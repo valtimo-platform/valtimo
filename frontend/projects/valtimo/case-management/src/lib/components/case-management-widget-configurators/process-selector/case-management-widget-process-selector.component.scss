@@ -1,0 +1,9 @@
+.valtimo-case-management-widget-process-selector {
+  display: flex;
+  gap: 16px;
+
+  > * {
+    max-width: 288px;
+    width: 100%;
+  }
+}

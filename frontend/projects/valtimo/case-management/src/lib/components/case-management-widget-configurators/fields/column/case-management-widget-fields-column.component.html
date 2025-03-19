@@ -1,0 +1,363 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<form
+  *ngIf="inputTheme$ | async as inputTheme"
+  class="valtimo-case-management-widget-field-column"
+  [formGroup]="formGroup"
+>
+  <cds-accordion formArrayName="rows" align="start" size="sm">
+    @for (formRow of formRows.controls; track $index) {
+      <cds-accordion-item
+        [title]="fieldTitle"
+        [context]="{count: $count, index: $index, title: formRow.get('title')?.value}"
+        [expanded]="$index === 0"
+        class="valtimo-case-management-widget-field-column__item"
+      >
+        <form
+          [formGroup]="formRow"
+          class="valtimo-case-management-widget-field-column__container"
+        >
+          <div
+            class="valtimo-case-management-widget-field-column__content"
+            [class.valtimo-case-management-widget-field-column__content--collection]="
+              !!fieldWidthDropdown
+            "
+          >
+            <cds-text-label>
+              <v-input-label
+                [title]="'widgetTabManagement.content.fields.title' | translate"
+                [tooltip]="
+                  'widgetTabManagement.content.' + widgetType() + '.titleTooltip' | translate
+                "
+              >
+              </v-input-label>
+
+              <input
+                cdsText
+                [attr.data-carbon-theme]="inputTheme"
+                [placeholder]="'widgetTabManagement.content.fields.titlePlaceholder' | translate"
+                type="text"
+                formControlName="title"
+              />
+            </cds-text-label>
+
+            <cds-dropdown
+              [attr.data-carbon-theme]="inputTheme"
+              [label]="'widgetTabManagement.content.fields.type' | translate"
+              [dropUp]="false"
+              [placeholder]="'widgetTabManagement.content.fields.typePlaceholder' | translate"
+              (selected)="onTypeSelected(formRow, $event)"
+              formControlName="type"
+            >
+              <cds-dropdown-list [items]="getDisplayItemsSelected(formRow)"></cds-dropdown-list>
+            </cds-dropdown>
+
+            <ng-container
+              *ngTemplateOutlet="fieldWidthDropdown; context: {index: $index}"
+            ></ng-container>
+
+            <div class="valtimo-case-management-widget-field-column__path-selector">
+              <v-input-label
+                [title]="'widgetTabManagement.content.fields.value' | translate"
+                [tooltip]="
+                  'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
+                "
+              >
+              </v-input-label>
+
+              <valtimo-value-path-selector
+                formControlName="content"
+                [documentDefinitionName]="documentDefinitionName"
+                [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
+                [parentItem]="selectedCollection"
+              ></valtimo-value-path-selector>
+            </div>
+          </div>
+
+          <div class="valtimo-case-management-widget-field-column__options">
+            @switch (formRow.get('type').value.id) {
+              @case (CaseWidgetDisplayTypeKey.CURRENCY) {
+                <cds-text-label>
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.currencyCode' | translate"
+                    [tooltip]="'widgetTabManagement.content.fields.currencyCodeTooltip' | translate"
+                  >
+                  </v-input-label>
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="inputTheme"
+                    [placeholder]="
+                      'widgetTabManagement.content.fields.currencyCodePlaceholder' | translate
+                    "
+                    type="text"
+                    formControlName="currencyCode"
+                  />
+                </cds-text-label>
+
+                <cds-text-label>
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.display' | translate"
+                    [tooltip]="'widgetTabManagement.content.fields.displayTooltip' | translate"
+                  >
+                  </v-input-label>
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="inputTheme"
+                    [placeholder]="
+                      'widgetTabManagement.content.fields.displayPlaceholder' | translate
+                    "
+                    type="text"
+                    formControlName="display"
+                  />
+                </cds-text-label>
+
+                <cds-text-label>
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+                    tooltip="{{
+                      'widgetTabManagement.content.fields.digitsInfoTooltip'
+                        | translate: {minFractionDigits: 2, maxFractionDigits: 2}
+                    }}"
+                  >
+                  </v-input-label>
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="inputTheme"
+                    [placeholder]="
+                      'widgetTabManagement.content.fields.digitsInfoPlaceholder' | translate
+                    "
+                    type="text"
+                    formControlName="digitsInfo"
+                  />
+                </cds-text-label>
+              }
+              @case (CaseWidgetDisplayTypeKey.DATE) {
+                <cds-text-label>
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.format' | translate"
+                    [tooltip]="'widgetTabManagement.content.fields.dateFormatTooltip' | translate"
+                  ></v-input-label>
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="inputTheme"
+                    [placeholder]="
+                      'widgetTabManagement.content.fields.formatPlaceholder' | translate
+                    "
+                    type="text"
+                    formControlName="format"
+                  />
+                </cds-text-label>
+              }
+              @case (CaseWidgetDisplayTypeKey.DATE_TIME) {
+                <cds-text-label>
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.format' | translate"
+                    [tooltip]="
+                      'widgetTabManagement.content.fields.dateTimeFormatTooltip' | translate
+                    "
+                  ></v-input-label>
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="inputTheme"
+                    [placeholder]="
+                      'widgetTabManagement.content.fields.formatPlaceholder' | translate
+                    "
+                    type="text"
+                    formControlName="format"
+                  />
+                </cds-text-label>
+              }
+              @case (CaseWidgetDisplayTypeKey.ENUM) {
+                <div
+                  class="valtimo-case-management-widget-field-column__enum"
+                  formArrayName="values"
+                >
+                  @for (rowValue of formRow.get('values')?.controls; track $index) {
+                    <form
+                      [formGroup]="rowValue"
+                      class="valtimo-case-management-widget-field-column__enum-form"
+                    >
+                      <cds-text-label>
+                        <v-input-label
+                          *ngIf="$index === 0"
+                          [title]="'widgetTabManagement.content.fields.enumValue' | translate"
+                          [tooltip]="
+                            'widgetTabManagement.content.fields.enumValueTooltip' | translate
+                          "
+                        ></v-input-label>
+
+                        <input
+                          [attr.data-carbon-theme]="inputTheme"
+                          cdsText
+                          [placeholder]="'widgetTabManagement.content.fields.enumValue' | translate"
+                          type="text"
+                          formControlName="key"
+                        />
+                      </cds-text-label>
+
+                      <cds-text-label>
+                        <v-input-label
+                          *ngIf="$index === 0"
+                          [title]="'widgetTabManagement.content.fields.enumDisplay' | translate"
+                          [tooltip]="
+                            'widgetTabManagement.content.fields.enumDisplayTooltip' | translate
+                          "
+                        ></v-input-label>
+
+                        <input
+                          cdsText
+                          [attr.data-carbon-theme]="inputTheme"
+                          [placeholder]="
+                            'widgetTabManagement.content.fields.enumDisplay' | translate
+                          "
+                          type="text"
+                          formControlName="value"
+                        />
+                      </cds-text-label>
+
+                      <button
+                        cdsButton="danger--ghost"
+                        [disabled]="$count === 1"
+                        [iconOnly]="true"
+                        class="valtimo-case-management-widget-field-column__delete-button enum"
+                        (click)="onDeleteRowClick($event, formRow.get('values'), $index)"
+                      >
+                        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+                      </button>
+                    </form>
+                  }
+
+                  <button
+                    cdsButton="primary"
+                    size="sm"
+                    (click)="onAddEnumValueClick(formRow.get('values'))"
+                  >
+                    {{ 'widgetTabManagement.content.fields.addEnum' | translate }}
+
+                    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+                  </button>
+                </div>
+              }
+              @case (CaseWidgetDisplayTypeKey.NUMBER) {
+                <cds-text-label>
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+                    tooltip="{{
+                      'widgetTabManagement.content.fields.digitsInfoTooltip'
+                        | translate
+                          : {
+                              minFractionDigits: 0,
+                              maxFractionDigits: 3,
+                            }
+                    }}"
+                  >
+                  </v-input-label>
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="inputTheme"
+                    [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+                    type="text"
+                    formControlName="digitsInfo"
+                  />
+                </cds-text-label>
+              }
+              @case (CaseWidgetDisplayTypeKey.PERCENT) {
+                <cds-text-label>
+                  <v-input-label
+                    [title]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+                    tooltip="{{
+                      'widgetTabManagement.content.fields.digitsInfoTooltip'
+                        | translate
+                          : {
+                              minFractionDigits: 0,
+                              maxFractionDigits: 0,
+                            }
+                    }}"
+                  >
+                  </v-input-label>
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="inputTheme"
+                    [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+                    type="text"
+                    formControlName="digitsInfo"
+                  />
+                </cds-text-label>
+              }
+            }
+
+            <cds-text-label
+              *ngIf="
+                formRow.get('type').value.id === CaseWidgetDisplayTypeKey.TEXT && isFieldWidget
+              "
+            >
+              <v-input-label
+                [title]="'widgetTabManagement.content.fields.ellipsisCharacterLimit' | translate"
+                tooltip="{{
+                  'widgetTabManagement.content.fields.ellipsisCharacterLimitTooltip' | translate
+                }}"
+              >
+              </v-input-label>
+
+              <input
+                cdsText
+                [attr.data-carbon-theme]="inputTheme"
+                [placeholder]="
+                  'widgetTabManagement.content.fields.ellipsisCharacterLimitPlaceholder' | translate
+                "
+                type="text"
+                formControlName="ellipsisCharacterLimit"
+              />
+            </cds-text-label>
+
+            <cds-checkbox *ngIf="showHideWhenEmptyCheckbox" formControlName="hideWhenEmpty">
+              {{ 'widgetTabManagement.content.hideWhenEmpty' | translate }}
+            </cds-checkbox>
+          </div>
+        </form>
+      </cds-accordion-item>
+    }
+  </cds-accordion>
+
+  <button cdsButton="primary" size="sm" (click)="addField()">
+    {{ addTranslateKey | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</form>
+
+<ng-template #fieldTitle let-count="count" let-index="index" let-title="title">
+  <div class="valtimo-case-management-widget-field-column__title">
+    {{ title || ('widgetTabManagement.content.fields.titlePlaceholder' | translate) }}
+
+    <button
+      cdsButton="danger"
+      [disabled]="count === 1"
+      [iconOnly]="true"
+      (click)="onDeleteRowClick($event, formRows, index)"
+      class="valtimo-case-management-widget-field-column__delete-button"
+    >
+      <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+    </button>
+  </div>
+</ng-template>

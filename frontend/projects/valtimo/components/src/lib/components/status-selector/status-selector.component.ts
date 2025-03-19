@@ -72,7 +72,7 @@ export class StatusSelectorComponent {
       statuses.map(status => ({
         content:
           status.key === this.CASES_WITHOUT_STATUS_KEY
-            ? this.translateService.instant('dossierManagement.statuses.withoutStatus')
+            ? this.translateService.instant('caseManagement.statuses.withoutStatus')
             : status.title,
         selected: !!selectedStatuses.find(selectedStatus => selectedStatus.key === status.key),
         key: status.key,

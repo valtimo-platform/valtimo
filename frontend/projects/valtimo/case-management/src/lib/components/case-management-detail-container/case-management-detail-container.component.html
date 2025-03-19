@@ -1,0 +1,140 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  *ngIf="{
+    currentTab: currentTab$ | async,
+    injectedTabs: injectedCaseManagementTabs$ | async,
+  } as obs"
+  class="case-management-detail-container"
+>
+  <cds-tabs class="case-management-tabs" type="inline">
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.PROCESSES"
+      [active]="obs.currentTab === TabEnum.PROCESSES"
+      [heading]="'caseManagement.tabs.processes' | translate"
+      (selected)="navigateToTab(TabEnum.PROCESSES, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.DOCUMENT"
+      [active]="obs.currentTab === TabEnum.DOCUMENT"
+      [heading]="'caseManagement.tabs.document' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.DOCUMENT, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [active]="obs.currentTab === TabEnum.CASE"
+      [heading]="'caseManagement.tabs.cases' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.CASE, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.DOCUMENT"
+      [active]="obs.currentTab === TabEnum.DOCUMENT"
+      [heading]="'caseManagement.tabs.document' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.DOCUMENT, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [active]="obs.currentTab === TabEnum.CASE"
+      [heading]="'caseManagement.tabs.cases' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.CASE, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.SEARCH"
+      [active]="obs.currentTab === TabEnum.SEARCH"
+      [heading]="'caseManagement.tabs.searchFields' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.SEARCH, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      *ngIf="caseListColumn"
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.LIST"
+      [active]="obs.currentTab === TabEnum.LIST"
+      [heading]="'caseManagement.tabs.listColumns' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.LIST, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      *ngIf="tabManagementEnabled"
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TABS"
+      [active]="obs.currentTab === TabEnum.TABS"
+      [heading]="'caseManagement.tabs.tabManagement' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.TABS, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      *ngIf="{active: obs.currentTab === TabEnum.STATUSES} as vars"
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.STATUSES"
+      [active]="vars.active"
+      [heading]="'caseManagement.tabs.statuses' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.STATUSES, obs.currentTab)"
+    >
+    </cds-tab>
+
+    @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
+      <cds-tab
+        class="no-padding-left-right no-padding-top-bottom"
+        [active]="obs.currentTab === injectedTab.translationKey"
+        [heading]="injectedTab.translationKey | translate"
+        disabled="true"
+        (selected)="navigateToTab(injectedTab.translationKey, true)"
+      >
+      </cds-tab>
+    }
+  </cds-tabs>
+
+  <div class="case-management-detail-container__content">
+    <router-outlet></router-outlet>
+  </div>
+</div>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <valtimo-case-management-detail-container-actions
+      [documentDefinitionTitle]="documentDefinitionTitle$ | async"
+      [caseDefinitionName]="caseDefinitionName$ | async"
+      (versionSet)="onVersionSet($event)"
+    ></valtimo-case-management-detail-container-actions>
+  </ng-template>
+</ng-container>

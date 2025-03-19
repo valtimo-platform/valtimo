@@ -123,7 +123,7 @@ export const environment: ValtimoConfig = {
           {link: ['/form-management'], title: 'Forms', sequence: 3},
           {link: ['/form-flow-management'], title: 'Form Flows', sequence: 4},
           {link: ['/decision-tables'], title: 'Decision tables', sequence: 5},
-          {link: ['/dossier-management'], title: 'Dossiers', sequence: 6},
+          {link: ['/case-management'], title: 'Cases', sequence: 6},
           {link: ['/task-management'], title: 'Tasks', sequence: 7},
           {
             link: ['/object-management'],

@@ -85,7 +85,7 @@ import {
   LocalizationService,
 } from '@valtimo/config';
 import {FormManagementModule} from '@valtimo/form-management';
-import {DossierManagementModule} from '@valtimo/dossier-management';
+import {CaseManagementModule} from '@valtimo/case-management';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
@@ -193,7 +193,7 @@ export function tabsFactory() {
     ProcessLinkModule,
     MigrationModule,
     FormManagementModule,
-    DossierManagementModule,
+    CaseManagementModule,
     PluginManagementModule,
     NotificatiesApiPluginModule,
     ObjectTokenAuthenticationPluginModule,

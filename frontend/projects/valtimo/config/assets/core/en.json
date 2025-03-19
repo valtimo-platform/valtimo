@@ -513,7 +513,7 @@
       "on": "on"
     }
   },
-  "dossierManagement": {
+  "caseManagement": {
     "version": "Version: ",
     "preparingDownload": "Preparing download",
     "more": "More",

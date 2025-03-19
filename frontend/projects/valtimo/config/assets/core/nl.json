@@ -512,7 +512,7 @@
       "on": "op"
     }
   },
-  "dossierManagement": {
+  "caseManagement": {
     "version": "Versie: ",
     "preparingDownload": "Download aan het voorbereiden",
     "more": "Meer",

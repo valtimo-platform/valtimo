@@ -36,7 +36,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {ListColumnModal} from '@valtimo/dossier-management';
+import {ListColumnModal} from '@valtimo/case-management';
 import {ObjectManagementService} from '../../../../services/object-management.service';
 import {
   DisplayTypeParameters,
