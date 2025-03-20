@@ -501,7 +501,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   public selectedDisplayType(event: ListItem): void {
     if (event.item.selected && event.item.key === 'tags') {
-      this.formGroup.patchValue({sortable: undefined, defaultSort: {key: ''}});
+      this.formGroup.patchValue({sortable: undefined, defaultSort: undefined});
     }
   }
 
