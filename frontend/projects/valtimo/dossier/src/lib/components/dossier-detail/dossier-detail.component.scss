@@ -130,7 +130,13 @@ $tab-max-height-compact: calc(100vh - 176px);
 
   .cds--tag {
     margin: 0;
-    height: var(--cds-layout-size-height-md);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    max-width: 100%;
   }
 
   &.--compact {

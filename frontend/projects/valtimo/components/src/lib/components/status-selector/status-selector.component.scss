@@ -29,6 +29,12 @@
 
   .cds--tag {
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    line-height: 24px;
+    max-width: 100%;
   }
 
   .generic-span {
