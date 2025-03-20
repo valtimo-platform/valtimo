@@ -1,7 +1,7 @@
 {
   "name": "@valtimo/logging",
   "license": "EUPL-1.2",
-  "version": "12.2.0",
+  "version": "13.0.0",
   "peerDependencies": {
     "@angular/common": "^17.2.2",
     "@angular/core": "^17.2.2"
