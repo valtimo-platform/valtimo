@@ -105,6 +105,10 @@ td:first-child {
 
   ::ng-deep .cds--tag {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    line-height: 24px;
   }
 
   ::ng-deep.valtimo-carbon-list__draggable .cds--btn--ghost {

@@ -43,6 +43,7 @@
       *ngIf="item.key !== CASES_WITHOUT_STATUS_KEY"
       class="cds-tag--no-margin"
       [type]="item?.tagType"
+      [title]="item?.content"
     >
       {{ item?.content }}
     </cds-tag>
