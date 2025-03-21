@@ -714,7 +714,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (isArray(object) && typeof object[0] !== 'string') return object as CarbonTag[];
 
-    if (!isArray(object) && typeof object !== 'string') return [object];
+    if (!isArray(object) && typeof object !== 'string') return [object as CarbonTag];
 
     if (typeof object === 'string')
       return [
