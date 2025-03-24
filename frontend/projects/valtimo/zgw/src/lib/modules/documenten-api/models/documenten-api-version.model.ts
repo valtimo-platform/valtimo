@@ -24,6 +24,7 @@ interface SupportedDocumentenApiFeatures {
   supportsFilterableColumns: boolean;
   supportsSortableColumns: boolean;
   supportsTrefwoorden: boolean;
+  supportsUpdatingDefinitiveDocument: boolean;
 }
 
 export {DocumentenApiManagementVersion, SupportedDocumentenApiFeatures};
