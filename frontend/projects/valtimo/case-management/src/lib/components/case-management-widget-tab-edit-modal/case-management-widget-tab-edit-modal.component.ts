@@ -26,7 +26,7 @@ import {
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {CARBON_CONSTANTS, ValtimoCdsModalDirectiveModule} from '@valtimo/components';
 import {TabManagementService} from '../../services';
-import {ApiTabItem, ApiTabType} from '@valtimo/dossier';
+import {ApiTabItem, ApiTabType} from '@valtimo/case';
 import {
   ButtonModule,
   InputModule,

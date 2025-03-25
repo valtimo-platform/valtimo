@@ -56,7 +56,7 @@ import {
   FieldsCaseWidgetValue,
   WidgetCollectionContent,
   WidgetContentProperties,
-} from '@valtimo/dossier';
+} from '@valtimo/case';
 import {
   ButtonModule,
   DropdownModule,

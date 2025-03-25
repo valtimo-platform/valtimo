@@ -36,7 +36,7 @@ import {
   EditorModel,
   EditorModule,
 } from '@valtimo/components';
-import {BasicCaseWidget, CaseWidgetsRes} from '@valtimo/dossier';
+import {BasicCaseWidget, CaseWidgetsRes} from '@valtimo/case';
 import {
   ButtonModule,
   IconModule,

@@ -15,7 +15,7 @@
  */
 import {Inject, Injectable, Optional} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {CASE_TAB_TOKEN, CaseTabConfig, DefaultTabs} from '@valtimo/dossier';
+import {CASE_TAB_TOKEN, CaseTabConfig, DefaultTabs} from '@valtimo/case';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';

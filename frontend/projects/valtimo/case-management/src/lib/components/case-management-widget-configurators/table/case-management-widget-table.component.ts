@@ -40,7 +40,7 @@ import {
   ValuePathSelectorPrefix,
   ValuePathType,
 } from '@valtimo/components';
-import {FieldsCaseWidgetValue, WidgetContentProperties, WidgetTableContent} from '@valtimo/dossier';
+import {FieldsCaseWidgetValue, WidgetContentProperties, WidgetTableContent} from '@valtimo/case';
 import {ButtonModule, InputModule, ToggleModule} from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
 import {WidgetContentComponent} from '../../../models';

@@ -57,7 +57,7 @@ import {
   CaseWidgetTextDisplayType,
   CaseWidgetType,
   FieldsCaseWidgetValue,
-} from '@valtimo/dossier';
+} from '@valtimo/case';
 import {
   AccordionModule,
   ButtonModule,

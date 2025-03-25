@@ -15,7 +15,7 @@
  */
 import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, signal} from '@angular/core';
 import {AbstractControl, FormGroup, FormGroupDirective} from '@angular/forms';
-import {ApiTabType, DefaultTabs} from '@valtimo/dossier';
+import {ApiTabType, DefaultTabs} from '@valtimo/case';
 import {ListItem} from 'carbon-components-angular';
 import {combineLatest, map, startWith, Subscription} from 'rxjs';
 import {TabService} from '../../../services';

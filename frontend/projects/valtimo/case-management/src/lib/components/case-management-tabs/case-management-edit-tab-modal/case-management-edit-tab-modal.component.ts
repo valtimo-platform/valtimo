@@ -15,7 +15,7 @@
  */
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {ApiTabItem} from '@valtimo/dossier';
+import {ApiTabItem} from '@valtimo/case';
 import {TabService} from '../../../services';
 
 @Component({

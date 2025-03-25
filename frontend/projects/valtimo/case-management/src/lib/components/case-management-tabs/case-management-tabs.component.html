@@ -32,8 +32,8 @@
 
   <valtimo-no-results
     [action]="addTabButton"
-    [description]="'dossier.tabs.noResultsDescription' | translate"
-    [title]="'dossier.tabs.noResults' | translate"
+    [description]="'case.tabs.noResultsDescription' | translate"
+    [title]="'case.tabs.noResults' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
@@ -47,8 +47,8 @@
 
 <ng-template #tabContentColumn let-data="data">
   {{
-    isTranslated('dossier.tabs.' + data.item.contentKey)
-      ? ('dossier.tabs.' + data.item.contentKey | translate)
+    isTranslated('case.tabs.' + data.item.contentKey)
+      ? ('case.tabs.' + data.item.contentKey | translate)
       : data.item.contentKey
   }}
 </ng-template>

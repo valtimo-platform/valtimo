@@ -5,7 +5,7 @@ import {
   CaseWidgetType,
   CaseWidgetWidth,
   WidgetContentProperties,
-} from '@valtimo/dossier';
+} from '@valtimo/case';
 import {WidgetStyle, WidgetTypeSelection} from '../models';
 
 @Injectable({

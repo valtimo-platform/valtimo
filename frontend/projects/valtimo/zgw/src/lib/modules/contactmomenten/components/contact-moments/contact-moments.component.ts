@@ -91,7 +91,7 @@ export class DossierDetailTabContactMomentsComponent {
       this.contactMomentService.saveContactMoment({kanaal: channel, tekst: text}).subscribe(
         () => {
           this.alertService.success(
-            this.translateService.instant('dossier.contactMoments.saveSuccess')
+            this.translateService.instant('case.contactMoments.saveSuccess')
           );
           this.enable();
           this.clear();

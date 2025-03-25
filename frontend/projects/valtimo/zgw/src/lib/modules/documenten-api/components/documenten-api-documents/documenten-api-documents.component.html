@@ -106,9 +106,9 @@
 
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="dashboardManagement.deleteModal.confirm"
-  contentTranslationKey="dossier.documenten.deleteConfirmationModal.content"
+  contentTranslationKey="case.documenten.deleteConfirmationModal.content"
   confirmButtonType="danger"
-  titleTranslationKey="dossier.documenten.deleteConfirmationModal.title"
+  titleTranslationKey="case.documenten.deleteConfirmationModal.title"
   [showModalSubject$]="showDeleteConfirmationModal$"
   (confirmEvent)="deleteDocument()"
 >
@@ -124,14 +124,14 @@
   } @else if (showZaakLinkWarning && isAdmin) {
     <valtimo-no-results
       [action]="navigateToCaseAdminButton"
-      [description]="'dossier.documenten.noZaakFound' | translate"
-      [title]="'dossier.documenten.noZaakFoundTitle' | translate"
+      [description]="'case.documenten.noZaakFound' | translate"
+      [title]="'case.documenten.noZaakFoundTitle' | translate"
     ></valtimo-no-results>
   } @else {
     <valtimo-no-results
       [action]="uploadButton"
-      [description]="'dossier.documenten.noFiles' | translate"
-      [title]="'dossier.documenten.noFilesTitle' | translate"
+      [description]="'case.documenten.noFiles' | translate"
+      [title]="'case.documenten.noFilesTitle' | translate"
     ></valtimo-no-results>
   }
 </ng-template>
@@ -178,7 +178,7 @@
 
 <ng-template #navigateToCaseAdminButton>
   <button (click)="onNavigateToCaseAdminClick()" cdsButton="primary">
-    {{ 'dossier.documenten.navigateToCaseAdmin' | translate }}
+    {{ 'case.documenten.navigateToCaseAdmin' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="settings" size="16"></svg>
   </button>

@@ -104,15 +104,15 @@ export class DossierDetailTabObjectTypeComponent {
 
   readonly columns$ = new BehaviorSubject<Array<TableColumn>>([
     {
-      labelTranslationKey: 'dossier.zaakobjecten.index',
+      labelTranslationKey: 'case.zaakobjecten.index',
       dataKey: 'index',
     },
     {
-      labelTranslationKey: 'dossier.zaakobjecten.registrationAt',
+      labelTranslationKey: 'case.zaakobjecten.registrationAt',
       dataKey: 'registrationAt',
     },
     {
-      labelTranslationKey: 'dossier.zaakobjecten.title',
+      labelTranslationKey: 'case.zaakobjecten.title',
       dataKey: 'title',
     },
   ]);

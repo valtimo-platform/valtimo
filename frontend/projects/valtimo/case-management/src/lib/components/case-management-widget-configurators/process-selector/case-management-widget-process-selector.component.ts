@@ -4,7 +4,7 @@ import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
-import {CaseWidgetAction} from '@valtimo/dossier';
+import {CaseWidgetAction} from '@valtimo/case';
 import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,

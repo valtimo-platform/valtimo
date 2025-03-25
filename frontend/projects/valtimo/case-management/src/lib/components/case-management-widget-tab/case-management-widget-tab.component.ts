@@ -33,7 +33,7 @@ import {
   PendingChangesComponent,
   RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
-import {ApiTabItem} from '@valtimo/dossier';
+import {ApiTabItem} from '@valtimo/case';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import moment from 'moment/moment';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';

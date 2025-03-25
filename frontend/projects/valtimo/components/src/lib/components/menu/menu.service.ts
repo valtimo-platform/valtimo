@@ -191,7 +191,7 @@ export class MenuService {
       }
     });
     menuItems = this.sortMenuItems(menuItems);
-    this.appendDossierSubMenuItems(menuItems).subscribe(
+    this.appendCaseSubMenuItems(menuItems).subscribe(
       value => (menuItems = this.applyMenuRoleSecurity(value))
     );
 
@@ -207,9 +207,9 @@ export class MenuService {
     return menuItems.sort((a, b) => a.sequence - b.sequence);
   }
 
-  private appendDossierSubMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {
+  private appendCaseSubMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {
     return new Observable(subscriber => {
-      this.logger.debug('appendDossierSubMenuItems');
+      this.logger.debug('appendCasesSubMenuItems');
       this.documentService.getAllDefinitions().subscribe(definitions => {
         combineLatest([
           ...definitions.content.map(definition =>
@@ -227,7 +227,7 @@ export class MenuService {
               );
 
               return {
-                link: ['/dossiers/' + definition.id.name],
+                link: ['/cases/' + definition.id.name],
                 title: definition.schema.title,
                 iconClass: 'icon mdi mdi-dot-circle',
                 sequence: index,

@@ -6,14 +6,14 @@
     "JsonSchemaDocumentModifiedEvent": "Case modified",
     "ProcessStartedEvent": "Process started: {{processDefinitionKey}}",
     "ProcessEndedEvent": "Process finished: {{processDefinitionKey}}",
-    "DossierDocumentGeneratedEvent": "Case document generated",
+    "CaseDocumentGeneratedEvent": "Case document generated",
     "DocumentRelatedFileAddedEvent": "Related file added",
     "DocumentRelatedFileRemovedEvent": "Related file removed",
     "BesluitAddedEvent": "Decision added > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "The assignee has been changed to {{assigneeName}}",
     "DocumentUnassignedEvent": "The assignee has been unassigned"
   },
-  "dossier": {
+  "case": {
     "bulkAssign": {
       "assign": "Assign to",
       "modal": {
@@ -1056,8 +1056,8 @@
   "uploadFormDefinition": "Upload form definition",
   "Process migration": "Process migration",
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
-  "Dossier": "Case",
-  "Dossiers": "Cases",
+  "Case": "Case",
+  "Cases": "Cases",
   "document definition": "Document definition",
   "Upload document definition": "Upload document definition",
   "Remove document definition": "Remove document definition",
@@ -1066,11 +1066,11 @@
   "remove-document-definition-success": "Removed document definition",
   "Download document definition": "Download document definition",
   "Select a document definition": "Select a file to upload",
-  "Overview of all Dossiers": "Overview of all Cases",
-  "Start Dossier": "Create New Case",
-  "Dossier details": "Case details",
+  "Overview of all Cases": "Overview of all Cases",
+  "Start Case": "Create New Case",
+  "Case details": "Case details",
   "Related documents": "Related documents",
-  "Overview of all documents in this dossier": "Overview of all documents in this case",
+  "Overview of all documents in this case": "Overview of all documents in this case",
   "Basics": "Basics",
   "Other": "Other",
   "Download": "Download",

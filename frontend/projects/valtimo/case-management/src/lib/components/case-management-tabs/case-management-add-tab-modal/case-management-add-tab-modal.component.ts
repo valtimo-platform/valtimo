@@ -29,7 +29,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {Code16, Development16, TableBuilt16, WatsonHealthPageScroll16} from '@carbon/icons';
-import {ApiTabItem, ApiTabType, TabSelectItem} from '@valtimo/dossier';
+import {ApiTabItem, ApiTabType, TabSelectItem} from '@valtimo/case';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {TabService} from '../../../services';

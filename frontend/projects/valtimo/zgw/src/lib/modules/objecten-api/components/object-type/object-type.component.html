@@ -28,7 +28,7 @@
     [items]="obs.objects"
     [columns]="obs.columns"
     [showEditButtons]="true"
-    editButtonTranslationKey="dossier.zaakobjecten.objectType.viewObject"
+    editButtonTranslationKey="case.zaakobjecten.objectType.viewObject"
     [amountOfLoadingRows]="2"
     [itemsTranslationKey]="'pluginManagement.tableItemsText'"
     [showPagination]="false"
@@ -36,7 +36,7 @@
   ></v-table>
 
   <v-paragraph *ngIf="!obs.hasData && !obs.loading" [center]="true">{{
-    'dossier.zaakobjecten.noObjectType' | translate
+    'case.zaakobjecten.noObjectType' | translate
   }}</v-paragraph>
 </ng-container>
 
@@ -53,7 +53,7 @@
       [form]="objectForm$ | async"
     ></valtimo-form-io>
     <v-paragraph *ngIf="noFormDefinitionComponent$ | async" [center]="true">{{
-      'dossier.zaakobjecten.noFormDefinitionComponent' | translate
+      'case.zaakobjecten.noFormDefinitionComponent' | translate
     }}</v-paragraph>
   </div>
 </v-modal>

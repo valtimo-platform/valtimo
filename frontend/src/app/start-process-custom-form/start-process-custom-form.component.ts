@@ -85,7 +85,7 @@ export class StartProcessCustomFormComponent implements OnInit {
         .startProcesInstance(this.key, businessKey, variables)
         .subscribe(response => {
           this.toastr.success(this.processDefinition.name + ' has successfully been started');
-          this.router.navigate(['/dossiers/' + this.key]);
+          this.router.navigate(['/cases/' + this.key]);
         });
     }
   }

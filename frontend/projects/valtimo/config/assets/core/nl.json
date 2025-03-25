@@ -6,14 +6,14 @@
     "JsonSchemaDocumentModifiedEvent": "Dossier aangepast",
     "ProcessStartedEvent": "Proces gestart: {{processDefinitionKey}}",
     "ProcessEndedEvent": "Proces afgerond: {{processDefinitionKey}}",
-    "DossierDocumentGeneratedEvent": "Dossier document gegenereerd",
+    "CaseDocumentGeneratedEvent": "Dossier document gegenereerd",
     "DocumentRelatedFileAddedEvent": "Gerelateerd bestand toegevoegd",
     "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd",
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
     "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald"
   },
-  "dossier": {
+  "case": {
     "bulkAssign": {
       "assign": "Toewijzen",
       "modal": {
@@ -1055,8 +1055,8 @@
   "uploadFormDefinition": "Upload formulier-definitie",
   "Process migration": "Procesmigratie",
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestartte processen krijgen de nieuwe candidate group)",
-  "Dossier": "Dossier",
-  "Dossiers": "Dossiers",
+  "Case": "Dossier",
+  "Cases": "Dossiers",
   "document definition": "Documentdefinitie",
   "Upload document definition": "Upload documentdefinitie",
   "Remove document definition": "Verwijder documentdefinitie",
@@ -1065,11 +1065,11 @@
   "remove-document-definition-success": "Documentdefinitie verwijderd",
   "Download document definition": "Download documentdefinitie",
   "Select a document definition": "Kies een bestand om te uploaden",
-  "Overview of all Dossiers": "Overzicht van alle Dossiers",
-  "Start Dossier": "Creëer Nieuw Dossier",
-  "Dossier details": "Dossier details",
+  "Overview of all Cases": "Overzicht van alle Dossiers",
+  "Start Case": "Creëer Nieuw Dossier",
+  "Case details": "Dossier details",
   "Related documents": "Gerelateerde documenten",
-  "Overview of all documents in this dossier": "Overzicht van documenten in dit dossier",
+  "Overview of all documents in this case": "Overzicht van documenten in dit dossier",
   "Basics": "Basis",
   "Other": "Overig",
   "Download": "Downloaden",

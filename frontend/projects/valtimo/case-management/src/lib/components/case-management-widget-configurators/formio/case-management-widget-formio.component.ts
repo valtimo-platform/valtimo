@@ -25,7 +25,7 @@ import {
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {WidgetFormioContent} from '@valtimo/dossier';
+import {WidgetFormioContent} from '@valtimo/case';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';

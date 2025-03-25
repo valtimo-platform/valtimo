@@ -446,21 +446,21 @@
         }
       }
     },
-    "@valtimo/dossier": {
-      "root": "projects/valtimo/dossier",
-      "sourceRoot": "projects/valtimo/dossier/src",
+    "@valtimo/case": {
+      "root": "projects/valtimo/case",
+      "sourceRoot": "projects/valtimo/case/src",
       "projectType": "library",
       "prefix": "valtimo",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/dossier/tsconfig.lib.json",
-            "project": "projects/valtimo/dossier/ng-package.json"
+            "tsConfig": "projects/valtimo/case/tsconfig.lib.json",
+            "project": "projects/valtimo/case/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/dossier/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/case/tsconfig.lib.prod.json"
             }
           }
         },
@@ -468,16 +468,16 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/dossier/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/dossier/karma.conf.js"
+            "tsConfig": "projects/valtimo/case/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/case/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/dossier/src/**/*.ts",
-              "projects/valtimo/dossier/src/**/*.html"
+              "projects/valtimo/case/src/**/*.ts",
+              "projects/valtimo/case/src/**/*.html"
             ]
           }
         }

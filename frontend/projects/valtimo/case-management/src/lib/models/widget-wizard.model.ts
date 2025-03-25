@@ -16,7 +16,7 @@
 
 import {Type} from '@angular/core';
 import {WidgetContentComponent} from './widget-content.model';
-import {CaseWidgetType} from '@valtimo/dossier';
+import {CaseWidgetType} from '@valtimo/case';
 import {
   CaseManagementWidgetCollectionComponent,
   CaseManagementWidgetCustomComponent,

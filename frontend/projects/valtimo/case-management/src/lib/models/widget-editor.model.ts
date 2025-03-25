@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {CaseWidgetType} from '@valtimo/dossier';
+import {CaseWidgetType} from '@valtimo/case';
 import {TagType} from 'carbon-components-angular';
 
 enum WidgetEditorTab {

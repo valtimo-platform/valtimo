@@ -13,17 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {BrowserModule} from '@angular/platform-browser';
-import {Injector, NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {HttpBackend, HttpClient, HttpClientModule} from '@angular/common/http';
-import {AppRoutingModule} from './app-routing.module';
-import {AppComponent} from './app.component';
-import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
-import {TaskModule} from '@valtimo/task';
-import {environment} from '../environments/environment';
-import {SecurityModule} from '@valtimo/security';
+import { CommonModule } from '@angular/common';
+import { HttpBackend, HttpClient, HttpClientModule } from '@angular/common/http';
+import { Injector, NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { BrowserModule } from '@angular/platform-browser';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { CustomFormFlowComponent } from '@src/app/custom-form-flow-component/custom-form-flow.component';
+import { AccessControlManagementModule } from '@valtimo/access-control-management';
+import { AccountModule } from '@valtimo/account';
+import { AnalyseModule } from '@valtimo/analyse';
+import { BootstrapModule } from '@valtimo/bootstrap';
+import {
+  CASE_TAB_TOKEN,
+  CaseDetailTabAuditComponent,
+  CaseDetailTabDocumentsComponent,
+  CaseDetailTabNotesComponent,
+  CaseDetailTabProgressComponent,
+  CaseDetailTabSummaryComponent,
+  CaseModule,
+  CUSTOM_CASE_WIDGET_TOKEN,
+  DefaultTabs,
+} from '@valtimo/case';
+import { CaseManagementModule } from '@valtimo/case-management';
+import { CaseMigrationModule } from '@valtimo/case-migration';
+import { ChoiceFieldModule } from '@valtimo/choice-field';
 import {
   BpmnJsDiagramModule,
   CardModule,
@@ -39,55 +53,21 @@ import {
   UploaderModule,
   WidgetModule,
 } from '@valtimo/components';
-import {
-  CASE_TAB_TOKEN,
-  CUSTOM_CASE_WIDGET_TOKEN,
-  DefaultTabs,
-  DossierDetailTabAuditComponent,
-  DossierDetailTabDocumentsComponent,
-  DossierDetailTabNotesComponent,
-  DossierDetailTabProgressComponent,
-  DossierDetailTabSummaryComponent,
-  DossierModule,
-} from '@valtimo/dossier';
-import {ProcessModule} from '@valtimo/process';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {CustomFormExampleComponent} from './custom-form-example/custom-form-example.component';
-import {StartProcessCustomFormComponent} from './start-process-custom-form/start-process-custom-form.component';
-import {DashboardModule} from '@valtimo/dashboard';
-import {DashboardManagementModule} from '@valtimo/dashboard-management';
-import {DocumentModule} from '@valtimo/document';
-import {AccountModule} from '@valtimo/account';
-import {ChoiceFieldModule} from '@valtimo/choice-field';
-import {ResourceModule} from '@valtimo/resource';
-import {FormioComponent} from './form-io/form-io.component';
-import {FormModule} from '@valtimo/form';
-import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
-import {CustomDossierTabComponent} from './custom-dossier-tab/custom-dossier-tab.component';
-import {CustomMapsTabComponent} from './custom-maps-tab/custom-maps-tab.component';
-import {SwaggerModule} from '@valtimo/swagger';
-import {AnalyseModule} from '@valtimo/analyse';
-import {ProcessManagementModule} from '@valtimo/process-management';
-import {DecisionModule} from '@valtimo/decision';
-import {MilestoneModule} from '@valtimo/milestone';
-import {LoggerModule} from 'ngx-logger';
-import {
-  FORM_CUSTOM_COMPONENT_TOKEN,
-  FORM_FLOW_COMPONENT_TOKEN,
-  ProcessLinkModule,
-} from '@valtimo/process-link';
-import {MigrationModule} from '@valtimo/migration';
-import {BootstrapModule} from '@valtimo/bootstrap';
-import {
-  ConfigModule,
-  ConfigService,
-  CustomMultiTranslateHttpLoaderFactory,
-  LocalizationService,
-} from '@valtimo/config';
-import {FormManagementModule} from '@valtimo/form-management';
-import {CaseManagementModule} from '@valtimo/case-management';
-import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {PluginManagementModule} from '@valtimo/plugin-management';
+import { ConfigModule, ConfigService, CustomMultiTranslateHttpLoaderFactory, LocalizationService } from '@valtimo/config';
+import { DashboardModule } from '@valtimo/dashboard';
+import { DashboardManagementModule } from '@valtimo/dashboard-management';
+import { DecisionModule } from '@valtimo/decision';
+import { DocumentModule } from '@valtimo/document';
+import { FormModule } from '@valtimo/form';
+import { FormFlowManagementModule } from '@valtimo/form-flow-management';
+import { FormManagementModule } from '@valtimo/form-management';
+import { FormViewModelModule } from '@valtimo/form-view-model';
+import { LayoutModule, TranslationManagementModule } from '@valtimo/layout';
+import { LoggingModule } from '@valtimo/logging';
+import { MigrationModule } from '@valtimo/migration';
+import { MilestoneModule } from '@valtimo/milestone';
+import { ObjectModule } from '@valtimo/object';
+import { ObjectManagementModule } from '@valtimo/object-management';
 import {
   BesluitenApiPluginModule,
   besluitenApiPluginSpecification,
@@ -117,29 +97,41 @@ import {
   ZakenApiPluginModule,
   zakenApiPluginSpecification,
 } from '@valtimo/plugin';
-import {ObjectManagementModule} from '@valtimo/object-management';
-import {ObjectModule} from '@valtimo/object';
-import {AccessControlManagementModule} from '@valtimo/access-control-management';
-import {FormFlowManagementModule} from '@valtimo/form-flow-management';
-import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custom-form-flow.component';
-import {TaskManagementModule} from '@valtimo/task-management';
-import {CaseMigrationModule} from '@valtimo/case-migration';
+import { PluginManagementModule } from '@valtimo/plugin-management';
+import { ProcessModule } from '@valtimo/process';
+import { FORM_FLOW_COMPONENT_TOKEN, ProcessLinkModule } from '@valtimo/process-link';
+import { ProcessManagementModule } from '@valtimo/process-management';
+import { ResourceModule } from '@valtimo/resource';
+import { SecurityModule } from '@valtimo/security';
+import { SwaggerModule } from '@valtimo/swagger';
+import { TaskModule } from '@valtimo/task';
+import { TaskManagementModule } from '@valtimo/task-management';
 import {
   DossierDetailTabContactMomentsComponent,
   DossierDetailTabZaakobjectenComponent,
   registerDocumentenApiFormioUploadComponent,
   ZgwModule,
 } from '@valtimo/zgw';
-import {LoggingModule} from '@valtimo/logging';
-import {FormViewModelModule} from '@valtimo/form-view-model';
+import { LoggerModule } from 'ngx-logger';
+
+import { environment } from '../environments/environment';
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { CustomDossierTabComponent } from './custom-dossier-tab/custom-dossier-tab.component';
+import { CustomFormExampleComponent } from './custom-form-example/custom-form-example.component';
+import { CustomMapsTabComponent } from './custom-maps-tab/custom-maps-tab.component';
+import { FormioComponent } from './form-io/form-io.component';
+import { StartProcessCustomFormComponent } from './start-process-custom-form/start-process-custom-form.component';
+import { UploadShowcaseComponent } from './upload-showcase/upload-showcase.component';
+
 
 export function tabsFactory() {
   return new Map<string, object>([
-    [DefaultTabs.summary, DossierDetailTabSummaryComponent],
-    [DefaultTabs.progress, DossierDetailTabProgressComponent],
-    [DefaultTabs.audit, DossierDetailTabAuditComponent],
-    [DefaultTabs.documents, DossierDetailTabDocumentsComponent],
-    [DefaultTabs.notes, DossierDetailTabNotesComponent],
+    [DefaultTabs.summary, CaseDetailTabSummaryComponent],
+    [DefaultTabs.progress, CaseDetailTabProgressComponent],
+    [DefaultTabs.audit, CaseDetailTabAuditComponent],
+    [DefaultTabs.documents, CaseDetailTabDocumentsComponent],
+    [DefaultTabs.notes, CaseDetailTabNotesComponent],
     ['custom-maps', CustomMapsTabComponent],
     ['custom-dossier', CustomDossierTabComponent],
   ]);
@@ -171,7 +163,7 @@ export function tabsFactory() {
     MenuModule,
     TaskModule,
     CaseMigrationModule,
-    DossierModule.forRoot(tabsFactory),
+    CaseModule.forRoot(tabsFactory),
     ProcessModule,
     BpmnJsDiagramModule,
     FormsModule,

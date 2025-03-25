@@ -16,7 +16,7 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, Signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseWidgetType, CaseWidgetWidth} from '@valtimo/dossier';
+import {CaseWidgetType, CaseWidgetWidth} from '@valtimo/case';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../services';
 

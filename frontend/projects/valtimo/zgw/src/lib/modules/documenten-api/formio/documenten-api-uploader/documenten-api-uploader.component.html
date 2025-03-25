@@ -18,12 +18,12 @@
   <div *ngIf="obs.linked === false">
     <div
       *ngIf="obs.isAdmin"
-      [translate]="'dossier.documenten.noProcessLinked.adminRole'"
+      [translate]="'case.documenten.noProcessLinked.adminRole'"
       class="bg-warning text-black mb-2 p-3 text-center"
     ></div>
     <div
       *ngIf="!obs.isAdmin"
-      [translate]="'dossier.documenten.noProcessLinked.regularUser'"
+      [translate]="'case.documenten.noProcessLinked.regularUser'"
       class="bg-warning text-black mb-2 p-3 text-center"
     ></div>
   </div>

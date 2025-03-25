@@ -35,8 +35,8 @@
       "@valtimo/access-control-management/*": ["dist/valtimo/access-control-management/*"],
       "@valtimo/security": ["dist/valtimo/security"],
       "@valtimo/security/*": ["dist/valtimo/security/*"],
-      "@valtimo/dossier": ["dist/valtimo/dossier"],
-      "@valtimo/dossier/*": ["dist/valtimo/dossier/*"],
+      "@valtimo/case": ["dist/valtimo/case"],
+      "@valtimo/case/*": ["dist/valtimo/case/*"],
       "@valtimo/process": ["dist/valtimo/process"],
       "@valtimo/process/*": ["dist/valtimo/process/*"],
       "@valtimo/dashboard": ["dist/valtimo/dashboard"],
@@ -153,10 +153,10 @@
       "path": "./projects/valtimo/security/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/dossier/tsconfig.lib.json"
+      "path": "./projects/valtimo/case/tsconfig.lib.json"
     },
     {
-      "path": "./projects/valtimo/dossier/tsconfig.spec.json"
+      "path": "./projects/valtimo/case/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/case-migration/tsconfig.lib.json"

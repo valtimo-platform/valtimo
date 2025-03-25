@@ -37,7 +37,7 @@ import {
   CurrentCarbonTheme,
   InputLabelModule,
 } from '@valtimo/components';
-import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/dossier';
+import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/case';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
 import {debounceTime, map, Observable, Subscription} from 'rxjs';
 

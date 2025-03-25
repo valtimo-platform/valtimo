@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {AbstractControl, FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TranslateService} from '@ngx-translate/core';
-import {CaseWidgetDisplayTypeKey} from '@valtimo/dossier';
+import {CaseWidgetDisplayTypeKey} from '@valtimo/case';
 import {ListItem} from 'carbon-components-angular';
 
 @Injectable({

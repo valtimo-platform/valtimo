@@ -32,7 +32,7 @@ import {
   CUSTOM_CASE_WIDGET_TOKEN,
   CustomCaseWidgetConfig,
   WidgetCustomContent,
-} from '@valtimo/dossier';
+} from '@valtimo/case';
 import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
