@@ -522,7 +522,11 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   }
 
   private editDisabled(file: DocumentenApiRelatedFile): boolean {
-    return file.status === 'definitief' || !this.filePermissions[file.fileId]?.canModify;
+    return (
+      (!this.supportedDocumentenApiFeatures$.value.supportsUpdatingDefinitiveDocument &&
+        file.status === 'definitief') ||
+      !this.filePermissions[file.fileId]?.canModify
+    );
   }
 
   private deleteDisabled(file: DocumentenApiRelatedFile): boolean {

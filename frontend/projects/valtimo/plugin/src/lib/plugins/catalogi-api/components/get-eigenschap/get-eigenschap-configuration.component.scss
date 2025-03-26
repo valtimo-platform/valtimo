@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,18 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-interface DocumentenApiManagementVersion {
-  selectedVersion: string;
-  detectedVersions: string;
-}
-
-interface SupportedDocumentenApiFeatures {
-  selectedVersion: string;
-  supportsFilterableColumns: boolean;
-  supportsSortableColumns: boolean;
-  supportsTrefwoorden: boolean;
-  supportsUpdatingDefinitiveDocument: boolean;
-}
-
-export {DocumentenApiManagementVersion, SupportedDocumentenApiFeatures};
