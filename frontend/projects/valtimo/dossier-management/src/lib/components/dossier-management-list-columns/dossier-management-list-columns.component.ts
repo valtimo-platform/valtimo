@@ -613,6 +613,10 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
   private enableInput(): void {
     this.disableInput$.next(false);
     this.formGroup.enable();
+    if (this.formGroup.value.displayType?.key === 'tags') {
+      this.formGroup.controls.defaultSort.disable();
+      this.formGroup.controls.sortable.disable();
+    }
   }
 
   private refreshCaseListColumns(): void {
