@@ -277,7 +277,9 @@
       ></valtimo-carbon-multi-input>
     </cds-label>
 
-    <cds-checkbox formControlName="sortable" [disabled]="modalObs.showTagAmount"
+    <cds-checkbox
+      formControlName="sortable"
+      [disabled]="modalObs.showTagAmount || modalObs.disableInput"
       >{{ 'listColumn.sortable' | translate }}
     </cds-checkbox>
 

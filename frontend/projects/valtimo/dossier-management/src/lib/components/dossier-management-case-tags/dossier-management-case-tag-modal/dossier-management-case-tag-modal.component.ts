@@ -230,6 +230,10 @@ export class DossierManagementModalComponent implements OnInit, OnDestroy {
     this.closeModalEvent.emit('close');
   }
 
+  public onClose(): void {
+    this.close();
+  }
+
   private prefillForm(prefillCaseTag: CaseTag): void {
     this._originalCaseTagKey$.next(prefillCaseTag.key);
     this.caseTagFormGroup.patchValue({

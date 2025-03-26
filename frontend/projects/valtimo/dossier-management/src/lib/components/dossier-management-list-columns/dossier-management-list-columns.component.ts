@@ -607,12 +607,10 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   private disableInput(): void {
     this.disableInput$.next(true);
-    this.formGroup.disable();
   }
 
   private enableInput(): void {
     this.disableInput$.next(false);
-    this.formGroup.enable();
   }
 
   private refreshCaseListColumns(): void {
