@@ -34,25 +34,25 @@ export class ZakenApiService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  public getStatusTypesByCaseDefinition(caseDefinitionId: string): Observable<Array<StatusType>> {
+  public getStatusTypesByCaseDefinition(caseDefinitionKey: string): Observable<Array<StatusType>> {
     return this.http.get<Array<StatusType>>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionId}/zaaktype/statustype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/statustype`
     );
   }
 
   public getResultaatTypesByCaseDefinition(
-    caseDefinitionId: string
+    caseDefinitionKey: string
   ): Observable<Array<ResultaatType>> {
     return this.http.get<Array<ResultaatType>>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionId}/zaaktype/resultaattype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/resultaattype`
     );
   }
 
   public getEigenschappenByCaseDefinition(
-    caseDefinitionName: string
+    caseDefinitionKey: string
   ): Observable<Array<Eigenschap>> {
     return this.http.get<Array<Eigenschap>>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionName}/catalogi-eigenschappen`
+      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/catalogi-eigenschappen`
     );
   }
 }

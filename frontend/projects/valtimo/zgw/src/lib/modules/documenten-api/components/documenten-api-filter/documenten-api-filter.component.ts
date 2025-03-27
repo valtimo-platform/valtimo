@@ -104,10 +104,10 @@ export class DocumentenApiFilterComponent implements OnInit, OnDestroy, AfterVie
   );
 
   public readonly informationObjectTypes$: Observable<ListItem[]> = this.route.paramMap.pipe(
-    filter((paramMap: ParamMap) => !!paramMap.get('documentDefinitionName')),
+    filter((paramMap: ParamMap) => !!paramMap.get('caseDefinitionKey')),
     switchMap((paramMap: ParamMap) =>
       combineLatest([
-        this.documentService.getDocumentTypes(paramMap.get('documentDefinitionName') ?? ''),
+        this.documentService.getDocumentTypes(paramMap.get('caseDefinitionKey') ?? ''),
         this._filter$,
       ])
     ),
@@ -122,10 +122,10 @@ export class DocumentenApiFilterComponent implements OnInit, OnDestroy, AfterVie
   );
 
   public readonly tags$: Observable<ListItem[]> = this.route.paramMap.pipe(
-    filter((paramMap: ParamMap) => !!paramMap.get('documentDefinitionName')),
+    filter((paramMap: ParamMap) => !!paramMap.get('caseDefinitionKey')),
     switchMap((paramMap: ParamMap) =>
       combineLatest([
-        this.documentenApiTagService.getTags(paramMap.get('documentDefinitionName') ?? ''),
+        this.documentenApiTagService.getTags(paramMap.get('caseDefinitionKey') ?? ''),
         this.route.queryParamMap,
       ])
     ),

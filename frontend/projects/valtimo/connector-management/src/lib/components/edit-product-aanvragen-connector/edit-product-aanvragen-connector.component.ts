@@ -155,7 +155,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnChanges
         switchMap(resDocumentDefinitions =>
           combineLatest(
             resDocumentDefinitions.content.map(definition =>
-              this.documentService.findProcessDocumentDefinitions(definition.id.name)
+              this.documentService.findProcessDefinitionCaseDefinitions(definition.id.name)
             )
           )
         ),
@@ -167,7 +167,7 @@ export class EditProductAanvragenConnectorComponent implements OnInit, OnChanges
 
           documentDefinitions.forEach((documentDefinition, index) => {
             this.processDocumentDefinitionOptions[documentDefinition.id.name] = res[index].map(
-              processDocumentDefinition => processDocumentDefinition.id.processDefinitionKey
+              processDocumentDefinition => processDocumentDefinition.id.processDefinitionId
             );
           });
 

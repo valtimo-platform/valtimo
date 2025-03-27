@@ -29,9 +29,9 @@ export class CaseListStatusService {
 
   private readonly _caseStatuses$: Observable<Array<InternalCaseStatus>> =
     this.caseListService.caseDefinitionKey$.pipe(
-      switchMap(documentDefinitionName =>
+      switchMap(caseDefinitionKey =>
         combineLatest([
-          this.caseStatusService.getInternalCaseStatuses(documentDefinitionName),
+          this.caseStatusService.getInternalCaseStatuses(caseDefinitionKey),
           this.caseParameterService.queryStatusParams$,
         ]).pipe(take(1))
       ),

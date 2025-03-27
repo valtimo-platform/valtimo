@@ -31,8 +31,8 @@ export class CaseListAssigneeService {
 
   public readonly canHaveAssignee$: Observable<boolean> =
     this.caseListService.caseDefinitionKey$.pipe(
-      switchMap(documentDefinitionName =>
-        this.documentService.getCaseSettings(documentDefinitionName)
+      switchMap(caseDefinitionKey =>
+        this.documentService.getCaseSettings(caseDefinitionKey)
       ),
       map(caseSettings => caseSettings?.canHaveAssignee),
       tap(canHaveAssignee => {

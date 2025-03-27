@@ -15,7 +15,11 @@
  */
 
 import {EventEmitter, Injectable} from '@angular/core';
-import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {
+  DocumentService,
+  ProcessDefinitionCaseDefinition,
+  ProcessDocumentDefinition,
+} from '@valtimo/document';
 import {BehaviorSubject, Observable, distinctUntilChanged, filter, switchMap} from 'rxjs';
 
 @Injectable({
@@ -25,11 +29,11 @@ export class WidgetsService {
   private readonly _activeProcessKey$ = new BehaviorSubject<string | null>(null);
   public readonly startProcessEvent = new EventEmitter();
 
-  public get activeProcess$(): Observable<ProcessDocumentDefinition[]> {
+  public get activeProcess$(): Observable<ProcessDefinitionCaseDefinition[]> {
     return this._activeProcessKey$.pipe(
-      filter((processDocumentDefinition: string | null) => !!processDocumentDefinition),
+      filter((processDefinitionCaseDefinition: string | null) => !!processDefinitionCaseDefinition),
       switchMap((processDefinitionKey: string) =>
-        this.documentService.findProcessDocumentDefinitionsByProcessDefinitionKey(
+        this.documentService.findProcessDefinitionCaseDefinitionsByProcessDefinitionKey(
           processDefinitionKey
         )
       ),

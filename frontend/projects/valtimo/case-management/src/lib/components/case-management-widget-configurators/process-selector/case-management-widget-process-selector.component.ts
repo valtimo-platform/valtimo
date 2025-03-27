@@ -3,7 +3,7 @@ import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {CaseWidgetAction} from '@valtimo/case';
 import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
 import {
@@ -46,21 +46,21 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
   public readonly processDefinitionItems$: Observable<ListItem[]> =
     this._documentDefinitionName$.pipe(
       switchMap((documentDefinitionName: string | null) =>
-        this.documentService.findProcessDocumentDefinitionsByStartableByUser(
+        this.documentService.findProcessDefinitionCaseDefinitionsByStartableByUser(
           documentDefinitionName ?? '',
           true
         )
       ),
-      map((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
+      map((processDocumentDefinitions: ProcessDefinitionCaseDefinition[]) => {
         const selectedProcessKey: string | undefined = this.widgetWizardService.editMode()
           ? this.widgetWizardService.widgetActions()?.[0]?.processDefinitionKey
           : undefined;
 
-        return processDocumentDefinitions.map((definition: ProcessDocumentDefinition) => {
+        return processDocumentDefinitions.map((definition: ProcessDefinitionCaseDefinition) => {
           const mappedItem: ListItem = {
-            content: definition.processName,
-            key: definition.id.processDefinitionKey,
-            selected: selectedProcessKey === definition.id.processDefinitionKey,
+            content: definition.processDefinitionName,
+            key: definition.processDefinitionKey,
+            selected: selectedProcessKey === definition.processDefinitionKey,
           };
 
           if (mappedItem.selected)

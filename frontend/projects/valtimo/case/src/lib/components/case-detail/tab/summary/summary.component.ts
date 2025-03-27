@@ -32,7 +32,7 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   encapsulation: ViewEncapsulation.None,
 })
 export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
-  public readonly documentDefinitionName: string;
+  public readonly caseDefinitionKey: string;
   public readonly documentId!: string;
 
   public document!: Document;
@@ -48,7 +48,7 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
     private readonly formService: FormService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
-    this.documentDefinitionName = this.snapshot.get('documentDefinitionName') || '';
+    this.caseDefinitionKey = this.snapshot.get('caseDefinitionKey') || '';
     this.documentId = this.snapshot.get('documentId') || '';
     this.options = new FormioOptionsImpl();
     this.options.disableAlerts = true;
@@ -71,7 +71,7 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
 
     this._subscriptions.add(
       this.formService
-        .getFormDefinitionByNamePreFilled(`${this.documentDefinitionName}.summary`, this.documentId)
+        .getFormDefinitionByNamePreFilled(`${this.caseDefinitionKey}.summary`, this.documentId)
         .subscribe(formDefinition => {
           this.formDefinition = formDefinition;
         })

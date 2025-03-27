@@ -63,7 +63,7 @@
     <valtimo-search-fields
       [searchFields]="obs.searchFields"
       (doSearch)="search($event)"
-      [documentDefinitionName]="documentDefinitionName$ | async"
+      [documentDefinitionName]="caseDefinitionKey$ | async"
       [defaultValues]="searchFieldValues$ | async"
       [inputDisabled]="!obs.loaded"
       [externalSearchField]="obs.showStatusSelector"
@@ -192,7 +192,7 @@
     *ngIf="canCreateCase$ | async"
     cdsButton="primary"
     [disabled]="disableStartButton$ | async"
-    (click)="startDossier()"
+    (click)="startCase()"
   >
     {{ 'Start Case' | translate }}
 

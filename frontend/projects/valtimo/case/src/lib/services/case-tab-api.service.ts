@@ -32,7 +32,7 @@ export class CaseTabApiService extends BaseApiService {
   }
 
   public getDossierTabs(
-    documentDefinitionName: string,
+    caseDefinitionKey: string,
     documentId: string
   ): Observable<Array<ApiTabItem>> {
     return this.httpClient.get<Array<ApiTabItem>>(this.getApiUrl(`v1/document/${documentId}/tab`));

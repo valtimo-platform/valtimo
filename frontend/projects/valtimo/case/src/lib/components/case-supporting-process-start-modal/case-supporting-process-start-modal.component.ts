@@ -27,14 +27,8 @@ import {
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
-import {
-  FormioComponent,
-  FormioOptionsImpl,
-  FormioSubmission,
-  ModalComponent,
-  ValtimoFormioOptions,
-} from '@valtimo/components';
-import {ProcessDocumentDefinition} from '@valtimo/document';
+import {FormioComponent, FormioOptionsImpl, FormioSubmission, ModalComponent, ValtimoFormioOptions,} from '@valtimo/components';
+import {ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {ProcessService} from '@valtimo/process';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
@@ -68,7 +62,7 @@ export class CaseSupportingProcessStartModalComponent {
   public isUIComponent = false;
 
   public readonly processDefinitionKey$ = new BehaviorSubject<string>('');
-  public readonly documentDefinitionName$ = new BehaviorSubject<string>('');
+  public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
   public readonly processName$ = new BehaviorSubject<string>('');
   public readonly formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
   public readonly formioSubmission$ = new BehaviorSubject<FormioSubmission>(undefined);
@@ -132,12 +126,12 @@ export class CaseSupportingProcessStartModalComponent {
       });
   }
 
-  public openModal(processDocumentDefinition: ProcessDocumentDefinition, documentId: string): void {
+  public openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition, documentId: string): void {
     this.documentId$.next(documentId);
-    this.documentDefinitionName$.next(processDocumentDefinition.id.documentDefinitionId.name);
-    this.processDefinitionKey$.next(processDocumentDefinition.id.processDefinitionKey);
-    this.processDefinitionId$.next(processDocumentDefinition.latestVersionId);
-    this.processName$.next(processDocumentDefinition.processName);
+    this.caseDefinitionKey$.next(processDefinitionCaseDefinition.id.caseDefinitionId.key);
+    this.processDefinitionKey$.next(processDefinitionCaseDefinition.processDefinitionKey);
+    this.processDefinitionId$.next(processDefinitionCaseDefinition.id.processDefinitionId);
+    this.processName$.next(processDefinitionCaseDefinition.processDefinitionName);
 
     const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {
       callback(null, submission);
@@ -197,16 +191,16 @@ export class CaseSupportingProcessStartModalComponent {
     combineLatest([
       this.formDefinition$,
       this.processDefinitionKey$,
-      this.documentDefinitionName$,
+      this.caseDefinitionKey$,
       this.options$,
       this.documentId$,
     ])
       .pipe(take(1))
-      .subscribe(([form, processDefinitionKey, documentDefinitionName, options, documentId]) => {
+      .subscribe(([form, processDefinitionKey, caseDefinitionKey, options, documentId]) => {
         formViewModelComponent.instance.formName = formName;
         formViewModelComponent.instance.form = form;
         formViewModelComponent.instance.processDefinitionKey = processDefinitionKey;
-        formViewModelComponent.instance.documentDefinitionName = documentDefinitionName;
+        formViewModelComponent.instance.documentDefinitionName = caseDefinitionKey;
         formViewModelComponent.instance.options = options;
         formViewModelComponent.instance.isStartForm = true;
         formViewModelComponent.instance.documentId = documentId;
@@ -228,11 +222,11 @@ export class CaseSupportingProcessStartModalComponent {
         customComponent
       ) as ComponentRef<FormCustomComponent>;
 
-      combineLatest([this.processDefinitionKey$, this.documentDefinitionName$])
+      combineLatest([this.processDefinitionKey$, this.caseDefinitionKey$])
         .pipe(take(1))
-        .subscribe(([processDefinitionKey, documentDefinitionName]) => {
+        .subscribe(([processDefinitionKey, caseDefinitionKey]) => {
           renderedComponent.instance.processDefinitionKey = processDefinitionKey;
-          renderedComponent.instance.documentDefinitionName = documentDefinitionName;
+          renderedComponent.instance.documentDefinitionName = caseDefinitionKey;
         });
 
       renderedComponent.instance.submittedEvent.subscribe(() => {

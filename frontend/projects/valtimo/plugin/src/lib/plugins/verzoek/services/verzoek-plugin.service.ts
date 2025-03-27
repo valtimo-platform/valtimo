@@ -39,11 +39,11 @@ export class VerzoekPluginService {
     );
   }
 
-  getRoltypesByDocumentDefinitionName(documentDefinitionName: string): Observable<Array<Roltype>> {
+  getRoltypesByDocumentDefinitionName(caseDefinitionKey: string): Observable<Array<Roltype>> {
     return this.http
       .get<
         Array<Roltype>
-      >(`${this.valtimoEndpointUri}v1/case-definition/${documentDefinitionName}/zaaktype/roltype`)
+      >(`${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/roltype`)
       .pipe(catchError(() => of([])));
   }
 }

@@ -28,7 +28,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {PermissionService} from '@valtimo/access-control';
-import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
   FormCustomComponent,
@@ -40,22 +40,14 @@ import {
 } from '@valtimo/process-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
-import {
-  FormioComponent,
-  FormioOptionsImpl,
-  FormioSubmission,
-  ModalComponent,
-  ValtimoFormioOptions,
-} from '@valtimo/components';
+import {FormioComponent, FormioOptionsImpl, FormioSubmission, ModalComponent, ValtimoFormioOptions,} from '@valtimo/components';
 import {FormioBeforeSubmit} from '@formio/angular/formio.common';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {CaseListService, StartModalService} from '../../services';
-import {ConfigService} from '@valtimo/config';
-import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/config';
-import {FormViewModel} from '@valtimo/config';
+import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 import {BehaviorSubject, Subscription} from 'rxjs';
 
 @Component({
@@ -67,7 +59,7 @@ import {BehaviorSubject, Subscription} from 'rxjs';
 export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   public processDefinitionKey: string;
   public processDefinitionId: string;
-  public documentDefinitionName: string;
+  public caseDefinitionKey: string;
   public processName: string;
   private _startEventName: string;
   private readonly _useStartEventNameAsStartFormTitle!: boolean;
@@ -139,7 +131,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       .getProcessDefinitionStartProcessLink(
         this.processDefinitionId,
         null,
-        this.documentDefinitionName
+        this.caseDefinitionKey
       )
       .pipe(take(1))
       .subscribe(startProcessResult => {
@@ -206,11 +198,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       : fallbackTitle;
   }
 
-  openModal(processDocumentDefinition: ProcessDocumentDefinition) {
-    this.processDefinitionKey = processDocumentDefinition.id.processDefinitionKey;
-    this.processDefinitionId = processDocumentDefinition.latestVersionId;
-    this.documentDefinitionName = processDocumentDefinition.id.documentDefinitionId.name;
-    this.processName = processDocumentDefinition.processName;
+  openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
+    this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;
+    this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key
     this.options = new FormioOptionsImpl();
     this.options.disableAlerts = true;
     const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {
@@ -260,7 +250,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
         if (canViewCase) {
           this.router.navigate([
             'cases',
-            this.documentDefinitionName,
+            this.caseDefinitionKey,
             'document',
             formSubmissionResult.documentId,
           ]);
@@ -280,7 +270,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     formViewModelComponent.instance.formName = this.formName;
     formViewModelComponent.instance.isStartForm = true;
     formViewModelComponent.instance.processDefinitionKey = this.processDefinitionKey;
-    formViewModelComponent.instance.documentDefinitionName = this.documentDefinitionName;
+    formViewModelComponent.instance.documentDefinitionName = this.caseDefinitionKey;
     this._subscriptions.add(
       formViewModelComponent.instance.formSubmit.subscribe(() => {
         this.listService.forceRefresh();
@@ -299,7 +289,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       ) as ComponentRef<FormCustomComponent>;
 
       renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
-      renderedComponent.instance.documentDefinitionName = this.documentDefinitionName;
+      renderedComponent.instance.documentDefinitionName = this.caseDefinitionKey;
 
       renderedComponent.instance.submittedEvent.subscribe(() => {
         this.modal.hide();

@@ -135,6 +135,24 @@ interface ProcessDocumentDefinition {
   latestVersionId: string;
 }
 
+interface CaseDefinitionId {
+  key: string;
+  versionTag: string;
+}
+
+interface ProcessDefinitionCaseDefinitionId {
+  processDefinitionId: string;
+  caseDefinitionId: CaseDefinitionId;
+}
+
+interface ProcessDefinitionCaseDefinition {
+  id: ProcessDefinitionCaseDefinitionId;
+  canInitializeDocument: boolean;
+  startableByUser: boolean;
+  processDefinitionName: string;
+  processDefinitionKey: string;
+}
+
 interface ProcessDocumentInstanceId {
   processInstanceId: string;
   documentId: string;
@@ -371,6 +389,7 @@ interface TemplateResponse {
 
 export {
   AssignHandlerToDocumentResult,
+  CaseDefinitionId,
   CaseListColumn,
   CaseListColumnView,
   CaseSettings,
@@ -407,6 +426,8 @@ export {
   OpenDocumentCount,
   Page,
   Pageable,
+  ProcessDefinitionCaseDefinition,
+  ProcessDefinitionCaseDefinitionId,
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionId,
   ProcessDocumentDefinitionRequest,

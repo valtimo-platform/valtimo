@@ -17,7 +17,7 @@ import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angula
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {DocumentService, ProcessDefinitionCaseDefinition,} from '@valtimo/document';
 import {NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
 import {CaseListService} from '../../services';
@@ -43,13 +43,13 @@ export class CaseListActionsComponent implements OnInit {
   @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
 
   public readonly associatedProcessDocumentDefinitions$: Observable<
-    Array<ProcessDocumentDefinition>
+    Array<ProcessDefinitionCaseDefinition>
   > = this.listService.caseDefinitionKey$.pipe(
-    switchMap(documentDefinitionName =>
+    switchMap(caseDefinitionKey =>
       combineLatest([
-        documentDefinitionName
-          ? this.documentService.findProcessDocumentDefinitionsByCanInitializeDocument(
-              documentDefinitionName,
+        caseDefinitionKey
+          ? this.documentService.findProcessDefinitionCaseDefinitionsByCanInitializeDocument(
+              caseDefinitionKey,
               true
             )
           : of([]),
@@ -63,9 +63,9 @@ export class CaseListActionsComponent implements OnInit {
     })
   );
 
-  private selectedProcessDocumentDefinition: ProcessDocumentDefinition | null = null;
+  private selectedProcessDefinitionCaseDefinition: ProcessDefinitionCaseDefinition | null = null;
   private modalListenerAdded = false;
-  private _cachedAssociatedProcessDocumentDefinitions: Array<ProcessDocumentDefinition> = [];
+  private _cachedAssociatedProcessDocumentDefinitions: Array<ProcessDefinitionCaseDefinition> = [];
 
   constructor(
     private readonly documentService: DocumentService,
@@ -85,18 +85,18 @@ export class CaseListActionsComponent implements OnInit {
     if (associatedProcessDocumentDefinitions.length > 1) {
       $('#startProcess').modal('show');
     } else {
-      this.selectedProcessDocumentDefinition = associatedProcessDocumentDefinitions[0];
+      this.selectedProcessDefinitionCaseDefinition = associatedProcessDocumentDefinitions[0];
       this.showStartProcessModal();
     }
   }
 
-  public selectProcess(processDocumentDefinition: ProcessDocumentDefinition): void {
+  public selectProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
     const modal = $('#startProcess');
     if (!this.modalListenerAdded) {
       modal.on('hidden.bs.modal', this.showStartProcessModal.bind(this));
       this.modalListenerAdded = true;
     }
-    this.selectedProcessDocumentDefinition = processDocumentDefinition;
+    this.selectedProcessDefinitionCaseDefinition = processDefinitionCaseDefinition;
     modal.modal('hide');
   }
 
@@ -122,9 +122,9 @@ export class CaseListActionsComponent implements OnInit {
   }
 
   private showStartProcessModal(): void {
-    if (this.selectedProcessDocumentDefinition !== null) {
-      this.processStart.openModal(this.selectedProcessDocumentDefinition);
-      this.selectedProcessDocumentDefinition = null;
+    if (this.selectedProcessDefinitionCaseDefinition !== null) {
+      this.processStart.openModal(this.selectedProcessDefinitionCaseDefinition);
+      this.selectedProcessDefinitionCaseDefinition = null;
     }
   }
 }

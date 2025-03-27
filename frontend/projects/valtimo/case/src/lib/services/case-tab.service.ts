@@ -43,9 +43,9 @@ import {CaseDetailWidgetsComponent} from '../components/case-detail/tab/widgets/
 @Injectable()
 export class CaseTabService implements OnDestroy {
   private readonly _tabManagementEnabled!: boolean;
-  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params?.documentDefinitionName),
-    filter(documentDefinitionName => !!documentDefinitionName)
+  private readonly _caseDefinitionKey$: Observable<string> = this.route.params.pipe(
+    map(params => params?.caseDefinitionKey),
+    filter(caseDefinitionKey => !!caseDefinitionKey)
   );
   private readonly _documentId$: Observable<string> = this.route.params.pipe(
     map(params => params?.documentId),
@@ -95,7 +95,7 @@ export class CaseTabService implements OnDestroy {
   ) {
     this._tabManagementEnabled =
       this.configService.config.featureToggles?.enableTabManagement ?? true;
-    this.openDocumentDefinitionNameSubscription();
+    this.openCaseDefinitionKeySubscription();
   }
 
   public ngOnDestroy(): void {
@@ -114,11 +114,11 @@ export class CaseTabService implements OnDestroy {
     this._tabHorizontalOverflowDisabled.set(false);
   }
 
-  private getConfigurableTabs(documentDefinitionName: string): Map<string, object> {
+  private getConfigurableTabs(caseDefinitionKey: string): Map<string, object> {
     const tabMap = new Map<string, object>();
 
     if (this.configService?.config?.caseObjectTypes) {
-      const allNamesObjects = this.configService?.config?.caseObjectTypes[documentDefinitionName];
+      const allNamesObjects = this.configService?.config?.caseObjectTypes[caseDefinitionKey];
 
       allNamesObjects?.forEach(name => {
         tabMap.set(name, this.zgwObjectTypeComponent || CaseDetailTabNotFoundComponent);
@@ -143,28 +143,28 @@ export class CaseTabService implements OnDestroy {
     return tabs;
   }
 
-  private openDocumentDefinitionNameSubscription(): void {
+  private openCaseDefinitionKeySubscription(): void {
     this._subscriptions.add(
-      combineLatest([this._documentDefinitionName$, this._documentId$]).subscribe(
-        ([documentDefinitionName, documentId]) => {
+      combineLatest([this._caseDefinitionKey$, this._documentId$]).subscribe(
+        ([caseDefinitionKey, documentId]) => {
           if (this._tabManagementEnabled) {
-            this.setApiTabs(documentDefinitionName, documentId);
+            this.setApiTabs(caseDefinitionKey, documentId);
           } else {
-            this.setEnvironmentTabs(documentDefinitionName);
+            this.setEnvironmentTabs(caseDefinitionKey);
           }
         }
       )
     );
   }
 
-  private setEnvironmentTabs(documentDefinitionName: string): void {
-    const configurableTabs = this.getConfigurableTabs(documentDefinitionName);
+  private setEnvironmentTabs(caseDefinitionKey: string): void {
+    const configurableTabs = this.getConfigurableTabs(caseDefinitionKey);
     const allEnvironmentTabs = this.getAllEnvironmentTabs(configurableTabs);
     this._tabs$.next(allEnvironmentTabs);
   }
 
-  private setApiTabs(documentDefinitionName: string, documentId: string): void {
-    this.caseTabApiService.getDossierTabs(documentDefinitionName, documentId).subscribe({
+  private setApiTabs(caseDefinitionKey: string, documentId: string): void {
+    this.caseTabApiService.getDossierTabs(caseDefinitionKey, documentId).subscribe({
       next: tabs => {
         const supportedTabs = tabs.filter(tab => this.filterTab(tab));
         const mappedTabs = supportedTabs.map((tab, index) => this.mapTab(tab, index));

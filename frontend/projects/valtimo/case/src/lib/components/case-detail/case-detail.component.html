@@ -216,8 +216,8 @@
   <button
     [size]="(compactMode$ | async) ? 'sm' : 'lg'"
     cdsButton="primary"
-    [disabled]="processDocumentDefinitions.length === 0"
-    [ngbTooltip]="processDocumentDefinitions.length === 0 ? 'No action' : null"
+    [disabled]="processDefinitionCaseDefinitions.length === 0"
+    [ngbTooltip]="processDefinitionCaseDefinitions.length === 0 ? 'No action' : null"
   >
     {{ 'case.startSubProcess' | translate }}
 
@@ -308,11 +308,11 @@
           class="overflow-button case-detail-overflow"
         >
           <cds-overflow-menu-option
-            *ngFor="let processDocumentDefinition of processDocumentDefinitions"
-            [attr.title]="processDocumentDefinition.displayName"
-            (click)="startProcess(processDocumentDefinition)"
+            *ngFor="let processDefinitionCaseDefinition of processDefinitionCaseDefinitions"
+            [attr.title]="processDefinitionCaseDefinition.displayName"
+            (click)="startProcess(processDefinitionCaseDefinition)"
           >
-            {{ processDocumentDefinition.displayName }}
+            {{ processDefinitionCaseDefinition.displayName }}
           </cds-overflow-menu-option>
         </cds-overflow-menu>
       </div>

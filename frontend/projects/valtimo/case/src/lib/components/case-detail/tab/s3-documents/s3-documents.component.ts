@@ -31,7 +31,7 @@ import {PromptService} from '@valtimo/components';
 })
 export class CaseDetailTabS3DocumentsComponent implements OnInit {
   public readonly documentId: string;
-  public readonly documentDefinitionName: string;
+  public readonly caseDefinitionKey: string;
   public readonly maxFileSize: number = this.configService?.config?.caseFileSizeUploadLimitMB || 5;
   public readonly acceptedFiles: string =
     this.configService?.config?.caseFileUploadAcceptedFiles || null;
@@ -87,7 +87,7 @@ export class CaseDetailTabS3DocumentsComponent implements OnInit {
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
-    this.documentDefinitionName = snapshot.get('documentDefinitionName') || '';
+    this.caseDefinitionKey = snapshot.get('caseDefinitionKey') || '';
   }
 
   ngOnInit(): void {
@@ -98,7 +98,7 @@ export class CaseDetailTabS3DocumentsComponent implements OnInit {
     this.uploading$.next(true);
 
     this.uploadProviderService
-      .uploadFile(file, this.documentDefinitionName, this.documentId)
+      .uploadFile(file, this.caseDefinitionKey, this.documentId)
       .pipe(
         switchMap(resourceFile =>
           this.documentService.assignResource(this.documentId, resourceFile.data.resourceId)

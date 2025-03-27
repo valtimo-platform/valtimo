@@ -92,8 +92,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   @ViewChild('translationTemplate') translationTemplate: TemplateRef<any>;
 
   private readonly _documentDefinitionName$ = this.route.params.pipe(
-    map(params => params?.documentDefinitionName),
-    filter(caseDefinitionName => !!caseDefinitionName)
+    map(params => params?.caseDefinitionKey),
+    filter(caseDefinitionKey => !!caseDefinitionKey)
   );
 
   public readonly supportedDocumentenApiFeatures$ =
@@ -165,8 +165,8 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
   ];
 
   public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params?.documentDefinitionName),
-    filter(documentDefinitionName => !!documentDefinitionName)
+    map(params => params?.caseDefinitionKey),
+    filter(caseDefinitionKey => !!caseDefinitionKey)
   );
 
   public readonly documentId$: Observable<string> = this.route.params.pipe(

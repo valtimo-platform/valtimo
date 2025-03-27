@@ -30,13 +30,13 @@ export class CaseColumnService {
   ) {}
 
   public getDefinitionColumns(
-    documentDefinitionName: string
+    caseDefinitionKey: string
   ): Observable<{columns: Array<DefinitionColumn>; hasApiConfig: boolean}> {
     const config = this.configService.config;
-    const customDefinitionTable = config.customDefinitionTables[documentDefinitionName];
+    const customDefinitionTable = config.customDefinitionTables[caseDefinitionKey];
     const defaultDefinitionTable = config.defaultDefinitionTable;
 
-    return this.documentService.getCaseList(documentDefinitionName).pipe(
+    return this.documentService.getCaseList(caseDefinitionKey).pipe(
       map(caseListColumns => {
         const apiCaseListColumns =
           (config.featureToggles?.caseListColumn ?? true) &&
@@ -53,8 +53,8 @@ export class CaseColumnService {
     );
   }
 
-  public hasEnvironmentConfig(documentDefinitionName: string): boolean {
-    return !!this.configService.config?.customDefinitionTables[documentDefinitionName];
+  public hasEnvironmentConfig(caseDefinitionKey: string): boolean {
+    return !!this.configService.config?.customDefinitionTables[caseDefinitionKey];
   }
 
   public mapDefinitionColumnsToListFields(
