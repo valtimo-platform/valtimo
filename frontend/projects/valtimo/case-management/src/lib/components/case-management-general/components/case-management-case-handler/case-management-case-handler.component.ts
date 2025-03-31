@@ -16,25 +16,19 @@
 
 import {Component} from '@angular/core';
 import {CaseSettings, DocumentService} from '@valtimo/document';
-import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
+import {BehaviorSubject, finalize, map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {tap} from 'rxjs/operators';
 
 @Component({
-  selector: 'valtimo-case-management-assignee',
-  templateUrl: './case-management-assignee.component.html',
-  styleUrls: ['./case-management-assignee.component.scss'],
+  selector: 'valtimo-case-management-case-handler',
+  templateUrl: './case-management-case-handler.component.html',
+  styleUrl: './case-management-case-handler.component.scss',
 })
-export class CaseManagementAssigneeComponent {
-  readonly disabled$ = new BehaviorSubject<boolean>(false);
+export class CaseManagementCaseHandlerComponent {
+  public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _refresh$ = new BehaviorSubject<null>(null);
-
-  readonly loading$ = new BehaviorSubject<boolean>(true);
-
-  readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || '')
-  );
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
     map(({caseDefinitionName, caseVersionTag}) => ({
@@ -42,6 +36,15 @@ export class CaseManagementAssigneeComponent {
       caseDefinitionVersionTag: caseVersionTag,
     }))
   );
+
+  public readonly caseDefinitionKey$: Observable<string> | undefined =
+    this.route.parent?.params.pipe(map(({caseDefinitionKey}) => caseDefinitionKey || ''));
+
+  public readonly caseVersionTag$: Observable<string> | undefined = this.route.parent?.params.pipe(
+    map(({caseVersionTag}) => caseVersionTag || '')
+  );
+
+  private readonly _refresh$ = new BehaviorSubject<null>(null);
 
   public readonly currentValue$: Observable<CaseSettings> = this._refresh$.pipe(
     switchMap(() => this.params$),
@@ -54,11 +57,9 @@ export class CaseManagementAssigneeComponent {
   constructor(
     private readonly documentService: DocumentService,
     private route: ActivatedRoute
-  ) {
-    this.disabled$ = new BehaviorSubject<boolean>(false);
-  }
+  ) {}
 
-  updateCaseSettings(
+  public updateCaseSettings(
     caseSettings: CaseSettings,
     caseDefinitionKey: string,
     caseDefinitionVersionTag: string
@@ -67,22 +68,17 @@ export class CaseManagementAssigneeComponent {
 
     this.documentService
       .patchCaseSettingsForManagement(caseDefinitionKey, caseDefinitionVersionTag, caseSettings)
-      .subscribe(
-        () => {
-          this.enableInput();
-          this.refreshSettings();
-        },
-        () => {
-          this.enableInput();
-        }
-      );
+      .pipe(finalize(() => this.enableInput()))
+      .subscribe({
+        next: () => this.refreshSettings(),
+      });
   }
 
-  disableInput(): void {
+  public disableInput(): void {
     this.disabled$.next(true);
   }
 
-  enableInput(): void {
+  public enableInput(): void {
     this.disabled$.next(false);
   }
 
@@ -90,22 +86,24 @@ export class CaseManagementAssigneeComponent {
     this._refresh$.next(null);
   }
 
-  toggleAssignee(
+  public toggleAssignee(
     currentSettings: CaseSettings,
     caseDefinitionKey: string,
     caseDefinitionVersionTag: string
   ) {
+    const newCanHaveAssignee = !currentSettings?.canHaveAssignee;
+
     this.updateCaseSettings(
       {
-        canHaveAssignee: !currentSettings?.canHaveAssignee,
-        autoAssignTasks: currentSettings.autoAssignTasks,
+        canHaveAssignee: newCanHaveAssignee,
+        autoAssignTasks: newCanHaveAssignee ? currentSettings.autoAssignTasks : false,
       },
       caseDefinitionKey,
       caseDefinitionVersionTag
     );
   }
 
-  toggleTaskAssignment(
+  public toggleTaskAssignment(
     currentSettings: CaseSettings,
     caseDefinitionKey: string,
     caseDefinitionVersionTag: string

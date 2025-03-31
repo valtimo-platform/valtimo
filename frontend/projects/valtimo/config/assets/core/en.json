@@ -550,6 +550,7 @@
       "checkboxDescription": "Automatically assign user tasks to the case handler"
     },
     "tabs": {
+      "general": "General",
       "cases": "Configuration",
       "processes": "Processes",
       "searchFields": "Search Fields",
@@ -557,7 +558,23 @@
       "tabManagement": "Tabs",
       "document": "Document",
       "statuses": "Statuses",
-      "zgw": "ZGW"
+      "zgw": "ZGW",
+      "generalTab": {
+        "linkUploadProcess": {
+          "title": "Link upload process to case",
+          "label": "Choose which process should handle file uploads",
+          "placeholder": "Documenten API upload document"
+        },
+        "caseHandler": {
+          "title": "Case handler",
+          "canHaveHandler": "Case type can have a handler",
+          "assignUser": "Automatically assign user tasks to case handler",
+          "toggle": {
+            "onText": "Yes",
+            "offText": "No"
+          }
+        }
+      }
     },
     "tabManagement": {
       "columns": {

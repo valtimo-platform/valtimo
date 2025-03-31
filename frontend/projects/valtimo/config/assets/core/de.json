@@ -549,6 +549,7 @@
       "checkboxDescription": "Aufgaben automatisch zu Fallbearbeiter zuweisen"
     },
     "tabs": {
+      "general": "Allgemein",
       "cases": "Konfiguration",
       "processes": "Prozesse",
       "searchFields": "Suchfelder",
@@ -556,7 +557,23 @@
       "tabManagement": "Tabs",
       "document": "Dokument",
       "statuses": "Status",
-      "zgw": "ZGW"
+      "zgw": "ZGW",
+      "generalTab": {
+        "linkUploadProcess": {
+          "title": "Upload-Prozess mit Fall verknüpfen",
+          "label": "Wählen Sie den Prozess für Datei-Uploads",
+          "placeholder": "Dokument-API-Upload-Dokument"
+        },
+        "caseHandler": {
+          "title": "Fallbearbeiter",
+          "canHaveHandler": "Falltyp kann einen Bearbeiter haben",
+          "assignUser": "Benutzeraufgaben automatisch dem Fallbearbeiter zuweisen",
+          "toggle": {
+            "onText": "Ja",
+            "offText": "Nein"
+          }
+        }
+      }
     },
     "tabManagement": {
       "columns": {

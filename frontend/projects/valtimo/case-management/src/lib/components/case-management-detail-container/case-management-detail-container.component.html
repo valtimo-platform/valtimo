@@ -24,6 +24,15 @@
   <cds-tabs class="case-management-tabs" type="inline">
     <cds-tab
       class="no-padding-left-right main-content"
+      [id]="TabEnum.GENERAL"
+      [active]="obs.currentTab === TabEnum.GENERAL"
+      [heading]="'dossierManagement.tabs.general' | translate"
+      (selected)="navigateToTab(TabEnum.GENERAL, obs.currentTab)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
       [id]="TabEnum.PROCESSES"
       [active]="obs.currentTab === TabEnum.PROCESSES"
       [heading]="'caseManagement.tabs.processes' | translate"

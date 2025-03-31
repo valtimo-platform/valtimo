@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,13 +14,21 @@
  * limitations under the License.
  */
 
-export enum TabEnum {
-  GENERAL = 'general',
-  DOCUMENT = 'document',
-  CASE = 'case',
-  PROCESSES = 'processes',
-  SEARCH = 'search',
-  LIST = 'list',
-  TABS = 'tabs',
-  STATUSES = 'statuses',
+.case-handler-process {
+  background-color: var(--cds-layer);
+  padding: 24px;
+  margin-bottom: 16px;
+
+  &__title {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+}
+
+.case-handler-process__toggles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
 }

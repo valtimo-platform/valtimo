@@ -515,11 +515,12 @@ export class DocumentService {
   }
 
   public patchCaseSettingsForManagement(
-    documentDefinitionName: string,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
     request: CaseSettings
   ): Observable<CaseSettings> {
     return this.http.patch<CaseSettings>(
-      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/settings`,
+      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/settings`,
       {...request}
     );
   }
@@ -530,9 +531,12 @@ export class DocumentService {
     );
   }
 
-  public getCaseSettingsForManagement(documentDefinitionName: string): Observable<CaseSettings> {
+  public getCaseSettingsForManagement(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<CaseSettings> {
     return this.http.get<CaseSettings>(
-      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/settings`
+      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/settings`
     );
   }
 

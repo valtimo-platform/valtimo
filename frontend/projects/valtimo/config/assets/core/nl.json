@@ -549,6 +549,7 @@
       "checkboxDescription": "Alle taken worden toegewezen aan de behandelaar"
     },
     "tabs": {
+      "general": "Algemeen",
       "cases": "Configuratie",
       "processes": "Processen",
       "searchFields": "Zoekvelden",
@@ -556,7 +557,23 @@
       "tabManagement": "Tabbladen",
       "document": "Document",
       "statuses": "Statussen",
-      "zgw": "ZGW"
+      "zgw": "ZGW",
+      "generalTab": {
+        "linkUploadProcess": {
+          "title": "Koppel uploadproces aan case",
+          "label": "Kies welk proces bestandsuploads moet verwerken",
+          "placeholder": "Documenten API upload document"
+        },
+        "caseHandler": {
+          "title": "Casehandler",
+          "canHaveHandler": "Casetype kan een handler hebben",
+          "assignUser": "Gebruikerstaken automatisch toewijzen aan casehandler",
+          "toggle": {
+            "onText": "Ja",
+            "offText": "Nee"
+          }
+        }
+      }
     },
     "tabManagement": {
       "columns": {

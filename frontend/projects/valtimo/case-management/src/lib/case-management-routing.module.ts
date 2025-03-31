@@ -29,6 +29,7 @@ import {CaseManagementStatusesComponent} from './components/case-management-stat
 import {CaseManagementTabsComponent} from './components/case-management-tabs/case-management-tabs.component';
 import {CaseManagementWidgetTabComponent} from './components/case-management-widget-tab/case-management-widget-tab.component';
 import {TabEnum} from './models';
+import {CaseManagementGeneralComponent} from './components/case-management-general/case-management-general.component';
 
 const routes: Routes = [
   {
@@ -60,6 +61,10 @@ const routes: Routes = [
       id: 'caseManagementDetails',
     },
     children: [
+      {
+        path: TabEnum.GENERAL,
+        component: CaseManagementGeneralComponent,
+      },
       {
         path: TabEnum.DOCUMENT,
         component: CaseManagementDocumentDefinitionComponent,
