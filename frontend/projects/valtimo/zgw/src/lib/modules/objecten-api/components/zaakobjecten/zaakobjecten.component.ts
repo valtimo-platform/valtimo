@@ -38,7 +38,7 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
-  selector: 'valtimo-dossier-detail-tab-zaakobjecten',
+  selector: 'valtimo-case-detail-tab-zaakobjecten',
   templateUrl: './zaakobjecten.component.html',
   styleUrls: ['./zaakobjecten.component.scss'],
   standalone: true,
@@ -54,7 +54,7 @@ import {TranslateModule} from '@ngx-translate/core';
     TranslateModule,
   ],
 })
-export class DossierDetailTabZaakobjectenComponent {
+export class CaseDetailTabZaakobjectenComponent {
   @ViewChild('viewZaakobjectModal') viewZaakobjectModal: VModalComponent;
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));

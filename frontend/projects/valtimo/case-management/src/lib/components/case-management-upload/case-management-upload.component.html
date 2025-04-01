@@ -46,9 +46,7 @@
         [message]="
           'caseManagement.importDefinition.steps.' + obs.activeStep + '.message' | translate
         "
-        [title]="
-          'caseManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate
-        "
+        [title]="'caseManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate"
         [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
       >
       </valtimo-case-management-upload-step>
@@ -92,9 +90,7 @@
       class="valtimo-definition-uploader__progress-bar"
       [label]="'caseManagement.importDefinition.progressBar.label' | translate"
       [status]="obs.uploadStatus"
-      [helperText]="
-        'caseManagement.importDefinition.progressBar.' + obs.uploadStatus | translate
-      "
+      [helperText]="'caseManagement.importDefinition.progressBar.' + obs.uploadStatus | translate"
     ></cds-progress-bar>
   </section>
 

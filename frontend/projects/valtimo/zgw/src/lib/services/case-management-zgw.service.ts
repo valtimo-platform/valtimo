@@ -20,7 +20,7 @@ import {ZgwTabEnum} from '../models';
 @Injectable({
   providedIn: 'root',
 })
-export class DossierManagementZgwService {
+export class CaseManagementZgwService {
   public configuredTabKeys: string[];
 
   private readonly _DEFAULT_TAB: ZgwTabEnum = ZgwTabEnum.DOCUMENTEN_API_COLUMNS;

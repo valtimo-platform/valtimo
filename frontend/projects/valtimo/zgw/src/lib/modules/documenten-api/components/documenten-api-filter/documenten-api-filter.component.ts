@@ -42,7 +42,7 @@ import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
 import {DocumentenApiTagService} from '../../services';
 
 @Component({
-  selector: 'valtimo-dossier-detail-tab-documenten-api-filter',
+  selector: 'valtimo-case-detail-tab-documenten-api-filter',
   templateUrl: './documenten-api-filter.component.html',
   styleUrls: ['./documenten-api-filter.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

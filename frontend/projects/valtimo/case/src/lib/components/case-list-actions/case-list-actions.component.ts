@@ -17,7 +17,7 @@ import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angula
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {DocumentService, ProcessDefinitionCaseDefinition,} from '@valtimo/document';
+import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
 import {CaseListService} from '../../services';

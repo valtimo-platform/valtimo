@@ -25,12 +25,12 @@ import {TranslateModule} from '@ngx-translate/core';
 import {ComboBoxModule, ListItem} from 'carbon-components-angular';
 
 @Component({
-  selector: 'valtimo-dossier-management-link-process',
-  templateUrl: './dossier-management-link-process.component.html',
+  selector: 'valtimo-case-management-link-upload-process',
+  templateUrl: './case-management-link-upload-process.component.html',
   standalone: true,
   imports: [CommonModule, ParagraphModule, TranslateModule, ComboBoxModule],
 })
-export class DossierManagementLinkProcessComponent implements OnInit {
+export class CaseManagementLinkUploadProcessComponent implements OnInit {
   public readonly documentenApiUploadProviders$ = new BehaviorSubject<boolean>(false);
 
   private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(

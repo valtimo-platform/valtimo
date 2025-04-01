@@ -23,9 +23,7 @@ export class CaseListService {
   private readonly _caseDefinitionKey$ = new BehaviorSubject<string>('');
 
   private readonly _hasEnvColumnConfig$: Observable<boolean> = this.caseDefinitionKey$.pipe(
-    map(caseDefinitionKey =>
-      this.caseColumnService.hasEnvironmentConfig(caseDefinitionKey)
-    )
+    map(caseDefinitionKey => this.caseColumnService.hasEnvironmentConfig(caseDefinitionKey))
   );
 
   private readonly _checkRefresh$ = new BehaviorSubject<boolean>(false);

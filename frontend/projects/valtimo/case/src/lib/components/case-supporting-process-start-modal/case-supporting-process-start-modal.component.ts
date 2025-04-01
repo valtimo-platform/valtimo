@@ -27,7 +27,13 @@ import {
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
-import {FormioComponent, FormioOptionsImpl, FormioSubmission, ModalComponent, ValtimoFormioOptions,} from '@valtimo/components';
+import {
+  FormioComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ModalComponent,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
 import {ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {ProcessService} from '@valtimo/process';
 import {
@@ -126,7 +132,10 @@ export class CaseSupportingProcessStartModalComponent {
       });
   }
 
-  public openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition, documentId: string): void {
+  public openModal(
+    processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition,
+    documentId: string
+  ): void {
     this.documentId$.next(documentId);
     this.caseDefinitionKey$.next(processDefinitionCaseDefinition.id.caseDefinitionId.key);
     this.processDefinitionKey$.next(processDefinitionCaseDefinition.processDefinitionKey);

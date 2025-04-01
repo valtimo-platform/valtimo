@@ -200,13 +200,13 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
           this.openZaakService
             .createInformatieObjectTypeLink(requestInformatieObjectTypeLink)
             .subscribe(() => {
-              this.toasterService.success('Successfully linked object informatie type to dossier');
+              this.toasterService.success('Successfully linked object informatie type to case');
             });
         }
-        this.toasterService.success('Successfully linked zaaktype to dossier');
+        this.toasterService.success('Successfully linked zaaktype to case');
       },
       err => {
-        this.toasterService.error('Failed to link zaaktype to dossier');
+        this.toasterService.error('Failed to link zaaktype to case');
       }
     );
   }

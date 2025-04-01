@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BaseApiService, ConfigService } from '@valtimo/config';
-import { Page } from '@valtimo/document';
-import { InterceptorSkipHeader } from '@valtimo/security';
-import { Observable } from 'rxjs';
-import { CaseListItem } from '../models';
-
+import {HttpClient, HttpResponse} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {BaseApiService, ConfigService} from '@valtimo/config';
+import {Page} from '@valtimo/document';
+import {InterceptorSkipHeader} from '@valtimo/security';
+import {Observable} from 'rxjs';
+import {CaseListItem} from '../models';
 
 @Injectable({
   providedIn: 'root',

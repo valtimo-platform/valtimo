@@ -83,7 +83,7 @@ export class CaseListPaginationService {
 
   public setPage(newPageNumber: number): void {
     this._pagination$.pipe(take(1)).subscribe(pagination => {
-      if(!pagination) return;
+      if (!pagination) return;
       this._pagination$.next({...pagination, page: newPageNumber});
     });
   }

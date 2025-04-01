@@ -24,7 +24,6 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {TabsModule} from 'carbon-components-angular';
-import {DossierManagementZgwService} from '../../services';
 import {ZgwTab, ZgwTabEnum} from '../../models';
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
@@ -37,15 +36,16 @@ import {
 } from '../../modules';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
+import {CaseManagementZgwService} from '../../services';
 
 @Component({
-  templateUrl: './dossier-management-zgw.component.html',
-  styleUrls: ['./dossier-management-zgw.component.scss'],
+  templateUrl: './case-management-zgw.component.html',
+  styleUrls: ['./case-management-zgw.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, TabsModule, TranslateModule],
 })
-export class DossierManagementZgwComponent implements AfterViewInit, OnDestroy {
+export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
   @ViewChild('zgwTabContent', {read: ViewContainerRef})
   private _zgwTabContent: ViewContainerRef;
 
@@ -62,7 +62,7 @@ export class DossierManagementZgwComponent implements AfterViewInit, OnDestroy {
 
   public readonly zgwTabs$: Observable<ZgwTab[]> = combineLatest([
     this._viewInitialized$,
-    this.dossierManagementZgwService.currentTab$,
+    this.caseManagementZgwService.currentTab$,
     this._supportedDocumentenApiFeatures$,
   ]).pipe(
     filter(([viewInitialized]) => viewInitialized),
@@ -101,7 +101,7 @@ export class DossierManagementZgwComponent implements AfterViewInit, OnDestroy {
   );
 
   constructor(
-    private readonly dossierManagementZgwService: DossierManagementZgwService,
+    private readonly caseManagementZgwService: CaseManagementZgwService,
     private readonly cdr: ChangeDetectorRef,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
     private readonly route: ActivatedRoute
@@ -112,10 +112,10 @@ export class DossierManagementZgwComponent implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.dossierManagementZgwService.resetToDefaultTab();
+    this.caseManagementZgwService.resetToDefaultTab();
   }
 
   public displayTab(tab: ZgwTabEnum): void {
-    this.dossierManagementZgwService.currentTab = tab;
+    this.caseManagementZgwService.currentTab = tab;
   }
 }

@@ -41,4 +41,10 @@ interface GetEigenschapConfig {
   processVariable: string;
 }
 
-export {CatalogiApiConfig, GetBesluittypeConfig, GetResultaattypeConfig, GetStatustypeConfig, GetEigenschapConfig};
+export {
+  CatalogiApiConfig,
+  GetBesluittypeConfig,
+  GetResultaattypeConfig,
+  GetStatustypeConfig,
+  GetEigenschapConfig,
+};

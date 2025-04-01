@@ -249,10 +249,7 @@
         caseStatus: caseStatus$ | async,
       } as obs"
     >
-      <div
-        class="case-status-assign-custom-title"
-        [ngClass]="{'--compact': compactMode$ | async}"
-      >
+      <div class="case-status-assign-custom-title" [ngClass]="{'--compact': compactMode$ | async}">
         @if (obs.caseStatus) {
           <cds-tag size="sm" [type]="obs.caseStatus.tagType" [title]="obs.caseStatus.title">{{
             obs.caseStatus.title

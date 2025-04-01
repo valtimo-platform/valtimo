@@ -35,51 +35,51 @@
     >
       <cds-dropdown-list [items]="obs.processInstanceItems.value || []"></cds-dropdown-list>
     </cds-dropdown>
-    
+
     <div>
       <v-input-label [title]="'progress.version' | translate"></v-input-label>
-      
+
       <cds-skeleton-text
         *ngIf="obs.selectedProcessInstance.isLoading"
         [lines]="1"
         [maxLineWidth]="30"
       ></cds-skeleton-text>
-      
+
       <span *ngIf="!obs.selectedProcessInstance.isLoading" class="process-info-text">
         {{ obs.selectedProcessInstance.value.version }} ({{ 'progress.of' | translate }}
         {{ obs.selectedProcessInstance.value.latestVersion }})
       </span>
     </div>
-    
+
     <div>
       <v-input-label [title]="'progress.startedBy' | translate"></v-input-label>
-    
+
       <cds-skeleton-text
         *ngIf="obs.selectedProcessInstance.isLoading"
         [lines]="1"
         [maxLineWidth]="50"
       ></cds-skeleton-text>
-    
+
       <span *ngIf="!obs.selectedProcessInstance.isLoading" class="process-info-text">
         {{ obs.selectedProcessInstance.value.startedBy || ('progress.system' | translate) }}
       </span>
     </div>
-    
+
     <div>
       <v-input-label [title]="'progress.startedOn' | translate"></v-input-label>
-    
+
       <cds-skeleton-text
         *ngIf="obs.selectedProcessInstance.isLoading"
         [lines]="1"
         [maxLineWidth]="50"
       ></cds-skeleton-text>
-    
+
       <span *ngIf="!obs.selectedProcessInstance.isLoading" class="process-info-text">
         {{ obs.selectedProcessInstance.value.startedOn.toLocaleDateString() }}
       </span>
     </div>
   </div>
-  
+
   <div>
     <valtimo-process-diagram
       *ngIf="!obs.selectedProcessInstance.isLoading"

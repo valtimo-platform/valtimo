@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DOCUMENT } from '@angular/common';
-import { HttpResponse } from '@angular/common/http';
+import {DOCUMENT} from '@angular/common';
+import {HttpResponse} from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -25,16 +25,14 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
-import { PageHeaderService } from '@valtimo/components';
-import { ListItem, Notification, NotificationService } from 'carbon-components-angular';
-import { BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap } from 'rxjs';
-import { take } from 'rxjs/operators';
-import { CaseManagementService, CaseDetailService } from '../../services';
-import {
-  CaseManagementRemoveModalComponent,
-} from '../case-management-remove-modal/case-management-remove-modal.component';
+import {ActivatedRoute, Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {PageHeaderService} from '@valtimo/components';
+import {ListItem, Notification, NotificationService} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {take} from 'rxjs/operators';
+import {CaseManagementService, CaseDetailService} from '../../services';
+import {CaseManagementRemoveModalComponent} from '../case-management-remove-modal/case-management-remove-modal.component';
 
 @Component({
   selector: 'valtimo-case-management-detail-container-actions',
@@ -163,7 +161,7 @@ export class CaseManagementDetailContainerActionsComponent {
 
   public openCaseRemoveModal(): void {
     this.selectedDocumentDefinition$.pipe(take(1)).subscribe(definition => {
-      if(!definition) return;
+      if (!definition) return;
 
       this._caseRemoveModal.openModal(definition);
     });

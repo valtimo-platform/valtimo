@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export * from './dossier-management-zgw.model';
+export * from './case-management-zgw.model';

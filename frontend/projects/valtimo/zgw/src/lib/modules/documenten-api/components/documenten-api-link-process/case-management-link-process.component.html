@@ -22,14 +22,14 @@
 >
   <div class="link-upload-process">
     <p class="link-upload-process__title">
-      {{ 'dossierManagement.tabs.generalTab.linkUploadProcess.title' | translate }}
+      {{ 'caseManagement.tabs.generalTab.linkUploadProcess.title' | translate }}
     </p>
 
     <cds-combo-box
       [cdsLayer]="1"
       [appendInline]="true"
       [dropUp]="false"
-      [label]="'dossierManagement.tabs.generalTab.linkUploadProcess.label' | translate"
+      [label]="'caseManagement.tabs.generalTab.linkUploadProcess.label' | translate"
       [disabled]="obs.disabled || !obs.processItems"
       (selected)="selectProcess($event)"
     >

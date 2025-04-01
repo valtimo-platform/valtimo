@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { FormDisplayType, FormSize, TaskWithProcessLink } from '@valtimo/process-link';
-import { BehaviorSubject, combineLatest, filter, map, Observable, startWith } from 'rxjs';
+import {Injectable} from '@angular/core';
+import {FormDisplayType, FormSize, TaskWithProcessLink} from '@valtimo/process-link';
+import {BehaviorSubject, combineLatest, filter, map, Observable, startWith} from 'rxjs';
 import {
   CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
   CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
@@ -9,8 +9,8 @@ import {
   CASE_DETAIL_RIGHT_PANEL_MIN_WIDTHS,
   CASE_DETAIL_TASK_LIST_WIDTH,
 } from '../constants';
-import { CaseDetailLayout } from '../models';
-import { CaseTabService } from './case-tab.service';
+import {CaseDetailLayout} from '../models';
+import {CaseTabService} from './case-tab.service';
 
 @Injectable()
 export class CaseDetailLayoutService {

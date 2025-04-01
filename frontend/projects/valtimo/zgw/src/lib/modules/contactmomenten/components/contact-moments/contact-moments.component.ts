@@ -35,13 +35,13 @@ import {FormsModule} from '@angular/forms';
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
-  selector: 'valtimo-dossier-detail-tab-contact-moments',
+  selector: 'valtimo-case-detail-tab-contact-moments',
   templateUrl: './contact-moments.component.html',
   styleUrls: ['./contact-moments.component.scss'],
   standalone: true,
   imports: [CommonModule, ModalModule, TranslateModule, FormsModule, SpinnerModule, TimelineModule],
 })
-export class DossierDetailTabContactMomentsComponent {
+export class CaseDetailTabContactMomentsComponent {
   @ViewChild('contactMomentsNoteModal') modal: ModalComponent;
 
   readonly refetchContactMoments$ = new BehaviorSubject('');

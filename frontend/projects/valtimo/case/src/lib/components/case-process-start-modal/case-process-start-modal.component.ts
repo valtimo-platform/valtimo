@@ -40,7 +40,13 @@ import {
 } from '@valtimo/process-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
-import {FormioComponent, FormioOptionsImpl, FormioSubmission, ModalComponent, ValtimoFormioOptions,} from '@valtimo/components';
+import {
+  FormioComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ModalComponent,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
 import {FormioBeforeSubmit} from '@formio/angular/formio.common';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
@@ -128,11 +134,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       });
     }
     this.processService
-      .getProcessDefinitionStartProcessLink(
-        this.processDefinitionId,
-        null,
-        this.caseDefinitionKey
-      )
+      .getProcessDefinitionStartProcessLink(this.processDefinitionId, null, this.caseDefinitionKey)
       .pipe(take(1))
       .subscribe(startProcessResult => {
         if (startProcessResult) {
@@ -200,7 +202,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
 
   openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
     this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;
-    this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key
+    this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
     this.options = new FormioOptionsImpl();
     this.options.disableAlerts = true;
     const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {

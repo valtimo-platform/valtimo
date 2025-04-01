@@ -60,8 +60,7 @@ export class CaseManagementAddTabModalComponent {
         title: 'caseManagement.tabManagement.addModal.standardTab',
         type: ApiTabType.STANDARD,
         disabled: disabled.standard,
-        disabledTooltipTranslationKey:
-          'caseManagement.tabManagement.addModal.standardTabDisabled',
+        disabledTooltipTranslationKey: 'caseManagement.tabManagement.addModal.standardTabDisabled',
       },
       {
         icon: 'page-scroll',

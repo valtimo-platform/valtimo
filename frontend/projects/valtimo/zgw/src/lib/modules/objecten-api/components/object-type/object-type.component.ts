@@ -40,7 +40,7 @@ import {CommonModule} from '@angular/common';
   standalone: true,
   imports: [CommonModule, TableModule, ParagraphModule, VModalModule, TitleModule, FormIoModule],
 })
-export class DossierDetailTabObjectTypeComponent {
+export class CaseDetailTabObjectTypeComponent {
   @ViewChild('viewObjectModal') viewObjectModal: VModalComponent;
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));

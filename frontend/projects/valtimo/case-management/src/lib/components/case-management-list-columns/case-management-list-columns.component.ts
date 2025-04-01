@@ -433,7 +433,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   }
 
   enumValueChange(value: Array<{[key: string]: string}>): void {
-    this.formGroup.patchValue({enum :value});
+    this.formGroup.patchValue({enum: value});
   }
 
   columnRowClicked(row: {key: string}): void {
@@ -496,15 +496,15 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
 
     this.documentService
       .putCaseListForManagement(documentDefinitionName, newCaseListColumns)
-      .subscribe(
-        {next: () => {
+      .subscribe({
+        next: () => {
           this.refreshCaseListColumns();
           localStorage.setItem(`list-search-${documentDefinitionName}`, '');
         },
         error: () => {
           this.enableInput();
-        }}
-      );
+        },
+      });
   }
 
   private addColumn(): void {
@@ -513,15 +513,15 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     this.documentDefinitionName$.pipe(take(1)).subscribe(docDefName => {
       this.documentService
         .postCaseListForManagement(docDefName, this.mapFormValuesToColumn(formValue))
-        .subscribe(
-          {next: () => {
+        .subscribe({
+          next: () => {
             this.closeModal();
             this.refreshCaseListColumns();
           },
           error: () => {
             this.enableInput();
-          }}
-        );
+          },
+        });
     });
   }
 

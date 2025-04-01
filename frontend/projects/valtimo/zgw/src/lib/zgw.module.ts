@@ -27,15 +27,15 @@ import {
 } from '@valtimo/config';
 import {DocumentModule} from '@valtimo/document';
 import {ResourceModule} from '@valtimo/resource';
-import {DossierManagementZgwComponent} from './components';
 import {
-  CaseManagementLinkProcessComponent,
+  CaseDetailTabDocumentenApiDocumentsComponent,
+  CaseDetailTabObjectTypeComponent,
+  CaseManagementLinkUploadProcessComponent,
   CustomerModule,
   DocumentenApiMetadataModalComponent,
   DocumentenApiUploaderComponent,
-  DossierDetailTabDocumentenApiDocumentsComponent,
-  DossierDetailTabObjectTypeComponent,
 } from './modules';
+import {CaseManagementZgwComponent} from './components';
 
 @NgModule({
   imports: [
@@ -57,23 +57,23 @@ import {
       provide: CASE_MANAGEMENT_TAB_TOKEN,
       useValue: {
         translationKey: 'caseManagement.tabs.zgw',
-        component: DossierManagementZgwComponent,
+        component: CaseManagementZgwComponent,
       },
       multi: true,
     },
     {
       provide: ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
-      useValue: DossierDetailTabObjectTypeComponent,
+      useValue: CaseDetailTabObjectTypeComponent,
     },
     {
       provide: ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
-      useValue: DossierDetailTabDocumentenApiDocumentsComponent,
+      useValue: CaseDetailTabDocumentenApiDocumentsComponent,
     },
     {
       provide: ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
       useValue: [
-        CaseManagementLinkProcessComponent,
-        // DossierManagementLinkProcessComponent,
+        CaseManagementLinkUploadProcessComponent,
+        // CaseManagementLinkProcessComponent,
         // DocumentenApiVersionComponent,
         // DocumentObjectenApiSyncComponent,
         // ZakenApiZaaktypeLinkComponent,

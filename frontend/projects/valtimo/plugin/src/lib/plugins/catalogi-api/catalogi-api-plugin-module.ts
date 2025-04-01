@@ -30,7 +30,7 @@ import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/g
     GetBesluittypeConfigurationComponent,
     GetResultaattypeConfigurationComponent,
     GetStatustypeConfigurationComponent,
-    GetEigenschapConfigurationComponent
+    GetEigenschapConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -45,7 +45,7 @@ import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/g
     GetBesluittypeConfigurationComponent,
     GetResultaattypeConfigurationComponent,
     GetStatustypeConfigurationComponent,
-    GetEigenschapConfigurationComponent
+    GetEigenschapConfigurationComponent,
   ],
 })
 export class CatalogiApiPluginModule {}

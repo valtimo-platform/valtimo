@@ -46,7 +46,9 @@ export class CaseListSearchService {
     this.caseListService.checkRefresh();
   }
 
-  public mapSearchValuesToFilters(values: SearchFieldValues): Array<SearchFilter | SearchFilterRange> {
+  public mapSearchValuesToFilters(
+    values: SearchFieldValues
+  ): Array<SearchFilter | SearchFilterRange> {
     const filters: Array<SearchFilter | SearchFilterRange> = [];
 
     Object.keys(values).forEach(valueKey => {

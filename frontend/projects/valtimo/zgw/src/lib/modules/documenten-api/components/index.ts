@@ -19,7 +19,7 @@ export * from './documenten-api-columns/documenten-api-columns.component';
 export * from './documenten-api-documents/documenten-api-documents.component';
 export * from './documenten-api-filter/documenten-api-filter.component';
 export * from './documenten-api-link-process/case-management-link-process.component';
-export * from './documenten-api-link-upload-process/dossier-management-link-process.component';
+export * from './documenten-api-link-upload-process/case-management-link-upload-process.component';
 export * from './documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 export * from './documenten-api-tag-modal/documenten-api-tag-modal.component';
 export * from './documenten-api-tags/documenten-api-tags.component';

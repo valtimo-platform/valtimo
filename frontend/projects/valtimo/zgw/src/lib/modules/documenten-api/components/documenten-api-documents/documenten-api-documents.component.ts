@@ -71,7 +71,7 @@ import {
 import {PermissionRequest, PermissionService} from '@valtimo/access-control';
 
 @Component({
-  selector: 'valtimo-dossier-detail-tab-documenten-api-documents',
+  selector: 'valtimo-case-detail-tab-documenten-api-documents',
   templateUrl: './documenten-api-documents.component.html',
   styleUrls: ['./documenten-api-documents.component.scss'],
   standalone: true,
@@ -87,7 +87,7 @@ import {PermissionRequest, PermissionService} from '@valtimo/access-control';
     ConfirmationModalModule,
   ],
 })
-export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, OnDestroy {
+export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput: ElementRef;
   @ViewChild('translationTemplate') translationTemplate: TemplateRef<any>;
 
@@ -474,7 +474,7 @@ export class DossierDetailTabDocumentenApiDocumentsComponent implements OnInit, 
 
   public onNavigateToCaseAdminClick(): void {
     this.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
-      this.router.navigate([`/dossier-management/dossier/${documentDefinitionName}`]);
+      this.router.navigate([`/case-management/case/${documentDefinitionName}`]);
     });
   }
 

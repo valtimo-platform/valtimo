@@ -41,15 +41,15 @@ import {
 } from '@valtimo/components';
 import {
   CASE_TAB_TOKEN,
+  CaseDetailTabAuditComponent,
+  CaseDetailTabDocumentsComponent,
+  CaseDetailTabNotesComponent,
+  CaseDetailTabProgressComponent,
+  CaseDetailTabSummaryComponent,
+  CaseModule,
   CUSTOM_CASE_WIDGET_TOKEN,
   DefaultTabs,
-  DossierDetailTabAuditComponent,
-  DossierDetailTabDocumentsComponent,
-  DossierDetailTabNotesComponent,
-  DossierDetailTabProgressComponent,
-  DossierDetailTabSummaryComponent,
-  DossierModule,
-} from '@valtimo/dossier';
+} from '@valtimo/case';
 import {ProcessModule} from '@valtimo/process';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CustomFormExampleComponent} from './custom-form-example/custom-form-example.component';
@@ -81,7 +81,6 @@ import {
   LocalizationService,
 } from '@valtimo/config';
 import {FormManagementModule} from '@valtimo/form-management';
-import {DossierManagementModule} from '@valtimo/dossier-management';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
@@ -121,13 +120,14 @@ import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custo
 import {TaskManagementModule} from '@valtimo/task-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
 import {
-  DossierDetailTabContactMomentsComponent,
-  DossierDetailTabZaakobjectenComponent,
+  CaseDetailTabContactMomentsComponent,
+  CaseDetailTabZaakobjectenComponent,
   registerDocumentenApiFormioUploadComponent,
   ZgwModule,
 } from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
+import {CaseManagementModule} from '@valtimo/case-management';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -247,8 +247,8 @@ export function tabsFactory() {
       provide: CASE_TAB_TOKEN,
       useValue: {
         'custom-dossier-tab': CustomDossierTabComponent,
-        zaakobjecten: DossierDetailTabZaakobjectenComponent,
-        contactmomenten: DossierDetailTabContactMomentsComponent,
+        zaakobjecten: CaseDetailTabZaakobjectenComponent,
+        contactmomenten: CaseDetailTabContactMomentsComponent,
       },
     },
     {

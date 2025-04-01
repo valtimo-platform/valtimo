@@ -28,11 +28,7 @@ import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@an
 import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {
-  CUSTOM_CASE_WIDGET_TOKEN,
-  CustomCaseWidgetConfig,
-  WidgetCustomContent,
-} from '@valtimo/case';
+import {CUSTOM_CASE_WIDGET_TOKEN, CustomCaseWidgetConfig, WidgetCustomContent} from '@valtimo/case';
 import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';

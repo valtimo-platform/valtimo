@@ -30,7 +30,7 @@ import {DocumentDefinitionCreateRequest, DocumentService} from '@valtimo/documen
 import {FileItem, IconService, NotificationContent} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './case-management-upload.constants';
-import { CaseManagementService } from '../../services';
+import {CaseManagementService} from '../../services';
 
 @Component({
   selector: 'valtimo-case-management-upload',
