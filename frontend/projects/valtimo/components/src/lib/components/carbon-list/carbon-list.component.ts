@@ -69,14 +69,13 @@ import {
   MoveRowDirection,
   MoveRowEvent,
   Pagination,
-  TAG_ELLIPSIS_LIMIT,
   ViewType,
 } from '../../models';
-import {EllipsisPipe} from '../../pipes';
 import {KeyStateService} from '../../services/key-state.service';
 import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {CarbonListDragAndDropService} from './services';
+import {EllipsisPipe} from '../../pipes';
 
 @Component({
   selector: 'valtimo-carbon-list',
@@ -99,11 +98,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _completeDataSource: TableItem[][];
 
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
-
   private get _items(): CarbonListItem[] {
     return this._items$.getValue();
   }
-
   public get items(): CarbonListItem[] {
     return this._items;
   }
@@ -115,7 +112,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public currentOpenActionId: string | null = null;
 
   private readonly _fields$ = new BehaviorSubject<ColumnConfig[]>([]);
-
   @Input() set fields(value: ColumnConfig[]) {
     this._fields$.next(value);
   }
@@ -123,7 +119,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _tableTranslations$: BehaviorSubject<CarbonListTranslations> = new BehaviorSubject(
     DEFAULT_LIST_TRANSLATIONS
   );
-
   @Input() set tableTranslations(value: Partial<CarbonListTranslations>) {
     this._tableTranslations$.next({...DEFAULT_LIST_TRANSLATIONS, ...value});
   }
@@ -712,32 +707,20 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (!object) return null;
 
-    if (isArray(object) && typeof object[0] !== 'string')
-      return (object as CarbonTag[]).map((tag: CarbonTag) => ({
-        ...tag,
-        ellipsisContent: this.ellipsisPipe.transform(tag.content, TAG_ELLIPSIS_LIMIT),
-      }));
+    if (isArray(object) && typeof object[0] !== 'string') return object as CarbonTag[];
 
-    if (!isArray(object) && typeof object !== 'string')
-      return [
-        {
-          ...object,
-          ellipsisContent: this.ellipsisPipe.transform(object.content, TAG_ELLIPSIS_LIMIT),
-        },
-      ];
+    if (!isArray(object) && typeof object !== 'string') return [object as CarbonTag];
 
     if (typeof object === 'string')
       return [
         {
           content: object,
-          ellipsisContent: this.ellipsisPipe.transform(object, TAG_ELLIPSIS_LIMIT),
           type: 'blue',
         },
       ];
 
     return (object as string[]).map((content: string) => ({
       content,
-      ellipsisContent: this.ellipsisPipe.transform(content, TAG_ELLIPSIS_LIMIT),
       type: 'blue',
     }));
   }

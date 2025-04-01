@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Injectable, OnDestroy} from '@angular/core';
+import {Inject, Injectable, OnDestroy, Optional} from '@angular/core';
 import {BehaviorSubject, map, Observable, Subject, Subscription} from 'rxjs';
 import {
+  FormCustomComponentConfig,
   ModalParams,
   ProcessLink,
   ProcessLinkCreateEvent,
@@ -27,6 +28,7 @@ import {
 import {PluginStateService} from './plugin-state.service';
 import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
+import {FORM_CUSTOM_COMPONENT_TOKEN} from '../constants';
 
 @Injectable({
   providedIn: 'root',
@@ -63,9 +65,22 @@ export class ProcessLinkStateService implements OnDestroy {
   public get elementName$(): Observable<string> {
     return this._elementName$.asObservable();
   }
-  public get availableProcessLinkTypes$(): Observable<Array<ProcessLinkType>> {
-    return this._availableProcessLinkTypes$.asObservable();
+  get availableProcessLinkTypes$(): Observable<Array<ProcessLinkType>> {
+    return this._availableProcessLinkTypes$.asObservable().pipe(
+      map(types => {
+        if (!this.formCustomComponentConfig) {
+          return types.map(type => {
+            if (type.processLinkType === 'ui-component') {
+              type.enabled = false;
+            }
+            return type;
+          });
+        }
+        return types;
+      })
+    );
   }
+
   public get hideProgressIndicator$(): Observable<boolean> {
     return this._availableProcessLinkTypes$
       .asObservable()
@@ -109,7 +124,10 @@ export class ProcessLinkStateService implements OnDestroy {
   constructor(
     private readonly processLinkStepService: ProcessLinkStepService,
     private readonly buttonService: ProcessLinkButtonService,
-    private readonly pluginStateService: PluginStateService
+    private readonly pluginStateService: PluginStateService,
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig
   ) {
     this.openAvailableProcessLinkTypesSubscription();
   }

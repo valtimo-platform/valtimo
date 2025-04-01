@@ -81,6 +81,7 @@ export * from './lib/plugins/catalogi-api/components/catalogi-api-configuration/
 export * from './lib/plugins/catalogi-api/components/get-besluittype/get-besluittype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-resultaattype/get-resultaattype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-statustype/get-statustype-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-eigenschap/get-eigenschap-configuration.component';
 /* notificaties api plugin */
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.module';
 export * from './lib/plugins/notificaties-api/notificaties-api-plugin.specification';

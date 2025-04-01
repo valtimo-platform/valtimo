@@ -22,6 +22,7 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/c
 import {GetStatustypeConfigurationComponent} from './components/get-statustype/get-statustype-configuration.component';
 import {GetBesluittypeConfigurationComponent} from './components/get-besluittype/get-besluittype-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
+import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import {GetResultaattypeConfigurationComponent} from './components/get-resultaat
     GetBesluittypeConfigurationComponent,
     GetResultaattypeConfigurationComponent,
     GetStatustypeConfigurationComponent,
+    GetEigenschapConfigurationComponent
   ],
   imports: [
     CommonModule,
@@ -43,6 +45,7 @@ import {GetResultaattypeConfigurationComponent} from './components/get-resultaat
     GetBesluittypeConfigurationComponent,
     GetResultaattypeConfigurationComponent,
     GetStatustypeConfigurationComponent,
+    GetEigenschapConfigurationComponent
   ],
 })
 export class CatalogiApiPluginModule {}

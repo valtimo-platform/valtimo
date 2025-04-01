@@ -1,7 +1,34 @@
+.log-header {
+  padding-top: 24px;
+  padding-bottom: 12px;
+  color: var(--cds-text-primary);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.property-key {
+  color: var(--cds-text-primary);
+}
+
+.property-value {
+  color: var(--cds-text-secondary);
+}
+
 .valtimo-log-details__content {
   padding: 32px;
 
-  ::ng-deep .ngx-json-viewer {
-    overflow: auto !important;
+  ::ng-deep .highlight1 {
+    color: var(--cds-text-primary);
+    font-weight: 600;
+  }
+  ::ng-deep .valtimo-log-stacktrace {
+    color: var(--cds-text-primary);
+    font-weight: 400;
+    background-color: var(--cds-layer-01);
+  }
+  ::ng-deep .highlight3 {
+    color: var(--cds-text-on-color-disabled);
+    font-weight: 300;
   }
 }

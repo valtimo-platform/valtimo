@@ -49,7 +49,8 @@ import {
   NewDocumentAndStartProcessRequestImpl,
   NewDocumentAndStartProcessResult,
   OpenDocumentCount,
-  Page, ProcessDefinitionCaseDefinition,
+  Page,
+  ProcessDefinitionCaseDefinition,
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionRequest,
   ProcessDocumentDefinitionSearch,
@@ -205,10 +206,7 @@ export class DocumentService {
     );
   }
 
-  public postDocumentSearch(
-    caseDefinitionKey: string,
-    request: SearchField
-  ): Observable<void> {
+  public postDocumentSearch(caseDefinitionKey: string, request: SearchField): Observable<void> {
     return this.http.post<void>(
       `${this.valtimoEndpointUri}v1/document-search/${caseDefinitionKey}/fields`,
       {...request}

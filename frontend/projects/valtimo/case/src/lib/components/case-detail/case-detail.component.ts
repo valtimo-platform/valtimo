@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DOCUMENT } from '@angular/common';
+import {DOCUMENT} from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -25,10 +25,10 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { ActivatedRoute, NavigationStart, ParamMap, Params, Router } from '@angular/router';
-import { ChevronDown16 } from '@carbon/icons';
-import { TranslateService } from '@ngx-translate/core';
-import { PermissionService } from '@valtimo/access-control';
+import {ActivatedRoute, NavigationStart, ParamMap, Params, Router} from '@angular/router';
+import {ChevronDown16} from '@carbon/icons';
+import {TranslateService} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
 import {
   BreadcrumbService,
   CARBON_CONSTANTS,
@@ -38,7 +38,7 @@ import {
   PageTitleService,
   PendingChangesComponent,
 } from '@valtimo/components';
-import { ConfigService } from '@valtimo/config';
+import {ConfigService} from '@valtimo/config';
 import {
   CaseStatusService,
   Document as ValtimoDocument,
@@ -46,15 +46,14 @@ import {
   InternalCaseStatus,
   InternalCaseStatusUtils,
   ProcessDefinitionCaseDefinition,
-  ProcessDocumentDefinition,
 } from '@valtimo/document';
-import { TaskWithProcessLink } from '@valtimo/process-link';
-import { UserProviderService } from '@valtimo/security';
-import { IntermediateSubmission } from '@valtimo/task';
-import { IconService, NotificationService } from 'carbon-components-angular';
-import { KeycloakService } from 'keycloak-angular';
+import {TaskWithProcessLink} from '@valtimo/process-link';
+import {UserProviderService} from '@valtimo/security';
+import {IntermediateSubmission} from '@valtimo/task';
+import {IconService, NotificationService} from 'carbon-components-angular';
+import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
-import { NGXLogger } from 'ngx-logger';
+import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
   combineLatest,
@@ -69,13 +68,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {
-  CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
-  CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
-  CASE_DETAIL_GUTTER_SIZE,
-  CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
-} from '../../constants';
-import { TabImpl, TabLoaderImpl } from '../../models';
+import {TabImpl, TabLoaderImpl} from '../../models';
 import {
   CAN_ASSIGN_CASE_PERMISSION,
   CAN_CLAIM_CASE_PERMISSION,
@@ -83,11 +76,15 @@ import {
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
-import { CaseDetailLayoutService, CaseService, CaseTabService } from '../../services';
+import {WidgetsService} from './tab/widgets/widgets.service';
 import {
-  CaseSupportingProcessStartModalComponent,
-} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
-import { WidgetsService } from './tab/widgets/widgets.service';
+  CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
+  CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
+  CASE_DETAIL_GUTTER_SIZE,
+  CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
+} from '../../constants';
+import {CaseDetailLayoutService, CaseService, CaseTabService} from '../../services';
+import {CaseSupportingProcessStartModalComponent} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 
 @Component({
   templateUrl: './case-detail.component.html',
@@ -113,7 +110,9 @@ export class CaseDetailComponent
   public documentDefinitionTitle: string;
   public documentId: string;
   public processDefinitionListFields: Array<any> = [];
-  public processDefinitionCaseDefinitions: (ProcessDefinitionCaseDefinition & {displayName?: string})[] = [];
+  public processDefinitionCaseDefinitions: (ProcessDefinitionCaseDefinition & {
+    displayName?: string;
+  })[] = [];
   public tabLoader: TabLoaderImpl | null = null;
 
   public readonly assigneeId$ = new BehaviorSubject<string>('');
@@ -169,9 +168,9 @@ export class CaseDetailComponent
           ) &&
           this.customCaseHeaderItems.length === 0
         ) {
-          this.configService.config.customCaseHeader[
-            this.caseDefinitionKey.toLowerCase()
-          ]?.forEach(item => this.getCustomCaseHeaderItem(item));
+          this.configService.config.customCaseHeader[this.caseDefinitionKey.toLowerCase()]?.forEach(
+            item => this.getCustomCaseHeaderItem(item)
+          );
         }
       }
     })
@@ -219,9 +218,7 @@ export class CaseDetailComponent
   );
 
   public readonly canHaveAssignee$: Observable<boolean> = this.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
-      this.documentService.getCaseSettings(caseDefinitionKey)
-    ),
+    switchMap(caseDefinitionKey => this.documentService.getCaseSettings(caseDefinitionKey)),
     map(caseSettings => caseSettings?.canHaveAssignee)
   );
 
@@ -264,8 +261,7 @@ export class CaseDetailComponent
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly tabHorizontalOverflowDisabled =
-    this.caseTabService.tabHorizontalOverflowDisabled;
+  public readonly tabHorizontalOverflowDisabled = this.caseTabService.tabHorizontalOverflowDisabled;
 
   public readonly showTaskList$ = this.caseTabService.showTaskList$;
 
@@ -377,7 +373,7 @@ export class CaseDetailComponent
     this._subscriptions.add(
       this.widgetsService.startProcessEvent
         .pipe(switchMap(() => this.widgetsService.activeProcess$))
-        .subscribe((processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition[]) => {
+        .subscribe(processDefinitionCaseDefinition => {
           this.startProcess(processDefinitionCaseDefinition[0]);
         })
     );
@@ -524,12 +520,10 @@ export class CaseDetailComponent
   }
 
   private initBreadcrumb(): void {
-    this.documentService
-      .getDocumentDefinition(this.caseDefinitionKey)
-      .subscribe(definition => {
-        this.documentDefinitionTitle = definition.schema.title;
-        this.setBreadcrumb();
-      });
+    this.documentService.getDocumentDefinition(this.caseDefinitionKey).subscribe(definition => {
+      this.documentDefinitionTitle = definition.schema.title;
+      this.setBreadcrumb();
+    });
   }
 
   private initTabLoader(): void {
@@ -662,7 +656,7 @@ export class CaseDetailComponent
       ...(isAdmin && {
         actions: [
           {
-            text: this.translateService.instant('case.configure'),
+            text: this.translateService.instant('dossier.configure'),
             click: () => this.router.navigate(['/process-links']),
           },
         ],

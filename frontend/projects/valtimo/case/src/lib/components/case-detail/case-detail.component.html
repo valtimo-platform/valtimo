@@ -254,7 +254,9 @@
         [ngClass]="{'--compact': compactMode$ | async}"
       >
         @if (obs.caseStatus) {
-          <cds-tag size="sm" [type]="obs.caseStatus.tagType">{{ obs.caseStatus.title }}</cds-tag>
+          <cds-tag size="sm" [type]="obs.caseStatus.tagType" [title]="obs.caseStatus.title">{{
+            obs.caseStatus.title
+          }}</cds-tag>
         }
 
         <div [ngClass]="{'--compact': compactMode$ | async}">

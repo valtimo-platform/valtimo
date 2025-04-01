@@ -265,12 +265,12 @@ export class DocumentenApiUploaderComponent
         .pipe(
           map(
             ([params, firstChildParams]) =>
-              (params?.caseDefinitionKey || firstChildParams?.caseDefinitionKey) as string
+              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
           ),
-          filter(caseDefinitionKey => !!caseDefinitionKey)
+          filter(documentDefinitionName => !!documentDefinitionName)
         )
-        .subscribe(caseDefinitionKey =>
-          this.modalService.setDocumentDefinitionName(caseDefinitionKey)
+        .subscribe(documentDefinitionName =>
+          this.modalService.setDocumentDefinitionName(documentDefinitionName)
         )
     );
   }

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import { TranslateService } from '@ngx-translate/core';
-import { PermissionService } from '@valtimo/access-control';
+import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute, Params, Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
 import {
   BreadcrumbService,
   CarbonListComponent,
@@ -31,10 +31,10 @@ import {
 } from '@valtimo/components';
 import {
   AssigneeFilter,
+  CaseListTab,
   ConfigService,
   DefinitionColumn,
   Direction,
-  CaseListTab,
   SearchField,
   SearchFieldValues,
   SortState,
@@ -42,15 +42,14 @@ import {
 import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,
-  Document,
   Documents,
   DocumentService,
   InternalCaseStatus,
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
-import { Tab, Tabs } from 'carbon-components-angular';
-import { isEqual } from 'lodash';
+import {Tab, Tabs} from 'carbon-components-angular';
+import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
   combineLatest,
@@ -68,8 +67,16 @@ import {
   tap,
 } from 'rxjs';
 
-import { CASE_LIST_NO_RESULTS_MESSAGE, CASE_LIST_TABLE_TRANSLATIONS, DEFAULT_CASE_LIST_TABS } from '../../constants';
-import { CAN_CREATE_CASE_PERMISSION, CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE } from '../../permissions';
+import {
+  CASE_LIST_NO_RESULTS_MESSAGE,
+  CASE_LIST_TABLE_TRANSLATIONS,
+  DEFAULT_CASE_LIST_TABS,
+} from '../../constants';
+import {
+  CAN_CREATE_CASE_PERMISSION,
+  CAN_VIEW_CASE_PERMISSION,
+  CASE_DETAIL_PERMISSION_RESOURCE,
+} from '../../permissions';
 import {
   CaseBulkAssignService,
   CaseColumnService,
@@ -80,7 +87,7 @@ import {
   CaseListStatusService,
   CaseParameterService,
 } from '../../services';
-import { CaseListActionsComponent } from '../case-list-actions/case-list-actions.component';
+import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.component';
 
 @Component({
   templateUrl: './case-list.component.html',
@@ -135,9 +142,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly selectedCaseIds$ = new BehaviorSubject<string[]>([]);
 
   public readonly schema$ = this.listService.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
-      this.documentService.getDocumentDefinition(caseDefinitionKey)
-    ),
+    switchMap(caseDefinitionKey => this.documentService.getDocumentDefinition(caseDefinitionKey)),
     map(caseDefinition => caseDefinition?.schema),
     tap(schema => {
       if (schema?.title) {
@@ -172,9 +177,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
   private readonly _columns$: Observable<Array<DefinitionColumn>> =
     this.listService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey =>
-        this.columnService.getDefinitionColumns(caseDefinitionKey)
-      ),
+      switchMap(caseDefinitionKey => this.columnService.getDefinitionColumns(caseDefinitionKey)),
       map(res => {
         this._hasApiColumnConfig$.next(res.hasApiConfig);
         return res.columns;
@@ -552,9 +555,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     if (!prevTab) {
       return;
     }
+
     const tab = this.tabsComponent.tabs.find((tab: Tab) => tab.active);
 
-    if(!tab) return;
+    if (!tab) return;
     tab.active = false;
     prevTab.active = true;
   }

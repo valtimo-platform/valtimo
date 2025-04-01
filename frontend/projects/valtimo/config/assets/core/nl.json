@@ -1989,6 +1989,10 @@
       "searchDescription": "Er zijn geen logregels die overeenkomen met je zoekcriteria",
       "title": "Er zijn geen logboeken"
     },
-    "detailsTitle": "Loggegevens"
+    "detailsTitle": "Loggegevens",
+    "timestamp": "Tijd",
+    "formattedMessage": "Bericht",
+    "properties": "Eigenschappen",
+    "stacktrace": "Stacktrace"
   }
 }

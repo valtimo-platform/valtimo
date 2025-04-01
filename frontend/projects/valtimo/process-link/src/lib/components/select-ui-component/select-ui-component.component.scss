@@ -1,5 +1,5 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-interface DocumentenApiManagementVersion {
-  selectedVersion: string;
-  detectedVersions: string;
-}
+.custom-widget {
+  padding: 24px;
 
-interface SupportedDocumentenApiFeatures {
-  selectedVersion: string;
-  supportsFilterableColumns: boolean;
-  supportsSortableColumns: boolean;
-  supportsTrefwoorden: boolean;
-  supportsUpdatingDefinitiveDocument: boolean;
-}
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-export {DocumentenApiManagementVersion, SupportedDocumentenApiFeatures};
+  &__title {
+    color: var(--cds-text-primary);
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 24px;
+  }
+}

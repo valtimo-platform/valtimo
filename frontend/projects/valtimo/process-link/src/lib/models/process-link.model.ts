@@ -146,6 +146,19 @@ interface URLProcessLinkUpdateRequestDto {
   activityId: string;
 }
 
+interface UIComponentProcessLinkCreateRequestDto {
+  componentKey: string;
+  activityId: string;
+  activityType: string;
+  processLinkType: string;
+  processDefinitionId: string;
+}
+
+interface UIComponentProcessLinkUpdateRequestDto {
+  id: string;
+  componentKey: string;
+}
+
 type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
 
 interface TaskProcessLinkResult {
@@ -203,6 +216,16 @@ interface ProcessLinkDeleteEvent {
 enum ProcessLinkEditMode {
   SAVE_TO_BACKEND,
   EMIT_EVENTS,
+}
+
+interface CompatibleProcessVersion {
+  version: string;
+  processLinks: ProcessLink[];
+}
+
+interface CompatiblePluginProcessLinks {
+  processDefinitionKey: string;
+  versions: CompatibleProcessVersion[];
 }
 
 interface CompatibleProcessVersion {

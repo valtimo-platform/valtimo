@@ -19,7 +19,7 @@
   *ngIf="{
     file: file$ | async,
     disabled: disabled$ | async,
-    isDefinitiveStatus: isDefinitiveStatus$ | async,
+    editDisabled: editDisabled$ | async,
     languageItems: languageItems$ | async,
     confidentialityLevelItems: confidentialityLevelItems$ | async,
     documentTypeItems: documentTypeItems$ | async,
@@ -58,7 +58,7 @@
     <button
       cdsButton="primary"
       type="submit"
-      [disabled]="obs.disabled || !documentenApiMetadataForm.valid || obs.isDefinitiveStatus"
+      [disabled]="obs.disabled || !documentenApiMetadataForm.valid || obs.editDisabled"
       (click)="save()"
     >
       {{ 'document.save' | translate }}

@@ -178,7 +178,12 @@
       @if (data.length === 0) {
         -
       } @else {
-        <cds-tag *ngIf="!!data[0].content" class="cds-tag--no-margin" [type]="data[0].type">
+        <cds-tag
+          *ngIf="!!data[0].content"
+          class="cds-tag--no-margin"
+          [type]="data[0].type"
+          [title]="data[0].content"
+        >
           {{ data[0].ellipsisContent ?? data[0].content }}
         </cds-tag>
 
