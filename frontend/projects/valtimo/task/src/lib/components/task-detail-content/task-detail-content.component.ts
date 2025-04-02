@@ -456,9 +456,9 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
   private setDocumentDefinitionNameInService(task: Task): void {
     this.documentService
-      .getProcessDocumentDefinitionFromProcessInstanceId(task.processInstanceId)
-      .subscribe(processDocumentDefinition => {
-        const documentDefinitionName = processDocumentDefinition.id.documentDefinitionId.name;
+      .getProcessDefinitionCaseDefinitionFromProcessInstanceId(task.processInstanceId)
+      .subscribe(ProcessDefinitionCaseDefinition => {
+        const documentDefinitionName = ProcessDefinitionCaseDefinition.id.caseDefinitionId.key;
         this.modalService.setDocumentDefinitionName(documentDefinitionName);
         this.stateService.setDocumentDefinitionName(documentDefinitionName);
       });

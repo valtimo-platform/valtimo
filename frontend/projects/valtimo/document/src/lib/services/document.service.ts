@@ -281,7 +281,7 @@ export class DocumentService {
     caseDefinitionKey: string
   ): Observable<ProcessDefinitionCaseDefinition[]> {
     return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/process-definition/settings`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link`
     );
   }
 
@@ -290,7 +290,7 @@ export class DocumentService {
     startableByUser: boolean
   ): Observable<ProcessDefinitionCaseDefinition[]> {
     return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/process-definition/settings?startableByUser=${startableByUser}`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link?startableByUser=${startableByUser}`
     );
   }
 
@@ -299,7 +299,7 @@ export class DocumentService {
     canInitializeDocument: boolean
   ): Observable<ProcessDefinitionCaseDefinition[]> {
     return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/process-definition/settings?canInitializeDocument=${canInitializeDocument}`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link?canInitializeDocument=${canInitializeDocument}`
     );
   }
 
@@ -311,16 +311,8 @@ export class DocumentService {
       fromObject: searchRequest as any,
     });
     return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/document/${documentId}/process-definition/settings`,
+      `${this.valtimoEndpointUri}v1/document-instance/${documentId}/case-process-link`,
       {params}
-    );
-  }
-
-  public findProcessDefinitionCaseDefinitionsByProcessDefinitionKey(
-    processDefinitionKey: string
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/process-document/definition/process/${processDefinitionKey}`
     );
   }
 
@@ -471,18 +463,18 @@ export class DocumentService {
     );
   }
 
-  public getProcessDocumentDefinitionFromProcessInstanceId(
+  public getProcessDefinitionCaseDefinitionFromProcessInstanceId(
     processInstanceId: string
-  ): Observable<ProcessDocumentDefinition> {
+  ): Observable<ProcessDefinitionCaseDefinition> {
     return this.configService.getFeatureToggle('enableSuppressDocumentError')
-      ? this.http.get<ProcessDocumentDefinition>(
-          `${this.valtimoEndpointUri}v1/process-document/definition/processinstance/${processInstanceId}`,
+      ? this.http.get<ProcessDefinitionCaseDefinition>(
+          `${this.valtimoEndpointUri}v1/process-instance/${processInstanceId}/case-process-link`,
           {
             headers: new HttpHeaders().set(InterceptorSkip, '400'),
           }
         )
-      : this.http.get<ProcessDocumentDefinition>(
-          `${this.valtimoEndpointUri}v1/process-document/definition/processinstance/${processInstanceId}`
+      : this.http.get<ProcessDefinitionCaseDefinition>(
+          `${this.valtimoEndpointUri}v1/process-instance/${processInstanceId}/case-process-link`,
         );
   }
 
