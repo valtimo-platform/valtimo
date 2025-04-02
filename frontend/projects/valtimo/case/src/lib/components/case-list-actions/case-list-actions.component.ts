@@ -64,6 +64,8 @@ export class CaseListActionsComponent implements OnInit {
   );
 
   private selectedProcessDefinitionCaseDefinition: ProcessDefinitionCaseDefinition | null = null;
+  public readonly startSelectionModalOpen$ = new BehaviorSubject<boolean>(false);
+
   private modalListenerAdded = false;
   private _cachedAssociatedProcessDocumentDefinitions: Array<ProcessDefinitionCaseDefinition> = [];
 
@@ -83,7 +85,7 @@ export class CaseListActionsComponent implements OnInit {
     const associatedProcessDocumentDefinitions = this._cachedAssociatedProcessDocumentDefinitions;
 
     if (associatedProcessDocumentDefinitions.length > 1) {
-      $('#startProcess').modal('show');
+      this.startSelectionModalOpen$.next(true);
     } else {
       this.selectedProcessDefinitionCaseDefinition = associatedProcessDocumentDefinitions[0];
       this.showStartProcessModal();
@@ -91,13 +93,9 @@ export class CaseListActionsComponent implements OnInit {
   }
 
   public selectProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
-    const modal = $('#startProcess');
-    if (!this.modalListenerAdded) {
-      modal.on('hidden.bs.modal', this.showStartProcessModal.bind(this));
-      this.modalListenerAdded = true;
-    }
-    this.selectedProcessDefinitionCaseDefinition = processDefinitionCaseDefinition;
-    modal.modal('hide');
+    this.selectedProcessDefinitionCaseDefinition = processDefinitionCaseDefinition[0];
+    this.startSelectionModalOpen$.next(false);
+    this.showStartProcessModal();
   }
 
   public onFormFlowComplete(): void {
@@ -119,6 +117,10 @@ export class CaseListActionsComponent implements OnInit {
       ],
       duration: CARBON_CONSTANTS.notificationDuration,
     });
+  }
+
+  public onCloseSelect(): void {
+    this.startSelectionModalOpen$.next(false);
   }
 
   private showStartProcessModal(): void {

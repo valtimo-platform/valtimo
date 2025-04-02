@@ -25,9 +25,8 @@
   } as obs"
   [open]="type !== 'closed'"
   size="sm"
-  (close)="onClose()"
 >
-  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1">
     <h3 cdsModalHeaderHeading>
       {{
         ('zgw.uploadFields.editModal.header' | translate) +
@@ -37,7 +36,7 @@
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent [cdsLayer]="1">
     <form [formGroup]="formGroup" class="uploadField-form">
       @if (key === 'taal') {
         <cds-combo-box
@@ -104,7 +103,7 @@
     </form>
   </section>
 
-  <cds-modal-footer>
+  <cds-modal-footer [cdsLayer]="1">
     <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled">
       {{ 'interface.cancel' | translate }}
     </button>

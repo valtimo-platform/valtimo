@@ -18,9 +18,8 @@
   valtimoCdsModal
   *ngIf="{selectedTabType: selectedTabType$ | async} as obs"
   [open]="open"
-  (close)="onCloseModal()"
 >
-  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()" [cdsLayer]="1">
     <h3 cdsModalHeaderHeading>
       {{
         !obs.selectedTabType
@@ -31,7 +30,7 @@
     </h3>
   </cds-modal-header>
 
-  <section [formGroup]="form" cdsModalContent class="valtimo-add-tab-modal__content">
+  <section [formGroup]="form" cdsModalContent class="valtimo-add-tab-modal__content" [cdsLayer]="1">
     <valtimo-tab-form
       *ngIf="obs.selectedTabType; else tabTypeSelection"
       [tabType]="obs.selectedTabType"
@@ -64,7 +63,7 @@
     </ng-template>
   </section>
 
-  <cds-modal-footer class="valtimo-add-tab-modal__footer">
+  <cds-modal-footer class="valtimo-add-tab-modal__footer" [cdsLayer]="1">
     <button class="valtimo-add-tab-modal__cancel" cdsButton="ghost" (click)="onCloseModal()">
       {{ 'interface.cancel' | translate }}
     </button>

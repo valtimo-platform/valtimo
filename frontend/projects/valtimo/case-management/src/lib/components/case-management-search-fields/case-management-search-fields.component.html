@@ -110,7 +110,7 @@
       </h3>
     </cds-modal-header>
 
-    <section cdsModalContent>
+    <section cdsModalContent [cdsLayer]="1">
       <v-form
         (valueChange)="formValueChange($event)"
         *ngIf="

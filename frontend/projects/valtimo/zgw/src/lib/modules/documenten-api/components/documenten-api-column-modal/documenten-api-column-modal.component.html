@@ -14,8 +14,8 @@
   ~ limitations under the License.
   -->
 
-<cds-modal valtimoCdsModal [open]="type !== 'closed'" size="sm" (close)="onClose()">
-  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()">
+<cds-modal valtimoCdsModal [open]="type !== 'closed'" size="sm">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1">
     <h3 cdsModalHeaderHeading>
       {{ (type === 'add' ? 'zgw.columns.add' : 'zgw.columns.edit') | translate }}
     </h3>
@@ -25,6 +25,7 @@
     class="valtimo-documenten-api-column-modal__content"
     cdsModalContent
     [formGroup]="formGroup"
+    [cdsLayer]="1"
   >
     <cds-dropdown
       formControlName="column"
@@ -47,7 +48,7 @@
     <cds-inline-notification [notificationObj]="notificationObj$ | async"></cds-inline-notification>
   </form>
 
-  <cds-modal-footer>
+  <cds-modal-footer [cdsLayer]="1">
     <button cdsButton="secondary" (click)="onClose()">
       {{ 'interface.cancel' | translate }}
     </button>

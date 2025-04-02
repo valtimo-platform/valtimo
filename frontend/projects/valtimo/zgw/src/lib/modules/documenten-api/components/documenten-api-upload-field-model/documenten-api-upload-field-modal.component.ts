@@ -36,6 +36,7 @@ import {
   CheckboxModule,
   ComboBoxModule,
   InputModule,
+  LayerModule,
   ListItem,
   ModalModule,
   ToggleModule,
@@ -62,6 +63,7 @@ import {DocumentService} from '@valtimo/document';
     ToggleModule,
     CheckboxModule,
     ComboBoxModule,
+    LayerModule,
   ],
 })
 export class DocumentenApiUploadFieldModalComponent implements OnDestroy {

@@ -27,18 +27,18 @@
   size="sm"
   (close)="onClose()"
 >
-  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1">
     <h3 cdsModalHeaderHeading>
       {{ obs.isAdd ? ('caseManagement.statuses.add' | translate) : '' }}
       {{ obs.isEdit ? ('caseManagement.statuses.edit' | translate) : '' }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent>
+  <section cdsModalContent [cdsLayer]="1">
     <ng-container *ngTemplateOutlet="statusForm; context: {obs: obs}"></ng-container>
   </section>
 
-  <cds-modal-footer>
+  <cds-modal-footer [cdsLayer]="1">
     <ng-container *ngTemplateOutlet="buttons; context: {obs: obs}"></ng-container>
   </cds-modal-footer>
 </cds-modal>

@@ -98,9 +98,11 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _completeDataSource: TableItem[][];
 
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
+
   private get _items(): CarbonListItem[] {
     return this._items$.getValue();
   }
+
   public get items(): CarbonListItem[] {
     return this._items;
   }
@@ -112,6 +114,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public currentOpenActionId: string | null = null;
 
   private readonly _fields$ = new BehaviorSubject<ColumnConfig[]>([]);
+
   @Input() set fields(value: ColumnConfig[]) {
     this._fields$.next(value);
   }
@@ -119,6 +122,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _tableTranslations$: BehaviorSubject<CarbonListTranslations> = new BehaviorSubject(
     DEFAULT_LIST_TRANSLATIONS
   );
+
   @Input() set tableTranslations(value: Partial<CarbonListTranslations>) {
     this._tableTranslations$.next({...DEFAULT_LIST_TRANSLATIONS, ...value});
   }

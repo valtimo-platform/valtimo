@@ -14,49 +14,27 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="associatedProcessDocumentDefinitions$ | async as associatedProcessDocumentDefinitions">
-  <div
-    class="modal fade"
-    id="startProcess"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby="startProcessLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title" id="startProcessLabel">
-            {{ 'dashboard.startProcess.title' | translate }}
-          </h3>
+<cds-modal
+  valtimoCdsModal
+  [open]="startSelectionModalOpen$ | async"
+  size="xs"
+  *ngIf="associatedProcessDocumentDefinitions$ | async as associatedProcessDocumentDefinitions"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()"
+    ><h3 cdsModalHeaderHeading>
+      {{ 'dashboard.startProcess.title' | translate }}
+    </h3>
+  </cds-modal-header>
 
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="table-responsive">
-            <table class="table m-0">
-              <tr
-                *ngFor="let processDocumentDefinition of associatedProcessDocumentDefinitions"
-                (click)="selectProcess(processDocumentDefinition)"
-                style="cursor: pointer"
-              >
-                <td>{{ processDocumentDefinition.processDefinitionName }}</td>
-              </tr>
-            </table>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">
-            {{ 'cta.close' | translate }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <section cdsModalContent class="start-modal-content" [cdsLayer]="1">
+    <cds-clickable-tile
+      *ngFor="let processDocumentDefinition of associatedProcessDocumentDefinitions"
+      (click)="selectProcess(processDocumentDefinition)"
+    >
+      {{ processDocumentDefinition.processName }}
+    </cds-clickable-tile>
+  </section>
+</cds-modal>
 
 <valtimo-case-process-start-modal
   #processStartModal
