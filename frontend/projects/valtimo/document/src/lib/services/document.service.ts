@@ -316,6 +316,14 @@ export class DocumentService {
     );
   }
 
+  public findProcessDefinitionCaseDefinitionsByProcessDefinitionKey(
+    processDefinitionKey: string
+  ): Observable<ProcessDefinitionCaseDefinition[]> {
+    return this.http.get<ProcessDefinitionCaseDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process-document/definition/process/${processDefinitionKey}`
+    );
+  }
+
   public findProcessDocumentDefinitionsByVersion(
     documentDefinitionName: string,
     version: number
@@ -474,7 +482,7 @@ export class DocumentService {
           }
         )
       : this.http.get<ProcessDefinitionCaseDefinition>(
-          `${this.valtimoEndpointUri}v1/process-instance/${processInstanceId}/case-process-link`,
+          `${this.valtimoEndpointUri}v1/process-instance/${processInstanceId}/case-process-link`
         );
   }
 
