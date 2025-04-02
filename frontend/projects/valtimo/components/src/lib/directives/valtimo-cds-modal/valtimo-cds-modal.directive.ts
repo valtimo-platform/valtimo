@@ -2,7 +2,7 @@
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
+ * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -74,6 +74,31 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       'hidden',
       RendererStyleFlags2.Important
     );
+
+    this.preventModalCloseButtonTooltip();
+  }
+
+  private preventModalCloseButtonTooltip(): void {
+    const modalElement = this.elementRef.nativeElement as HTMLElement;
+    const closeButton = modalElement.querySelector('.cds--modal-close') as HTMLElement;
+
+    let attempts = 0;
+    const maxAttempts = 100;
+
+    const blurIfFocused = () => {
+      if (!closeButton || attempts >= maxAttempts) {
+        return;
+      }
+
+      if (this.document.activeElement === closeButton) {
+        closeButton.blur();
+      } else {
+        attempts++;
+        requestAnimationFrame(blurIfFocused);
+      }
+    };
+
+    requestAnimationFrame(blurIfFocused);
   }
 
   private removeStyle(): void {

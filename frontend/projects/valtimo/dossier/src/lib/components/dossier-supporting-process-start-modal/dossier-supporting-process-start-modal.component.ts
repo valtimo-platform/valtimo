@@ -31,7 +31,6 @@ import {
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
-  ModalComponent,
   ValtimoFormioOptions,
 } from '@valtimo/components';
 import {ProcessDocumentDefinition} from '@valtimo/document';
@@ -55,7 +54,6 @@ import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 })
 export class DossierSupportingProcessStartModalComponent {
   @ViewChild('form', {static: false}) form: FormioComponent;
-  @ViewChild('supportingProcessStartModal', {static: false}) modal: ModalComponent;
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;
   @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
@@ -78,6 +76,7 @@ export class DossierSupportingProcessStartModalComponent {
   public readonly processDefinitionId$ = new BehaviorSubject<string>(undefined);
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly documentId$ = new BehaviorSubject<string>(undefined);
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
   >({});
@@ -119,15 +118,15 @@ export class DossierSupportingProcessStartModalComponent {
             case 'form-view-model':
               this.formDefinition$.next(startProcessResult.properties.formDefinition);
               this.setFormViewModelComponent(startProcessResult.properties.formName);
-              this.modal.show();
+              this.openCdsModal();
               break;
             case 'ui-component':
               this.setFormCustomComponent(startProcessResult.properties.componentKey);
               this.isUIComponent = true;
-              this.modal.show();
+              this.openCdsModal();
               break;
           }
-          this.modal.show();
+          this.openCdsModal();
         }
       });
   }
@@ -175,16 +174,20 @@ export class DossierSupportingProcessStartModalComponent {
   }
 
   public formSubmitted(): void {
-    this.modal.hide();
+    this.closeCdsModal();
     this.formSubmit.emit();
     this.formDefinition$.next(null);
   }
 
   public gotoFormLinkScreen(): void {
-    this.modal.hide();
+    this.closeCdsModal();
     this.router.navigate(['process-links'], {
       queryParams: {process: this.processDefinitionKey$.getValue()},
     });
+  }
+
+  public onCloseSelect(): void {
+    this.closeCdsModal();
   }
 
   private setFormViewModelComponent(formName: string): void {
@@ -239,5 +242,13 @@ export class DossierSupportingProcessStartModalComponent {
         this.formSubmitted();
       });
     });
+  }
+
+  private closeCdsModal(): void {
+    this.modalOpen$.next(false);
+  }
+
+  private openCdsModal(): void {
+    this.modalOpen$.next(true);
   }
 }

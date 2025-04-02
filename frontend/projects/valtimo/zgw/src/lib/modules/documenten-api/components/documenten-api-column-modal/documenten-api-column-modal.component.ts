@@ -29,6 +29,7 @@ import {
   ButtonModule,
   DropdownModule,
   InputModule,
+  LayerModule,
   ListItem,
   ModalModule,
   NotificationContent,
@@ -60,6 +61,7 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
     DropdownModule,
     RadioModule,
     NotificationModule,
+    LayerModule,
   ],
 })
 export class DocumentenApiColumnModalComponent implements OnInit, OnDestroy {

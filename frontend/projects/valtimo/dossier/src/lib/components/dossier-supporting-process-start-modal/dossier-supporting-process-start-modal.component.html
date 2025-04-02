@@ -14,44 +14,40 @@
   ~ limitations under the License.
   -->
 
-<valtimo-modal
-  #supportingProcessStartModal
-  elementId="supportingProcessStartModal"
-  [title]="
-    (processDefinitionKey$ | async | translate) !== (processDefinitionKey$ | async)
-      ? (processDefinitionKey$ | async | translate)
-      : (processName$ | async)
-  "
->
-  <div body *ngIf="!isFormViewModel && formDefinition$ | async as formDefinition">
-    <valtimo-form-io
-      #form
-      [submission]="submission$ | async"
-      [form]="formDefinition"
-      [options]="options$ | async"
-      (submit)="onSubmit($event)"
-    >
-    </valtimo-form-io>
-  </div>
-  <div body *ngIf="formFlowInstanceId$ | async as formFlowInstanceId">
-    <valtimo-form-flow
-      #formFlow
-      [formFlowInstanceId]="formFlowInstanceId"
-      (formFlowComplete)="formSubmitted()"
-    ></valtimo-form-flow>
-  </div>
-  <div body>
+<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()" [cdsLayer]="1"
+    ><h3 cdsModalHeaderHeading>
+      {{
+        (processDefinitionKey$ | async | translate) !== (processDefinitionKey$ | async)
+          ? (processDefinitionKey$ | async | translate)
+          : (processName$ | async)
+      }}
+    </h3>
+  </cds-modal-header>
+
+  <section cdsModalContent [cdsLayer]="1">
     <ng-template #formViewModelComponent></ng-template>
     <ng-template #formCustomComponent></ng-template>
-  </div>
 
-  <ng-container
-    *ngIf="{
-      formDefinition: formDefinition$ | async,
-      formFlowInstanceId: formFlowInstanceId$ | async,
-    } as obs"
-  >
-    <div body *ngIf="!obs.formDefinition && !obs.formFlowInstanceId && !isUIComponent">
+    @if (!isFormViewModel && (formDefinition$ | async)) {
+      <valtimo-form-io
+        #form
+        [submission]="submission$ | async"
+        [form]="formDefinition$ | async"
+        [options]="options$ | async"
+        (submit)="onSubmit($event)"
+      ></valtimo-form-io>
+    }
+
+    @if (formFlowInstanceId$ | async) {
+      <valtimo-form-flow
+        #formFlow
+        [formFlowInstanceId]="formFlowInstanceId$ | async"
+        (formFlowComplete)="formSubmitted()"
+      ></valtimo-form-flow>
+    }
+
+    @if (!(formDefinition$ | async) && !(formFlowInstanceId$ | async) && !isUIComponent) {
       <div class="bg-warning text-black mb-0 p-3 text-center">
         {{
           isAdmin
@@ -69,6 +65,6 @@
           {{ 'formManagement.gotoProcessLinksButton' | translate }}
         </button>
       </div>
-    </div>
-  </ng-container>
-</valtimo-modal>
+    }
+  </section>
+</cds-modal>

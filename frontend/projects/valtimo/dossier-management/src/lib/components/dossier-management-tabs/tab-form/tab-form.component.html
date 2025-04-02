@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<form *ngIf="form" [formGroup]="form" class="valtimo-tab-form-modal">
+<form *ngIf="form" [formGroup]="form" class="valtimo-tab-form-modal" [cdsLayer]="1">
   <cds-label>
     {{ 'dossierManagement.tabManagement.addModal.tabNameLabel' | translate }}
 
@@ -35,6 +35,7 @@
 
   <cds-combo-box
     *ngIf="tabType !== 'widgets'"
+    [cdsLayer]="1"
     [dropUp]="false"
     formControlName="contentKey"
     [items]="listItems$ | async"
@@ -43,7 +44,7 @@
     (search)="onSearch($event)"
     (selected)="onSelected($event)"
   >
-    <cds-dropdown-list></cds-dropdown-list>
+    <cds-dropdown-list [cdsLayer]="1"></cds-dropdown-list>
   </cds-combo-box>
 
   <cds-toggle

@@ -50,6 +50,7 @@ import {
   FileUploaderModule,
   IconModule,
   InputModule as CarbonInputModule,
+  LayerModule,
   LinkModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
@@ -164,6 +165,7 @@ import {DossierManagementCaseTagComponent} from './components/dossier-management
     DossierManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
     NumberModule,
+    LayerModule,
   ],
   providers: [TabManagementService],
 })

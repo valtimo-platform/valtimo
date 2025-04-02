@@ -36,8 +36,10 @@ export function registerCustomFormioComponent(
 ): void {
   registerCustomTag(options.selector, injector);
 
-  const complexCustomComponent = createCustomElement(angularComponent, {injector});
-  customElements.define(options.selector, complexCustomComponent);
+  if (!customElements.get(options.selector)) {
+    const complexCustomComponent = createCustomElement(angularComponent, {injector});
+    customElements.define(options.selector, complexCustomComponent);
+  }
 
   Components.setComponent(options.type, createCustomFormioComponent(options));
 }
@@ -50,8 +52,10 @@ export function registerCustomFormioComponentWithClass(
 ): void {
   registerCustomTag(options.selector, injector);
 
-  const complexCustomComponent = createCustomElement(angularComponent, {injector});
-  customElements.define(options.selector, complexCustomComponent);
+  if (!customElements.get(options.selector)) {
+    const complexCustomComponent = createCustomElement(angularComponent, {injector});
+    customElements.define(options.selector, complexCustomComponent);
+  }
 
   Components.setComponent(options.type, formioClass);
 }
