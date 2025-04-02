@@ -138,7 +138,7 @@ export class DossierManagementWidgetTabComponent
   }
 
   public ngOnInit(): void {
-    this.pageTitleService.disableReset();
+    this.pageTitleService.enableReset();
   }
 
   public ngAfterViewInit(): void {
