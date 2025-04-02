@@ -59,7 +59,7 @@ import {ListColumnModal} from '../../models';
 })
 export class DossierManagementListColumnsComponent implements AfterViewInit {
   readonly downloadName$ = new BehaviorSubject<string>('');
-  readonly downloadUrl$ = new BehaviorSubject<SafeUrl>(undefined);
+  readonly downloadUrl$ = new BehaviorSubject<SafeUrl | undefined>(undefined);
 
   public readonly actionItems: ActionItem[] = [
     {
@@ -205,6 +205,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       key: this.INVALID_KEY,
     }),
     enum: new FormControl([]),
+    tagAmount: new FormControl(1),
   });
 
   readonly disableDefaultSort$ = combineLatest([
@@ -237,6 +238,11 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       }
     }),
     startWith(false)
+  );
+
+  readonly showTagAmount$ = this.formGroup.valueChanges.pipe(
+    map(formValues => formValues.displayType?.key === this.DISPLAY_TYPES[6]),
+    startWith(this.formGroup.value.displayType?.key === this.DISPLAY_TYPES[6] ? true : false)
   );
 
   readonly showEnum$ = this.formGroup.valueChanges.pipe(
@@ -313,7 +319,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
   readonly validKey$ = combineLatest([this.formGroup.valueChanges, this.currentModalType$]).pipe(
     map(([formValues, currentModalType]) => {
       const existingKeys = this.cachedCaseListColumns.map(column => column.key);
-      return currentModalType === 'create' ? !existingKeys.includes(formValues.key) : true;
+      return currentModalType === 'create' ? !existingKeys.includes(formValues.key ?? '') : true;
     }),
     startWith(false)
   );
@@ -325,7 +331,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
           formValues.displayType?.key !== this.INVALID_KEY &&
           formValues.path &&
           validKey &&
-          (formValues.displayType.key === 'enum' ? formValues.enum?.length > 0 : true)
+          (formValues?.displayType?.key === 'enum' ? formValues.enum?.length > 0 : true) &&
+          (formValues?.displayType?.key === 'tags' ? formValues.tagAmount > 0 : true)
         )
     ),
     startWith(false)
@@ -335,7 +342,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   readonly deleteRowKey$ = new BehaviorSubject<string>('');
 
-  readonly defaultEnumValues$ = new BehaviorSubject<MultiInputValues>(undefined);
+  readonly defaultEnumValues$ = new BehaviorSubject<MultiInputValues | undefined>(undefined);
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
@@ -446,15 +453,16 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
         const column = this.cachedCaseListColumns.find(
           cachedColumn => cachedColumn.key === row.key
         );
-        const viewTypeItem = viewTypeItems.find(item => item.key === column.displayType.type);
+        const viewTypeItem = viewTypeItems.find(item => item.key === column?.displayType.type);
         const viewTypeItemIndex = viewTypeItems.findIndex(
-          item => item.key === column.displayType.type
+          item => item.key === column?.displayType.type
         );
-        const sortItem = sortItems.find(item => item.key === column.defaultSort);
-        const sortItemIndex = sortItems.findIndex(item => item.key === column.defaultSort);
+        const sortItem = sortItems.find(item => item.key === column?.defaultSort);
+        const sortItemIndex = sortItems.findIndex(item => item.key === column?.defaultSort);
         const enumValues = column?.displayType?.displayTypeParameters?.enum;
         const mappedEnumValues: MultiInputValues = [];
         const columnDateFormat = column?.displayType?.displayTypeParameters?.dateFormat;
+        const tagAmount = column?.displayType?.displayTypeParameters?.tagAmount;
 
         this.selectedViewTypeItemIndex$.next(viewTypeItemIndex);
 
@@ -470,12 +478,11 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
         } else {
           this.defaultEnumValues$.next([{key: '', value: ''}]);
         }
-
         this.formGroup.patchValue({
-          key: column.key,
-          title: column.title,
-          path: column.path,
-          sortable: column.sortable,
+          key: column?.key,
+          title: column?.title,
+          path: column?.path,
+          sortable: column?.sortable,
           // @ts-ignore
           displayType: {...viewTypeItem},
           // @ts-ignore
@@ -483,10 +490,19 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
           ...(columnDateFormat && {
             dateFormat: columnDateFormat,
           }),
+          ...(tagAmount && {
+            tagAmount: tagAmount,
+          }),
         });
 
         this.openModal('edit');
       });
+  }
+
+  public selectedDisplayType(event: ListItem): void {
+    if (event.item.selected && event.item.key === 'tags') {
+      this.formGroup.patchValue({sortable: undefined, defaultSort: undefined});
+    }
   }
 
   private updateCaseListColumns(
@@ -510,7 +526,6 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   private addColumn(): void {
     const formValue = this.formGroup.value;
-
     this.documentDefinitionName$.pipe(take(1)).subscribe(docDefName => {
       this.documentService
         .postCaseListForManagement(docDefName, this.mapFormValuesToColumn(formValue))
@@ -529,6 +544,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
   private getDisplayTypeParametersView(displayTypeParameters: DisplayTypeParameters): string {
     if (displayTypeParameters?.dateFormat) {
       return displayTypeParameters.dateFormat;
+    } else if (displayTypeParameters?.tagAmount) {
+      return displayTypeParameters.tagAmount.toString();
     } else if (displayTypeParameters?.enum) {
       return Object.keys(displayTypeParameters.enum).reduce((acc, curr) => {
         const keyValuePairString = `${curr}: ${displayTypeParameters.enum[curr]}`;
@@ -596,6 +613,10 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
   private enableInput(): void {
     this.disableInput$.next(false);
     this.formGroup.enable();
+    if (this.formGroup.value.displayType?.key === 'tags') {
+      this.formGroup.controls.defaultSort.disable();
+      this.formGroup.controls.sortable.disable();
+    }
   }
 
   private refreshCaseListColumns(): void {
@@ -629,6 +650,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       displayType: {
         type: formValue.displayType?.key,
         displayTypeParameters: {
+          ...(formValue.tagAmount && {tagAmount: formValue.tagAmount}),
           ...(formValue.dateFormat && {dateFormat: formValue.dateFormat}),
           ...(Array.isArray(formValue.enum) &&
             formValue.enum.length > 0 && {

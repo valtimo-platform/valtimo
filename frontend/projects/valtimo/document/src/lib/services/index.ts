@@ -17,3 +17,4 @@
 export * from './case-status.service';
 export * from './document.service';
 export * from './file-sort.service';
+export * from './tags.service';

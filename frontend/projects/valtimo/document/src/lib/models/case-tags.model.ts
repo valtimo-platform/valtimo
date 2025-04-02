@@ -17,19 +17,13 @@
 import {TagType} from 'carbon-components-angular';
 import {TagColor} from '@valtimo/config';
 
-class InternalCaseStatusUtils {
-  static getTagTypeFromInternalCaseStatusColor(internalCaseStatusColor: TagColor): TagType {
-    switch (internalCaseStatusColor) {
-      case TagColor.HighContrast:
-        return 'high-contrast';
-      case TagColor.CoolGray:
-        return 'cool-gray';
-      case TagColor.WarmGray:
-        return 'warm-gray';
-      default:
-        return internalCaseStatusColor?.toLowerCase() as TagType;
-    }
-  }
+interface CaseTag {
+  key: string;
+  title: string;
+  color: TagColor;
+  documentDefinitionName?: string;
+  order?: number;
+  tagType?: TagType;
 }
 
-export {InternalCaseStatusUtils};
+export {CaseTag};

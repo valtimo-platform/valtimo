@@ -465,7 +465,10 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
               });
             case ViewType.TAGS: {
               return new TableItem({
-                data: this.resolveTagObject(item, field.key),
+                data: {
+                  tags: this.resolveTagObject(item, field.key),
+                  tagAmount: field?.tagAmount || 1,
+                },
                 template: this.tagTemplate,
               });
             }

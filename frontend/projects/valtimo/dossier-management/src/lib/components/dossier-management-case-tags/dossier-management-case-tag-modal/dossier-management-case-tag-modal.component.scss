@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,22 +14,39 @@
  * limitations under the License.
  */
 
-import {TagType} from 'carbon-components-angular';
-import {TagColor} from '@valtimo/config';
+.case-tag-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-class InternalCaseStatusUtils {
-  static getTagTypeFromInternalCaseStatusColor(internalCaseStatusColor: TagColor): TagType {
-    switch (internalCaseStatusColor) {
-      case TagColor.HighContrast:
-        return 'high-contrast';
-      case TagColor.CoolGray:
-        return 'cool-gray';
-      case TagColor.WarmGray:
-        return 'warm-gray';
-      default:
-        return internalCaseStatusColor?.toLowerCase() as TagType;
-    }
+.edit-key-input {
+  height: 40px;
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  gap: 16px;
+  align-items: flex-end;
+
+  input:read-only {
+    color: var(--cds-text-disabled);
   }
 }
 
-export {InternalCaseStatusUtils};
+::ng-deep .horizontal-inputs {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+
+  .cds--label {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.case-tag-margins {
+  margin-top: -4px;
+  margin-left: 2px;
+}

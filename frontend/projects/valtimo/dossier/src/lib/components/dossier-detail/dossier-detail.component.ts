@@ -46,6 +46,8 @@ import {
   InternalCaseStatus,
   InternalCaseStatusUtils,
   ProcessDocumentDefinition,
+  CaseTag,
+  CaseTagsUtils,
 } from '@valtimo/document';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
@@ -135,6 +137,8 @@ export class DossierDetailComponent
     filter(key => !!key)
   );
 
+  public readonly _caseTags$ = new BehaviorSubject<CaseTag[] | null>(null);
+
   public readonly showDeleteModal$: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   public readonly canView$: Observable<boolean> = this.route.paramMap.pipe(
@@ -158,9 +162,11 @@ export class DossierDetailComponent
     ),
     tap((document: ValtimoDocument | null) => {
       if (document) {
+        console.log('document', document);
         this.assigneeId$.next(document.assigneeId);
         this.document = document;
         this._caseStatusKey$.next(document?.internalStatus || 'NOT_AVAILABLE');
+        this._caseTags$.next(document?.caseTags || null);
 
         if (
           this.configService.config.customDossierHeader?.hasOwnProperty(
@@ -200,6 +206,19 @@ export class DossierDetailComponent
           }
       )
     );
+
+  public readonly caseTags$: Observable<CaseTag[] | undefined> = this.documentDefinitionName$.pipe(
+    filter(documentDefinitionName => !!documentDefinitionName),
+    switchMap(documentDefinitionName => this._caseTags$),
+    map(
+      tag =>
+        tag &&
+        tag.map(caseTag => ({
+          ...caseTag,
+          tagType: CaseTagsUtils.getTagTypeFromCaseTagColor(caseTag.color),
+        }))
+    )
+  );
 
   public readonly userId$: Observable<string | undefined> = of(
     this.keyCloakService.isLoggedIn()

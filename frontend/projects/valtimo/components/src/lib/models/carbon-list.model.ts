@@ -77,6 +77,7 @@ interface ColumnConfig extends ListField {
   template?: TemplateRef<any>;
   templateData?: object;
   tooltipCharLimit?: number;
+  tagAmount?: number;
 }
 
 enum MoveRowDirection {
@@ -104,6 +105,7 @@ interface ListField {
   viewType?: string;
   default?: string | boolean;
   sortable?: boolean;
+  tagAmount?: number;
 }
 
 interface CarbonListNoResultsMessage {

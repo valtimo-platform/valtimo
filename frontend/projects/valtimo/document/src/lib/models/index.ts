@@ -21,3 +21,4 @@ export * from './advanced-document-search-request';
 export * from './document-search-request';
 export * from './internal-case-status.model';
 export * from './process-document-definition-search.model';
+export * from './case-tags.model';
