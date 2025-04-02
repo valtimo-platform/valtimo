@@ -52,6 +52,7 @@ import {
   TimelineModule,
   TitleModule,
   UploaderModule,
+  ValtimoCdsModalDirectiveModule,
   ValtimoCdsOverflowButtonDirectiveModule,
   VModalModule,
   WidgetModule,
@@ -67,12 +68,14 @@ import {
   DialogModule,
   DropdownModule,
   IconModule,
+  LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
   SelectModule as CarbonSelectModule,
   SkeletonModule,
   TabsModule,
   TagModule,
+  TilesModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {DossierAssignUserComponent} from './components/dossier-assign-user/dossier-assign-user.component';
@@ -191,6 +194,9 @@ export type TabsFactory = () => Map<string, object>;
     DossierDetailTaskListComponent,
     DossierDetailsTaskDetailComponent,
     AngularSplitModule,
+    ValtimoCdsModalDirectiveModule,
+    TilesModule,
+    LayerModule,
   ],
   exports: [DossierListComponent, DossierDetailComponent, DossierProcessStartModalComponent],
 })

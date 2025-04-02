@@ -30,16 +30,14 @@ import {
   ButtonModule,
   DropdownModule,
   InputModule,
+  LayerModule,
   ModalModule,
   TagModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
-import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
-import {Utils} from 'formiojs';
-import getValue = Utils.getValue;
 
 @Component({
   selector: 'valtimo-documenten-api-tag-modal',
@@ -56,6 +54,7 @@ import getValue = Utils.getValue;
     ButtonModule,
     DropdownModule,
     ToggleModule,
+    LayerModule,
   ],
 })
 export class DocumentenApiTagModalComponent implements OnDestroy {

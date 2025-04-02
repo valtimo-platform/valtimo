@@ -136,7 +136,7 @@
     [open]="modalObs.show"
     size="sm"
   >
-    <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()" [cdsLayer]="1">
       <h3 cdsModalHeaderHeading>
         {{
           modalObs.type === 'create'
@@ -145,7 +145,8 @@
         }}
       </h3>
     </cds-modal-header>
-    <section cdsModalContent>
+
+    <section cdsModalContent [cdsLayer]="1">
       <ng-container *ngTemplateOutlet="modalContent; context: {modalObs: modalObs}"></ng-container>
     </section>
     <ng-container *ngTemplateOutlet="modalFooter; context: {modalObs: modalObs}"></ng-container>
@@ -282,7 +283,7 @@
 </ng-template>
 
 <ng-template #modalFooter let-modalObs="modalObs">
-  <cds-modal-footer>
+  <cds-modal-footer [cdsLayer]="1">
     <ng-container>
       <button
         cdsButton="secondary"

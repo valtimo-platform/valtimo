@@ -50,6 +50,7 @@ import {
   FileUploaderModule,
   IconModule,
   InputModule as CarbonInputModule,
+  LayerModule,
   LinkModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
@@ -158,6 +159,7 @@ import {DossierManagementWidgetsEditorComponent} from './components/dossier-mana
     TooltipModule,
     DossierManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
+    LayerModule,
   ],
   providers: [TabManagementService],
 })

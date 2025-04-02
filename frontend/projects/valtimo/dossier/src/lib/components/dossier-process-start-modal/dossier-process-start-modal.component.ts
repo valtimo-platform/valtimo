@@ -44,7 +44,6 @@ import {
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
-  ModalComponent,
   ValtimoFormioOptions,
 } from '@valtimo/components';
 import {FormioBeforeSubmit} from '@formio/angular/formio.common';
@@ -53,9 +52,7 @@ import {UserProviderService} from '@valtimo/security';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {DossierListService, StartModalService} from '../../services';
-import {ConfigService} from '@valtimo/config';
-import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/config';
-import {FormViewModel} from '@valtimo/config';
+import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 import {BehaviorSubject, Subscription} from 'rxjs';
 
 @Component({
@@ -81,13 +78,14 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   public isFormViewModel = false;
   public isUIComponent = false;
   @ViewChild('form', {static: false}) form: FormioComponent;
-  @ViewChild('processStartModal', {static: false}) modal: ModalComponent;
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;
   @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
   public formCustomComponentDynamicContainer: ViewContainerRef;
   @Output() formFlowComplete = new EventEmitter();
   @Output() noProcessLinked = new EventEmitter();
+
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
   private _subscriptions = new Subscription();
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
@@ -149,12 +147,12 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
               this.formDefinition = startProcessResult.properties.prefilledForm;
               this.processLinkId = startProcessResult.processLinkId;
               this.isFormViewModel = false;
-              this.modal.show();
+              this.openCdsModal();
               break;
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
               this.isFormViewModel = false;
-              this.modal.show();
+              this.openCdsModal();
               break;
             case 'form-view-model':
               this.formDefinition = startProcessResult.properties.formDefinition;
@@ -162,7 +160,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
               this.processLinkId = startProcessResult.processLinkId;
               this.isFormViewModel = true;
               this.setFormViewModelComponent();
-              this.modal.show();
+              this.openCdsModal();
               break;
             case 'url':
               this.processLinkId = startProcessResult.processLinkId;
@@ -185,7 +183,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
             case 'ui-component':
               this.setFormCustomComponent(startProcessResult.properties.componentKey);
               this.isUIComponent = true;
-              this.modal.show();
+              this.openCdsModal();
               break;
           }
         } else {
@@ -195,7 +193,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   public gotoProcessLinkScreen(): void {
-    this.modal.hide();
+    this.closeCdsModal();
     this.router.navigate(['process-links'], {queryParams: {process: this.processDefinitionKey}});
   }
 
@@ -235,7 +233,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
 
   public formFlowSubmitted(): void {
     this.formFlowComplete.emit(null);
-    this.modal.hide();
+    this.closeCdsModal();
   }
 
   public isUserAdmin(): void {
@@ -249,8 +247,12 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
     );
   }
 
+  public onCloseSelect(): void {
+    this.closeCdsModal();
+  }
+
   private submitCompleted(formSubmissionResult: FormSubmissionResult): void {
-    this.modal.hide();
+    this.closeCdsModal();
     this.permissionService
       .requestPermission(CAN_VIEW_CASE_PERMISSION, {
         resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
@@ -284,7 +286,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       formViewModelComponent.instance.formSubmit.subscribe(() => {
         this.listService.forceRefresh();
-        this.modal.hide();
+        this.closeCdsModal();
       })
     );
   }
@@ -302,8 +304,16 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
       renderedComponent.instance.documentDefinitionName = this.documentDefinitionName;
 
       renderedComponent.instance.submittedEvent.subscribe(() => {
-        this.modal.hide();
+        this.closeCdsModal();
       });
     });
+  }
+
+  private openCdsModal(): void {
+    this.modalOpen$.next(true);
+  }
+
+  private closeCdsModal(): void {
+    this.modalOpen$.next(false);
   }
 }

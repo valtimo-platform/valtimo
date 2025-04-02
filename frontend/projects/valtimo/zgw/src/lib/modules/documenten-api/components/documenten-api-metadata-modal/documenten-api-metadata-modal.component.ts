@@ -68,6 +68,7 @@ import {
   DropdownModule,
   IconModule,
   InputModule as CarbonInputModule,
+  LayerModule,
   ListItem,
   ModalModule,
   RadioModule,
@@ -102,6 +103,7 @@ import {DocumentenApiVersionService} from '../../services';
     TooltipModule,
     TranslateModule,
     VModalModule,
+    LayerModule,
   ],
 })
 export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {

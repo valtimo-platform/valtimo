@@ -60,3 +60,7 @@ Thumbs.db
 /.git
 
 /.nx
+
+# rebuild temp files
+
+.rebuilding-*

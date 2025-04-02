@@ -17,6 +17,7 @@
 <ng-container *ngIf="loading">
   <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
 </ng-container>
+
 <ng-container *ngIf="!loading">
   <cds-accordion>
     <cds-accordion-item
@@ -44,6 +45,7 @@
         *ngIf="!vars.noSearchFields"
         class="search-fields-container"
         [ngClass]="{'search-fields-container--hidden': (expanded$ | async) === false}"
+        [cdsLayer]="1"
       >
         <ng-content></ng-content>
 
@@ -235,7 +237,6 @@
     (keyup.enter)="search()"
     [defaultValue]="values[searchField.key]"
     [disabled]="inputDisabled"
-    [carbonTheme]="carbonTheme"
   >
   </v-input>
 </ng-template>
@@ -263,7 +264,6 @@
     (keyup.enter)="search()"
     [defaultValue]="values[searchField.key]"
     [disabled]="inputDisabled"
-    [carbonTheme]="carbonTheme"
   >
   </v-input>
 </ng-template>
@@ -288,7 +288,6 @@
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
     [disabled]="inputDisabled"
-    [carbonTheme]="carbonTheme"
   ></v-date-picker>
 </ng-template>
 
@@ -318,7 +317,6 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
-        [carbonTheme]="carbonTheme"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -330,7 +328,6 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
-        [carbonTheme]="carbonTheme"
       >
       </v-input>
     </v-form>
@@ -365,7 +362,6 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
-        [carbonTheme]="carbonTheme"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
@@ -379,7 +375,6 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
-        [carbonTheme]="carbonTheme"
       >
       </v-input>
     </v-form>
@@ -411,7 +406,6 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
-        [carbonTheme]="carbonTheme"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -421,7 +415,6 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
-        [carbonTheme]="carbonTheme"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -452,7 +445,6 @@
       (keyup.enter)="search()"
       [defaultSelectionId]="getDefaultBooleanSelectionId(values, searchField.key)"
       [disabled]="inputDisabled"
-      [carbonTheme]="carbonTheme"
       [appendInline]="false"
     ></v-select>
   </ng-container>
@@ -479,7 +471,6 @@
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
     [disabled]="inputDisabled"
-    [carbonTheme]="carbonTheme"
   ></v-date-picker>
 </ng-template>
 
@@ -509,7 +500,6 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
-        [carbonTheme]="carbonTheme"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -520,7 +510,6 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
-        [carbonTheme]="carbonTheme"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -557,7 +546,6 @@
       (keyup.enter)="search()"
       [defaultSelectionId]="values[searchField.key]"
       [disabled]="inputDisabled"
-      [carbonTheme]="carbonTheme"
       [appendInline]="false"
     ></v-select>
   </ng-container>
@@ -595,7 +583,6 @@
       (keyup.enter)="search()"
       [defaultSelectionIds]="values[searchField.key]"
       [disabled]="inputDisabled"
-      [carbonTheme]="carbonTheme"
       [appendInline]="false"
     ></v-select>
   </ng-container>

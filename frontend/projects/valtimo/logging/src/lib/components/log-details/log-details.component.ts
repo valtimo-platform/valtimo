@@ -18,13 +18,14 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@
 import {TranslateModule} from '@ngx-translate/core';
 import {ModalModule} from 'carbon-components-angular';
 import {LoggingEvent} from '../../models';
+import {ValtimoCdsModalDirectiveModule} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-log-details',
   templateUrl: './log-details.component.html',
   styleUrl: './log-details.component.scss',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ModalModule],
+  imports: [CommonModule, TranslateModule, ModalModule, ValtimoCdsModalDirectiveModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogDetailsComponent {
