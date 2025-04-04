@@ -43,3 +43,14 @@ export interface ModifyFormDefinitionRequest {
   name: string;
   formDefinition: string;
 }
+
+export interface QueryFormsResponse {
+  content: {readonly: boolean; id: string; formDefinition: FormioForm}[];
+  first: boolean;
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  numberOfElements: number;
+  size: number;
+  number: number;
+}

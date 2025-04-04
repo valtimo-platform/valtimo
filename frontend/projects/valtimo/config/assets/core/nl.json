@@ -497,6 +497,7 @@
     "deploy": "Deploy",
     "duplicate": "Dupliceren",
     "readOnly": "Alleen-lezen",
+    "add": "Formulier toevoegen",
     "tabs": {
       "formBuilder": "Formulier editor",
       "jsonEditor": "JSON editor",
@@ -510,6 +511,21 @@
       "error": "Voortgang kon niet worden opgeslagen",
       "lastSavedBy": "Laatst opgeslagen door",
       "on": "op"
+    },
+    "notifications": {
+      "created": "Nieuw formulier aangemaakt",
+      "deleted": "Formulier verwijderd",
+      "deletionError": "Fout bij het verwijderen van het formulier",
+      "deployed": "Formulier gedeployed",
+      "deploymentError": "Fout bij het deployen van het formulier"
+    },
+    "upload": {
+      "modalTitle": "Formulierdefinitie uploaden",
+      "title": "Bestand uploaden",
+      "description": "Alleen formulierdefinitiebestanden worden ondersteund.",
+      "buttonText": "Bestand selecteren",
+      "success": "Upload succesvol",
+      "failure": "Upload mislukt"
     }
   },
   "caseManagement": {
@@ -573,7 +589,9 @@
             "offText": "Nee"
           }
         }
-      }
+      },
+      "zgw": "ZGW",
+      "forms": "Formulieren"
     },
     "tabManagement": {
       "columns": {

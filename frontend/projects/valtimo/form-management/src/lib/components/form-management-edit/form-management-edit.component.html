@@ -19,58 +19,21 @@
     jsonFormDefinition: jsonFormDefinition$ | async,
     jsonOutput: jsonOutput$ | async,
     compactMode: compactMode$ | async,
+    context: context$ | async,
   } as obs"
 >
   @if (obs.formDefinition) {
     <ng-container renderInPageHeader [fullWidth]="true">
       <ng-template>
-        <div
-          class="valtimo-form-management-edit__header-container"
-          [ngClass]="{'--compact': obs.compactMode}"
-        >
-          @if (obs.formDefinition.readOnly) {
-            <cds-tag size="sm" type="blue">{{ 'formManagement.readOnly' | translate }}</cds-tag>
-          }
-
-          <div class="valtimo-form-management-edit__header">
-            <cds-overflow-menu>
-              <cds-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)">
-                {{ 'Download' | translate }}
-              </cds-overflow-menu-option>
-
-              <cds-overflow-menu-option
-                [disabled]="obs.formDefinition.readOnly"
-                (selected)="showUploadModal()"
-              >
-                {{ 'Upload' | translate }}
-              </cds-overflow-menu-option>
-
-              <cds-overflow-menu-option
-                [disabled]="obs.formDefinition.readOnly"
-                (selected)="delete(obs.formDefinition)"
-              >
-                {{ 'interface.delete' | translate }}
-              </cds-overflow-menu-option>
-
-              <cds-overflow-menu-option (selected)="showDuplicateModal(obs.formDefinition)">
-                {{ 'formManagement.duplicate' | translate }}
-              </cds-overflow-menu-option>
-            </cds-overflow-menu>
-
-            <button
-              cdsButton="primary"
-              [disabled]="obs.formDefinition.readOnly || !validJsonChange"
-              [size]="obs.compactMode ? 'sm' : 'md'"
-              (click)="modifyFormDefinition(obs.formDefinition)"
-            >
-              {{ 'interface.save' | translate }}
-
-              <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
-            </button>
-          </div>
-        </div>
+        @if (obs.context === 'independent') {
+          <ng-container *ngTemplateOutlet="actions; context: {obs: obs}"></ng-container>
+        }
       </ng-template>
     </ng-container>
+
+    <div *ngIf="obs.context === 'case'" class="valtimo-form-management-edit__case-header">
+      <ng-container *ngTemplateOutlet="actions; context: {obs: obs}"></ng-container>
+    </div>
 
     <cds-tabs type="contained">
       <cds-tab [heading]="TABS.BUILDER | translate" (selected)="onSelectedTab(TABS.BUILDER)">
@@ -143,7 +106,67 @@
       (validEvent)="onValidEvent($event, data.disabled)"
       (valueChangeEvent)="onValueChangeEvent($event, data.formDefinition, data.disabled)"
       [fitPage]="true"
-      [fitPageExtraSpace]="80"
+      [fitPageExtraSpace]="obs.context === 'case' ? 204 : 80"
     ></valtimo-editor>
   </ng-template>
 </ng-container>
+
+<ng-template #actions let-obs="obs">
+  <div
+    class="valtimo-form-management-edit__header-container"
+    [ngClass]="{
+      '--compact': obs.compactMode,
+      'valtimo-form-management-edit__header-container-case': obs?.context === 'case',
+    }"
+  >
+    @if (obs.context === 'case') {
+      <button
+        cdsButton="secondary"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        (click)="onGoBackButtonClick()"
+      >
+        <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+
+        <span>{{ 'interface.back' | translate }}</span>
+      </button>
+    }
+
+    @if (obs.formDefinition.readOnly) {
+      <cds-tag size="sm" type="blue">{{ 'formManagement.readOnly' | translate }}</cds-tag>
+    }
+
+    <div class="valtimo-form-management-edit__header">
+      <cds-overflow-menu>
+        <cds-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)">
+          {{ 'Download' | translate }}
+        </cds-overflow-menu-option>
+
+        <cds-overflow-menu-option
+          [disabled]="obs.formDefinition.readOnly"
+          (selected)="showUploadModal()"
+        >
+          {{ 'Upload' | translate }}
+        </cds-overflow-menu-option>
+
+        <cds-overflow-menu-option [disabled]="obs.formDefinition.readOnly" (selected)="delete()">
+          {{ 'interface.delete' | translate }}
+        </cds-overflow-menu-option>
+
+        <cds-overflow-menu-option (selected)="showDuplicateModal(obs.formDefinition)">
+          {{ 'formManagement.duplicate' | translate }}
+        </cds-overflow-menu-option>
+      </cds-overflow-menu>
+
+      <button
+        cdsButton="primary"
+        [disabled]="obs.formDefinition.readOnly || !validJsonChange"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        (click)="modifyFormDefinition(obs.formDefinition)"
+      >
+        {{ 'interface.save' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
+      </button>
+    </div>
+  </div>
+</ng-template>

@@ -19,11 +19,12 @@ import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {LoadingModule, NotificationModule, NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
-import {CaseProcessInstance, ProcessManagementContext, ProcessManagementParams} from '../../models';
+import {CaseProcessInstance, ProcessManagementParams} from '../../models';
 import {ProcessManagementService} from '../../services';
 import {ProcessManagementBuilderComponent} from '../process-management-builder/process-management-builder.component';
 import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
 import {ProcessManagementUploadComponent} from '../process-management-upload/process-management-upload.component';
+import {ManagementContext} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-process-management',
@@ -44,7 +45,7 @@ import {ProcessManagementUploadComponent} from '../process-management-upload/pro
 export class ProcessManagementComponent {
   public readonly selectedProcess$ = new BehaviorSubject<CaseProcessInstance | null>(null);
 
-  @Input() public set context(value: ProcessManagementContext) {
+  @Input() public set context(value: ManagementContext) {
     this.processManagementService.context = value;
   }
   public readonly paramsAreSet$ = new BehaviorSubject<boolean>(false);

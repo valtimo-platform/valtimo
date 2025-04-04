@@ -23,4 +23,5 @@ export enum TabEnum {
   LIST = 'list',
   TABS = 'tabs',
   STATUSES = 'statuses',
+  FORMS = 'forms',
 }

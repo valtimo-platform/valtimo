@@ -498,6 +498,7 @@
     "deploy": "Deploy",
     "duplicate": "Duplicate",
     "readOnly": "Read-only",
+    "add": "Add form",
     "tabs": {
       "formBuilder": "Form builder",
       "jsonEditor": "JSON editor",
@@ -511,6 +512,21 @@
       "error": "Failed to save progress",
       "lastSavedBy": "Last saved by",
       "on": "on"
+    },
+    "notifications": {
+      "created": "Created new Form",
+      "deleted": "Deleted form",
+      "deletionError": "Error deleting form",
+      "deployed": "Form deployed",
+      "deploymentError": "Error deploying form"
+    },
+    "upload": {
+      "modalTitle": "Upload form definition",
+      "title": "Upload file",
+      "description": "Only form definition files are supported.",
+      "buttonText": "Select file",
+      "success": "Upload successful",
+      "failure": "Upload failed"
     }
   },
   "caseManagement": {
@@ -574,7 +590,9 @@
             "offText": "No"
           }
         }
-      }
+      },
+      "zgw": "ZGW",
+      "forms": "Forms"
     },
     "tabManagement": {
       "columns": {

@@ -15,14 +15,14 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
-  selector: 'app-custom-dossier-tab',
-  templateUrl: './custom-dossier-tab.component.html',
-  styleUrls: ['./custom-dossier-tab.component.scss'],
+  selector: 'app-custom-case-tab',
+  templateUrl: './custom-case-tab.component.html',
+  styleUrls: ['./custom-case-tab.component.scss'],
 })
-export class CustomDossierTabComponent implements OnInit {
+export class CustomCaseTabComponent implements OnInit {
   private documentDefinitionName: string;
   private documentId: string;
 

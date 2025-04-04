@@ -30,6 +30,7 @@ import {CaseManagementTabsComponent} from './components/case-management-tabs/cas
 import {CaseManagementWidgetTabComponent} from './components/case-management-widget-tab/case-management-widget-tab.component';
 import {TabEnum} from './models';
 import {CaseManagementGeneralComponent} from './components/case-management-general/case-management-general.component';
+import {FormManagementComponent, FormManagementRouteData} from '@valtimo/form-management';
 
 const routes: Routes = [
   {
@@ -93,6 +94,14 @@ const routes: Routes = [
       {
         path: TabEnum.STATUSES,
         component: CaseManagementStatusesComponent,
+      },
+      {
+        path: TabEnum.FORMS,
+        component: FormManagementComponent,
+        canDeactivate: [pendingChangesGuard],
+        data: {
+          context: 'case',
+        } as FormManagementRouteData,
       },
     ],
   },

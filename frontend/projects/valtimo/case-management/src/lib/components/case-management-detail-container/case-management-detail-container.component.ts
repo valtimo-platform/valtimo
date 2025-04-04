@@ -57,16 +57,20 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
 
   public _activeTab: TabEnum | string;
   public pendingTab: TabEnum | null | string;
+
   public readonly currentTab$ = this.router.events.pipe(
     filter(event => event instanceof NavigationEnd),
     map(event => {
-      const splitUrl = (event as NavigationEnd).url.split('/');
+      const urlWithoutQuery = (event as NavigationEnd).urlAfterRedirects.split('?')[0];
+      const splitUrl = urlWithoutQuery.split('/');
       return splitUrl[splitUrl.length - 1];
     }),
     startWith(this.route.firstChild?.routeConfig?.path)
   );
+
   public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
     this.tabService.injectedCaseManagementTabs$;
+
   public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
 
   public readonly TabEnum = TabEnum;
@@ -97,9 +101,9 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
   }
 
   public navigateToTab(tab: TabEnum | string): void {
-    this.router.navigate([
-      `case-management/case/${this._params.caseDefinitionName}/version/${this._params.caseVersionTag}/${tab}`,
-    ]);
+    this.router.navigateByUrl(
+      `case-management/case/${this._params.caseDefinitionName}/version/${this._params.caseVersionTag}/${tab}`
+    );
   }
 
   public openTabCheckSubscription(): void {

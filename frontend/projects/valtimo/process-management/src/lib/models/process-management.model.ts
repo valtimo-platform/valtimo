@@ -21,8 +21,6 @@ interface OpenProcessLinkModalEvent {
   processLink?: ProcessLink;
 }
 
-type ProcessManagementContext = 'case' | 'independent';
-
 const PROCESS_MANAGEMENT_ENDPOINTS = {
   case: '/management/v1/case-definition',
   // TODO: Update when BE support is done
@@ -34,9 +32,4 @@ interface ProcessManagementParams {
   versionTag: string;
 }
 
-export {
-  OpenProcessLinkModalEvent,
-  ProcessManagementContext,
-  PROCESS_MANAGEMENT_ENDPOINTS,
-  ProcessManagementParams,
-};
+export {OpenProcessLinkModalEvent, PROCESS_MANAGEMENT_ENDPOINTS, ProcessManagementParams};

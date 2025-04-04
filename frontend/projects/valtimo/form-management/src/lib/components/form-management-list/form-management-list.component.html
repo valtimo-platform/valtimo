@@ -15,11 +15,17 @@
   -->
 
 <valtimo-carbon-list
-  [fields]="formDefinitionFields"
+  *ngIf="{
+    formDefinitions: formDefinitions$ | async,
+    pagination: pagination$ | async,
+    loading: loading$ | async,
+  } as obs"
+  [fields]="FIELDS"
   [header]="false"
   [isSearchable]="true"
-  [items]="formDefinitions"
-  [pagination]="pagination"
+  [items]="obs?.formDefinitions || []"
+  [pagination]="obs.pagination"
+  [loading]="obs.loading"
   paginationIdentifier="formManagementList"
   (paginationClicked)="paginationClicked($event)"
   (paginationSet)="paginationSet($event)"
@@ -27,16 +33,11 @@
   (search)="searchTermEntered($event)"
 >
   <ng-container carbonToolbarContent>
-    <button
-      cdsButton="ghost"
-      [iconOnly]="true"
-      [routerLink]="'create'"
-      [queryParams]="{upload: 'true'}"
-    >
+    <button cdsButton="ghost" [iconOnly]="true" (click)="navigateToUploadRoute()">
       <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
     </button>
 
-    <button cdsButton="primary" [routerLink]="'create'">
+    <button cdsButton="primary" (click)="navigateToCreateRoute()">
       {{ 'Create new Form' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

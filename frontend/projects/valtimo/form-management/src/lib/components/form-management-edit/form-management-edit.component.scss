@@ -23,6 +23,12 @@
     margin-left: auto;
   }
 
+  &__case-header {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
   &__header-container {
     width: 100%;
     display: flex;
@@ -39,6 +45,10 @@
       align-items: flex-start;
       padding-bottom: 0;
     }
+  }
+
+  &__header-container-case {
+    padding-bottom: 24px;
   }
 
   &__output .cds--tab-content {

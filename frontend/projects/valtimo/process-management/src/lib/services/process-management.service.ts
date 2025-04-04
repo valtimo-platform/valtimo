@@ -1,13 +1,9 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable, Signal, signal} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/config';
+import {BaseApiService, ConfigService, ManagementContext} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, filter, Observable, switchMap} from 'rxjs';
 
-import {
-  CaseProcessInstance,
-  PROCESS_MANAGEMENT_ENDPOINTS,
-  ProcessManagementContext,
-} from '../models';
+import {CaseProcessInstance, PROCESS_MANAGEMENT_ENDPOINTS} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -26,11 +22,11 @@ export class ProcessManagementService extends BaseApiService {
     )
   );
 
-  private _context = signal<ProcessManagementContext>('independent');
-  public set context(value: ProcessManagementContext) {
+  private _context = signal<ManagementContext>('independent');
+  public set context(value: ManagementContext) {
     this._context.set(value);
   }
-  public get context(): Signal<ProcessManagementContext> {
+  public get context(): Signal<ManagementContext> {
     return this._context.asReadonly();
   }
 

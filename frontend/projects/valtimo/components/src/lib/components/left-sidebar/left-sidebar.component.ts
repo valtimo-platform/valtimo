@@ -89,11 +89,11 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     this._breakpointSubscription?.unsubscribe();
   }
 
-  public navigateToRoute(route: Array<string>, event: MouseEvent) {
+  public navigateToRoute(route: Array<string>, event: MouseEvent): void {
     event.preventDefault();
 
     if (!event.ctrlKey && !event.metaKey) {
-      this.router.navigate(route);
+      this.router.navigate(route, {queryParams: {}});
 
       combineLatest([
         this.shellService.sideBarExpanded$,

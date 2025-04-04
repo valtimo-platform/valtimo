@@ -16,13 +16,22 @@
 
 import {FormManagementService} from '../services';
 import {AbstractControl, AsyncValidatorFn, ValidationErrors} from '@angular/forms';
+import {ManagementContext} from '@valtimo/config';
 import {map, Observable} from 'rxjs';
+import {FormManagementParams} from '../models';
 
 export function noDuplicateFormValidator(
+  context: ManagementContext | '',
+  params: FormManagementParams,
   formManagementService: FormManagementService
 ): AsyncValidatorFn {
   return (control: AbstractControl): Observable<ValidationErrors> =>
-    formManagementService
-      .existsFormDefinition(control.value.toString())
-      .pipe(map((result: boolean) => (result ? {duplicate: true} : null)));
+    (context === 'case'
+      ? formManagementService.existsFormDefinitionCase(
+          params.definitionName,
+          params.versionTag,
+          control.value.toString()
+        )
+      : formManagementService.existsFormDefinition(control.value.toString())
+    ).pipe(map((result: boolean) => (result ? {duplicate: true} : null)));
 }

@@ -1,0 +1,54 @@
+<cds-modal
+  valtimoCdsModal
+  class="form-management-create"
+  size="sm"
+  [cdsLayer]="0"
+  [open]="true"
+  (close)="onCloseEvent()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseEvent()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'formManagement.add' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form [formGroup]="form" (ngSubmit)="createFormDefinition()">
+    <section cdsModalContent [cdsLayer]="1">
+      <cds-label
+        [invalid]="formControls?.name?.touched && formControls?.name?.errors"
+        [invalidText]="
+          (formControls?.name?.errors?.required && ('formManagement.nameIsRequired' | translate)) ||
+          (formControls?.name?.errors?.duplicate && ('formManagement.nameIsInUse' | translate)) ||
+          'test'
+        "
+      >
+        {{ 'formManagement.name' | translate }}
+
+        <input
+          cdsText
+          type="text"
+          id="name"
+          formControlName="name"
+          [invalid]="formControls?.name?.touched && formControls?.name?.errors"
+          required
+        />
+      </cds-label>
+    </section>
+
+    <cds-modal-footer [cdsLayer]="1">
+      <cds-modal-footer>
+        <button cdsButton="ghost" (click)="$event.preventDefault(); onBackButtonClick()">
+          {{ 'formManagement.back' | translate }}
+        </button>
+
+        <button cdsButton="ghost" (click)="$event.preventDefault(); reset()">
+          {{ 'formManagement.reset' | translate | translate }}
+        </button>
+
+        <button [disabled]="form.invalid" type="submit" cdsButton="primary">
+          {{ 'formManagement.submit' | translate }}
+        </button>
+      </cds-modal-footer>
+    </cds-modal-footer>
+  </form>
+</cds-modal>

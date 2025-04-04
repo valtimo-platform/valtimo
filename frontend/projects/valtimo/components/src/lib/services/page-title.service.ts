@@ -122,6 +122,10 @@ export class PageTitleService implements OnDestroy {
     this._pageTitleHidden$.next(hidden);
   }
 
+  public clearPageActionsViewContainerRef(): void {
+    this._pageActionsViewContainerRef$.getValue()?.clear();
+  }
+
   private openRouteSubscription(): void {
     this._routeSubscription = combineLatest([this.router.events, this.pageActionsViewContainerRef$])
       .pipe(
