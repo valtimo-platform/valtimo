@@ -40,6 +40,21 @@ export class CaseManagementLinkProcessComponent {
     filter(name => !!name)
   );
 
+  public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
+    map(({caseDefinitionName, caseVersionTag}) => ({
+      caseDefinitionKey: caseDefinitionName,
+      caseDefinitionVersionTag: caseVersionTag,
+    }))
+  );
+
+  public readonly caseDefinitionKey$: Observable<string> | undefined = this.params$?.pipe(
+    map(({caseDefinitionKey}) => caseDefinitionKey || '')
+  );
+
+  public readonly caseVersionTag$: Observable<string> | undefined = this.params$?.pipe(
+    map(({caseDefinitionVersionTag}) => caseDefinitionVersionTag || '')
+  );
+
   public readonly selectedProcessKey$ = new BehaviorSubject<string>('');
   public readonly processItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentenApiLinkProcessService.getProcessDefinitions(),
@@ -76,11 +91,13 @@ export class CaseManagementLinkProcessComponent {
 
     if (processDefinitionKey && processDefinitionKey !== currentSelectionId) {
       this.disabled$.next(true);
-      this._documentDefinitionName$
+
+      combineLatest([this.caseDefinitionKey$, this.caseVersionTag$])
         .pipe(
-          switchMap(documentDefinitionName =>
+          switchMap(([caseDefinitionKey, caseVersionTag]) =>
             this.documentenApiLinkProcessService.updateLinkedUploadProcess(
-              documentDefinitionName,
+              caseDefinitionKey,
+              caseVersionTag,
               processDefinitionKey
             )
           )
@@ -90,10 +107,13 @@ export class CaseManagementLinkProcessComponent {
           this.disabled$.next(false);
         });
     } else if (!processDefinitionKey) {
-      this._documentDefinitionName$
+      combineLatest([this.caseDefinitionKey$, this.caseVersionTag$])
         .pipe(
-          switchMap(documentDefinitionName =>
-            this.documentenApiLinkProcessService.deleteLinkedUploadProcess(documentDefinitionName)
+          switchMap(([caseDefinitionKey, caseVersionTag]) =>
+            this.documentenApiLinkProcessService.deleteLinkedUploadProcess(
+              caseDefinitionKey,
+              caseVersionTag
+            )
           )
         )
         .subscribe(() => {
@@ -111,10 +131,13 @@ export class CaseManagementLinkProcessComponent {
   }
 
   private getDefaultSelection(): void {
-    this._documentDefinitionName$
+    combineLatest([this.caseDefinitionKey$, this.caseVersionTag$])
       .pipe(
-        switchMap(documentDefinitionName =>
-          this.documentenApiLinkProcessService.getLinkedUploadProcess(documentDefinitionName)
+        switchMap(([caseDefinitionKey, caseVersionTag]) =>
+          this.documentenApiLinkProcessService.getLinkedUploadProcess(
+            caseDefinitionKey,
+            caseVersionTag
+          )
         )
       )
       .subscribe(linkedUploadProcess => {

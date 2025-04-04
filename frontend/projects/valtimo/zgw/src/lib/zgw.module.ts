@@ -30,7 +30,7 @@ import {ResourceModule} from '@valtimo/resource';
 import {
   CaseDetailTabDocumentenApiDocumentsComponent,
   CaseDetailTabObjectTypeComponent,
-  CaseManagementLinkUploadProcessComponent,
+  CaseManagementLinkProcessComponent,
   CustomerModule,
   DocumentenApiMetadataModalComponent,
   DocumentenApiUploaderComponent,
@@ -72,8 +72,8 @@ import {CaseManagementZgwComponent} from './components';
     {
       provide: ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
       useValue: [
-        CaseManagementLinkUploadProcessComponent,
-        // CaseManagementLinkProcessComponent,
+        CaseManagementLinkProcessComponent,
+        // CaseManagementLinkUploadProcessComponent
         // DocumentenApiVersionComponent,
         // DocumentObjectenApiSyncComponent,
         // ZakenApiZaaktypeLinkComponent,

@@ -25,7 +25,7 @@
 >
   <div class="case-handler-process" [cdsLayer]="0">
     <p class="case-handler-process__title">
-      {{ 'dossierManagement.tabs.generalTab.caseHandler.title' | translate }}
+      {{ 'caseManagement.tabs.generalTab.caseHandler.title' | translate }}
     </p>
 
     <div class="case-handler-process__toggles">
@@ -36,9 +36,9 @@
           (checkedChange)="
             toggleAssignee(obs?.currentValue, obs.caseDefinitionKey, obs.caseVersionTag)
           "
-          [label]="'dossierManagement.tabs.generalTab.caseHandler.canHaveHandler' | translate"
-          [onText]="'dossierManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
-          [offText]="'dossierManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
+          [label]="'caseManagement.tabs.generalTab.caseHandler.canHaveHandler' | translate"
+          [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
+          [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
         ></cds-toggle>
       </ng-container>
 
@@ -49,9 +49,9 @@
           (checkedChange)="
             toggleTaskAssignment(obs?.currentValue, obs?.caseDefinitionKey, obs.caseVersionTag)
           "
-          [label]="'dossierManagement.toggleAutoAssignTasks.checkboxDescription' | translate"
-          [onText]="'dossierManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
-          [offText]="'dossierManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
+          [label]="'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate"
+          [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
+          [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
         ></cds-toggle>
       </ng-container>
     </div>

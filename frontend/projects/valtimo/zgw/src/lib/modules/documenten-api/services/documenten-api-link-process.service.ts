@@ -35,18 +35,26 @@ export class DocumentenApiLinkProcessService extends BaseApiService {
     return this.httpClient.get<ProcessDefinition[]>(this.getApiUrl('/v1/process/definition'));
   }
 
-  public getLinkedUploadProcess(documentDefinitionName: string): Observable<UploadProcessLink> {
+  public getLinkedUploadProcess(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<UploadProcessLink> {
     return this.httpClient.get<UploadProcessLink>(
-      this.getApiUrl(`/v1/process-document/demo/${documentDefinitionName}/process`)
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/feature-process/DOCUMENT_UPLOAD`
+      )
     );
   }
 
   public updateLinkedUploadProcess(
-    documentDefinitionName: string,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
     processDefinitionKey: string
   ): Observable<UploadProcessLink> {
     return this.httpClient.put<UploadProcessLink>(
-      this.getApiUrl(`/v1/process-document/demo/${documentDefinitionName}/process`),
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/feature-process`
+      ),
       {
         processDefinitionKey,
         linkType: 'DOCUMENT_UPLOAD',
@@ -54,9 +62,14 @@ export class DocumentenApiLinkProcessService extends BaseApiService {
     );
   }
 
-  public deleteLinkedUploadProcess(documentDefinitionName: string): Observable<void> {
+  public deleteLinkedUploadProcess(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<void> {
     return this.httpClient.delete<void>(
-      this.getApiUrl(`/v1/process-document/demo/${documentDefinitionName}/process`)
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/feature-process/DOCUMENT_UPLOAD`
+      )
     );
   }
 }

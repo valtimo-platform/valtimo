@@ -37,11 +37,12 @@ export class CaseManagementCaseHandlerComponent {
     }))
   );
 
-  public readonly caseDefinitionKey$: Observable<string> | undefined =
-    this.route.parent?.params.pipe(map(({caseDefinitionKey}) => caseDefinitionKey || ''));
+  public readonly caseDefinitionKey$: Observable<string> | undefined = this.params$?.pipe(
+    map(({caseDefinitionKey}) => caseDefinitionKey || '')
+  );
 
-  public readonly caseVersionTag$: Observable<string> | undefined = this.route.parent?.params.pipe(
-    map(({caseVersionTag}) => caseVersionTag || '')
+  public readonly caseVersionTag$: Observable<string> | undefined = this.params$?.pipe(
+    map(({caseDefinitionVersionTag}) => caseDefinitionVersionTag || '')
   );
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
