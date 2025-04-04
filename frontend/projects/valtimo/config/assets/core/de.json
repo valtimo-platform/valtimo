@@ -547,6 +547,21 @@
       "title": "Aufgabenzuweisung",
       "checkboxDescription": "Aufgaben automatisch zu Fallbearbeiter zuweisen"
     },
+    "externalStartForm": {
+      "title": "Externes Startformular",
+      "enabledToggle": "Externes Startformular aktiviert",
+      "enabledToggleOn": "Ja",
+      "enabledToggleOff": "Nein",
+      "externalUrl": "URL des externen Startformulars",
+      "externalUrlPlaceholder": "Geben Sie eine gültige URL ein",
+      "apply": "Speichern",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Eine kurze Beschreibung des externen Startformulars",
+      "notification": {
+        "success": "Konfiguration des externen Startformulars erfolgreich aktualisiert",
+        "error": "Aktualisierung der Konfiguration des externen Startformulars fehlgeschlagen"
+      }
+    },
     "tabs": {
       "cases": "Konfiguration",
       "processes": "Prozesse",

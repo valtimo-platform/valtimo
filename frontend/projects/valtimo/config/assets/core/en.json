@@ -548,6 +548,21 @@
       "title": "Task assignment",
       "checkboxDescription": "Automatically assign user tasks to the case handler"
     },
+    "externalStartForm": {
+      "title": "External start form",
+      "enabledToggle": "External start form enabled",
+      "enabledToggleOn": "Yes",
+      "enabledToggleOff": "No",
+      "externalUrl": "URL of external start form",
+      "externalUrlPlaceholder": "Input a valid URL",
+      "apply": "Save",
+      "description": "Description",
+      "descriptionPlaceholder": "A short description of the external start form",
+      "notification": {
+        "success": "External start form configuration updated successfully",
+        "error": "External start form configuration failed to update"
+      }
+    },
     "tabs": {
       "cases": "Configuration",
       "processes": "Processes",

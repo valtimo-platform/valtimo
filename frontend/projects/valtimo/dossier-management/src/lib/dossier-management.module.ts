@@ -58,6 +58,7 @@ import {
   ProgressBarModule,
   TabsModule,
   TagModule,
+  TilesModule,
   ToggleModule,
   TooltipModule,
   NumberModule,
@@ -86,6 +87,7 @@ import {DossierManagementStatusesComponent} from './components/dossier-managemen
 import {DossierManagementStatusModalComponent} from './components/dossier-management-statuses/dossier-management-status-modal/dossier-management-status-modal.component';
 import {DossierManagementCreateComponent} from './components/dossier-management-create/dossier-management-create.component';
 import {DossierManagementWidgetsEditorComponent} from './components/dossier-management-widget-tab/editor/dossier-management-widgets-editor.component';
+import {DossierManagementExternalStartFormComponent} from './components/dossier-management-external-start-form/dossier-management-external-start-form.component';
 import {DossierManagementModalComponent} from './components/dossier-management-case-tags/dossier-management-case-tag-modal/dossier-management-case-tag-modal.component';
 import {DossierManagementCaseTagComponent} from './components/dossier-management-case-tags/dossier-management-case-tags.component';
 
@@ -111,6 +113,7 @@ import {DossierManagementCaseTagComponent} from './components/dossier-management
     DossierManagementStatusesComponent,
     DossierManagementStatusModalComponent,
     DossierManagementCreateComponent,
+    DossierManagementExternalStartFormComponent,
     DossierManagementCaseTagComponent,
     DossierManagementModalComponent,
   ],
@@ -164,8 +167,9 @@ import {DossierManagementCaseTagComponent} from './components/dossier-management
     TooltipModule,
     DossierManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
-    NumberModule,
+    TilesModule,
     LayerModule,
+    NumberModule,
   ],
   providers: [TabManagementService],
 })

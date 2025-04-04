@@ -18,7 +18,10 @@
   valtimoCdsModal
   [open]="startSelectionModalOpen$ | async"
   size="xs"
-  *ngIf="associatedProcessDocumentDefinitions$ | async as associatedProcessDocumentDefinitions"
+  *ngIf="{
+    associatedProcessDocumentDefinitions: associatedProcessDocumentDefinitions$ | async,
+    caseSettings: caseSettings$ | async,
+  } as obs"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()"
     ><h3 cdsModalHeaderHeading>
@@ -28,7 +31,14 @@
 
   <section cdsModalContent class="start-modal-content" [cdsLayer]="1">
     <cds-clickable-tile
-      *ngFor="let processDocumentDefinition of associatedProcessDocumentDefinitions"
+      *ngIf="obs.caseSettings?.hasExternalStartForm"
+      (click)="openExternalCaseStartForm(true)"
+    >
+      {{ obs?.caseSettings.externalStartFormDescription || '-' }}
+    </cds-clickable-tile>
+
+    <cds-clickable-tile
+      *ngFor="let processDocumentDefinition of obs?.associatedProcessDocumentDefinitions"
       (click)="selectProcess(processDocumentDefinition)"
     >
       {{ processDocumentDefinition.processName }}
