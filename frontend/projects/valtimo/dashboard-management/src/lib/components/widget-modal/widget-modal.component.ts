@@ -37,7 +37,7 @@ import {
 } from 'rxjs';
 import {DashboardItem, WidgetDataSource, WidgetModalType} from '../../models';
 import {FormBuilder, Validators} from '@angular/forms';
-import {ListItem, NotificationService} from 'carbon-components-angular';
+import {ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {DOCUMENT} from '@angular/common';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
@@ -49,13 +49,13 @@ import {
   WidgetService,
   WidgetTranslationService,
 } from '@valtimo/dashboard';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-widget-modal',
   templateUrl: './widget-modal.component.html',
   styleUrls: ['./widget-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  providers: [NotificationService],
 })
 export class WidgetModalComponent implements OnInit, OnDestroy {
   @Input() public showModal$: Observable<boolean>;
@@ -188,7 +188,7 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private readonly document: Document,
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly dashboardManagementService: DashboardManagementService,
     private readonly widgetService: WidgetService,
     private readonly widgetTranslationService: WidgetTranslationService

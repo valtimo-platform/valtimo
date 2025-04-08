@@ -23,16 +23,15 @@ import {
   FileUploaderModule,
   LayerModule,
   ModalModule,
-  NotificationService,
 } from 'carbon-components-angular';
 import {map, startWith} from 'rxjs';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-process-management-upload',
   templateUrl: './process-management-upload.component.html',
   styleUrls: ['./process-management-upload.component.scss'],
-  providers: [NotificationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -63,7 +62,7 @@ export class ProcessManagementUploadComponent {
     private readonly processManagementStateService: ProcessManagementStateService,
     private readonly processManagementService: ProcessManagementService,
     private readonly formBuilder: FormBuilder,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService
   ) {}
 

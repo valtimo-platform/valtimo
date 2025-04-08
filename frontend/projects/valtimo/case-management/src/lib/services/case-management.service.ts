@@ -39,9 +39,9 @@ export class CaseManagementService extends BaseApiService {
     );
   }
 
-  public getCaseDefinitionVersions(caseDefinitionName: string): Observable<any[]> {
+  public getCaseDefinitionVersions(caseDefinitionKey: string): Observable<any[]> {
     return this.httpClient.get<any[]>(
-      this.getApiUrl(`management/v1/case-definition/${caseDefinitionName}/version`)
+      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}/version`)
     );
   }
 

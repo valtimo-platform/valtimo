@@ -18,10 +18,10 @@ import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap} from 'rxjs';
 import {CaseListService} from '../../services';
 import {CaseProcessStartModalComponent} from '../case-process-start-modal/case-process-start-modal.component';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 declare const $;
 
@@ -29,7 +29,6 @@ declare const $;
   selector: 'valtimo-case-list-actions',
   templateUrl: './case-list-actions.component.html',
   styleUrls: ['./case-list-actions.component.scss'],
-  providers: [NotificationService],
 })
 export class CaseListActionsComponent implements OnInit {
   @ViewChild('processStartModal') processStart: CaseProcessStartModalComponent;
@@ -72,7 +71,7 @@ export class CaseListActionsComponent implements OnInit {
   constructor(
     private readonly documentService: DocumentService,
     private readonly listService: CaseListService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly router: Router,
     private readonly translateService: TranslateService
   ) {}

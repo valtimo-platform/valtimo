@@ -38,17 +38,16 @@ import {
   PageTitleService,
 } from '@valtimo/components';
 import {FormFlowDefinition, FormFlowDefinitionId, LoadedValue} from '../../models';
-import {NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {FormFlowDownloadService} from '../../services/form-flow-download.service';
 import {ListItem} from 'carbon-components-angular/dropdown';
 import formFlowSchemaJson from './formflow.schema.json';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   templateUrl: './form-flow-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./form-flow-editor.component.scss'],
-  providers: [NotificationService],
 })
 export class FormFlowEditorComponent implements OnInit, OnDestroy {
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
@@ -101,7 +100,7 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService,
     private readonly formFlowDownloadService: FormFlowDownloadService,
     private readonly pageHeaderService: PageHeaderService

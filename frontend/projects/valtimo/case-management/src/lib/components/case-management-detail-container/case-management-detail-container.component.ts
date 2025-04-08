@@ -42,14 +42,17 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
   private _documentDefinitionTab: CaseManagementDocumentDefinitionComponent;
   @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
-  private _params: {caseDefinitionName: string; caseVersionTag: string};
-  public readonly caseDefinitionName$: Observable<{
-    caseDefinitionName: string;
-    caseVersionTag: string;
+  private _params: {caseDefinitionKey: string; caseDefinitionVersionTag: string};
+  public readonly caseDefinitionKey$: Observable<{
+    caseDefinitionKey: string;
+    caseDefinitionVersionTag: string;
   }> = this.route.params.pipe(
-    tap(params => (this._params = params as {caseDefinitionName: string; caseVersionTag: string})),
-    map(params => params.caseDefinitionName || ''),
-    filter(caseDefinitionName => !!caseDefinitionName)
+    tap(
+      params =>
+        (this._params = params as {caseDefinitionKey: string; caseDefinitionVersionTag: string})
+    ),
+    map(params => params.caseDefinitionKey || ''),
+    filter(caseDefinitionKey => !!caseDefinitionKey)
   );
 
   public caseListColumn!: boolean;
@@ -102,7 +105,7 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
 
   public navigateToTab(tab: TabEnum | string): void {
     this.router.navigateByUrl(
-      `case-management/case/${this._params.caseDefinitionName}/version/${this._params.caseVersionTag}/${tab}`
+      `case-management/case/${this._params.caseDefinitionKey}/version/${this._params.caseDefinitionVersionTag}/${tab}`
     );
   }
 

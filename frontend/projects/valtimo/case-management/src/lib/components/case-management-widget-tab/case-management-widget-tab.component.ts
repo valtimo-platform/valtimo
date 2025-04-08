@@ -110,8 +110,8 @@ export class CaseManagementWidgetTabComponent
     this.tabWidgetKey$,
     this._refreshWidgetTabSubject$,
   ]).pipe(
-    switchMap(([caseDefinitionName, tabWidgetKey]) =>
-      this.widgetTabManagementService.getWidgetTabConfiguration(caseDefinitionName, tabWidgetKey)
+    switchMap(([caseDefinitionKey, tabWidgetKey]) =>
+      this.widgetTabManagementService.getWidgetTabConfiguration(caseDefinitionKey, tabWidgetKey)
     )
   );
 

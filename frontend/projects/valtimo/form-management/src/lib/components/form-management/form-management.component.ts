@@ -16,15 +16,15 @@
 
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {ActivatedRoute, Params, Router} from '@angular/router';
-import {CARBON_CONSTANTS, PendingChangesComponent} from '@valtimo/components';
+import {ActivatedRoute, Router, RouterOutlet} from '@angular/router';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 import {FormManagementCreateComponent} from '../form-management-create';
 import {FormManagementListComponent} from '../form-management-list';
-import {ButtonModule, NotificationService} from 'carbon-components-angular';
-import {map, Observable} from 'rxjs';
-import {ManagementContext} from '@valtimo/config';
+import {ButtonModule} from 'carbon-components-angular';
+import {BehaviorSubject} from 'rxjs';
 import {FormManagementEditComponent} from '../form-management-edit';
 import {TranslateService} from '@ngx-translate/core';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   templateUrl: './form-management.component.html',
@@ -36,143 +36,70 @@ import {TranslateService} from '@ngx-translate/core';
     FormManagementListComponent,
     FormManagementCreateComponent,
     FormManagementEditComponent,
+    RouterOutlet,
   ],
-  providers: [NotificationService],
 })
-export class FormManagementComponent extends PendingChangesComponent {
-  public readonly hasCreateQueryParam$: Observable<boolean> = this.route.queryParamMap.pipe(
-    map(params => params.has('create') && params.get('create') === 'true')
-  );
-
-  public readonly editQueryParam$: Observable<string | null> = this.route.queryParamMap.pipe(
-    map(params => (params.has('edit') ? params.get('edit') : null))
-  );
-
-  public readonly context$: Observable<ManagementContext | ''> = this.route.data.pipe(
-    map(data => data && (data['context'] as ManagementContext))
-  );
+export class FormManagementComponent {
+  public readonly create$ = new BehaviorSubject<boolean>(false);
+  public readonly upload$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService
-  ) {
-    super();
-  }
+  ) {}
 
   public onNavigateToCreateEvent(): void {
-    this.updateQueryParams({create: true});
-  }
-
-  public onNavigateToUploadEvent(): void {
-    this.updateQueryParams({create: true, upload: true});
+    this.create$.next(true);
   }
 
   public onGoBackFromCreateEvent(): void {
-    this.updateQueryParams({}, ['create']);
+    this.create$.next(false);
+    this.upload$.next(false);
   }
 
-  public onGoBackEvent(): void {
-    if (!this.pendingChanges) {
-      this.updateQueryParams({}, ['create', 'edit', 'upload']);
-    } else {
-      const canDeactivate = this.canDeactivate() as Observable<boolean>;
-      const isObservable = !!canDeactivate?.subscribe;
-      isObservable &&
-        canDeactivate.subscribe(navigateAway => {
-          if (navigateAway) this.updateQueryParams({}, ['create', 'edit', 'upload']);
-        });
-    }
+  public onFormDefinitionEditEvent(formDefinitionId: string, upload = false): void {
+    this.router.navigate([formDefinitionId], {
+      relativeTo: this.route,
+      queryParams: {...(upload && {upload: true})},
+    });
   }
 
   public onFormDefinitionCreateEvent(formDefinitionId: string): void {
     this.resetNotifications();
+
     this.notificationService.showToast({
       type: 'success',
       duration: CARBON_CONSTANTS.notificationDuration,
       showClose: true,
       title: this.translateService.instant('formManagement.notifications.created'),
     });
-    this.updateQueryParams({edit: formDefinitionId}, ['create']);
+
+    this.onFormDefinitionEditEvent(formDefinitionId);
   }
 
   public onFormDefinitionUploadEvent(formDefinitionId: string): void {
     this.resetNotifications();
+
     this.notificationService.showToast({
       type: 'success',
       duration: CARBON_CONSTANTS.notificationDuration,
       showClose: true,
       title: this.translateService.instant('formManagement.notifications.created'),
     });
-    this.updateQueryParams({edit: formDefinitionId, upload: true}, ['create']);
+
+    this.onFormDefinitionEditEvent(formDefinitionId, true);
   }
 
-  public onFormDefinitionEditEvent(formDefinitionId: string): void {
-    this.updateQueryParams({edit: formDefinitionId}, ['create']);
-  }
-
-  public onModifiedEvent(isDelete = false): void {
-    this.onDeactivatePendingChanges();
-    this.updateQueryParams({}, ['create', 'edit', 'upload']);
-    this.resetNotifications();
-    this.notificationService.showToast({
-      type: 'success',
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
-      title: isDelete
-        ? this.translateService.instant('formManagement.notifications.deleted')
-        : this.translateService.instant('formManagement.notifications.deployed'),
-    });
-  }
-
-  public onPendingChangesChangeEvent(event: boolean): void {
-    if (event) {
-      this.onActivatePendingChanges();
-    } else {
-      this.onDeactivatePendingChanges();
-    }
-  }
-
-  public onDeleteErrorEvent(): void {
-    this.resetNotifications();
-    this.notificationService.showToast({
-      type: 'error',
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
-      title: this.translateService.instant('formManagement.notifications.deletionError'),
-    });
-  }
-
-  public onDeployErrorEvent(): void {
-    this.resetNotifications();
-    this.notificationService.showToast({
-      type: 'error',
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
-      title: this.translateService.instant('formManagement.notifications.deploymentError'),
-    });
-  }
-
-  private onActivatePendingChanges(): void {
-    this.pendingChanges = true;
-  }
-
-  private onDeactivatePendingChanges(): void {
-    this.pendingChanges = false;
-  }
-
-  private updateQueryParams(addParams: Params, removeParams: string[] = []): void {
-    const clearedParams = removeParams.reduce((acc, curr) => ({...acc, [curr]: null}), {});
-    const mergedParams = {...clearedParams, ...addParams};
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: mergedParams,
-      queryParamsHandling: 'merge',
-    });
+  public onNavigateToUploadEvent(): void {
+    this.create$.next(true);
+    this.upload$.next(true);
   }
 
   private resetNotifications(): void {
-    this.notificationService.notificationRefs.forEach(ref => this.notificationService.close(ref));
+    this.notificationService
+      ?.getNotificationRefs()
+      .forEach(ref => this.notificationService.close(ref));
   }
 }

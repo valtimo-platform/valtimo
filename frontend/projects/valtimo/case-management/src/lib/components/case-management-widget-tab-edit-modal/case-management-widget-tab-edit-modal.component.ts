@@ -27,12 +27,7 @@ import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@an
 import {CARBON_CONSTANTS, ValtimoCdsModalDirectiveModule} from '@valtimo/components';
 import {TabManagementService} from '../../services';
 import {ApiTabItem, ApiTabType} from '@valtimo/case';
-import {
-  ButtonModule,
-  InputModule,
-  ModalModule,
-  NotificationService,
-} from 'carbon-components-angular';
+import {ButtonModule, InputModule, ModalModule} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
@@ -42,7 +37,6 @@ import {TranslateModule} from '@ngx-translate/core';
   templateUrl: './case-management-widget-tab-edit-modal.html',
   styleUrls: ['./case-management-widget-tab-edit-modal.scss'],
   encapsulation: ViewEncapsulation.None,
-  providers: [NotificationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [

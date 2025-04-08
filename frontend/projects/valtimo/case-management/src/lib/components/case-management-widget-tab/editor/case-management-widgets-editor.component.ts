@@ -200,7 +200,7 @@ export class CaseManagementWidgetsEditorComponent {
 
     this.widgetTabManagementService
       .updateWidgets({
-        caseDefinitionName: this.documentDefinitionName,
+        caseDefinitionKey: this.documentDefinitionName,
         key: this.tabWidgetKey,
         widgets: !!widgetResult.key
           ? existingWidgets.map((widget: BasicCaseWidget) =>

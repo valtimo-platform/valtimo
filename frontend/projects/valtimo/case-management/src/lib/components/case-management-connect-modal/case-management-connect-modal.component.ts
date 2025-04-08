@@ -23,15 +23,14 @@ import {
   ProcessDocumentDefinitionRequest,
 } from '@valtimo/document';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
-import {NotificationService} from 'carbon-components-angular';
 import {switchMap, take} from 'rxjs';
 import {CaseDetailService} from '../../services';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-case-management-connect-modal',
   templateUrl: './case-management-connect-modal.component.html',
   styleUrls: ['./case-management-connect-modal.component.scss'],
-  providers: [NotificationService],
 })
 export class CaseManagementConnectModalComponent implements OnInit {
   @ViewChild('caseConnectModal') private readonly _modal: ModalComponent;
@@ -47,7 +46,7 @@ export class CaseManagementConnectModalComponent implements OnInit {
   constructor(
     private readonly documentService: DocumentService,
     private readonly caseDetailService: CaseDetailService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly processService: ProcessService,
     private readonly translateService: TranslateService
   ) {}

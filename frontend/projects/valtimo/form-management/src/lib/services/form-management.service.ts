@@ -46,12 +46,12 @@ export class FormManagementService extends BaseApiService {
 
   public getFormDefinitionCase(
     caseDefinitionKey: string,
-    versionTag: string,
+    caseDefinitionVersionTag: string,
     formDefinitionId: string
   ): Observable<FormDefinition> {
     return this.httpClient.get<FormDefinition>(
       this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form/${formDefinitionId}`
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form/${formDefinitionId}`
       )
     );
   }
@@ -66,14 +66,14 @@ export class FormManagementService extends BaseApiService {
 
   public existsFormDefinitionCase(
     caseDefinitionKey: string,
-    versionTag: string,
+    caseDefinitionVersionTag: string,
     formDefinitionName: string
   ): Observable<boolean> {
     if (!formDefinitionName) return of(false);
 
     return this.httpClient.get<boolean>(
       this.getApiUrl(
-        `management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form/${formDefinitionName}/exists`
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form/${formDefinitionName}/exists`
       )
     );
   }
@@ -86,12 +86,12 @@ export class FormManagementService extends BaseApiService {
 
   public queryFormDefinitionsCase(
     caseDefinitionKey: string,
-    versionTag: string,
+    caseDefinitionVersionTag: string,
     params?: any
   ): Observable<QueryFormsResponse> {
     return this.httpClient.get<QueryFormsResponse>(
       this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form`
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form`
       ),
       {
         params,
@@ -105,12 +105,12 @@ export class FormManagementService extends BaseApiService {
 
   public createFormDefinitionsCase(
     caseDefinitionKey: string,
-    versionTag: string,
+    caseDefinitionVersionTag: string,
     request: CreateFormDefinitionRequest
   ): Observable<FormDefinition> {
     return this.httpClient.post<FormDefinition>(
       this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form`
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form`
       ),
       request
     );
@@ -122,12 +122,12 @@ export class FormManagementService extends BaseApiService {
 
   public modifyFormDefinitionCase(
     caseDefinitionKey: string,
-    versionTag: string,
+    caseDefinitionVersionTag: string,
     request: ModifyFormDefinitionRequest
   ): Observable<FormDefinition> {
     return this.httpClient.put<FormDefinition>(
       this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form`
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form`
       ),
       request
     );
@@ -139,12 +139,12 @@ export class FormManagementService extends BaseApiService {
 
   public deleteFormDefinitionCase(
     caseDefinitionKey: string,
-    versionTag: string,
+    caseDefinitionVersionTag: string,
     formDefinitionId: string
   ): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form/${formDefinitionId}`
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form/${formDefinitionId}`
       )
     );
   }

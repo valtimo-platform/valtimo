@@ -31,9 +31,9 @@ export class CaseManagementCaseHandlerComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
-    map(({caseDefinitionName, caseVersionTag}) => ({
-      caseDefinitionKey: caseDefinitionName,
-      caseDefinitionVersionTag: caseVersionTag,
+    map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
+      caseDefinitionKey: caseDefinitionKey,
+      caseDefinitionVersionTag: caseDefinitionVersionTag,
     }))
   );
 
@@ -41,7 +41,7 @@ export class CaseManagementCaseHandlerComponent {
     map(({caseDefinitionKey}) => caseDefinitionKey || '')
   );
 
-  public readonly caseVersionTag$: Observable<string> | undefined = this.params$?.pipe(
+  public readonly caseDefinitionVersionTag$: Observable<string> | undefined = this.params$?.pipe(
     map(({caseDefinitionVersionTag}) => caseDefinitionVersionTag || '')
   );
 

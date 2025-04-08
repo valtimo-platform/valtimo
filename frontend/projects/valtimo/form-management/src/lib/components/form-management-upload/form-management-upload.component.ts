@@ -31,15 +31,14 @@ import {
   FileUploaderModule,
   LayerModule,
   ModalModule,
-  NotificationService,
 } from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, startWith, Subscription} from 'rxjs';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-form-management-upload',
   templateUrl: './form-management-upload.component.html',
   styleUrls: ['./form-management-upload.component.scss'],
-  providers: [NotificationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -74,7 +73,7 @@ export class FormManagementUploadComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly formBuilder: FormBuilder,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService
   ) {}
 

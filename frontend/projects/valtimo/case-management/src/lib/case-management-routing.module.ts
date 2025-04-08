@@ -30,7 +30,11 @@ import {CaseManagementTabsComponent} from './components/case-management-tabs/cas
 import {CaseManagementWidgetTabComponent} from './components/case-management-widget-tab/case-management-widget-tab.component';
 import {TabEnum} from './models';
 import {CaseManagementGeneralComponent} from './components/case-management-general/case-management-general.component';
-import {FormManagementComponent, FormManagementRouteData} from '@valtimo/form-management';
+import {
+  FormManagementComponent,
+  FormManagementEditComponent,
+  FormManagementRouteData,
+} from '@valtimo/form-management';
 
 const routes: Routes = [
   {
@@ -53,7 +57,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'case-management/case/:caseDefinitionName/version/:caseVersionTag',
+    path: 'case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag',
     component: CaseManagementDetailContainerComponent,
     canActivate: [AuthGuardService],
     data: {
@@ -98,12 +102,23 @@ const routes: Routes = [
       {
         path: TabEnum.FORMS,
         component: FormManagementComponent,
-        canDeactivate: [pendingChangesGuard],
         data: {
           context: 'case',
         } as FormManagementRouteData,
       },
     ],
+  },
+  {
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.FORMS}/:formDefinitionId`,
+    component: FormManagementEditComponent,
+    canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
+    data: {
+      title: 'Forms',
+      roles: [ROLE_ADMIN],
+      context: 'case',
+      customPageTitle: true,
+    } as FormManagementRouteData,
   },
 ];
 

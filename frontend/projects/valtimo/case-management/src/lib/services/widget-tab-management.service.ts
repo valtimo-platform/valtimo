@@ -43,7 +43,7 @@ export class WidgetTabManagementService {
 
   public updateWidgets(tab: CaseWidgetsRes): Observable<any> {
     return this.http.post<any>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${tab.caseDefinitionName}/widget-tab/${tab.key}`,
+      `${this.valtimoEndpointUri}management/v1/case-definition/${tab.caseDefinitionKey}/widget-tab/${tab.key}`,
       tab
     );
   }

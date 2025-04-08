@@ -101,7 +101,7 @@ type FormioCaseWidgetWidgetWithUuid = FormioCaseWidget & {
 };
 
 interface CaseWidgetsRes {
-  caseDefinitionName: string;
+  caseDefinitionKey: string;
   key: string;
   widgets: BasicCaseWidget[];
 }

@@ -37,14 +37,10 @@ import {
   EditorModule,
 } from '@valtimo/components';
 import {BasicCaseWidget, CaseWidgetsRes} from '@valtimo/case';
-import {
-  ButtonModule,
-  IconModule,
-  IconService,
-  NotificationService,
-} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, take} from 'rxjs';
 import {WidgetJsonEditorService, WidgetTabManagementService} from '../../../services';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-case-management-widgets-json-editor',
@@ -60,7 +56,6 @@ import {WidgetJsonEditorService, WidgetTabManagementService} from '../../../serv
     IconModule,
     ConfirmationModalModule,
   ],
-  providers: [NotificationService],
 })
 export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
   @ViewChild('pendingChangesModal') public pendingChangesModal: ConfirmationModalComponent;
@@ -100,7 +95,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
 
   constructor(
     private readonly iconService: IconService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService,
     private readonly widgetJsonEditorService: WidgetJsonEditorService,
     private readonly widgetTabManagementService: WidgetTabManagementService
@@ -124,7 +119,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
     downloadAnchorElement.setAttribute('href', dataString);
     downloadAnchorElement.setAttribute(
       'download',
-      `${this._currentWidgetTab.caseDefinitionName}-widgets.json`
+      `${this._currentWidgetTab.caseDefinitionKey}-widgets.json`
     );
     downloadAnchorElement.click();
   }
@@ -217,7 +212,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
 
     this._jsonSchemaInvalid.set(
       widgetConfig.key !== this._currentWidgetTab.key ||
-        widgetConfig.caseDefinitionName !== this._currentWidgetTab.caseDefinitionName ||
+        widgetConfig.caseDefinitionKey !== this._currentWidgetTab.caseDefinitionKey ||
         new Set(editedWidgetKeys).size !== editedWidgetKeys.length
     );
 

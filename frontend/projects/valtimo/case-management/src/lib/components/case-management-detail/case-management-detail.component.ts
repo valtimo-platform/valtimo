@@ -38,9 +38,7 @@ export class CaseManagementDetailComponent implements AfterViewInit {
 
   public readonly documentDefinition$: Observable<DocumentDefinition> = this.route.paramMap.pipe(
     switchMap((params: ParamMap) =>
-      this.documentService.getDocumentDefinitionForManagement(
-        params.get('caseDefinitionName') ?? ''
-      )
+      this.documentService.getDocumentDefinitionForManagement(params.get('caseDefinitionKey') ?? '')
     )
   );
 

@@ -58,8 +58,10 @@ Run the following command to build all the Valtimo libraries: `npm run libs-buil
 #### Development mode
 
 - If you expect to make changes to multiple libraries at once, use the following commands:
-  - `npm run devMode` to build all libraries, watch them for changes and to start the Angular application.
-  - `npm run devMode:skipLibsBuild`. Use this command if all libraries have already been built. Watches all libraries for changes and starts the Angular application.
+  - `npm run devMode` to build all libraries, watch them for changes and to start the Angular
+    application.
+  - `npm run devMode:skipLibsBuild`. Use this command if all libraries have already been built.
+    Watches all libraries for changes and starts the Angular application.
 
 ### Making changes to the Valtimo frontend libraries
 

@@ -30,16 +30,25 @@ export class BreadcrumbService {
   private _cachedQueryParams: {[routeMatchString: string]: Params} = {};
   private readonly _manualSecondBreadcrumb$ = new BehaviorSubject<BreadcrumbItem | null>(null);
   private readonly _manualThirdBreadcrumb$ = new BehaviorSubject<BreadcrumbItem | null>(null);
+  private readonly _manualFourthBreadcrumb$ = new BehaviorSubject<BreadcrumbItem | null>(null);
+
   private readonly _breadcrumbItems$: Observable<Array<BreadcrumbItem>> = combineLatest([
     this.menuService.activeParentSequenceNumber$,
     this.menuService.menuItems$,
     this._manualSecondBreadcrumb$,
     this._manualThirdBreadcrumb$,
+    this._manualFourthBreadcrumb$,
     this.translateService.stream('key'),
     this.router.events.pipe(startWith(this.router)),
   ]).pipe(
     map(
-      ([activeParentSequenceNumber, menuItems, manualSecondBreadcrumb, manualThirdBreadcrumb]) => {
+      ([
+        activeParentSequenceNumber,
+        menuItems,
+        manualSecondBreadcrumb,
+        manualThirdBreadcrumb,
+        manualFourthBreadcrumb,
+      ]) => {
         const activeParentBreadcrumbTitle = menuItems.find(
           menuItem => `${menuItem.sequence}` === activeParentSequenceNumber
         )?.title;
@@ -55,6 +64,7 @@ export class BreadcrumbService {
           ...(manualSecondBreadcrumb ? [manualSecondBreadcrumb] : []),
           ...(secondBreadCrumb && !manualSecondBreadcrumb ? [secondBreadCrumb] : []),
           ...(!!manualThirdBreadcrumb ? [manualThirdBreadcrumb] : []),
+          ...(!!manualFourthBreadcrumb ? [manualFourthBreadcrumb] : []),
         ];
       }
     ),
@@ -74,23 +84,31 @@ export class BreadcrumbService {
     private readonly serializer: UrlSerializer
   ) {}
 
-  setSecondBreadcrumb(breadcrumb: BreadcrumbItem): void {
+  public setSecondBreadcrumb(breadcrumb: BreadcrumbItem): void {
     this._manualSecondBreadcrumb$.next(breadcrumb);
   }
 
-  clearSecondBreadcrumb(): void {
+  public clearSecondBreadcrumb(): void {
     this._manualSecondBreadcrumb$.next(null);
   }
 
-  setThirdBreadcrumb(breadcrumb: BreadcrumbItem): void {
+  public setThirdBreadcrumb(breadcrumb: BreadcrumbItem): void {
     this._manualThirdBreadcrumb$.next(breadcrumb);
   }
 
-  clearThirdBreadcrumb(): void {
+  public clearThirdBreadcrumb(): void {
     this._manualThirdBreadcrumb$.next(null);
   }
 
-  cacheQueryParams(routeMatchString: string, params: Params): void {
+  public setFourthBreadcrumb(breadcrumb: BreadcrumbItem): void {
+    this._manualFourthBreadcrumb$.next(breadcrumb);
+  }
+
+  public clearFourthBreadcrumb(): void {
+    this._manualFourthBreadcrumb$.next(null);
+  }
+
+  public cacheQueryParams(routeMatchString: string, params: Params): void {
     if (routeMatchString && typeof params === 'object' && Object.keys(params).length > 0) {
       this._cachedQueryParams = {...this._cachedQueryParams, [routeMatchString]: params};
     }

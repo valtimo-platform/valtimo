@@ -1,31 +1,20 @@
 <ng-container
   *ngIf="{
-    hasCreateQueryParam: hasCreateQueryParam$ | async,
-    editQueryParam: editQueryParam$ | async,
+    create: create$ | async,
+    upload: upload$ | async,
   } as obs"
 >
   <valtimo-form-management-list
-    *ngIf="!obs.editQueryParam"
     (navigateToCreateEvent)="onNavigateToCreateEvent()"
     (navigateToUploadEvent)="onNavigateToUploadEvent()"
     (navigateToEditEvent)="onFormDefinitionEditEvent($event)"
   ></valtimo-form-management-list>
 
   <valtimo-form-management-create
-    *ngIf="obs.hasCreateQueryParam && !obs.editQueryParam"
+    *ngIf="obs.create"
+    [upload]="obs.upload"
     (goBackEvent)="onGoBackFromCreateEvent()"
     (afterCreateEvent)="onFormDefinitionCreateEvent($event)"
     (afterUploadEvent)="onFormDefinitionUploadEvent($event)"
   ></valtimo-form-management-create>
-
-  <valtimo-form-management-edit
-    *ngIf="!!obs.editQueryParam"
-    (deleteEvent)="onModifiedEvent()"
-    (formModifiedEvent)="onModifiedEvent()"
-    (formDeletedEvent)="onModifiedEvent(true)"
-    (goBackEvent)="onGoBackEvent()"
-    (pendingChangesChangeEvent)="onPendingChangesChangeEvent($event)"
-    (deleteErrorEvent)="onDeleteErrorEvent()"
-    (deployErrorEvent)="onDeployErrorEvent()"
-  ></valtimo-form-management-edit>
 </ng-container>

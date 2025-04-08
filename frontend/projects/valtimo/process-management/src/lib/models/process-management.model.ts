@@ -28,8 +28,8 @@ const PROCESS_MANAGEMENT_ENDPOINTS = {
 };
 
 interface ProcessManagementParams {
-  definitionName: string;
-  versionTag: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
 }
 
 export {OpenProcessLinkModalEvent, PROCESS_MANAGEMENT_ENDPOINTS, ProcessManagementParams};

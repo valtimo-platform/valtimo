@@ -25,15 +25,9 @@
   @if (obs.formDefinition) {
     <ng-container renderInPageHeader [fullWidth]="true">
       <ng-template>
-        @if (obs.context === 'independent') {
-          <ng-container *ngTemplateOutlet="actions; context: {obs: obs}"></ng-container>
-        }
+        <ng-container *ngTemplateOutlet="actions; context: {obs: obs}"></ng-container>
       </ng-template>
     </ng-container>
-
-    <div *ngIf="obs.context === 'case'" class="valtimo-form-management-edit__case-header">
-      <ng-container *ngTemplateOutlet="actions; context: {obs: obs}"></ng-container>
-    </div>
 
     <cds-tabs type="contained">
       <cds-tab [heading]="TABS.BUILDER | translate" (selected)="onSelectedTab(TABS.BUILDER)">
@@ -80,7 +74,7 @@
       </cds-tab>
     </cds-tabs>
   } @else {
-    <valtimo-spinner></valtimo-spinner>
+    <cds-loading></cds-loading>
   }
 
   <valtimo-confirmation-modal
@@ -106,7 +100,7 @@
       (validEvent)="onValidEvent($event, data.disabled)"
       (valueChangeEvent)="onValueChangeEvent($event, data.formDefinition, data.disabled)"
       [fitPage]="true"
-      [fitPageExtraSpace]="obs.context === 'case' ? 204 : 80"
+      [fitPageExtraSpace]="80"
     ></valtimo-editor>
   </ng-template>
 </ng-container>
@@ -119,18 +113,6 @@
       'valtimo-form-management-edit__header-container-case': obs?.context === 'case',
     }"
   >
-    @if (obs.context === 'case') {
-      <button
-        cdsButton="secondary"
-        [size]="obs.compactMode ? 'sm' : 'md'"
-        (click)="onGoBackButtonClick()"
-      >
-        <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
-
-        <span>{{ 'interface.back' | translate }}</span>
-      </button>
-    }
-
     @if (obs.formDefinition.readOnly) {
       <cds-tag size="sm" type="blue">{{ 'formManagement.readOnly' | translate }}</cds-tag>
     }
@@ -156,6 +138,18 @@
           {{ 'formManagement.duplicate' | translate }}
         </cds-overflow-menu-option>
       </cds-overflow-menu>
+
+      @if (obs.context === 'case') {
+        <button
+          cdsButton="secondary"
+          [size]="obs.compactMode ? 'sm' : 'md'"
+          (click)="onGoBackButtonClick()"
+        >
+          <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+
+          <span>{{ 'interface.back' | translate }}</span>
+        </button>
+      }
 
       <button
         cdsButton="primary"

@@ -25,7 +25,8 @@ import {
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {filter} from 'rxjs/operators';
 import {Subscription} from 'rxjs';
-import {PlaceholderService} from 'carbon-components-angular';
+import {NotificationService, PlaceholderService} from 'carbon-components-angular';
+import {GlobalNotificationService} from '../../services';
 
 // eslint-disable-next-line no-var
 declare var App: any;
@@ -33,6 +34,7 @@ declare var App: any;
 @Component({
   selector: 'valtimo-layout',
   templateUrl: './layout.component.html',
+  providers: [NotificationService],
 })
 export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('carbonPlaceHolder', {static: true, read: ViewContainerRef})
@@ -45,11 +47,14 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly placeHolderService: PlaceholderService
+    private readonly placeHolderService: PlaceholderService,
+    private readonly notificationService: NotificationService,
+    private readonly globalNotificationService: GlobalNotificationService
   ) {}
 
   public ngOnInit() {
     this.openRouterSubscription();
+    this.globalNotificationService.setNotificationService(this.notificationService);
   }
 
   public ngAfterViewInit(): void {

@@ -50,7 +50,7 @@ import {
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {IntermediateSubmission} from '@valtimo/task';
-import {IconService, NotificationService} from 'carbon-components-angular';
+import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
@@ -85,11 +85,12 @@ import {
 } from '../../constants';
 import {CaseDetailLayoutService, CaseService, CaseTabService} from '../../services';
 import {CaseSupportingProcessStartModalComponent} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   templateUrl: './case-detail.component.html',
   styleUrls: ['./case-detail.component.scss'],
-  providers: [CaseTabService, CaseDetailLayoutService, NotificationService],
+  providers: [CaseTabService, CaseDetailLayoutService],
 })
 export class CaseDetailComponent
   extends PendingChangesComponent
@@ -306,7 +307,7 @@ export class CaseDetailComponent
     private readonly iconService: IconService,
     private readonly keyCloakService: KeycloakService,
     private readonly logger: NGXLogger,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly pageHeaderService: PageHeaderService,
     private readonly pageTitleService: PageTitleService,
     private readonly permissionService: PermissionService,

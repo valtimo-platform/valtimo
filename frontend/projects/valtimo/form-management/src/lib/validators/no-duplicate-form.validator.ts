@@ -28,8 +28,8 @@ export function noDuplicateFormValidator(
   return (control: AbstractControl): Observable<ValidationErrors> =>
     (context === 'case'
       ? formManagementService.existsFormDefinitionCase(
-          params.definitionName,
-          params.versionTag,
+          params.caseDefinitionKey,
+          params.caseDefinitionVersionTag,
           control.value.toString()
         )
       : formManagementService.existsFormDefinition(control.value.toString())

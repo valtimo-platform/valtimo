@@ -1,15 +1,15 @@
 import {Component, EventEmitter, Output} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
+import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {Upload16} from '@carbon/icons';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {FormManagementService} from '../../services';
 import {CarbonListModule, ColumnConfig, Pagination} from '@valtimo/components';
-import {FormDefinition, FormManagementParams} from '../../models';
+import {FormDefinition} from '../../models';
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms'; // For translation support
-import {ManagementContext} from '@valtimo/config';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
 
 @Component({
   selector: 'valtimo-form-management-list',
@@ -31,26 +31,14 @@ export class FormManagementListComponent {
   @Output() public readonly navigateToUploadEvent = new EventEmitter<void>();
   @Output() public readonly navigateToEditEvent = new EventEmitter<string>();
 
-  public readonly context$: Observable<ManagementContext | ''> = this.route.data.pipe(
-    map(data => data && (data['context'] as ManagementContext))
-  );
-
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly searchTerm$ = new BehaviorSubject<string>('');
 
-  public readonly caseManagementRouteParams$: Observable<FormManagementParams | null> = this.route
-    .parent
-    ? this.route.parent.params.pipe(
-        map(({caseDefinitionName, caseVersionTag}) =>
-          caseDefinitionName && caseVersionTag
-            ? {
-                definitionName: caseDefinitionName,
-                versionTag: caseVersionTag,
-              }
-            : null
-        )
-      )
-    : of(null);
+  public readonly context$ = getContextObservable(this.route);
+
+  public readonly caseManagementRouteParams$ = this.context$.pipe(
+    switchMap(context => getCaseManagementRouteParams(context, this.route))
+  );
 
   private readonly _collectionSize$ = new BehaviorSubject<number>(0);
 
@@ -79,6 +67,9 @@ export class FormManagementListComponent {
     this._partialPagination$,
     this.searchTerm$,
   ]).pipe(
+    filter(([context, params]) =>
+      context === 'case' ? !!(params?.caseDefinitionVersionTag && params?.caseDefinitionKey) : true
+    ),
     switchMap(([context, routeParams, pagination, searchTerm]) => {
       const params = {
         ...pagination,
@@ -89,8 +80,8 @@ export class FormManagementListComponent {
       switch (context) {
         case 'case':
           return this.formManagementService.queryFormDefinitionsCase(
-            routeParams.definitionName,
-            routeParams.versionTag,
+            routeParams.caseDefinitionKey,
+            routeParams.caseDefinitionVersionTag,
             params
           );
         default:
@@ -99,7 +90,7 @@ export class FormManagementListComponent {
       }
     }),
     map(res => {
-      this._collectionSize$.next(res.totalElements);
+      this._collectionSize$.next(res?.totalElements);
 
       return res?.content || [];
     }),
@@ -114,7 +105,6 @@ export class FormManagementListComponent {
   constructor(
     private readonly formManagementService: FormManagementService,
     private readonly iconService: IconService,
-    private readonly router: Router,
     private readonly route: ActivatedRoute
   ) {
     this.iconService.registerAll([Upload16]);

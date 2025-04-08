@@ -25,15 +25,14 @@ import {
   PageTitleService,
 } from '@valtimo/components';
 import {Role} from '../../models';
-import {NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   templateUrl: './access-control-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./access-control-editor.component.scss'],
-  providers: [NotificationService],
 })
 export class AccessControlEditorComponent implements OnInit, OnDestroy {
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
@@ -54,7 +53,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService,
     private readonly accessControlExportService: AccessControlExportService,
     private readonly pageHeaderService: PageHeaderService

@@ -1,10 +1,10 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {ValtimoCdsModalDirectiveModule, WidgetModule} from '@valtimo/components';
 import {FormManagementService} from '../../services';
-import {CreateFormDefinitionRequest, FormManagementParams} from '../../models';
-import {combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {CreateFormDefinitionRequest} from '../../models';
+import {combineLatest, switchMap, tap} from 'rxjs';
 import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.validator';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
@@ -15,8 +15,8 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {ManagementContext} from '@valtimo/config';
 import {take} from 'rxjs/operators';
+import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
 
 @Component({
   selector: 'valtimo-form-management-create',
@@ -39,24 +39,17 @@ import {take} from 'rxjs/operators';
   ],
 })
 export class FormManagementCreateComponent implements OnInit {
+  @Input() public readonly upload = false;
+
   @Output() public readonly goBackEvent = new EventEmitter<void>();
   @Output() public readonly afterCreateEvent = new EventEmitter<string>();
   @Output() public readonly afterUploadEvent = new EventEmitter<string>();
 
-  public readonly context$: Observable<ManagementContext | ''> = this.route.data.pipe(
-    map(data => data && (data['context'] as ManagementContext))
-  );
+  public readonly context$ = getContextObservable(this.route);
 
-  public readonly caseManagementRouteParams$: Observable<FormManagementParams | null> = this.route
-    .parent
-    ? this.route.parent.params.pipe(
-        map(({caseDefinitionName, caseVersionTag}) =>
-          caseDefinitionName && caseVersionTag
-            ? {definitionName: caseDefinitionName, versionTag: caseVersionTag}
-            : null
-        )
-      )
-    : of(null);
+  public readonly caseManagementRouteParams$ = this.context$.pipe(
+    switchMap(context => getCaseManagementRouteParams(context, this.route))
+  );
 
   public form: FormGroup;
 
@@ -113,15 +106,14 @@ export class FormManagementCreateComponent implements OnInit {
         switchMap(([context, caseManagementParams]) =>
           context === 'case'
             ? this.formManagementService.createFormDefinitionsCase(
-                caseManagementParams.definitionName,
-                caseManagementParams.versionTag,
+                caseManagementParams.caseDefinitionKey,
+                caseManagementParams.caseDefinitionVersionTag,
                 request
               )
             : this.formManagementService.createFormDefinition(request)
         ),
-        switchMap(formDefinition => combineLatest([of(formDefinition), this.route.queryParams])),
-        tap(([formDefinition, params]) => {
-          if (params?.upload === 'true') {
+        tap(formDefinition => {
+          if (this.upload) {
             this.afterUploadEvent.emit(formDefinition.id);
           } else {
             this.afterCreateEvent.emit(formDefinition.id);

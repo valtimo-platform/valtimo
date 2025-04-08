@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {LoadingModule, NotificationModule, NotificationService} from 'carbon-components-angular';
+import {LoadingModule, NotificationModule} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {CaseProcessInstance, ProcessManagementParams} from '../../models';
 import {ProcessManagementService} from '../../services';
@@ -25,6 +25,7 @@ import {ProcessManagementBuilderComponent} from '../process-management-builder/p
 import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
 import {ProcessManagementUploadComponent} from '../process-management-upload/process-management-upload.component';
 import {ManagementContext} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-process-management',
@@ -40,7 +41,7 @@ import {ManagementContext} from '@valtimo/config';
     LoadingModule,
     NotificationModule,
   ],
-  providers: [NotificationService, TranslateService],
+  providers: [TranslateService],
 })
 export class ProcessManagementComponent {
   public readonly selectedProcess$ = new BehaviorSubject<CaseProcessInstance | null>(null);
@@ -52,12 +53,15 @@ export class ProcessManagementComponent {
   @Input() public set params(value: ProcessManagementParams | null) {
     if (!value) return;
 
-    this.processManagementService.setParams(value.definitionName, value.versionTag);
+    this.processManagementService.setParams(
+      value.caseDefinitionKey,
+      value.caseDefinitionVersionTag
+    );
     this.paramsAreSet$.next(true);
   }
 
   constructor(
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly processManagementService: ProcessManagementService,
     private readonly translateService: TranslateService
   ) {}
