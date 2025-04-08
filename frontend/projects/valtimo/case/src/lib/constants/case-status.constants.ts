@@ -15,13 +15,14 @@
  */
 
 import {CASES_WITHOUT_STATUS_KEY} from '@valtimo/components';
-import {InternalCaseStatus, InternalCaseStatusColor} from '@valtimo/document';
+import {InternalCaseStatus} from '@valtimo/document';
+import {TagColor} from '@valtimo/config';
 
 const CASE_WITHOUT_STATUS_STATUS: InternalCaseStatus = {
   key: CASES_WITHOUT_STATUS_KEY,
   documentDefinitionName: '',
   title: '',
-  color: InternalCaseStatusColor.Gray,
+  color: TagColor.Gray,
   visibleInCaseListByDefault: false,
 };
 

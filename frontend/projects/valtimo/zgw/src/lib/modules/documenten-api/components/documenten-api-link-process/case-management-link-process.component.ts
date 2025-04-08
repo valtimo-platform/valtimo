@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
-import {filter} from 'rxjs/operators';
 import {ComboBoxModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/config';
 import {ActivatedRoute} from '@angular/router';
@@ -32,13 +31,8 @@ import {TranslateModule} from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, ParagraphModule, TranslateModule, ComboBoxModule, LayerModule],
 })
-export class CaseManagementLinkProcessComponent {
+export class CaseManagementLinkProcessComponent implements OnInit {
   public readonly documentenApiUploadProviders$ = new BehaviorSubject<boolean>(false);
-
-  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params?.name),
-    filter(name => !!name)
-  );
 
   public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
     map(({caseDefinitionName, caseVersionTag}) => ({

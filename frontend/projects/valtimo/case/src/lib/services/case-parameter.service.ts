@@ -110,6 +110,20 @@ export class CaseParameterService implements OnDestroy {
     );
   }
 
+  public get queryCaseTagsParams$(): Observable<string[] | null> {
+    return this.route.queryParams.pipe(
+      map(params => {
+        if (params?.casetags) {
+          return JSON.parse(atob(params.casetags)) as string[];
+        }
+        return null;
+      }),
+      distinctUntilChanged(
+        (prevParams, currParams) => JSON.stringify(prevParams) === JSON.stringify(currParams)
+      )
+    );
+  }
+
   private _dossierParametersSubscription!: Subscription;
 
   constructor(
@@ -186,6 +200,22 @@ export class CaseParameterService implements OnDestroy {
     });
   }
 
+  public setCaseTagParameter(caseTagKeyParameters: string[]): void {
+    this._dossierParameters$.pipe(take(1)).subscribe(dossierParameters => {
+      if ((caseTagKeyParameters || []).length > 0) {
+        this._dossierParameters$.next({
+          ...dossierParameters,
+          casetags: this.objectToBase64(caseTagKeyParameters),
+        });
+      } else {
+        if (dossierParameters?.casetags) {
+          delete dossierParameters.casetags;
+        }
+        this._dossierParameters$.next(dossierParameters);
+      }
+    });
+  }
+
   public clearSearchFieldValues(): void {
     this._searchFieldValues$.next({});
   }
@@ -221,18 +251,22 @@ export class CaseParameterService implements OnDestroy {
       this.querySearchParams$,
       this.queryAssigneeParam$,
       this.queryStatusParams$,
+      this.queryCaseTagsParams$,
     ])
       .pipe(take(1))
-      .subscribe(([paginationParams, searchParams, assigneeParams, statusParams]) => {
-        if (paginationParams) this.setPaginationParameters(paginationParams);
-        if (assigneeParams) this.setAssigneeParameter(assigneeParams);
-        if (statusParams) this.setStatusParameter(statusParams);
-        if (searchParams) {
-          this.setSearchParameters(searchParams);
-          this.setSearchFieldValues(searchParams);
-        }
+      .subscribe(
+        ([paginationParams, searchParams, assigneeParams, statusParams, caseTagParams]) => {
+          if (paginationParams) this.setPaginationParameters(paginationParams);
+          if (assigneeParams) this.setAssigneeParameter(assigneeParams);
+          if (statusParams) this.setStatusParameter(statusParams);
+          if (caseTagParams) this.setCaseTagParameter(caseTagParams);
+          if (searchParams) {
+            this.setSearchParameters(searchParams);
+            this.setSearchFieldValues(searchParams);
+          }
 
-        this.openDossierParametersSubscription();
-      });
+          this.openDossierParametersSubscription();
+        }
+      );
   }
 }

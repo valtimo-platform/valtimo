@@ -42,16 +42,12 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import {
-  CaseStatusService,
-  InternalCaseStatus,
-  InternalCaseStatusColor,
-  InternalCaseStatusUtils,
-} from '@valtimo/document';
-import {IconService} from 'carbon-components-angular';
+import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
+import {IconService, Tag} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {TranslateService} from '@ngx-translate/core';
+import {TagColor} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-case-management-status-modal',
@@ -117,22 +113,9 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
 
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
-  private readonly COLORS: InternalCaseStatusColor[] = [
-    InternalCaseStatusColor.Red,
-    InternalCaseStatusColor.Magenta,
-    InternalCaseStatusColor.Purple,
-    InternalCaseStatusColor.Blue,
-    InternalCaseStatusColor.Teal,
-    InternalCaseStatusColor.Green,
-    InternalCaseStatusColor.Cyan,
-    InternalCaseStatusColor.Gray,
-    InternalCaseStatusColor.CoolGray,
-    InternalCaseStatusColor.WarmGray,
-    InternalCaseStatusColor.HighContrast,
-    InternalCaseStatusColor.Outline,
-  ];
+  private readonly COLORS: TagColor[] = Object.values(TagColor);
 
-  private readonly _selectedColor$ = new BehaviorSubject<InternalCaseStatusColor>(undefined);
+  private readonly _selectedColor$ = new BehaviorSubject<TagColor | undefined>(undefined);
 
   public readonly colorListItems$: Observable<ListItem[]> = combineLatest([
     this._selectedColor$,
@@ -258,7 +241,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     item: {color: string; content: string; selected: boolean};
     isUpdate: boolean;
   }): void {
-    const newColor = event?.item?.color as InternalCaseStatusColor;
+    const newColor = event?.item?.color as TagColor;
 
     if (newColor) {
       this._selectedColor$.next(newColor);
@@ -285,9 +268,9 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       key: '',
       title: '',
       visibleInCaseListByDefault: true,
-      color: InternalCaseStatusColor.Blue,
+      color: TagColor.Blue,
     });
-    this._selectedColor$.next(InternalCaseStatusColor.Blue);
+    this._selectedColor$.next(TagColor.Blue);
     this.statusFormGroup.markAsPristine();
     this.resetEditingKey();
   }
@@ -387,7 +370,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       key: this.key.value,
       title: this.title.value,
       visibleInCaseListByDefault: this.visibleInCaseListByDefault.value,
-      color: this.color.value as InternalCaseStatusColor,
+      color: this.color.value as TagColor,
     };
   }
 }

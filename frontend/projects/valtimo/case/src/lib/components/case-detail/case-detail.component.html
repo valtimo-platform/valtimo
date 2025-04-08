@@ -18,6 +18,18 @@
   [ngClass]="{'main-content--no-horizontal-overflow': tabHorizontalOverflowDisabled()}"
 >
   <div class="container-fluid">
+    <ng-container *ngIf="caseTags$ | async as caseTags">
+      @if (caseTags && caseTags.length > 0) {
+        <div class="spacing-case-tags">
+          @for (tag of caseTags; track tag) {
+            <cds-tag size="sm" [type]="tag.tagType">
+              {{ tag.title }}
+            </cds-tag>
+          }
+        </div>
+      }
+    </ng-container>
+
     <ng-container *ngTemplateOutlet="tabs"></ng-container>
 
     <ng-template #tabs>
@@ -32,7 +44,6 @@
         </cds-tabs>
       </ng-container>
     </ng-template>
-
     <div
       #tabContentContainer
       class="tab-content-container"

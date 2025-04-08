@@ -15,3 +15,4 @@
  */
 
 export * from './internal-case-status.utils';
+export * from './case-tags.utils';

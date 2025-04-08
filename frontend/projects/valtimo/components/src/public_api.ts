@@ -268,3 +268,5 @@ export * from './lib/components/form-io/formio-value-resolver-selector/formio-va
 // formio dummy
 export * from './lib/components/form-io/form-io-dummy/dummy.component';
 export * from './lib/components/form-io/form-io-dummy/dummy.formio';
+
+export * from './lib/components/case-tags-selector/case-tags-selector.component';

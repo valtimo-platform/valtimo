@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {CaseTag} from './case-tags.model';
+
 interface SortResult {
   sorted: boolean;
   unsorted: boolean;
@@ -115,6 +117,7 @@ interface Document {
   assigneeFullName: string;
   assigneeId: string;
   internalStatus?: string;
+  caseTags?: CaseTag[];
 }
 
 interface DocumentDefinitionId {
@@ -321,10 +324,16 @@ interface DocumentType {
   name: string;
 }
 
-interface CaseSettings {
+interface ExternalStartFormConfiguration {
+  hasExternalStartForm?: boolean;
+  externalStartFormUrl?: string;
+  externalStartFormDescription?: string;
+}
+
+interface CaseSettings extends ExternalStartFormConfiguration {
   name?: string;
-  canHaveAssignee: boolean;
-  autoAssignTasks: boolean;
+  canHaveAssignee?: boolean;
+  autoAssignTasks?: boolean;
 }
 
 interface OpenDocumentCount {
@@ -361,6 +370,7 @@ interface DisplayTypeParameters {
     [key: string]: string;
   };
   dateFormat?: string;
+  tagAmount?: number;
 }
 
 interface DocumentDefinitionVersionsResult {
@@ -440,4 +450,5 @@ export {
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
+  ExternalStartFormConfiguration,
 };

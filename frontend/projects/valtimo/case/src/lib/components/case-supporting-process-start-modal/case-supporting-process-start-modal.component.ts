@@ -31,7 +31,6 @@ import {
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
-  ModalComponent,
   ValtimoFormioOptions,
 } from '@valtimo/components';
 import {ProcessDefinitionCaseDefinition} from '@valtimo/document';

@@ -204,6 +204,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
       key: this.INVALID_KEY,
     }),
     enum: new FormControl<{[key: string]: string}[]>([]),
+    tagAmount: new FormControl(1),
   });
 
   readonly disableDefaultSort$ = combineLatest([
@@ -236,6 +237,11 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
       }
     }),
     startWith(false)
+  );
+
+  readonly showTagAmount$ = this.formGroup.valueChanges.pipe(
+    map(formValues => formValues.displayType?.key === this.DISPLAY_TYPES[6]),
+    startWith(this.formGroup.value.displayType?.key === this.DISPLAY_TYPES[6] ? true : false)
   );
 
   readonly showEnum$ = this.formGroup.valueChanges.pipe(
@@ -312,7 +318,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   readonly validKey$ = combineLatest([this.formGroup.valueChanges, this.currentModalType$]).pipe(
     map(([formValues, currentModalType]) => {
       const existingKeys = this.cachedCaseListColumns.map(column => column.key);
-      return currentModalType === 'create' ? !existingKeys.includes(formValues.key || '') : true;
+      return currentModalType === 'create' ? !existingKeys.includes(formValues.key ?? '') : true;
     }),
     startWith(false)
   );
@@ -324,7 +330,8 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
           formValues.displayType?.key !== this.INVALID_KEY &&
           formValues.path &&
           validKey &&
-          (formValues.displayType?.key === 'enum' ? (formValues.enum ?? []).length > 0 : true)
+          (formValues?.displayType?.key === 'enum' ? formValues.enum?.length > 0 : true) &&
+          (formValues?.displayType?.key === 'tags' ? formValues.tagAmount > 0 : true)
         )
     ),
     startWith(false)
@@ -454,6 +461,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
         const enumValues = column?.displayType?.displayTypeParameters?.enum;
         const mappedEnumValues: MultiInputValues = [];
         const columnDateFormat = column?.displayType?.displayTypeParameters?.dateFormat;
+        const tagAmount = column?.displayType?.displayTypeParameters?.tagAmount;
 
         this.selectedViewTypeItemIndex$.next(viewTypeItemIndex);
 
@@ -482,10 +490,19 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
           ...(columnDateFormat && {
             dateFormat: columnDateFormat,
           }),
+          ...(tagAmount && {
+            tagAmount: tagAmount,
+          }),
         });
 
         this.openModal('edit');
       });
+  }
+
+  public selectedDisplayType(event: ListItem): void {
+    if (event.item.selected && event.item.key === 'tags') {
+      this.formGroup.patchValue({sortable: undefined, defaultSort: undefined});
+    }
   }
 
   private updateCaseListColumns(
@@ -528,6 +545,8 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   private getDisplayTypeParametersView(displayTypeParameters: DisplayTypeParameters): string {
     if (displayTypeParameters?.dateFormat) {
       return displayTypeParameters.dateFormat;
+    } else if (displayTypeParameters?.tagAmount) {
+      return displayTypeParameters.tagAmount.toString();
     } else if (displayTypeParameters?.enum) {
       return Object.keys(displayTypeParameters.enum).reduce((acc, curr) => {
         const keyValuePairString = `${curr}: ${displayTypeParameters.enum?.[curr]}`;
@@ -595,6 +614,10 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   private enableInput(): void {
     this.disableInput$.next(false);
     this.formGroup.enable();
+    if (this.formGroup.value.displayType?.key === 'tags') {
+      this.formGroup.controls.defaultSort.disable();
+      this.formGroup.controls.sortable.disable();
+    }
   }
 
   private refreshCaseListColumns(): void {
@@ -628,6 +651,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
       displayType: {
         type: formValue.displayType?.key,
         displayTypeParameters: {
+          ...(formValue.tagAmount && {tagAmount: formValue.tagAmount}),
           ...(formValue.dateFormat && {dateFormat: formValue.dateFormat}),
           ...(Array.isArray(formValue.enum) &&
             formValue.enum.length > 0 && {

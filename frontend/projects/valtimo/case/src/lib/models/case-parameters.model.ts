@@ -27,6 +27,7 @@ interface CaseParameters extends PaginationParameters {
   search?: string;
   assignee?: string;
   status?: string;
+  casetags?: string;
 }
 
 export {CaseParameters};

@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-import {InternalCaseStatusColor} from '../models';
 import {TagType} from 'carbon-components-angular';
+import {TagColor} from '@valtimo/config';
 
 class InternalCaseStatusUtils {
-  static getTagTypeFromInternalCaseStatusColor(
-    internalCaseStatusColor: InternalCaseStatusColor
-  ): TagType {
+  static getTagTypeFromInternalCaseStatusColor(internalCaseStatusColor: TagColor): TagType {
     switch (internalCaseStatusColor) {
-      case InternalCaseStatusColor.HighContrast:
+      case TagColor.HighContrast:
         return 'high-contrast';
-      case InternalCaseStatusColor.CoolGray:
+      case TagColor.CoolGray:
         return 'cool-gray';
-      case InternalCaseStatusColor.WarmGray:
+      case TagColor.WarmGray:
         return 'warm-gray';
       default:
         return internalCaseStatusColor?.toLowerCase() as TagType;

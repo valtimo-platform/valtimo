@@ -41,7 +41,7 @@ export class FormIoCurrencyComponent
   @Input() public set value(value: number) {
     this._value = value;
     this.currencyForm.setValue({
-      currencyValue: Currency.masking(value, this._currencyInstance.opts.maskOpts),
+      currencyValue: Currency.masking(value, this.maskOpts),
     });
   }
 
@@ -62,6 +62,18 @@ export class FormIoCurrencyComponent
   private _currencyInstance!: Currency;
 
   private readonly _subscriptions = new Subscription();
+
+  private get maskOpts(): any {
+    return {
+      empty: this.allowEmptyValue || false,
+      locales: this.currencyLocale || 'nl-NL',
+      digits: 2,
+      options: {
+        style: 'currency',
+        currency: this.currencyCurrency || 'EUR',
+      },
+    };
+  }
 
   public ngOnInit(): void {
     this._subscriptions.add(
@@ -85,15 +97,7 @@ export class FormIoCurrencyComponent
 
   public ngAfterViewInit(): void {
     this._currencyInstance = new Currency(this.currencyElement.nativeElement, {
-      maskOpts: {
-        empty: this.allowEmptyValue || false,
-        locales: this.currencyLocale || 'nl-NL',
-        digits: 2,
-        options: {
-          style: 'currency',
-          currency: this.currencyCurrency || 'EUR',
-        },
-      },
+      maskOpts: this.maskOpts,
     });
   }
 
