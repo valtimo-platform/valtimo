@@ -22,6 +22,8 @@
     versions: versions$ | async,
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
+    selectedVersionIsSameAsActiveVersion: selectedVersionIsSameAsActiveVersion$ | async,
+    selectedVersionIsGloballyActive: selectedVersionIsGloballyActive$ | async,
     compactMode: compactMode$ | async,
   } as obs"
   [ngClass]="{'--compact': obs.compactMode}"
@@ -37,14 +39,30 @@
 
 <ng-template #versionSelection let-obs="obs">
   <cds-dropdown
-    class="version-selection"
-    [disabled]="obs.loadingVersion || (obs.versionListItems?.length || []) === 1"
-    [skeleton]="obs.loadingVersion"
-    (selected)="setVersion($event)"
+    class="version-selector"
+    selectionFeedback="fixed"
     [size]="obs.compactMode ? 'sm' : 'md'"
+    [appendInline]="false"
+    (selected)="setVersion($event)"
+    [disabled]="!obs.versions?.length"
   >
-    <cds-dropdown-list [items]="obs.versions || []"></cds-dropdown-list>
+    <cds-dropdown-list
+      [items]="obs.versions"
+      [listTpl]="versionListItemTemplate"
+    ></cds-dropdown-list>
   </cds-dropdown>
+</ng-template>
+
+<ng-template #versionListItemTemplate let-item="item">
+  <div class="version-selector-dropdown-template">
+    <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
+      {{ item?.content }}
+    </cds-tag>
+
+    <cds-tag class="cds-tag--no-margin" [type]="'high-contrast'">
+      {{ 'caseManagement.globallyActive' | translate }}
+    </cds-tag>
+  </div>
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">
@@ -70,6 +88,13 @@
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="openCaseRemoveModal()"
       >{{ 'Remove document definition' | translate }}</cds-overflow-menu-option
+    >
+
+    <cds-overflow-menu-option
+      [id]="'setGlobalActiveVersion'"
+      [disabled]="obs.selectedVersionIsGloballyActive"
+      (selected)="openGlobalActiveVersionModal()"
+      >{{ 'caseManagement.setGlobalActiveVersion' | translate }}</cds-overflow-menu-option
     >
   </cds-overflow-menu>
 </ng-template>
@@ -99,3 +124,38 @@
 </ng-template>
 
 <valtimo-case-management-remove-modal #caseRemoveModal></valtimo-case-management-remove-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showGlobalVersionModal$"
+  cancelButtonType="ghost"
+  cancelButtonTextTranslationKey="caseManagement.globalActiveVersionModal.cancel"
+  confirmButtonTextTranslationKey="caseManagement.globalActiveVersionModal.continue"
+  titleTranslationKey="caseManagement.globalActiveVersionModal.title"
+  contentTranslationKey="caseManagement.globalActiveVersionModal.description"
+  (cancelEvent)="closeGlobalVersionCaseModal()"
+  (confirmEvent)="openGlobalCaseVersionConfirmationModal()"
+>
+  <cds-notification
+    *ngIf="isOlderVersionSelected$ | async"
+    class="full-width-notification"
+    [notificationObj]="{
+      type: 'warning',
+      title: 'caseManagement.globalActiveVersionModal.warningTitle' | translate,
+      message: 'caseManagement.globalActiveVersionModal.warningMessage' | translate,
+      showClose: false,
+      lowContrast: true,
+    }"
+  >
+  </cds-notification>
+</valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showGlobalVersionConfirmationModal$"
+  cancelButtonType="ghost"
+  cancelButtonTextTranslationKey="caseManagement.confirmationGlobalVersionModal.cancel"
+  confirmButtonTextTranslationKey="caseManagement.confirmationGlobalVersionModal.confirm"
+  contentTranslationKey="caseManagement.confirmationGlobalVersionModal.description"
+  titleTranslationKey="caseManagement.confirmationGlobalVersionModal.title"
+  (cancelEvent)="closeGlobalCaseConfirmationModal()"
+  (confirmEvent)="setGlobalActiveCaseVersion()"
+></valtimo-confirmation-modal>

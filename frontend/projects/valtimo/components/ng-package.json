@@ -35,6 +35,7 @@
     "deepmerge-ts",
     "@carbon/charts-angular",
     "@types/topojson",
-    "@tadashi/currency"
+    "@tadashi/currency",
+    "semver"
   ]
 }

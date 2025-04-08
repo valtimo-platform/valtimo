@@ -542,7 +542,26 @@
     "connectProcess": "Connect process",
     "processLink": "Link process",
     "selectProcessDef": "Select process definition",
+    "setGlobalActiveVersion": "Set as active version",
+    "setGlobalActiveVersionErrorTitle": "Error",
+    "setGlobalActiveVersionErrorMessage": "Something went wrong",
+    "setGlobalActiveVersionSuccessTitle": "Global active version updated",
+    "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
+    "globalActiveVersionModal": {
+      "title": "Set as global active version",
+      "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
+      "warningTitle": "Warning: Older version",
+      "warningMessage": "You're trying to make a case version the global active version, but it's older than the version that's currently active.",
+      "continue": "Continue",
+      "cancel": "Cancel"
+    },
+    "confirmationGlobalVersionModal": {
+      "title": "Are you sure?",
+      "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
+      "confirm": "Set as active version",
+      "cancel": "Cancel"
+    },
     "processLinkNotification": {
       "linkSuccess": "Successfully linked process",
       "linkFailure": "Failed to link process",

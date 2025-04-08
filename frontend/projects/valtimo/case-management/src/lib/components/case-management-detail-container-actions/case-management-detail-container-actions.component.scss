@@ -46,3 +46,28 @@
   gap: 24px;
   align-items: flex-end;
 }
+
+::ng-deep .version-selector {
+  width: 160px;
+  margin-bottom: 0 !important;
+}
+
+::ng-deep .version-selector-dropdown-template {
+  display: flex;
+  margin-top: -4px;
+
+  .cds--tag {
+    margin: 0 8px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    line-height: 24px;
+    max-width: 100%;
+  }
+}
+
+.full-width-notification {
+  max-inline-size: 100%;
+  min-inline-size: 100%;
+}

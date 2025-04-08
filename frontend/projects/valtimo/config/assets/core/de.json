@@ -541,7 +541,26 @@
     "connectProcess": "Prozess verknüpfen",
     "processLink": "Prozess verknüpfen",
     "selectProcessDef": "Prozessdefinition auswählen",
+    "setGlobalActiveVersion": "Als aktive Version festlegen",
+    "setGlobalActiveVersionErrorTitle": "Fehler",
+    "setGlobalActiveVersionErrorMessage": "Ein Fehler ist aufgetreten",
+    "setGlobalActiveVersionSuccessTitle": "Global aktive Version aktualisiert",
+    "globallyActive": "Global aktiv",
     "unlinkProcess": "Verknüpfung aufheben",
+    "globalActiveVersionModal": {
+      "title": "Als global aktive Version festlegen",
+      "description": "Legen Sie die aktuell ausgewählte Version als global aktive Version fest. Bitte beachten Sie, dass es zu Problemen kommen kann oder nicht wie vorgesehen funktioniert.",
+      "warningTitle": "Warnung: Ältere Version",
+      "warningMessage": "Sie versuchen, eine Fallversion zur global aktiven Version zu machen, diese ist jedoch älter als die aktuell aktive Version.",
+      "continue": "Weiter",
+      "cancel": "Abbrechen"
+    },
+    "confirmationGlobalVersionModal": {
+      "title": "Sind Sie sicher?",
+      "message": "Legen Sie die aktuell ausgewählte Version als global aktive Version fest. Bitte beachten Sie, dass es zu Funktionsstörungen kommen kann.",
+      "confirm": "Als aktive Version festlegen",
+      "cancel": "Abbrechen"
+    },
     "processLinkNotification": {
       "linkSuccess": "Erfolgreich verknüpfter Prozess",
       "linkFailure": "Prozess konnte nicht verknüpft werden",

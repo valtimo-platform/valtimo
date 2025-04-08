@@ -16,8 +16,8 @@
 
 import {Component, ViewChild} from '@angular/core';
 import {
-  DocumentService,
   DocumentDefinition,
+  DocumentService,
   UndeployDocumentDefinitionResult,
 } from '@valtimo/document';
 import {MenuService, ModalComponent} from '@valtimo/components';
@@ -42,12 +42,12 @@ export class CaseManagementRemoveModalComponent {
     private menuService: MenuService
   ) {}
 
-  openModal(documentDefinition: DocumentDefinition) {
+  public openModal(documentDefinition: DocumentDefinition): void {
     this.documentDefinition = documentDefinition;
     this.modal.show();
   }
 
-  removeDocumentDefinition() {
+  public removeDocumentDefinition(): void {
     this.documentService
       .removeDocumentDefinitionForManagement(this.documentDefinition.id.name)
       .subscribe(

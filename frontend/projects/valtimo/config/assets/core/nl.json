@@ -541,7 +541,26 @@
     "connectProcess": "Proces koppelen",
     "processLink": "Proces koppelen",
     "selectProcessDef": "Procesdefinitie kiezen",
+    "setGlobalActiveVersion": "Instellen als actieve versie",
+    "setGlobalActiveVersionErrorTitle": "Fout",
+    "setGlobalActiveVersionErrorMessage": "Er is iets misgegaan",
+    "setGlobalActiveVersionSuccessTitle": "Globale actieve versie bijgewerkt",
+    "globallyActive": "Wereldwijd actief",
     "unlinkProcess": "Ontkoppelen",
+    "globalActiveVersionModal": {
+      "title": "Instellen als globaal actieve versie",
+      "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
+      "warningTitle": "Waarschuwing: Oudere versie",
+      "warningMessage": "U probeert een caseversie de globaal actieve versie te maken, maar deze is ouder dan de versie die momenteel actief is.",
+      "continue": "Doorgaan",
+      "cancel": "Annuleren"
+    },
+    "confirmationGlobalVersionModal": {
+      "title": "Weet u het zeker?",
+      "message": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
+      "confirm": "Instellen als actieve versie",
+      "cancel": "Annuleren"
+    },
     "processLinkNotification": {
       "linkSuccess": "Succesvol gekoppeld proces",
       "linkFailure": "Kan het proces niet koppelen",

@@ -45,6 +45,24 @@ export class CaseManagementService extends BaseApiService {
     );
   }
 
+  public getGlobalActiveCase(caseDefinitionKey: string): Observable<any> {
+    return this.httpClient.get<any[]>(
+      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}`)
+    );
+  }
+
+  public setGlobalActiveCaseVersion(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<any[]> {
+    return this.httpClient.post<any[]>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/active`
+      ),
+      {}
+    );
+  }
+
   public importDocumentDefinitionZip(file: FormData): Observable<HttpResponse<Blob>> {
     return this.httpClient.post<HttpResponse<Blob>>(
       this.getApiUrl(`management/v1/case/import`),

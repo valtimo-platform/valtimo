@@ -153,7 +153,6 @@ import {CaseManagementExternalStartFormComponent} from './components/case-manage
     RenderInPageHeaderDirectiveModule,
     DialogModule,
     ValtimoCdsOverflowButtonDirectiveModule,
-    NotificationModule,
     EditorModule,
     CarbonListModule,
     TabsModule,

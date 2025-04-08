@@ -34,6 +34,7 @@ import {take} from 'rxjs/operators';
 import {CaseDetailService, CaseManagementService} from '../../services';
 import {CaseManagementRemoveModalComponent} from '../case-management-remove-modal/case-management-remove-modal.component';
 import {GlobalNotificationService} from '@valtimo/layout';
+import {eq, lt} from 'semver';
 
 @Component({
   selector: 'valtimo-case-management-detail-container-actions',
@@ -57,9 +58,39 @@ export class CaseManagementDetailContainerActionsComponent {
 
   public readonly exporting$ = new BehaviorSubject<boolean>(false);
   public readonly selectedVersionNumber$ = this.caseDetailService.selectedVersionNumber$;
+  public readonly selectedVersion$ = new BehaviorSubject<string>('');
+  public readonly currentGlobalActiveVersion$ = new BehaviorSubject<string>('');
+
+  public readonly params$: Observable<{
+    caseDefinitionKey: string;
+    caseDefinitionVersionTag: string;
+  }> = this.route.params.pipe(
+    map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
+      caseDefinitionKey: caseDefinitionKey,
+      caseDefinitionVersionTag: caseDefinitionVersionTag,
+    }))
+  );
+
+  public readonly caseDefinitionKey$: Observable<string> = this.params$.pipe(
+    map(params => params.caseDefinitionKey || '')
+  );
+
+  public readonly caseDefinitionVersionTag$: Observable<string> = this.params$.pipe(
+    map(params => params.caseDefinitionVersionTag || '')
+  );
+
+  public readonly selectedVersionIsGloballyActive$: Observable<boolean> =
+    this.caseDefinitionKey$?.pipe(
+      switchMap(caseDefinitionKey =>
+        this.caseManagementService.getGlobalActiveCase(caseDefinitionKey)
+      ),
+      map(result => !!result?.active)
+    );
 
   private readonly _caseDefinitionKey$ = this.caseDetailService.selectedDocumentDefinitionName$;
   public readonly loadingVersion$ = new BehaviorSubject<boolean>(true);
+  public readonly showGlobalVersionModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showGlobalVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
   public readonly selectedDocumentDefinition$ = this.caseDetailService.documentDefinition$;
 
@@ -67,6 +98,24 @@ export class CaseManagementDetailContainerActionsComponent {
     this.caseDetailService.selectedDocumentDefinitionIsReadOnly$;
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  public readonly selectedVersionIsSameAsActiveVersion$: Observable<boolean> = combineLatest([
+    this.currentGlobalActiveVersion$,
+    this.selectedVersion$,
+  ]).pipe(
+    map(([current, selected]) => {
+      return eq(selected, current);
+    })
+  );
+
+  public readonly isOlderVersionSelected$: Observable<boolean> = combineLatest([
+    this.currentGlobalActiveVersion$,
+    this.selectedVersion$,
+  ]).pipe(
+    map(([current, selected]) => {
+      return lt(selected, current);
+    })
+  );
 
   private readonly _cachedVersions = new BehaviorSubject<ListItem[] | null>(null);
   public readonly versions$: Observable<ListItem[] | null> = this.route.params.pipe(
@@ -88,6 +137,12 @@ export class CaseManagementDetailContainerActionsComponent {
       if (this._cachedVersions.getValue() === null) this._cachedVersions.next(mapping);
 
       return mapping;
+    }),
+    tap(versions => {
+      const selected = versions?.find(version => version.selected);
+      if (selected) {
+        this.selectedVersion$.next(selected.content);
+      }
     })
   );
 
@@ -153,6 +208,7 @@ export class CaseManagementDetailContainerActionsComponent {
   }
 
   public setVersion(version: any): void {
+    this.selectedVersion$.next(version?.item?.content);
     this.router.navigate(
       [`../${version.item.content}/${this.route.firstChild?.routeConfig?.path}`],
       {relativeTo: this.route}
@@ -165,6 +221,65 @@ export class CaseManagementDetailContainerActionsComponent {
 
       this._caseRemoveModal.openModal(definition);
     });
+  }
+
+  public openGlobalActiveVersionModal(): void {
+    this.showGlobalVersionModal$.next(true);
+  }
+
+  public closeGlobalVersionCaseModal(): void {
+    this.showGlobalVersionModal$.next(false);
+  }
+
+  public openGlobalCaseVersionConfirmationModal(): void {
+    this.showGlobalVersionModal$.next(false);
+    this.showGlobalVersionConfirmationModal$.next(true);
+  }
+
+  public closeGlobalCaseConfirmationModal(): void {
+    this.showGlobalVersionConfirmationModal$.next(false);
+  }
+
+  public setGlobalActiveCaseVersion(): void {
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'info',
+      title: '',
+      showClose: false,
+      template: this._exportMessageTemplateRef,
+    });
+
+    combineLatest([this._caseDefinitionKey$, this.selectedVersion$])
+      .pipe(
+        take(1),
+        switchMap(([caseDefinitionKey, selectedVersion]) =>
+          this.caseManagementService.setGlobalActiveCaseVersion(caseDefinitionKey, selectedVersion)
+        )
+      )
+      .subscribe({
+        next: response => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant(
+              'caseManagement.setGlobalActiveVersionSuccessTitle'
+            ),
+            duration: 5000,
+          });
+        },
+        error: () => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'error',
+            title: this.translateService.instant('caseManagement.setGlobalActiveVersionErrorTitle'),
+            message: this.translateService.instant(
+              'caseManagement.setGlobalActiveVersionErrorMessage'
+            ),
+            duration: 5000,
+          });
+        },
+      });
+
+    this.showGlobalVersionConfirmationModal$.next(false);
   }
 
   private startExporting(): void {
