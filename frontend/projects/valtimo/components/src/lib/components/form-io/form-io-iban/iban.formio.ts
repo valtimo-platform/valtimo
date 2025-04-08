@@ -14,7 +14,7 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
     hideLabel: false,
     tableView: true,
     validate: {
-      required: true,
+      required: false,
     },
   },
 };
