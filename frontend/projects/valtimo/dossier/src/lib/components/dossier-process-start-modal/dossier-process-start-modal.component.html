@@ -26,7 +26,7 @@
 
     <ng-template #formCustomComponent></ng-template>
 
-    @if (formDefinition && !isFormViewModel) {
+    @if (formDefinition && !isFormViewModel && !isUIComponent) {
       <valtimo-form-io
         #form
         [form]="formDefinition"

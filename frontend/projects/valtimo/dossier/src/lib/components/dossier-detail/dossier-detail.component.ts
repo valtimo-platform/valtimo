@@ -41,13 +41,13 @@ import {
 import {ConfigService} from '@valtimo/config';
 import {
   CaseStatusService,
+  CaseTag,
+  CaseTagsUtils,
   Document as ValtimoDocument,
   DocumentService,
   InternalCaseStatus,
   InternalCaseStatusUtils,
   ProcessDocumentDefinition,
-  CaseTag,
-  CaseTagsUtils,
 } from '@valtimo/document';
 import {TaskWithProcessLink} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
@@ -56,20 +56,7 @@ import {IconService, NotificationService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  Observable,
-  of,
-  startWith,
-  Subject,
-  Subscription,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, Subject, Subscription, switchMap, take, tap,} from 'rxjs';
 import {
   DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE,
   DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE,
@@ -162,7 +149,6 @@ export class DossierDetailComponent
     ),
     tap((document: ValtimoDocument | null) => {
       if (document) {
-        console.log('document', document);
         this.assigneeId$.next(document.assigneeId);
         this.document = document;
         this._caseStatusKey$.next(document?.internalStatus || 'NOT_AVAILABLE');

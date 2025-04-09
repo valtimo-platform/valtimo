@@ -29,7 +29,7 @@
     <ng-template #formViewModelComponent></ng-template>
     <ng-template #formCustomComponent></ng-template>
 
-    @if (!isFormViewModel && (formDefinition$ | async)) {
+    @if (!isFormViewModel && !isUIComponent && (formDefinition$ | async)) {
       <valtimo-form-io
         #form
         [submission]="submission$ | async"
