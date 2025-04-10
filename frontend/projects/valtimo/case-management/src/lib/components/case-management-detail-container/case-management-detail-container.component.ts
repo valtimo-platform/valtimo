@@ -95,6 +95,7 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
 
   public ngOnInit(): void {
     this.openActiveVersionSubscription();
+    this.pageTitleService.disableReset();
   }
 
   public ngOnDestroy(): void {

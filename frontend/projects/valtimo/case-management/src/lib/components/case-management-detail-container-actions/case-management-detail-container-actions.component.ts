@@ -68,7 +68,10 @@ export class CaseManagementDetailContainerActionsComponent {
     map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
       caseDefinitionKey: caseDefinitionKey,
       caseDefinitionVersionTag: caseDefinitionVersionTag,
-    }))
+    })),
+    tap(({caseDefinitionKey, caseDefinitionVersionTag}) =>
+      this.selectedVersion$.next(caseDefinitionVersionTag)
+    )
   );
 
   public readonly caseDefinitionKey$: Observable<string> = this.params$.pipe(
@@ -118,31 +121,27 @@ export class CaseManagementDetailContainerActionsComponent {
   );
 
   private readonly _cachedVersions = new BehaviorSubject<ListItem[] | null>(null);
-  public readonly versions$: Observable<ListItem[] | null> = this.route.params.pipe(
-    switchMap(({caseDefinitionKey, caseDefinitionVersionTag}) =>
+  public readonly versions$: Observable<ListItem[] | null> = combineLatest([
+    this.route.params,
+    this.selectedVersion$,
+  ]).pipe(
+    switchMap(([{caseDefinitionKey}, selectedVersion]) =>
       combineLatest([
         this._cachedVersions.getValue() === null
           ? this.caseManagementService.getCaseDefinitionVersions(caseDefinitionKey)
           : this._cachedVersions.asObservable(),
-        of(caseDefinitionVersionTag),
+        of(selectedVersion),
       ])
     ),
-    map(([caseDefinitionVersions, caseDefinitionVersionTag]) => {
+    map(([caseDefinitionVersions, selectedVersion]) => {
       const mapping: ListItem[] | null =
         caseDefinitionVersions?.map((caseDefinitionVersion: string) => ({
           content: caseDefinitionVersion,
-          selected: caseDefinitionVersion === caseDefinitionVersionTag,
+          selected: caseDefinitionVersion === selectedVersion,
+          tagType: 'green',
         })) ?? null;
 
-      if (this._cachedVersions.getValue() === null) this._cachedVersions.next(mapping);
-
       return mapping;
-    }),
-    tap(versions => {
-      const selected = versions?.find(version => version.selected);
-      if (selected) {
-        this.selectedVersion$.next(selected.content);
-      }
     })
   );
 

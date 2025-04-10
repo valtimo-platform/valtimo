@@ -41,19 +41,17 @@
   <cds-dropdown
     class="version-selector"
     selectionFeedback="fixed"
+    [displayValue]="versionItemTemplate"
     [size]="obs.compactMode ? 'sm' : 'md'"
     [appendInline]="false"
-    (selected)="setVersion($event)"
     [disabled]="!obs.versions?.length"
+    (selected)="setVersion($event)"
   >
-    <cds-dropdown-list
-      [items]="obs.versions"
-      [listTpl]="versionListItemTemplate"
-    ></cds-dropdown-list>
+    <cds-dropdown-list [items]="obs.versions" [listTpl]="versionItemTemplate"></cds-dropdown-list>
   </cds-dropdown>
 </ng-template>
 
-<ng-template #versionListItemTemplate let-item="item">
+<ng-template #versionItemTemplate let-item="item">
   <div class="version-selector-dropdown-template">
     <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
       {{ item?.content }}
