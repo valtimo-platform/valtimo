@@ -19,6 +19,7 @@ import {PermissionRequest} from '@valtimo/access-control';
 enum PERMISSION_ACTION {
   assign = 'assign',
   view = 'view',
+  modify = 'modify',
 }
 
 enum TASK_DETAIL_PERMISSION_RESOURCE {
@@ -41,9 +42,15 @@ const CAN_VIEW_CASE_PERMISSION: PermissionRequest = {
   resource: TASK_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
 };
 
+const CAN_MODIFY_TASK_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.modify,
+  resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+};
+
 export {
   CAN_ASSIGN_TASK_PERMISSION,
   CAN_VIEW_TASK_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
+  CAN_MODIFY_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
 };

@@ -23,6 +23,8 @@ enum SelectableCarbonTheme {
 enum CurrentCarbonTheme {
   G10 = 'g10',
   G90 = 'g90',
+  G100 = 'g100',
+  WHITE = 'white',
 }
 
 export {SelectableCarbonTheme, CurrentCarbonTheme};

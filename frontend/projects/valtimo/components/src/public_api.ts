@@ -160,6 +160,17 @@ export * from './lib/components/expansion-panel/expansion-panel.component';
 export * from './lib/components/editor/editor.module';
 export * from './lib/components/editor/editor.component';
 
+// status selector
+export * from './lib/components/status-selector/status-selector.component';
+// value path selector
+export * from './lib/components/value-path-selector/value-path-selector.component';
+// formio value resolver selector
+export * from './lib/components/form-io/formio-value-resolver-selector/formio-value-resolver-selector.formio';
+export * from './lib/components/form-io/formio-value-resolver-selector/formio-value-resolver-selector.component';
+// formio dummy
+export * from './lib/components/form-io/form-io-dummy/dummy.component';
+export * from './lib/components/form-io/form-io-dummy/dummy.formio';
+
 // Button component
 export * from './lib/components/button/button.module';
 export * from './lib/components/button/button.component';
@@ -258,15 +269,7 @@ export * from './lib/directives/command-click/command-click-directive.module';
 // cds overflow button
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button-directive.module';
-// status selector
-export * from './lib/components/status-selector/status-selector.component';
-// value path selector
-export * from './lib/components/value-path-selector/value-path-selector.component';
-// formio value resoler selector
-export * from './lib/components/form-io/formio-value-resolver-selector/formio-value-resolver-selector.formio';
-export * from './lib/components/form-io/formio-value-resolver-selector/formio-value-resolver-selector.component';
-// formio dummy
-export * from './lib/components/form-io/form-io-dummy/dummy.component';
-export * from './lib/components/form-io/form-io-dummy/dummy.formio';
-
+// remove toggletip button class
+export * from './lib/directives/remove-classnames/remove-classnames.directive';
+// case tag selector
 export * from './lib/components/case-tags-selector/case-tags-selector.component';

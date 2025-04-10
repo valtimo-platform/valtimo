@@ -25,6 +25,7 @@ import {
   FormIoModule,
   ModalModule,
   ParagraphModule,
+  RemoveClassnamesDirective,
   RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   StepperModule,
@@ -122,6 +123,7 @@ import {ImportPluginConfigurationComponent} from './components/import-plugin-con
     CarbonMultiInputModule,
     LayerModule,
     ToggletipModule,
+    RemoveClassnamesDirective,
   ],
   exports: [
     ProcessLinkComponent,

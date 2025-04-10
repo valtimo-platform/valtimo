@@ -14,27 +14,6 @@
  * limitations under the License.
  */
 
-#taskDetailModal {
-  .formio-component-submit {
-    text-align: right;
-  }
-}
-
-cds-modal-header {
-  .cds--modal-header {
-    display: flex;
-    justify-content: space-between;
-  }
-}
-
-.save-buttons-margin {
-  margin-top: -15px;
-}
-
-.task-actions {
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  padding-top: 8px;
-  gap: 8px;
+:host {
+  flex-shrink: 0;
 }

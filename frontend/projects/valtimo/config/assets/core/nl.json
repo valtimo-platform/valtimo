@@ -11,7 +11,8 @@
     "DocumentRelatedFileRemovedEvent": "Gerelateerd bestand verwijderd",
     "BesluitAddedEvent": "Besluit toegevoegd > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "De behandelaar is gewijzigd naar {{assigneeName}}",
-    "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald"
+    "DocumentUnassignedEvent": "De behandelaar is van het dossier afgehaald",
+    "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
   },
   "dossier": {
     "bulkAssign": {
@@ -1285,12 +1286,15 @@
     "taskCompleted": "is succesvol afgerond"
   },
   "assignTask": {
-    "assignedTo": "Toegewezen aan ",
+    "assignedTo": "Toegewezen aan",
     "header": "Gebruiker toewijzen aan deze taak",
-    "placeholder": "Selecteer een gebruiker",
+    "placeholder": "Selecteer gebruiker",
     "remove": "Toewijzing ongedaan maken",
     "save": "Opslaan",
-    "fetchingUsers": "Gebruikers ophalen..."
+    "fetchingUsers": "Gebruikers ophalen...",
+    "buttonText": "Gebruiker toewijzen",
+    "submitButtonText": "Gebruiker toewijzen aan taak",
+    "comboboxLabel": "Selecteer gebruiker om toe te wijzen"
   },
   "assignDocument": {
     "assignedTo": "Toegewezen aan ",
@@ -1997,5 +2001,11 @@
     "formattedMessage": "Bericht",
     "properties": "Eigenschappen",
     "stacktrace": "Stacktrace"
+  },
+  "setTaskDueDate": {
+    "buttonText": "Stel einddatum in",
+    "submitButtonText": "Stel einddatum in",
+    "dueDateText": "Einddatum:",
+    "removeButtonText": "Einddatum verwijderen"
   }
 }

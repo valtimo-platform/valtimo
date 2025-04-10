@@ -11,7 +11,8 @@
     "DocumentRelatedFileRemovedEvent": "Related file removed",
     "BesluitAddedEvent": "Decision added > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "The assignee has been changed to {{assigneeName}}",
-    "DocumentUnassignedEvent": "The assignee has been unassigned"
+    "DocumentUnassignedEvent": "The assignee has been unassigned",
+    "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
   },
   "dossier": {
     "bulkAssign": {
@@ -1287,12 +1288,15 @@
     "taskCompleted": "has successfully been completed"
   },
   "assignTask": {
-    "assignedTo": "Assigned to ",
+    "assignedTo": "Assigned to",
     "header": "Assign a user to this task",
-    "placeholder": "Select a user",
+    "placeholder": "Select user",
     "remove": "Unassign",
     "save": "Save",
-    "fetchingUsers": "Fetching users..."
+    "fetchingUsers": "Fetching users...",
+    "buttonText": "Assign user",
+    "submitButtonText": "Assign user to task",
+    "comboboxLabel": "Select user to assign"
   },
   "assignDocument": {
     "assignedTo": "Assigned to ",
@@ -1991,10 +1995,16 @@
       "searchDescription": "No logs match your search criteria",
       "title": "There are no logs"
     },
-    "detailsTitle": "Log details",
     "timestamp": "Timestamp",
     "formattedMessage": "Message",
     "properties": "Properties",
-    "stacktrace": "Stacktrace"
+    "stacktrace": "Stacktrace",
+    "detailsTitle": "Log details"
+  },
+  "setTaskDueDate": {
+    "buttonText": "Set due date",
+    "submitButtonText": "Set due date",
+    "dueDateText": "Due date:",
+    "removeButtonText": "Remove due date"
   }
 }

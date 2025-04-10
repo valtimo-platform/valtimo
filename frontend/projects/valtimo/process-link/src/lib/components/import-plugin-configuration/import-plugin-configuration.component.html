@@ -19,6 +19,7 @@
     class="process-link-configuration-import-button"
     [disabled]="((compatiblePluginProcessLinks$ | async) || []).length === 0"
     cdsToggletipButton
+    [removeClassnames]="['cds--toggletip-button']"
     cdsButton="ghost"
   >
     {{ 'processLinkConfiguration.importConfiguration' | translate }}
@@ -26,7 +27,11 @@
     <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
   </button>
 
-  <div cdsToggletipContent data-carbon-theme="g90" class="process-link-configuration-select">
+  <div
+    cdsToggletipContent
+    [attr.data-carbon-theme]="toggletipTheme$ | async"
+    class="process-link-configuration-select"
+  >
     <cds-dropdown
       [label]="'processLinkConfiguration.process' | translate"
       [placeholder]="'processLinkConfiguration.selectProcess' | translate"

@@ -33,7 +33,11 @@ import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService} from '../../services';
-import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
+import {
+  CAN_ASSIGN_TASK_PERMISSION,
+  CAN_MODIFY_TASK_PERMISSION,
+  TASK_DETAIL_PERMISSION_RESOURCE,
+} from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
 
 moment.locale(localStorage.getItem('langKey') || '');
@@ -69,6 +73,7 @@ export class TaskDetailModalComponent implements OnInit {
   public readonly size$ = new BehaviorSubject<CarbonModalSize>('md');
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
+  public readonly canModifyTask$ = new BehaviorSubject<boolean>(false);
 
   public readonly modalCloseEvent$ = new BehaviorSubject<boolean>(false);
 
@@ -87,6 +92,7 @@ export class TaskDetailModalComponent implements OnInit {
       this.task$.subscribe(task => {
         if (task) {
           this.logger.debug('Checking if user allowed to assign a user to Task with id:', task.id);
+
           this.permissionService
             .requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
               resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
@@ -94,6 +100,15 @@ export class TaskDetailModalComponent implements OnInit {
             })
             .subscribe((allowed: boolean) => {
               this.canAssignUserToTask$.next(allowed);
+            });
+
+          this.permissionService
+            .requestPermission(CAN_MODIFY_TASK_PERMISSION, {
+              resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+              identifier: task.id,
+            })
+            .subscribe((allowed: boolean) => {
+              this.canModifyTask$.next(allowed);
             });
         } else {
           this.logger.debug('Reset is user allowed to assign a user to Task as task is null');

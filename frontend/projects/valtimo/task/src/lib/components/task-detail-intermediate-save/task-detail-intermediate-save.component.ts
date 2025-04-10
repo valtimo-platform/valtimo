@@ -37,6 +37,7 @@ import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link'
 @Component({
   selector: 'valtimo-task-detail-intermediate-save',
   templateUrl: './task-detail-intermediate-save.component.html',
+  styleUrls: ['./task-detail-intermediate-save.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [

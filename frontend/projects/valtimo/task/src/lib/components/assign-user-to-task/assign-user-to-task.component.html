@@ -15,39 +15,106 @@
   -->
 
 <ng-container
-  *ngIf="{
-    candidateUsers: candidateUsersForTask$ | async,
-    disabled: disabled$ | async,
-    idOnServer: assignedIdOnServer$ | async,
-  } as obs"
+  *ngIf="
+    (canAssignUserToTaskSet$ | async) && {
+      candidateUsers: candidateUsersForTask$ | async,
+      disabled: disabled$ | async,
+      idOnServer: assignedIdOnServer$ | async,
+      mouseIsOverAssignee: mouseIsOverAssignee$ | async,
+      assignedUserFullName: assignedUserFullName$ | async,
+      selectedUserId: selectedUserId$ | async,
+      canAssignUserToTask: canAssignUserToTask$ | async,
+    } as obs
+  "
 >
-  <div class="container-fluid">
-    <div class="mt-2 mb-2">
-      <div class="col-12 pl-0 d-flex flex-row align-items-center">
-        <valtimo-searchable-dropdown-select
-          *ngIf="obs.candidateUsers; else loading"
-          [style]="'underlinedText'"
-          [items]="mapUsersForDropdown(obs.candidateUsers)"
-          [buttonText]="'assignTask.header' | translate"
-          [searchText]="'interface.typeToSearch' | translate"
-          [noResultsText]="'interface.noSearchResults' | translate"
-          [disabled]="obs.disabled"
-          [selectedText]="'assignTask.assignedTo' | translate"
-          [selectedTextValue]="assignedUserFullName$ | async"
-          [clearSelectionButtonTitle]="'assignTask.remove' | translate"
-          [hasSelection]="userIdToAssign === obs.idOnServer && obs.idOnServer !== null"
-          [width]="250"
-          (itemSelected)="assignTask($event)"
-          (clearSelection)="unassignTask()"
-        >
-        </valtimo-searchable-dropdown-select>
-      </div>
-    </div>
-  </div>
-</ng-container>
+  <ng-container
+    *ngIf="{hasSelection: obs.selectedUserId === obs.idOnServer && obs.idOnServer !== null} as vars"
+  >
+    <div
+      class="assign-user-container"
+      *ngIf="obs.canAssignUserToTask || (!obs.canAssignUserToTask && vars.hasSelection)"
+      (mouseenter)="onMouseEnterAssignee()"
+      (mouseleave)="onMouseLeaveAssignee()"
+    >
+      <div
+        class="assignee-text element"
+        [ngClass]="{
+          active: obs.canAssignUserToTask
+            ? vars.hasSelection && !obs.mouseIsOverAssignee
+            : vars.hasSelection,
+        }"
+      >
+        <span class="bold">{{ 'assignTask.assignedTo' | translate }}</span>
 
-<ng-template #loading>
-  <h5>
-    <b>{{ 'assignTask.fetchingUsers' | translate }}</b>
-  </h5>
-</ng-template>
+        &nbsp;
+
+        <span class="name">{{ obs.assignedUserFullName }}</span>
+      </div>
+
+      <button
+        *ngIf="obs.canAssignUserToTask"
+        cdsButton="ghost"
+        class="element remove-button"
+        [ngClass]="{active: vars.hasSelection && obs.mouseIsOverAssignee}"
+        [disabled]="obs.disabled"
+        size="sm"
+        (click)="unassignTask()"
+      >
+        {{ 'assignTask.remove' | translate }}
+      </button>
+
+      <cds-toggletip
+        align="bottom"
+        class="element main"
+        [autoAlign]="true"
+        [isOpen]="open$ | async"
+        [ngClass]="{active: !vars.hasSelection}"
+        (onOpen)="clear()"
+      >
+        <button
+          cdsToggletipButton
+          [removeClassnames]="['cds--toggletip-button']"
+          cdsButton="tertiary"
+          size="sm"
+          class="set-assignee-button"
+        >
+          {{ 'assignTask.buttonText' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+        </button>
+
+        <div
+          cdsToggletipContent
+          [attr.data-carbon-theme]="toggletipTheme$ | async"
+          class="assign-task-popover-content"
+        >
+          <cds-combo-box
+            *ngIf="!vars.hasSelection"
+            [label]="'assignTask.comboboxLabel' | translate"
+            [placeholder]="'assignTask.placeholder' | translate"
+            [appendInline]="true"
+            [dropUp]="false"
+            [cdsLayer]="1"
+            [items]="obs?.candidateUsers || []"
+            [disabled]="obs.disabled"
+            (selected)="onUserSelect($event)"
+            (clear)="clear()"
+          >
+            <cds-dropdown-list onclick="event.stopPropagation()"></cds-dropdown-list>
+          </cds-combo-box>
+
+          <button
+            cdsButton
+            class="submit-task-button"
+            [disabled]="!obs.selectedUserId || obs.disabled"
+            (click)="onSubmitButtonClick()"
+          >
+            {{ 'assignTask.submitButtonText' | translate }}
+
+            <svg class="cds--btn__icon" cdsIcon="user--follow" size="16"></svg>
+          </button>
+        </div>
+      </cds-toggletip>
+    </div>
+  </ng-container>
+</ng-container>
