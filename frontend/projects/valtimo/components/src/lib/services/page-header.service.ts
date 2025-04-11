@@ -34,6 +34,8 @@ export class PageHeaderService {
   private readonly _pageActionsHasContent$ = new BehaviorSubject<boolean>(false);
   private readonly _pageHeadHeight$ = new BehaviorSubject<number | null>(null);
 
+  private readonly _smallTitle$ = new BehaviorSubject<boolean>(false);
+
   public get headerViewContainerRef$(): Observable<ViewContainerRef> {
     return this._headerViewContainerRef$.pipe(filter(ref => !!ref));
   }
@@ -44,6 +46,10 @@ export class PageHeaderService {
 
   public get compactMode$(): Observable<boolean> {
     return this._compactMode$.asObservable();
+  }
+
+  public get smallTitle$(): Observable<boolean> {
+    return this._smallTitle$.asObservable();
   }
 
   public get showUserNameInTopBar$(): Observable<boolean> {
@@ -82,6 +88,14 @@ export class PageHeaderService {
 
   public setPageHeadHeight(height: number): void {
     this._pageHeadHeight$.next(height);
+  }
+
+  public enableSmallTitle(): void {
+    this._smallTitle$.next(true);
+  }
+
+  public disableSmallTitle(): void {
+    this._smallTitle$.next(false);
   }
 
   private getDefaultShowUserNameInTopBarValue(): boolean {

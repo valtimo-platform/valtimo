@@ -56,7 +56,20 @@ import {IconService, NotificationService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, filter, map, Observable, of, startWith, Subject, Subscription, switchMap, take, tap,} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  startWith,
+  Subject,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {
   DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE,
   DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE,
@@ -195,7 +208,7 @@ export class DossierDetailComponent
 
   public readonly caseTags$: Observable<CaseTag[] | undefined> = this.documentDefinitionName$.pipe(
     filter(documentDefinitionName => !!documentDefinitionName),
-    switchMap(documentDefinitionName => this._caseTags$),
+    switchMap(() => this._caseTags$),
     map(
       tag =>
         tag &&
@@ -204,6 +217,10 @@ export class DossierDetailComponent
           tagType: CaseTagsUtils.getTagTypeFromCaseTagColor(caseTag.color),
         }))
     )
+  );
+
+  public readonly hasCaseTags$: Observable<boolean> = this._caseTags$.pipe(
+    map(caseTags => Array.isArray(caseTags) && caseTags.length > 0)
   );
 
   public readonly userId$: Observable<string | undefined> = of(
@@ -268,6 +285,8 @@ export class DossierDetailComponent
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
+  public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
+
   public readonly tabHorizontalOverflowDisabled =
     this.dossierTabService.tabHorizontalOverflowDisabled;
 
@@ -299,6 +318,7 @@ export class DossierDetailComponent
   private _pendingTab: TabImpl;
   private _observer!: ResizeObserver;
   private _tabsInit = false;
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -341,6 +361,7 @@ export class DossierDetailComponent
     this.setDocumentStyle();
     this.enableResetOnBackNavigation();
     this.openWidgetProcessSubscription();
+    this.openSmallTitleSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -348,6 +369,7 @@ export class DossierDetailComponent
     this.pageTitleService.enableReset();
     this.removeDocumentStyle();
     this._subscriptions.unsubscribe();
+    this.pageHeaderService.disableSmallTitle();
   }
 
   public getAllAssociatedProcessDefinitions(): void {
@@ -703,6 +725,20 @@ export class DossierDetailComponent
         : longestName < 40
           ? DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.medium
           : DOSSIER_DETAIL_START_PROCESS_DROPDOWN_WIDTH.large
+    );
+  }
+
+  private openSmallTitleSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this.hasCaseTags$, this.compactMode$]).subscribe(
+        ([hasCaseTags, compactMode]) => {
+          if (!compactMode && hasCaseTags) {
+            this.pageHeaderService.enableSmallTitle();
+          } else {
+            this.pageHeaderService.disableSmallTitle();
+          }
+        }
+      )
     );
   }
 }

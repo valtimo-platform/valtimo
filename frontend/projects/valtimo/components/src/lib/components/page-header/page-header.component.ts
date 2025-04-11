@@ -37,6 +37,7 @@ export class PageHeaderComponent implements AfterViewInit, OnDestroy {
   private readonly _pageHead!: ElementRef<HTMLDivElement>;
   public readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+  public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
   public readonly pageActionsHasContent$ = this.pageHeaderService.pageActionsHasContent$;
   public readonly pageTitleHidden$ = this.pageTitleService.pageTitleHidden$;
 

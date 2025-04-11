@@ -20,7 +20,7 @@
   <div class="container-fluid">
     <ng-container *ngIf="caseTags$ | async as caseTags">
       @if (caseTags && caseTags.length > 0) {
-        <div class="spacing-case-tags">
+        <div class="case-tags">
           @for (tag of caseTags; track tag) {
             <cds-tag size="sm" [type]="tag.tagType">
               {{ tag.title }}
@@ -249,7 +249,10 @@
   <ng-template>
     <div
       class="dossier-actions"
-      [ngClass]="{'--compact': compactMode$ | async}"
+      [ngClass]="{
+        'dossier-actions--compact': compactMode$ | async,
+        'dossier-actions--small-title': smallTitle$ | async,
+      }"
       *ngIf="{
         assigneeId: assigneeId$ | async,
         canAssign: canAssign$ | async,
