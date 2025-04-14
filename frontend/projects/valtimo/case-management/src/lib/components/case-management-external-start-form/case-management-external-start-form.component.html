@@ -20,11 +20,10 @@
     params: params$ | async,
     caseSettings: caseSettings$ | async,
   } as obs"
-  [cdsLayer]="1"
 >
   <h4>{{ 'caseManagement.externalStartForm.title' | translate }}</h4>
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="0">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1">
     <cds-toggle
       formControlName="hasExternalForm"
       label="{{ 'caseManagement.externalStartForm.enabledToggle' | translate }}"

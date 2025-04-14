@@ -13,26 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {ApiTabItem} from '@valtimo/case';
-import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, Observable, of} from 'rxjs';
+import {catchError, switchMap, take, tap} from 'rxjs/operators';
+import {CaseManagementParams} from '../models';
 
 @Injectable()
 export class TabManagementService {
-  private _valtimoEndpointUri: string;
-  private _caseDefinitionId: string;
+  private _valtimoEndpointBase: string;
+  private _params!: CaseManagementParams;
 
   public readonly tabs$ = new BehaviorSubject<ApiTabItem[]>([]);
-
   public readonly loading$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly configService: ConfigService,
     private readonly http: HttpClient
   ) {
-    this._valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}management/v1/case-definition`;
+    this._valtimoEndpointBase = `${this.configService.config.valtimoApi.endpointUri}management/v1/case-definition`;
+  }
+
+  public setParams(params: CaseManagementParams): void {
+    this._params = params;
+  }
+
+  private get _caseDefinitionUrl(): string {
+    return `${this._valtimoEndpointBase}/${this._params.caseDefinitionKey}/version/${this._params.caseDefinitionVersionTag}`;
   }
 
   public loadTabs(): void {
@@ -75,51 +85,36 @@ export class TabManagementService {
   }
 
   public addTab(tab: Partial<ApiTabItem>): Observable<ApiTabItem> {
-    return this.http.post<ApiTabItem>(
-      `${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab`,
-      this.getTabDto(tab)
-    );
+    return this.http.post<ApiTabItem>(`${this._caseDefinitionUrl}/tab`, this.getTabDto(tab));
   }
 
   public deleteTab(tabKey: string): Observable<null> {
-    return this.http.delete<null>(
-      `${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab/${tabKey}`
-    );
+    return this.http.delete<null>(`${this._caseDefinitionUrl}/tab/${tabKey}`);
   }
 
   public editTab(tab: Partial<ApiTabItem>, tabKey: string): Observable<ApiTabItem> {
     return this.http.put<ApiTabItem>(
-      `${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab/${tabKey}`,
+      `${this._caseDefinitionUrl}/tab/${tabKey}`,
       this.getTabDto(tab)
     );
   }
 
   public editTabsOrder(tabList: ApiTabItem[]): Observable<ApiTabItem[]> {
-    return this.http.put<ApiTabItem[]>(
-      `${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab`,
-      tabList
-    );
-  }
-
-  public setCaseDefinitionId(caseDefinitionId: string): void {
-    this._caseDefinitionId = caseDefinitionId;
+    return this.http.put<ApiTabItem[]>(`${this._caseDefinitionUrl}/tab`, tabList);
   }
 
   public getTab(tabKey: string): Observable<ApiTabItem> {
-    return this.http.get<ApiTabItem>(
-      `${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab/${tabKey}`
-    );
+    return this.http.get<ApiTabItem>(`${this._caseDefinitionUrl}/tab/${tabKey}`);
   }
 
   private getTabList(): Observable<ApiTabItem[]> {
-    return this.http.get<ApiTabItem[]>(`${this._valtimoEndpointUri}/${this._caseDefinitionId}/tab`);
+    return this.http.get<ApiTabItem[]>(`${this._caseDefinitionUrl}/tab`);
   }
 
   private getTabDto(tab: Partial<ApiTabItem>): Partial<ApiTabItem> {
     if (tab.name === '') {
       delete tab.name;
     }
-
     return tab;
   }
 }

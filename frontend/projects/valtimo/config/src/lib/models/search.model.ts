@@ -58,6 +58,7 @@ interface SearchField {
   fieldType: SearchFieldFieldType;
   matchType?: SearchFieldMatchType;
   dropdownDataProvider?: string;
+  uuid?: string;
 }
 
 interface SearchFieldWithValue extends SearchField {

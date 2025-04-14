@@ -80,6 +80,7 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
 
   private _activeVersion: number | null;
   private _subscriptions = new Subscription();
+
   constructor(
     private readonly caseDetailService: CaseDetailService,
     private readonly route: ActivatedRoute,

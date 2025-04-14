@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,15 +14,4 @@
  * limitations under the License.
  */
 
-:host {
-  padding: 24px;
-  margin-bottom: 16px;
-  background: var(--cds-layer);
-}
-
-.external-case-form-container,
-.external-case-form-container form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+export * from './case-management.utils';

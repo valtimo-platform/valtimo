@@ -14,73 +14,75 @@
   ~ limitations under the License.
   -->
 
-<valtimo-carbon-list
-  *ngIf="{fields: fields$ | async, loading: loading$ | async, tabs: tabs$ | async} as obs"
-  [actionItems]="actionItems"
-  [items]="obs.tabs"
-  [fields]="obs.fields"
-  [header]="false"
-  [loading]="obs.loading"
-  (rowClicked)="onRowClicked($event)"
-  [dragAndDrop]="true"
-  [dragAndDropDisabled]="dragAndDropDisabled()"
-  (itemsReordered)="onItemsReorderedEvent($event)"
->
-  <ng-container carbonToolbarContent>
-    <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>
-  </ng-container>
+<ng-container *ngIf="{routeParams: caseManagementRouteParams$ | async} as obs">
+  <valtimo-carbon-list
+    *ngIf="{fields: fields$ | async, loading: loading$ | async, tabs: tabs$ | async} as obs"
+    [actionItems]="actionItems"
+    [items]="obs.tabs"
+    [fields]="obs.fields"
+    [header]="false"
+    [loading]="obs.loading"
+    (rowClicked)="onRowClicked($event)"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="dragAndDropDisabled()"
+    (itemsReordered)="onItemsReorderedEvent($event)"
+  >
+    <ng-container carbonToolbarContent>
+      <ng-container [ngTemplateOutlet]="addTabButton"></ng-container>
+    </ng-container>
 
-  <valtimo-no-results
-    [action]="addTabButton"
-    [description]="'case.tabs.noResultsDescription' | translate"
-    [title]="'case.tabs.noResults' | translate"
-  ></valtimo-no-results>
-</valtimo-carbon-list>
+    <valtimo-no-results
+      [action]="addTabButton"
+      [description]="'case.tabs.noResultsDescription' | translate"
+      [title]="'case.tabs.noResults' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
 
-<ng-template #tabTypeColumn let-data="data">
-  {{
-    isTranslated('caseManagement.tabType.' + data.item.type)
-      ? ('caseManagement.tabType.' + data.item.type | translate)
-      : data.item.type
-  }}
-</ng-template>
+  <ng-template #tabTypeColumn let-data="data">
+    {{
+      isTranslated('caseManagement.tabType.' + data.item.type)
+        ? ('caseManagement.tabType.' + data.item.type | translate)
+        : data.item.type
+    }}
+  </ng-template>
 
-<ng-template #tabContentColumn let-data="data">
-  {{
-    isTranslated('case.tabs.' + data.item.contentKey)
-      ? ('case.tabs.' + data.item.contentKey | translate)
-      : data.item.contentKey
-  }}
-</ng-template>
+  <ng-template #tabContentColumn let-data="data">
+    {{
+      isTranslated('case.tabs.' + data.item.contentKey)
+        ? ('case.tabs.' + data.item.contentKey | translate)
+        : data.item.contentKey
+    }}
+  </ng-template>
 
-<ng-template #addTabButton>
-  <button cdsButton="primary" (click)="openAddTabModal()">
-    {{ 'caseManagement.tabManagement.addModal.addTab' | translate }}
+  <ng-template #addTabButton>
+    <button cdsButton="primary" (click)="openAddTabModal()">
+      {{ 'caseManagement.tabManagement.addModal.addTab' | translate }}
 
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-  </button>
-</ng-template>
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </ng-template>
 
-<valtimo-case-management-add-tab-modal
-  *ngIf="openAddModal$ | async"
-  [documentDefinitionName]="documentDefinitionName"
-  [open]="openAddModal$ | async"
-  (closeModalEvent)="onCloseAddModalEvent($event)"
-></valtimo-case-management-add-tab-modal>
+  <valtimo-case-management-add-tab-modal
+    *ngIf="openAddModal$ | async"
+    [params]="obs.routeParams"
+    [open]="openAddModal$ | async"
+    (closeModalEvent)="onCloseAddModalEvent($event)"
+  ></valtimo-case-management-add-tab-modal>
 
-<valtimo-case-management-edit-tab-modal
-  *ngIf="openEditModal$ | async"
-  [tab]="tab$ | async"
-  (closeModalEvent)="onCloseEditModalEvent($event)"
-  [open]="openEditModal$ | async"
-></valtimo-case-management-edit-tab-modal>
+  <valtimo-case-management-edit-tab-modal
+    *ngIf="openEditModal$ | async"
+    [tab]="tab$ | async"
+    (closeModalEvent)="onCloseEditModalEvent($event)"
+    [open]="openEditModal$ | async"
+  ></valtimo-case-management-edit-tab-modal>
 
-<valtimo-confirmation-modal
-  confirmButtonTextTranslationKey="interface.delete"
-  confirmButtonType="danger"
-  contentTranslationKey="caseManagement.tabManagement.deleteModal.description"
-  [outputOnConfirm]="deleteRowKey$ | async"
-  [showModalSubject$]="showDeleteModal$"
-  titleTranslationKey="caseManagement.tabManagement.deleteModal.title"
-  (confirmEvent)="onConfirmEvent($event)"
-></valtimo-confirmation-modal>
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="caseManagement.tabManagement.deleteModal.description"
+    [outputOnConfirm]="deleteRowKey$ | async"
+    [showModalSubject$]="showDeleteModal$"
+    titleTranslationKey="caseManagement.tabManagement.deleteModal.title"
+    (confirmEvent)="onConfirmEvent($event)"
+  ></valtimo-confirmation-modal>
+</ng-container>

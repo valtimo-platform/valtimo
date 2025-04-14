@@ -30,10 +30,11 @@ import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {DropdownModule, InputModule, SelectModule} from 'carbon-components-angular';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
-import {WidgetContentComponent} from '../../../models';
+import {CaseManagementParams, WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
-import {ActivatedRoute, ParamMap} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
+import {getCaseManagementRouteParams} from '../../../utils';
 
 @Component({
   templateUrl: './case-management-widget-formio.component.html',
@@ -73,8 +74,8 @@ export class CaseManagementWidgetFormioComponent
 
   private readonly _formDefinitionOptions$ = new BehaviorSubject<FormDefinitionOption[]>([]);
 
-  public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
-    map((paramMap: ParamMap) => paramMap.get('name') ?? '')
+  public readonly params$: Observable<CaseManagementParams> = getCaseManagementRouteParams(
+    this.route
   );
   public readonly formListItems$: Observable<ListItem[]> = combineLatest([
     this._formDefinitionOptions$,

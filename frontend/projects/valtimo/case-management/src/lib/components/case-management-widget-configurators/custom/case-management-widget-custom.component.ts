@@ -25,7 +25,7 @@ import {
   Output,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute, ParamMap} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {CUSTOM_CASE_WIDGET_TOKEN, CustomCaseWidgetConfig, WidgetCustomContent} from '@valtimo/case';
@@ -35,6 +35,7 @@ import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} f
 import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
+import {getCaseManagementRouteParams} from '../../../utils';
 
 @Component({
   templateUrl: './case-management-widget-custom.component.html',
@@ -70,9 +71,7 @@ export class CaseManagementWidgetCustomComponent
     )
   );
 
-  public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
-    map((paramMap: ParamMap) => paramMap.get('name') ?? '')
-  );
+  public readonly params$ = getCaseManagementRouteParams(this.route);
 
   private readonly _selectedCustomComponentKey$ = new BehaviorSubject<string | null>(null);
   private readonly _customCaseWidgetConfig$ = new BehaviorSubject<CustomCaseWidgetConfig>({});

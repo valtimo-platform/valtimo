@@ -529,7 +529,7 @@
       "failure": "Upload failed"
     }
   },
-  "dossierManagement": {
+  "caseManagement": {
     "version": "Version: ",
     "preparingDownload": "Preparing download",
     "more": "More",
@@ -608,9 +608,9 @@
       "tabManagement": "Tabs",
       "document": "Document",
       "statuses": "Statuses",
-      "zgw": "ZGW",
       "tags": "Tags",
       "zgw": "ZGW",
+      "forms": "Forms",
       "generalTab": {
         "linkUploadProcess": {
           "title": "Link upload process to case",
@@ -626,9 +626,7 @@
             "offText": "No"
           }
         }
-      },
-      "zgw": "ZGW",
-      "forms": "Forms"
+      }
     },
     "tabManagement": {
       "columns": {

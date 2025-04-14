@@ -20,7 +20,7 @@
       {{
         !obs.selectedTabType
           ? ('caseManagement.tabManagement.addModal.title'
-            | translate: {documentDefinitionName: (documentDefinitionName | titlecase)})
+            | translate: {documentDefinitionName: (params.caseDefinitionKey | titlecase)})
           : ('caseManagement.tabManagement.titles.' + obs.selectedTabType | translate)
       }}
     </h3>

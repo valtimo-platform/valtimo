@@ -28,7 +28,7 @@ import {
   WritableSignal,
 } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute, ParamMap} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_THEME,
@@ -47,6 +47,7 @@ import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {CaseManagementWidgetFieldsColumnComponent} from '../fields/column/case-management-widget-fields-column.component';
 import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
+import {getCaseManagementRouteParams} from '../../../utils';
 
 @Component({
   templateUrl: './case-management-widget-table.component.html',
@@ -93,9 +94,7 @@ export class CaseManagementWidgetTableComponent
       currentTheme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
     )
   );
-  public readonly documentDefinitionName$: Observable<string> = this.route.paramMap.pipe(
-    map((paramMap: ParamMap) => paramMap.get('name') ?? '')
-  );
+  public readonly params$ = getCaseManagementRouteParams(this.route);
 
   public readonly content = this.widgetWizardService
     .widgetContent as WritableSignal<WidgetTableContent>;

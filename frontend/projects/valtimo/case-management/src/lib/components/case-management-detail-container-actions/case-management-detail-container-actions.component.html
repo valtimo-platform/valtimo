@@ -47,7 +47,7 @@
     [disabled]="!obs.versions?.length"
     (selected)="setVersion($event)"
   >
-    <cds-dropdown-list [items]="obs.versions" [listTpl]="versionItemTemplate"></cds-dropdown-list>
+    <cds-dropdown-list [items]="obs?.versions || []" [listTpl]="versionItemTemplate"></cds-dropdown-list>
   </cds-dropdown>
 </ng-template>
 

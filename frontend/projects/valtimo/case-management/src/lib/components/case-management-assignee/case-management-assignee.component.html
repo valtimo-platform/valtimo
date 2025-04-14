@@ -19,9 +19,9 @@
 <ng-container
   *ngIf="{
     currentValue: currentValue$ | async,
-    documentDefinitionName: documentDefinitionName$ | async,
     loading: loading$ | async,
     disabled: disabled$ | async,
+    params: params$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
@@ -34,7 +34,7 @@
         class="custom-control-input"
         type="checkbox"
         [disabled]="obs.disabled"
-        (click)="toggleAssignee(obs?.currentValue, obs.documentDefinitionName)"
+        (click)="toggleAssignee(obs?.currentValue, obs.params?.caseDefinitionKey)"
       /><span class="custom-control-label custom-control-color">{{
         'caseManagement.toggleAssignee.checkboxDescription' | translate
       }}</span>
@@ -50,7 +50,7 @@
         class="custom-control-input"
         type="checkbox"
         [disabled]="obs.disabled"
-        (click)="toggleTaskAssignment(obs?.currentValue, obs?.documentDefinitionName)"
+        (click)="toggleTaskAssignment(obs?.currentValue, obs.params?.caseDefinitionKey)"
       /><span class="custom-control-label custom-control-color">{{
         'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate
       }}</span>

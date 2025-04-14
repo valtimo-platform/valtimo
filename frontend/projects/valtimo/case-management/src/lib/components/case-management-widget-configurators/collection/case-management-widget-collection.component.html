@@ -58,7 +58,7 @@
       <valtimo-value-path-selector
         formControlName="collection"
         [attr.data-carbon-theme]="obs.theme"
-        [documentDefinitionName]="documentDefinitionName$ | async"
+        [documentDefinitionName]="(params$ | async)?.caseDefinitionKey"
         [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
         [type]="ValuePathType.COLLECTION"
         (collectionSelected)="onCollectionSelected($event)"
@@ -67,7 +67,7 @@
   </form>
 
   <valtimo-case-management-widget-process-selector
-    [documentDefinitionName]="documentDefinitionName$ | async"
+    [params]="params$ | async"
   ></valtimo-case-management-widget-process-selector>
 
   <span class="valtimo-case-management-widget-collection__subtitle">
@@ -86,7 +86,7 @@
         <valtimo-value-path-selector
           formControlName="value"
           [attr.data-carbon-theme]="obs.theme"
-          [documentDefinitionName]="documentDefinitionName"
+          [params]="params$ | async"
           [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
           [parentItem]="selectedCollection$ | async"
         ></valtimo-value-path-selector>
@@ -313,7 +313,7 @@
   <valtimo-case-management-widget-fields-column
     [columnData]="content()?.fields"
     [fieldWidthDropdown]="fieldWidthDropdown"
-    [documentDefinitionName]="documentDefinitionName$ | async"
+    [params]="params$ | async"
     [selectedCollection]="selectedCollection$ | async"
     [showHideWhenEmptyCheckbox]="true"
     (columnUpdateEvent)="onColumnUpdateEvent($event)"

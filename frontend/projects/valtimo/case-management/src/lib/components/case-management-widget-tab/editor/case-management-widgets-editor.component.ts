@@ -36,7 +36,12 @@ import {
 import {BasicCaseWidget, CaseWidget, CaseWidgetsRes} from '@valtimo/case';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rxjs';
-import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../models';
+import {
+  AVAILABLE_WIDGETS,
+  CaseManagementParams,
+  WidgetStyle,
+  WidgetTypeTags,
+} from '../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../services';
 import {CasManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
 import {cloneDeep} from 'lodash';
@@ -58,7 +63,7 @@ import {cloneDeep} from 'lodash';
   ],
 })
 export class CaseManagementWidgetsEditorComponent {
-  @Input() public documentDefinitionName: string;
+  @Input() public params: CaseManagementParams;
   @Input() public tabWidgetKey: string;
   private _currentWidgetTab: CaseWidgetsRes;
   @Input() public set currentWidgetTab(value: CaseWidgetsRes) {
@@ -200,7 +205,8 @@ export class CaseManagementWidgetsEditorComponent {
 
     this.widgetTabManagementService
       .updateWidgets({
-        caseDefinitionKey: this.documentDefinitionName,
+        caseDefinitionKey: this.params.caseDefinitionKey,
+        caseDefinitionVersionTag: this.params.caseDefinitionVersionTag,
         key: this.tabWidgetKey,
         widgets: !!widgetResult.key
           ? existingWidgets.map((widget: BasicCaseWidget) =>

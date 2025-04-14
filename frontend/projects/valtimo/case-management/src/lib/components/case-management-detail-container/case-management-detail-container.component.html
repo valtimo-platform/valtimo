@@ -68,30 +68,10 @@
     </cds-tab>
 
     <cds-tab
-      class="no-padding-left-right no-padding-top-bottom"
-      [id]="TabEnum.DOCUMENT"
-      [active]="obs.currentTab === TabEnum.DOCUMENT"
-      [heading]="'caseManagement.tabs.document' | translate"
-      disabled="true"
-      (selected)="navigateToTab(TabEnum.DOCUMENT)"
-    >
-    </cds-tab>
-
-    <cds-tab
-      class="no-padding-left-right main-content"
-      [active]="obs.currentTab === TabEnum.CASE"
-      [heading]="'caseManagement.tabs.cases' | translate"
-      disabled="true"
-      (selected)="navigateToTab(TabEnum.CASE)"
-    >
-    </cds-tab>
-
-    <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"
       [id]="TabEnum.SEARCH"
       [active]="obs.currentTab === TabEnum.SEARCH"
       [heading]="'caseManagement.tabs.searchFields' | translate"
-      disabled="true"
       (selected)="navigateToTab(TabEnum.SEARCH)"
     >
     </cds-tab>
@@ -102,7 +82,6 @@
       [id]="TabEnum.LIST"
       [active]="obs.currentTab === TabEnum.LIST"
       [heading]="'caseManagement.tabs.listColumns' | translate"
-      disabled="true"
       (selected)="navigateToTab(TabEnum.LIST)"
     >
     </cds-tab>
@@ -113,7 +92,6 @@
       [id]="TabEnum.TABS"
       [active]="obs.currentTab === TabEnum.TABS"
       [heading]="'caseManagement.tabs.tabManagement' | translate"
-      disabled="true"
       (selected)="navigateToTab(TabEnum.TABS)"
     >
     </cds-tab>

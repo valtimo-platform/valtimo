@@ -206,7 +206,7 @@ export class DocumentService {
   ): Observable<void> {
     return this.http.put<void>(
       `${this.valtimoEndpointUri}v1/document-search/${caseDefinitionKey}/fields`,
-      [...request]
+      request
     );
   }
 

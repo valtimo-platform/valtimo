@@ -71,6 +71,7 @@ import {
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
 import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
+import {CaseManagementParams} from '../../../../models';
 
 @Component({
   selector: 'valtimo-case-management-widget-fields-column',
@@ -97,7 +98,7 @@ export class CaseManagementWidgetFieldsColumnComponent implements OnInit, OnDest
   @HostBinding('class') public readonly class = 'valtimo-case-management-widget-field-column';
   @Input({required: true}) public columnData: FieldsCaseWidgetValue[];
   @Input() public addTranslateKey = 'widgetTabManagement.content.fields.add';
-  @Input() public documentDefinitionName?: string;
+  @Input() public params?: CaseManagementParams;
   @Input() public fieldWidthDropdown?: TemplateRef<Dropdown>;
   @Input() public selectedCollection?: ValuePathItem;
   @Input() public showHideWhenEmptyCheckbox = false;

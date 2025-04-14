@@ -19,7 +19,7 @@
     searchFields: translatedSearchFields$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
-    documentDefinitionName: documentDefinitionName$ | async,
+    caseDefinitionKey: caseDefinitionKey$ | async,
     valid: valid$ | async,
     disableInput: disableInput$ | async,
   } as obs"
@@ -47,8 +47,7 @@
     [disabled]="
       !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
     "
-    [download]="obs.downloadName"
-    [href]="obs.downloadUrl"
+    (click)="onDownloadClick()"
   >
     <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
   </button>
@@ -72,9 +71,10 @@
     [header]="false"
     [items]="obs.searchFields"
     [loading]="!obs.searchFields"
-    [movingRowsEnabled]="true"
     (rowClicked)="searchFieldClicked($event, false)"
-    (moveRow)="onMoveRowClick($event, obs.documentDefinitionName)"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="obs.disableInput"
+    (itemsReordered)="onItemsReordered(obs.caseDefinitionKey, $event)"
   >
     <ng-container
       carbonToolbarContent
@@ -150,7 +150,7 @@
           [label]="'searchFieldsOverview.path' | translate"
           [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
           [marginXl]="true"
-          [documentDefinitionName]="documentDefinitionName$ | async"
+          [documentDefinitionName]="caseDefinitionKey$ | async"
           [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
           [defaultValue]="searchObs.searchField?.path"
           [disabled]="obs.disableInput"
@@ -281,7 +281,7 @@
     data-testid="case-management-search-save"
     cdsButton="primary"
     [disabled]="obs.disableInput || !obs.valid"
-    (click)="saveSearchField(obs.documentDefinitionName)"
+    (click)="saveSearchField(obs.caseDefinitionKey)"
   >
     {{ 'searchFieldsOverview.submit' | translate }}
   </button>

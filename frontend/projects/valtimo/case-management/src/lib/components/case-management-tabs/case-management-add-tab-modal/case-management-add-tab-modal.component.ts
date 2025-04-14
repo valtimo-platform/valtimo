@@ -34,6 +34,7 @@ import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {TabService} from '../../../services';
 import {ConfigService} from '@valtimo/config';
+import {CaseManagementParams} from '../../../models';
 
 @Component({
   selector: 'valtimo-case-management-add-tab-modal',
@@ -43,7 +44,7 @@ import {ConfigService} from '@valtimo/config';
   encapsulation: ViewEncapsulation.None,
 })
 export class CaseManagementAddTabModalComponent {
-  @Input() documentDefinitionName: string;
+  @Input() params: CaseManagementParams;
   @Input() open = false;
 
   @Output() closeModalEvent = new EventEmitter<Partial<ApiTabItem> | null>();

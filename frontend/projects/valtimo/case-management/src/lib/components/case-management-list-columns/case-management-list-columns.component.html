@@ -17,11 +17,12 @@
 <ng-container
   *ngIf="{
     caseListColumn: translatedCaseListColumns$ | async,
-    documentDefinitionName: documentDefinitionName$ | async,
+    params: params$ | async,
     hasEnvironmentConfig: hasEnvironmentConfig$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
     loadingCaseListColumns: loadingCaseListColumns$ | async,
+    disableInput: disableInput$ | async,
   } as obs"
 >
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
@@ -35,13 +36,14 @@
   <valtimo-carbon-list
     [actionItems]="actionItems"
     [loading]="obs.loadingCaseListColumns"
-    [items]="obs.caseListColumn"
+    [items]="obs?.caseListColumn || []"
     [fields]="fields"
     [viewMode]="false"
     [header]="false"
-    [movingRowsEnabled]="true"
-    (moveRow)="onMoveRowEvent($event, obs.documentDefinitionName)"
     (rowClicked)="columnRowClicked($event)"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="obs.disableInput"
+    (itemsReordered)="onItemsReordered(obs.params.caseDefinitionKey, $event)"
   >
     <ng-container
       carbonToolbarContent
@@ -68,15 +70,14 @@
   <button
     cdsButton="ghost"
     iconOnly="true"
-    [href]="obs.downloadUrl"
-    [download]="obs.downloadName"
+    (click)="onDownloadClick()"
     [disabled]="
       obs.hasEnvironmentConfig ||
       !obs.downloadUrl ||
       !obs.downloadName ||
       obs.caseListColumn?.length < 1 ||
       obs.disableInput ||
-      loadingCaseListColumns
+      obs.loadingCaseListColumns
     "
   >
     <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
@@ -85,7 +86,7 @@
   <button
     (click)="openModal('create')"
     cdsButton="primary"
-    [disabled]="obs.hasEnvironmentConfig || loadingCaseListColumns"
+    [disabled]="obs.hasEnvironmentConfig || obs.loadingCaseListColumns"
   >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
@@ -199,7 +200,7 @@
 
       <valtimo-value-path-selector
         formControlName="path"
-        [documentDefinitionName]="documentDefinitionName$ | async"
+        [documentDefinitionName]="(params$ | async)?.caseDefinitionKey"
         [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
       ></valtimo-value-path-selector>
     </cds-label>
@@ -218,7 +219,7 @@
         [disabled]="modalObs.disableInput"
         (selected)="selectedDisplayType($event)"
       >
-        <cds-dropdown-list [items]="viewTypeItems$ | async"></cds-dropdown-list>
+        <cds-dropdown-list [items]="(viewTypeItems$ | async) || []"></cds-dropdown-list>
       </cds-dropdown>
     </cds-label>
 
@@ -301,7 +302,7 @@
         formControlName="defaultSort"
         [disabled]="modalObs.disableInput || modalObs.disableDefaultSort || modalObs.showTagAmount"
       >
-        <cds-dropdown-list [items]="sortItems$ | async"></cds-dropdown-list>
+        <cds-dropdown-list [items]="(sortItems$ | async) || []"></cds-dropdown-list>
       </cds-dropdown>
     </cds-label>
   </form>

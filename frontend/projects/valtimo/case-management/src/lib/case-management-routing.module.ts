@@ -120,6 +120,18 @@ const routes: Routes = [
       customPageTitle: true,
     } as FormManagementRouteData,
   },
+  {
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.TABS}/widget-tab/:key`,
+    component: CaseManagementWidgetTabComponent,
+    canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
+    data: {
+      title: 'Widget tab',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      customPageSubtitle: true,
+    },
+  },
 ];
 
 @NgModule({

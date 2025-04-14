@@ -37,7 +37,7 @@
 </form>
 
 <valtimo-case-management-widget-process-selector
-  [documentDefinitionName]="documentDefinitionName$ | async"
+  [params]="params$ | async"
 ></valtimo-case-management-widget-process-selector>
 
 <cds-tabs type="contained">
@@ -52,7 +52,7 @@
         *ngIf="activeTab() === $index"
         [isFieldWidget]="true"
         [columnData]="selectedWidgetContent()?.[$index]"
-        [documentDefinitionName]="documentDefinitionName$ | async"
+        [params]="params$ | async"
         [showHideWhenEmptyCheckbox]="true"
         (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
       ></valtimo-case-management-widget-fields-column>

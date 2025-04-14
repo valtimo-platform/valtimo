@@ -18,7 +18,6 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  Input,
   signal,
   TemplateRef,
   ViewChild,
@@ -31,8 +30,8 @@ import {ApiTabItem, ApiTabType} from '@valtimo/case';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, tap} from 'rxjs';
 import {TabManagementService, TabService} from '../../services';
-import {Router} from '@angular/router';
-import {ConfigService} from '@valtimo/config';
+import {ActivatedRoute, Router} from '@angular/router';
+import {getCaseManagementRouteParams} from '../../utils';
 
 @Component({
   templateUrl: './case-management-tabs.component.html',
@@ -44,18 +43,12 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   @ViewChild('tabTypeColumn') tabTypeColumnTemplate: TemplateRef<any>;
   @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;
 
-  private _documentDefinitionName: string;
-  @Input() public set documentDefinitionName(value: string) {
-    if (!value) {
-      return;
-    }
-    this._documentDefinitionName = value;
-    this.tabManagementService.setCaseDefinitionId(value);
-    this.tabManagementService.loadTabs();
-  }
-  public get documentDefinitionName(): string {
-    return this._documentDefinitionName;
-  }
+  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route).pipe(
+    tap(params => {
+      this.tabManagementService.setParams(params);
+      this.tabManagementService.loadTabs();
+    })
+  );
 
   public actionItems: ActionItem[] = [
     {
@@ -87,6 +80,7 @@ export class CaseManagementTabsComponent implements AfterViewInit {
       this.dragAndDropDisabled.set(false);
     })
   );
+
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
   public readonly dragAndDropDisabled = signal(false);
 
@@ -97,43 +91,15 @@ export class CaseManagementTabsComponent implements AfterViewInit {
     private readonly tabService: TabService,
     private readonly translateService: TranslateService,
     private readonly router: Router,
-    private readonly configService: ConfigService
-  ) {}
+    private readonly route: ActivatedRoute
+  ) {
+    this.caseManagementRouteParams$.subscribe(x => console.log(x));
+  }
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
-
-    this.fields$.next([
-      {
-        key: 'name',
-        label: 'caseManagement.tabManagement.columns.name',
-        viewType: ViewType.TEXT,
-      },
-      {
-        key: 'key',
-        label: 'caseManagement.tabManagement.columns.key',
-        viewType: ViewType.TEXT,
-      },
-      {
-        viewType: ViewType.TEMPLATE,
-        template: this.tabTypeColumnTemplate,
-        key: '',
-        label: 'caseManagement.tabManagement.columns.type',
-      },
-      {
-        viewType: ViewType.TEMPLATE,
-        template: this.tabContentColumnTemplate,
-        key: '',
-        label: 'caseManagement.tabManagement.columns.content',
-      },
-      {
-        viewType: ViewType.BOOLEAN,
-        key: 'showTasks',
-        label: 'caseManagement.tabManagement.columns.showTasks',
-      },
-    ]);
-
     this.cd.detectChanges();
+    this.setFields();
   }
 
   public isTranslated(key: string): boolean {
@@ -151,10 +117,9 @@ export class CaseManagementTabsComponent implements AfterViewInit {
 
   public onRowClicked(tab: ApiTabItem): void {
     this.tab$.next(tab);
+
     if (tab.type === ApiTabType.WIDGETS) {
-      this.router.navigate([
-        `/case-management/case/${this._documentDefinitionName}/widget-tab/${tab.key}`,
-      ]);
+      this.router.navigate(['widget-tab', tab.key], {relativeTo: this.route});
     } else {
       this.openEditModal$.next(true);
     }
@@ -209,5 +174,37 @@ export class CaseManagementTabsComponent implements AfterViewInit {
 
   private editTab(tab: ApiTabItem): void {
     this.tabManagementService.dispatchAction(this.tabManagementService.editTab(tab, tab.key));
+  }
+
+  private setFields(): void {
+    this.fields$.next([
+      {
+        key: 'name',
+        label: 'caseManagement.tabManagement.columns.name',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'key',
+        label: 'caseManagement.tabManagement.columns.key',
+        viewType: ViewType.TEXT,
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.tabTypeColumnTemplate,
+        key: '',
+        label: 'caseManagement.tabManagement.columns.type',
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.tabContentColumnTemplate,
+        key: '',
+        label: 'caseManagement.tabManagement.columns.content',
+      },
+      {
+        viewType: ViewType.BOOLEAN,
+        key: 'showTasks',
+        label: 'caseManagement.tabManagement.columns.showTasks',
+      },
+    ]);
   }
 }

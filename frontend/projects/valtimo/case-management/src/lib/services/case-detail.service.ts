@@ -103,11 +103,13 @@ export class CaseDetailService implements OnDestroy {
   public setLoadingDocumentDefinition(loading: boolean): void {
     this._loadingDocumentDefinition$.next(loading);
   }
+
   private openDocumentDefinitionSubscription(): void {
     this._subscriptions.add(
       combineLatest([this.selectedVersionNumber$, this.selectedDocumentDefinitionName$])
         .pipe(
           tap(() => {
+            console.log('hi');
             this.pageTitleService.setCustomPageTitleSet(false);
             this.setLoadingDocumentDefinition(true);
           }),

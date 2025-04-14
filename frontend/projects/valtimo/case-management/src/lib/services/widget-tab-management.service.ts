@@ -13,37 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService} from '@valtimo/config';
 import {CaseWidgetsRes} from '@valtimo/case';
 import {Observable} from 'rxjs';
+import {CaseManagementParams} from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WidgetTabManagementService {
-  private readonly valtimoEndpointUri: string;
+  private readonly valtimoEndpointBase: string;
 
   constructor(
     private readonly http: HttpClient,
     private readonly configService: ConfigService
   ) {
-    this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}`;
+    this.valtimoEndpointBase = `${this.configService.config.valtimoApi.endpointUri}management/v1/case-definition`;
   }
 
   public getWidgetTabConfiguration(
-    caseDefinitionKey: string,
+    params: CaseManagementParams,
     widgetTabKey: string
   ): Observable<CaseWidgetsRes> {
     return this.http.get<CaseWidgetsRes>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/widget-tab/${widgetTabKey}`
+      `${this.valtimoEndpointBase}/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}/widget-tab/${widgetTabKey}`
     );
   }
 
   public updateWidgets(tab: CaseWidgetsRes): Observable<any> {
     return this.http.post<any>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${tab.caseDefinitionKey}/widget-tab/${tab.key}`,
+      `${this.valtimoEndpointBase}/${tab.caseDefinitionKey}/version/${tab.caseDefinitionVersionTag}/widget-tab/${tab.key}`,
       tab
     );
   }

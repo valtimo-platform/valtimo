@@ -40,7 +40,7 @@
 @switch (activeContent()) {
   @case (WidgetEditorTab.VISUAL) {
     <valtimo-case-management-widgets-editor
-      [documentDefinitionName]="documentDefinitionName$ | async"
+      [params]="caseManagementRouteParams$ | async"
       [tabWidgetKey]="tabWidgetKey$ | async"
       [currentWidgetTab]="currentWidgetTab$ | async"
       (changeSaved)="refreshWidgetTab()"

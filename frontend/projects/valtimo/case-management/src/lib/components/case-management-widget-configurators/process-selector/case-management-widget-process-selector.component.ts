@@ -16,6 +16,7 @@ import {
   switchMap,
 } from 'rxjs';
 import {WidgetWizardService} from '../../../services';
+import {CaseManagementParams} from '../../../models';
 
 @Component({
   selector: 'valtimo-case-management-widget-process-selector',
@@ -26,9 +27,9 @@ import {WidgetWizardService} from '../../../services';
   imports: [CommonModule, TranslateModule, DropdownModule, InputModule, ReactiveFormsModule],
 })
 export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
-  private readonly _documentDefinitionName$ = new BehaviorSubject<string | null>(null);
-  @Input() public set documentDefinitionName(value: string) {
-    this._documentDefinitionName$.next(value);
+  private readonly _params$ = new BehaviorSubject<CaseManagementParams | null>(null);
+  @Input() public set params(value: CaseManagementParams) {
+    this._params$.next(value);
   }
 
   public readonly formGroup = this.fb.group({
@@ -43,34 +44,33 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
     }),
   });
 
-  public readonly processDefinitionItems$: Observable<ListItem[]> =
-    this._documentDefinitionName$.pipe(
-      switchMap((documentDefinitionName: string | null) =>
-        this.documentService.findProcessDefinitionCaseDefinitionsByStartableByUser(
-          documentDefinitionName ?? '',
-          true
-        )
-      ),
-      map((processDocumentDefinitions: ProcessDefinitionCaseDefinition[]) => {
-        const selectedProcessKey: string | undefined = this.widgetWizardService.editMode()
-          ? this.widgetWizardService.widgetActions()?.[0]?.processDefinitionKey
-          : undefined;
+  public readonly processDefinitionItems$: Observable<ListItem[]> = this._params$.pipe(
+    switchMap((params: CaseManagementParams | null) =>
+      this.documentService.findProcessDefinitionCaseDefinitionsByStartableByUser(
+        params?.caseDefinitionKey ?? '',
+        true
+      )
+    ),
+    map((processDocumentDefinitions: ProcessDefinitionCaseDefinition[]) => {
+      const selectedProcessKey: string | undefined = this.widgetWizardService.editMode()
+        ? this.widgetWizardService.widgetActions()?.[0]?.processDefinitionKey
+        : undefined;
 
-        return processDocumentDefinitions.map((definition: ProcessDefinitionCaseDefinition) => {
-          const mappedItem: ListItem = {
-            content: definition.processDefinitionName,
-            key: definition.processDefinitionKey,
-            selected: selectedProcessKey === definition.processDefinitionKey,
-          };
+      return processDocumentDefinitions.map((definition: ProcessDefinitionCaseDefinition) => {
+        const mappedItem: ListItem = {
+          content: definition.processDefinitionName,
+          key: definition.processDefinitionKey,
+          selected: selectedProcessKey === definition.processDefinitionKey,
+        };
 
-          if (mappedItem.selected)
-            this.formGroup.patchValue({processDefinitionKey: mappedItem}, {emitEvent: false});
+        if (mappedItem.selected)
+          this.formGroup.patchValue({processDefinitionKey: mappedItem}, {emitEvent: false});
 
-          return mappedItem;
-        });
-      }),
-      startWith([])
-    );
+        return mappedItem;
+      });
+    }),
+    startWith([])
+  );
 
   public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
     map((theme: CurrentCarbonTheme) =>

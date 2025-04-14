@@ -32,10 +32,6 @@ export class CaseManagementAssigneeComponent {
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || '')
-  );
-
   public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
     map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
       caseDefinitionKey: caseDefinitionKey,

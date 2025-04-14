@@ -46,6 +46,7 @@ import {
 import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
 import {CaseManagementWidgetsEditorComponent} from './editor/case-management-widgets-editor.component';
 import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-management-widgets-json-editor.component';
+import {getCaseManagementRouteParams} from '../../utils';
 
 @Component({
   templateUrl: './case-management-widget-tab.component.html',
@@ -68,12 +69,11 @@ export class CaseManagementWidgetTabComponent
   extends PendingChangesComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || ''),
-    filter(documentDefinitionName => !!documentDefinitionName),
-    tap(documentDefinitionName =>
-      this.tabManagementService.setCaseDefinitionId(documentDefinitionName)
-    )
+  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route).pipe(
+    tap(params => {
+      this.tabManagementService.setParams(params);
+      this.tabManagementService.loadTabs();
+    })
   );
 
   public readonly tabWidgetKey$: Observable<string> = this.route.params.pipe(
@@ -106,12 +106,12 @@ export class CaseManagementWidgetTabComponent
     })
   );
   public readonly currentWidgetTab$ = combineLatest([
-    this.documentDefinitionName$,
+    this.caseManagementRouteParams$,
     this.tabWidgetKey$,
     this._refreshWidgetTabSubject$,
   ]).pipe(
-    switchMap(([caseDefinitionKey, tabWidgetKey]) =>
-      this.widgetTabManagementService.getWidgetTabConfiguration(caseDefinitionKey, tabWidgetKey)
+    switchMap(([params, tabWidgetKey]) =>
+      this.widgetTabManagementService.getWidgetTabConfiguration(params, tabWidgetKey)
     )
   );
 
@@ -142,11 +142,12 @@ export class CaseManagementWidgetTabComponent
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([Edit16]);
-    this.initBreadcrumb();
+    this.initBreadcrumbs();
   }
 
   public ngOnDestroy(): void {
     this.breadcrumbService.clearThirdBreadcrumb();
+    this.breadcrumbService.clearFourthBreadcrumb();
     this.pageTitleService.disableReset();
   }
 
@@ -205,12 +206,20 @@ export class CaseManagementWidgetTabComponent
     this.widgetJsonEditorService.showPendingModal.set(true);
   }
 
-  private initBreadcrumb(): void {
-    this.documentDefinitionName$.subscribe(documentDefinitionName => {
+  private initBreadcrumbs(): void {
+    this.caseManagementRouteParams$.subscribe(params => {
+      const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
+
       this.breadcrumbService.setThirdBreadcrumb({
-        route: [`/case-management/case/${documentDefinitionName}`],
-        content: documentDefinitionName,
-        href: `/case-management/case/${documentDefinitionName}`,
+        route: [route],
+        content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
+        href: route,
+      });
+
+      this.breadcrumbService.setFourthBreadcrumb({
+        route: [`${route}/tabs`],
+        content: this.translateService.instant('caseManagement.tabs.tabManagement'),
+        href: `${route}/tabs`,
       });
     });
   }
