@@ -547,6 +547,11 @@
     "setGlobalActiveVersionSuccessTitle": "Globale actieve versie bijgewerkt",
     "globallyActive": "Wereldwijd actief",
     "unlinkProcess": "Ontkoppelen",
+    "listColumns": {
+      "name": "Naam",
+      "key": "Sleutel",
+      "version": "Versie"
+    },
     "globalActiveVersionModal": {
       "title": "Instellen als globaal actieve versie",
       "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",

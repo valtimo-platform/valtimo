@@ -547,6 +547,11 @@
     "setGlobalActiveVersionSuccessTitle": "Global aktive Version aktualisiert",
     "globallyActive": "Global aktiv",
     "unlinkProcess": "Verknüpfung aufheben",
+    "listColumns": {
+      "name": "Name",
+      "key": "Schlüssel",
+      "version": "Version"
+    },
     "globalActiveVersionModal": {
       "title": "Als global aktive Version festlegen",
       "description": "Legen Sie die aktuell ausgewählte Version als global aktive Version fest. Bitte beachten Sie, dass es zu Problemen kommen kann oder nicht wie vorgesehen funktioniert.",

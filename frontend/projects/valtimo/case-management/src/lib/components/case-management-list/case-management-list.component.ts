@@ -58,9 +58,9 @@ export class CaseManagementListComponent {
   };
 
   public readonly FIELDS: ColumnConfig[] = [
-    {key: 'name', label: 'Name'},
-    {key: 'caseDefinitionKey', label: 'Key'},
-    {key: 'caseDefinitionVersionTag', label: 'Version'},
+    {key: 'name', label: 'caseManagement.listColumns.name'},
+    {key: 'caseDefinitionKey', label: 'caseManagement.listColumns.key'},
+    {key: 'caseDefinitionVersionTag', label: 'caseManagement.listColumns.version'},
   ];
 
   public readonly showCreateModal$ = new BehaviorSubject<boolean>(false);
