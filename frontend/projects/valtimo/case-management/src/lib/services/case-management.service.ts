@@ -20,6 +20,7 @@ import {Page} from '@valtimo/document';
 import {InterceptorSkipHeader} from '@valtimo/security';
 import {Observable} from 'rxjs';
 import {CaseListItem} from '../models';
+import {CaseVersionListItem} from '../models/case-version-list.model';
 
 @Injectable({
   providedIn: 'root',
@@ -60,6 +61,13 @@ export class CaseManagementService extends BaseApiService {
         `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/active`
       ),
       {}
+    );
+  }
+
+  public getAllCaseVersions(params: any): Observable<Page<CaseVersionListItem>> {
+    return this.httpClient.get<Page<CaseVersionListItem>>(
+      this.getApiUrl(`management/v1/case-definition`),
+      {params}
     );
   }
 

@@ -19,10 +19,9 @@
   *ngIf="{
     exporting: exporting$ | async,
     loadingVersion: loadingVersion$ | async,
-    versions: versions$ | async,
+    versionItems: versionSelectorItems$ | async,
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
-    selectedVersionIsSameAsActiveVersion: selectedVersionIsSameAsActiveVersion$ | async,
     selectedVersionIsGloballyActive: selectedVersionIsGloballyActive$ | async,
     compactMode: compactMode$ | async,
   } as obs"
@@ -44,23 +43,33 @@
     [displayValue]="versionItemTemplate"
     [size]="obs.compactMode ? 'sm' : 'md'"
     [appendInline]="false"
-    [disabled]="!obs.versions?.length"
-    (selected)="setVersion($event)"
+    [disabled]="!obs.versionItems?.length"
+    (selected)="selectVersion($event)"
   >
-    <cds-dropdown-list [items]="obs?.versions || []" [listTpl]="versionItemTemplate"></cds-dropdown-list>
+    <cds-dropdown-list
+      [items]="obs?.versionItems || []"
+      [listTpl]="versionItemTemplate"
+    ></cds-dropdown-list>
   </cds-dropdown>
 </ng-template>
 
 <ng-template #versionItemTemplate let-item="item">
-  <div class="version-selector-dropdown-template">
-    <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
-      {{ item?.content }}
-    </cds-tag>
+  <ng-container *ngIf="item.isAllVersionsOption; else regularVersionTemplate">
+    <span>{{ item.content }}</span>
+    <svg cdsIcon="version" size="16"></svg>
+  </ng-container>
 
-    <cds-tag class="cds-tag--no-margin" [type]="'high-contrast'">
-      {{ 'caseManagement.globallyActive' | translate }}
-    </cds-tag>
-  </div>
+  <ng-template #regularVersionTemplate>
+    <div class="version-selector-dropdown-template">
+      <cds-tag class="cds-tag--no-margin" [type]="item.tagType" [title]="item.content">
+        {{ item.content }}
+      </cds-tag>
+
+      <cds-tag *ngIf="item.active" class="cds-tag--no-margin" type="high-contrast">
+        {{ 'caseManagement.globallyActive' | translate }}
+      </cds-tag>
+    </div>
+  </ng-template>
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">
@@ -75,25 +84,23 @@
       [id]="'exportDocumentDefinition'"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="export()"
-      >{{
-        'caseManagement.export' | translate: {value: documentDefinitionTitle}
-      }}</cds-overflow-menu-option
-    >
+      >{{ 'caseManagement.export' | translate: {value: documentDefinitionTitle} }}
+    </cds-overflow-menu-option>
 
     <cds-overflow-menu-option
       *ngIf="obs.selectedDocumentDefinition && !obs.selectedDocumentDefinition.readOnly"
       [id]="'removeDocumentDefinition'"
       [disabled]="obs.exporting || obs.loadingVersion"
       (selected)="openCaseRemoveModal()"
-      >{{ 'Remove document definition' | translate }}</cds-overflow-menu-option
-    >
+      >{{ 'Remove document definition' | translate }}
+    </cds-overflow-menu-option>
 
     <cds-overflow-menu-option
       [id]="'setGlobalActiveVersion'"
       [disabled]="obs.selectedVersionIsGloballyActive"
       (selected)="openGlobalActiveVersionModal()"
-      >{{ 'caseManagement.setGlobalActiveVersion' | translate }}</cds-overflow-menu-option
-    >
+      >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
+    </cds-overflow-menu-option>
   </cds-overflow-menu>
 </ng-template>
 
@@ -123,6 +130,15 @@
 
 <valtimo-case-management-remove-modal #caseRemoveModal></valtimo-case-management-remove-modal>
 
+<valtimo-case-management-select-version-modal
+  [open]="showAllVersionsModal$ | async"
+  [caseDefinitionTitle]="_caseDefinitionTitle$ | async"
+  [caseDefinitionKey]="caseDefinitionKey$ | async"
+  [previousSelectedVersion]="selectedVersion$ | async"
+  (closeEvent)="closeAllVersionsModal()"
+  (selectedVersion)="selectVersionFromModal($event)"
+></valtimo-case-management-select-version-modal>
+
 <valtimo-confirmation-modal
   [showModalSubject$]="showGlobalVersionModal$"
   cancelButtonType="ghost"
@@ -151,6 +167,7 @@
   [showModalSubject$]="showGlobalVersionConfirmationModal$"
   cancelButtonType="ghost"
   cancelButtonTextTranslationKey="caseManagement.confirmationGlobalVersionModal.cancel"
+  confirmButtonType="danger"
   confirmButtonTextTranslationKey="caseManagement.confirmationGlobalVersionModal.confirm"
   contentTranslationKey="caseManagement.confirmationGlobalVersionModal.description"
   titleTranslationKey="caseManagement.confirmationGlobalVersionModal.title"

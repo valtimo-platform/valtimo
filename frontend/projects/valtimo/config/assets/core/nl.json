@@ -540,6 +540,7 @@
     "connectedProcesses": "Gekoppelde processen",
     "connectProcess": "Proces koppelen",
     "processLink": "Proces koppelen",
+    "seeAllVersions": "Bekijk alle versies",
     "selectProcessDef": "Procesdefinitie kiezen",
     "setGlobalActiveVersion": "Instellen als actieve versie",
     "setGlobalActiveVersionErrorTitle": "Fout",
@@ -565,6 +566,19 @@
       "message": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
       "confirm": "Instellen als actieve versie",
       "cancel": "Annuleren"
+    },
+    "allVersionsModal": {
+      "title": "Alle {{value}} versies",
+      "closeButton": "Sluiten",
+      "columns": {
+        "version": "Versie",
+        "release": "Uitgebracht op",
+        "description": "Beschrijving"
+      },
+      "noResults": {
+        "title": "Er zijn geen caseversies",
+        "description": "Er is geen versie geconfigureerd voor deze case"
+      }
     },
     "processLinkNotification": {
       "linkSuccess": "Succesvol gekoppeld proces",

@@ -28,13 +28,14 @@ import {
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PageHeaderService} from '@valtimo/components';
-import {ListItem, Notification} from 'carbon-components-angular';
+import {IconService, ListItem, Notification} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {CaseDetailService, CaseManagementService} from '../../services';
 import {CaseManagementRemoveModalComponent} from '../case-management-remove-modal/case-management-remove-modal.component';
 import {GlobalNotificationService} from '@valtimo/layout';
-import {eq, lt, valid} from 'semver';
+import {lt, valid} from 'semver';
+import {Version16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-case-management-detail-container-actions',
@@ -56,10 +57,10 @@ export class CaseManagementDetailContainerActionsComponent {
 
   public readonly CARBON_THEME = 'g10';
 
+  public readonly showAllVersionsModal$ = new BehaviorSubject<boolean>(false);
   public readonly exporting$ = new BehaviorSubject<boolean>(false);
   public readonly selectedVersionNumber$ = this.caseDetailService.selectedVersionNumber$;
   public readonly selectedVersion$ = new BehaviorSubject<string>('');
-  public readonly currentGlobalActiveVersion$ = new BehaviorSubject<string>('');
 
   public readonly params$: Observable<{
     caseDefinitionKey: string;
@@ -82,18 +83,33 @@ export class CaseManagementDetailContainerActionsComponent {
     map(params => params.caseDefinitionVersionTag || '')
   );
 
-  public readonly selectedVersionIsGloballyActive$: Observable<boolean> =
-    this.caseDefinitionKey$?.pipe(
-      switchMap(caseDefinitionKey =>
-        this.caseManagementService.getGlobalActiveCase(caseDefinitionKey)
-      ),
-      map(result => !!result?.active)
-    );
+  public readonly globalActiveVersion$ = this.caseDefinitionKey$.pipe(
+    switchMap(caseDefinitionKey =>
+      this.caseManagementService
+        .getGlobalActiveCase(caseDefinitionKey)
+        .pipe(map(result => result.caseDefinitionVersionTag))
+    )
+  );
+
+  public readonly selectedVersionIsGloballyActive$: Observable<boolean> = combineLatest([
+    this.selectedVersion$,
+    this.globalActiveVersion$,
+  ]).pipe(map(([selectedVersion, globalActiveVersion]) => selectedVersion === globalActiveVersion));
 
   private readonly _caseDefinitionKey$ = this.caseDetailService.selectedDocumentDefinitionName$;
   public readonly loadingVersion$ = new BehaviorSubject<boolean>(true);
   public readonly showGlobalVersionModal$ = new BehaviorSubject<boolean>(false);
   public readonly showGlobalVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly _globalActiveCase$: Observable<any> = this.caseDefinitionKey$.pipe(
+    switchMap(caseDefinitionKey =>
+      this.caseManagementService.getGlobalActiveCase(caseDefinitionKey)
+    )
+  );
+
+  public readonly _caseDefinitionTitle$: Observable<string> = this._globalActiveCase$.pipe(
+    map(result => result.name)
+  );
 
   public readonly selectedDocumentDefinition$ = this.caseDetailService.documentDefinition$;
 
@@ -102,26 +118,17 @@ export class CaseManagementDetailContainerActionsComponent {
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly selectedVersionIsSameAsActiveVersion$: Observable<boolean> = combineLatest([
-    this.currentGlobalActiveVersion$,
-    this.selectedVersion$,
-  ]).pipe(
-    map(([current, selected]) => {
-      return valid(current) && valid(selected) && eq(selected, current);
-    })
-  );
-
   public readonly isOlderVersionSelected$: Observable<boolean> = combineLatest([
-    this.currentGlobalActiveVersion$,
+    this.globalActiveVersion$,
     this.selectedVersion$,
   ]).pipe(
-    map(([current, selected]) => {
-      return valid(current) && valid(selected) && lt(selected, current);
+    map(([currentVersion, selectedVersion]) => {
+      return valid(currentVersion) && valid(selectedVersion) && lt(selectedVersion, currentVersion);
     })
   );
 
   private readonly _cachedVersions = new BehaviorSubject<ListItem[] | null>(null);
-  public readonly versions$: Observable<ListItem[] | null> = combineLatest([
+  public readonly versionSelectorItems$: Observable<ListItem[] | null> = combineLatest([
     this.route.params,
     this.selectedVersion$,
   ]).pipe(
@@ -134,14 +141,24 @@ export class CaseManagementDetailContainerActionsComponent {
       ])
     ),
     map(([caseDefinitionVersions, selectedVersion]) => {
+      const limitedVersions = caseDefinitionVersions ? caseDefinitionVersions.slice(0, 5) : [];
+
       const mapping: ListItem[] | null =
-        caseDefinitionVersions?.map((caseDefinitionVersion: string) => ({
-          content: caseDefinitionVersion,
-          selected: caseDefinitionVersion === selectedVersion,
-          tagType: 'green',
+        limitedVersions.map(({versionTag, active}) => ({
+          content: versionTag,
+          selected: versionTag === selectedVersion,
+          active,
+          tagType: 'blue',
+          isAllVersionsOption: false,
         })) ?? null;
 
-      return mapping;
+      const allVersionsItem: ListItem = {
+        content: this.translateService.instant('caseManagement.seeAllVersions'),
+        selected: false,
+        active: false,
+        isAllVersionsOption: true,
+      };
+      return [...mapping, allVersionsItem];
     })
   );
 
@@ -152,11 +169,14 @@ export class CaseManagementDetailContainerActionsComponent {
     private readonly caseManagementService: CaseManagementService,
     private readonly caseDetailService: CaseDetailService,
     private readonly notificationService: GlobalNotificationService,
+    private readonly iconService: IconService,
     private readonly pageHeaderService: PageHeaderService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly translateService: TranslateService
-  ) {}
+  ) {
+    this.iconService.register(Version16);
+  }
 
   public export(): void {
     this.closeCurrentNotification();
@@ -206,12 +226,16 @@ export class CaseManagementDetailContainerActionsComponent {
       });
   }
 
-  public setVersion(version: any): void {
-    this.selectedVersion$.next(version?.item?.content);
-    this.router.navigate(
-      [`../${version.item.content}/${this.route.firstChild?.routeConfig?.path}`],
-      {relativeTo: this.route}
-    );
+  public selectVersion(version: any): void {
+    if (version?.item?.isAllVersionsOption) {
+      this.showAllVersionsModal();
+    } else {
+      this.setVersion(version?.item?.content);
+    }
+  }
+
+  public selectVersionFromModal(version: string): void {
+    this.setVersion(version);
   }
 
   public openCaseRemoveModal(): void {
@@ -228,6 +252,14 @@ export class CaseManagementDetailContainerActionsComponent {
 
   public closeGlobalVersionCaseModal(): void {
     this.showGlobalVersionModal$.next(false);
+  }
+
+  public showAllVersionsModal(): void {
+    this.showAllVersionsModal$.next(true);
+  }
+
+  public closeAllVersionsModal(): void {
+    this.showAllVersionsModal$.next(false);
   }
 
   public openGlobalCaseVersionConfirmationModal(): void {
@@ -252,7 +284,8 @@ export class CaseManagementDetailContainerActionsComponent {
         take(1),
         switchMap(([caseDefinitionKey, selectedVersion]) =>
           this.caseManagementService.setGlobalActiveCaseVersion(caseDefinitionKey, selectedVersion)
-        )
+        ),
+        tap((result: any) => this.selectedVersion$.next(result.caseDefinitionVersionTag))
       )
       .subscribe({
         next: response => {
@@ -311,6 +344,13 @@ export class CaseManagementDetailContainerActionsComponent {
   private findLargestInArray(array: Array<number>): number {
     return array.reduce(function (a, b) {
       return a > b ? a : b;
+    });
+  }
+
+  private setVersion(version: string): void {
+    this.selectedVersion$.next(version);
+    this.router.navigate([`../${version}/${this.route.firstChild?.routeConfig?.path}`], {
+      relativeTo: this.route,
     });
   }
 }

@@ -540,6 +540,7 @@
     "connectedProcesses": "Verknüpfte Prozesse",
     "connectProcess": "Prozess verknüpfen",
     "processLink": "Prozess verknüpfen",
+    "seeAllVersions": "Alle Versionen anzeigen",
     "selectProcessDef": "Prozessdefinition auswählen",
     "setGlobalActiveVersion": "Als aktive Version festlegen",
     "setGlobalActiveVersionErrorTitle": "Fehler",
@@ -565,6 +566,19 @@
       "message": "Legen Sie die aktuell ausgewählte Version als global aktive Version fest. Bitte beachten Sie, dass es zu Funktionsstörungen kommen kann.",
       "confirm": "Als aktive Version festlegen",
       "cancel": "Abbrechen"
+    },
+    "allVersionsModal": {
+      "title": "Alle {{value}} versionen",
+      "closeButton": "Schließen",
+      "columns": {
+        "version": "Version",
+        "release": "Veröffentlicht am",
+        "description": "Beschreibung"
+      },
+      "noResults": {
+        "title": "Es sind keine Fallversionen vorhanden",
+        "description": "Für diesen Fall wurde keine Version konfiguriert"
+      }
     },
     "processLinkNotification": {
       "linkSuccess": "Erfolgreich verknüpfter Prozess",

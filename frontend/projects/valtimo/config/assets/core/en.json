@@ -541,6 +541,7 @@
     "connectedProcesses": "Connected processes",
     "connectProcess": "Connect process",
     "processLink": "Link process",
+    "seeAllVersions": "See all versions",
     "selectProcessDef": "Select process definition",
     "setGlobalActiveVersion": "Set as active version",
     "setGlobalActiveVersionErrorTitle": "Error",
@@ -566,6 +567,19 @@
       "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
       "confirm": "Set as active version",
       "cancel": "Cancel"
+    },
+    "allVersionsModal": {
+      "title": "All {{value}} versions",
+      "closeButton": "Close",
+      "columns": {
+        "version": "Version",
+        "release": "Released on",
+        "description": "Description"
+      },
+      "noResults": {
+        "title": "There are no case versions",
+        "description": "No version has been configured for this case"
+      }
     },
     "processLinkNotification": {
       "linkSuccess": "Successfully linked process",

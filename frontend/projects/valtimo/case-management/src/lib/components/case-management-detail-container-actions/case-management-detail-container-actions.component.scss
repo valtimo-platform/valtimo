@@ -48,8 +48,8 @@
 }
 
 ::ng-deep .version-selector {
-  width: 300px;
   margin-bottom: 0;
+  width: 300px;
 }
 
 ::ng-deep .version-selector-dropdown-template {
@@ -64,6 +64,17 @@
     line-height: 24px;
     max-width: 100%;
   }
+}
+
+::ng-deep .cds--list-box__field {
+  display: flex;
+  justify-content: space-between;
+}
+
+::ng-deep .cds--list-box__menu-item__option {
+  display: flex;
+  justify-content: space-between;
+  padding-inline-end: 0;
 }
 
 ::ng-deep .cds--list-box__menu-item__option > div {
