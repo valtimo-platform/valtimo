@@ -1262,7 +1262,8 @@
       "cool-gray": "Cool gray",
       "warm-gray": "Warm gray",
       "high-contrast": "High contrast",
-      "outline": "Outline"
+      "outline": "Outline",
+      "orange": "Orange"
     },
     "labels": {
       "dateCreationFrom": "Date creation from",

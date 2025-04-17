@@ -1260,7 +1260,8 @@
       "cool-gray": "Koel grijs",
       "warm-gray": "Warm grijs",
       "high-contrast": "Hoog contrast",
-      "outline": "Omlijnd"
+      "outline": "Omlijnd",
+      "orange": "Oranje"
     },
     "labels": {
       "dateCreationFrom": "Aanmaakdatum van",
