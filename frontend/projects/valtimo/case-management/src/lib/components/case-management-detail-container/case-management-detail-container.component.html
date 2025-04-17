@@ -59,15 +59,6 @@
     </cds-tab>
 
     <cds-tab
-      class="no-padding-left-right main-content"
-      [active]="obs.currentTab === TabEnum.CASE"
-      [heading]="'caseManagement.tabs.cases' | translate"
-      disabled="true"
-      (selected)="navigateToTab(TabEnum.CASE)"
-    >
-    </cds-tab>
-
-    <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"
       [id]="TabEnum.SEARCH"
       [active]="obs.currentTab === TabEnum.SEARCH"
@@ -102,7 +93,6 @@
       [id]="TabEnum.STATUSES"
       [active]="vars.active"
       [heading]="'caseManagement.tabs.statuses' | translate"
-      disabled="true"
       (selected)="navigateToTab(TabEnum.STATUSES)"
     >
     </cds-tab>
@@ -112,7 +102,6 @@
         class="no-padding-left-right no-padding-top-bottom"
         [active]="obs.currentTab === injectedTab.translationKey"
         [heading]="injectedTab.translationKey | translate"
-        disabled="true"
         (selected)="navigateToTab(injectedTab.translationKey)"
       >
       </cds-tab>

@@ -43,7 +43,7 @@
   [type]="statusModalType$ | async"
   [prefill]="prefillStatus$ | async"
   [usedKeys]="usedKeys$ | async"
-  [documentDefinitionName]="documentDefinitionName$ | async"
+  [documentDefinitionName]="caseDefinitionKey$ | async"
   (closeModalEvent)="closeModal($event)"
 ></valtimo-case-management-status-modal>
 

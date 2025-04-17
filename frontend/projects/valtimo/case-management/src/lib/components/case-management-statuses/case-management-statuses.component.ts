@@ -52,14 +52,13 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
-  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params?.name),
-    filter(docDefName => !!docDefName)
-  );
+  private _caseDefinitionKey: string;
 
-  public get documentDefinitionName$(): Observable<string> {
-    return this._documentDefinitionName$;
-  }
+  public readonly caseDefinitionKey$: Observable<string> = this.route.parent.params.pipe(
+    map(params => params.caseDefinitionKey || ''),
+    filter(caseDefinitionKey => !!caseDefinitionKey),
+    tap((caseDefinitionKey: string) => (this._caseDefinitionKey = caseDefinitionKey))
+  );
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
@@ -68,7 +67,7 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
   private _documentStatuses: InternalCaseStatus[] = [];
 
   public readonly documentStatuses$ = combineLatest([
-    this._documentDefinitionName$,
+    this.caseDefinitionKey$,
     this._reload$,
   ]).pipe(
     tap(([_, reload]) => {
@@ -76,8 +75,8 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
         this.loading$.next(true);
       }
     }),
-    switchMap(([documentDefinitionName]) =>
-      this.caseStatusService.getInternalCaseStatusesManagement(documentDefinitionName)
+    switchMap(([caseDefinitionKey]) =>
+      this.caseStatusService.getInternalCaseStatusesManagement(caseDefinitionKey)
     ),
     map(statuses =>
       statuses.map(status => ({
@@ -145,10 +144,10 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
   }
 
   public confirmDeleteStatus(status: InternalCaseStatus): void {
-    this.documentDefinitionName$
+    this.caseDefinitionKey$
       .pipe(
-        switchMap(documentDefinitionName =>
-          this.caseStatusService.deleteInternalCaseStatus(documentDefinitionName, status.key)
+        switchMap(caseDefinitionKey =>
+          this.caseStatusService.deleteInternalCaseStatus(caseDefinitionKey, status.key)
         )
       )
       .subscribe(() => {
@@ -164,10 +163,10 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
         ? this.swapStatuses(this._documentStatuses, index - 1, index)
         : this.swapStatuses(this._documentStatuses, index, index + 1);
 
-    this.documentDefinitionName$
+    this.caseDefinitionKey$
       .pipe(
-        switchMap(documentDefinitionName =>
-          this.caseStatusService.updateInternalCaseStatuses(documentDefinitionName, orderedStatuses)
+        switchMap(caseDefinitionKey =>
+          this.caseStatusService.updateInternalCaseStatuses(caseDefinitionKey, orderedStatuses)
         )
       )
       .subscribe(() => {
