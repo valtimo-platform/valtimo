@@ -42,7 +42,7 @@ export class DossierListCaseTagService {
         }
       }),
       map(([caseTags]) => caseTags),
-      tap(caseTags => this._showCaseTagsSelector$.next((caseTags || []).length > 1))
+      tap(caseTags => this._showCaseTagsSelector$.next((caseTags || []).length > 0))
     );
 
   public get caseTags$(): Observable<CaseTag[]> {
