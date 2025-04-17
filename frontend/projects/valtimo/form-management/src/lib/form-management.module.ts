@@ -47,7 +47,7 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes, RouterUtils.getRouterExtraOptions())],
   exports: [RouterModule],
 })
-class FormManagementRoutingModule {}
+export class FormManagementRoutingModule {}
 
 @NgModule({
   imports: [FormManagementComponent, FormManagementRoutingModule],
