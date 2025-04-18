@@ -33,11 +33,11 @@ import {CUSTOM_CASE_WIDGET_TOKEN} from '../../../../../../constants';
 import {BehaviorSubject, combineLatest, filter, Observable, Subscription} from 'rxjs';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
-import {WidgetProcess} from '../widget-process/widget-process';
 import {DocumentService} from '@valtimo/document';
 import {PermissionService} from '@valtimo/access-control';
-import {WidgetsService} from '../../widgets.service';
 import {ButtonModule} from 'carbon-components-angular';
+import {WidgetProcess} from '../widget-process/widget-process';
+import {WidgetsService} from '../../widgets.service';
 
 @Component({
   selector: 'valtimo-widget-custom',

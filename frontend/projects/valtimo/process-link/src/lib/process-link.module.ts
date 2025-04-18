@@ -67,8 +67,8 @@ import {SelectUrlComponent} from './components/select-url/select-url.component';
 import {UrlValidatorService} from './services/url-validator.service';
 import {UrlResolverService} from './services/url-resolver.service';
 import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
-import {SelectUIComponent} from './components/select-ui/select-ui.component';
 import {ImportPluginConfigurationComponent} from './components/import-plugin-configuration/import-plugin-configuration.component';
+import {SelectUIComponentComponent} from './components/select-ui-component/select-ui-component.component';
 
 @NgModule({
   declarations: [
@@ -128,6 +128,7 @@ import {ImportPluginConfigurationComponent} from './components/import-plugin-con
     LayerModule,
     ToggletipModule,
     RemoveClassnamesDirective,
+    ReactiveFormsModule,
   ],
   exports: [
     ProcessLinkComponent,

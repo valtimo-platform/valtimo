@@ -34,7 +34,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {ActivatedRoute, ParamMap} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CARBON_THEME,
@@ -165,10 +165,10 @@ export class CaseManagementWidgetCollectionComponent
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
     private readonly widgetFieldsService: WidgetFieldsService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly widgetWizardService: WidgetWizardService
   ) {}
 
   public ngOnInit(): void {

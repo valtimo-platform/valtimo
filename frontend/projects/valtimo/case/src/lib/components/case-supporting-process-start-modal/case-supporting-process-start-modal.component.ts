@@ -42,7 +42,7 @@ import {
   FormSubmissionResult,
   ProcessLinkService,
 } from '@valtimo/process-link';
-import {BehaviorSubject, combineLatest, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 

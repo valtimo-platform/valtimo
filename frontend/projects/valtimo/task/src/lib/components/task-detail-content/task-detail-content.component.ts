@@ -75,7 +75,6 @@ import {
 import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
-import {FormCustomComponent} from '@valtimo/process-link';
 
 @Component({
   selector: 'valtimo-task-detail-content',
@@ -445,7 +444,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
           if (!this.formCustomComponentConfig) {
             return;
           }
-          let renderedComponent:ComponentRef<FormCustomComponent>;
+          let renderedComponent: ComponentRef<FormCustomComponent>;
           this._subscriptions.add(
             this._formCustomComponentConfig$.subscribe(formCustomComponentConfig => {
               const customComponent = formCustomComponentConfig[formCustomComponentKey];
