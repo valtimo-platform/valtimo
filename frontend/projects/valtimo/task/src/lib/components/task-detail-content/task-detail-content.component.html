@@ -37,7 +37,12 @@
 >
   <valtimo-form-io
     #form
-    *ngIf="obs.formDefinition && obs.processLinkIsForm && !obs.processLinkIsUiComponent && !obs.processLinkIsFormViewModel"
+    *ngIf="
+      obs.formDefinition &&
+      obs.processLinkIsForm &&
+      !obs.processLinkIsUiComponent &&
+      !obs.processLinkIsFormViewModel
+    "
     [form]="obs.formDefinition"
     [submission]="obs.submission"
     (submit)="onSubmit($event)"

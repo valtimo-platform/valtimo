@@ -253,7 +253,8 @@
       [ngClass]="{
         'case-actions--compact': compactMode$ | async,
         'case-actions--small-title': smallTitle$ | async,
-      }"      *ngIf="{
+      }"
+      *ngIf="{
         assigneeId: assigneeId$ | async,
         canAssign: canAssign$ | async,
         canClaim: canClaim$ | async,

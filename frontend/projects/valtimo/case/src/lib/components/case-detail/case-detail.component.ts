@@ -224,7 +224,6 @@ export class CaseDetailComponent
     map(caseTags => Array.isArray(caseTags) && caseTags.length > 0)
   );
 
-
   public readonly userId$: Observable<string | undefined> = of(
     this.keyCloakService.isLoggedIn()
   ).pipe(
@@ -287,7 +286,6 @@ export class CaseDetailComponent
 
   public readonly tabHorizontalOverflowDisabled = this.caseTabService.tabHorizontalOverflowDisabled;
   public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
-
 
   public readonly showTaskList$ = this.caseTabService.showTaskList$;
 
@@ -392,7 +390,6 @@ export class CaseDetailComponent
         ];
       })
     );
-
   }
 
   public startProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
