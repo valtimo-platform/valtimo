@@ -23,6 +23,7 @@ export * from './lib/components/task-detail-content/task-detail-content.componen
 export * from './lib/components/task-detail-intermediate-save/task-detail-intermediate-save.component';
 export * from './lib/components/task-detail-modal/task-detail-modal.component';
 export * from './lib/components/task-list/task-list.component';
+export * from './lib/components/set-task-due-date/set-task-due-date.component';
 export * from './lib/constants';
 export * from './lib/models';
 export * from './lib/services';

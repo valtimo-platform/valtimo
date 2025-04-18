@@ -220,6 +220,11 @@ export class CaseDetailComponent
     )
   );
 
+  public readonly hasCaseTags$: Observable<boolean> = this._caseTags$.pipe(
+    map(caseTags => Array.isArray(caseTags) && caseTags.length > 0)
+  );
+
+
   public readonly userId$: Observable<string | undefined> = of(
     this.keyCloakService.isLoggedIn()
   ).pipe(
@@ -281,6 +286,8 @@ export class CaseDetailComponent
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
   public readonly tabHorizontalOverflowDisabled = this.caseTabService.tabHorizontalOverflowDisabled;
+  public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
+
 
   public readonly showTaskList$ = this.caseTabService.showTaskList$;
 
@@ -310,6 +317,7 @@ export class CaseDetailComponent
   private _pendingTab: TabImpl;
   private _observer!: ResizeObserver;
   private _tabsInit = false;
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -352,6 +360,7 @@ export class CaseDetailComponent
     this.setDocumentStyle();
     this.enableResetOnBackNavigation();
     this.openWidgetProcessSubscription();
+    this.openSmallTitleSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -359,6 +368,7 @@ export class CaseDetailComponent
     this.pageTitleService.enableReset();
     this.removeDocumentStyle();
     this._subscriptions.unsubscribe();
+    this.pageHeaderService.disableSmallTitle();
   }
 
   public getAllAssociatedProcessDefinitions(): void {
@@ -382,6 +392,7 @@ export class CaseDetailComponent
         ];
       })
     );
+
   }
 
   public startProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
@@ -712,6 +723,20 @@ export class CaseDetailComponent
         : longestName < 40
           ? CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH.medium
           : CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH.large
+    );
+  }
+
+  private openSmallTitleSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this.hasCaseTags$, this.compactMode$]).subscribe(
+        ([hasCaseTags, compactMode]) => {
+          if (!compactMode && hasCaseTags) {
+            this.pageHeaderService.enableSmallTitle();
+          } else {
+            this.pageHeaderService.disableSmallTitle();
+          }
+        }
+      )
     );
   }
 }

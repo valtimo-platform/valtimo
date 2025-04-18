@@ -44,6 +44,7 @@
         </cds-tabs>
       </ng-container>
     </ng-template>
+
     <div
       #tabContentContainer
       class="tab-content-container"
@@ -249,8 +250,10 @@
   <ng-template>
     <div
       class="case-actions"
-      [ngClass]="{'--compact': compactMode$ | async}"
-      *ngIf="{
+      [ngClass]="{
+        'case-actions--compact': compactMode$ | async,
+        'case-actions--small-title': smallTitle$ | async,
+      }"      *ngIf="{
         assigneeId: assigneeId$ | async,
         canAssign: canAssign$ | async,
         canClaim: canClaim$ | async,

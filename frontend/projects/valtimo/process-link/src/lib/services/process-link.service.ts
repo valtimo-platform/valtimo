@@ -20,6 +20,7 @@ import {map, Observable} from 'rxjs';
 
 import {
   CompatiblePluginProcessLinks,
+  FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,
   FormProcessLinkUpdateRequestDto,
   FormSubmissionResult,
@@ -30,6 +31,9 @@ import {
   ProcessLinkType,
   TaskWithProcessLink,
   UIComponentProcessLinkUpdateRequestDto,
+  UIComponentProcessLinkCreateRequestDto,
+  UIComponentProcessLinkUpdateRequestDto,
+  URLProcessLinkCreateDto,
   URLProcessLinkUpdateRequestDto,
 } from '../models';
 import {URLVariables} from '../models/process-link-url.model';

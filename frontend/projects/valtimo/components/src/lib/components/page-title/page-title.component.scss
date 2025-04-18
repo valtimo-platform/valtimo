@@ -19,11 +19,11 @@
   flex-direction: row;
   align-items: flex-end;
 
-  &.--no-margin {
+  &--no-margin {
     margin-bottom: 0;
   }
 
-  &.--compact {
+  &--compact {
     align-items: center;
   }
 
@@ -33,6 +33,13 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    &--small-title {
+      font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+      font-weight: var(--cds-body-compact-01-font-weight, 400);
+      line-height: var(--cds-body-compact-01-line-height, 1.28572);
+      letter-spacing: var(--cds-body-compact-01-letter-spacing, 0.16px);
+    }
   }
 
   .compact-page-title {
@@ -45,13 +52,13 @@
       width: 200px;
       height: 40px;
     }
-  }
 
-  .skeleton-container.--compact {
-    width: 60px;
-    height: 18px;
-    overflow: hidden;
-    margin-left: 8px;
+    &--compact {
+      width: 60px;
+      height: 18px;
+      overflow: hidden;
+      margin-left: 8px;
+    }
   }
 }
 

@@ -81,6 +81,10 @@ export class CaseSupportingProcessStartModalComponent {
     FormCustomComponentConfig | {}
   >({});
 
+  public readonly closeModalEvent = new EventEmitter();
+
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly router: Router,
     private readonly processService: ProcessService,
@@ -107,6 +111,8 @@ export class CaseSupportingProcessStartModalComponent {
       )
       .subscribe(startProcessResult => {
         if (startProcessResult) {
+          this.isUIComponent = false;
+          this.isFormViewModel = false;
           switch (startProcessResult.type) {
             case 'form':
               this.formDefinition$.next(startProcessResult.properties.prefilledForm);
@@ -152,6 +158,7 @@ export class CaseSupportingProcessStartModalComponent {
     this.options$.next(options);
 
     this.loadProcessLink();
+    this.openCdsModal();
   }
 
   public onSubmit(submission: FormioSubmission): void {
@@ -221,6 +228,12 @@ export class CaseSupportingProcessStartModalComponent {
     formViewModelComponent.instance.formSubmit.pipe(take(1)).subscribe(() => {
       this.formSubmitted();
     });
+
+    this._subscriptions.add(
+      this.closeModalEvent.subscribe(() => {
+        formViewModelComponent.destroy();
+      })
+    );
 
     this.isFormViewModel = true;
   }

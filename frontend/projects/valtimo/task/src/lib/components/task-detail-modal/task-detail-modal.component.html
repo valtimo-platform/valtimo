@@ -92,17 +92,25 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #assignUserToTask>
-  <ng-container
+  <div
     *ngIf="{
       task: task$ | async,
       canAssignUserToTask: canAssignUserToTask$ | async,
+      canModifyTask: canModifyTask$ | async,
     } as obs"
+    class="task-actions"
   >
     <valtimo-assign-user-to-task
-      *ngIf="obs.task && obs.canAssignUserToTask && assignmentOfTaskChanged"
+      *ngIf="obs.task && assignmentOfTaskChanged"
       [taskId]="obs.task.id"
       [assigneeId]="obs.task.assignee"
+      [canAssignUserToTask]="obs.canAssignUserToTask"
       (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
     ></valtimo-assign-user-to-task>
-  </ng-container>
+
+    <valtimo-set-task-due-date
+      [task]="obs.task"
+      [canModifyTask]="obs.canModifyTask"
+    ></valtimo-set-task-due-date>
+  </div>
 </ng-template>

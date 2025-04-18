@@ -25,6 +25,7 @@ import {
   FormIoModule,
   ModalModule,
   ParagraphModule,
+  RemoveClassnamesDirective,
   RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   StepperModule,
@@ -84,7 +85,7 @@ import {ImportPluginConfigurationComponent} from './components/import-plugin-con
     FormFlowConfigurationContainerComponent,
     SelectUrlComponent,
     FormDisplayConfigurationComponent,
-    SelectUIComponent,
+    SelectUIComponentComponent,
     ImportPluginConfigurationComponent,
   ],
   imports: [
@@ -124,6 +125,9 @@ import {ImportPluginConfigurationComponent} from './components/import-plugin-con
     ToggletipModule,
     ComboBoxModule,
     TranslateModule,
+    LayerModule,
+    ToggletipModule,
+    RemoveClassnamesDirective,
   ],
   exports: [
     ProcessLinkComponent,

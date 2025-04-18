@@ -50,7 +50,7 @@ import {
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
-import {Tab, Tabs} from 'carbon-components-angular';
+import {Tab, Tabs, TagType} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {
   BehaviorSubject,

@@ -29,7 +29,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_THEME,
@@ -39,7 +39,7 @@ import {
 } from '@valtimo/components';
 import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/case';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
-import {debounceTime, map, Subscription} from 'rxjs';
+import {debounceTime, map, Observable, Subscription} from 'rxjs';
 
 import {WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';

@@ -31,7 +31,9 @@ import {ProcessInstanceTask} from '@valtimo/process';
 import {
   AssignUserToTaskComponent,
   CAN_ASSIGN_TASK_PERMISSION,
+  CAN_MODIFY_TASK_PERMISSION,
   IntermediateSubmission,
+  SetTaskDueDateComponent,
   TASK_DETAIL_PERMISSION_RESOURCE,
   TaskDetailContentComponent,
   TaskDetailIntermediateSaveComponent,
@@ -54,6 +56,7 @@ import {TaskWithProcessLink} from '@valtimo/process-link';
     ButtonModule,
     IconModule,
     AssignUserToTaskComponent,
+    SetTaskDueDateComponent,
   ],
 })
 export class CaseDetailsTaskDetailComponent implements OnDestroy {
@@ -79,6 +82,14 @@ export class CaseDetailsTaskDetailComponent implements OnDestroy {
   public readonly canAssignUserToTask$: Observable<boolean> = this.task$.pipe(
     switchMap((task: ProcessInstanceTask | null) =>
       this.permissionService.requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
+        resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
+        identifier: task?.id ?? '',
+      })
+    )
+  );
+  public readonly canModifyTask$: Observable<boolean> = this.task$.pipe(
+    switchMap((task: ProcessInstanceTask | null) =>
+      this.permissionService.requestPermission(CAN_MODIFY_TASK_PERMISSION, {
         resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
         identifier: task?.id ?? '',
       })

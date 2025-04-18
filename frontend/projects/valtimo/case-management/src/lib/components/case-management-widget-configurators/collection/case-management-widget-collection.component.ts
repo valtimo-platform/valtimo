@@ -34,7 +34,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CARBON_THEME,
@@ -167,8 +167,8 @@ export class CaseManagementWidgetCollectionComponent
     private readonly fb: FormBuilder,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
-    private readonly widgetWizardService: WidgetWizardService,
-    private readonly widgetFieldsService: WidgetFieldsService
+    private readonly widgetFieldsService: WidgetFieldsService,
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngOnInit(): void {

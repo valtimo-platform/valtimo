@@ -33,7 +33,7 @@ import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} f
 import {CaseManagementParams, WidgetContentComponent} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {getCaseManagementRouteParams} from '../../../utils';
 
 @Component({
