@@ -545,8 +545,8 @@
     "setGlobalActiveVersion": "Instellen als actieve versie",
     "setGlobalActiveVersionErrorTitle": "Fout",
     "setGlobalActiveVersionErrorMessage": "Er is iets misgegaan",
-    "setGlobalActiveVersionSuccessTitle": "Globale actieve versie bijgewerkt",
-    "globallyActive": "Wereldwijd actief",
+    "setGlobalActiveVersionSuccessTitle": "Globaal actieve versie bijgewerkt",
+    "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
     "listColumns": {
       "name": "Naam",
@@ -1184,8 +1184,9 @@
       "title": "Proces verwijderen",
       "content": "Weet u zeker dat u dit proces wilt verwijderen?"
     },
-    "successNotification": "Proces succesvol geïmplementeerd",
-    "errorNotification": "Proces mislukt om te implementeren",
+    "successNotification": "Proces succesvol gedeployed",
+    "errorNotification": "Er ging iets mis bij het deployen van het proces",
+    "deleteNotification": "Proces succesvol verwijderd",
     "upload": {
       "modalTitle": "Upload procesdefinitie",
       "title": "Upload bestand",

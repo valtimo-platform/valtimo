@@ -26,10 +26,11 @@ import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {PageTitleService} from '@valtimo/components';
 import {CaseManagementTabConfig, ConfigService} from '@valtimo/config';
 import {Tab} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, startWith, Subscription, tap} from 'rxjs';
-import {TabEnum} from '../../models';
+import {combineLatest, filter, map, Observable, startWith, Subscription} from 'rxjs';
+import {CaseManagementParams, TabEnum} from '../../models';
 import {CaseDetailService, TabService} from '../../services';
 import {CaseManagementDocumentDefinitionComponent} from '../case-management-document-definition/case-management-document-definition.component';
+import {getCaseManagementRouteParams} from '../../utils';
 
 @Component({
   templateUrl: './case-management-detail-container.component.html',
@@ -42,18 +43,13 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
   private _documentDefinitionTab: CaseManagementDocumentDefinitionComponent;
   @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
-  private _params: {caseDefinitionKey: string; caseDefinitionVersionTag: string};
-  public readonly caseDefinitionKey$: Observable<{
-    caseDefinitionKey: string;
-    caseDefinitionVersionTag: string;
-  }> = this.route.params.pipe(
-    tap(
-      params =>
-        (this._params = params as {caseDefinitionKey: string; caseDefinitionVersionTag: string})
-    ),
-    map(params => params.caseDefinitionKey || ''),
-    filter(caseDefinitionKey => !!caseDefinitionKey)
+  private _params: CaseManagementParams;
+
+  public readonly params$: Observable<CaseManagementParams> = getCaseManagementRouteParams(
+    this.route
   );
+
+  public readonly caseDefinitionKey$ = this.params$.pipe(map(params => params.caseDefinitionKey));
 
   public caseListColumn!: boolean;
   public tabManagementEnabled!: boolean;
@@ -78,7 +74,7 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
 
   public readonly TabEnum = TabEnum;
 
-  private _activeVersion: number | null;
+  private _activeVersion: string | null;
   private _subscriptions = new Subscription();
 
   constructor(
@@ -97,6 +93,7 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
   public ngOnInit(): void {
     this.openActiveVersionSubscription();
     this.pageTitleService.disableReset();
+    this.openParamsSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -106,6 +103,8 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
   }
 
   public navigateToTab(tab: TabEnum | string): void {
+    if (!this._params) return;
+
     this.router.navigateByUrl(
       `case-management/case/${this._params.caseDefinitionKey}/version/${this._params.caseDefinitionVersionTag}/${tab}`
     );
@@ -121,7 +120,7 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
 
   public onCancelRedirectEvent(): void {
     if (this._activeVersion) {
-      this.caseDetailService.setPreviousSelectedVersionNumber(this._activeVersion);
+      this.caseDetailService.setPreviousSelectedCaseDefinitionVersionTag(`${this._activeVersion}`);
       this._activeVersion = null;
       return;
     }
@@ -133,13 +132,25 @@ export class CaseManagementDetailContainerComponent implements OnInit, OnDestroy
   }
 
   public onVersionSet(version: number): void {
-    this.caseDetailService.setSelectedVersionNumber(version);
+    this.caseDetailService.setSelectedCaseDefinitionVersionTag(`${version}`);
   }
 
   private openActiveVersionSubscription(): void {
     this._subscriptions.add(
-      this.caseDetailService.selectedVersionNumber$.subscribe((versionNumber: number | null) => {
-        this._activeVersion = versionNumber;
+      this.caseDetailService.selectedCaseDefinitionVersionTag$.subscribe(
+        (versionTag: string | null) => {
+          this._activeVersion = versionTag;
+        }
+      )
+    );
+  }
+
+  private openParamsSubscription(): void {
+    this._subscriptions.add(
+      this.params$.subscribe(params => {
+        this.caseDetailService.setSelectedCaseDefinitionKey(params.caseDefinitionKey);
+        this.caseDetailService.setSelectedCaseDefinitionVersionTag(params.caseDefinitionVersionTag);
+        this._params = params;
       })
     );
   }

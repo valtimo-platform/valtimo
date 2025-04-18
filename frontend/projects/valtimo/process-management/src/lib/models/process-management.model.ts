@@ -15,6 +15,7 @@
  */
 
 import {ModalParams, ProcessLink} from '@valtimo/process-link';
+import {ManagementContext} from '@valtimo/config';
 
 interface OpenProcessLinkModalEvent {
   modalParams: ModalParams;
@@ -23,8 +24,7 @@ interface OpenProcessLinkModalEvent {
 
 const PROCESS_MANAGEMENT_ENDPOINTS = {
   case: '/management/v1/case-definition',
-  // TODO: Update when BE support is done
-  independent: 'management/v1/process-definition',
+  independent: '/management/v1/process-definition',
 };
 
 interface ProcessManagementParams {
@@ -32,4 +32,13 @@ interface ProcessManagementParams {
   caseDefinitionVersionTag: string;
 }
 
-export {OpenProcessLinkModalEvent, PROCESS_MANAGEMENT_ENDPOINTS, ProcessManagementParams};
+interface ProcessManagementRouteData {
+  context: ManagementContext;
+}
+
+export {
+  OpenProcessLinkModalEvent,
+  PROCESS_MANAGEMENT_ENDPOINTS,
+  ProcessManagementParams,
+  ProcessManagementRouteData,
+};

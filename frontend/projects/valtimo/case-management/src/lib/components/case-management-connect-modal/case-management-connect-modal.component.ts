@@ -98,18 +98,18 @@ export class CaseManagementConnectModalComponent implements OnInit {
 
     const request: ProcessDocumentDefinitionRequest = {
       canInitializeDocument: this.newDocumentProcessDefinitionInit,
-      documentDefinitionName: this.documentDefinition.id.name,
-      documentDefinitionVersion: this.documentDefinition.id.version,
+      caseDefinitionKey: this.documentDefinition.id.name,
+      caseDefinitionVersionTag: `${this.documentDefinition.id.version}`,
       processDefinitionKey: this.newDocumentProcessDefinition.key,
       startableByUser: this.newDocumentProcessDefinitionStartableByUser,
     };
 
-    this.caseDetailService.selectedVersionNumber$
+    this.caseDetailService.selectedCaseDefinitionVersionTag$
       .pipe(
-        switchMap((documentDefinitionVersion: number) =>
+        switchMap((caseDefinitionVersionTag: string) =>
           this.documentService.createProcessDocumentDefinition({
             ...request,
-            documentDefinitionVersion,
+            caseDefinitionVersionTag,
           })
         ),
         take(1)

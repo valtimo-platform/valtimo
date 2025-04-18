@@ -16,7 +16,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 
-@Injectable()
+@Injectable({providedIn: 'root'})
 export class ProcessManagementStateService {
   private readonly _openModal$ = new Subject<boolean>();
   private readonly _reloadDefinitions$ = new BehaviorSubject<null>(null);

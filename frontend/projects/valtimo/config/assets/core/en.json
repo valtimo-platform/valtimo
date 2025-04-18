@@ -1204,6 +1204,7 @@
     },
     "successNotification": "Process deployed successfully",
     "errorNotification": "Process failed to deploy",
+    "deleteNotification": "Process deleted successfully",
     "upload": {
       "modalTitle": "Upload process definition",
       "title": "Upload file",

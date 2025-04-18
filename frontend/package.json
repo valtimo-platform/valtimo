@@ -7,7 +7,8 @@
     "npm": ">=8.19.3 <11.0.0"
   },
   "scripts": {
-    "clean": "rimraf dist .angular node_modules package-lock.json",
+    "reset": "npx --yes npm-run-all clean installDeps devMode",
+    "clean": "npx rimraf@5 dist .angular node_modules package-lock.json",
     "ng": "ng",
     "installDeps": "npm install",
     "devMode": "node scripts/dev-mode.js",

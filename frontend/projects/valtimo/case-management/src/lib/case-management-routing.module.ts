@@ -18,7 +18,6 @@ import {Route, Router, RouterModule, Routes} from '@angular/router';
 import {pendingChangesGuard} from '@valtimo/components';
 import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig, ROLE_ADMIN} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
-import {CaseManagementProcessesComponent} from './components/case-management-processes/case-management-processes.component';
 import {CaseManagementDetailContainerComponent} from './components/case-management-detail-container/case-management-detail-container.component';
 import {CaseManagementDetailComponent} from './components/case-management-detail/case-management-detail.component';
 import {CaseManagementDocumentDefinitionComponent} from './components/case-management-document-definition/case-management-document-definition.component';
@@ -35,6 +34,11 @@ import {
   FormManagementEditComponent,
   FormManagementRouteData,
 } from '@valtimo/form-management';
+import {
+  ProcessManagementBuilderComponent,
+  ProcessManagementComponent,
+  ProcessManagementRouteData,
+} from '@valtimo/process-management';
 
 const routes: Routes = [
   {
@@ -80,8 +84,10 @@ const routes: Routes = [
       },
       {
         path: TabEnum.PROCESSES,
-        component: CaseManagementProcessesComponent,
-        canDeactivate: [pendingChangesGuard],
+        component: ProcessManagementComponent,
+        data: {
+          context: 'case',
+        } as ProcessManagementRouteData,
       },
       {
         path: TabEnum.SEARCH,
@@ -131,6 +137,30 @@ const routes: Routes = [
       customPageTitle: true,
       customPageSubtitle: true,
     },
+  },
+  {
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.PROCESSES}/create`,
+    component: ProcessManagementBuilderComponent,
+    canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
+    data: {
+      title: 'Create new Process',
+      customPageTitle: false,
+      roles: [ROLE_ADMIN],
+      context: 'case',
+    } as ProcessManagementRouteData,
+  },
+  {
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.PROCESSES}/:processDefinitionKey`,
+    component: ProcessManagementBuilderComponent,
+    canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
+    data: {
+      title: 'Process details',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'case',
+    } as ProcessManagementRouteData,
   },
 ];
 

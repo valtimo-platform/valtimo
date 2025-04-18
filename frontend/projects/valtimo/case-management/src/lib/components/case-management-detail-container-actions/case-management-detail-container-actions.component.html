@@ -43,7 +43,7 @@
     [displayValue]="versionItemTemplate"
     [size]="obs.compactMode ? 'sm' : 'md'"
     [appendInline]="false"
-    [disabled]="!obs.versionItems?.length"
+    [disabled]="!obs?.versionItems?.length || obs?.versionItems?.length === 1"
     (selected)="selectVersion($event)"
   >
     <cds-dropdown-list

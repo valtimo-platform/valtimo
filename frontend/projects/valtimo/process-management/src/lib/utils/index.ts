@@ -15,3 +15,4 @@
  */
 
 export * from './bpmn.utils';
+export * from './process-management.utils';

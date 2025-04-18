@@ -287,8 +287,8 @@ class ModifyDocumentAndStartProcessRequestImpl
 
 interface ProcessDocumentDefinitionRequest {
   processDefinitionKey: string;
-  documentDefinitionName: string;
-  documentDefinitionVersion: number;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
   canInitializeDocument: boolean;
   startableByUser: boolean;
 }

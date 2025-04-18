@@ -56,7 +56,7 @@
     (validEvent)="onValidEvent($event)"
     (valueChangeEvent)="onValueChangeEvent($event)"
     [fitPage]="true"
-    [fitPageExtraSpace]="96"
+    [fitPageExtraSpace]="128"
   >
   </valtimo-editor>
 
@@ -82,7 +82,7 @@
     confirmButtonTextTranslationKey="interface.save"
     contentTranslationKey="caseManagement.documentDefinition.saveModalContent"
     titleTranslationKey="interface.save"
-    (cancelEvent)="keepEditing()"
+    (cancelEvent)="keepEditingDefinition()"
     (confirmEvent)="saveDefinition()"
   ></valtimo-confirmation-modal>
 

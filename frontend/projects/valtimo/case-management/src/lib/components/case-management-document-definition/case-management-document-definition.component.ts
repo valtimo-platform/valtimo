@@ -33,6 +33,8 @@ import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {CaseDetailService} from '../../services';
 import {ActivatedRoute} from '@angular/router';
+import {CaseManagementParams} from '../../models';
+import {getCaseManagementRouteParams} from '../../utils';
 
 @Component({
   templateUrl: './case-management-document-definition.component.html',
@@ -41,7 +43,7 @@ import {ActivatedRoute} from '@angular/router';
 })
 export class CaseManagementDocumentDefinitionComponent {
   @ViewChild('cancelModal') public cancelModal: ConfirmationModalComponent;
-  @Input() documentDefinitionName: string;
+  @Input() caseDefinitionKey: string;
   @Output() cancelRedirect = new EventEmitter();
   @Output() confirmRedirect = new EventEmitter();
   @Output() pendingChangesUpdate = new EventEmitter<boolean>();
@@ -80,6 +82,10 @@ export class CaseManagementDocumentDefinitionComponent {
   );
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  public readonly params$: Observable<CaseManagementParams> = getCaseManagementRouteParams(
+    this.route
+  );
 
   private _changesToSave: any;
   private _initialId: string;
@@ -141,14 +147,23 @@ export class CaseManagementDocumentDefinitionComponent {
       JSON.stringify(this._changesToSave)
     );
 
-    this.documentService
-      .createDocumentDefinitionForManagement(newDocumentDefinition)
+    this.params$
+      .pipe(
+        switchMap(params =>
+          this.documentService.updateDocumentDefinitionForManagement(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag,
+            newDocumentDefinition
+          )
+        )
+      )
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this.caseDetailService.setSelectedDocumentDefinitionName(this.documentDefinitionName);
+          this.caseDetailService.setSelectedCaseDefinitionKey(this.caseDefinitionKey);
           this.confirmRedirect.emit();
           this._pendingChanges$.next(false);
+          this.caseDetailService.reloadDocumentDefinition();
         },
         error: () => {
           this.cancelRedirect.emit();

@@ -16,9 +16,10 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Output} from '@angular/core';
 import {Upload16} from '@carbon/icons';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
+  CARBON_CONSTANTS,
   CarbonListModule,
   ColumnConfig,
   ConfirmationModalModule,
@@ -26,9 +27,10 @@ import {
 } from '@valtimo/components';
 import {ProcessDefinition} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {BehaviorSubject, map, Observable, switchMap, take, tap} from 'rxjs';
-import {CaseProcessInstance} from '../../models';
+import {BehaviorSubject, Observable, switchMap, tap} from 'rxjs';
+import {ProcessDefinitionResult} from '../../models';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-process-management-list',
@@ -47,7 +49,9 @@ import {ProcessManagementService, ProcessManagementStateService} from '../../ser
   ],
 })
 export class ProcessManagementListComponent {
-  @Output() public readonly processSelected = new EventEmitter<CaseProcessInstance | 'create'>();
+  @Output() public readonly processSelected = new EventEmitter<
+    ProcessDefinitionResult | 'create'
+  >();
 
   public readonly processToDelete$ = new BehaviorSubject<ProcessDefinition | null>(null);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
@@ -60,7 +64,7 @@ export class ProcessManagementListComponent {
     },
   ];
 
-  public readonly processDefinitions$: Observable<CaseProcessInstance[]> =
+  public readonly processDefinitions$: Observable<ProcessDefinitionResult[]> =
     this.processManagementStateService.reloadDefinitions$.pipe(
       tap(() => this.loading$.next(true)),
       switchMap(() => this.processManagementService.processes$),
@@ -76,12 +80,14 @@ export class ProcessManagementListComponent {
   constructor(
     private readonly processManagementService: ProcessManagementService,
     private readonly processManagementStateService: ProcessManagementStateService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly translateService: TranslateService
   ) {
     this.iconService.registerAll([Upload16]);
   }
 
-  public editProcessDefinition(processDefinition: CaseProcessInstance): void {
+  public editProcessDefinition(processDefinition: ProcessDefinitionResult): void {
     this.processSelected.emit(processDefinition);
   }
 
@@ -94,15 +100,25 @@ export class ProcessManagementListComponent {
   }
 
   public onDeleteConfirm(processDefinition: ProcessDefinition): void {
-    this.processManagementService
-      .deleteProcess(processDefinition.key)
-      .pipe(take(1))
-      .subscribe(() => {
-        this.processManagementStateService.reloadDefinitions();
+    const context = this.processManagementService.context();
+
+    (context === 'case'
+      ? this.processManagementService.deleteProcess(processDefinition.key)
+      : this.processManagementService.deleteUnlinkedProcess(processDefinition.key)
+    ).subscribe(() => {
+      this.processManagementStateService.reloadDefinitions();
+
+      this.notificationService.showToast({
+        caption: this.translateService.instant(`processManagement.deleteNotification`),
+        type: 'success',
+        duration: CARBON_CONSTANTS.notificationDuration,
+        showClose: true,
+        title: this.translateService.instant(`interface.delete`),
       });
+    });
   }
 
-  public onDeleteProcess(process: CaseProcessInstance): void {
+  public onDeleteProcess(process: ProcessDefinitionResult): void {
     this.processToDelete$.next(process.processDefinition);
     this.showDeleteModal$.next(true);
   }

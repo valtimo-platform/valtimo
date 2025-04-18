@@ -92,9 +92,7 @@ export class CaseManagementTabsComponent implements AfterViewInit {
     private readonly translateService: TranslateService,
     private readonly router: Router,
     private readonly route: ActivatedRoute
-  ) {
-    this.caseManagementRouteParams$.subscribe(x => console.log(x));
-  }
+  ) {}
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
