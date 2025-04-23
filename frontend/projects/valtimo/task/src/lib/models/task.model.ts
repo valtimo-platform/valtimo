@@ -78,4 +78,15 @@ interface MappedSpecifiedTask {
   [key: string]: any;
 }
 
-export {AssigneeRequest, ListItemField, Task, SpecifiedTask, MappedSpecifiedTask};
+interface SetTaskDueDateRequest {
+  dueDate: string | null;
+}
+
+export {
+  AssigneeRequest,
+  ListItemField,
+  Task,
+  SpecifiedTask,
+  MappedSpecifiedTask,
+  SetTaskDueDateRequest,
+};

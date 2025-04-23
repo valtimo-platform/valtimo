@@ -11,7 +11,8 @@
     "DocumentRelatedFileRemovedEvent": "Datei entfernt",
     "BesluitAddedEvent": "Entscheidung getroffen > {{identificatie}}",
     "DocumentAssigneeChangedEvent": "Der Beauftragte wurde geändert in {{assigneeName}}",
-    "DocumentUnassignedEvent": "Die Zuweisung des Bevollmächtigten wurde aufgehoben"
+    "DocumentUnassignedEvent": "Die Zuweisung des Bevollmächtigten wurde aufgehoben",
+    "TaskDueDateSetEvent": "Aufgabefrist gesetzt > {{taskName}}"
   },
   "case": {
     "bulkAssign": {
@@ -1375,7 +1376,8 @@
       "cool-gray": "Kühles Grau",
       "warm-gray": "Warmes Grau",
       "high-contrast": "Hoher Kontrast",
-      "outline": "Umrissen"
+      "outline": "Umrissen",
+      "orange": "Orange"
     },
     "labels": {
       "dateCreationFrom": "Datum der Erstellung von",
@@ -1402,12 +1404,15 @@
     "taskCompleted": "erfolgreich abgeschlossen"
   },
   "assignTask": {
-    "assignedTo": "User-Zuordnung: ",
+    "assignedTo": "Zugewiesen an",
     "header": "Aufgabe einen User zuordnen",
     "placeholder": "User auswählen",
     "remove": "Entfernen",
     "save": "Speichern",
-    "fetchingUsers": "User abrufen..."
+    "fetchingUsers": "User abrufen...",
+    "buttonText": "User zuordnen",
+    "submitButtonText": "Aufgabe einen User zuordnen",
+    "comboboxLabel": "Benutzer zur Zuweisung auswählen"
   },
   "assignDocument": {
     "assignedTo": "User-Zuordnung: ",
@@ -2112,5 +2117,11 @@
     "formattedMessage": "Nachricht",
     "properties": "Eigenschaften",
     "stacktrace": "Stapelverfolgung"
+  },
+  "setTaskDueDate": {
+    "buttonText": "Fälligkeitsdatum festlegen",
+    "submitButtonText": "Fälligkeitsdatum festlegen",
+    "dueDateText": "Fälligkeitsdatum:",
+    "removeButtonText": "Fälligkeitsdatum entfernen"
   }
 }

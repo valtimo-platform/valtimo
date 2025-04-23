@@ -165,10 +165,10 @@ export class CaseManagementWidgetCollectionComponent
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
-    private readonly widgetWizardService: WidgetWizardService,
-    private readonly widgetFieldsService: WidgetFieldsService
+    private readonly widgetFieldsService: WidgetFieldsService,
+    private readonly route: ActivatedRoute,
+    private readonly widgetWizardService: WidgetWizardService
   ) {}
 
   public ngOnInit(): void {

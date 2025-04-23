@@ -62,6 +62,8 @@ export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
   public readonly customPageTitle$ = this.pageTitleService.customPageTitle$;
   public readonly customPageTitleSet$ = this.pageTitleService.customPageTitleSet$;
   public readonly translatedTitle$ = new BehaviorSubject<string>('');
+  public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
+
   private appTitleAsSuffix =
     this.configService?.config?.featureToggles?.applicationTitleAsSuffix || false;
   private readonly _subscriptions = new Subscription();

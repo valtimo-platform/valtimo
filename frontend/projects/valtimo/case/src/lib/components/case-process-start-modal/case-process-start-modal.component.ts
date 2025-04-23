@@ -44,7 +44,6 @@ import {
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
-  ModalComponent,
   ValtimoFormioOptions,
 } from '@valtimo/components';
 import {FormioBeforeSubmit} from '@formio/angular/formio.common';

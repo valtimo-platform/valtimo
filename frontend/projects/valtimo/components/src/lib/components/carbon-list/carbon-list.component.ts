@@ -69,7 +69,6 @@ import {
   MoveRowDirection,
   MoveRowEvent,
   Pagination,
-  TAG_ELLIPSIS_LIMIT,
   ViewType,
 } from '../../models';
 import {KeyStateService} from '../../services/key-state.service';

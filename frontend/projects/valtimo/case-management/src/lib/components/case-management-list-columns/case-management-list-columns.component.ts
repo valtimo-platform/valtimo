@@ -196,7 +196,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     defaultSort: new FormControl({
       key: this.INVALID_KEY,
     }),
-    enum: new FormControl<{[key: string]: string}[]>([]),
+    enum: new FormControl([]),
     tagAmount: new FormControl(1),
   });
 

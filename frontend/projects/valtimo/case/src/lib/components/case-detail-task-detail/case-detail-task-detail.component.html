@@ -20,6 +20,7 @@
     intermediateSaveValue: intermediateSaveValue$ | async,
     task: task$ | async,
     taskAndProcessLink: taskAndProcessLink$ | async,
+    canModifyTask: canModifyTask$ | async,
   } as obs"
   class="valtimo-case-detail-task-detail"
 >
@@ -62,11 +63,19 @@
         }}
       </p>
 
-      <valtimo-assign-user-to-task
-        *ngIf="obs.task && obs.canAssignUserToTask"
-        [taskId]="obs.task.id"
-        [assigneeId]="obs.task.assignee"
-      ></valtimo-assign-user-to-task>
+      <div class="task-actions">
+        @if (obs.task) {
+          <valtimo-assign-user-to-task
+            [canAssignUserToTask]="obs.canAssignUserToTask"
+            [taskId]="obs.task.id"
+            [assigneeId]="obs.task.assignee"
+          ></valtimo-assign-user-to-task>
+
+          <valtimo-set-task-due-date
+            [canModifyTask]="obs.canModifyTask"
+          ></valtimo-set-task-due-date>
+        }
+      </div>
     </div>
 
     <valtimo-task-detail-content

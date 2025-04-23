@@ -19,6 +19,7 @@ import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common
 import {Observable} from 'rxjs';
 import {
   AssigneeRequest,
+  SetTaskDueDateRequest,
   SpecifiedTask,
   Task,
   TaskListColumn,
@@ -149,5 +150,19 @@ export class TaskService extends BaseApiService {
     return this.httpClient.get<TaskListSearchField[]>(
       this.getApiUrl(`v1/search/field/TaskListSearchColumns/${caseDefinitionName}`)
     );
+  }
+
+  public setTaskDueDate(
+    taskId: string,
+    setTaskDueDateRequest: SetTaskDueDateRequest
+  ): Observable<void> {
+    return this.httpClient.post<void>(
+      this.getApiUrl(`/v1/task/${taskId}/set-due-date`),
+      setTaskDueDateRequest
+    );
+  }
+
+  public removeTaskDueDate(taskId: string): Observable<void> {
+    return this.httpClient.post<void>(this.getApiUrl(`/v1/task/${taskId}/set-due-date`), null);
   }
 }

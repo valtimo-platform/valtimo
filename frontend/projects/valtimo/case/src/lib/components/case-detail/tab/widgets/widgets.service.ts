@@ -29,9 +29,7 @@ export class WidgetsService {
     return this._activeProcessKey$.pipe(
       filter((processDocumentDefinition: string | null) => !!processDocumentDefinition),
       switchMap((processDefinitionKey: string) =>
-        this.documentService.findProcessDefinitionCaseDefinitionsByProcessDefinitionKey(
-          processDefinitionKey
-        )
+        this.documentService.findProcessDefinitionCaseDefinitions(processDefinitionKey)
       ),
       distinctUntilChanged()
     );

@@ -21,16 +21,21 @@
   align-items: flex-end;
   margin-bottom: 24px;
 
-  &.--hidden {
+  &--small-title {
+    align-items: flex-start;
+    margin-bottom: 0;
+  }
+
+  &--hidden {
     display: none;
   }
 
-  &.--compact {
+  &--compact {
     margin-bottom: 16px;
   }
 
-  &.--no-content,
-  &.--no-margin {
+  &--no-content,
+  &--no-margin {
     margin-bottom: 0;
   }
 }
@@ -38,12 +43,19 @@
 .page-header-container {
   width: min-content;
 
-  &.--compact {
+  &--compact {
     width: 100%;
     display: flex;
     width: 100%;
     justify-content: space-between;
     align-items: center;
     padding-inline: 16px;
+  }
+
+  &--small-title {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    width: min-content;
   }
 }

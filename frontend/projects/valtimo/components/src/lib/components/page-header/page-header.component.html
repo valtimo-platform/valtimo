@@ -18,10 +18,11 @@
   #pageHead
   class="page-head"
   [ngClass]="{
-    '--hidden': (showPageHeader$ | async) === false,
-    '--compact': compactMode$ | async,
-    '--no-content': (compactMode$ | async) && (pageActionsHasContent$ | async) === false,
-    '--no-margin': pageTitleHidden$ | async,
+    'page-head--hidden': (showPageHeader$ | async) === false,
+    'page-head--compact': compactMode$ | async,
+    'page-head--no-content': (compactMode$ | async) && (pageActionsHasContent$ | async) === false,
+    'page-head--no-margin': pageTitleHidden$ | async,
+    'page-head--small-title': smallTitle$ | async,
   }"
 >
   <ng-container #contentVcr></ng-container>
@@ -33,7 +34,13 @@
 
 <ng-container renderPageHeader>
   <ng-template>
-    <div class="page-header-container" [ngClass]="{'--compact': compactMode$ | async}">
+    <div
+      class="page-header-container"
+      [ngClass]="{
+        'page-header-container--compact': compactMode$ | async,
+        'page-header-container--small-title': smallTitle$ | async,
+      }"
+    >
       <valtimo-breadcrumb-navigation></valtimo-breadcrumb-navigation>
 
       <valtimo-page-title></valtimo-page-title>

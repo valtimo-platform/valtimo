@@ -98,7 +98,8 @@ $tab-max-height-compact: calc(100vh - 176px);
   align-items: flex-end;
   padding-bottom: 4px;
 
-  &.--compact {
+  &--compact,
+  &--small-title {
     padding-bottom: 0;
     align-items: flex-start;
   }
@@ -162,6 +163,6 @@ $tab-max-height-compact: calc(100vh - 176px);
   --_as-gutter-icon-horizontal: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAABPlJREFUeF7tm1tW3DAMhu2+krCmdmWlKytrIuGV9HjixDddfjkOtOd0XmAGWZfPsiw7g3fVyzvntvpD9H01+JIuwCamX5YKf9VfmCVaDze2S2fXIDG+CGC8YsrqMCvDFDmHZYCeI5gE6LietD2LlNb6uQAQTLWfCDTLmLpOIfoRvxEZydZn+pH7+vdlAEJyoIwIwDIrFtk7C2TyA/Po9gxY1zVWrN2haZq85FqS3zEF+YET3qi6rFzjfAR0yGkBwQA0wyFU75zf5MaOBYDoR2YGDigqY+U7HOKHlAsFiQOXqax+JYCYBGJr32ZAB+lEpxwc3i1nDcDWtBUYPjN8p35VBxf/4/MQUI7lqAGPzwjYBQDv3PQ0+Ue/CjV/sODp8+UiyNE7XLHO6EM+Dg4/ntBdAI69zdIqBlgTlDldADLN9a7R551cDot0kDPNbn40AIh6LSS4DS0Be9jJg7sAXPHJfBZojbXriMscGgDvvhUYmRGEes6iocJiyVejWdelYDPNk5cquhnAxVSAlgDZQG/7bUqKjvZEDqgdYwaAzQsrVQHowFkPqd5bA4LlO1ytp+zoFM0Ml2V5CYPmeX78lF7v67rla8B6GpynKZxnxBfmD03MvASCMe/9z+DRtm2/SAiZLXRGqcapbYTaICB/BHwggN1wbuzQSUHI3UQBHPqo+wPO/7dlefkWJ0PyR0ofEIAjg49Z8GOe51fOCAYgIcPkd2vLsnz33v+ubadJ0TZw8Fqcmnkk+CBjCahHXodQ49mhHGjUDJCDf37Vjmn54Sa4MuxGaL/weWzDdggJigjgDL7KpG3bxLTPmY/PALqa90JgAahpf/ohb8jjAfAlrQdCCSDG0gRPxCiHzf81XwKUVA1M7gDwbojbspsM4GZea3jov5cFp6cGoHYRFCWE5FthQwKAGCnLS9vD6UXwXbnIRpGUcsH3D6JxI2sADwFHwEnqAI4HKW0AB07ci6QDXgLHELUIghPxbxRBBukICDuAZMCaAbu8XnLf1K4wzBjdGYpzSUGI66ntBQg/8QzYB+PyyW18++sAEHvu8wSY02IbosyONaBTPj7XO6/F+SxVzgPKRooWlN7l0A0g+i0tGXrmvdu2D/qYTrBgO0GKG3ocRlrhB/jm6a13zR2i8GAk+BOOw/lmy95RMIlgAlAvh4ex5/ll5CUndYMkJfGNFyL84sCuoHa3tSVQW9HkGxjeueUNv6Krx7dbTO5R/J1FARSQ9X3d8gyh13RSZAYA9iOcmHkJWO1ZA+LkRdbaRAlO3wogKL/+/YDZl5cuFQogC/P4k/j+mx0AYVDyYVQGWDMPlbcDQDVHOREA1DmGDAgv7emA0bEofgmAmn3euXUpT3d9Z4G+4PRR+6PR9oigRqarPiT6ng4nBzRguCe0ZJEBatyqQGvkfw249VtiHTNSzdGZAddVESmW1YBDv5bSpoxBnOZkst7h6jISx5sCEltnJFp7KKkG3KNfPQvULluB2UMuR1zaBiXjB08+IJr4FQA9c3gDgNINKSDK4SCff67VjEsZEI+Cl3Scg3vwA4cU6uu0bRL3d4k3ZEDm3mAoY2YqdX7BvVsA2OJW9qlhUe+KQvObX1DYANS+2iIdHArR0bArgXfUBoAMoewopH9ROd3oBmcZiMkOANA3sXUq9mm5Pqrvq7IYXLo3Vs713ao7WRAZ8NULfTACRd0fdjtUcYyr1cIAAAAASUVORK5CYII=);
 }
 
-.spacing-case-tags {
-  margin-bottom: 10px;
+.case-tags {
+  margin-bottom: 16px;
 }
