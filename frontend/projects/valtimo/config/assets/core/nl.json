@@ -580,6 +580,33 @@
         "description": "Er is geen versie geconfigureerd voor deze case"
       }
     },
+    "deployment": {
+      "title": "Implementatie",
+      "buttons": {
+        "back": "Terug",
+        "delete": "Concept verwijderen",
+        "finalize": "Concept finaliseren"
+      },
+      "releaseVersion": {
+        "title": "Releaseversie",
+        "fields": {
+          "caseDefinitionVersionTag": "Versie",
+          "basedOnVersionTag": "Gebaseerd op"
+        },
+        "warning": {
+          "title": "Waarschuwing",
+          "description": "Er is een ander concept gebaseerd op {{ basedOnVersionTag }} concept, genaamd {{ conflictingVersions }}"
+        }
+      },
+      "releaseInformation": {
+        "title": "Release-informatie",
+        "fields": {
+          "createdBy": "Gemaakt door",
+          "createdDate": "Gemaakt op",
+          "description": "Beschrijving"
+        }
+      }
+    },
     "processLinkNotification": {
       "linkSuccess": "Succesvol gekoppeld proces",
       "linkFailure": "Kan het proces niet koppelen",
@@ -1148,6 +1175,7 @@
   "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestartte processen krijgen de nieuwe candidate group)",
   "Case": "Dossier",
   "Cases": "Dossiers",
+  "Deployment": "Implementatie",
   "document definition": "Documentdefinitie",
   "Upload document definition": "Upload documentdefinitie",
   "Remove document definition": "Verwijder documentdefinitie",

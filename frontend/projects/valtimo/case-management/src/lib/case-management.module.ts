@@ -24,6 +24,7 @@ import {
   ConfirmationModalModule,
   DropzoneModule,
   EditorModule,
+  EllipsisPipe,
   FormModule,
   InputModule,
   ListModule,
@@ -89,6 +90,7 @@ import {CaseManagementCaseHandlerComponent} from './components/case-management-g
 import {FormManagementComponent} from '@valtimo/form-management';
 import {CaseManagementExternalStartFormComponent} from './components/case-management-external-start-form/case-management-external-start-form.component';
 import {CaseManagementSelectVersionModalComponent} from './components/case-management-select-version-modal/case-management-select-version-modal.component';
+import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
 
 @NgModule({
   declarations: [
@@ -115,6 +117,7 @@ import {CaseManagementSelectVersionModalComponent} from './components/case-manag
     CaseManagementGeneralComponent,
     CaseManagementCaseHandlerComponent,
     CaseManagementExternalStartFormComponent,
+    CaseManagementDeploymentComponent,
   ],
   imports: [
     CommonModule,
@@ -167,6 +170,7 @@ import {CaseManagementSelectVersionModalComponent} from './components/case-manag
     ValuePathSelectorComponent,
     LayerModule,
     FormManagementComponent,
+    EllipsisPipe,
   ],
   providers: [TabManagementService],
 })

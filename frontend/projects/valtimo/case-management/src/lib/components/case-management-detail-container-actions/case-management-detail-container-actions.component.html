@@ -33,7 +33,11 @@
     <ng-container *ngTemplateOutlet="readOnly; context: {obs: obs}"></ng-container>
   </div>
 
-  <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
+  <div class="case-buttons">
+    <ng-container *ngTemplateOutlet="deploymentButton; context: {obs: obs}"></ng-container>
+
+    <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
+  </div>
 </div>
 
 <ng-template #versionSelection let-obs="obs">
@@ -54,22 +58,34 @@
 </ng-template>
 
 <ng-template #versionItemTemplate let-item="item">
-  <ng-container *ngIf="item.isAllVersionsOption; else regularVersionTemplate">
-    <span>{{ item.content }}</span>
+  <ng-container *ngIf="item?.isAllVersionsOption; else regularVersionTemplate">
+    <span>{{ item?.content }}</span>
     <svg cdsIcon="version" size="16"></svg>
   </ng-container>
 
   <ng-template #regularVersionTemplate>
     <div class="version-selector-dropdown-template">
-      <cds-tag class="cds-tag--no-margin" [type]="item.tagType" [title]="item.content">
-        {{ item.content }}
+      <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
+        {{ item?.content }}
       </cds-tag>
 
-      <cds-tag *ngIf="item.active" class="cds-tag--no-margin" type="high-contrast">
+      <cds-tag *ngIf="item?.active" class="cds-tag--no-margin" type="high-contrast">
         {{ 'caseManagement.globallyActive' | translate }}
       </cds-tag>
     </div>
   </ng-template>
+</ng-template>
+
+<ng-template #deploymentButton let-obs="obs">
+  <button
+    cdsButton="secondary"
+    [size]="(compactMode$ | async) ? 'sm' : 'md'"
+    (click)="redirectToDeployment()"
+  >
+    {{ 'caseManagement.deployment.title' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
+  </button>
 </ng-template>
 
 <ng-template #exportMenu let-obs="obs">

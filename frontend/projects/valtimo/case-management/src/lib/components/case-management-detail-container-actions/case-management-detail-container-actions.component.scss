@@ -47,6 +47,11 @@
   align-items: flex-end;
 }
 
+.case-buttons {
+  display: flex;
+  gap: 16px;
+}
+
 ::ng-deep .version-selector {
   margin-bottom: 0;
   width: 300px;

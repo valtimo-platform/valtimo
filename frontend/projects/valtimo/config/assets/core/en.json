@@ -581,6 +581,33 @@
         "description": "No version has been configured for this case"
       }
     },
+    "deployment": {
+      "title": "Deployment",
+      "buttons": {
+        "back": "Back",
+        "delete": "Delete draft",
+        "finalize": "Finalize draft"
+      },
+      "releaseVersion": {
+        "title": "Release version",
+        "fields": {
+          "caseDefinitionVersionTag": "Version",
+          "basedOnVersionTag": "Based on"
+        },
+        "warning": {
+          "title": "Warning",
+          "description": "There is another draft based on {{ basedOnVersionTag }} called {{ conflictingVersions }}"
+        }
+      },
+      "releaseInformation": {
+        "title": "Release information",
+        "fields": {
+          "createdBy": "Created by",
+          "createdDate": "Created on",
+          "description": "Description"
+        }
+      }
+    },
     "processLinkNotification": {
       "linkSuccess": "Successfully linked process",
       "linkFailure": "Failed to link process",
@@ -1166,6 +1193,7 @@
   "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
   "Case": "Case",
   "Cases": "Cases",
+  "Deployment": "Deployment",
   "document definition": "Document definition",
   "Upload document definition": "Upload document definition",
   "Remove document definition": "Remove document definition",

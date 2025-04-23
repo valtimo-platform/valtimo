@@ -21,6 +21,7 @@ import {InterceptorSkipHeader} from '@valtimo/security';
 import {Observable} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
+import {CaseDeploymentData} from '../models/case-deployment.model';
 
 @Injectable({
   providedIn: 'root',
@@ -68,6 +69,17 @@ export class CaseManagementService extends BaseApiService {
     return this.httpClient.get<Page<CaseVersionListItem>>(
       this.getApiUrl(`management/v1/case-definition`),
       {params}
+    );
+  }
+
+  public getCaseDefinition(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<CaseDeploymentData> {
+    return this.httpClient.get<CaseDeploymentData>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
+      )
     );
   }
 

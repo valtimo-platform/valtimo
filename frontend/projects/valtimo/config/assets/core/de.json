@@ -580,6 +580,33 @@
         "description": "Für diesen Fall wurde keine Version konfiguriert"
       }
     },
+    "deployment": {
+      "title": "Bereitstellung",
+      "buttons": {
+        "back": "Zurück",
+        "delete": "Entwurf löschen",
+        "finalize": "Entwurf fertigstellen"
+      },
+      "releaseVersion": {
+        "title": "Release-Version",
+        "fields": {
+          "caseDefinitionVersionTag": "Version",
+          "basedOnVersionTag": "Basierend auf"
+        },
+        "warning": {
+          "title": "Warnung",
+          "description": "Er is een ander concept gebaseerd op {{ basedOnVersionTag }} genaamd {{ conflictingVersions }}"
+        }
+      },
+      "releaseInformation": {
+        "title": "Release-Informationen",
+        "fields": {
+          "createdBy": "Erstellt von",
+          "createdDate": "Erstellt am",
+          "description": "Beschreibung"
+        }
+      }
+    },
     "processLinkNotification": {
       "linkSuccess": "Erfolgreich verknüpfter Prozess",
       "linkFailure": "Prozess konnte nicht verknüpft werden",
@@ -1165,6 +1192,7 @@
   "Process migration warning": "<b>Warnung:</b> Wenn ein Prozess migriert wird, werden die User-Gruppen der laufenden Instanzen nicht geupdatet. Dies kann bei Bedarf in der Datenbank erfolgen. (Zum Beispiel, wenn eine spezifische User-Aufgabe für ROLE_USER offen ist und die User-Gruppe für die User-Aufgabe wird im Prozess auf ROLE_ADMIN angepasst, wird diese Aufgabe nachwievor für ROLE_USER verfügbar sein. Nur neu gestartete Prozesse werden die neue User-Gruppe berücksichtigen.)",
   "Case": "Case",
   "Cases": "Cases",
+  "Deployment": "Bereitstellung",
   "document definition": "Dokumentdefinition",
   "Upload document definition": "Upload Dokumentdefinition",
   "Remove document definition": "Dokumentdefinition löschen",
