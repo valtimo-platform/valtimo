@@ -14,25 +14,30 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Component} from '@angular/core';
+import {AfterViewInit, Component, TemplateRef, ViewChild} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {IconService} from 'carbon-components-angular';
+import {IconService, Notification} from 'carbon-components-angular';
 import {Return16, Save16, TrashCan16} from '@carbon/icons';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {CaseManagementService} from '../../services';
-import {tap} from 'rxjs/operators';
-import {CaseDeploymentData} from '../../models/case-deployment.model';
+import {take, tap} from 'rxjs/operators';
+import {CaseDefinition} from '../../models/case-deployment.model';
 import {BreadcrumbService} from '@valtimo/components';
 import {DatePipe} from '@angular/common';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   templateUrl: './case-management-deployment.component.html',
   styleUrls: ['./case-management-deployment.component.scss'],
 })
 export class CaseManagementDeploymentComponent implements AfterViewInit {
+  @ViewChild('draftMessage')
+  private readonly _draftMessageTemplateRef: TemplateRef<HTMLDivElement>;
   public readonly isDraftVersion$ = new BehaviorSubject<boolean>(false);
   public readonly hasConflictingVersions$ = new BehaviorSubject<boolean>(false);
+  public readonly showDeleteDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showFinalizeDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly params$: Observable<{
     caseDefinitionKey: string;
     caseDefinitionVersionTag: string;
@@ -61,25 +66,25 @@ export class CaseManagementDeploymentComponent implements AfterViewInit {
     map(result => result.name)
   );
 
-  public readonly caseDeploymentData$: Observable<CaseDeploymentData> = combineLatest([
+  public readonly caseDefinition$: Observable<CaseDefinition> = combineLatest([
     this.caseDefinitionKey$,
     this.caseDefinitionVersionTag$,
   ]).pipe(
     switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
       this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
     ),
-    tap(caseDeploymentData => {
-      this.isDraftVersion$.next(!caseDeploymentData.final);
-      this.hasConflictingVersions$.next(caseDeploymentData.conflictingVersions ? true : false);
+    tap(caseDefinition => {
+      this.isDraftVersion$.next(!caseDefinition.final);
+      this.hasConflictingVersions$.next(!!caseDefinition.conflictingVersions);
     })
   );
 
   public readonly releaseVersionEntries$: Observable<{key: string; value: string}[]> =
-    this.caseDeploymentData$.pipe(
-      map(caseDeploymentData => {
+    this.caseDefinition$.pipe(
+      map(caseDefinition => {
         const releaseVersionData = {
-          caseDefinitionVersionTag: caseDeploymentData.caseDefinitionVersionTag ?? '-',
-          basedOnVersionTag: caseDeploymentData.basedOnVersionTag ?? '-',
+          caseDefinitionVersionTag: caseDefinition.caseDefinitionVersionTag ?? '-',
+          basedOnVersionTag: caseDefinition.basedOnVersionTag ?? '-',
         };
 
         return Object.entries(releaseVersionData).map(([key, value]) => ({key, value}));
@@ -88,17 +93,19 @@ export class CaseManagementDeploymentComponent implements AfterViewInit {
 
   public readonly releaseInformationDataEntries$: Observable<
     {key: string; value: string | Date}[]
-  > = this.caseDeploymentData$.pipe(
-    map(caseDeploymentData => {
+  > = this.caseDefinition$.pipe(
+    map(caseDefinition => {
       const releaseInformationData = {
-        createdBy: caseDeploymentData.createdBy ?? '-',
-        createdDate: this.datePipe.transform(caseDeploymentData.createdDate ?? '', 'dd-MM-yyyy'),
-        description: caseDeploymentData.description ?? '-',
+        createdBy: caseDefinition.createdBy ?? '-',
+        createdDate: this.datePipe.transform(caseDefinition.createdDate ?? '', 'dd-MM-yyyy'),
+        description: caseDefinition.description ?? '-',
       };
 
       return Object.entries(releaseInformationData).map(([key, value]) => ({key, value}));
     })
   );
+
+  private _currentNotification!: Notification;
 
   constructor(
     private readonly caseManagementService: CaseManagementService,
@@ -107,7 +114,8 @@ export class CaseManagementDeploymentComponent implements AfterViewInit {
     private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly datePipe: DatePipe
+    private readonly datePipe: DatePipe,
+    private readonly notificationService: GlobalNotificationService
   ) {
     this.iconService.register(Return16);
     this.iconService.register(TrashCan16);
@@ -116,6 +124,12 @@ export class CaseManagementDeploymentComponent implements AfterViewInit {
 
   public ngAfterViewInit(): void {
     this.initBreadcrumbs();
+  }
+
+  public goToCaseList(): void {
+    this.breadcrumbService.clearThirdBreadcrumb();
+    this.breadcrumbService.clearSecondBreadcrumb();
+    this.router.navigate(['/case-management']);
   }
 
   public goBack(): void {
@@ -134,6 +148,118 @@ export class CaseManagementDeploymentComponent implements AfterViewInit {
       .subscribe();
   }
 
+  public openDeleteDraftConfirmationModal(): void {
+    this.showDeleteDraftConfirmationModal$.next(true);
+  }
+
+  public closeDeleteDraftConfirmationModal(): void {
+    this.showDeleteDraftConfirmationModal$.next(false);
+  }
+
+  public openFinalizeDraftConfirmationModal(): void {
+    this.showFinalizeDraftConfirmationModal$.next(true);
+  }
+
+  public closeFinalizeDraftConfirmationModal(): void {
+    this.showFinalizeDraftConfirmationModal$.next(false);
+  }
+
+  public deleteDraftCaseVersion(): void {
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'info',
+      title: '',
+      showClose: false,
+      template: this._draftMessageTemplateRef,
+    });
+
+    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
+      .pipe(
+        take(1),
+        switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+          this.caseManagementService.deleteDraftCaseVersion(
+            caseDefinitionKey,
+            caseDefinitionVersionTag
+          )
+        )
+      )
+      .subscribe({
+        next: response => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant(
+              'caseManagement.deployment.finalizeDraftConfirmationModal.successMessage'
+            ),
+            duration: 5000,
+          });
+
+          this.goToCaseList();
+        },
+        error: () => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'error',
+            title: this.translateService.instant(
+              'caseManagement.deployment.deleteDraftConfirmationModal.errorMessage'
+            ),
+            message: this.translateService.instant(
+              'caseManagement.deployment.deleteDraftConfirmationModal.errorMessage'
+            ),
+            duration: 5000,
+          });
+        },
+      });
+
+    this.closeDeleteDraftConfirmationModal();
+  }
+
+  public finalizeDraftCaseVersion(): void {
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'info',
+      title: '',
+      showClose: false,
+      template: this._draftMessageTemplateRef,
+    });
+
+    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
+      .pipe(
+        take(1),
+        switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) => {
+          return this.caseManagementService.finalizeDraftCaseVersion(
+            caseDefinitionKey,
+            caseDefinitionVersionTag
+          );
+        })
+      )
+      .subscribe({
+        next: response => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant(
+              'caseManagement.deployment.finalizeDraftConfirmationModal.successMessage'
+            ),
+            duration: 5000,
+          });
+        },
+        error: () => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'error',
+            title: this.translateService.instant(
+              'caseManagement.deployment.deleteDraftConfirmationModal.errorMessage'
+            ),
+            message: this.translateService.instant(
+              'caseManagement.deployment.deleteDraftConfirmationModal.errorMessage'
+            ),
+            duration: 5000,
+          });
+        },
+      });
+
+    this.closeFinalizeDraftConfirmationModal();
+  }
+
   private initBreadcrumbs(): void {
     combineLatest([this.params$, this._caseDefinitionTitle$])
       .pipe(
@@ -148,5 +274,11 @@ export class CaseManagementDeploymentComponent implements AfterViewInit {
         })
       )
       .subscribe();
+  }
+
+  private closeCurrentNotification(): void {
+    if (this._currentNotification) {
+      this.notificationService.close(this._currentNotification);
+    }
   }
 }

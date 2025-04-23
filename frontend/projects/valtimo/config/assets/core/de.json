@@ -588,6 +588,24 @@
         "delete": "Entwurf löschen",
         "finalize": "Entwurf fertigstellen"
       },
+      "deleteDraftConfirmationModal": {
+        "title": "Entwurf löschen",
+        "description": "Möchten Sie den Entwurf wirklich löschen?",
+        "confirm": "Löschen",
+        "cancel": "Schließen",
+        "successTitle": "Entwurf gelöscht",
+        "errorTitle": "Fehler",
+        "errorMessage": "Es ist ein Fehler aufgetreten"
+      },
+      "finalizeDraftConfirmationModal": {
+        "title": "Entwurf finalisieren",
+        "description": "Sie sind dabei, {{caseDefinitionVersionKey}} {{caseDefinitionVersionTag}} zu finalisieren. Nach dem Finalisieren sind keine weiteren Änderungen mehr möglich. Sind Sie sicher?",
+        "confirm": "Finalisieren",
+        "cancel": "Schließen",
+        "successMessage": "Entwurf finalisiert",
+        "errorTitle": "Fehler",
+        "errorMessage": "Es ist ein Fehler aufgetreten"
+      },
       "releaseVersion": {
         "title": "Release-Version",
         "fields": {

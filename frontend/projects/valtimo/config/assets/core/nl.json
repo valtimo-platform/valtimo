@@ -588,6 +588,24 @@
         "delete": "Concept verwijderen",
         "finalize": "Concept finaliseren"
       },
+      "deleteDraftConfirmationModal": {
+        "title": "Concept verwijderen",
+        "description": "Weet u zeker dat u het concept wilt verwijderen?",
+        "confirm": "Verwijderen",
+        "cancel": "Sluiten",
+        "successTitle": "Concept verwijderd",
+        "errorTitle": "Fout",
+        "errorMessage": "Er is iets misgegaan"
+      },
+      "finalizeDraftConfirmationModal": {
+        "title": "Concept finaliseren",
+        "description": "U staat op het punt {{caseDefinitionVersionKey}} {{caseDefinitionVersionTag}} te finaliseren. Na het finaliseren kunt u geen wijzigingen meer aanbrengen. Weet u het zeker?",
+        "confirm": "Finaliseren",
+        "cancel": "Sluiten",
+        "successMessage": "Concept gefinaliseerd",
+        "errorTitle": "Fout",
+        "errorMessage": "Er is iets misgegaan"
+      },
       "releaseVersion": {
         "title": "Releaseversie",
         "fields": {
