@@ -13,16 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use '@carbon/colors';
 
-.row {
-  margin: 0;
+::ng-deep.case-management-tabs {
+  .cds--tab-content {
+    background-color: var(--cds-layer);
+    padding: 0 !important;
+    margin-top: 24px;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .no-padding-left-right .cds--tab-content {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .no-padding-top-bottom .cds--tab-content {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .no-padding-bottom .cds--tab-content {
+    padding-bottom: 0;
+  }
 }
 
-.case-schema {
-  resize: none;
+.tab-container {
+  min-height: 300px;
 }
 
-valtimo-widget::ng-deep .card-border.card-full-default {
-  background: transparent;
-  border: none;
+.case-management-detail-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }

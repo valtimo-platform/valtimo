@@ -14,18 +14,113 @@
   ~ limitations under the License.
   -->
 
-<div class="col-12 px-0 mb-5">
-  <valtimo-widget>
-    <div class="row pt-4 mb-5 pb-4 pl-2 pr-2">
-      <div class="col-10 offset-1">
-        <ng-template #extensions></ng-template>
+<div
+  *ngIf="{
+    currentTab: currentTab$ | async,
+    injectedTabs: injectedCaseManagementTabs$ | async,
+  } as obs"
+  class="case-management-detail-container"
+>
+  <cds-tabs class="case-management-tabs" type="inline">
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.GENERAL"
+      [active]="obs.currentTab === TabEnum.GENERAL"
+      [heading]="'caseManagement.tabs.general' | translate"
+      (selected)="navigateToTab(TabEnum.GENERAL)"
+    >
+    </cds-tab>
 
-        <valtimo-case-management-assignee
-          *ngIf="documentDefinition$ | async"
-        ></valtimo-case-management-assignee>
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.PROCESSES"
+      [active]="obs.currentTab === TabEnum.PROCESSES"
+      [heading]="'caseManagement.tabs.processes' | translate"
+      (selected)="navigateToTab(TabEnum.PROCESSES)"
+    >
+    </cds-tab>
 
-        <valtimo-case-management-external-start-form></valtimo-case-management-external-start-form>
-      </div>
-    </div>
-  </valtimo-widget>
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.DOCUMENT"
+      [active]="obs.currentTab === TabEnum.DOCUMENT"
+      [heading]="'caseManagement.tabs.document' | translate"
+      (selected)="navigateToTab(TabEnum.DOCUMENT)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.FORMS"
+      [active]="obs.currentTab === TabEnum.FORMS"
+      [heading]="'caseManagement.tabs.forms' | translate"
+      (selected)="navigateToTab(TabEnum.FORMS)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.SEARCH"
+      [active]="obs.currentTab === TabEnum.SEARCH"
+      [heading]="'caseManagement.tabs.searchFields' | translate"
+      (selected)="navigateToTab(TabEnum.SEARCH)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      *ngIf="caseListColumn"
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.LIST"
+      [active]="obs.currentTab === TabEnum.LIST"
+      [heading]="'caseManagement.tabs.listColumns' | translate"
+      (selected)="navigateToTab(TabEnum.LIST)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      *ngIf="tabManagementEnabled"
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TABS"
+      [active]="obs.currentTab === TabEnum.TABS"
+      [heading]="'caseManagement.tabs.tabManagement' | translate"
+      (selected)="navigateToTab(TabEnum.TABS)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      *ngIf="{active: obs.currentTab === TabEnum.STATUSES} as vars"
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.STATUSES"
+      [active]="vars.active"
+      [heading]="'caseManagement.tabs.statuses' | translate"
+      disabled="true"
+      (selected)="navigateToTab(TabEnum.STATUSES)"
+    >
+    </cds-tab>
+
+    @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
+      <cds-tab
+        class="no-padding-left-right no-padding-top-bottom"
+        [active]="obs.currentTab === injectedTab.translationKey"
+        [heading]="injectedTab.translationKey | translate"
+        disabled="true"
+        (selected)="navigateToTab(injectedTab.translationKey)"
+      >
+      </cds-tab>
+    }
+  </cds-tabs>
+
+  <div class="case-management-detail-container__content">
+    <router-outlet></router-outlet>
+  </div>
 </div>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <valtimo-case-management-detail-actions
+      [documentDefinitionTitle]="documentDefinitionTitle$ | async"
+      [caseDefinitionKey]="caseDefinitionKey$ | async"
+      (versionSet)="onVersionSet($event)"
+    ></valtimo-case-management-detail-actions>
+  </ng-template>
+</ng-container>

@@ -14,59 +14,148 @@
  * limitations under the License.
  */
 import {
-  AfterViewInit,
-  ChangeDetectorRef,
+  ChangeDetectionStrategy,
   Component,
-  Inject,
-  Optional,
-  Type,
+  OnDestroy,
+  OnInit,
+  QueryList,
   ViewChild,
-  ViewContainerRef,
+  ViewChildren,
 } from '@angular/core';
-import {ActivatedRoute, ParamMap} from '@angular/router';
-import {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/config';
-import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {Observable, switchMap} from 'rxjs';
+import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {PageTitleService} from '@valtimo/components';
+import {CaseManagementTabConfig, ConfigService} from '@valtimo/config';
+import {Tab} from 'carbon-components-angular';
+import {combineLatest, filter, map, Observable, startWith, Subscription} from 'rxjs';
+import {CaseManagementParams, TabEnum} from '../../models';
+import {CaseDetailService, TabService} from '../../services';
+import {CaseManagementDocumentDefinitionComponent} from './tabs/case-management-document-definition/case-management-document-definition.component';
+import {getCaseManagementRouteParams} from '../../utils';
 
 @Component({
   templateUrl: './case-management-detail.component.html',
   styleUrls: ['./case-management-detail.component.scss'],
+  providers: [CaseDetailService],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseManagementDetailComponent implements AfterViewInit {
-  @ViewChild('extensions', {read: ViewContainerRef})
-  private _extensions: ViewContainerRef;
+export class CaseManagementDetailComponent implements OnInit, OnDestroy {
+  @ViewChild(CaseManagementDocumentDefinitionComponent)
+  private _documentDefinitionTab: CaseManagementDocumentDefinitionComponent;
+  @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
-  public readonly documentDefinition$: Observable<DocumentDefinition> = this.route.paramMap.pipe(
-    switchMap((params: ParamMap) =>
-      this.documentService.getDocumentDefinitionForManagement(params.get('caseDefinitionKey') ?? '')
-    )
+  private _params: CaseManagementParams;
+
+  public readonly params$: Observable<CaseManagementParams> = getCaseManagementRouteParams(
+    this.route
   );
 
-  constructor(
-    private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute,
-    @Optional()
-    @Inject(ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN)
-    private readonly zgwCaseConfigurationExtensionComponents: Type<any>[],
-    private readonly cdr: ChangeDetectorRef
-  ) {}
+  public readonly caseDefinitionKey$ = this.params$.pipe(map(params => params.caseDefinitionKey));
 
-  public ngAfterViewInit(): void {
-    this.renderExtensions();
+  public caseListColumn!: boolean;
+  public tabManagementEnabled!: boolean;
+
+  public _activeTab: TabEnum | string;
+  public pendingTab: TabEnum | null | string;
+
+  public readonly currentTab$ = this.router.events.pipe(
+    filter(event => event instanceof NavigationEnd),
+    map(event => {
+      const urlWithoutQuery = (event as NavigationEnd).urlAfterRedirects.split('?')[0];
+      const splitUrl = urlWithoutQuery.split('/');
+      return splitUrl[splitUrl.length - 1];
+    }),
+    startWith(this.route.firstChild?.routeConfig?.path)
+  );
+
+  public readonly injectedCaseManagementTabs$: Observable<CaseManagementTabConfig[]> =
+    this.tabService.injectedCaseManagementTabs$;
+
+  public readonly documentDefinitionTitle$ = this.pageTitleService.customPageTitle$;
+
+  public readonly TabEnum = TabEnum;
+
+  private _activeVersion: string | null;
+  private _subscriptions = new Subscription();
+
+  constructor(
+    private readonly caseDetailService: CaseDetailService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly configService: ConfigService,
+    private readonly tabService: TabService,
+    private readonly pageTitleService: PageTitleService
+  ) {
+    const featureToggles = this.configService.config.featureToggles;
+    this.caseListColumn = featureToggles?.caseListColumn ?? true;
+    this.tabManagementEnabled = featureToggles?.enableTabManagement ?? true;
   }
 
-  private renderExtensions(): void {
-    if (
-      !Array.isArray(this.zgwCaseConfigurationExtensionComponents) ||
-      this.zgwCaseConfigurationExtensionComponents.length === 0
-    ) {
+  public ngOnInit(): void {
+    this.openActiveVersionSubscription();
+    this.pageTitleService.disableReset();
+    this.openParamsSubscription();
+  }
+
+  public ngOnDestroy(): void {
+    this.tabService.currentTab = TabEnum.GENERAL;
+    this._subscriptions.unsubscribe();
+    this.pageTitleService.enableReset();
+  }
+
+  public navigateToTab(tab: TabEnum | string): void {
+    if (!this._params) return;
+
+    this.router.navigateByUrl(
+      `case-management/case/${this._params.caseDefinitionKey}/version/${this._params.caseDefinitionVersionTag}/${tab}`
+    );
+  }
+
+  public openTabCheckSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this._tabs.changes, this.currentTab$]).subscribe(([tabs, currentTab]) => {
+        tabs.forEach((tab: Tab) => (tab.active = tab.id === currentTab));
+      })
+    );
+  }
+
+  public onCancelRedirectEvent(): void {
+    if (this._activeVersion) {
+      this.caseDetailService.setPreviousSelectedCaseDefinitionVersionTag(`${this._activeVersion}`);
+      this._activeVersion = null;
       return;
     }
 
-    this.zgwCaseConfigurationExtensionComponents.forEach(extensionComponent => {
-      this._extensions.createComponent(extensionComponent);
-    });
+    if (!this.pendingTab) {
+      return;
+    }
+    this.tabService.currentTab = this.pendingTab;
+  }
 
-    this.cdr.detectChanges();
+  public onVersionSet(version: number): void {
+    this.caseDetailService.setSelectedCaseDefinitionVersionTag(`${version}`);
+  }
+
+  private openActiveVersionSubscription(): void {
+    this._subscriptions.add(
+      this.caseDetailService.selectedCaseDefinitionVersionTag$.subscribe(
+        (versionTag: string | null) => {
+          this._activeVersion = versionTag;
+        }
+      )
+    );
+  }
+
+  private openParamsSubscription(): void {
+    this._subscriptions.add(
+      this.params$.subscribe(params => {
+        this.caseDetailService.setSelectedCaseDefinitionKey(params.caseDefinitionKey);
+        this.caseDetailService.setSelectedCaseDefinitionVersionTag(params.caseDefinitionVersionTag);
+        this._params = params;
+      })
+    );
+  }
+
+  protected onCanDeactivate(): void {
+    this._documentDefinitionTab?.onCanDeactivate();
   }
 }

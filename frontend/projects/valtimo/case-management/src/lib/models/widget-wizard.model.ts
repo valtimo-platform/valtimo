@@ -23,7 +23,7 @@ import {
   CaseManagementWidgetFieldsComponent,
   CaseManagementWidgetFormioComponent,
   CaseManagementWidgetTableComponent,
-} from '../components/case-management-widget-configurators';
+} from '../components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-configurators';
 
 enum WidgetWizardStep {
   TYPE,
