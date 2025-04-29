@@ -24,25 +24,17 @@ import {
   Output,
 } from '@angular/core';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../../models';
-import {
-  BehaviorSubject,
-  combineLatest,
-  map,
-  Observable,
-  Subscription,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, take} from 'rxjs';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 import {
   AbstractControl,
   AsyncValidatorFn,
   FormBuilder,
+  FormControl,
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
+import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
@@ -50,12 +42,12 @@ import {TranslateService} from '@ngx-translate/core';
 import {TagColor} from '@valtimo/config';
 
 @Component({
-  selector: 'valtimo-case-management-status-modal',
-  templateUrl: './case-management-status-modal.component.html',
-  styleUrls: ['./case-management-status-modal.component.scss'],
+  selector: 'valtimo-case-management-tags-modal',
+  templateUrl: './case-management-tags-modal.component.html',
+  styleUrls: ['./case-management-tags-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
+export class CaseManagementTagsModalComponent implements OnInit, OnDestroy {
   @Input() public set type(value: StatusModalType) {
     this._type$.next(value);
 
@@ -68,44 +60,45 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  @Input() public set prefill(value: InternalCaseStatus) {
-    this._prefillStatus.next(value);
+  @Input() public set prefill(value: CaseTag) {
+    this._prefillCaseTag.next(value);
   }
 
   @Input() public usedKeys!: string[];
   @Input() public caseDefinitionKey!: string;
+  @Input() public caseDefinitionVersionTag!: string;
 
   @Output() public closeModalEvent = new EventEmitter<StatusModalCloseEvent>();
 
-  private readonly _type$ = new BehaviorSubject<StatusModalType>(undefined);
-  private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType>(undefined);
-  private readonly _prefillStatus = new BehaviorSubject<InternalCaseStatus>(undefined);
+  private readonly _type$ = new BehaviorSubject<StatusModalType | undefined>(undefined);
+  private readonly _typeAnimationDelay$ = new BehaviorSubject<StatusModalType | undefined>(
+    undefined
+  );
+  private readonly _prefillCaseTag = new BehaviorSubject<CaseTag | undefined>(undefined);
 
-  public readonly statusFormGroup = this.fb.group({
+  public readonly caseTagFormGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
     key: this.fb.control('', [
       Validators.required,
       Validators.minLength(3),
       this.uniqueKeyValidator,
     ]),
-    visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
   });
 
-  private _isEdit!: boolean;
-
-  public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillStatus]).pipe(
-    tap(([type, prefillStatus]) => {
-      if (type === 'edit' && prefillStatus) this.prefillForm(prefillStatus);
-    }),
-    map(([type]) => type === 'edit'),
-    tap(isEdit => (this._isEdit = isEdit))
+  public readonly isEdit$ = combineLatest([this._typeAnimationDelay$, this._prefillCaseTag]).pipe(
+    map(([type, prefillCaseTag]) => {
+      if (type === 'edit' && prefillCaseTag) {
+        this.prefillForm(prefillCaseTag);
+      }
+      return type === 'edit';
+    })
   );
 
   public readonly isAdd$ = this._typeAnimationDelay$.pipe(
-    map(type => type === 'add'),
-    tap(isAdd => {
-      if (isAdd) this.resetForm();
+    map(type => {
+      if (type === 'add') this.resetForm();
+      return type === 'add';
     })
   );
 
@@ -114,7 +107,6 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
   private readonly COLORS: TagColor[] = Object.values(TagColor);
-
   private readonly _selectedColor$ = new BehaviorSubject<TagColor | undefined>(undefined);
 
   public readonly colorListItems$: Observable<ListItem[]> = combineLatest([
@@ -125,50 +117,45 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       this.COLORS.map(color => ({
         selected: color === selectedColor,
         content: this.translateService.instant(
-          'interface.tagType.' +
-            InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(color)
+          'interface.tagType.' + CaseTagsUtils.getTagTypeFromCaseTagColor(color)
         ),
         color,
-        tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(color),
+        tagType: CaseTagsUtils.getTagTypeFromCaseTagColor(color),
       }))
     )
   );
 
-  public get visibleInCaseListByDefault(): AbstractControl<boolean, boolean> {
-    return this.statusFormGroup?.get('visibleInCaseListByDefault');
+  public get key(): AbstractControl<string | null, string | null> {
+    return this.caseTagFormGroup?.get('key') ?? new FormControl('');
   }
 
-  public get key(): AbstractControl<string, string> {
-    return this.statusFormGroup?.get('key');
+  public get title(): AbstractControl<string | null, string | null> {
+    return this.caseTagFormGroup?.get('title') ?? new FormControl('');
   }
 
-  public get title(): AbstractControl<string, string> {
-    return this.statusFormGroup?.get('title');
-  }
-
-  public get color(): AbstractControl<string, string> {
-    return this.statusFormGroup?.get('color');
+  public get color(): AbstractControl<string | null, string | null> {
+    return this.caseTagFormGroup?.get('color') ?? new FormControl('');
   }
 
   public get invalid(): boolean {
-    return !!this.statusFormGroup?.invalid;
+    return !!this.caseTagFormGroup?.invalid;
   }
 
   public get pristine(): boolean {
-    return !!this.statusFormGroup?.pristine;
+    return !!this.caseTagFormGroup?.pristine;
   }
 
   public readonly editingKey$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _originalStatusKey$ = new BehaviorSubject<string>('');
+  private readonly _originalCaseTagKey$ = new BehaviorSubject<string>('');
 
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
-    private readonly caseStatusService: CaseStatusService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly caseTagService: CaseTagService
   ) {
     this.iconService.registerAll([Edit16]);
   }
@@ -181,22 +168,10 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public onClose(): void {
-    this.close();
-  }
-
-  public toggleCheckedChange(checked: boolean): void {
-    this.statusFormGroup.patchValue({
-      visibleInCaseListByDefault: checked,
-    });
-    this.statusFormGroup.markAsDirty();
-  }
-
-  public addStatus(): void {
+  public addCaseTag(): void {
     this.disable();
-
-    this.caseStatusService
-      .createInternalCaseStatus(this.caseDefinitionKey, this.getFormValue())
+    this.caseTagService
+      .saveCaseTag(this.caseDefinitionKey, this.caseDefinitionVersionTag, this.getFormValue())
       .subscribe({
         next: () => {
           this.enable();
@@ -208,19 +183,20 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       });
   }
 
-  public editStatus(): void {
+  public editCaseTag(): void {
     this.disable();
 
-    this._originalStatusKey$
+    this._originalCaseTagKey$
       .pipe(
         take(1),
-        switchMap(originalStatusKey =>
-          this.caseStatusService.updateInternalCaseStatus(
+        switchMap(originalCaseTagKey => {
+          return this.caseTagService.updateCaseTag(
             this.caseDefinitionKey,
-            originalStatusKey,
+            this.caseDefinitionVersionTag,
+            originalCaseTagKey,
             this.getFormValue()
-          )
-        )
+          );
+        })
       )
       .subscribe({
         next: () => {
@@ -245,33 +221,35 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
 
     if (newColor) {
       this._selectedColor$.next(newColor);
-      this.statusFormGroup.patchValue({color: newColor});
-      this.statusFormGroup.markAsDirty();
+      this.caseTagFormGroup.patchValue({color: newColor});
+      this.caseTagFormGroup.markAsDirty();
     }
   }
 
-  private prefillForm(prefillStatus: InternalCaseStatus): void {
-    this._originalStatusKey$.next(prefillStatus.key);
-    this.statusFormGroup.patchValue({
-      key: prefillStatus.key,
-      title: prefillStatus.title,
-      visibleInCaseListByDefault: prefillStatus.visibleInCaseListByDefault,
-      color: prefillStatus.color,
+  public close(): void {
+    this.closeModalEvent.emit('close');
+  }
+
+  private prefillForm(prefillCaseTag: CaseTag): void {
+    this._originalCaseTagKey$.next(prefillCaseTag.key);
+    this.caseTagFormGroup.patchValue({
+      key: prefillCaseTag.key,
+      title: prefillCaseTag.title,
+      color: prefillCaseTag.color,
     });
-    this._selectedColor$.next(prefillStatus.color);
-    this.statusFormGroup.markAsPristine();
+    this._selectedColor$.next(prefillCaseTag.color);
+    this.caseTagFormGroup.markAsPristine();
     this.resetEditingKey();
   }
 
   private resetForm(): void {
-    this.statusFormGroup.patchValue({
+    this.caseTagFormGroup.patchValue({
       key: '',
       title: '',
-      visibleInCaseListByDefault: true,
       color: TagColor.Blue,
     });
     this._selectedColor$.next(TagColor.Blue);
-    this.statusFormGroup.markAsPristine();
+    this.caseTagFormGroup.markAsPristine();
     this.resetEditingKey();
   }
 
@@ -285,7 +263,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
         ([isAdd, titleValue, editingKey]) => {
           if (isAdd && !editingKey) {
             if (titleValue) {
-              this.statusFormGroup.patchValue({key: this.getUniqueKey(titleValue)});
+              this.caseTagFormGroup.patchValue({key: this.getUniqueKey(titleValue)});
             } else {
               this.clearKey();
             }
@@ -328,7 +306,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
   }
 
   private clearKey(): void {
-    this.statusFormGroup.patchValue({key: ''});
+    this.caseTagFormGroup.patchValue({key: ''});
   }
 
   private uniqueKeyValidator(): AsyncValidatorFn {
@@ -344,32 +322,27 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
 
   private disable(): void {
     this.disabled$.next(true);
-    this.statusFormGroup.disable();
+    this.caseTagFormGroup.disable();
   }
 
   private enable(delay = true): void {
     setTimeout(
       () => {
         this.disabled$.next(false);
-        this.statusFormGroup.enable();
+        this.caseTagFormGroup.enable();
       },
       delay ? CARBON_CONSTANTS.modalAnimationMs : 0
     );
-  }
-
-  private close(): void {
-    this.closeModalEvent.emit('close');
   }
 
   private closeAndRefresh(): void {
     this.closeModalEvent.emit('closeAndRefresh');
   }
 
-  private getFormValue(): InternalCaseStatus {
+  private getFormValue(): CaseTag {
     return {
       key: this.key.value,
       title: this.title.value,
-      visibleInCaseListByDefault: this.visibleInCaseListByDefault.value,
       color: this.color.value as TagColor,
     };
   }

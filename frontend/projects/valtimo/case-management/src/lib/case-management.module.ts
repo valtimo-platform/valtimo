@@ -90,6 +90,8 @@ import {FormManagementComponent} from '@valtimo/form-management';
 import {CaseManagementExternalStartFormComponent} from './components/case-management-detail/tabs/case-management-general/components/case-management-external-start-form/case-management-external-start-form.component';
 import {CaseManagementSelectVersionModalComponent} from './components/case-management-select-version-modal/case-management-select-version-modal.component';
 import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
+import {CaseManagementTagsComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags.component';
+import {CaseManagementTagsModalComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags-modal/case-management-tags-modal.component';
 
 @NgModule({
   declarations: [
@@ -116,6 +118,8 @@ import {CaseManagementDeploymentComponent} from './components/case-management-de
     CaseManagementCaseHandlerComponent,
     CaseManagementExternalStartFormComponent,
     CaseManagementDeploymentComponent,
+    CaseManagementTagsComponent,
+    CaseManagementTagsModalComponent,
   ],
   imports: [
     CommonModule,

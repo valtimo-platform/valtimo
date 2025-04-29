@@ -18,51 +18,71 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, map, Subject, switchMap, tap} from 'rxjs';
+import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Subject,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
 import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
-  templateUrl: './case-management-statuses.component.html',
-  styleUrls: ['./case-management-statuses.component.scss'],
+  selector: 'valtimo-case-management-tags',
+  templateUrl: './case-management-tags.component.html',
+  styleUrls: ['./case-management-tags.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseManagementStatusesComponent implements AfterViewInit {
+export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
   private readonly _params$ = getCaseManagementRouteParams(this.route);
 
-  public readonly caseDefinitionKey$ = this._params$.pipe(map(params => params.caseDefinitionKey));
-
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  public readonly caseDefinitionKey$ = this._params$.pipe(map(p => p.caseDefinitionKey));
+  public readonly caseDefinitionVersionTag$ = this._params$.pipe(
+    map(p => p.caseDefinitionVersionTag)
+  );
 
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
 
-  public readonly caseStatuses$ = combineLatest([this.caseDefinitionKey$, this._reload$]).pipe(
-    tap(([_, reload]) => {
+  private readonly _subscriptions = new Subscription();
+
+  public readonly caseTags$ = combineLatest([
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$,
+    this._reload$,
+  ]).pipe(
+    tap(([_, __, reload]) => {
       if (reload === null) {
         this.loading$.next(true);
       }
     }),
-    switchMap(([caseDefinitionKey]) =>
-      this.caseStatusService.getInternalCaseStatusesManagement(caseDefinitionKey)
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.caseTagService.getCaseTagsManagement(caseDefinitionKey, caseDefinitionVersionTag)
     ),
-    map(statuses =>
-      statuses.map(status => ({
-        ...status,
-        tagType: InternalCaseStatusUtils.getTagTypeFromInternalCaseStatusColor(status.color),
+    map(caseTags =>
+      caseTags.map(caseTag => ({
+        ...caseTag,
+        tagType: CaseTagsUtils.getTagTypeFromCaseTagColor(caseTag.color),
       }))
     ),
-    tap(statuses => {
-      this.usedKeys$.next(statuses.map(status => status.key));
+    tap(caseTags => {
+      this.usedKeys$.next(caseTags.map(caseTag => caseTag.key));
       this.loading$.next(false);
     })
   );
@@ -83,13 +103,13 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
   ];
 
   public readonly statusModalType$ = new BehaviorSubject<StatusModalType>('closed');
-  public readonly prefillStatus$ = new BehaviorSubject<InternalCaseStatus>(undefined);
+  public readonly prefillCaseTag$ = new BehaviorSubject<CaseTag | undefined>(undefined);
 
-  public readonly statusToDelete$ = new BehaviorSubject<InternalCaseStatus>(undefined);
+  public readonly caseTagToDelete$ = new BehaviorSubject<CaseTag | undefined>(undefined);
   public readonly showDeleteModal$ = new Subject<boolean>();
 
   constructor(
-    private readonly caseStatusService: CaseStatusService,
+    private readonly caseTagService: CaseTagService,
     private readonly route: ActivatedRoute
   ) {}
 
@@ -97,13 +117,17 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
     this.initFields();
   }
 
-  public openDeleteModal(status: InternalCaseStatus): void {
-    this.statusToDelete$.next(status);
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  public openDeleteModal(caseTag: CaseTag): void {
+    this.caseTagToDelete$.next(caseTag);
     this.showDeleteModal$.next(true);
   }
 
-  public openEditModal(status: InternalCaseStatus): void {
-    this.prefillStatus$.next(status);
+  public openEditModal(caseTag: CaseTag): void {
+    this.prefillCaseTag$.next(caseTag);
     this.statusModalType$.next('edit');
   }
 
@@ -119,23 +143,36 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
     this.statusModalType$.next('closed');
   }
 
-  public confirmDeleteStatus(status: InternalCaseStatus): void {
-    this.caseDefinitionKey$
-      .pipe(
-        switchMap(caseDefinitionKey =>
-          this.caseStatusService.deleteInternalCaseStatus(caseDefinitionKey, status.key)
+  public confirmDeleteCaseTag(caseTag: CaseTag): void {
+    this._subscriptions.add(
+      combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
+        .pipe(
+          switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+            this.caseTagService.deleteCaseTag(
+              caseDefinitionKey,
+              caseDefinitionVersionTag,
+              caseTag.key
+            )
+          )
         )
-      )
-      .subscribe(() => {
-        this.reload();
-      });
+        .subscribe(() => {
+          this.reload();
+        })
+    );
   }
 
-  public onItemsReordered(reorderedItems: InternalCaseStatus[]): void {
-    this.caseDefinitionKey$
+  public onItemsReorderedEvent(reorderedItems: CaseTag[]): void {
+    if (!reorderedItems) return;
+
+    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
       .pipe(
-        switchMap(caseDefinitionKey =>
-          this.caseStatusService.updateInternalCaseStatuses(caseDefinitionKey, reorderedItems)
+        take(1),
+        switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+          this.caseTagService.updateCaseTags(
+            caseDefinitionKey,
+            caseDefinitionVersionTag,
+            reorderedItems
+          )
         )
       )
       .subscribe(() => {
@@ -151,24 +188,19 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
     this.fields$.next([
       {
         key: 'title',
-        label: 'caseManagement.statuses.columns.title',
+        label: 'caseManagement.caseTags.columns.title',
         viewType: ViewType.TEXT,
       },
       {
         key: 'key',
-        label: 'caseManagement.statuses.columns.key',
+        label: 'caseManagement.caseTags.columns.key',
         viewType: ViewType.TEXT,
-      },
-      {
-        key: 'visibleInCaseListByDefault',
-        label: 'caseManagement.statuses.columns.visible',
-        viewType: ViewType.BOOLEAN,
       },
       {
         viewType: ViewType.TEMPLATE,
         template: this.colorColumnTemplate,
         key: 'color',
-        label: 'caseManagement.statuses.columns.color',
+        label: 'caseManagement.caseTags.columns.color',
       },
     ]);
   }

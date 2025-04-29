@@ -39,6 +39,7 @@ import {
   ProcessManagementRouteData,
 } from '@valtimo/process-management';
 import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
+import {CaseManagementTagsComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags.component';
 
 const routes: Routes = [
   {
@@ -107,6 +108,10 @@ const routes: Routes = [
         data: {
           context: 'case',
         } as FormManagementRouteData,
+      },
+      {
+        path: TabEnum.TAGS,
+        component: CaseManagementTagsComponent,
       },
     ],
   },

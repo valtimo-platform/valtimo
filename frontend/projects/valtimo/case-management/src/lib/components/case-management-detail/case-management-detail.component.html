@@ -88,13 +88,20 @@
     </cds-tab>
 
     <cds-tab
-      *ngIf="{active: obs.currentTab === TabEnum.STATUSES} as vars"
       class="no-padding-left-right no-padding-top-bottom"
       [id]="TabEnum.STATUSES"
-      [active]="vars.active"
+      [active]="obs.currentTab === TabEnum.STATUSES"
       [heading]="'caseManagement.tabs.statuses' | translate"
-      disabled="true"
       (selected)="navigateToTab(TabEnum.STATUSES)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TAGS"
+      [active]="obs.currentTab === TabEnum.TAGS"
+      [heading]="'caseManagement.tabs.tags' | translate"
+      (selected)="navigateToTab(TabEnum.TAGS)"
     >
     </cds-tab>
 

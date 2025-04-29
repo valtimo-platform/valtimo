@@ -17,17 +17,18 @@
 <valtimo-carbon-list
   *ngIf="{
     loading: loading$ | async,
-    caseStatuses: caseStatuses$ | async,
+    caseTags: caseTags$ | async,
+    fields: fields$ | async,
   } as obs"
-  [items]="obs.caseStatuses"
-  [fields]="fields$ | async"
+  [items]="obs.caseTags"
+  [fields]="obs.fields"
   [header]="false"
   [loading]="obs.loading"
-  [dragAndDrop]="true"
-  [dragAndDropDisabled]="obs.loading"
   [actionItems]="ACTION_ITEMS"
+  [dragAndDrop]="true"
+  [dragAndDropDisabled]="false"
+  (itemsReordered)="onItemsReorderedEvent($event)"
   (rowClicked)="openEditModal($event)"
-  (itemsReordered)="onItemsReordered($event)"
 >
   <ng-container
     carbonToolbarContent
@@ -35,35 +36,35 @@
   ></ng-container>
 
   <valtimo-no-results
-    [description]="'caseManagement.statuses.noResults.description' | translate"
-    [title]="'caseManagement.statuses.noResults.title' | translate"
+    [description]="'caseManagement.caseTags.noResults.description' | translate"
+    [title]="'caseManagement.caseTags.noResults.title' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
-<valtimo-case-management-status-modal
+<valtimo-case-management-tags-modal
   [type]="statusModalType$ | async"
-  [prefill]="prefillStatus$ | async"
+  [prefill]="prefillCaseTag$ | async"
   [usedKeys]="usedKeys$ | async"
   [caseDefinitionKey]="caseDefinitionKey$ | async"
+  [caseDefinitionVersionTag]="caseDefinitionVersionTag$ | async"
   (closeModalEvent)="closeModal($event)"
-></valtimo-case-management-status-modal>
+></valtimo-case-management-tags-modal>
 
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="interface.delete"
   confirmButtonType="danger"
-  contentTranslationKey="caseManagement.statuses.deleteText"
-  [outputOnConfirm]="statusToDelete$ | async"
+  contentTranslationKey="caseManagement.caseTags.deleteText"
+  [outputOnConfirm]="caseTagToDelete$ | async"
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="interface.delete"
-  (confirmEvent)="confirmDeleteStatus($event)"
+  (confirmEvent)="confirmDeleteCaseTag($event)"
 ></valtimo-confirmation-modal>
 
 <ng-template #buttons let-obs="obs">
-  <div class="case-management-search-fields__buttons">
+  <div class="dossier-management-search-fields__buttons">
     <button cdsButton="primary" [disabled]="obs.loading" (click)="openAddModal()">
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-
-      {{ 'caseManagement.statuses.add' | translate }}
+      {{ 'caseManagement.caseTags.add' | translate }}
     </button>
   </div>
 </ng-template>
