@@ -164,7 +164,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() actionItems: ActionItem[];
   @Input() header: boolean;
   @Input() hideColumnHeader: boolean;
-  @Input() initialSortState: SortState;
+  private _isSortInit = false;
+  @Input() set initialSortState(value: SortState) {
+    if (!value || this._isSortInit) return;
+
+    this._isSortInit = true;
+    this.sort$.next(value);
+  }
 
   @Input() set sortState(value: SortState) {
     if (!value) return;
@@ -282,10 +288,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public ngOnInit(): void {
     if (this.pagination) {
       this.loadPaginationSize();
-    }
-
-    if (this.initialSortState) {
-      this.sort$.next(this.initialSortState);
     }
 
     this._subscriptions.add(
