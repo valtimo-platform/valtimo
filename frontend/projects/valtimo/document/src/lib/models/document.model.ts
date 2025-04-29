@@ -399,8 +399,18 @@ interface TemplateResponse {
   type: string;
 }
 
+interface CaseDefinition {
+  name: string;
+  active: boolean;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
+  canHaveAssignee: boolean;
+  autoAssignTasks: boolean;
+}
+
 export {
   AssignHandlerToDocumentResult,
+  CaseDefinition,
   CaseDefinitionId,
   CaseListColumn,
   CaseListColumnView,
