@@ -40,7 +40,7 @@ export class CaseManagementListComponent {
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 
   public readonly caseListItems$: Observable<CaseListItem[]> = this.route.queryParams.pipe(
-    switchMap(params => this.caseManagementService.getCaseDefinitions(params)),
+    switchMap(params => this.caseManagementService.getCaseDefinitions({...params, active: true})),
     map((page: Page<CaseListItem>) => {
       this.pagination$.next({
         size: page.size,
