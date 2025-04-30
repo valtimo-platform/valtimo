@@ -564,7 +564,7 @@
     },
     "confirmationGlobalVersionModal": {
       "title": "Sind Sie sicher?",
-      "message": "Legen Sie die aktuell ausgewählte Version als global aktive Version fest. Bitte beachten Sie, dass es zu Funktionsstörungen kommen kann.",
+      "description": "Legen Sie die aktuell ausgewählte Version als global aktive Version fest. Bitte beachten Sie, dass es zu Funktionsstörungen kommen kann.",
       "confirm": "Als aktive Version festlegen",
       "cancel": "Abbrechen"
     },
@@ -586,9 +586,11 @@
       "buttons": {
         "back": "Zurück",
         "delete": "Entwurf löschen",
-        "finalize": "Entwurf fertigstellen"
+        "finalize": "Entwurf fertigstellen",
+        "createDraft": "Entwurfsversion erstellen"
       },
       "deleteDraftConfirmationModal": {
+        "loadingText": "Entwurfsversion wird gelöscht...",
         "title": "Entwurf löschen",
         "description": "Möchten Sie den Entwurf wirklich löschen?",
         "confirm": "Löschen",
@@ -598,11 +600,23 @@
         "errorMessage": "Es ist ein Fehler aufgetreten"
       },
       "finalizeDraftConfirmationModal": {
+        "loadingText": "Entwurfsversion wird fertiggestellt …",
         "title": "Entwurf finalisieren",
         "description": "Sie sind dabei, {{caseDefinitionVersionKey}} {{caseDefinitionVersionTag}} zu finalisieren. Nach dem Finalisieren sind keine weiteren Änderungen mehr möglich. Sind Sie sicher?",
         "confirm": "Finalisieren",
         "cancel": "Schließen",
         "successMessage": "Entwurf finalisiert",
+        "errorTitle": "Fehler",
+        "errorMessage": "Es ist ein Fehler aufgetreten"
+      },
+      "createDraftConfirmationModal": {
+        "loadingText": "Entwurfsversion wird erstellt...",
+        "title": "Entwurfsversion erstellen",
+        "description": "Sie erstellen gerade eine Entwurfsversion aus Version {{caseDefinitionKey}} {{caseDefinitionVersionTag}}. Sind Sie sicher?",
+        "input": "Version",
+        "confirm": "Erstellen",
+        "cancel": "Schließen",
+        "successMessage": "Entwurfsversion erstellt",
         "errorTitle": "Fehler",
         "errorMessage": "Es ist ein Fehler aufgetreten"
       },
@@ -791,13 +805,21 @@
     },
     "createDefinition": {
       "idError": "Dieser Definitionsname wird bereits verwendet. Bitte ändern Sie ihn in einen eindeutigen Namen",
-      "modalTitle": "Casedefinition erstellen",
-      "name": "Name der Casedefinition",
-      "namePlaceholder": "Der Name der Casedefinition wird hier automatisch generiert",
-      "nameTooltip": "Der Name wird für den Systemnamen, $id usw. verwendet. Außer „-“ sind keine Leerzeichen oder Sonderzeichen erlaubt.",
-      "title": "Titel der Casedefinition",
-      "titlePlaceholder": "Geben Sie hier den Titel ein",
-      "titleTooltip": "Der Titel wird als sichtbarer Name der Casedefinition in der Benutzeroberfläche verwendet"
+      "versionError": "Diese Version ist keine gültige Semver-Version",
+      "versionExistsError": "Diese Version existiert bereits für diesen Fall",
+      "modalTitle": "Falldefinition erstellen",
+      "key": "Falldefinitionsschlüssel",
+      "keyPlaceholder": "Der Falldefinitionsschlüssel wird hier automatisch generiert",
+      "keyTooltip": "Der Schlüssel wird für die Systemnamen, $id usw. verwendet. Leerzeichen und Sonderzeichen außer “-”. sind nicht zulässig.",
+      "name": "Falldefinitionsname",
+      "namePlaceholder": "Name hier eingeben",
+      "nameTooltip": "Der Name wird für den sichtbaren Namen der Falldefinition in der Benutzeroberfläche verwendet.",
+      "version": "Falldefinitionsversion.",
+      "versionPlaceholder": "Version hier eingeben",
+      "versionTooltip": "Die Version wird für den sichtbaren Namen der Falldefinition in der Benutzeroberfläche verwendet.",
+      "description": "Beschreibung der Falldefinition",
+      "descriptionPlaceholder": "Beschreibung hier eingeben",
+      "descriptionTooltip": "Die Beschreibung dient als sichtbarer Name der Falldefinition in der Benutzeroberfläche"
     },
     "documentDefinition": {
       "cancelModal": {

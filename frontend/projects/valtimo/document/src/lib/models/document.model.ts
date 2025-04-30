@@ -386,8 +386,10 @@ interface LoadedValue<T> {
 }
 
 interface TemplatePayload {
-  documentDefinitionId: string;
-  documentDefinitionTitle: string;
+  name: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersion: string;
+  description: string;
 }
 
 interface TemplateResponse {

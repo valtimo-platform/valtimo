@@ -564,7 +564,7 @@
     },
     "confirmationGlobalVersionModal": {
       "title": "Weet u het zeker?",
-      "message": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
+      "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
       "confirm": "Instellen als actieve versie",
       "cancel": "Annuleren"
     },
@@ -586,9 +586,11 @@
       "buttons": {
         "back": "Terug",
         "delete": "Concept verwijderen",
-        "finalize": "Concept finaliseren"
+        "finalize": "Concept finaliseren",
+        "createDraft": "Conceptversie maken"
       },
       "deleteDraftConfirmationModal": {
+        "loadingText": "Conceptversie verwijderen...",
         "title": "Concept verwijderen",
         "description": "Weet u zeker dat u het concept wilt verwijderen?",
         "confirm": "Verwijderen",
@@ -598,11 +600,23 @@
         "errorMessage": "Er is iets misgegaan"
       },
       "finalizeDraftConfirmationModal": {
+        "loadingText": "Conceptversie afronden...",
         "title": "Concept finaliseren",
         "description": "U staat op het punt {{caseDefinitionVersionKey}} {{caseDefinitionVersionTag}} te finaliseren. Na het finaliseren kunt u geen wijzigingen meer aanbrengen. Weet u het zeker?",
         "confirm": "Finaliseren",
         "cancel": "Sluiten",
         "successMessage": "Concept gefinaliseerd",
+        "errorTitle": "Fout",
+        "errorMessage": "Er is iets misgegaan"
+      },
+      "createDraftConfirmationModal": {
+        "loadingText": "Conceptversie maken...",
+        "title": "Conceptversie aanmaken",
+        "description": "U staat op het punt een conceptversie aan te maken van versie {{caseDefinitionKey}} {{caseDefinitionVersionTag}}. Weet u het zeker?",
+        "input": "Versie",
+        "confirm": "Aanmaken",
+        "cancel": "Sluiten",
+        "successMessage": "Conceptversie aangemaakt",
         "errorTitle": "Fout",
         "errorMessage": "Er is iets misgegaan"
       },
@@ -673,7 +687,24 @@
       "document": "Document",
       "statuses": "Statussen",
       "zgw": "ZGW",
-      "tags": "Tags"
+      "tags": "Tags",
+      "forms": "Formulieren",
+      "generalTab": {
+        "linkUploadProcess": {
+          "title": "Uploadproces koppelen aan case",
+          "label": "Kies welk proces bestanduploads moet verwerken",
+          "placeholder": "Documenten API document uploaden"
+        },
+        "caseHandler": {
+          "title": "Casehandler",
+          "canHaveHandler": "Casetype kan een handler hebben",
+          "assignUser": "Gebruikerstaken automatisch toewijzen aan casehandler",
+          "toggle": {
+            "onText": "Ja",
+            "offText": "Nee"
+          }
+        }
+      }
     },
     "tabManagement": {
       "columns": {
@@ -771,14 +802,22 @@
       }
     },
     "createDefinition": {
-      "idError": "Deze definitienaam is al in gebruik. Wijzig dit naar een unieke naam",
-      "modalTitle": "Dossierdefinitie maken",
-      "name": "Dossierdefinitienaam",
-      "namePlaceholder": "De naam van de dossierdefinitie wordt hier automatisch gegenereerd",
-      "nameTooltip": "De naam wordt gebruikt voor de systeemnamen, $id etc. Er zijn geen spaties of speciale tekens toegestaan behalve “-”.",
-      "title": "Dossierdefinitietitel",
-      "titlePlaceholder": "Voer hier de titel in",
-      "titleTooltip": "De titel wordt gebruikt voor de naam van de definitie in de interface"
+      "idError": "Deze definitienaam is al in gebruik. Wijzig de naam in een unieke naam",
+      "versionError": "Deze versie is geen geldige Semver-versie",
+      "versionExistsError": "Deze versie bestaat al voor deze case",
+      "modalTitle": "Casedefinitie aanmaken",
+      "key": "Casedefinitiesleutel",
+      "keyPlaceholder": "De casedefinitiesleutel wordt hier automatisch gegenereerd",
+      "keyTooltip": "De sleutel wordt gebruikt voor de systeemnamen, $id, enz. Spaties of speciale tekens zijn niet toegestaan, behalve “-”",
+      "name": "Casedefinitienaam",
+      "namePlaceholder": "Voer hier de naam in",
+      "nameTooltip": "De naam wordt gebruikt voor de zichtbare naam van de casedefinitie in de gebruikersinterface",
+      "version": "Casedefinitieversie",
+      "versionPlaceholder": "Voer hier de versie in",
+      "versionTooltip": "De versie wordt gebruikt voor de zichtbare naam van de casedefinitie in de gebruikersinterface",
+      "description": "Omschrijving van de casedefinitie",
+      "descriptionPlaceholder": "Voer hier een beschrijving in",
+      "descriptionTooltip": "De beschrijving wordt gebruikt voor de zichtbare naam van de casedefinitie in de gebruikersinterface"
     },
     "documentDefinition": {
       "cancelModal": {

@@ -39,3 +39,11 @@ export class ReleaseInformationData {
   createdDate: Date;
   description: string;
 }
+
+export class DraftVersion {
+  name: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersion: string;
+  description: string;
+  basedOnCaseDefinitionVersion?: string;
+}

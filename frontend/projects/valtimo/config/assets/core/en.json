@@ -587,9 +587,11 @@
       "buttons": {
         "back": "Back",
         "delete": "Delete draft",
-        "finalize": "Finalize draft"
+        "finalize": "Finalize draft",
+        "createDraft": "Create draft version"
       },
       "deleteDraftConfirmationModal": {
+        "loadingText": "Deleting draft version...",
         "title": "Delete draft",
         "description": "Are you sure you want to delete the draft?",
         "confirm": "Delete",
@@ -599,11 +601,23 @@
         "errorMessage": "Something went wrong"
       },
       "finalizeDraftConfirmationModal": {
+        "loadingText": "Finalizing draft version...",
         "title": "Finalize draft",
-        "description": "You are about to finalize {{caseDefinitionVersionKey}} {{caseDefinitionVersionTag}} After finalization you can't make any more changes. Are you sure?",
+        "description": "You are about to finalize {{caseDefinitionKey}} {{caseDefinitionVersionTag}} After finalization you can't make any more changes. Are you sure?",
         "confirm": "Finalize",
         "cancel": "Close",
         "successMessage": "Draft finalized",
+        "errorTitle": "Error",
+        "errorMessage": "Something went wrong"
+      },
+      "createDraftConfirmationModal": {
+        "loadingText": "Creating draft version...",
+        "title": "Create draft version",
+        "description": "You are about to create a draft version from version {{caseDefinitionKey}} {{caseDefinitionVersionTag}}. Are you sure?",
+        "input": "Version",
+        "confirm": "Create",
+        "cancel": "Close",
+        "successMessage": "Draft version created",
         "errorTitle": "Error",
         "errorMessage": "Something went wrong"
       },
@@ -790,13 +804,21 @@
     },
     "createDefinition": {
       "idError": "This definition name is already in use. Please change to a unique name",
+      "versionError": "This version is not a valid Semver version",
+      "versionExistsError": "This version already exists for this case",
       "modalTitle": "Create case definition",
+      "key": "Case definition key",
+      "keyPlaceholder": "Case definition key will be auto-generated here",
+      "keyTooltip": "The key is used for the system names, $id etc. No spaces or special characters are allowed other than “-”.",
       "name": "Case definition name",
-      "namePlaceholder": "Case definition name will be auto-generated here",
-      "nameTooltip": "The name is used for the system names, $id etc. No spaces or special characters are allowed other than “-”.",
-      "title": "Case definition title",
-      "titlePlaceholder": "Enter title here",
-      "titleTooltip": "The title is used for the visible name of the case definition in the UI"
+      "namePlaceholder": "Enter name here",
+      "nameTooltip": "The name is used for the visible name of the case definition in the UI",
+      "version": "Case definition version",
+      "versionPlaceholder": "Enter version here",
+      "versionTooltip": "The version is used for the visible name of the case definition in the UI",
+      "description": "Case definition description",
+      "descriptionPlaceholder": "Enter description here",
+      "descriptionTooltip": "The description is used for the visible name of the case definition in the UI"
     },
     "documentDefinition": {
       "cancelModal": {

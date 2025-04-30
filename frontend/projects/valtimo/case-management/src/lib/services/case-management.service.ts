@@ -21,7 +21,7 @@ import {InterceptorSkipHeader} from '@valtimo/security';
 import {Observable} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
-import {CaseDefinition} from '../models/case-deployment.model';
+import {CaseDefinition, DraftVersion} from '../models/case-deployment.model';
 
 @Injectable({
   providedIn: 'root',
@@ -43,7 +43,17 @@ export class CaseManagementService extends BaseApiService {
 
   public getCaseDefinitionVersions(caseDefinitionKey: string): Observable<any[]> {
     return this.httpClient.get<any[]>(
-      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}/version`)
+      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}/version`),
+      {
+        params: {size: 100},
+      }
+    );
+  }
+
+  public createDraftVersion(payload: DraftVersion): Observable<any[]> {
+    return this.httpClient.post<any[]>(
+      this.getApiUrl(`management/v1/case-definition/draft`),
+      payload
     );
   }
 

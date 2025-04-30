@@ -76,3 +76,7 @@
     font-size: 14px;
   }
 }
+
+::ng-deep .cds--inline-notification__title {
+  width: 100%;
+}

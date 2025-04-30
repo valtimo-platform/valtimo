@@ -78,12 +78,12 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
 
   constructor(
-    private readonly caseDetailService: CaseDetailService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
+    private readonly caseDetailService: CaseDetailService,
     private readonly configService: ConfigService,
-    private readonly tabService: TabService,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly router: Router,
+    private readonly tabService: TabService
   ) {
     const featureToggles = this.configService.config.featureToggles;
     this.caseListColumn = featureToggles?.caseListColumn ?? true;

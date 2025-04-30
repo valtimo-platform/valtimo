@@ -19,6 +19,7 @@
     releaseInformationDataEntries: releaseInformationDataEntries$ | async,
     isDraftVersion: isDraftVersion$ | async,
     hasConflictingVersions: hasConflictingVersions$ | async,
+    notificationContent: notificationContent$ | async,
   } as obs"
 >
   <div class="header-buttons">
@@ -27,17 +28,24 @@
       <svg cdsIcon="return" size="16" class="cds--btn__icon"></svg>
     </button>
 
-    <div *ngIf="obs.isDraftVersion" class="draft-buttons">
-      <button cdsButton="danger" (click)="openDeleteDraftConfirmationModal()">
-        {{ 'caseManagement.deployment.buttons.delete' | translate }}
-        <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
-      </button>
+    @if (obs.isDraftVersion) {
+      <div class="draft-buttons">
+        <button cdsButton="danger" (click)="openDeleteDraftModal()">
+          {{ 'caseManagement.deployment.buttons.delete' | translate }}
+          <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+        </button>
 
-      <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()">
-        {{ 'caseManagement.deployment.buttons.finalize' | translate }}
+        <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()">
+          {{ 'caseManagement.deployment.buttons.finalize' | translate }}
+          <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+        </button>
+      </div>
+    } @else {
+      <button cdsButton="primary" (click)="openCreateDraftVersionConfirmationModal()">
+        {{ 'caseManagement.deployment.buttons.createDraft' | translate }}
         <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
       </button>
-    </div>
+    }
   </div>
 
   <div class="deployment-panels">
@@ -47,9 +55,9 @@
         context: {
           data: obs.releaseVersionEntries,
           showNotification: obs.hasConflictingVersions,
-          notificationData: {
-            basedOnVersionTag: obs.releaseVersionEntries?.basedOnVersionTag ?? ' - ',
-            conflictingVersions: obs.releaseVersionEntries?.conflictingVersions ?? ' - ',
+          notificationContent: {
+            basedOnVersionTag: obs.notificationContent?.basedOnVersionTag,
+            conflictingVersions: obs.notificationContent?.conflictingVersions,
           },
         }
       "
@@ -70,7 +78,7 @@
   #releaseVersionPanel
   let-data="data"
   let-showNotification="showNotification"
-  let-notificationData="notificationData"
+  let-notificationContent="notificationContent"
 >
   <div class="release-version">
     <p class="deployment-panel-title">
@@ -96,7 +104,7 @@
         title: ('caseManagement.deployment.releaseVersion.warning.title' | translate),
         message:
           ('caseManagement.deployment.releaseVersion.warning.description'
-          | translate: notificationData),
+          | translate: notificationContent),
         showClose: false,
         lowContrast: true,
       }"
@@ -129,33 +137,98 @@
 <valtimo-confirmation-modal
   [showModalSubject$]="showDeleteDraftConfirmationModal$"
   (confirmEvent)="deleteDraftCaseVersion()"
-  (cancelEvent)="closeDeleteDraftConfirmationModal()"
+  (cancelEvent)="closeDeleteDraftModal()"
   cancelButtonType="ghost"
   confirmButtonType="danger"
   confirmButtonTextTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.confirm"
   cancelButtonTextTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.cancel"
   titleTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.title"
   contentTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.description"
-></valtimo-confirmation-modal>
+>
+</valtimo-confirmation-modal>
 
 <valtimo-confirmation-modal
   [showModalSubject$]="showFinalizeDraftConfirmationModal$"
+  [content]="finalizeDraftDescription$ | async"
   (confirmEvent)="finalizeDraftCaseVersion()"
-  (cancelEvent)="closeFinalizeDraftConfirmationModal()"
+  (cancelEvent)="closeFinalizeDraftModal()"
   cancelButtonType="ghost"
   confirmButtonType="secondary"
   confirmButtonTextTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.confirm"
   cancelButtonTextTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.cancel"
   titleTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.title"
-  contentTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.description"
 ></valtimo-confirmation-modal>
 
-<ng-template #draftMessage>
-  <div class="exporting-message">
-    <span class="cds--inline-notification__title">{{
-      'caseManagement.deployment.title' | translate
-    }}</span>
+<valtimo-confirmation-modal
+  [showModalSubject$]="showCreateDraftVersionConfirmationModal$"
+  [content]="createDraftDescription$ | async"
+  (confirmEvent)="createDraftVersion()"
+  (cancelEvent)="closeCreateDraftVersionModal()"
+  cancelButtonType="ghost"
+  confirmButtonType="secondary"
+  confirmButtonTextTranslationKey="caseManagement.deployment.createDraftConfirmationModal.confirm"
+  cancelButtonTextTranslationKey="caseManagement.deployment.createDraftConfirmationModal.cancel"
+  titleTranslationKey="caseManagement.deployment.createDraftConfirmationModal.title"
+>
+  <form [formGroup]="newDraftVersionForm" class="tag-form">
+    <cds-label
+      [invalid]="!!(versionError$ | async)"
+      [invalidText]="versionError$ | async | translate"
+    >
+      {{ 'caseManagement.deployment.createDraftConfirmationModal.input' | translate }}
 
+      <input
+        cdsText
+        formControlName="caseDefinitionVersion"
+        [invalid]="!!versionError$"
+        [attr.modal-primary-focus]="true"
+        required
+      />
+    </cds-label>
+  </form>
+</valtimo-confirmation-modal>
+
+<ng-template #loadingMessage let-translationKey="translationKey">
+  <div>
+    <span class="cds--inline-notification__title">
+      {{ translationKey | translate }}
+    </span>
     <cds-loading size="sm"></cds-loading>
   </div>
+</ng-template>
+
+<ng-template #createDraftMessage>
+  <ng-container
+    *ngTemplateOutlet="
+      loadingMessage;
+      context: {
+        translationKey: 'caseManagement.deployment.createDraftConfirmationModal.loadingText',
+      }
+    "
+  >
+  </ng-container>
+</ng-template>
+
+<ng-template #finalizeDraftMessage>
+  <ng-container
+    *ngTemplateOutlet="
+      loadingMessage;
+      context: {
+        translationKey: 'caseManagement.deployment.finalizeDraftConfirmationModal.loadingText',
+      }
+    "
+  >
+  </ng-container>
+</ng-template>
+
+<ng-template #deleteDraftMessage>
+  <ng-container
+    *ngTemplateOutlet="
+      loadingMessage;
+      context: {
+        translationKey: 'caseManagement.deployment.finalizeDraftConfirmationModal.loadingText',
+      }
+    "
+  >
+  </ng-container>
 </ng-template>

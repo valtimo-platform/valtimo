@@ -131,16 +131,35 @@ export class CaseManagementDetailActionsComponent {
       ])
     ),
     map(([caseDefinitionVersions, selectedVersion]) => {
-      const limitedVersions = caseDefinitionVersions ? caseDefinitionVersions.slice(0, 5) : [];
+      if (!caseDefinitionVersions) {
+        return null;
+      }
 
-      const mapping: ListItem[] | null =
-        limitedVersions.map(({versionTag, active}) => ({
-          content: versionTag,
-          selected: versionTag === selectedVersion,
-          active,
-          tagType: 'blue',
-          isAllVersionsOption: false,
-        })) ?? null;
+      this.loadingVersion$.next(false);
+
+      const dropdownListVersions = caseDefinitionVersions.slice(0, 5);
+      const isSelectedOnTheList = dropdownListVersions.some(
+        version => version.versionTag === selectedVersion
+      );
+
+      let limitedVersions = dropdownListVersions;
+
+      if (!isSelectedOnTheList && selectedVersion) {
+        const selectedVersionObj = caseDefinitionVersions.find(
+          caseVersion => caseVersion.versionTag === selectedVersion
+        );
+        if (selectedVersionObj) {
+          limitedVersions = [...dropdownListVersions.slice(0, 4), selectedVersionObj];
+        }
+      }
+
+      const mapping: ListItem[] = limitedVersions.map(({versionTag, active}) => ({
+        content: versionTag,
+        selected: versionTag === selectedVersion,
+        active,
+        tagType: 'blue',
+        isAllVersionsOption: false,
+      }));
 
       const allVersionsItem: ListItem = {
         content: this.translateService.instant('caseManagement.seeAllVersions'),
@@ -148,6 +167,7 @@ export class CaseManagementDetailActionsComponent {
         active: false,
         isAllVersionsOption: true,
       };
+
       return [...mapping, allVersionsItem];
     })
   );
