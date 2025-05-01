@@ -64,3 +64,8 @@ Thumbs.db
 # rebuild temp files
 
 .rebuilding-*
+
+
+# other
+
+playwright-report
