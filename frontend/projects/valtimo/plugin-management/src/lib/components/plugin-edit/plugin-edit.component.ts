@@ -20,6 +20,7 @@ import {PluginManagementStateService} from '../../services';
 import {PluginConfigurationData} from '@valtimo/plugin';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-plugin-edit',
   templateUrl: './plugin-edit.component.html',
   styleUrls: ['./plugin-edit.component.scss'],

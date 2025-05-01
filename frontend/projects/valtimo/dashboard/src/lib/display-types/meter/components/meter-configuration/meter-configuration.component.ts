@@ -29,6 +29,7 @@ import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {MeterDisplayTypeProperties} from '../../models';
 
 @Component({
+  standalone: false,
   templateUrl: './meter-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -46,8 +46,7 @@ import {
   FormioSubmission,
   ValtimoFormioOptions,
 } from '@valtimo/components';
-import {FormioBeforeSubmit} from '@formio/angular/formio.common';
-import {FormioForm} from '@formio/angular';
+import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
@@ -56,6 +55,7 @@ import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/conf
 import {BehaviorSubject, Subscription} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-process-start-modal',
   templateUrl: './case-process-start-modal.component.html',
   styleUrls: ['./case-process-start-modal.component.scss'],

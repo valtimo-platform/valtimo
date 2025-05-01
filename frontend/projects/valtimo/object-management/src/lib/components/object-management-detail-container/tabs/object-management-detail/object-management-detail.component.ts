@@ -21,6 +21,7 @@ import {ObjectManagementStateService} from '../../../../services/object-manageme
 import {BehaviorSubject, Observable} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-detail',
   templateUrl: './object-management-detail.component.html',
   styleUrls: ['./object-management-detail.component.scss'],

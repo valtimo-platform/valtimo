@@ -21,6 +21,7 @@ import {NGXLogger} from 'ngx-logger';
 import {ConfigService} from '@valtimo/config';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-swagger',
   templateUrl: './swagger.component.html',
   styleUrls: ['./swagger.component.scss'],

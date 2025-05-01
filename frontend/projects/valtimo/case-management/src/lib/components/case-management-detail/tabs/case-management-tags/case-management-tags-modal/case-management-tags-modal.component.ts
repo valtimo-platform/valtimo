@@ -35,13 +35,13 @@ import {
   Validators,
 } from '@angular/forms';
 import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
-import {IconService} from 'carbon-components-angular';
+import {IconService, ListItem} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
-import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
 import {TranslateService} from '@ngx-translate/core';
 import {TagColor} from '@valtimo/config';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-tags-modal',
   templateUrl: './case-management-tags-modal.component.html',
   styleUrls: ['./case-management-tags-modal.component.scss'],

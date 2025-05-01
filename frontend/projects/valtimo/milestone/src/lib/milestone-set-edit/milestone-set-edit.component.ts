@@ -22,6 +22,7 @@ import {AlertService} from '@valtimo/components';
 import {MilestoneSet} from '../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-milestone-set-edit',
   templateUrl: './milestone-set-edit.component.html',
   styleUrls: ['./milestone-set-edit.component.scss'],

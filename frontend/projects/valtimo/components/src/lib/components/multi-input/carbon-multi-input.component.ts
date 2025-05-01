@@ -43,6 +43,7 @@ import {v4 as uuidv4} from 'uuid';
   templateUrl: './carbon-multi-input.component.html',
   styleUrls: ['./carbon-multi-input.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public addRowText = '';

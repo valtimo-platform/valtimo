@@ -28,6 +28,7 @@ import {CaseDetailService} from '../../services';
 import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-connect-modal',
   templateUrl: './case-management-connect-modal.component.html',
   styleUrls: ['./case-management-connect-modal.component.scss'],

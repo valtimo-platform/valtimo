@@ -18,7 +18,7 @@ import {AfterContentInit, ContentChild, Directive, OnDestroy, TemplateRef} from 
 import {combineLatest, Subscription} from 'rxjs';
 import {PageHeaderService, PageSubtitleService} from '../../services';
 
-@Directive({selector: '[renderPageSubtitle]'})
+@Directive({selector: '[renderPageSubtitle]', standalone: false})
 export class RenderPageSubtitleDirective implements AfterContentInit, OnDestroy {
   @ContentChild(TemplateRef) templateRef;
 

@@ -35,6 +35,7 @@ declare const monaco: any;
   selector: 'valtimo-editor',
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss'],
+  standalone: false,
 })
 export class EditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editorContainer', {static: true}) editorContainer: ElementRef;

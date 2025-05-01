@@ -23,6 +23,7 @@ import {ObjectTokenAuthenticationConfig} from '../../models';
   selector: 'valtimo-object-token-authentication-configuration',
   templateUrl: './object-token-authencation-configuration.component.html',
   styleUrls: ['./object-token-authencation-configuration.component.scss'],
+  standalone: false,
 })
 export class ObjectTokenAuthencationConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy

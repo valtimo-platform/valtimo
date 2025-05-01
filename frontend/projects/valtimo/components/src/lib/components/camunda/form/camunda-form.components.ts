@@ -20,6 +20,7 @@ import {FormField} from './generated/formfield/formfield.model';
 @Component({
   selector: 'valtimo-camunda-form',
   templateUrl: './camunda-form.component.html',
+  standalone: false,
 })
 export class CamundaFormComponent {
   @Input() componentName: string;

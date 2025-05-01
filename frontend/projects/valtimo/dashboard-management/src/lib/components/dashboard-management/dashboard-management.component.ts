@@ -22,6 +22,7 @@ import {DashboardItem} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
 
 @Component({
+  standalone: false,
   templateUrl: './dashboard-management.component.html',
   styleUrls: ['./dashboard-management.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

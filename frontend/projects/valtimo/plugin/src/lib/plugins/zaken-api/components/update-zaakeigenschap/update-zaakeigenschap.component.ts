@@ -36,6 +36,7 @@ import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-update-zaakeigenschap',
   templateUrl: './update-zaakeigenschap.component.html',
   providers: [PluginTranslatePipe],

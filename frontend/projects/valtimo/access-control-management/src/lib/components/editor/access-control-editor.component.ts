@@ -30,6 +30,7 @@ import {AccessControlExportService} from '../../services/access-control-export.s
 import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
+  standalone: false,
   templateUrl: './access-control-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./access-control-editor.component.scss'],

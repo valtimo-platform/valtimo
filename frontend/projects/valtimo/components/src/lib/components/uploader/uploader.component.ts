@@ -21,6 +21,7 @@ import {S3Resource, S3Service} from '@valtimo/resource';
   selector: 'valtimo-uploader',
   templateUrl: './uploader.component.html',
   styleUrls: ['./uploader.component.css'],
+  standalone: false,
 })
 export class UploaderComponent {
   public resources: any = [];

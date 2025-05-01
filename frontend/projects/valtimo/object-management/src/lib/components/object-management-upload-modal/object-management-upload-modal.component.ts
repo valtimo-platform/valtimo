@@ -34,6 +34,7 @@ import {Objecttype, ObjecttypeKeys} from '../../models/object-management.model';
 import {VModalComponent, ModalService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-upload-modal',
   templateUrl: './object-management-upload-modal.component.html',
   styleUrls: ['./object-management-upload-modal.component.scss'],

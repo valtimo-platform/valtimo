@@ -29,6 +29,7 @@ import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {DonutDisplayTypeProperties} from '../../models';
 
 @Component({
+  standalone: false,
   templateUrl: './donut-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

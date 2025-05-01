@@ -26,6 +26,7 @@ import {Close24} from '@carbon/icons';
   selector: 'v-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
+  standalone: false,
 })
 export class VModalComponent implements OnInit {
   @Input() appearingDelayMs = 140;

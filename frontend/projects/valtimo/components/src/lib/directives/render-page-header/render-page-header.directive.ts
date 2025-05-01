@@ -18,7 +18,7 @@ import {AfterContentInit, ContentChild, Directive, OnDestroy, TemplateRef} from 
 import {combineLatest, Subscription} from 'rxjs';
 import {PageHeaderService} from '../../services';
 
-@Directive({selector: '[renderPageHeader]'})
+@Directive({selector: '[renderPageHeader]', standalone: false})
 export class RenderPageHeaderDirective implements AfterContentInit, OnDestroy {
   @ContentChild(TemplateRef) templateRef;
 

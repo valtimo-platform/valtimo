@@ -32,6 +32,7 @@ import {BehaviorSubject, Observable, Subscription, take} from 'rxjs';
   selector: 'v-input',
   templateUrl: './input.component.html',
   styleUrls: ['./input.component.scss'],
+  standalone: false,
 })
 export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @HostBinding('class.full-width') fullWidthClass = false;

@@ -24,6 +24,7 @@ import {ProcessService} from '@valtimo/process';
   selector: 'app-start-process-custom-form',
   templateUrl: './start-process-custom-form.component.html',
   styleUrls: ['./start-process-custom-form.component.scss'],
+  standalone: false,
 })
 export class StartProcessCustomFormComponent implements OnInit {
   public processDefinition: any;

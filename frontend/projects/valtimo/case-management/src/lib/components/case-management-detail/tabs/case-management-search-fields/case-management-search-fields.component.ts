@@ -60,6 +60,7 @@ import {
 import {v4 as uuidv4} from 'uuid';
 
 @Component({
+  standalone: false,
   templateUrl: './case-management-search-fields.component.html',
   styleUrls: ['./case-management-search-fields.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -21,6 +21,7 @@ import {ExactPluginService} from '../../exact-plugin.service';
 import {ExactPluginConfig} from '../../exact-plugin';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-exact-plugin-configuration',
   templateUrl: './exact-plugin-configuration.component.html',
 })

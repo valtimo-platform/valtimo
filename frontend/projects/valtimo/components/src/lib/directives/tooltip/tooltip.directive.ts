@@ -19,7 +19,7 @@ import {Overlay, OverlayPositionBuilder, OverlayRef} from '@angular/cdk/overlay'
 import {ComponentPortal} from '@angular/cdk/portal';
 import {TooltipComponent} from './tooltip.component';
 
-@Directive({selector: '[vTooltip]'})
+@Directive({selector: '[vTooltip]', standalone: false})
 export class TooltipDirective implements OnInit {
   @Input('vTooltip') text = '';
   @Input() onBottom = false;

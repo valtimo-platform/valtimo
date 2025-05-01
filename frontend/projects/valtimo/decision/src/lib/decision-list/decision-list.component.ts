@@ -26,6 +26,7 @@ import {IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-decision-list',
   templateUrl: './decision-list.component.html',
   styleUrls: ['./decision-list.component.scss'],

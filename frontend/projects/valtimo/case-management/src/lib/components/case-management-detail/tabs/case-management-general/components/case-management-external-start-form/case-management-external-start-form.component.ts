@@ -26,6 +26,7 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
 import {ProcessManagementParams} from '@valtimo/process-management';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-external-start-form',
   templateUrl: './case-management-external-start-form.component.html',
   styleUrl: './case-management-external-start-form.component.scss',

@@ -36,6 +36,7 @@ import Muuri from 'muuri';
 import {Router} from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-widget-dashboard-content',
   templateUrl: './widget-dashboard-content.component.html',
   styleUrls: ['./widget-dashboard-content.component.scss'],

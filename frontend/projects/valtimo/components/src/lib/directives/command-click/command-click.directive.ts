@@ -26,6 +26,7 @@ import {
 
 @Directive({
   selector: '[ctrl-click]',
+  standalone: false,
 })
 export class CtrlClickDirective implements OnInit, OnDestroy {
   @Output('ctrl-click') ctrlClickEvent = new EventEmitter();

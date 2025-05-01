@@ -33,7 +33,7 @@ import {ConfigService, DefinitionColumn} from '@valtimo/config';
 import {ListField, MultiInputValues} from '@valtimo/components';
 import {catchError, take} from 'rxjs/operators';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {ListItem} from 'carbon-components-angular';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ListColumnModal} from '@valtimo/case-management';
@@ -45,6 +45,7 @@ import {
 } from '../../../../models/object-management.model';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-list-columns',
   templateUrl: './object-management-list-columns.component.html',
   styleUrls: ['./object-management-list-columns.component.scss'],

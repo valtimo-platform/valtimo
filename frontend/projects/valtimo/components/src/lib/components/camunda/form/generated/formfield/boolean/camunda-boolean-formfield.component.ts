@@ -21,6 +21,7 @@ import {FormField} from '../formfield.model';
 @Component({
   selector: 'valtimo-camunda-boolean-formfield',
   templateUrl: './camunda-boolean-formfield.component.html',
+  standalone: false,
 })
 export class CamundaBooleanFormfieldComponent {
   public formGroup: UntypedFormGroup;

@@ -33,6 +33,7 @@ import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
 
 @Component({
+  standalone: false,
   templateUrl: './dashboard-details.component.html',
   styleUrls: ['./dashboard-details.component.scss'],
   encapsulation: ViewEncapsulation.None,

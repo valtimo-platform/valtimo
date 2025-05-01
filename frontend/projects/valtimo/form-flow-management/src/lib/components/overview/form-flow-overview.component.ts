@@ -21,6 +21,7 @@ import {FormFlowDefinition, ListFormFlowDefinition} from '../../models';
 import {FormFlowService} from '../../services/form-flow.service';
 
 @Component({
+  standalone: false,
   templateUrl: './form-flow-overview.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

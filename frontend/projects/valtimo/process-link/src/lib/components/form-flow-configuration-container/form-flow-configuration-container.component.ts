@@ -32,6 +32,7 @@ import {FormFlowComponentService} from '../../services';
 import {FormioSubmission} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-form-flow-configuration-container',
   templateUrl: './form-flow-configuration-container.component.html',
 })

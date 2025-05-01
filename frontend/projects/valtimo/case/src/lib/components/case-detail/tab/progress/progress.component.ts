@@ -21,6 +21,7 @@ import {BehaviorSubject, combineLatest, map, Observable, startWith, switchMap, t
 import {ListItem} from 'carbon-components-angular/dropdown';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-detail-tab-progress',
   templateUrl: './progress.component.html',
   styleUrls: ['./progress.component.scss'],

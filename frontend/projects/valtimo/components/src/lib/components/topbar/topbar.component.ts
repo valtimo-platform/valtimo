@@ -36,6 +36,7 @@ import {CurrentCarbonTheme, TopbarLogo} from '../../models';
   selector: 'valtimo-topbar',
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss'],
+  standalone: false,
 })
 export class TopbarComponent implements OnInit, AfterViewInit {
   @HostBinding('class.cds--header') headerClass = true;

@@ -26,6 +26,7 @@ import {ConfigService} from '@valtimo/config';
 import {PromptService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-detail-tab-s3-documents',
   templateUrl: './s3-documents.component.html',
 })

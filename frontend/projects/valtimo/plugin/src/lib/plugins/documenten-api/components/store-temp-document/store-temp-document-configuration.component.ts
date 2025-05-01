@@ -17,7 +17,7 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
-import {StoreTempDocumentConfig, DocumentLanguage, DocumentStatus} from '../../models';
+import {DocumentLanguage, DocumentStatus, StoreTempDocumentConfig} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '../../../../services';
 import {ConfidentialityLevel} from '../../../documenten-api/models';
@@ -25,6 +25,7 @@ import {ConfidentialityLevel} from '../../../documenten-api/models';
 @Component({
   selector: 'valtimo-store-temp-document-configuration',
   templateUrl: './store-temp-document-configuration.component.html',
+  standalone: false,
 })
 export class StoreTempDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

@@ -21,6 +21,7 @@ import {ConnectorProperties} from '@valtimo/config';
  * @deprecated Use the new plugin framework
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-edit-connector-form',
   templateUrl: './edit-connector-form.component.html',
   styleUrls: ['./edit-connector-form.component.scss'],

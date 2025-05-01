@@ -29,6 +29,7 @@ import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {BarChartDisplayTypeProperties} from '../../models';
 
 @Component({
+  standalone: false,
   templateUrl: './bar-chart-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

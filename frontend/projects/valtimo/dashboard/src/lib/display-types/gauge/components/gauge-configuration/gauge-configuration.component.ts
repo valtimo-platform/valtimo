@@ -29,6 +29,7 @@ import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {GaugeDisplayTypeProperties} from '../../models';
 
 @Component({
+  standalone: false,
   templateUrl: './gauge-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

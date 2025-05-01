@@ -25,6 +25,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
  * @deprecated Use the new plugin framework
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-add-connector-select',
   templateUrl: './add-connector-select.component.html',
   styleUrls: ['./add-connector-select.component.scss'],

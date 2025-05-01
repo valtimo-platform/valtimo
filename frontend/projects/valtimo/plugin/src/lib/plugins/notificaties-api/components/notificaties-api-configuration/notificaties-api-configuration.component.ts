@@ -22,6 +22,7 @@ import {PluginManagementService, PluginTranslationService} from '../../../../ser
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-notificaties-api-configuration',
   templateUrl: './notificaties-api-configuration.component.html',
   styleUrls: ['./notificaties-api-configuration.component.scss'],

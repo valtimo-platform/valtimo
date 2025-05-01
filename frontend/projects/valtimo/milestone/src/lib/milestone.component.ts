@@ -17,6 +17,7 @@
 import {Component} from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-milestone',
   templateUrl: './milestone.component.html',
   styleUrls: ['./milestone.component.scss'],

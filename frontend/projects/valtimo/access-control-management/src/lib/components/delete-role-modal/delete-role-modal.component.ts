@@ -18,6 +18,7 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@
 import {Observable} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-delete-role-modal',
   templateUrl: './delete-role-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

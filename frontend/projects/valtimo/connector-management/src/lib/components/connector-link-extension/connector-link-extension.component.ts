@@ -30,6 +30,7 @@ import {ConnectorInstance} from '@valtimo/config';
  * @deprecated Use the new plugin framework
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-connector-link-extension',
   templateUrl: './connector-link-extension.component.html',
   styleUrls: ['./connector-link-extension.component.scss'],

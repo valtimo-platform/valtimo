@@ -33,6 +33,7 @@ import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from './case-management-upload.consta
 import {CaseManagementService} from '../../services';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-upload',
   templateUrl: './case-management-upload.component.html',
   styleUrls: ['./case-management-upload.component.scss'],

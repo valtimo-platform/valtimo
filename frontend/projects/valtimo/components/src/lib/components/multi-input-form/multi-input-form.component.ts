@@ -33,6 +33,7 @@ import {v4 as uuidv4} from 'uuid';
   selector: 'v-multi-input-form',
   templateUrl: './multi-input-form.component.html',
   styleUrls: ['./multi-input-form.component.scss'],
+  standalone: false,
 })
 export class MultiInputFormComponent implements OnInit, OnChanges, OnDestroy {
   @Input() name = '';

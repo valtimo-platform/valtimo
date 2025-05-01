@@ -27,6 +27,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 
 @Component({
+  standalone: false,
   templateUrl: './summary.component.html',
   styleUrls: ['./summary.component.scss'],
   encapsulation: ViewEncapsulation.None,

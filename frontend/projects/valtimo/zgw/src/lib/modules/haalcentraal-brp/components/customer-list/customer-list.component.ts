@@ -33,6 +33,7 @@ import {Router} from '@angular/router';
  * @deprecated Will be replace by new plugins
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-customer-list',
   templateUrl: './customer-list.component.html',
   styleUrls: ['./customer-list.component.scss'],

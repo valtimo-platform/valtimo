@@ -24,6 +24,7 @@ import {TitleType} from '../../models';
   selector: 'v-title',
   templateUrl: './title.component.html',
   styleUrls: ['./title.component.scss'],
+  standalone: false,
 })
 export class TitleComponent implements OnInit {
   @Input() type: TitleType = 'h1';

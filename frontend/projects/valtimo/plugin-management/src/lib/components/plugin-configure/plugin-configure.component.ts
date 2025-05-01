@@ -21,6 +21,7 @@ import {PluginConfigurationData} from '@valtimo/plugin';
 import {of} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-plugin-configure',
   templateUrl: './plugin-configure.component.html',
   styleUrls: ['./plugin-configure.component.scss'],

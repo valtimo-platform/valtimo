@@ -18,6 +18,7 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-exact-redirect',
   templateUrl: './exact-redirect.component.html',
 })

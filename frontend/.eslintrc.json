@@ -73,7 +73,9 @@
             "selector": "objectLiteralProperty"
           }
         ],
-        "no-else-return": "error"
+        "no-else-return": "error",
+        "@angular-eslint/prefer-standalone": "warn",
+        "@angular-eslint/no-output-native": "warn"
       }
     },
     {

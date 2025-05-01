@@ -47,6 +47,7 @@ import {take} from 'rxjs/operators';
 import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-supporting-process-start-modal',
   templateUrl: './case-supporting-process-start-modal.component.html',
   styleUrls: ['./case-supporting-process-start-modal.component.scss'],

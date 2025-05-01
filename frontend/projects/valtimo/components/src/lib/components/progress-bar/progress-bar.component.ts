@@ -20,5 +20,6 @@ import {Component} from '@angular/core';
   selector: 'valtimo-progress-bar',
   templateUrl: './progress-bar.component.html',
   styleUrls: ['./progress-bar.component.scss'],
+  standalone: false,
 })
 export class ProgressBarComponent {}

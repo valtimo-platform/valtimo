@@ -3,13 +3,13 @@
   "license": "EUPL-1.2",
   "version": "13.0.0",
   "peerDependencies": {
-    "@angular/common": "^17.2.2",
-    "@angular/core": "^17.2.2"
+    "@angular/common": "^19.2.8",
+    "@angular/core": "^19.2.8"
   },
   "dependencies": {
-    "tslib": "2.6.3",
-    "carbon-components-angular": "5.28.6",
-    "@ngx-translate/core": "15.0.0",
-    "@angular/forms": "^17.2.2"
+    "tslib": "2.8.1",
+    "carbon-components-angular": "5.57.6",
+    "@ngx-translate/core": "16.0.4",
+    "@angular/forms": "^19.2.8"
   }
 }

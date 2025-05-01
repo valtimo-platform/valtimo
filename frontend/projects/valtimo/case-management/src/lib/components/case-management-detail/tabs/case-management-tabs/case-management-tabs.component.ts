@@ -34,6 +34,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
+  standalone: false,
   templateUrl: './case-management-tabs.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

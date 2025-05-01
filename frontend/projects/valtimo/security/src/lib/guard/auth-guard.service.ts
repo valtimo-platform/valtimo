@@ -15,9 +15,14 @@
  */
 
 import {Injectable, Injector} from '@angular/core';
-import {ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot, UrlTree} from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  GuardResult,
+  MaybeAsync,
+  RouterStateSnapshot,
+} from '@angular/router';
 import {NGXLogger} from 'ngx-logger';
-import {Observable} from 'rxjs';
 import {ConfigService} from '@valtimo/config';
 
 @Injectable({
@@ -37,10 +42,7 @@ export class AuthGuardService implements CanActivate {
     this.logger.debug('Loading AuthGuardServiceProvider service', this.authGuardServiceProvider);
   }
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): MaybeAsync<GuardResult> {
     this.logger.debug('Delegating AuthGuard canActivate');
     return this.authGuardServiceProvider.canActivate(route, state);
   }

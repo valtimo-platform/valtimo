@@ -26,7 +26,7 @@ import {
 import {Subscription, take} from 'rxjs';
 import {PageHeaderService, PageTitleService} from '../../services';
 
-@Directive({selector: '[renderInPageHeader]'})
+@Directive({selector: '[renderInPageHeader]', standalone: false})
 export class RenderInPageHeaderDirective implements OnInit, AfterContentInit, OnDestroy {
   @ContentChild(TemplateRef) templateRef;
   @Input() fullWidth = false;

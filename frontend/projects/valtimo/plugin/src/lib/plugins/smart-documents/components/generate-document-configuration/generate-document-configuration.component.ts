@@ -24,6 +24,7 @@ import {ValuePathSelectorPrefix} from '@valtimo/components';
   selector: 'valtimo-generate-document-configuration',
   templateUrl: './generate-document-configuration.component.html',
   styleUrls: ['./generate-document-configuration.component.scss'],
+  standalone: false,
 })
 export class GenerateDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

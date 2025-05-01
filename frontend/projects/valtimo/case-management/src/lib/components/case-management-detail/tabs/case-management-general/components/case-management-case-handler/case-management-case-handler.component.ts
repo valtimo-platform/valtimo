@@ -21,6 +21,7 @@ import {ActivatedRoute} from '@angular/router';
 import {tap} from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-case-handler',
   templateUrl: './case-management-case-handler.component.html',
   styleUrl: './case-management-case-handler.component.scss',

@@ -21,6 +21,7 @@ import {FormField} from '../formfield.model';
 @Component({
   selector: 'valtimo-camunda-string-formfield',
   templateUrl: './camunda-string-formfield.component.html',
+  standalone: false,
 })
 export class CamundaStringFormfieldComponent {
   public formGroup: UntypedFormGroup;

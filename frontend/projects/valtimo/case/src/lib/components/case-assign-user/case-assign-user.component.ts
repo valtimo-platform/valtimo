@@ -21,6 +21,7 @@ import {NamedUser} from '@valtimo/config';
 import {tap} from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-assign-user',
   templateUrl: './case-assign-user.component.html',
   styleUrls: ['./case-assign-user.component.scss'],

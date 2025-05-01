@@ -90,6 +90,7 @@ import {CaseSupportingProcessStartModalComponent} from '../case-supporting-proce
 import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
+  standalone: false,
   templateUrl: './case-detail.component.html',
   styleUrls: ['./case-detail.component.scss'],
   providers: [CaseTabService, CaseDetailLayoutService],

@@ -17,6 +17,7 @@
 import {Component} from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-analyse',
   templateUrl: './analyse.component.html',
   styleUrls: ['./analyse.component.scss'],

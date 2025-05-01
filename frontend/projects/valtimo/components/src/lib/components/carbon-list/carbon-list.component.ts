@@ -83,6 +83,7 @@ import {EllipsisPipe} from '../../pipes';
   styleUrls: ['./carbon-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CarbonListFilterPipe, CarbonListDragAndDropService],
+  standalone: false,
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;

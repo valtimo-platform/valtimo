@@ -36,6 +36,7 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
   templateUrl: './process-diagram.component.html',
   styleUrls: ['./process-diagram.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class ProcessDiagramComponent implements OnInit, OnDestroy, OnChanges {
   private bpmnViewer: BpmnViewer;

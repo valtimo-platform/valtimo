@@ -80,7 +80,7 @@
 <ng-template #deploymentButton let-obs="obs">
   <button
     cdsButton="secondary"
-    [size]="(compactMode$ | async) ? 'sm' : 'md'"
+    [size]="obs.compactMode ? 'sm' : 'md'"
     (click)="redirectToDeployment()"
   >
     {{ 'caseManagement.deployment.title' | translate }}

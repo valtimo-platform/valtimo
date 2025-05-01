@@ -11,6 +11,7 @@ import {FormioCustomComponent} from '../../../modules';
   selector: 'valtimo-iban',
   templateUrl: './iban.component.html',
   styleUrls: ['./iban.component.scss'],
+  standalone: false,
 })
 export class FormIoIbanComponent implements FormioCustomComponent<any>, AfterViewInit, OnDestroy {
   @Input() public value: string;

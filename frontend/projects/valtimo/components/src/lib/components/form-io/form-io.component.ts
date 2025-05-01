@@ -29,7 +29,6 @@ import {ValtimoFormioOptions} from '../../models';
 import {ValtimoModalService} from '../../services/valtimo-modal.service';
 import {UserProviderService} from '@valtimo/security';
 import {
-  Formio,
   FormioComponent as FormIoSourceComponent,
   FormioForm,
   FormioOptions,
@@ -47,12 +46,14 @@ import {FormIoLocalStorageService} from './services/form-io-local-storage.servic
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/config';
 import {isEqual} from 'lodash';
+import {Formio} from '@formio/js';
 
 @Component({
   selector: 'valtimo-form-io',
   templateUrl: './form-io.component.html',
   styleUrls: ['./form-io.component.css'],
   providers: [FormIoLocalStorageService],
+  standalone: false,
 })
 export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() set options(optionsValue: ValtimoFormioOptions) {

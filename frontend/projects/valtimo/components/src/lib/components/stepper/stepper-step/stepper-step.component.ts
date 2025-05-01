@@ -25,6 +25,7 @@ import {BehaviorSubject, Observable} from 'rxjs';
   selector: 'v-stepper-step',
   templateUrl: './stepper-step.component.html',
   styleUrls: ['./stepper-step.component.scss'],
+  standalone: false,
 })
 export class StepperStepComponent {
   @Input() titleTranslationKey!: string;

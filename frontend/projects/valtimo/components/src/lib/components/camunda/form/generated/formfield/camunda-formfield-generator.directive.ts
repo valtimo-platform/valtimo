@@ -34,6 +34,7 @@ import {CamundaChoicefieldFormfieldComponent} from './choicefield/camunda-choice
 
 @Directive({
   selector: '[valtimoCamundaFormfieldGenerator]',
+  standalone: false,
 })
 export class CamundaFormfieldGeneratorDirective implements OnInit {
   @Input() formField: FormField;

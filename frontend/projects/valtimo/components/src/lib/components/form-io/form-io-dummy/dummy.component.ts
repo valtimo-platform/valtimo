@@ -4,6 +4,7 @@ import {FormioCustomComponent} from '../../../modules';
 @Component({
   selector: 'valtimo-dummy',
   template: '',
+  standalone: false,
 })
 export class FormioDummyComponent implements FormioCustomComponent<any> {
   @Input() public value: string;

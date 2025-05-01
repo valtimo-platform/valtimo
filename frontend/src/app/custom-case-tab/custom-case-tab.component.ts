@@ -21,6 +21,7 @@ import {ActivatedRoute} from '@angular/router';
   selector: 'app-custom-case-tab',
   templateUrl: './custom-case-tab.component.html',
   styleUrls: ['./custom-case-tab.component.scss'],
+  standalone: false,
 })
 export class CustomCaseTabComponent implements OnInit {
   private documentDefinitionName: string;

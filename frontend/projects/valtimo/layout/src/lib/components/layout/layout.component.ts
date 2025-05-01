@@ -35,6 +35,7 @@ declare var App: any;
   selector: 'valtimo-layout',
   templateUrl: './layout.component.html',
   providers: [NotificationService],
+  standalone: false,
 })
 export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('carbonPlaceHolder', {static: true, read: ViewContainerRef})

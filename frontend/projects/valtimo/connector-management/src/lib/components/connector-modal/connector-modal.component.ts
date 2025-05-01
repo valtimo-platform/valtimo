@@ -25,6 +25,7 @@ import {VModalComponent, ModalService} from '@valtimo/components';
  * @deprecated Use the new plugin framework
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-connector-modal',
   templateUrl: './connector-modal.component.html',
   styleUrls: ['./connector-modal.component.scss'],

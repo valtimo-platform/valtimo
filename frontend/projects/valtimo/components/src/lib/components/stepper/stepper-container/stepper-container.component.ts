@@ -26,6 +26,7 @@ import {Subject, Subscription} from 'rxjs';
   templateUrl: './stepper-container.component.html',
   styleUrls: ['./stepper-container.component.scss'],
   providers: [StepperService],
+  standalone: false,
 })
 export class StepperContainerComponent implements OnInit, OnDestroy {
   @Input() returnToFirstStepSubject$!: Subject<boolean>;

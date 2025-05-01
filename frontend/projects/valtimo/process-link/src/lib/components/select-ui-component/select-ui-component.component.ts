@@ -42,6 +42,7 @@ import {
 import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-select-ui-component',
   templateUrl: './select-ui-component.component.html',
   styleUrls: ['./select-ui-component.component.scss'],

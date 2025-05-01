@@ -23,6 +23,7 @@ import {CreatePortalTaskConfig, FormType, OtherReceiver, Receiver} from '../../m
 import {SelectItem, ValuePathSelectorPrefix} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-create-portal-task',
   templateUrl: './create-portal-task.component.html',
   styleUrls: ['./create-portal-task.component.scss'],

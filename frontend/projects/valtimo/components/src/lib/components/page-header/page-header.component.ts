@@ -29,6 +29,7 @@ import {PageHeaderService, PageTitleService} from '../../services';
   selector: 'valtimo-page-header',
   templateUrl: './page-header.component.html',
   styleUrls: ['./page-header.component.scss'],
+  standalone: false,
 })
 export class PageHeaderComponent implements AfterViewInit, OnDestroy {
   @ViewChild('contentVcr', {static: true, read: ViewContainerRef})

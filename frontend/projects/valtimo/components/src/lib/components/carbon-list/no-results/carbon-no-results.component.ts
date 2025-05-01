@@ -31,6 +31,7 @@ import {
   templateUrl: './carbon-no-results.component.html',
   styleUrls: ['./carbon-no-results.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class CarbonNoResultsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('noResults') private _noResultsRef: ElementRef<HTMLDivElement>;

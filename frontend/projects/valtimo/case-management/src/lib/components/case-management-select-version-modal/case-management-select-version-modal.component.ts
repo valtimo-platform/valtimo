@@ -25,6 +25,7 @@ import {Page} from '@valtimo/document';
 import {CaseVersionListItem} from '../../models/case-version-list.model';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-select-version-modal',
   templateUrl: './case-management-select-version-modal.component.html',
   styleUrls: ['./case-management-select-version-modal.component.scss'],

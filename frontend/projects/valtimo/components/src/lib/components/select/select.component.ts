@@ -34,6 +34,7 @@ import {map, take} from 'rxjs/operators';
   selector: 'v-select',
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
+  standalone: false,
 })
 export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public set items(value: Array<SelectItem>) {

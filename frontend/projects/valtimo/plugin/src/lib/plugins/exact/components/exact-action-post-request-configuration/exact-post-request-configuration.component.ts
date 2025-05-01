@@ -20,6 +20,7 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import ExactPostRequestConfiguration from './exact-post-request-configuration';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-exact-post-request-configuration',
   templateUrl: './exact-post-request-configuration.component.html',
 })

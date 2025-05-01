@@ -31,6 +31,7 @@ import {DOCUMENT} from '@angular/common';
   selector: 'valtimo-translation-management',
   templateUrl: './translation-management.component.html',
   styleUrls: ['./translation-management.component.scss'],
+  standalone: false,
 })
 export class TranslationManagementComponent implements OnInit {
   public readonly loading$ = new BehaviorSubject<boolean>(true);

@@ -20,5 +20,6 @@ import {Component} from '@angular/core';
   selector: 'valtimo-layout-public',
   templateUrl: './layout-public.component.html',
   styleUrls: ['./layout-public.component.scss'],
+  standalone: false,
 })
 export class LayoutPublicComponent {}

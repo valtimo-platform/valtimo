@@ -24,6 +24,7 @@ import {PluginManagementStateService} from '../../services';
 import {PluginManagementService, PluginDefinition} from '@valtimo/plugin';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-plugin-add-select',
   templateUrl: './plugin-add-select.component.html',
   styleUrls: ['./plugin-add-select.component.scss'],

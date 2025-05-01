@@ -30,6 +30,7 @@ import * as semver from 'semver';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 
 @Component({
+  standalone: false,
   templateUrl: './case-management-deployment.component.html',
   styleUrls: ['./case-management-deployment.component.scss'],
 })

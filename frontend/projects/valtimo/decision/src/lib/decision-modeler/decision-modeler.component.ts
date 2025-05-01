@@ -41,6 +41,7 @@ import {EMPTY_DECISION} from './empty-decision';
 declare const $: any;
 
 @Component({
+  standalone: false,
   selector: 'valtimo-decision-modeler',
   templateUrl: './decision-modeler.component.html',
   styleUrls: ['./decision-modeler.component.scss'],

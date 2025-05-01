@@ -29,6 +29,7 @@ import {take} from 'rxjs/operators';
 import {NotesService} from '../../services/notes.service';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-note-modal',
   templateUrl: './note-modal.component.html',
   styleUrls: ['./note-modal.component.scss'],

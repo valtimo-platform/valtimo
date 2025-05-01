@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {LinkDocumentToBesluitConfig} from '../../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-link-document-to-besluit-configuration',
   templateUrl: './link-document-to-besluit-configuration.component.html',
   styleUrls: ['./link-document-to-besluit-configuration.component.scss'],

@@ -34,6 +34,7 @@ import {MenuService} from '../menu/menu.service';
   selector: 'valtimo-left-sidebar',
   templateUrl: './left-sidebar.component.html',
   styleUrls: ['./left-sidebar.component.scss'],
+  standalone: false,
 })
 export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   @ViewChild('toggleButton') toggleButtonRef: ElementRef;

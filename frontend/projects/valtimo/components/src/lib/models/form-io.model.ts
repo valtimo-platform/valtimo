@@ -22,7 +22,7 @@ import {
   FormioOptions,
 } from '@formio/angular';
 
-export interface FormioSubmission {
+interface FormioSubmission {
   data: {
     [key: string]: any;
     submit?: boolean;
@@ -31,12 +31,12 @@ export interface FormioSubmission {
   state: string;
 }
 
-export interface ResourceOption {
+interface ResourceOption {
   label: string;
   value: string;
 }
 
-export class AlertsOptionsImpl implements AlertsOptions {
+class AlertsOptionsImpl implements AlertsOptions {
   submitMessage: string;
 
   constructor(submitMessage: string) {
@@ -44,12 +44,12 @@ export class AlertsOptionsImpl implements AlertsOptions {
   }
 }
 
-export interface ValtimoFormioOptions extends FormioOptions {
+interface ValtimoFormioOptions extends FormioOptions {
   setAlertMessage(submitMessage: string);
   setHooks(submitFunction: FormioBeforeSubmit);
 }
 
-export class FormioOptionsImpl implements ValtimoFormioOptions {
+class FormioOptionsImpl implements ValtimoFormioOptions {
   errors?: ErrorsOptions;
   alerts?: AlertsOptions;
   disableAlerts?: boolean;
@@ -71,3 +71,99 @@ export class FormioOptionsImpl implements ValtimoFormioOptions {
     this.hooks = {beforeSubmit};
   }
 }
+
+interface ValidateOptions {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  custom?: any;
+  customPrivate?: boolean;
+  min?: number;
+  max?: number;
+  minSelectedCount?: number;
+  maxSelectedCount?: number;
+  minWords?: number;
+  maxWords?: number;
+  email?: boolean;
+  url?: boolean;
+  date?: boolean;
+  day?: boolean;
+  json?: string;
+  mask?: boolean;
+  minDate?: any;
+  maxDate?: any;
+}
+
+interface BuilderInfo {
+  title: string;
+  group: string;
+  icon: string;
+  documentation?: string;
+  weight?: number;
+  schema?: ExtendedComponentSchema;
+}
+
+interface ComponentSchema<T = any> {
+  type?: string;
+  key?: string;
+  label?: string;
+  placeholder?: string;
+  input?: boolean;
+  tableView?: boolean;
+  multiple?: boolean;
+  protected?: boolean;
+  prefix?: string;
+  suffix?: string;
+  defaultValue?: T;
+  clearOnHide?: boolean;
+  unique?: boolean;
+  persistent?: boolean;
+  hidden?: boolean;
+  validate?: ValidateOptions;
+  conditional?: ConditionalOptions;
+  errors?: Object;
+  logic?: Object[];
+  customClass?: string;
+  dataGridLabel?: boolean;
+  labelPosition?: 'top' | 'bottom' | 'left' | 'right';
+  labelWidth?: number;
+  labelMargin?: number;
+  description?: string;
+  errorLabel?: string;
+  tooltip?: string;
+  hideLabel?: boolean;
+  tabindex?: string;
+  disabled?: boolean;
+  autofocus?: boolean;
+  dbIndex?: boolean;
+  customDefaultValue?: any;
+  calculateValue?: any;
+  allowCalculateOverride?: boolean;
+  widget?: any;
+  refreshOn?: string;
+  clearOnRefresh?: boolean;
+  validateOn?: 'change' | 'blur';
+}
+
+type ExtendedComponentSchema<T = any> = ComponentSchema<T> & {[key: string]: any};
+
+interface ConditionalOptions {
+  show?: boolean;
+  when?: string;
+  eq?: string;
+  json?: Object;
+}
+
+export {
+  FormioSubmission,
+  ResourceOption,
+  AlertsOptionsImpl,
+  FormioOptionsImpl,
+  ValtimoFormioOptions,
+  ValidateOptions,
+  BuilderInfo,
+  ComponentSchema,
+  ExtendedComponentSchema,
+  ConditionalOptions,
+};

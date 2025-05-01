@@ -28,7 +28,7 @@ import {PageHeaderService} from '../../services';
 import {combineLatest, Subscription} from 'rxjs';
 import {DOCUMENT} from '@angular/common';
 
-@Directive({selector: '[fitPage]'})
+@Directive({selector: '[fitPage]', standalone: false})
 export class FitPageDirective implements AfterViewInit, OnDestroy {
   @Input() extraSpace: number = 0;
   @Input() disabled = false;

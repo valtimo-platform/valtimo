@@ -15,10 +15,10 @@
  */
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Components} from 'formiojs';
+import {Components} from '@formio/js';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
-import {FormioOptions} from '@formio/angular/formio.common';
+import {FormioOptions} from '@formio/angular';
 import {FormIoStateService} from './services/form-io-state.service';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {
@@ -30,6 +30,7 @@ import {
   selector: 'valtimo-form-io-builder',
   templateUrl: './form-io-builder.component.html',
   styleUrls: ['./form-io-builder.component.css'],
+  standalone: false,
 })
 export class FormioBuilderComponent implements OnInit {
   public readonly form$ = new BehaviorSubject<object | null>(null);

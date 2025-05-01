@@ -33,7 +33,11 @@ describe('CamundaBooleanFormfieldComponent', () => {
 
   let formGroup: UntypedFormGroup;
 
-  @Component({selector: 'valtimo-camunda-formfield-validation', template: ''})
+  @Component({
+    selector: 'valtimo-camunda-formfield-validation',
+    template: '',
+    standalone: false,
+  })
   class CamundaFormFieldValidationComponent {
     @Input() formField: FormField;
     @Input() formGroup: UntypedFormGroup;

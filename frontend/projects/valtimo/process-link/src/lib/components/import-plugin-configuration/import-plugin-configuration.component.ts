@@ -24,6 +24,7 @@ import {Upload16} from '@carbon/icons';
 import {CdsThemeService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-import-plugin-configuration',
   templateUrl: './import-plugin-configuration.component.html',
   styleUrls: ['./import-plugin-configuration.component.scss'],

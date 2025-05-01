@@ -29,6 +29,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
  * @deprecated Use the new plugin framework
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-edit-connector-properties',
   templateUrl: './edit-connector-properties.component.html',
   styleUrls: ['./edit-connector-properties.component.scss'],

@@ -38,6 +38,7 @@ import {ObjectManagementService, SearchColumn} from '@valtimo/object-management'
 import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/config';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-list',
   templateUrl: './object-list.component.html',
   styleUrls: ['./object-list.component.scss'],

@@ -331,10 +331,9 @@ export class DocumentService {
 
   // Case definition calls
   public getCaseDefinitions(params: any): Observable<CaseDefinition[]> {
-    return this.http.get<CaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition`,
-      {params}
-    );
+    return this.http.get<CaseDefinition[]>(`${this.valtimoEndpointUri}v1/case-definition`, {
+      params,
+    });
   }
 
   public findProcessDocumentDefinitionsByVersion(

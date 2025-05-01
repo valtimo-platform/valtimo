@@ -23,5 +23,6 @@ import {Component} from '@angular/core';
   selector: 'v-page-header-introduction',
   templateUrl: './page-header-introduction.component.html',
   styleUrls: ['./page-header-introduction.component.scss'],
+  standalone: false,
 })
 export class PageHeaderIntroductionComponent {}

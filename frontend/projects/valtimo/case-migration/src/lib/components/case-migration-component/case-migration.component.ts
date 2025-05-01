@@ -35,6 +35,7 @@ import {WatsonHealthStackedMove16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-migration',
   templateUrl: './case-migration.component.html',
 })

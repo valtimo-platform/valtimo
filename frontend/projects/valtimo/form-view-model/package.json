@@ -3,11 +3,11 @@
   "license": "EUPL-1.2",
   "version": "13.0.0",
   "peerDependencies": {
-    "@angular/common": "^17.2.2",
-    "@angular/core": "^17.2.2"
+    "@angular/common": "^19.2.8",
+    "@angular/core": "^19.2.8"
   },
   "dependencies": {
-    "formiojs": "4.19.5",
-    "@formio/angular": "7.0.0"
+    "@formio/js": "5.2.0-rc.1",
+    "@formio/angular": "8.1.0"
   }
 }

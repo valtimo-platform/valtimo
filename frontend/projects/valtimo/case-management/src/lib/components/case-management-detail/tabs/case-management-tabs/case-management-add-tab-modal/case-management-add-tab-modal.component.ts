@@ -37,6 +37,7 @@ import {ConfigService} from '@valtimo/config';
 import {CaseManagementParams} from '../../../../../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-add-tab-modal',
   templateUrl: './case-management-add-tab-modal.component.html',
   styleUrls: ['./case-management-add-tab-modal.component.scss'],

@@ -20,6 +20,7 @@ import {Component, Input} from '@angular/core';
   selector: 'valtimo-spinner',
   templateUrl: './spinner.component.html',
   styleUrls: ['./spinner.component.scss'],
+  standalone: false,
 })
 export class SpinnerComponent {
   @Input() useBootstrapSpinner = true;

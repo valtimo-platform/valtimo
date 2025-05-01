@@ -23,5 +23,6 @@ import {Component} from '@angular/core';
   selector: 'v-page-header-actions',
   templateUrl: './page-header-actions.component.html',
   styleUrls: ['./page-header-actions.component.scss'],
+  standalone: false,
 })
 export class PageHeaderActionsComponent {}

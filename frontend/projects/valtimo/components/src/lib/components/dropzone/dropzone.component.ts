@@ -37,6 +37,7 @@ import {map} from 'rxjs/operators';
   selector: 'valtimo-dropzone',
   templateUrl: './dropzone.component.html',
   styleUrls: ['./dropzone.component.scss'],
+  standalone: false,
 })
 export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('dropzone') dropzoneRef: ElementRef<any>;

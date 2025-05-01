@@ -113,6 +113,8 @@ td:first-child {
 
   ::ng-deep.valtimo-carbon-list__draggable .cds--btn--ghost {
     cursor: move !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
   }
 
   ::ng-deep &__drag-table-row {

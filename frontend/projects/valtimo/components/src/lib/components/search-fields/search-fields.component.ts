@@ -27,6 +27,7 @@ import {ChevronDown16, ChevronUp16} from '@carbon/icons';
   selector: 'valtimo-search-fields',
   templateUrl: './search-fields.component.html',
   styleUrls: ['./search-fields.component.scss'],
+  standalone: false,
 })
 export class SearchFieldsComponent implements OnInit, OnDestroy {
   @Input() public loading!: boolean;

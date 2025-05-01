@@ -30,6 +30,7 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 import {PageTitleService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-analyse-process-diagram',
   templateUrl: './analyse-process-diagram.component.html',
   styleUrls: ['./analyse-process-diagram.component.scss'],

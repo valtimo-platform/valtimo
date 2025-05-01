@@ -23,6 +23,7 @@ import {BehaviorSubject, take, tap} from 'rxjs';
 import * as semver from 'semver';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-create',
   styleUrls: ['./case-management-create.component.scss'],
   templateUrl: './case-management-create.component.html',

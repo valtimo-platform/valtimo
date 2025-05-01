@@ -20,6 +20,7 @@ import {PluginTranslationService} from '../../services/plugin-translation.servic
 
 @Pipe({
   name: 'pluginTranslate',
+  standalone: false,
 })
 export class PluginTranslatePipe implements PipeTransform {
   constructor(private readonly pluginTranslationService: PluginTranslationService) {}

@@ -80,6 +80,7 @@ import {TaskUpdateSseEvent} from '../../models';
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
+  standalone: false,
   selector: 'valtimo-task-list',
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss'],

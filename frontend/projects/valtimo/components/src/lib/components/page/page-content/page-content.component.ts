@@ -23,5 +23,6 @@ import {Component} from '@angular/core';
   selector: 'v-page-content',
   templateUrl: './page-content.component.html',
   styleUrls: ['./page-content.component.scss'],
+  standalone: false,
 })
 export class PageContentComponent {}

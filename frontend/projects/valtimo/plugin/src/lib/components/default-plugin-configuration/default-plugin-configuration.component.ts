@@ -23,6 +23,7 @@ import {validate as isValidUUID} from 'uuid';
   selector: 'valtimo-default-plugin-configuration',
   templateUrl: './default-plugin-configuration.component.html',
   styleUrls: ['./default-plugin-configuration.component.scss'],
+  standalone: false,
 })
 export class DefaultPluginConfigurationComponent implements OnInit, OnDestroy {
   @Input() save$: Observable<void>;

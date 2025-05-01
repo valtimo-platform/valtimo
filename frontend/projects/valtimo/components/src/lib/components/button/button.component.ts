@@ -16,12 +16,12 @@
 
 import {
   Component,
-  Output,
   EventEmitter,
   Input,
-  OnInit,
-  SimpleChanges,
   OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 import {ButtonType} from '../../models';
 
@@ -32,6 +32,7 @@ import {ButtonType} from '../../models';
   selector: 'v-button',
   templateUrl: './button.component.html',
   styleUrls: ['./button.component.scss'],
+  standalone: false,
 })
 export class ButtonComponent implements OnInit, OnChanges {
   @Input() type: ButtonType = 'primary';

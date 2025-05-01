@@ -17,7 +17,12 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {HttpBackend, HttpClient, HttpClientModule} from '@angular/common/http';
+import {
+  HttpBackend,
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
@@ -71,11 +76,7 @@ import {ProcessManagementModule} from '@valtimo/process-management';
 import {DecisionModule} from '@valtimo/decision';
 import {MilestoneModule} from '@valtimo/milestone';
 import {LoggerModule} from 'ngx-logger';
-import {
-  FORM_CUSTOM_COMPONENT_TOKEN,
-  FORM_FLOW_COMPONENT_TOKEN,
-  ProcessLinkModule,
-} from '@valtimo/process-link';
+import {FORM_FLOW_COMPONENT_TOKEN, ProcessLinkModule} from '@valtimo/process-link';
 import {MigrationModule} from '@valtimo/migration';
 import {BootstrapModule} from '@valtimo/bootstrap';
 import {
@@ -155,8 +156,8 @@ export function tabsFactory() {
     CustomCaseTabComponent,
     CustomMapsTabComponent,
   ],
+  bootstrap: [AppComponent],
   imports: [
-    HttpClientModule,
     CommonModule,
     BrowserModule,
     AppRoutingModule,
@@ -207,7 +208,6 @@ export function tabsFactory() {
     BesluitenApiPluginModule,
     CatalogiApiPluginModule,
     VerzoekPluginModule,
-    HttpClientModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -228,6 +228,7 @@ export function tabsFactory() {
     FormManagementModule,
   ],
   providers: [
+    provideHttpClient(withInterceptorsFromDi()),
     FormioComponent,
     {
       provide: PLUGINS_TOKEN,
@@ -271,7 +272,6 @@ export function tabsFactory() {
       },
     },
   ],
-  bootstrap: [AppComponent],
 })
 export class AppModule {
   constructor(injector: Injector) {

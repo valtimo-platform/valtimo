@@ -18,10 +18,14 @@ import {Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output} fr
 import {editProductAanvragenConnectorForm} from './edit-product-aanvragen-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {ExtendedComponentSchema, FormioForm, FormioRefreshValue} from '@formio/angular';
+import {
+  ExtendedComponentSchema,
+  FormioForm,
+  FormioOptions,
+  FormioRefreshValue,
+} from '@formio/angular';
 import {BehaviorSubject, combineLatest, Subject, Subscription} from 'rxjs';
 import {ConnectorProperties} from '@valtimo/config';
-import {FormioOptions} from '@formio/angular/formio.common';
 import {cloneDeep} from 'lodash';
 import {TranslateService} from '@ngx-translate/core';
 import {map, switchMap, tap} from 'rxjs/operators';
@@ -32,6 +36,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
  * @deprecated Use the new plugin framework
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-edit-product-aanvragen-connector',
   templateUrl: './edit-product-aanvragen-connector.component.html',
   styleUrls: ['./edit-product-aanvragen-connector.component.scss'],

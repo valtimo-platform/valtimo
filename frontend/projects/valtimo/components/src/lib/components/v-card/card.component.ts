@@ -23,6 +23,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
   selector: 'v-card',
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.scss'],
+  standalone: false,
 })
 export class VCardComponent {
   @Input() titleTranslationKey = '';

@@ -16,13 +16,14 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {SmartDocumentsConfig} from '../../models';
 
 @Component({
   selector: 'valtimo-smart-documents-configuration',
   templateUrl: './smart-documents-configuration.component.html',
   styleUrls: ['./smart-documents-configuration.component.scss'],
+  standalone: false,
 })
 export class SmartDocumentsConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy

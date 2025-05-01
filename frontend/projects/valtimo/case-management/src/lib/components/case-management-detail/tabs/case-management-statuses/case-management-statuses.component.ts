@@ -29,6 +29,7 @@ import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
 import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
+  standalone: false,
   templateUrl: './case-management-statuses.component.html',
   styleUrls: ['./case-management-statuses.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

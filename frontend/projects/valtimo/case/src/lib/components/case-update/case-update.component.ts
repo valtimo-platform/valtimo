@@ -26,6 +26,7 @@ import {CaseService} from '../../services/case.service';
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
+  standalone: false,
   templateUrl: './case-update.component.html',
   styleUrls: ['./case-update.component.scss'],
 })

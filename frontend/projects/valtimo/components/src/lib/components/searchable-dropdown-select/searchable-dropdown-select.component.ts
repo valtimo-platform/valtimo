@@ -21,6 +21,7 @@ import {DropdownButtonStyle, DropdownItem} from '../../models';
   selector: 'valtimo-searchable-dropdown-select',
   templateUrl: './searchable-dropdown-select.component.html',
   styleUrls: ['./searchable-dropdown-select.component.scss'],
+  standalone: false,
 })
 export class SearchableDropdownSelectComponent {
   @Input() style: DropdownButtonStyle;

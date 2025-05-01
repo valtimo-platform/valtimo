@@ -20,6 +20,7 @@ import {Role, RoleMetadataModal} from '../../models';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-role-metadata-modal',
   templateUrl: './role-metadata-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -23,6 +23,7 @@ import {Component, Input, OnInit} from '@angular/core';
   selector: 'valtimo-widget',
   templateUrl: './widget.component.html',
   styleUrls: ['./widget.component.css'],
+  standalone: false,
 })
 export class WidgetComponent implements OnInit {
   @Input() type?: string;

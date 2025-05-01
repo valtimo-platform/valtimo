@@ -27,6 +27,7 @@ declare var $;
 @Component({
   selector: 'valtimo-camunda-date-formfield',
   templateUrl: './camunda-date-formfield.component.html',
+  standalone: false,
 })
 export class CamundaDateFormfieldComponent implements OnInit, AfterViewInit {
   public formGroup: UntypedFormGroup;

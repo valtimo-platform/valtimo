@@ -29,6 +29,7 @@ import {cloneDeep} from 'lodash';
 import {v4 as uuidv4} from 'uuid';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-plugin-management',
   templateUrl: './plugin-management.component.html',
   styleUrls: ['./plugin-management.component.scss'],

@@ -36,6 +36,7 @@ import {ConfigurationOutput} from '@valtimo/dashboard';
   styleUrls: ['./edit-dashboard-modal.scss'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class EditDashboardModalComponent implements OnInit {
   @Input() public showModal$: Observable<boolean>;

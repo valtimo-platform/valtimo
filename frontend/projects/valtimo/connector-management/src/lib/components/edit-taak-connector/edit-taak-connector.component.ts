@@ -19,8 +19,7 @@ import {editTaakConnectorForm} from './edit-taak-connector.form';
 import {FormMappingService, FormTranslationService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, Subject, Subscription, timer} from 'rxjs';
 import {ConnectorProperties} from '@valtimo/config';
-import {FormioForm, FormioRefreshValue} from '@formio/angular';
-import {FormioOptions} from '@formio/angular/formio.common';
+import {FormioForm, FormioOptions, FormioRefreshValue} from '@formio/angular';
 import {cloneDeep} from 'lodash';
 import {TranslateService} from '@ngx-translate/core';
 import {map, tap} from 'rxjs/operators';
@@ -31,6 +30,7 @@ import {ConnectorManagementStateService} from '../../services/connector-manageme
  * @deprecated Use the new plugin framework
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-edit-taak-connector',
   templateUrl: './edit-taak-connector.component.html',
   styleUrls: ['./edit-taak-connector.component.scss'],

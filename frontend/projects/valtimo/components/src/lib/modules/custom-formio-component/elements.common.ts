@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {BuilderInfo, ExtendedComponentSchema, ValidateOptions} from 'formiojs';
 import {EventEmitter} from '@angular/core';
 import {NgElement, WithProperties} from '@angular/elements';
+import {BuilderInfo, ExtendedComponentSchema, ValidateOptions} from '../../models';
 
 // Custom Angular Components
 export interface FormioCustomComponentInfo extends BuilderInfo {

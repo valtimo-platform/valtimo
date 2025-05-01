@@ -20,6 +20,7 @@ import {TimelineItem} from '../../models';
   selector: 'valtimo-timeline',
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss'],
+  standalone: false,
 })
 export class TimelineComponent {
   @Input() items: Array<TimelineItem>;

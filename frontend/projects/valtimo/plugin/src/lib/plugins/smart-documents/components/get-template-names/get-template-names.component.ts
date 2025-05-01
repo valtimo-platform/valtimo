@@ -18,9 +18,11 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {GetTemplateNamesConfig} from '../../models';
 import {FunctionConfigurationComponent} from '../../../../models';
+
 @Component({
   selector: 'valtimo-get-template-names',
   templateUrl: './get-template-names.component.html',
+  standalone: false,
 })
 export class GetTemplateNamesComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

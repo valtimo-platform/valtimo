@@ -36,6 +36,7 @@ import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-create-zaak-resultaat-configuration',
   templateUrl: './create-zaak-resultaat-configuration.component.html',
   styleUrls: ['./create-zaak-resultaat-configuration.component.scss'],

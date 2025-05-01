@@ -36,6 +36,7 @@
     "@carbon/charts-angular",
     "@types/topojson",
     "@tadashi/currency",
-    "semver"
+    "semver",
+    "@formio/js"
   ]
 }

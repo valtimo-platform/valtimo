@@ -22,6 +22,7 @@ import {ChoiceFieldService} from '../../../../../../services';
 @Component({
   selector: 'valtimo-camunda-choicefield-formfield',
   templateUrl: './camunda-choicefield-formfield.component.html',
+  standalone: false,
 })
 export class CamundaChoicefieldFormfieldComponent implements OnInit {
   public formGroup: UntypedFormGroup;

@@ -22,6 +22,7 @@ import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
   selector: 'v-input-label',
   templateUrl: './input-label.component.html',
   styleUrls: ['./input-label.component.scss'],
+  standalone: false,
 })
 export class InputLabelComponent {
   @Input() public name = '';

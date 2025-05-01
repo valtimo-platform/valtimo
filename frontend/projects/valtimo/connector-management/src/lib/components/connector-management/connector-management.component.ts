@@ -27,6 +27,7 @@ import {Pagination, TableColumn} from '@valtimo/components';
  * @deprecated Use the new plugin framework
  */
 @Component({
+  standalone: false,
   selector: 'valtimo-connector-management',
   templateUrl: './connector-management.component.html',
   styleUrls: ['./connector-management.component.scss'],

@@ -27,6 +27,7 @@ import {CaseManagementService} from '../../services';
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-list',
   templateUrl: './case-management-list.component.html',
   styleUrls: ['./case-management-list.component.scss'],

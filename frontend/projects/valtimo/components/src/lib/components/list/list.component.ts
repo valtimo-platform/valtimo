@@ -41,6 +41,7 @@ import {get as _get} from 'lodash';
   selector: 'valtimo-list',
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss'],
+  standalone: false,
 })
 export class ListComponent implements OnChanges, OnInit, AfterViewInit {
   private static PAGINATION_SIZE = 'PaginationSize';

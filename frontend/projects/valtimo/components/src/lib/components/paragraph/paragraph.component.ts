@@ -23,6 +23,7 @@ import {Component, Input} from '@angular/core';
   selector: 'v-paragraph',
   templateUrl: './paragraph.component.html',
   styleUrls: ['./paragraph.component.scss'],
+  standalone: false,
 })
 export class ParagraphComponent {
   @Input() center = false;

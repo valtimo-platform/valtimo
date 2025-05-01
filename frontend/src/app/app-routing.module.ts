@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {NgModule} from '@angular/core';
-import {Router, RouterModule, Routes} from '@angular/router';
+import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
 import {FormioComponent} from './form-io/form-io.component';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
@@ -35,13 +35,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [
+    RouterModule.forRoot(routes, {
+      errorHandler: error => {
+        window.location.href = '/';
+      },
+    }),
+  ],
   exports: [RouterModule],
 })
-export class AppRoutingModule {
-  constructor(private router: Router) {
-    this.router.errorHandler = () => {
-      this.router.navigate(['']);
-    };
-  }
-}
+export class AppRoutingModule {}

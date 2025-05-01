@@ -26,6 +26,7 @@ import {PromptService} from '../../services/prompt.service';
   selector: 'v-prompt',
   templateUrl: './prompt.component.html',
   styleUrls: ['./prompt.component.scss'],
+  standalone: false,
 })
 export class PromptComponent implements OnInit {
   @Input() appearingDelayMs = 140;

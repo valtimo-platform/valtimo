@@ -23,6 +23,7 @@ import {KeycloakProfile} from 'keycloak-js';
   selector: 'valtimo-formio-current-user',
   template: '{{ this.value?.firstName }} {{ this.value?.lastName }}<br />{{ this.value?.email }}',
   styles: [],
+  standalone: false,
 })
 export class FormIoCurrentUserComponent implements FormioCustomComponent<any> {
   @Input() value: any;

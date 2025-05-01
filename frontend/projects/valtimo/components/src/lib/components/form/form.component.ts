@@ -39,6 +39,7 @@ import {ValuePathSelectorComponent} from '../value-path-selector/value-path-sele
   selector: 'v-form',
   templateUrl: './form.component.html',
   styleUrls: ['./form.component.scss'],
+  standalone: false,
 })
 export class FormComponent implements AfterContentInit, OnDestroy {
   @ContentChildren(InputComponent) inputComponents!: QueryList<InputComponent>;

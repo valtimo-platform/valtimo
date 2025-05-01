@@ -39,6 +39,7 @@ import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
 import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-tags',
   templateUrl: './case-management-tags.component.html',
   styleUrls: ['./case-management-tags.component.scss'],

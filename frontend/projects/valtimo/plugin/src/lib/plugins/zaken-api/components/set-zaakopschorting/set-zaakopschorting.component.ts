@@ -21,6 +21,7 @@ import {SetZaakopschortingConfig} from '../../models';
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
+  standalone: false,
   providers: [PluginTranslatePipe],
   selector: 'valtimo-set-zaak-opschorting-configuration',
   templateUrl: './set-zaakopschorting.component.html',

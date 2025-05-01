@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {BuilderInfo, Components, ExtendedComponentSchema, Utils as FormioUtils} from 'formiojs';
+import {Components, Utils as FormioUtils} from '@formio/js';
 import {FormioCustomComponentInfo, FormioCustomElement, FormioEvent} from './elements.common';
 import {clone, isArray, isNil} from 'lodash';
+import {BuilderInfo, ExtendedComponentSchema} from '../../models';
 
 const BaseInputComponent = Components.components.input;
 const TextfieldComponent = Components.components.textfield;

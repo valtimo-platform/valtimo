@@ -26,8 +26,8 @@
   padding-block-end: var(--v-spacing-block-md);
   font-size: var(--v-font-size-default);
   border-radius: var(--v-border-radius-md);
-  transition: var(--v-transition-bg-fast), var(--v-transition-color-fast),
-    var(--v-transition-border-fast);
+  transition:
+    var(--v-transition-bg-fast), var(--v-transition-color-fast), var(--v-transition-border-fast);
   cursor: var(--v-cursor-clickable);
 }
 

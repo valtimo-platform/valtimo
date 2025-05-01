@@ -3,12 +3,12 @@
   "license": "EUPL-1.2",
   "version": "13.0.0",
   "peerDependencies": {
-    "@angular/common": "^17.2.2",
-    "@angular/core": "^17.2.2"
+    "@angular/common": "^19.2.8",
+    "@angular/core": "^19.2.8"
   },
   "dependencies": {
     "ngx-toastr": "19.0.0",
-    "tslib": "2.6.3",
+    "tslib": "2.8.1",
     "moment": "2.30.1"
   }
 }

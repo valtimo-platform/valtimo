@@ -25,6 +25,7 @@ import {DocumentenApiService} from '../../services';
 @Component({
   selector: 'valtimo-documenten-api-configuration',
   templateUrl: './documenten-api-configuration.component.html',
+  standalone: false,
 })
 export class DocumentenApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy

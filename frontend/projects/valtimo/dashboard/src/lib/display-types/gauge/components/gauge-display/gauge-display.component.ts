@@ -22,6 +22,7 @@ import {CdsThemeService} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-gauge-display',
   templateUrl: './gauge-display.component.html',
   styleUrls: ['./gauge-display.component.scss'],

@@ -20,6 +20,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {AlertService, ChoiceFieldService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-choice-field-create',
   templateUrl: './choice-field-create.component.html',
   styleUrls: ['./choice-field-create.component.css'],

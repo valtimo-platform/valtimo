@@ -31,6 +31,7 @@ import {
 } from '../../services';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-select-form-flow',
   templateUrl: './select-form-flow.component.html',
   styleUrls: ['./select-form-flow.component.scss'],

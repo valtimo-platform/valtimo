@@ -37,12 +37,12 @@ import {
   PluginConfigurationComponent,
   PluginConfigurationData,
 } from '../../models';
-import {NGXLogger} from 'ngx-logger';
 
 @Component({
   selector: 'valtimo-plugin-configuration-container',
   templateUrl: './plugin-configuration-container.component.html',
   styleUrls: ['./plugin-configuration-container.component.scss'],
+  standalone: false,
 })
 export class PluginConfigurationContainerComponent
   implements OnInit, OnDestroy, Omit<PluginConfigurationComponent, 'pluginId'>

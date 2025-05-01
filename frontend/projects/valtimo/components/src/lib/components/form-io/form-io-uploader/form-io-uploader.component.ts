@@ -26,6 +26,7 @@ import {FormIoDomService} from '../services/form-io-dom.service';
   selector: 'valtimo-form-io-uploader',
   templateUrl: './form-io-uploader.component.html',
   styleUrls: ['./form-io-uploader.component.scss'],
+  standalone: false,
 })
 export class FormIoUploaderComponent implements FormioCustomComponent<Array<ResourceFile>> {
   @Input() disabled: boolean;

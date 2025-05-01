@@ -19,6 +19,7 @@ import {DecisionListComponent} from './decision-list/decision-list.component';
 import {ConfigService} from '@valtimo/config';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-decision',
   templateUrl: './decision.component.html',
   styleUrls: ['./decision.component.scss'],

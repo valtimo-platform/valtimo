@@ -25,6 +25,7 @@ import {FormService} from '@valtimo/form';
 import {VModalComponent, ModalService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-modal',
   templateUrl: './object-management-modal.component.html',
   styleUrls: ['./object-management-modal.component.scss'],

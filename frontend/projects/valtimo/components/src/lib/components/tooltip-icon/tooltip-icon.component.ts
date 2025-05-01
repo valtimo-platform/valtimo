@@ -23,6 +23,7 @@ import {Component, Input} from '@angular/core';
   selector: 'v-tooltip-icon',
   templateUrl: './tooltip-icon.component.html',
   styleUrls: ['./tooltip-icon.component.scss'],
+  standalone: false,
 })
 export class TooltipIconComponent {
   @Input() tooltip = '';

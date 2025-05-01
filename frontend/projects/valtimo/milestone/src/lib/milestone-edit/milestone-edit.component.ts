@@ -24,6 +24,7 @@ import {ProcessService, ProcessDefinition} from '@valtimo/process';
 import {switchMap} from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-milestone-edit',
   templateUrl: './milestone-edit.component.html',
   styleUrls: ['./milestone-edit.component.scss'],

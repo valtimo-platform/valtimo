@@ -22,6 +22,7 @@ import {Subscription} from 'rxjs';
 @Component({
   selector: 'valtimo-currency',
   templateUrl: './currency.component.html',
+  standalone: false,
 })
 export class FormIoCurrencyComponent
   implements FormioCustomComponent<number>, OnInit, AfterViewInit, OnChanges, OnDestroy

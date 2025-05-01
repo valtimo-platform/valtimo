@@ -26,6 +26,7 @@ import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-case-management-remove-modal',
   templateUrl: './case-management-remove-modal.component.html',
 })

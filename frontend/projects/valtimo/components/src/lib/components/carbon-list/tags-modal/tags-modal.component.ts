@@ -7,6 +7,7 @@ import {cloneDeep} from 'lodash';
   templateUrl: './tags-modal.component.html',
   styleUrls: ['./tags-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class CarbonTagsModalComponent {
   @Input() open = false;

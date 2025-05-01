@@ -19,7 +19,6 @@ import {
   ComponentFactoryResolver,
   Input,
   OnInit,
-  Type,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -28,6 +27,7 @@ import {
   selector: 'valtimo-custom-form',
   templateUrl: './camunda-custom-form.component.html',
   styleUrls: ['./camunda-custom-form.component.css'],
+  standalone: false,
 })
 export class CamundaCustomFormComponent implements OnInit {
   @Input() componentName: string;

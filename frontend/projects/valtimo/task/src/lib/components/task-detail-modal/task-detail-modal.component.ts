@@ -43,6 +43,7 @@ import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-s
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
+  standalone: false,
   selector: 'valtimo-task-detail-modal',
   templateUrl: './task-detail-modal.component.html',
   styleUrls: ['./task-detail-modal.component.scss'],

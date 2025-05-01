@@ -22,6 +22,7 @@ import {MenuItem} from '@valtimo/config';
   templateUrl: './menu-item-text.component.html',
   styleUrls: ['./menu-item-text.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class MenuItemTextComponent {
   @Input() menuItem: MenuItem;

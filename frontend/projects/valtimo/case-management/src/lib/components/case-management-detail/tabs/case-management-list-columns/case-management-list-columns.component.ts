@@ -32,8 +32,7 @@ import {
   DisplayTypeParameters,
   DocumentService,
 } from '@valtimo/document';
-import {IconService} from 'carbon-components-angular';
-import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {IconService, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -51,6 +50,7 @@ import {v4 as uuidv4} from 'uuid';
 import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
+  standalone: false,
   templateUrl: './case-management-list-columns.component.html',
   styleUrls: ['./case-management-list-columns.component.scss'],
 })

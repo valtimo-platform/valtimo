@@ -23,6 +23,7 @@ import {FormioForm} from '@formio/angular';
 import {catchError} from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   templateUrl: './formio.component.html',
   styleUrls: ['./formio.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

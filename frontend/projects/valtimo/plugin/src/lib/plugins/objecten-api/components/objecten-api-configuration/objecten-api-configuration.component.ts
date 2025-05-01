@@ -22,6 +22,7 @@ import {PluginManagementService, PluginTranslationService} from '../../../../ser
 import {TranslateService} from '@ngx-translate/core';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-objecten-api-configuration',
   templateUrl: './objecten-api-configuration.component.html',
   styleUrls: ['./objecten-api-configuration.component.scss'],

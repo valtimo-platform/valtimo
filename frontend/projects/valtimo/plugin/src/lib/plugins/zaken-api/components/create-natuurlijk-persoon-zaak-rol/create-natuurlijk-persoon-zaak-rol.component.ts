@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {CreateNatuurlijkePersoonZaakRolConfig} from '../../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-create-natuurlijk-persoon-zaak-rol-configuration',
   templateUrl: './create-natuurlijk-persoon-zaak-rol.component.html',
   styleUrls: ['./create-natuurlijk-persoon-zaak-rol.component.scss'],

@@ -25,6 +25,7 @@ declare var App;
   selector: 'valtimo-layout-internal',
   templateUrl: './layout-internal.component.html',
   styleUrls: ['./layout-internal.component.scss'],
+  standalone: false,
 })
 export class LayoutInternalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mainContent') mainContentRef: ElementRef;

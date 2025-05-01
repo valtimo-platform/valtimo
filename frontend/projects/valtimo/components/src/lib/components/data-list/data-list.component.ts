@@ -20,6 +20,7 @@ import {Component, Input} from '@angular/core';
   selector: 'valtimo-data-list',
   templateUrl: './data-list.component.html',
   styleUrls: ['./data-list.component.css'],
+  standalone: false,
 })
 export class DataListComponent {
   @Input() collection?: Array<any>;

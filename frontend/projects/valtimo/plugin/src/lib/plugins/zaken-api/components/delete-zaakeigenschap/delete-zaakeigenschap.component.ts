@@ -36,6 +36,7 @@ import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-delete-zaakeigenschap',
   templateUrl: './delete-zaakeigenschap.component.html',
   providers: [PluginTranslatePipe],

@@ -24,6 +24,7 @@ import {StepperFooterStepComponent} from '../stepper-footer-step/stepper-footer-
   selector: 'v-stepper-footer',
   templateUrl: './stepper-footer.component.html',
   styleUrls: ['./stepper-footer.component.scss'],
+  standalone: false,
 })
 export class StepperFooterComponent implements AfterContentInit {
   @ContentChildren(StepperFooterStepComponent)

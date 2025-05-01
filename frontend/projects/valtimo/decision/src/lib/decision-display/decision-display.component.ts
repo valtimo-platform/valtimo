@@ -23,6 +23,7 @@ import {ToastrService} from 'ngx-toastr';
 import {migrateDiagram} from '@bpmn-io/dmn-migrate';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-decision-display',
   templateUrl: './decision-display.component.html',
   styleUrls: ['./decision-display.component.scss'],

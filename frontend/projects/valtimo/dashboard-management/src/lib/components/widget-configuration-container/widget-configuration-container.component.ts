@@ -37,6 +37,7 @@ import {
 } from '@valtimo/dashboard';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-widget-configuration-container',
   templateUrl: './widget-configuration-container.component.html',
 })

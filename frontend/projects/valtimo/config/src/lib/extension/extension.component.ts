@@ -22,6 +22,7 @@ import {Extension, ExtensionLoader, ExtensionPoint} from '../models';
   selector: 'valtimo-extension',
   templateUrl: './extension.component.html',
   styleUrls: ['./extension.component.css'],
+  standalone: false,
 })
 export class ExtensionComponent implements OnInit {
   public extensionLoader: ExtensionLoader = null;

@@ -28,6 +28,7 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-export-role-modal',
   templateUrl: './export-role-modal.component.html',
   styleUrls: ['./export-role-modal.component.scss'],

@@ -39,7 +39,6 @@ import {TranslateModule} from '@ngx-translate/core';
     MilestoneSetEditComponent,
   ],
   imports: [
-    RouterModule,
     MilestoneRoutingModule,
     CommonModule,
     ListModule,
@@ -47,6 +46,7 @@ import {TranslateModule} from '@ngx-translate/core';
     ReactiveFormsModule,
     ColorPickerModule,
     TranslateModule,
+    RouterModule,
   ],
   exports: [MilestoneComponent],
 })

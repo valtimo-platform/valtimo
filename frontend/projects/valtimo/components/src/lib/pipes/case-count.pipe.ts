@@ -16,7 +16,7 @@
 
 import {Pipe, PipeTransform} from '@angular/core';
 
-@Pipe({name: 'caseCount'})
+@Pipe({name: 'caseCount', standalone: false})
 export class CaseCountPipe implements PipeTransform {
   transform(caseCount: any): string {
     if (typeof caseCount === 'number') {

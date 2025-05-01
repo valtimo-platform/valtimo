@@ -21,6 +21,7 @@ import {FormField} from '../formfield.model';
 @Component({
   selector: 'valtimo-camunda-textarea-formfield',
   templateUrl: './camunda-textarea-formfield.component.html',
+  standalone: false,
 })
 export class CamundaTextareaFormfieldComponent {
   public formGroup: UntypedFormGroup;
