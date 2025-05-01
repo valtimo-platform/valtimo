@@ -40,7 +40,7 @@ export class FormManagementService extends BaseApiService {
 
   public getFormDefinition(formDefinitionId: string): Observable<FormDefinition> {
     return this.httpClient.get<FormDefinition>(
-      this.getApiUrl(`v1/form-management/${formDefinitionId}`)
+      this.getApiUrl(`/management/v1/form/${formDefinitionId}`)
     );
   }
 
@@ -60,7 +60,7 @@ export class FormManagementService extends BaseApiService {
     if (!formDefinitionName) return of(false);
 
     return this.httpClient.get<boolean>(
-      this.getApiUrl(`v1/form-management/exists/${formDefinitionName}`)
+      this.getApiUrl(`/management/v1/form/exists/${formDefinitionName}`)
     );
   }
 
@@ -79,7 +79,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public queryFormDefinitions(params?: any): Observable<QueryFormsResponse> {
-    return this.httpClient.get<QueryFormsResponse>(this.getApiUrl(`v1/form-management`), {
+    return this.httpClient.get<QueryFormsResponse>(this.getApiUrl(`/management/v1/form`), {
       params,
     });
   }
@@ -100,7 +100,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public createFormDefinition(request: CreateFormDefinitionRequest): Observable<FormDefinition> {
-    return this.httpClient.post<FormDefinition>(this.getApiUrl(`/v1/form-management`), request);
+    return this.httpClient.post<FormDefinition>(this.getApiUrl(`/management/v1/form`), request);
   }
 
   public createFormDefinitionsCase(
@@ -117,7 +117,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public modifyFormDefinition(request: ModifyFormDefinitionRequest): Observable<FormDefinition> {
-    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/v1/form-management`), request);
+    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/management/v1/form/`), request);
   }
 
   public modifyFormDefinitionCase(
@@ -134,7 +134,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public deleteFormDefinition(formDefinitionId: string): Observable<void> {
-    return this.httpClient.delete<void>(this.getApiUrl(`/v1/form-management/${formDefinitionId}`));
+    return this.httpClient.delete<void>(this.getApiUrl(`/management/v1/form/${formDefinitionId}`));
   }
 
   public deleteFormDefinitionCase(
