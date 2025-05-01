@@ -108,7 +108,6 @@ export class CaseDetailComponent
   @ViewChild('tabContentContainer')
   private readonly _tabContentContainer!: ElementRef<HTMLDivElement>;
 
-  public customCaseHeaderItems: Array<any> = [];
   public document: ValtimoDocument | null = null;
   public caseDefinitionKey: string;
   public documentDefinitionTitle: string;
@@ -168,17 +167,6 @@ export class CaseDetailComponent
         this.document = document;
         this._caseStatusKey$.next(document?.internalStatus || 'NOT_AVAILABLE');
         this._caseTags$.next(document?.caseTags || null);
-
-        if (
-          this.configService.config.customCaseHeader?.hasOwnProperty(
-            this.caseDefinitionKey.toLowerCase()
-          ) &&
-          this.customCaseHeaderItems.length === 0
-        ) {
-          this.configService.config.customCaseHeader[this.caseDefinitionKey.toLowerCase()]?.forEach(
-            item => this.getCustomCaseHeaderItem(item)
-          );
-        }
       }
     })
   );
@@ -587,40 +575,6 @@ export class CaseDetailComponent
 
   public assignmentOfDocumentChanged(): void {
     this.caseService.refresh();
-  }
-
-  private getCustomCaseHeaderItem(item): void {
-    this.customCaseHeaderItems.push({
-      label: item['labelTranslationKey'] || '',
-      columnSize: item['columnSize'] || 3,
-      textSize: item['textSize'] || 'md',
-      customClass: item['customClass'] || '',
-      modifier: item['modifier'] || '',
-      value: item['propertyPaths']?.reduce(
-        (prev, curr) => prev + this.getStringFromDocumentPath(item, curr),
-        ''
-      ),
-    });
-  }
-
-  private getStringFromDocumentPath(item, path): string {
-    const prefix = item['propertyPaths'].indexOf(path) > 0 ? ' ' : '';
-    let string = this.getNestedProperty(this.document.content, path, item['noValueText']) || '';
-    const dateFormats = [moment.ISO_8601, 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
-    switch (item['modifier']) {
-      case 'age': {
-        if (moment(string, dateFormats, true).isValid()) {
-          string = moment().diff(string, 'years');
-        }
-        break;
-      }
-      default: {
-        if (moment(string, dateFormats, true).isValid()) {
-          string = moment(string).format('DD-MM-YYYY');
-        }
-      }
-    }
-    return prefix + string;
   }
 
   private getNestedProperty(obj: any, path: string, defaultValue: any): any {

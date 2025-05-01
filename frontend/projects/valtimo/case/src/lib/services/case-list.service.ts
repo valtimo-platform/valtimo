@@ -22,19 +22,11 @@ import {CaseColumnService} from '.';
 export class CaseListService {
   private readonly _caseDefinitionKey$ = new BehaviorSubject<string>('');
 
-  private readonly _hasEnvColumnConfig$: Observable<boolean> = this.caseDefinitionKey$.pipe(
-    map(caseDefinitionKey => this.caseColumnService.hasEnvironmentConfig(caseDefinitionKey))
-  );
-
   private readonly _checkRefresh$ = new BehaviorSubject<boolean>(false);
   private readonly _forceRefresh$ = new BehaviorSubject<boolean>(false);
 
   public get caseDefinitionKey$(): Observable<string> {
     return this._caseDefinitionKey$.asObservable();
-  }
-
-  public get hasEnvColumnConfig$(): Observable<boolean> {
-    return this._hasEnvColumnConfig$;
   }
 
   get checkRefresh$(): Observable<boolean> {
@@ -53,10 +45,9 @@ export class CaseListService {
 
   public mapDocuments(
     documents: Documents | SpecifiedDocuments,
-    hasEnvColumnConfig: boolean,
     hasApiColumnConfig: boolean
   ) {
-    if (hasEnvColumnConfig || !hasApiColumnConfig) {
+    if (!hasApiColumnConfig) {
       return (documents as Documents).content.map(document => {
         const {content, ...others} = document;
         return {...content, ...others};

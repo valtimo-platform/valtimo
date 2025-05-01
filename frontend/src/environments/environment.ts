@@ -181,24 +181,6 @@ export const environment: ValtimoConfig = {
   caseFileSizeUploadLimitMB: 100,
   supportedDocumentFileTypesToViewInBrowser: ['pdf', 'jpg', 'png', 'svg'],
   defaultDefinitionTable: defaultDefinitionColumns,
-  customDefinitionTables: {
-    leningen: [
-      ...defaultDefinitionColumns,
-      {propertyName: '$.voornaam', translationKey: 'firstName', sortable: false},
-      {
-        propertyName: 'relatedFiles',
-        translationKey: 'files',
-        sortable: true,
-        viewType: 'relatedFiles',
-      },
-      {
-        propertyName: '$.lening-akkoord',
-        translationKey: 'accepted',
-        sortable: false,
-        viewType: 'boolean',
-      },
-    ],
-  },
   caseFileUploadAcceptedFiles:
     'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
@@ -261,15 +243,6 @@ export const environment: ValtimoConfig = {
     enableTaskPanel: true,
     enablePbacDocumentenApiDocuments: true,
     enableSuppressDocumentError: false,
-  },
-  customCaseHeader: {
-    leningen: [
-      {
-        propertyPaths: ['voornaam'],
-        columnSize: 3,
-        textSize: 'sm',
-      },
-    ],
   },
   csp: cspHeaderParamsDev,
   formioOptions: {

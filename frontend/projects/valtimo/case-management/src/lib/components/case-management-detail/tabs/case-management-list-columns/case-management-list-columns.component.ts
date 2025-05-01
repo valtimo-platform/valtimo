@@ -118,10 +118,6 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   readonly params$ = getCaseManagementRouteParams(this.route);
   readonly disableInput$ = new BehaviorSubject<boolean>(false);
 
-  readonly hasEnvironmentConfig$: Observable<boolean> = this.params$.pipe(
-    map(params => !!this.configService?.config?.customDefinitionTables[params?.caseDefinitionKey])
-  );
-
   private cachedCaseListColumns: Array<CaseListColumn> = [];
 
   private readonly refreshCaseListcolumns$ = new BehaviorSubject<null>(null);
@@ -400,7 +396,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     this.updateCaseListColumns(caseDefinitionKey, unformattedColumns);
   }
 
-  saveCasListColumns(): void {
+  saveCaseListColumns(): void {
     this.disableInput();
 
     this.currentModalType$.pipe(take(1)).subscribe(currentModalType => {

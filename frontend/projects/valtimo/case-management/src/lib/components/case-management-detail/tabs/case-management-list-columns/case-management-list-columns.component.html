@@ -18,7 +18,6 @@
   *ngIf="{
     caseListColumn: translatedCaseListColumns$ | async,
     params: params$ | async,
-    hasEnvironmentConfig: hasEnvironmentConfig$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
     loadingCaseListColumns: loadingCaseListColumns$ | async,
@@ -51,18 +50,11 @@
     ></ng-container>
 
     <valtimo-no-results
-      *ngIf="!obs.hasEnvironmentConfig"
       [title]="'listColumn.noConfigWarningTitle' | translate"
       [description]="'listColumn.noConfigWarning' | translate"
       illustration="valtimo-layout/img/emptystate-empty.svg"
     ></valtimo-no-results>
 
-    <valtimo-no-results
-      *ngIf="obs.hasEnvironmentConfig"
-      [title]="'listColumn.hasEnvConfigWarningTitle' | translate"
-      [description]="'listColumn.hasEnvConfigWarning' | translate"
-      illustration="valtimo-layout/img/emptystate-error.svg"
-    ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-template>
 
@@ -72,7 +64,6 @@
     iconOnly="true"
     (click)="onDownloadClick()"
     [disabled]="
-      obs.hasEnvironmentConfig ||
       !obs.downloadUrl ||
       !obs.downloadName ||
       obs.caseListColumn?.length < 1 ||
@@ -86,25 +77,11 @@
   <button
     (click)="openModal('create')"
     cdsButton="primary"
-    [disabled]="obs.hasEnvironmentConfig || obs.loadingCaseListColumns"
+    [disabled]="obs.loadingCaseListColumns"
   >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
-</ng-template>
-
-<ng-template #environmentConfigWarning>
-  <div class="pl-2 pr-2 pb-2 pt-2">
-    <cds-notification
-      [notificationObj]="{
-        type: 'warning',
-        title: 'listColumn.hasEnvConfigWarningTitle' | translate,
-        message: 'listColumn.hasEnvConfigWarning' | translate,
-        showClose: false,
-      }"
-    >
-    </cds-notification>
-  </div>
 </ng-template>
 
 <ng-template #noConfigWarning>
@@ -324,7 +301,7 @@
         cdsButton="primary"
         [attr.modal-primary-focus]="true"
         [disabled]="modalObs.valid === false"
-        (click)="saveCasListColumns()"
+        (click)="saveCaseListColumns()"
         [disabled]="
           modalObs.disableInput || modalObs.valid === false || modalObs.validKey === false
         "

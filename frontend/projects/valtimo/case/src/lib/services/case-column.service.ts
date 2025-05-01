@@ -33,7 +33,6 @@ export class CaseColumnService {
     caseDefinitionKey: string
   ): Observable<{columns: Array<DefinitionColumn>; hasApiConfig: boolean}> {
     const config = this.configService.config;
-    const customDefinitionTable = config.customDefinitionTables[caseDefinitionKey];
     const defaultDefinitionTable = config.defaultDefinitionTable;
 
     return this.documentService.getCaseList(caseDefinitionKey).pipe(
@@ -46,20 +45,15 @@ export class CaseColumnService {
           this.mapCaseListColumnsToDefinitionColumns(caseListColumns);
 
         return {
-          columns: customDefinitionTable || apiCaseListColumns || defaultDefinitionTable,
+          columns: apiCaseListColumns || defaultDefinitionTable,
           hasApiConfig: !!apiCaseListColumns,
         };
       })
     );
   }
 
-  public hasEnvironmentConfig(caseDefinitionKey: string): boolean {
-    return !!this.configService.config?.customDefinitionTables[caseDefinitionKey];
-  }
-
   public mapDefinitionColumnsToListFields(
     columns: Array<DefinitionColumn>,
-    hasEnvColumnConfig: boolean,
     hasApiColumnConfig: boolean
   ): Array<ListField> {
     return columns.map(column => {
@@ -68,7 +62,7 @@ export class CaseColumnService {
       const validTranslation = translation !== translationKey && translation;
       return {
         key:
-          hasEnvColumnConfig || !hasApiColumnConfig ? column.propertyName : column.translationKey,
+          !hasApiColumnConfig ? column.propertyName : column.translationKey,
         label: column.title || validTranslation || column.translationKey,
         sortable: column.sortable,
         ...(column.viewType && {viewType: column.viewType}),

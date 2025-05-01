@@ -181,7 +181,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
       this.loadingPagination = false;
     })
   );
-  private readonly _hasEnvColumnConfig$: Observable<boolean> = this.listService.hasEnvColumnConfig$;
   private readonly _hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
   private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
   private readonly _columns$: Observable<Array<DefinitionColumn>> =
@@ -216,7 +215,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
-    this._hasEnvColumnConfig$,
     this._hasApiColumnConfig$,
     this.statuses$,
     this.translateService.stream('key'),
@@ -224,7 +222,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     tap(([canHaveAssignee]) => {
       this.canHaveAssignee = canHaveAssignee;
     }),
-    map(([canHaveAssignee, columns, hasEnvConfig, hasApiConfig, statuses]) => {
+    map(([canHaveAssignee, columns, hasApiConfig, statuses]) => {
       this._internalStatusKeys$.next([
         ...this._internalStatusKeys$.getValue(),
         ...columns.reduce(
@@ -247,7 +245,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
       );
       const listFields = this.columnService.mapDefinitionColumnsToListFields(
         filteredAssigneeColumns,
-        hasEnvConfig,
         hasApiConfig
       );
       const fieldsToReturn = this.assigneeService.addAssigneeListField(
@@ -307,7 +304,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.statusService.selectedCaseStatuses$,
         this.caseListCaseTagService.selectedCaseTags$,
         this.listService.forceRefresh$,
-        this._hasEnvColumnConfig$,
         this._hasApiColumnConfig$,
         this.statusService.caseStatuses$,
         this.caseListCaseTagService.caseTags$,
@@ -359,11 +355,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
         selectedStatuses,
         selectedCaseTags,
         _,
-        hasEnvColumnConfig,
         hasApiColumnConfig,
         allStatuses,
       ]) => {
-        const obsEnv: Observable<boolean> = of(hasEnvColumnConfig);
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
         const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
           status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
@@ -372,7 +366,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents:
-              hasEnvColumnConfig || !hasApiColumnConfig
+              !hasApiColumnConfig
                 ? this.documentService.getDocumentsSearch(
                     documentSearchRequest,
                     'AND',
@@ -389,7 +383,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
                     statusKeys,
                     caseTagsKeys
                   ),
-            hasEnvColumnConfig: obsEnv,
             hasApiColumnConfig: obsApi,
             isSearchResult: of(true),
             allStatuses: of(allStatuses),
@@ -398,7 +391,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
 
         return forkJoin({
           documents:
-            hasEnvColumnConfig || !hasApiColumnConfig
+            !hasApiColumnConfig
               ? this.documentService.getDocumentsSearch(
                   documentSearchRequest,
                   'AND',
@@ -415,7 +408,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   statusKeys,
                   caseTagsKeys
                 ),
-          hasEnvColumnConfig: obsEnv,
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
           allStatuses: of(allStatuses),
@@ -454,7 +446,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
     map(
       (res: {
         documents: Documents | SpecifiedDocuments;
-        hasEnvColumnConfig: boolean;
         hasApiColumnConfig: boolean;
         isSearchResult: boolean;
         selectedStatuses: InternalCaseStatus[];
@@ -469,7 +460,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
         return {
           data: this.listService.mapDocuments(
             res.documents,
-            res.hasEnvColumnConfig,
             res.hasApiColumnConfig
           ),
           statuses: res.allStatuses,
