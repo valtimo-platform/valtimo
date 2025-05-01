@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {BreadcrumbNavigationComponent} from './breadcrumb-navigation.component';
 import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
@@ -34,7 +34,7 @@ describe('BreadcrumbNavigationComponent', () => {
   let httpClient: HttpClient;
   let httpTestingController: HttpTestingController;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [BreadcrumbNavigationComponent],
       imports: [RouterTestingModule, LoggerTestingModule],

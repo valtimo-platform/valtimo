@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {
+  FormsModule,
+  ReactiveFormsModule,
   UntypedFormBuilder,
   UntypedFormControl,
   UntypedFormGroup,
-  FormsModule,
-  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import {FormField} from '../formfield.model';
@@ -43,7 +43,7 @@ describe('CamundaStringFormfieldComponent', () => {
     @Input() formGroup: UntypedFormGroup;
   }
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [CamundaFormFieldValidationComponent, CamundaStringFormfieldComponent],
       imports: [ReactiveFormsModule, FormsModule],
