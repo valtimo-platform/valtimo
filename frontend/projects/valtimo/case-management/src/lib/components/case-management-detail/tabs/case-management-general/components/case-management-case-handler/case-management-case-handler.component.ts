@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {CaseSettings, DocumentService} from '@valtimo/document';
 import {BehaviorSubject, finalize, map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
@@ -27,6 +27,8 @@ import {tap} from 'rxjs/operators';
   styleUrl: './case-management-case-handler.component.scss',
 })
 export class CaseManagementCaseHandlerComponent {
+  @Input() public readonly isReadOnly: boolean;
+
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);

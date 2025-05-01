@@ -32,7 +32,7 @@
       <ng-container>
         <cds-toggle
           [checked]="obs?.currentValue?.canHaveAssignee"
-          [disabled]="obs.disabled"
+          [disabled]="obs.disabled || isReadOnly"
           (checkedChange)="
             toggleAssignee(obs?.currentValue, obs.caseDefinitionKey, obs.caseDefinitionVersionTag)
           "
@@ -45,7 +45,7 @@
       <ng-container>
         <cds-toggle
           [checked]="obs?.currentValue?.autoAssignTasks"
-          [disabled]="!obs?.currentValue?.canHaveAssignee"
+          [disabled]="!obs?.currentValue?.canHaveAssignee || isReadOnly"
           (checkedChange)="
             toggleTaskAssignment(
               obs?.currentValue,

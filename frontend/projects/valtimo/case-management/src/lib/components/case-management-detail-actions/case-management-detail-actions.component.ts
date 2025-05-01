@@ -154,12 +154,13 @@ export class CaseManagementDetailActionsComponent {
         }
       }
 
-      const mapping: ListItem[] = limitedVersions.map(({versionTag, active}) => ({
+      const mapping: ListItem[] = limitedVersions.map(({versionTag, active, final}) => ({
         content: versionTag,
         selected: versionTag === selectedVersion,
         active,
-        tagType: 'blue',
+        tagType: final ? 'green' : 'red',
         isAllVersionsOption: false,
+        draft: !final,
       }));
 
       const allVersionsItem: ListItem = {

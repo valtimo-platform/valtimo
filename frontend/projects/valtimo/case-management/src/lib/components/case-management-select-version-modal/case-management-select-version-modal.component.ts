@@ -64,13 +64,26 @@ export class CaseManagementSelectVersionModalComponent {
         page: page.number + 1,
         collectionSize: +page.totalElements,
       });
+
+      return page.content.map((version: any) => ({
+        ...version,
+        versionTags: [
+          {
+            content: version.final
+              ? version.caseDefinitionVersionTag
+              : `DRAFT: ${version.caseDefinitionVersionTag}`,
+            type: version.final ? 'green' : 'red',
+          },
+        ],
+      }));
+
       return page.content;
     })
   );
 
   public readonly FIELDS: ColumnConfig[] = [
     {
-      key: 'caseDefinitionVersionTag',
+      key: 'versionTags',
       label: 'caseManagement.allVersionsModal.columns.version',
       viewType: ViewType.TAGS,
     },

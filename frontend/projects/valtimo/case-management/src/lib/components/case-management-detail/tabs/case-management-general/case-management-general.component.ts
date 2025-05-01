@@ -28,6 +28,7 @@ import {map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
 import {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/config';
+import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
@@ -46,16 +47,24 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     }))
   );
 
-  public readonly documentDefinition$: Observable<DocumentDefinition> = this.params$!.pipe(
+  public readonly documentDefinition$: Observable<DocumentDefinition> = this.params$.pipe(
     switchMap(({caseDefinitionKey}) =>
       this.documentService.getDocumentDefinitionForManagement(caseDefinitionKey)
     )
+  );
+
+  public readonly isReadOnly$ = this.params$.pipe(
+    switchMap(({caseDefinitionKey, caseDefinitionVersionTag}) =>
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
   );
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly cdr: ChangeDetectorRef,
+    private readonly caseManagementService: CaseManagementService,
     @Optional()
     @Inject(ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN)
     private readonly zgwCaseConfigurationExtensionComponents: Type<any>[]
@@ -74,7 +83,8 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     }
 
     this.zgwCaseConfigurationExtensionComponents.forEach(extensionComponent => {
-      this._extensions.createComponent(extensionComponent);
+      const componentRef = this._extensions.createComponent(extensionComponent);
+      componentRef.setInput('isReadOnly$', this.isReadOnly$);
     });
 
     this.cdr.detectChanges();

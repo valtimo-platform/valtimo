@@ -14,12 +14,20 @@
   ~ limitations under the License.
 -->
 
-<div class="case-management-general-tab">
-  <ng-template #extensions></ng-template>
+<ng-container
+  *ngIf="{
+    isReadOnly: isReadOnly$ | async,
+  } as obs"
+>
+  <div class="case-management-general-tab">
+    <ng-template #extensions></ng-template>
 
-  <valtimo-case-management-case-handler
-    *ngIf="documentDefinition$ | async"
-  ></valtimo-case-management-case-handler>
+    <valtimo-case-management-case-handler
+      [isReadOnly]="obs.isReadOnly"
+      *ngIf="documentDefinition$ | async"
+    ></valtimo-case-management-case-handler>
 
-  <valtimo-case-management-external-start-form> </valtimo-case-management-external-start-form>
-</div>
+    <valtimo-case-management-external-start-form [isReadOnly]="obs.isReadOnly">
+    </valtimo-case-management-external-start-form>
+  </div>
+</ng-container>

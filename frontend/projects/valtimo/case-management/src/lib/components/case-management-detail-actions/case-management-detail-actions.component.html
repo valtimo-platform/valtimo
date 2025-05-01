@@ -67,7 +67,7 @@
   <ng-template #regularVersionTemplate>
     <div class="version-selector-dropdown-template">
       <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
-        {{ item?.content }}
+        {{ item?.draft ? 'DRAFT: ' + item?.content : item?.content }}
       </cds-tag>
 
       <cds-tag *ngIf="item?.active" class="cds-tag--no-margin" type="high-contrast">

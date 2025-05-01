@@ -25,6 +25,7 @@
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1">
     <cds-toggle
+      [disabled]="isReadOnly"
       formControlName="hasExternalForm"
       label="{{ 'caseManagement.externalStartForm.enabledToggle' | translate }}"
       onText="{{ 'caseManagement.externalStartForm.enabledToggleOn' | translate }}"
@@ -53,7 +54,7 @@
       />
     </cds-label>
 
-    <button cdsButton="primary" type="submit" [disabled]="!form.valid">
+    <button cdsButton="primary" type="submit" [disabled]="!form.valid || isReadOnly">
       {{ 'caseManagement.externalStartForm.apply' | translate }}
     </button>
   </form>

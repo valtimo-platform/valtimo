@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} from 'rxjs';
 import {CaseSettings, DocumentService} from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
@@ -33,6 +33,8 @@ import {ProcessManagementParams} from '@valtimo/process-management';
   providers: [NotificationService],
 })
 export class CaseManagementExternalStartFormComponent implements OnInit, OnDestroy {
+  @Input() public readonly isReadOnly: boolean;
+
   private readonly _URL_PATTERN = new RegExp(
     '^(https?:\\/\\/)(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}|\\d{1,3}(\\.\\d{1,3}){3})(:\\d+)?(\\/\\S*)?(\\?\\S*)?(#\\S*)?$'
   );
