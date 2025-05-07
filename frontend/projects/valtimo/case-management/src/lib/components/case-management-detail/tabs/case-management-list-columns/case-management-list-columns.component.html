@@ -54,7 +54,6 @@
       [description]="'listColumn.noConfigWarning' | translate"
       illustration="valtimo-layout/img/emptystate-empty.svg"
     ></valtimo-no-results>
-
   </valtimo-carbon-list>
 </ng-template>
 
@@ -74,11 +73,7 @@
     <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
   </button>
 
-  <button
-    (click)="openModal('create')"
-    cdsButton="primary"
-    [disabled]="obs.loadingCaseListColumns"
-  >
+  <button (click)="openModal('create')" cdsButton="primary" [disabled]="obs.loadingCaseListColumns">
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>

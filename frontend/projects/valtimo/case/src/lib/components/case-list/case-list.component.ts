@@ -365,38 +365,12 @@ export class CaseListComponent implements OnInit, OnDestroy {
         const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
-            documents:
-              !hasApiColumnConfig
-                ? this.documentService.getDocumentsSearch(
-                    documentSearchRequest,
-                    'AND',
-                    assigneeFilter,
-                    this.searchService.mapSearchValuesToFilters(searchValues),
-                    statusKeys,
-                    caseTagsKeys
-                  )
-                : this.documentService.getSpecifiedDocumentsSearch(
-                    documentSearchRequest,
-                    'AND',
-                    assigneeFilter,
-                    this.searchService.mapSearchValuesToFilters(searchValues),
-                    statusKeys,
-                    caseTagsKeys
-                  ),
-            hasApiColumnConfig: obsApi,
-            isSearchResult: of(true),
-            allStatuses: of(allStatuses),
-          });
-        }
-
-        return forkJoin({
-          documents:
-            !hasApiColumnConfig
+            documents: !hasApiColumnConfig
               ? this.documentService.getDocumentsSearch(
                   documentSearchRequest,
                   'AND',
                   assigneeFilter,
-                  undefined,
+                  this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
                   caseTagsKeys
                 )
@@ -404,10 +378,34 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   documentSearchRequest,
                   'AND',
                   assigneeFilter,
-                  undefined,
+                  this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
                   caseTagsKeys
                 ),
+            hasApiColumnConfig: obsApi,
+            isSearchResult: of(true),
+            allStatuses: of(allStatuses),
+          });
+        }
+
+        return forkJoin({
+          documents: !hasApiColumnConfig
+            ? this.documentService.getDocumentsSearch(
+                documentSearchRequest,
+                'AND',
+                assigneeFilter,
+                undefined,
+                statusKeys,
+                caseTagsKeys
+              )
+            : this.documentService.getSpecifiedDocumentsSearch(
+                documentSearchRequest,
+                'AND',
+                assigneeFilter,
+                undefined,
+                statusKeys,
+                caseTagsKeys
+              ),
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
           allStatuses: of(allStatuses),
@@ -458,10 +456,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.updateNoResultsMessage(res.isSearchResult);
 
         return {
-          data: this.listService.mapDocuments(
-            res.documents,
-            res.hasApiColumnConfig
-          ),
+          data: this.listService.mapDocuments(res.documents, res.hasApiColumnConfig),
           statuses: res.allStatuses,
           statusColumnKeys: res.statusColumnKeys,
           caseTagsKeys: res.caseTagsKeys,

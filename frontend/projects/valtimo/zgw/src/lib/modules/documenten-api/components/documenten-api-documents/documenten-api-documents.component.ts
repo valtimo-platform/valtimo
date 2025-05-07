@@ -122,7 +122,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       const defaultSortColumn: ConfiguredColumn | undefined = columns.find(
         (column: ConfiguredColumn) => !!column.defaultSort
       );
-      if (!!defaultSortColumn && !sort && supportedDocumentenApiFeatures.supportsSortableColumns) {
+      if (
+        !!defaultSortColumn &&
+        !sort?.sort &&
+        supportedDocumentenApiFeatures.supportsSortableColumns
+      ) {
         this._sort$.next({sort: `${defaultSortColumn.key},${defaultSortColumn.defaultSort}`});
       }
 
@@ -138,9 +142,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
         sortable: column.sortable && supportedDocumentenApiFeatures.supportsSortableColumns,
       }));
     }),
-    tap(() => {
-      this.fieldsLoading$.next(false);
-    })
+    tap(() => this.fieldsLoading$.next(false))
   );
   public document: DocumentenApiRelatedFile;
   public actionItems: ActionItem[] = [
@@ -209,9 +211,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
     itemsPerPageOptions: [5, 10, 20, 50, 100],
   };
 
-  public get sortState$(): Observable<SortState | null> {
-    return this._sort$.pipe(map(sortValue => this.getSortStateFromSortString(sortValue?.sort)));
-  }
+  public sortState$: Observable<SortState | null> = this._sort$.pipe(
+    filter(sortValue => !!sortValue?.sort),
+    map(sortValue => this.getSortStateFromSortString(sortValue?.sort))
+  );
 
   public uploadFields$: Observable<DocumentenApiUploadFields> = this.documentId$.pipe(
     switchMap(documentId => this.documentenApiDocumentService.getPrefilledUploadFields(documentId)),

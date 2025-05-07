@@ -42,13 +42,9 @@ export class CaseTagService extends BaseApiService {
     );
   }
 
-  public getCaseTags(
-    caseDefinitionKey: string
-  ): Observable<CaseTag[]> {
+  public getCaseTags(caseDefinitionKey: string): Observable<CaseTag[]> {
     return this.httpClient.get<CaseTag[]>(
-      this.getApiUrl(
-        `/v1/case-definition/${caseDefinitionKey}/case-tag`
-      )
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/case-tag`)
     );
   }
 

@@ -61,8 +61,7 @@ export class CaseColumnService {
       const translation = this.translateService.instant(translationKey);
       const validTranslation = translation !== translationKey && translation;
       return {
-        key:
-          !hasApiColumnConfig ? column.propertyName : column.translationKey,
+        key: !hasApiColumnConfig ? column.propertyName : column.translationKey,
         label: column.title || validTranslation || column.translationKey,
         sortable: column.sortable,
         ...(column.viewType && {viewType: column.viewType}),

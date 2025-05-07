@@ -43,10 +43,7 @@ export class CaseListService {
     this._caseDefinitionKey$.next(caseDefinitionKey);
   }
 
-  public mapDocuments(
-    documents: Documents | SpecifiedDocuments,
-    hasApiColumnConfig: boolean
-  ) {
+  public mapDocuments(documents: Documents | SpecifiedDocuments, hasApiColumnConfig: boolean) {
     if (!hasApiColumnConfig) {
       return (documents as Documents).content.map(document => {
         const {content, ...others} = document;

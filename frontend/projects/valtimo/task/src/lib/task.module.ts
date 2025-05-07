@@ -30,6 +30,7 @@ import {
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SpinnerModule,
+  ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/config';
@@ -95,6 +96,7 @@ import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-d
     TaskDetailContentComponent,
     TaskDetailIntermediateSaveComponent,
     SetTaskDueDateComponent,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })
