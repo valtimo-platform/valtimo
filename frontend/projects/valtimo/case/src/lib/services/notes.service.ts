@@ -15,10 +15,10 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService, ConnectorModal, Page} from '@valtimo/config';
+import {ConfigService, Page} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {Note, NoteCreateRequest, NoteUpdateRequest} from '../models/notes.model';
+import {Note, NoteCreateRequest, NoteModal, NoteUpdateRequest} from '../models/notes.model';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +28,7 @@ export class NotesService {
   private readonly _showModal$ = new Subject();
   private readonly _hideModal$ = new Subject();
   private readonly _refresh$ = new BehaviorSubject<null>(null);
-  private readonly _modalType$ = new BehaviorSubject<ConnectorModal>('add');
+  private readonly _modalType$ = new BehaviorSubject<NoteModal>('add');
 
   constructor(
     private readonly configService: ConfigService,
@@ -69,7 +69,7 @@ export class NotesService {
     return this._refresh$.asObservable();
   }
 
-  get modalType$(): Observable<ConnectorModal> {
+  get modalType$(): Observable<NoteModal> {
     return this._modalType$.asObservable();
   }
 
@@ -85,7 +85,7 @@ export class NotesService {
     this._refresh$.next(null);
   }
 
-  setModalType(type: ConnectorModal): void {
+  setModalType(type: NoteModal): void {
     this._modalType$.next(type);
   }
 }

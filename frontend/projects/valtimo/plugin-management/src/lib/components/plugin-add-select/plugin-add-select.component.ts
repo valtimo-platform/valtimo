@@ -15,13 +15,9 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {ConnectorProperties, ConnectorType} from '@valtimo/config';
-import {take, map} from 'rxjs/operators';
-import {AlertService} from '@valtimo/components';
-import {TranslateService} from '@ngx-translate/core';
+import {combineLatest, Subscription} from 'rxjs';
 import {PluginManagementStateService} from '../../services';
-import {PluginManagementService, PluginDefinition} from '@valtimo/plugin';
+import {PluginDefinition, PluginManagementService} from '@valtimo/plugin';
 
 @Component({
   standalone: false,
@@ -38,8 +34,7 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
-    private readonly stateService: PluginManagementStateService,
-    private readonly translateService: TranslateService
+    private readonly stateService: PluginManagementStateService
   ) {}
 
   ngOnInit(): void {

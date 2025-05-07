@@ -934,43 +934,6 @@
         }
       }
     },
-    "@valtimo/connector-management": {
-      "projectType": "library",
-      "root": "projects/valtimo/connector-management",
-      "sourceRoot": "projects/valtimo/connector-management/src",
-      "prefix": "lib",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "tsConfig": "projects/valtimo/connector-management/tsconfig.lib.json",
-            "project": "projects/valtimo/connector-management/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/connector-management/tsconfig.lib.prod.json"
-            }
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/connector-management/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/connector-management/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/connector-management/src/**/*.ts",
-              "projects/valtimo/connector-management/src/**/*.html"
-            ]
-          }
-        }
-      }
-    },
     "@valtimo/process-management": {
       "projectType": "library",
       "root": "projects/valtimo/process-management",

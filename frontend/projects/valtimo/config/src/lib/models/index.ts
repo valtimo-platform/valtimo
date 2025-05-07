@@ -24,7 +24,6 @@ export * from './http-loader';
 export * from './roles';
 export * from './user-management.model';
 export * from './page';
-export * from './connector.model';
 export * from './search.model';
 export * from './versions.model';
 export * from './user-settings.model';

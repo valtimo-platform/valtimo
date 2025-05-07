@@ -15,11 +15,9 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConnectorInstance, IncludeFunction, Page, ValtimoConfig} from '../models';
-import {HttpClient} from '@angular/common/http';
+import {IncludeFunction, ValtimoConfig} from '../models';
 import {ConfigService} from './config.service';
 import {Observable, of} from 'rxjs';
-import {map} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -27,33 +25,16 @@ import {map} from 'rxjs/operators';
 export class MenuIncludeService {
   private valtimoConfig!: ValtimoConfig;
 
-  constructor(
-    private readonly http: HttpClient,
-    private readonly configService: ConfigService
-  ) {
-    this.valtimoConfig = configService.config;
+  constructor(private readonly configService: ConfigService) {
+    this.valtimoConfig = this.configService.config;
   }
 
   getIncludeFunction(includeFunction: IncludeFunction): Observable<boolean> {
     switch (includeFunction) {
-      case IncludeFunction.HaalcentraalConnectorConfigured:
-        return this.isHaalCentraalConnectorConfigured();
       case IncludeFunction.ObjectManagementEnabled:
         return of(!!this.valtimoConfig?.featureToggles?.enableObjectManagement || true);
       default:
         return of(true);
     }
-  }
-
-  private isHaalCentraalConnectorConfigured(): Observable<boolean> {
-    return this.getHaalCentraalConnectorInstances().pipe(
-      map(haalcentraalConnectorInstances => haalcentraalConnectorInstances?.content?.length > 0)
-    );
-  }
-
-  private getHaalCentraalConnectorInstances(): Observable<Page<ConnectorInstance>> {
-    return this.http.get<Page<ConnectorInstance>>(
-      `${this.valtimoConfig.valtimoApi.endpointUri}v1/connector/instance?typeName=HaalCentraalBrp`
-    );
   }
 }
