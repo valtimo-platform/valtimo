@@ -69,6 +69,7 @@ const routes: Routes = [
       title: 'Case details',
       roles: [ROLE_ADMIN],
       id: 'caseManagementDetails',
+      customPageTitle: true
     },
     children: [
       {

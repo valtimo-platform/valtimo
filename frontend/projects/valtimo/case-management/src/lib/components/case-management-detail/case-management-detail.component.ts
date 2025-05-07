@@ -31,6 +31,7 @@ import {CaseManagementParams, TabEnum} from '../../models';
 import {CaseDetailService, TabService} from '../../services';
 import {CaseManagementDocumentDefinitionComponent} from './tabs/case-management-document-definition/case-management-document-definition.component';
 import {getCaseManagementRouteParams} from '../../utils';
+import {DocumentDefinition} from '@valtimo/document';
 
 @Component({
   standalone: false,
@@ -44,13 +45,14 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   private _documentDefinitionTab: CaseManagementDocumentDefinitionComponent;
   @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
-  private _params: CaseManagementParams;
+  private _params: CaseManagementParams | undefined;
 
-  public readonly params$: Observable<CaseManagementParams> = getCaseManagementRouteParams(
-    this.route
+  public readonly params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
+
+  public readonly caseDefinitionKey$ = this.params$.pipe(
+    map(params => params?.caseDefinitionKey ?? '')
   );
-
-  public readonly caseDefinitionKey$ = this.params$.pipe(map(params => params.caseDefinitionKey));
 
   public caseListColumn!: boolean;
   public tabManagementEnabled!: boolean;
@@ -92,6 +94,15 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
+    this._subscriptions.add(
+      this.caseDetailService.documentDefinition$.subscribe(
+        (documentDefinition: DocumentDefinition | null) => {
+          if (!documentDefinition) return;
+
+          this.pageTitleService.setCustomPageTitle(documentDefinition.schema.title);
+        }
+      )
+    );
     this.openActiveVersionSubscription();
     this.pageTitleService.disableReset();
     this.openParamsSubscription();
@@ -149,8 +160,10 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   private openParamsSubscription(): void {
     this._subscriptions.add(
       this.params$.subscribe(params => {
-        this.caseDetailService.setSelectedCaseDefinitionKey(params.caseDefinitionKey);
-        this.caseDetailService.setSelectedCaseDefinitionVersionTag(params.caseDefinitionVersionTag);
+        this.caseDetailService.setSelectedCaseDefinitionKey(params?.caseDefinitionKey ?? '');
+        this.caseDetailService.setSelectedCaseDefinitionVersionTag(
+          params?.caseDefinitionVersionTag ?? ''
+        );
         this._params = params;
       })
     );
