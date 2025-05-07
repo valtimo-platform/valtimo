@@ -46,7 +46,7 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
   readonly selectedObjecttype$ = new BehaviorSubject<string | null>(null);
 
   readonly formDefinitions$: Observable<Array<{id: string; text: string}>> = this.formService
-    .getAllFormDefinitions()
+    .getAllUnlinkedFormDefinitions()
     .pipe(
       map(results =>
         results?.map(configuration => ({

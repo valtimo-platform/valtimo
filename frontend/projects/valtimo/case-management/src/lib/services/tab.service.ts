@@ -18,9 +18,11 @@ import {TranslateService} from '@ngx-translate/core';
 import {CASE_TAB_TOKEN, CaseTabConfig, DefaultTabs} from '@valtimo/case';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {ListItem} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
-import {TabEnum} from '../models';
+import {BehaviorSubject, combineLatest, map, switchMap, Observable} from 'rxjs';
+import {CaseManagementParams, TabEnum} from '../models';
 import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig} from '@valtimo/config';
+import {ActivatedRoute} from '@angular/router';
+import {getCaseManagementRouteParams} from '../utils';
 
 @Injectable({
   providedIn: 'root',
@@ -50,18 +52,6 @@ export class TabService {
     this._configuredContentKeys$.next(value);
   }
 
-  public readonly formDefinitions$: Observable<ListItem[]> = this.formService
-    .getAllFormDefinitions()
-    .pipe(
-      map((formDefinitions: FormDefinitionOption[]) =>
-        formDefinitions.map((formDefinition: FormDefinitionOption) => ({
-          contentKey: formDefinition.name,
-          content: formDefinition.name,
-          selected: false,
-        }))
-      )
-    );
-
   public readonly customComponentKeys$ = new BehaviorSubject<ListItem[]>(
     !this.caseTabConfig
       ? []
@@ -82,38 +72,59 @@ export class TabService {
     )
   );
 
-  public readonly disableAddTabs$: Observable<{
-    standard: boolean;
-    custom: boolean;
-    formIO: boolean;
-    widgets: boolean;
-  }> = combineLatest([
-    this.configuredContentKeys$,
-    this.formDefinitions$,
-    this.defaultTabs$,
-    this.customComponentKeys$,
-  ]).pipe(
-    map(([tabKeys, formDefinitions, defaultTabs, customComponentKeys]) => ({
-      standard: defaultTabs.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
-      custom:
-        !customComponentKeys.length ||
-        customComponentKeys.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
-      formIO:
-        !formDefinitions.length ||
-        formDefinitions.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
-      widgets: false,
-    }))
-  );
-
   constructor(
     @Optional() @Inject(CASE_TAB_TOKEN) private readonly caseTabConfig: CaseTabConfig,
     @Optional()
     @Inject(CASE_MANAGEMENT_TAB_TOKEN)
     private readonly caseManagementTabConfig: CaseManagementTabConfig[],
     private readonly formService: FormService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
   ) {
     this.setInjectedCaseManagementTabs(this.caseManagementTabConfig);
+  }
+
+  public getDisabledAddTabs(route: ActivatedRoute): Observable<{
+    standard: boolean;
+    custom: boolean;
+    formIO: boolean;
+    widgets: boolean;
+  }> {
+    return combineLatest([
+      this.configuredContentKeys$,
+      this.getFormDefinitions(route),
+      this.defaultTabs$,
+      this.customComponentKeys$,
+    ]).pipe(
+      map(([tabKeys, formDefinitions, defaultTabs, customComponentKeys]) => ({
+        standard: defaultTabs.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
+        custom:
+          !customComponentKeys.length ||
+          customComponentKeys.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
+        formIO:
+          !formDefinitions.length ||
+          formDefinitions.every((tabItem: ListItem) => tabKeys.includes(tabItem.contentKey)),
+        widgets: false,
+      }))
+    );
+  }
+
+  public getFormDefinitions(route: ActivatedRoute): Observable<ListItem[]> {
+    return getCaseManagementRouteParams(route)
+      .pipe(
+        switchMap((params: CaseManagementParams) => {
+          return this.formService
+            .getAllFormDefinitionsForCaseDefinition(params.caseDefinitionKey, params.caseDefinitionVersionTag)
+            .pipe(
+              map((formDefinitions: FormDefinitionOption[]) => {
+                return formDefinitions.map((formDefinition: FormDefinitionOption) => ({
+                  contentKey: formDefinition.name,
+                  content: formDefinition.name,
+                  selected: false,
+                }))}
+              )
+            );
+        })
+      )
   }
 
   private setInjectedCaseManagementTabs(

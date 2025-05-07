@@ -20,6 +20,7 @@ import {ListItem} from 'carbon-components-angular';
 import {combineLatest, map, startWith, Subscription} from 'rxjs';
 import {TabService} from '../../../../../services';
 import {ConfigService} from '@valtimo/config';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   standalone: false,
@@ -35,7 +36,7 @@ export class TabFormComponent implements OnInit, OnDestroy {
 
   public readonly listItems$ = combineLatest([
     this.tabService.configuredContentKeys$,
-    this.tabService.formDefinitions$,
+    this.tabService.getFormDefinitions(this.route),
     this.tabService.defaultTabs$,
     this.tabService.customComponentKeys$,
   ]).pipe(
@@ -65,7 +66,8 @@ export class TabFormComponent implements OnInit, OnDestroy {
   constructor(
     private readonly configService: ConfigService,
     private readonly tabService: TabService,
-    private readonly formGroupDirective: FormGroupDirective
+    private readonly formGroupDirective: FormGroupDirective,
+    private readonly route: ActivatedRoute,
   ) {}
 
   public ngOnInit(): void {

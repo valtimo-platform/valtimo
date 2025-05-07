@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {FormService} from '@valtimo/form';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {FormDefinitionOption, FormService} from '@valtimo/form';
+import {BehaviorSubject, combineLatest, map, mergeMap, Observable, of, Subscription, tap} from 'rxjs';
+import {distinctUntilChanged, filter, take} from 'rxjs/operators';
 
 import {
   FormDefinitionListItem,
@@ -25,11 +25,9 @@ import {
   FormSize,
   ProcessLinkEditMode,
 } from '../../models';
-import {
-  ProcessLinkButtonService,
-  ProcessLinkService,
-  ProcessLinkStateService,
-} from '../../services';
+import {ProcessLinkButtonService, ProcessLinkService, ProcessLinkStateService} from '../../services';
+import {ActivatedRoute} from '@angular/router';
+import {isEqual} from 'lodash';
 
 @Component({
   standalone: false,
@@ -44,7 +42,20 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   public selectedFormDefinition!: FormDefinitionListItem;
 
   public readonly saving$ = this.stateService.saving$;
-  private readonly formDefinitions$ = this.formService.getAllFormDefinitions();
+  public readonly caseDefinitionId$ = this.getCaseManagementRouteParams(this.route)
+
+  private readonly formDefinitions$: Observable<Array<FormDefinitionOption>> = this.caseDefinitionId$.pipe(
+    mergeMap(caseDefinitionId => {
+      if (!!caseDefinitionId) {
+        return this.formService.getAllFormDefinitionsForCaseDefinition(
+          caseDefinitionId.caseDefinitionKey,
+          caseDefinitionId.caseDefinitionVersionTag
+        );
+      }
+      return this.formService.getAllUnlinkedFormDefinitions();
+    })
+  )
+
   public readonly formDefinitionListItems$: Observable<Array<FormDefinitionListItem>> =
     combineLatest([this.stateService.selectedProcessLink$, this.formDefinitions$]).pipe(
       map(([selectedProcessLink, formDefinitions]) =>
@@ -75,7 +86,8 @@ export class SelectFormComponent implements OnInit, OnDestroy {
     private readonly formService: FormService,
     private readonly stateService: ProcessLinkStateService,
     private readonly processLinkService: ProcessLinkService,
-    private readonly buttonService: ProcessLinkButtonService
+    private readonly buttonService: ProcessLinkButtonService,
+    private readonly route: ActivatedRoute,
   ) {}
 
   public ngOnInit(): void {
@@ -225,4 +237,32 @@ export class SelectFormComponent implements OnInit, OnDestroy {
         });
       });
   }
+
+  private getCaseManagementRouteParams(
+    route: ActivatedRoute
+  ): Observable<CaseDefinitionId | undefined> {
+    const rootParams$ = route.params ? route.params : of({});
+    const parentParams$ = route.parent?.params ? route.parent.params : of({});
+
+    return combineLatest([rootParams$, parentParams$]).pipe(
+      map(([rootParams, parentParams]) => {
+        const caseDefinitionKey =
+          rootParams['caseDefinitionKey'] || parentParams['caseDefinitionKey'];
+        const caseDefinitionVersionTag =
+          rootParams['caseDefinitionVersionTag'] || parentParams['caseDefinitionVersionTag'];
+
+        if (caseDefinitionKey && caseDefinitionVersionTag) {
+          return {caseDefinitionKey, caseDefinitionVersionTag};
+        }
+
+        return null;
+      }),
+      distinctUntilChanged((prev, curr) => isEqual(prev, curr))
+    );
+  }
+}
+
+interface CaseDefinitionId {
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
 }

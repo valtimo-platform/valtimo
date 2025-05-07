@@ -53,9 +53,18 @@ export class FormService {
     );
   }
 
-  getAllFormDefinitions(): Observable<Array<FormDefinitionOption>> {
+  getAllUnlinkedFormDefinitions(): Observable<Array<FormDefinitionOption>> {
     return this.http.get<Array<FormDefinitionOption>>(
-      `${this.valtimoApiConfig.endpointUri}v1/form-definition`
+      `${this.valtimoApiConfig.endpointUri}management/v1/form-option`
+    );
+  }
+
+  getAllFormDefinitionsForCaseDefinition(
+    caseDefinitionKey: string,
+    versionTag: string
+  ): Observable<Array<FormDefinitionOption>> {
+    return this.http.get<Array<FormDefinitionOption>>(
+      `${this.valtimoApiConfig.endpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form-option`
     );
   }
 }
