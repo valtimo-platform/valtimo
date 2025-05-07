@@ -30,6 +30,7 @@ import {
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SpinnerModule,
+  ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/config';
@@ -51,7 +52,6 @@ import {TaskListComponent} from './components/task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
 import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
 import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {UrlResolverService} from '@valtimo/process-link';
 
 @NgModule({
   declarations: [TaskListComponent, TaskDetailModalComponent],
@@ -94,6 +94,7 @@ import {UrlResolverService} from '@valtimo/process-link';
     AssignUserToTaskComponent,
     TaskDetailContentComponent,
     TaskDetailIntermediateSaveComponent,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })
