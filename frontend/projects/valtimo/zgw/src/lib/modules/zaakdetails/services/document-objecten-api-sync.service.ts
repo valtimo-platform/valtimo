@@ -36,12 +36,6 @@ export class DocumentObjectenApiSyncService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getDocumentDefinition(documentDefinitionName: string): Observable<DocumentDefinition> {
-    return this.httpClient.get<DocumentDefinition>(
-      this.getApiUrl(`/v1/document-definition/${documentDefinitionName}`)
-    );
-  }
-
   public getObjectManagementConfigurations(): Observable<Array<ObjectManagementConfiguration>> {
     return this.httpClient.get<Array<ObjectManagementConfiguration>>(
       this.getApiUrl(`/management/v1/object/management/configuration`)
@@ -49,19 +43,19 @@ export class DocumentObjectenApiSyncService extends BaseApiService {
   }
 
   public getDocumentObjectenApiSync(
-    documentDefinitionName: string,
-    documentDefinitionVersion: number
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
   ): Observable<DocumentObjectenApiSync> {
     return this.httpClient.get<DocumentObjectenApiSync>(
       this.getApiUrl(
-        `/management/v1/document-definition/${documentDefinitionName}/version/${documentDefinitionVersion}/objecten-api-sync`
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/objecten-api-sync`
       )
     );
   }
 
   public updateDocumentObjectenApiSync(
-    documentDefinitionName: string,
-    documentDefinitionVersion: number,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
     request: {
       objectManagementConfigurationId: string;
       enabled: boolean;
@@ -69,19 +63,19 @@ export class DocumentObjectenApiSyncService extends BaseApiService {
   ): Observable<void> {
     return this.httpClient.put<void>(
       this.getApiUrl(
-        `/management/v1/document-definition/${documentDefinitionName}/version/${documentDefinitionVersion}/objecten-api-sync`
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/objecten-api-sync`
       ),
       request
     );
   }
 
   public deleteDocumentObjectenApiSync(
-    documentDefinitionName: string,
-    documentDefinitionVersion: number
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
   ): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(
-        `/management/v1/document-definition/${documentDefinitionName}/version/${documentDefinitionVersion}/objecten-api-sync`
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/objecten-api-sync`
       )
     );
   }

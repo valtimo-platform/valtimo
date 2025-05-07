@@ -56,10 +56,10 @@ export class CaseManagementConnectModalComponent implements OnInit {
     if (!this.documentDefinition) {
       return;
     }
-    const {name, version} = this.documentDefinition.id;
+    const {key, versionTag} = this.documentDefinition.id.caseDefinitionId;
     this.processDocumentDefinitionExists = {};
     this.documentService
-      .findProcessDocumentDefinitionsByVersion(name, version)
+      .findProcessDocumentDefinitionsByVersion(key, versionTag)
       .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
         processDocumentDefinitions.forEach(
           (processDocumentDefinition: ProcessDocumentDefinition) => {
@@ -99,8 +99,8 @@ export class CaseManagementConnectModalComponent implements OnInit {
 
     const request: ProcessDocumentDefinitionRequest = {
       canInitializeDocument: this.newDocumentProcessDefinitionInit,
-      caseDefinitionKey: this.documentDefinition.id.name,
-      caseDefinitionVersionTag: `${this.documentDefinition.id.version}`,
+      caseDefinitionKey: this.documentDefinition.id.caseDefinitionId.key,
+      caseDefinitionVersionTag: `${this.documentDefinition.id.caseDefinitionId.key}`,
       processDefinitionKey: this.newDocumentProcessDefinition.key,
       startableByUser: this.newDocumentProcessDefinitionStartableByUser,
     };

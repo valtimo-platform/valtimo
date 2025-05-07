@@ -46,10 +46,10 @@ export class DocumentenApiVersionService extends BaseApiService {
   }
 
   public getSupportedApiFeatures(
-    caseDefinitionName: string
+    caseDefinitionKey: string
   ): Observable<SupportedDocumentenApiFeatures> {
     return this.httpClient.get<SupportedDocumentenApiFeatures>(
-      this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/documenten-api/version`)
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/documenten-api/version`)
     );
   }
 

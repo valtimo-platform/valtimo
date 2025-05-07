@@ -17,17 +17,6 @@ import {Inject, NgModule} from '@angular/core';
 import {Route, Router, RouterModule, Routes} from '@angular/router';
 import {pendingChangesGuard} from '@valtimo/components';
 import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig, ROLE_ADMIN} from '@valtimo/config';
-import {AuthGuardService} from '@valtimo/security';
-import {CaseManagementDetailComponent} from './components/case-management-detail/case-management-detail.component';
-import {CaseManagementDocumentDefinitionComponent} from './components/case-management-detail/tabs/case-management-document-definition/case-management-document-definition.component';
-import {CaseManagementListColumnsComponent} from './components/case-management-detail/tabs/case-management-list-columns/case-management-list-columns.component';
-import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
-import {CaseManagementSearchFieldsComponent} from './components/case-management-detail/tabs/case-management-search-fields/case-management-search-fields.component';
-import {CaseManagementStatusesComponent} from './components/case-management-detail/tabs/case-management-statuses/case-management-statuses.component';
-import {CaseManagementTabsComponent} from './components/case-management-detail/tabs/case-management-tabs/case-management-tabs.component';
-import {CaseManagementWidgetTabComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
-import {TabEnum} from './models';
-import {CaseManagementGeneralComponent} from './components/case-management-detail/tabs/case-management-general/case-management-general.component';
 import {
   FormManagementComponent,
   FormManagementEditComponent,
@@ -38,8 +27,19 @@ import {
   ProcessManagementComponent,
   ProcessManagementRouteData,
 } from '@valtimo/process-management';
+import {AuthGuardService} from '@valtimo/security';
 import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
+import {CaseManagementDetailComponent} from './components/case-management-detail/case-management-detail.component';
+import {CaseManagementDocumentDefinitionComponent} from './components/case-management-detail/tabs/case-management-document-definition/case-management-document-definition.component';
+import {CaseManagementGeneralComponent} from './components/case-management-detail/tabs/case-management-general/case-management-general.component';
+import {CaseManagementListColumnsComponent} from './components/case-management-detail/tabs/case-management-list-columns/case-management-list-columns.component';
+import {CaseManagementSearchFieldsComponent} from './components/case-management-detail/tabs/case-management-search-fields/case-management-search-fields.component';
+import {CaseManagementStatusesComponent} from './components/case-management-detail/tabs/case-management-statuses/case-management-statuses.component';
+import {CaseManagementTabsComponent} from './components/case-management-detail/tabs/case-management-tabs/case-management-tabs.component';
+import {CaseManagementWidgetTabComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
 import {CaseManagementTagsComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags.component';
+import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
+import {TabEnum} from './models';
 
 const routes: Routes = [
   {
@@ -190,7 +190,7 @@ export class CaseManagementRoutingModule {
     if (!detailsRoute) return;
     detailsRoute.children?.push(
       ...this.caseManagementTabConfig.map((tabConfig: CaseManagementTabConfig) => ({
-        path: tabConfig.translationKey,
+        path: tabConfig.tabRoute ?? tabConfig.translationKey,
         component: tabConfig.component,
       }))
     );

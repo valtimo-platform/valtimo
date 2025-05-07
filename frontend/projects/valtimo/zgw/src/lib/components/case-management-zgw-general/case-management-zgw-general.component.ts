@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-.card-header,
-.setting-row {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {DocumentObjectenApiSyncComponent, ZakenApiZaaktypeLinkComponent} from '../../modules';
 
-.controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.add-sync {
-  max-width: unset;
-}
+@Component({
+  templateUrl: './case-management-zgw-general.component.html',
+  styleUrl: './case-management-zgw-general.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: true,
+  imports: [CommonModule, ZakenApiZaaktypeLinkComponent, DocumentObjectenApiSyncComponent],
+})
+export class CaseManagementZgwGeneralComponent {}

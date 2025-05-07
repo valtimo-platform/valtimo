@@ -362,13 +362,13 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   public readonly tagItems$: Observable<Array<ListItem>> = combineLatest([
-    this.valtimoModalService.documentDefinitionName$,
+    this.valtimoModalService.caseDefinitionKey$,
     this.tagFormControl.valueChanges.pipe(startWith(this.tagFormControl.value)),
   ]).pipe(
-    filter(([documentDefinitionName]) => !!documentDefinitionName),
-    switchMap(([documentDefinitionName, tagFormControlValue]) =>
+    filter(([caseDefinitionKey]) => !!caseDefinitionKey),
+    switchMap(([caseDefinitionKey, tagFormControlValue]) =>
       combineLatest([
-        this.documentenApiTagService.getTags(documentDefinitionName),
+        this.documentenApiTagService.getTags(caseDefinitionKey),
         of(tagFormControlValue),
       ])
     ),
@@ -399,14 +399,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this.valtimoModalService.documentDefinitionName$,
+    this.valtimoModalService.caseDefinitionKey$,
     this.informatieobjecttypeFormControl.valueChanges.pipe(
       startWith(this.informatieobjecttypeFormControl.value)
     ),
   ]).pipe(
-    switchMap(([documentDefinitionName, informatieobjecttypeValue]) =>
+    switchMap(([caseDefinitionKey, informatieobjecttypeValue]) =>
       combineLatest([
-        this.documentService.getDocumentTypes(documentDefinitionName),
+        this.documentService.getDocumentTypes(caseDefinitionKey),
         of(informatieobjecttypeValue),
       ])
     ),
@@ -423,9 +423,9 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    this.valtimoModalService.documentDefinitionName$.pipe(
-      switchMap(documentDefinitionName =>
-        this.documentenApiVersionService.getSupportedApiFeatures(documentDefinitionName)
+    this.valtimoModalService.caseDefinitionKey$.pipe(
+      switchMap(caseDefinitionKey =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey)
       )
     );
 
@@ -662,18 +662,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
         .pipe(
           map(
             ([params, firstChildParams]) =>
-              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
+              (params?.caseDefinitionKey || firstChildParams?.caseDefinitionKey) as string
           ),
-          filter(documentDefinitionName => !!documentDefinitionName)
+          filter(caseDefinitionKey => !!caseDefinitionKey)
         )
-        .subscribe(documentDefinitionName =>
-          this.valtimoModalService.setDocumentDefinitionName(documentDefinitionName)
+        .subscribe(caseDefinitionKey =>
+          this.valtimoModalService.setCaseDefinitionKey(caseDefinitionKey)
         )
     );
-  }
-
-  private setAdditionalDate(value: AdditionalDocumentDate): void {
-    this.additionalDocumentDate$.next(value);
   }
 
   private areAllFieldsHidden(): boolean {

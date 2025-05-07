@@ -93,7 +93,8 @@ export class CreateZaakConfigurationComponent
         this.openZaakService.getZaakTypes(),
         ...processDocumentDefinitions.map(processDocumentDefinition =>
           this.openZaakService.getZaakTypeLink(
-            processDocumentDefinition.id.documentDefinitionId.name
+            processDocumentDefinition.id.documentDefinitionId.caseDefinitionId.key,
+            processDocumentDefinition.id.documentDefinitionId.caseDefinitionId.versionTag
           )
         ),
       ])

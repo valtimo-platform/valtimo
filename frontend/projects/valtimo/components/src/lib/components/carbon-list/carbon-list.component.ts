@@ -340,9 +340,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (firstItem) firstItem.ctrlClick = this.keyStateService.getCtrlOrCmdState();
 
-    if (!firstItem || firstItem?.locked) {
-      return;
-    }
+    if (!firstItem || firstItem?.locked) return;
+
     this.rowClicked.emit(firstItem);
   }
 
@@ -454,6 +453,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
             case ViewType.TEMPLATE:
               return new TableItem({
                 data: {item, index, length: items.length, ...field.templateData},
+                item,
                 template: field.template,
               });
             case ViewType.BOOLEAN:

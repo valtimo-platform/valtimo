@@ -110,8 +110,7 @@
         class="no-padding-left-right no-padding-top-bottom"
         [active]="obs.currentTab === injectedTab.translationKey"
         [heading]="injectedTab.translationKey | translate"
-        disabled="true"
-        (selected)="navigateToTab(injectedTab.translationKey)"
+        (selected)="navigateToTab(injectedTab.tabRoute ?? injectedTab.translationKey)"
       >
       </cds-tab>
     }

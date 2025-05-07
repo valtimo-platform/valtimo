@@ -23,7 +23,7 @@ import {ZgwTabEnum} from '../models';
 export class CaseManagementZgwService {
   public configuredTabKeys: string[];
 
-  private readonly _DEFAULT_TAB: ZgwTabEnum = ZgwTabEnum.DOCUMENTEN_API_COLUMNS;
+  private readonly _DEFAULT_TAB: ZgwTabEnum = ZgwTabEnum.GENERAL;
 
   private _currentTab$ = new BehaviorSubject<ZgwTabEnum>(this._DEFAULT_TAB);
   public get currentTab$(): Observable<ZgwTabEnum> {

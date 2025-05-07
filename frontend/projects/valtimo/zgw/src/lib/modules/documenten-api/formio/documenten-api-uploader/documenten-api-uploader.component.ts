@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal} from '@angular/core';
-import {
-  FormioCustomComponent,
-  FormIoDomService,
-  FormIoStateService,
-  ValtimoModalService,
-} from '@valtimo/components';
+import {ActivatedRoute} from '@angular/router';
+import {FormioCustomComponent, FormIoDomService, ValtimoModalService} from '@valtimo/components';
+import {DocumentenApiFileReference, UploadProviderService} from '@valtimo/resource';
+import {UserProviderService} from '@valtimo/security';
 import {
   BehaviorSubject,
   combineLatest,
@@ -30,15 +27,8 @@ import {
   Subscription,
   switchMap,
 } from 'rxjs';
-import {
-  DocumentenApiFileReference,
-  DownloadService,
-  UploadProviderService,
-} from '@valtimo/resource';
-import {DocumentenApiMetadata, SupportedDocumentenApiFeatures} from '../../models';
 import {filter, map, take, tap} from 'rxjs/operators';
-import {UserProviderService} from '@valtimo/security';
-import {ActivatedRoute} from '@angular/router';
+import {DocumentenApiMetadata, SupportedDocumentenApiFeatures} from '../../models';
 import {DocumentenApiVersionService} from '../../services';
 
 @Component({
@@ -170,9 +160,9 @@ export class DocumentenApiUploaderComponent
   readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
   readonly showModal = signal<boolean>(false);
   readonly uploadProcessLinked$: Observable<boolean | string> =
-    this.modalService.documentDefinitionName$.pipe(
-      switchMap(documentDefinitionName =>
-        this.uploadProviderService.checkUploadProcessLink(documentDefinitionName)
+    this.modalService.caseDefinitionKey$.pipe(
+      switchMap(caseDefinitionKey =>
+        this.uploadProviderService.checkUploadProcessLink(caseDefinitionKey)
       ),
       startWith('loading')
     );
@@ -181,22 +171,20 @@ export class DocumentenApiUploaderComponent
     .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
 
   public readonly supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    this.modalService.documentDefinitionName$.pipe(
-      switchMap(caseDefinitionName =>
-        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionName)
+    this.modalService.caseDefinitionKey$.pipe(
+      switchMap(caseDefinitionKey =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey)
       )
     );
 
   public defaultValues: {} = {};
   public hideFields: Array<string> = [];
 
-  private _subscriptions = new Subscription();
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly uploadProviderService: UploadProviderService,
-    private readonly stateService: FormIoStateService,
     private readonly domService: FormIoDomService,
-    private readonly downloadService: DownloadService,
     private readonly modalService: ValtimoModalService,
     private readonly userProviderService: UserProviderService,
     private readonly route: ActivatedRoute,
@@ -204,7 +192,7 @@ export class DocumentenApiUploaderComponent
   ) {}
 
   public ngOnInit(): void {
-    this.openDocumentDefinitionSubscription();
+    this.openCaseDefinitionKeySubscription();
   }
 
   public ngOnDestroy(): void {
@@ -260,19 +248,17 @@ export class DocumentenApiUploaderComponent
       .subscribe();
   }
 
-  private openDocumentDefinitionSubscription() {
+  private openCaseDefinitionKeySubscription() {
     this._subscriptions.add(
       combineLatest([this.route?.params || of(null), this.route?.firstChild?.params || of(null)])
         .pipe(
           map(
             ([params, firstChildParams]) =>
-              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
+              (params?.caseDefinitionKey || firstChildParams?.caseDefinitionKey) as string
           ),
-          filter(documentDefinitionName => !!documentDefinitionName)
+          filter(caseDefinitionKey => !!caseDefinitionKey)
         )
-        .subscribe(documentDefinitionName =>
-          this.modalService.setDocumentDefinitionName(documentDefinitionName)
-        )
+        .subscribe(caseDefinitionKey => this.modalService.setCaseDefinitionKey(caseDefinitionKey))
     );
   }
 

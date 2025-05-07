@@ -30,9 +30,9 @@ export class DocumentenApiColumnService extends BaseApiService {
     super(http, configService);
   }
 
-  public getConfiguredColumns(caseDefinitionName: string): Observable<ConfiguredColumn[]> {
+  public getConfiguredColumns(caseDefinitionKey: string): Observable<ConfiguredColumn[]> {
     return this.http.get<ConfiguredColumn[]>(
-      this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/zgw-document-column`)
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/zgw-document-column`)
     );
   }
 

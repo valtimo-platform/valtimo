@@ -67,7 +67,7 @@ import {DocumentService} from '@valtimo/document';
   ],
 })
 export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
-  @Input() public documentDefinitionName!: string;
+  @Input() public caseDefinitionKey!: string;
   @Input() public type!: string;
   protected key: string;
 
@@ -133,7 +133,7 @@ export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
   ]).pipe(
     switchMap(([selectedItem]) =>
       combineLatest([
-        this.documentService.getDocumentTypes(this.documentDefinitionName),
+        this.documentService.getDocumentTypes(this.caseDefinitionKey),
         of(selectedItem),
       ])
     ),
@@ -199,7 +199,7 @@ export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
     } as DocumentenApiUploadField;
 
     this.documentenApiDocumentService
-      .updateUploadField(this.documentDefinitionName, formField)
+      .updateUploadField(this.caseDefinitionKey, formField)
       .subscribe({
         next: () => {
           this.enable();

@@ -58,6 +58,7 @@ import {CaseManagementZgwComponent} from './components';
       useValue: {
         translationKey: 'caseManagement.tabs.zgw',
         component: CaseManagementZgwComponent,
+        tabRoute: 'zgw',
       },
       multi: true,
     },

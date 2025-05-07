@@ -482,9 +482,9 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     this.documentService
       .getProcessDefinitionCaseDefinitionFromProcessInstanceId(task.processInstanceId)
       .subscribe(ProcessDefinitionCaseDefinition => {
-        const documentDefinitionName = ProcessDefinitionCaseDefinition.id.caseDefinitionId.key;
-        this.modalService.setDocumentDefinitionName(documentDefinitionName);
-        this.stateService.setDocumentDefinitionName(documentDefinitionName);
+        const caseDefinitionKey = ProcessDefinitionCaseDefinition.id.caseDefinitionId.key;
+        this.modalService.setCaseDefinitionKey(caseDefinitionKey);
+        this.stateService.setDocumentDefinitionName(caseDefinitionKey);
       });
   }
 }

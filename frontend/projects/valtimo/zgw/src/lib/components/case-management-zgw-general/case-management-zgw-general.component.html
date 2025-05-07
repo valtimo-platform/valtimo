@@ -14,15 +14,5 @@
   ~ limitations under the License.
   -->
 
-<cds-tabs class="case-management-tabs" type="contained">
-  @for (zgwTab of (zgwTabs$ | async) || []; track zgwTab.tab) {
-    <cds-tab
-      [class]="zgwTab.class"
-      [active]="zgwTab.active"
-      [heading]="zgwTab.headingTranslationKey | translate"
-      (selected)="displayTab(zgwTab.tab)"
-    ></cds-tab>
-  }
-</cds-tabs>
-
-<ng-template #zgwTabContent></ng-template>
+<valtimo-zaken-api-zaaktype-link></valtimo-zaken-api-zaaktype-link>
+<valtimo-document-objecten-api-sync></valtimo-document-objecten-api-sync>

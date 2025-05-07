@@ -103,6 +103,7 @@ export class CaseManagementDocumentDefinitionComponent {
 
   public downloadDefinition(): void {
     this.selectedDocumentDefinition$.pipe(take(1)).subscribe(definition => {
+      const {key, versionTag} = definition.id.caseDefinitionId;
       const dataString =
         'data:text/json;charset=utf-8,' +
         encodeURIComponent(JSON.stringify(definition.schema, null, 2));
@@ -112,10 +113,7 @@ export class CaseManagementDocumentDefinitionComponent {
       }
 
       downloadAnchorElement.setAttribute('href', dataString);
-      downloadAnchorElement.setAttribute(
-        'download',
-        `${definition.id.name}-v${definition.id.version}.json`
-      );
+      downloadAnchorElement.setAttribute('download', `${key}-v${versionTag}.json`);
       downloadAnchorElement.click();
     });
   }

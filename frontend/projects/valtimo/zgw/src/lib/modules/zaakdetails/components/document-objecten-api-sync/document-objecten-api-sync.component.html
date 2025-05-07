@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div class="input-group mt-4 mb-2 align-items-center">
+<div class="input-group mb-2 align-items-center">
   <div>
     <h2>{{ 'zaakdetails.title' | translate }}</h2>
   </div>
@@ -33,12 +33,18 @@
           <div>
             {{ obs.documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
           </div>
+
           <div class="controls">
-            <button class="btn btn-danger ml-3" (click)="showModal()">
-              <i class="icon mdi mdi-pencil"></i>
+            <button cdsButton="tertiary" (click)="showModal()">
+              {{ 'interface.edit' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
             </button>
-            <button class="btn btn-danger ml-3" (click)="remove()">
-              <i class="icon mdi mdi-delete"></i>
+
+            <button cdsButton="danger" (click)="remove()">
+              {{ 'interface.delete' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
             </button>
           </div>
         </div>
@@ -71,9 +77,11 @@
 </ng-container>
 
 <ng-template #addSync>
-  <div class="text-right mt-5">
-    <button class="btn btn-primary" (click)="showModal()">
-      <i class="icon mdi mdi-plus mr-1"></i>{{ 'zaakdetails.submitButton' | translate }}
+  <div class="text-right">
+    <button cdsButton="primary" class="add-sync" (click)="showModal()">
+      {{ 'zaakdetails.submitButton' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
     </button>
   </div>
 </ng-template>

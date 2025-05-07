@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -23,10 +23,11 @@ import {
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
-import {TabsModule} from 'carbon-components-angular';
-import {ZgwTab, ZgwTabEnum} from '../../models';
+import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {CommonModule} from '@angular/common';
+import {TabsModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {ZgwTab, ZgwTabEnum} from '../../models';
 import {
   DocumentenApiColumnsComponent,
   DocumentenApiTagsComponent,
@@ -34,13 +35,13 @@ import {
   DocumentenApiVersionService,
   SupportedDocumentenApiFeatures,
 } from '../../modules';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
 import {CaseManagementZgwService} from '../../services';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
+import {CaseManagementZgwGeneralComponent} from '../case-management-zgw-general/case-management-zgw-general.component';
 
 @Component({
   templateUrl: './case-management-zgw.component.html',
-  styleUrls: ['./case-management-zgw.component.scss'],
+  styleUrl: './case-management-zgw.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, TabsModule, TranslateModule],
@@ -52,11 +53,11 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
   private readonly _viewInitialized$ = new BehaviorSubject<boolean>(false);
 
   private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    this.route.params.pipe(
-      map(params => params?.name),
-      filter(caseDefinitionName => !!caseDefinitionName),
-      switchMap(caseDefinitionName =>
-        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionName)
+    getCaseManagementRouteParams(this.route).pipe(
+      map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
+      filter((caseDefinitionKey: string) => !!caseDefinitionKey),
+      switchMap((caseDefinitionKey: string) =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey ?? '')
       )
     );
 
@@ -68,6 +69,12 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
     filter(([viewInitialized]) => viewInitialized),
     map(([_, currentTab, supportedDocumentenApiFeatures]) =>
       [
+        {
+          class: 'no-padding-left-right no-padding-top-bottom',
+          headingTranslationKey: 'caseManagement.tabs.general',
+          tab: ZgwTabEnum.GENERAL,
+          component: CaseManagementZgwGeneralComponent,
+        },
         {
           class: 'no-padding-left-right no-padding-top-bottom',
           headingTranslationKey: 'zgw.tabs.documentColumns',
@@ -94,6 +101,8 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
     ),
     tap(zgwTabs => {
       const activeTab = zgwTabs.length > 1 ? zgwTabs.find(tab => tab.active) : zgwTabs[0];
+      if (!activeTab) return;
+
       this._zgwTabContent.clear();
       this._zgwTabContent.createComponent(activeTab.component);
       this.cdr.detectChanges();

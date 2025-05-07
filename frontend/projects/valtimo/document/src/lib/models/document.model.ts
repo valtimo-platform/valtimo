@@ -57,15 +57,15 @@ interface DocumentDefinitions {
 }
 
 interface DocumentDefinition {
-  id: DefinitionId;
+  id: DocumentDefinitionId;
   schema: any;
   createdOn: string;
   readOnly: boolean;
 }
 
-interface DefinitionId {
+interface DocumentDefinitionId {
   name: string;
-  version: number;
+  caseDefinitionId: CaseDefinitionId;
 }
 
 interface CreateDocumentDefinitionResponse {
@@ -120,14 +120,9 @@ interface Document {
   caseTags?: CaseTag[];
 }
 
-interface DocumentDefinitionId {
-  name: string;
-  version: number;
-}
-
 interface ProcessDocumentDefinitionId {
   processDefinitionKey: string;
-  documentDefinitionId: DefinitionId;
+  documentDefinitionId: DocumentDefinitionId;
 }
 
 interface ProcessDocumentDefinition {
@@ -418,13 +413,12 @@ export {
   CaseListColumnView,
   CaseSettings,
   CreateDocumentDefinitionResponse,
-  DefinitionId,
+  DocumentDefinitionId,
   DisplayType,
   DisplayTypeParameters,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
-  DocumentDefinitionId,
   DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
@@ -433,6 +427,7 @@ export {
   Documents,
   DocumentSendMessageRequest,
   DocumentType,
+  ExternalStartFormConfiguration,
   LoadedValue,
   ModifyDocumentAndCompleteTaskRequest,
   ModifyDocumentAndCompleteTaskRequestImpl,
@@ -464,5 +459,4 @@ export {
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
-  ExternalStartFormConfiguration,
 };

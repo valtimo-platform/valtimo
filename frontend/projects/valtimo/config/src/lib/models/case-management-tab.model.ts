@@ -19,6 +19,7 @@ import {Type} from '@angular/core';
 interface CaseManagementTabConfig {
   translationKey: string;
   component: Type<any>;
+  tabRoute?: string;
 }
 
 export {CaseManagementTabConfig};

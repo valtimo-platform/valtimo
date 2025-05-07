@@ -19,7 +19,7 @@
     loading: loading$ | async,
     documentTags: documentTags$ | async,
     addModalClosed: addModalClosed$ | async,
-    documentDefinitionName: documentDefinitionName$ | async,
+    caseDefinitionKey: caseDefinitionKey$ | async,
     selectedRowKeys: selectedRowKeys$ | async,
     searchTerm: searchTerm$ | async,
     showDeleteModal: showDeleteModal$ | async,
@@ -65,7 +65,7 @@
 
   <valtimo-documenten-api-tag-modal
     [open]="!obs.addModalClosed"
-    [documentDefinitionName]="obs.documentDefinitionName"
+    [caseDefinitionKey]="obs.caseDefinitionKey"
     (closeModalEvent)="closeModal($event)"
   ></valtimo-documenten-api-tag-modal>
 
@@ -88,7 +88,7 @@
     [showModalSubject$]="showDeleteMultipleModal$"
     titleTranslationKey="interface.delete"
     [outputOnConfirm]="{
-      documentDefinitionName: obs.documentDefinitionName,
+      caseDefinitionKey: obs.caseDefinitionKey,
       tagIds: obs.selectedRowKeys,
       itemsOnCurrentPage: obs.documentTags.length,
     }"

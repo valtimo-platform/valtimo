@@ -46,6 +46,7 @@ import {
 } from '../../models/documenten-api-upload-field.model';
 import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiUploadFieldModalComponent} from '../documenten-api-upload-field-model/documenten-api-upload-field-modal.component';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 
 @Component({
   selector: 'valtimo-documenten-api-upload-fields',
@@ -67,11 +68,13 @@ export class DocumentenApiUploadFieldsComponent {
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
-  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params?.name),
-    filter(docDefName => !!docDefName)
-  );
 
+  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
+    this.route
+  ).pipe(
+    map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
+    filter(caseDefinitionKey => !!caseDefinitionKey)
+  );
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly uploadFieldModalType$ = new BehaviorSubject<DocumentenApiColumnModalType>(
@@ -79,12 +82,8 @@ export class DocumentenApiUploadFieldsComponent {
   );
   public readonly prefill$ = new BehaviorSubject<DocumentenApiUploadField | undefined>(undefined);
 
-  public get documentDefinitionName$(): Observable<string> {
-    return this._documentDefinitionName$;
-  }
-
   public readonly documentUploadFields$: Observable<string[]> = combineLatest([
-    this._documentDefinitionName$,
+    this.caseDefinitionKey$,
     this._reload$,
     this.translateService.stream('key'),
   ]).pipe(
@@ -93,8 +92,8 @@ export class DocumentenApiUploadFieldsComponent {
         this.loading$.next(true);
       }
     }),
-    switchMap(([documentDefinitionName]) =>
-      this.documentenApiDocumentService.getUploadFields(documentDefinitionName)
+    switchMap(([caseDefinitionKey]) =>
+      this.documentenApiDocumentService.getUploadFields(caseDefinitionKey)
     ),
     map(fields =>
       fields.map(field => ({

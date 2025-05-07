@@ -45,6 +45,7 @@ import {DocumentenApiTagService} from '../../services/documenten-api-tag.service
 import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
 import {DocumentenApiTagModalComponent} from '../documenten-api-tag-modal/documenten-api-tag-modal.component';
 import {Page} from '@valtimo/document';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 
 @Component({
   selector: 'valtimo-documenten-api-tags',
@@ -67,9 +68,11 @@ export class DocumentenApiTagsComponent {
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
-  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params?.name),
-    filter(docDefName => !!docDefName)
+  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
+    this.route
+  ).pipe(
+    map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
+    filter((caseDefinitionKey: string) => !!caseDefinitionKey)
   );
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -81,22 +84,16 @@ export class DocumentenApiTagsComponent {
   public readonly searchTerm$ = new BehaviorSubject<string>('');
   public readonly tagToDelete$ = new BehaviorSubject<DocumentenApiTag | null>(null);
 
-  public get documentDefinitionName$(): Observable<string> {
-    return this._documentDefinitionName$;
-  }
-
   public readonly documentTags$: Observable<DocumentenApiTag[]> = combineLatest([
-    this._documentDefinitionName$,
+    this.caseDefinitionKey$,
     this.searchTerm$,
     this._reload$,
   ]).pipe(
     tap(([_1, _2, reload]) => {
-      if (reload === null) {
-        this.loading$.next(true);
-      }
+      if (reload === null) this.loading$.next(true);
     }),
-    switchMap(([documentDefinitionName, searchTerm]) =>
-      this.documentenApiTagService.getTagsForAdmin(documentDefinitionName, {
+    switchMap(([caseDefinitionKey, searchTerm]) =>
+      this.documentenApiTagService.getTagsForAdmin(caseDefinitionKey, {
         page: this.pagination.page - 1,
         size: this.pagination.size,
         search: searchTerm,
@@ -153,9 +150,8 @@ export class DocumentenApiTagsComponent {
   }
 
   public closeModal(closeModalEvent: DocumentenApiColumnModalTypeCloseEvent): void {
-    if (closeModalEvent === 'closeAndRefresh') {
-      this.reload();
-    }
+    if (closeModalEvent === 'closeAndRefresh') this.reload();
+
     this.addModalClosed$.next(true);
   }
 
@@ -181,10 +177,10 @@ export class DocumentenApiTagsComponent {
   }
 
   public confirmDeleteTag(tag: DocumentenApiTag): void {
-    this.documentDefinitionName$
+    this.caseDefinitionKey$
       .pipe(
-        switchMap(documentDefinitionName =>
-          this.documentenApiTagService.deleteTag(documentDefinitionName, tag.value)
+        switchMap(caseDefinitionKey =>
+          this.documentenApiTagService.deleteTag(caseDefinitionKey, tag.value)
         )
       )
       .subscribe(() => {
@@ -193,12 +189,12 @@ export class DocumentenApiTagsComponent {
   }
 
   public confirmDeleteMultipleTag(tagsToDelete: {
-    documentDefinitionName: string;
+    caseDefinitionKey: string;
     tagIds: string[];
     itemsOnCurrentPage: number;
   }): void {
     this.documentenApiTagService
-      .deleteTags(tagsToDelete.documentDefinitionName, tagsToDelete.tagIds)
+      .deleteTags(tagsToDelete.caseDefinitionKey, tagsToDelete.tagIds)
       .subscribe(() => {
         const lastPage = Math.ceil(
           (this.pagination.collectionSize as number) / this.pagination.size

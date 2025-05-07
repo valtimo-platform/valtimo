@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-.card-header,
-.setting-row {
+:host {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 16px;
-}
-
-.add-sync {
-  max-width: unset;
+  padding: 16px;
+  background: var(--cds-layer-01);
 }

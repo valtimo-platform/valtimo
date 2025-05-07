@@ -89,7 +89,9 @@ export class CaseMigrationComponent {
         documentDefinitionIds.find(id => id.name === sourceDocumentDefinitionNameSelected)
       ),
       filter(documentDefinitionId => !!documentDefinitionId),
-      map(documentDefinitionId => [...Array(documentDefinitionId.version).keys()].map(v => v + 1)),
+      map(documentDefinitionId =>
+        [...Array(documentDefinitionId.caseDefinitionId.versionTag).keys()].map(v => v + 1)
+      ),
       map(versions =>
         versions.map(
           version =>
@@ -125,7 +127,9 @@ export class CaseMigrationComponent {
         documentDefinitionIds.find(id => id.name === targetDocumentDefinitionNameSelected)
       ),
       filter(documentDefinitionId => !!documentDefinitionId),
-      map(documentDefinitionId => [...Array(documentDefinitionId.version).keys()].map(v => v + 1)),
+      map(documentDefinitionId =>
+        [...Array(documentDefinitionId.caseDefinitionId.versionTag).keys()].map(v => v + 1)
+      ),
       map(versions =>
         versions.map(
           version =>

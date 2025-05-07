@@ -18,7 +18,7 @@
   *ngIf="{
     columnModalType: columnModalType$ | async,
     columnToUpdate: columnToUpdate$ | async,
-    documentDefinitionName: documentDefinitionName$ | async,
+    caseDefinitionKey: caseDefinitionKey$ | async,
     configuredColumns: configuredColumns$ | async,
     configurableColumns: configurableColumns$ | async,
     loading: loading$ | async,
@@ -31,8 +31,9 @@
     [header]="false"
     [items]="obs.configuredColumns"
     [loading]="obs.loading || !fields"
-    [movingRowsEnabled]="true"
-    (itemsReordered)="onItemsReordered(obs.documentDefinitionName, $event)"
+    [dragAndDrop]="true"
+    (itemsReordered)="onItemsReordered(obs.caseDefinitionKey, $event)"
+    (rowClicked)="openEditModal($event)"
   >
     <ng-container carbonToolbarContent>
       <ng-container *ngTemplateOutlet="addButton"></ng-container>
@@ -48,7 +49,7 @@
   <valtimo-documenten-api-column-modal
     [availableColumns]="obs.configurableColumns"
     [configuredColumns]="obs.configuredColumns"
-    [definitionName]="obs.documentDefinitionName"
+    [definitionName]="obs.caseDefinitionKey"
     [prefillColumn]="obs.prefillColumn"
     [type]="obs.columnModalType"
     (closeModal)="onCloseModal($event)"
@@ -61,7 +62,7 @@
     [outputOnConfirm]="columnToUpdate$ | async"
     [showModalSubject$]="showDeleteModal$"
     titleTranslationKey="interface.delete"
-    (confirmEvent)="confirmDeleteStatus($event, obs.documentDefinitionName)"
+    (confirmEvent)="confirmDeleteStatus($event, obs.caseDefinitionKey)"
   ></valtimo-confirmation-modal>
 </ng-container>
 

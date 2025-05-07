@@ -23,6 +23,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 import {
   ActionItem,
   CarbonListModule,
@@ -63,26 +64,24 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
-  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params?.name),
-    filter(docDefName => !!docDefName)
+  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
+    this.route
+  ).pipe(
+    map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
+    filter((caseDefinitionKey: string) => !!caseDefinitionKey)
   );
-
-  public get documentDefinitionName$(): Observable<string> {
-    return this._documentDefinitionName$;
-  }
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   public readonly configuredColumns$: Observable<ConfiguredColumn[]> = combineLatest([
-    this._documentDefinitionName$,
+    this.caseDefinitionKey$,
     this._reload$,
   ]).pipe(
     tap(([_, reload]) => {
       if (reload === null) this.loading$.next(true);
     }),
-    switchMap(([documentDefinitionName]) =>
-      this.zgwDocumentColumnService.getAdminConfiguredColumns(documentDefinitionName)
+    switchMap(([caseDefinitionKey]) =>
+      this.zgwDocumentColumnService.getAdminConfiguredColumns(caseDefinitionKey)
     ),
     tap(() => {
       this.loading$.next(false);
@@ -90,10 +89,10 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
   );
 
   public readonly configurableColumns$: Observable<ConfiguredColumn[]> =
-    this.documentDefinitionName$.pipe(
-      switchMap((documentDefinitionName: string) =>
+    this.caseDefinitionKey$.pipe(
+      switchMap((caseDefinitionKey: string) =>
         combineLatest([
-          this.zgwDocumentColumnService.getAdminConfigurableColumns(documentDefinitionName),
+          this.zgwDocumentColumnService.getAdminConfigurableColumns(caseDefinitionKey),
           this.configuredColumns$,
         ])
       ),
@@ -122,8 +121,6 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
       type: 'danger',
     },
   ];
-
-  public readonly CARBON_THEME = 'g10';
 
   public readonly columnModalType$ = new BehaviorSubject<DocumentenApiColumnModalType>('closed');
   public readonly prefillColumn$ = new BehaviorSubject<ConfiguredColumn | undefined>(undefined);

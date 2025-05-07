@@ -91,16 +91,16 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   @ViewChild('fileInput') fileInput: ElementRef;
   @ViewChild('translationTemplate') translationTemplate: TemplateRef<any>;
 
-  private readonly _documentDefinitionName$ = this.route.params.pipe(
-    map(params => params?.caseDefinitionKey),
-    filter(caseDefinitionKey => !!caseDefinitionKey)
+  private readonly _caseDefinitionKey$ = this.route.params.pipe(
+    map(params => params?.caseDefinitionKey ?? ''),
+    filter((caseDefinitionKey: string) => !!caseDefinitionKey)
   );
 
   public readonly supportedDocumentenApiFeatures$ =
     new BehaviorSubject<SupportedDocumentenApiFeatures | null>(null);
 
   private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    this._documentDefinitionName$.pipe(
+    this._caseDefinitionKey$.pipe(
       switchMap(caseDefinitionName =>
         this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionName)
       ),
@@ -109,11 +109,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       )
     );
 
-  public readonly fields$: Observable<ColumnConfig[]> = this._documentDefinitionName$.pipe(
+  public readonly fields$: Observable<ColumnConfig[]> = this._caseDefinitionKey$.pipe(
     tap(() => this.fieldsLoading$.next(true)),
-    switchMap(documentDefinitionName =>
+    switchMap(caseDefinitionKey =>
       combineLatest([
-        this.documentenApiColumnService.getConfiguredColumns(documentDefinitionName),
+        this.documentenApiColumnService.getConfiguredColumns(caseDefinitionKey),
         this._supportedDocumentenApiFeatures$,
         this._sort$,
       ])
@@ -165,11 +165,6 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       type: 'danger',
     },
   ];
-
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params?.caseDefinitionKey),
-    filter(caseDefinitionKey => !!caseDefinitionKey)
-  );
 
   public readonly documentId$: Observable<string> = this.route.params.pipe(
     map(params => params?.documentId),
@@ -476,8 +471,8 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onNavigateToCaseAdminClick(): void {
-    this.documentDefinitionName$.pipe(take(1)).subscribe(documentDefinitionName => {
-      this.router.navigate([`/case-management/case/${documentDefinitionName}`]);
+    this._caseDefinitionKey$.pipe(take(1)).subscribe((caseDefinitionKey: string) => {
+      this.router.navigate([`/case-management/case/${caseDefinitionKey}`]);
     });
   }
 
@@ -547,7 +542,7 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   private openQueryParamsSubscription(): void {
     this._subscriptions.add(
       combineLatest([
-        this.documentDefinitionName$,
+        this._caseDefinitionKey$,
         this.documentId$,
         this.filter$,
         this._sort$,
@@ -566,10 +561,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   private setUploadProcessLinked(): void {
-    this.documentDefinitionName$
+    this._caseDefinitionKey$
       .pipe(
-        switchMap(documentDefinitionName =>
-          this.uploadProviderService.checkUploadProcessLink(documentDefinitionName)
+        switchMap(caseDefinitionKey =>
+          this.uploadProviderService.checkUploadProcessLink(caseDefinitionKey)
         ),
         take(1),
         tap(() => {

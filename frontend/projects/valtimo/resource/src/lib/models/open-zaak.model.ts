@@ -33,13 +33,6 @@ export interface InformatieObjectType {
   omschrijving: string;
 }
 
-export interface InformatieObjectTypeLink {
-  informatieObjectTypeLinkId: string;
-  documentDefinitionName: string;
-  zaakType: string;
-  informatieObjectType: string;
-}
-
 export interface ZaakTypeLink {
   id: string;
   documentDefinitionName: string;
@@ -55,7 +48,8 @@ export interface ZaakTypeRequest {
 }
 
 export interface CreateZaakTypeLinkRequest {
-  documentDefinitionName: string;
+  caseDefinitionKey: string;
+  caseVersionTag: string;
   zaakTypeUrl?: string;
   createWithDossier: boolean;
   zakenApiPluginConfigurationId?: string;
