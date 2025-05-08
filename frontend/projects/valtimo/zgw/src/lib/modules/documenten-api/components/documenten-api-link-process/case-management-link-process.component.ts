@@ -13,44 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, Input, OnInit} from '@angular/core';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
-import {ComboBoxModule, LayerModule, ListItem} from 'carbon-components-angular';
-import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/config';
-import {ActivatedRoute} from '@angular/router';
-import {DocumentenApiLinkProcessService, DocumentenApiVersionService} from '../../services';
 import {CommonModule} from '@angular/common';
-import {ParagraphModule} from '@valtimo/components';
+import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
+import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/config';
+import {ComboBoxModule, LayerModule, ListItem} from 'carbon-components-angular';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {DocumentenApiLinkProcessService, DocumentenApiVersionService} from '../../services';
 
 @Component({
   selector: 'valtimo-case-management-link-process',
   templateUrl: './case-management-link-process.component.html',
   styleUrl: './case-management-link-process.component.scss',
   standalone: true,
-  imports: [CommonModule, ParagraphModule, TranslateModule, ComboBoxModule, LayerModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule, TranslateModule, ComboBoxModule, LayerModule],
 })
-export class CaseManagementLinkProcessComponent implements OnInit {
+export class CaseManagementLinkProcessComponent implements OnInit, OnDestroy {
   @Input() isReadOnly$: Observable<boolean>;
 
   public readonly documentenApiUploadProviders$ = new BehaviorSubject<boolean>(false);
-
-  public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
-    map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
-      caseDefinitionKey: caseDefinitionKey,
-      caseDefinitionVersionTag: caseDefinitionVersionTag,
-    }))
-  );
-
-  public readonly caseDefinitionKey$: Observable<string> | undefined = this.params$?.pipe(
-    map(({caseDefinitionKey}) => caseDefinitionKey || '')
-  );
-
-  public readonly caseDefinitionVersionTag$: Observable<string> | undefined = this.params$?.pipe(
-    map(({caseDefinitionVersionTag}) => caseDefinitionVersionTag || '')
-  );
-
   public readonly selectedProcessKey$ = new BehaviorSubject<string>('');
   public readonly processItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentenApiLinkProcessService.getProcessDefinitions(),
@@ -68,6 +61,10 @@ export class CaseManagementLinkProcessComponent implements OnInit {
     tap(() => this.documentenApiVersionService.refresh())
   );
 
+  private readonly _caseParams$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
+  private readonly _subscriptions = new Subscription();
+
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
   constructor(
     private readonly configService: ConfigService,
@@ -80,43 +77,53 @@ export class CaseManagementLinkProcessComponent implements OnInit {
     this.setDocumentenApiUploaderProvider(this.configService.config);
   }
 
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
   public selectProcess(item: {id: string}): void {
     const processDefinitionKey = item?.id;
     this.disabled$.next(true);
     const currentSelectionId = this.selectedProcessKey$.getValue();
 
-    if (processDefinitionKey && processDefinitionKey !== currentSelectionId) {
-      this.disabled$.next(true);
+    if (processDefinitionKey && processDefinitionKey !== currentSelectionId)
+      this.updateProcess(processDefinitionKey);
+    else if (!processDefinitionKey) this.deleteProcess();
+  }
 
-      combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
-        .pipe(
-          switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-            this.documentenApiLinkProcessService.updateLinkedUploadProcess(
-              caseDefinitionKey,
-              caseDefinitionVersionTag,
-              processDefinitionKey
-            )
+  private deleteProcess(): void {
+    this._caseParams$
+      .pipe(
+        take(1),
+        switchMap((params: CaseManagementParams | undefined) =>
+          this.documentenApiLinkProcessService.deleteLinkedUploadProcess(
+            params?.caseDefinitionKey ?? '',
+            params?.caseDefinitionVersionTag ?? ''
           )
         )
-        .subscribe(processLink => {
-          this.selectedProcessKey$.next(processLink.processDefinitionKey);
-          this.disabled$.next(false);
-        });
-    } else if (!processDefinitionKey) {
-      combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
-        .pipe(
-          switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-            this.documentenApiLinkProcessService.deleteLinkedUploadProcess(
-              caseDefinitionKey,
-              caseDefinitionVersionTag
-            )
+      )
+      .subscribe(() => {
+        this.selectedProcessKey$.next('');
+        this.disabled$.next(false);
+      });
+  }
+
+  private updateProcess(processDefinitionKey: string): void {
+    this._caseParams$
+      .pipe(
+        take(1),
+        switchMap((params: CaseManagementParams | undefined) =>
+          this.documentenApiLinkProcessService.updateLinkedUploadProcess(
+            params?.caseDefinitionKey ?? '',
+            params?.caseDefinitionVersionTag ?? '',
+            processDefinitionKey
           )
         )
-        .subscribe(() => {
-          this.selectedProcessKey$.next('');
-          this.disabled$.next(false);
-        });
-    }
+      )
+      .subscribe(processLink => {
+        this.selectedProcessKey$.next(processLink.processDefinitionKey);
+        this.disabled$.next(false);
+      });
   }
 
   private setDocumentenApiUploaderProvider(config: ValtimoConfig): void {
@@ -127,19 +134,19 @@ export class CaseManagementLinkProcessComponent implements OnInit {
   }
 
   private getDefaultSelection(): void {
-    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
-      .pipe(
-        switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-          this.documentenApiLinkProcessService.getLinkedUploadProcess(
-            caseDefinitionKey,
-            caseDefinitionVersionTag
+    this._subscriptions.add(
+      this._caseParams$
+        .pipe(
+          switchMap((params: CaseManagementParams | undefined) =>
+            this.documentenApiLinkProcessService.getLinkedUploadProcess(
+              params?.caseDefinitionKey ?? '',
+              params?.caseDefinitionVersionTag ?? ''
+            )
           )
         )
-      )
-      .subscribe(linkedUploadProcess => {
-        if (linkedUploadProcess) {
-          this.selectedProcessKey$.next(linkedUploadProcess.processDefinitionKey);
-        }
-      });
+        .subscribe(linkedUploadProcess => {
+          this.selectedProcessKey$.next(linkedUploadProcess?.processDefinitionKey ?? '');
+        })
+    );
   }
 }
