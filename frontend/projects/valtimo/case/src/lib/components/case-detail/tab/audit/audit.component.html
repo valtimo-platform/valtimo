@@ -28,10 +28,10 @@
 </valtimo-spinner>
 
 <div
-  class="pagination-holder audit-pagination bg-light px-4 pt-4 pb-2 overflow-auto row mr-0 ml-0"
+  class="valtimo-audit-pagination"
   *ngIf="pagination && pagination.totalElements > pagination.size"
 >
-  <div class="float-left page-count col-4">
+  <div>
     <strong>{{
       'list.currentPage' | translate: {current: pagination.number, total: pagination.totalPages}
     }}</strong>
@@ -46,16 +46,14 @@
     }}
   </div>
 
-  <div class="col-8">
-    <ngb-pagination
-      *ngIf="pagination.totalElements > pagination.size"
-      class="float-right"
-      [collectionSize]="pagination.totalElements"
-      [(page)]="pagination.number"
-      [pageSize]="pagination.size"
-      [maxSize]="pagination.size"
-      [rotate]="true"
-      (pageChange)="onChangePagination(pagination.number)"
-    ></ngb-pagination>
-  </div>
+  <ngb-pagination
+    *ngIf="pagination.totalElements > pagination.size"
+    class="float-right"
+    [collectionSize]="pagination.totalElements"
+    [(page)]="pagination.number"
+    [pageSize]="pagination.size"
+    [maxSize]="pagination.size"
+    [rotate]="true"
+    (pageChange)="onChangePagination(pagination.number)"
+  ></ngb-pagination>
 </div>

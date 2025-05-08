@@ -14,16 +14,9 @@
   ~ limitations under the License.
   -->
 
-<div class="container-fluid">
-  <div class="row py-4">
-    <div class="col-12">
-      <div *ngIf="document">
-        <div *ngIf="formDefinition" class="summaryForm">
-          <div class="mb-4">
-            <valtimo-form-io [form]="formDefinition" [options]="options"></valtimo-form-io>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <valtimo-form-io
+    *ngIf="formDefinition && document"
+    class="valtimo-summary-form"
+    [form]="formDefinition"
+    [options]="options"
+  ></valtimo-form-io>

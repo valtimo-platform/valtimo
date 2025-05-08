@@ -716,9 +716,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
             title: 'case.noResults.search.title',
           }
         : {
-            description: `dossier.noResults.${this.activeTab ?? 'ALL'}.description`,
+            description: `case.noResults.${this.activeTab ?? 'ALL'}.description`,
             isSearchResult,
-            title: `dossier.noResults.${this.activeTab ?? 'ALL'}.title`,
+            title: `case.noResults.${this.activeTab ?? 'ALL'}.title`,
           }
     );
   }

@@ -23,6 +23,9 @@ import {initializeCsp} from '@valtimo/security';
 import {DOCUMENT} from '@angular/common';
 import {DomSanitizer} from '@angular/platform-browser';
 
+/**
+ * @deprecated To be removed in Valtimo 14
+ */
 @NgModule({
   declarations: [],
   imports: [],

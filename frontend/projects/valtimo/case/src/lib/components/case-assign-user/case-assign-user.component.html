@@ -14,31 +14,21 @@
   ~ limitations under the License.
   -->
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-12 pl-0 d-flex flex-row align-items-center">
-      <ng-container *ngTemplateOutlet="content"> </ng-container>
-    </div>
-  </div>
-</div>
-
-<ng-template #content>
-  <ng-container
-    *ngIf="{
-      disabled: disabled$ | async,
-      assigneeFullName: assigneeFullName$ | async,
-      assigneeId: assigneeId$ | async,
-    } as obs"
-  >
-    <ng-container *ngIf="!hasPermission && obs.assigneeFullName">
-      <ng-container *ngTemplateOutlet="fullName; context: {obs: obs}"></ng-container>
-    </ng-container>
-
-    <ng-container *ngIf="hasPermission">
-      <ng-container *ngTemplateOutlet="selectUser; context: {obs: obs}"></ng-container>
-    </ng-container>
+<ng-container
+  *ngIf="{
+    disabled: disabled$ | async,
+    assigneeFullName: assigneeFullName$ | async,
+    assigneeId: assigneeId$ | async,
+  } as obs"
+>
+  <ng-container *ngIf="!hasPermission && obs.assigneeFullName">
+    <ng-container *ngTemplateOutlet="fullName; context: {obs: obs}"></ng-container>
   </ng-container>
-</ng-template>
+
+  <ng-container *ngIf="hasPermission">
+    <ng-container *ngTemplateOutlet="selectUser; context: {obs: obs}"></ng-container>
+  </ng-container>
+</ng-container>
 
 <ng-template #fullName let-obs="obs">
   <valtimo-searchable-dropdown-select

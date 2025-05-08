@@ -37,22 +37,17 @@
       !loadingDocumentItems,
   } as obs"
 >
-  <div class="main-content pt-0">
-    <div class="container-fluid">
-      <div class="col-12 px-0 mb-5">
-        <valtimo-case-list-actions
-          [loading]="!obs.loaded"
-          (formFlowComplete)="forceRefresh()"
-          (startButtonDisableEvent)="onStartButtonDisableEvent($event)"
-        ></valtimo-case-list-actions>
-        <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+  <valtimo-case-list-actions
+    [loading]="!obs.loaded"
+    (formFlowComplete)="forceRefresh()"
+    (startButtonDisableEvent)="onStartButtonDisableEvent($event)"
+  ></valtimo-case-list-actions>
 
-        <ng-container *ngIf="obs.loaded; else loading">
-          <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
-        </ng-container>
-      </div>
-    </div>
-  </div>
+  <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+
+  <ng-container *ngIf="obs.loaded; else loading">
+    <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+  </ng-container>
 
   <ng-container *ngTemplateOutlet="bulkAssignModal; context: {obs: obs}"></ng-container>
 
@@ -62,32 +57,30 @@
 </ng-container>
 
 <ng-template #searchFields let-obs="obs">
-  <div class="mb-3">
-    <valtimo-search-fields
-      [searchFields]="obs.searchFields"
-      (doSearch)="search($event)"
-      [documentDefinitionName]="caseDefinitionKey$ | async"
-      [defaultValues]="searchFieldValues$ | async"
-      [inputDisabled]="!obs.loaded"
-      [externalSearchField]="obs.showStatusSelector"
-    >
-      <valtimo-status-selector
-        *ngIf="obs.showStatusSelector"
-        [statuses]="obs.statuses"
-        [selectedStatuses]="obs.selectedStatuses"
-        [disabled]="!obs.loaded"
-        (selectedStatusesChangeEvent)="onSelectedStatusesChange($event)"
-      ></valtimo-status-selector>
+  <valtimo-search-fields
+    [searchFields]="obs.searchFields"
+    (doSearch)="search($event)"
+    [documentDefinitionName]="caseDefinitionKey$ | async"
+    [defaultValues]="searchFieldValues$ | async"
+    [inputDisabled]="!obs.loaded"
+    [externalSearchField]="obs.showStatusSelector"
+  >
+    <valtimo-status-selector
+      *ngIf="obs.showStatusSelector"
+      [statuses]="obs.statuses"
+      [selectedStatuses]="obs.selectedStatuses"
+      [disabled]="!obs.loaded"
+      (selectedStatusesChangeEvent)="onSelectedStatusesChange($event)"
+    ></valtimo-status-selector>
 
-      <valtimo-case-tags-selector
-        *ngIf="obs.showCaseTagsSelector"
-        [caseTags]="obs.caseTags"
-        [selectedCaseTags]="obs.selectedCaseTags"
-        [disabled]="!obs.loaded"
-        (selectedCaseTagsChangeEvent)="onSelectedCaseTagsChange($event)"
-      ></valtimo-case-tags-selector>
-    </valtimo-search-fields>
-  </div>
+    <valtimo-case-tags-selector
+      *ngIf="obs.showCaseTagsSelector"
+      [caseTags]="obs.caseTags"
+      [selectedCaseTags]="obs.selectedCaseTags"
+      [disabled]="!obs.loaded"
+      (selectedCaseTagsChangeEvent)="onSelectedCaseTagsChange($event)"
+    ></valtimo-case-tags-selector>
+  </valtimo-search-fields>
 </ng-template>
 
 <ng-template #list let-obs="obs">
@@ -97,7 +90,7 @@
     [initialSortState]="pagination.sort"
     [items]="obs.documentItems"
     [pagination]="pagination"
-    paginationIdentifier="dossierList"
+    paginationIdentifier="caseList"
     lockedTooltipTranslationKey="case.rowLocked"
     [showSelectionColumn]="canHaveAssignee"
     [tableTranslations]="tableTranslations"
@@ -113,11 +106,11 @@
     </ng-container>
 
     <div carbonToolbarContent>
-      <ng-container *ngTemplateOutlet="dossierListActions"></ng-container>
+      <ng-container *ngTemplateOutlet="caseListActions"></ng-container>
     </div>
 
     <valtimo-no-results
-      [action]="obs.noResultsMessage.isSearchResult ? null : dossierListActions"
+      [action]="obs.noResultsMessage.isSearchResult ? null : caseListActions"
       [description]="obs.noResultsMessage.description | translate"
       [title]="obs.noResultsMessage.title | translate"
     ></valtimo-no-results>
@@ -130,11 +123,7 @@
 
 <ng-template #tabs>
   <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
-    <cds-tabs
-      *ngIf="!visibleDossierTabs; else configuredTabs"
-      type="contained"
-      class="dossier-list-tabs"
-    >
+    <cds-tabs *ngIf="!visibleCaseTabs; else configuredTabs" type="contained" class="case-list-tabs">
       <cds-tab
         *ngFor="let tab of defaultTabs; trackBy: trackByIndex"
         [active]="assigneeFilter === tab"
@@ -148,9 +137,9 @@
 
 <ng-template #configuredTabs>
   <ng-container *ngIf="assigneeFilter$ | async as assigneeFilter">
-    <cds-tabs type="contained" class="dossier-list-tabs">
+    <cds-tabs type="contained" class="case-list-tabs">
       <cds-tab
-        *ngFor="let tab of visibleDossierTabs; trackBy: trackByIndex"
+        *ngFor="let tab of visibleCaseTabs; trackBy: trackByIndex"
         [active]="assigneeFilter === tab"
         heading="{{ 'case.tabs.' + tab | translate }}"
         [id]="tab"
@@ -198,7 +187,7 @@
   ></valtimo-confirmation-modal>
 </ng-template>
 
-<ng-template #dossierListActions>
+<ng-template #caseListActions>
   <button
     *ngIf="canCreateCase$ | async"
     cdsButton="primary"

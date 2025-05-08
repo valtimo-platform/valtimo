@@ -42,10 +42,11 @@ import {
   CheckboxModule,
   IconModule,
   IconService,
+  LayerModule,
   ModalModule,
+  TilesModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, switchMap, tap} from 'rxjs';
-
 import {DocumentObjectenApiSync} from '../../models';
 import {DocumentObjectenApiSyncService} from '../../services';
 
@@ -55,19 +56,21 @@ import {DocumentObjectenApiSyncService} from '../../services';
   styleUrls: ['./document-objecten-api-sync.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    TranslateModule,
-    SpinnerModule,
-    FormModule,
-    InputModule,
-    SelectModule,
-    ValtimoCdsModalDirectiveModule,
-    CheckboxModule,
-    ReactiveFormsModule,
     ButtonModule,
-    ModalModule,
+    CheckboxModule,
+    CommonModule,
+    FormModule,
+    FormsModule,
     IconModule,
+    InputModule,
+    LayerModule,
+    ModalModule,
+    ReactiveFormsModule,
+    SelectModule,
+    SpinnerModule,
+    TilesModule,
+    TranslateModule,
+    ValtimoCdsModalDirectiveModule,
   ],
 })
 export class DocumentObjectenApiSyncComponent implements OnInit {
@@ -93,7 +96,7 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
         }))
       )
     );
-  private readonly modalShowing$ = new BehaviorSubject<boolean>(false);
+  public readonly modalShowing$ = new BehaviorSubject<boolean>(false);
   public readonly currentTheme$ = this.cdsThemeService.currentTheme$;
   public readonly formGroup = new FormGroup({
     objectManagementConfigurationId: new FormControl('', Validators.required),

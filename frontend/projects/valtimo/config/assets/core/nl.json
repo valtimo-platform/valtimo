@@ -1319,8 +1319,7 @@
     "selectZakenApiPlugin": "Kies Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
     "rsin": "RSIN gebruikt bij aanmaken zaak",
-    "selectInfoObjectType": "Kies informatieobject-type",
-    "save": "Opslaan"
+    "selectInfoObjectType": "Kies informatieobject-type"
   },
   "zaakdetails": {
     "title": "Zaakdetail-synchronisatie",

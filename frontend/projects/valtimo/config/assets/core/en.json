@@ -1320,8 +1320,7 @@
     "selectZakenApiPlugin": "Select Zaken Api plugin",
     "zakenApiPlugin": "Zaken Api plugin",
     "rsin": "RSIN used when creating the Zaak in the Zaken Api",
-    "selectInfoObjectType": "Select information object type",
-    "save": "Save"
+    "selectInfoObjectType": "Select information object type"
   },
   "zaakdetails": {
     "title": "Case detail synchronisation",

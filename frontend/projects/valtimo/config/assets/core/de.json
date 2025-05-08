@@ -1319,8 +1319,7 @@
     "selectZakenApiPlugin": "Zaken Api plugin wählen",
     "zakenApiPlugin": "Zaken Api plugin",
     "rsin": "RSIN ",
-    "selectInfoObjectType": "Wählen Sie den Typ des Informationsobjekts",
-    "save": "Speichern"
+    "selectInfoObjectType": "Wählen Sie den Typ des Informationsobjekts"
   },
   "zaakdetails": {
     "title": "Fall-Detail-Synchronisation",

@@ -14,21 +14,51 @@
  * limitations under the License.
  */
 
-.card-header,
-.setting-row {
+:host {
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.controls {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 16px;
 }
+.valtimo-zaak-type-link {
+  &__link-button {
+    align-self: flex-end;
+  }
 
-.full-width-notification {
-  max-inline-size: 100%;
-  min-inline-size: 100%;
+  &__card {
+    &-title {
+      font-size: 18px;
+    }
+
+    &-header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+    }
+
+    &-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    &-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      > div {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        font-size: 16px;
+      }
+    }
+  }
+
+  &-modal__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 }
