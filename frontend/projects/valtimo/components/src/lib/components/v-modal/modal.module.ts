@@ -17,15 +17,11 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {VModalComponent} from './modal.component';
-import {ButtonModule} from '../button/button.module';
-import {ButtonModule as CarbonButtonModule, IconModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule} from 'carbon-components-angular';
 
-/**
- * @deprecated Migrate old design to Carbon
- */
 @NgModule({
   declarations: [VModalComponent],
-  imports: [CommonModule, ButtonModule, CarbonButtonModule, IconModule],
+  imports: [CommonModule, ButtonModule, IconModule],
   exports: [VModalComponent],
 })
 export class VModalModule {}
