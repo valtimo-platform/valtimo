@@ -815,10 +815,10 @@
       "nameTooltip": "The name is used for the visible name of the case definition in the UI",
       "version": "Case definition version",
       "versionPlaceholder": "Enter version here",
-      "versionTooltip": "The version is used for the visible name of the case definition in the UI",
+      "versionTooltip": "The version is used for the visible version of the case definition in the UI",
       "description": "Case definition description",
       "descriptionPlaceholder": "Enter description here",
-      "descriptionTooltip": "The description is used for the visible name of the case definition in the UI"
+      "descriptionTooltip": "The description is used for the visible description of the case definition in the UI"
     },
     "documentDefinition": {
       "cancelModal": {

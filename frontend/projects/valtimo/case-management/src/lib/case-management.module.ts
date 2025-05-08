@@ -92,6 +92,7 @@ import {CaseManagementSelectVersionModalComponent} from './components/case-manag
 import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
 import {CaseManagementTagsComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags.component';
 import {CaseManagementTagsModalComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags-modal/case-management-tags-modal.component';
+import {CaseManagementCreateDraftVersionComponent} from './components/case-management-create-draft-version/case-management-create-draft-version.component';
 
 @NgModule({
   declarations: [
@@ -120,6 +121,7 @@ import {CaseManagementTagsModalComponent} from './components/case-management-det
     CaseManagementDeploymentComponent,
     CaseManagementTagsComponent,
     CaseManagementTagsModalComponent,
+    CaseManagementCreateDraftVersionComponent,
   ],
   imports: [
     CommonModule,

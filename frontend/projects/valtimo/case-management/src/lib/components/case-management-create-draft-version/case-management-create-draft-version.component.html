@@ -1,0 +1,125 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  *ngIf="{
+    versionError: versionError$ | async,
+    createDraftDescription: createDraftDescription$ | async,
+  } as obs"
+  valtimoCdsModal
+  showFooter="true"
+  class="valtimo-definition-create"
+  [open]="open"
+  (close)="onCloseModal()"
+>
+  <cds-modal-header showCloseButton="true" (closeSelect)="onCloseModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'caseManagement.createDefinition.modalTitle' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <div cdsModalContent>
+    <p class="valtimo-definition-create__description">{{ obs.createDraftDescription }}</p>
+
+    <form [formGroup]="draftVersionForm" class="valtimo-definition-create__content">
+      <cds-label>
+        {{ 'caseManagement.createDefinition.name' | translate }}
+
+        <cds-tooltip
+          [caret]="true"
+          [description]="'caseManagement.createDefinition.nameTooltip' | translate"
+        >
+          <svg cdsIcon="information" size="16"></svg>
+        </cds-tooltip>
+
+        <input
+          formControlName="name"
+          cdsText
+          placeholder="{{ 'caseManagement.createDefinition.namePlaceholder' | translate }}"
+          [cdsLayer]="1"
+          [attr.modal-primary-focus]="true"
+        />
+      </cds-label>
+
+      <cds-label>
+        {{ 'caseManagement.createDefinition.key' | translate }}
+
+        <cds-tooltip
+          [caret]="true"
+          [description]="'caseManagement.createDefinition.keyTooltip' | translate"
+        >
+          <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
+        </cds-tooltip>
+
+        <input
+          formControlName="caseDefinitionKey"
+          cdsText
+          placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}"
+          [cdsLayer]="1"
+        />
+      </cds-label>
+
+      <cds-label [invalid]="!!obs.versionError" [invalidText]="obs.versionError | translate">
+        {{ 'caseManagement.createDefinition.version' | translate }}
+
+        <cds-tooltip
+          [caret]="true"
+          [description]="'caseManagement.createDefinition.versionTooltip' | translate"
+        >
+          <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
+        </cds-tooltip>
+
+        <input
+          formControlName="caseDefinitionVersion"
+          cdsText
+          placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}"
+          [cdsLayer]="1"
+          [invalid]="!!obs.versionError"
+        />
+      </cds-label>
+
+      <cds-textarea-label>
+        {{ 'caseManagement.createDefinition.description' | translate }}
+
+        <cds-tooltip
+          [caret]="true"
+          [description]="'caseManagement.createDefinition.descriptionTooltip' | translate"
+        >
+          <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
+        </cds-tooltip>
+
+        <textarea
+          cdsTextArea
+          formControlName="description"
+          placeholder="{{ 'caseManagement.createDefinition.descriptionPlaceholder' | translate }}"
+          [cdsLayer]="1"
+          [rows]="3"
+          [cols]="150"
+        ></textarea>
+      </cds-textarea-label>
+    </form>
+  </div>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCloseModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [disabled]="draftVersionForm.invalid" (click)="onCloseModal(true)">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

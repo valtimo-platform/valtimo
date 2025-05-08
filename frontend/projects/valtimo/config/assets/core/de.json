@@ -804,22 +804,22 @@
       }
     },
     "createDefinition": {
-      "idError": "Dieser Definitionsname wird bereits verwendet. Bitte ändern Sie ihn in einen eindeutigen Namen",
-      "versionError": "Diese Version ist keine gültige Semver-Version",
-      "versionExistsError": "Diese Version existiert bereits für diesen Fall",
+      "idError": "Dieser Definitionsname wird bereits verwendet. Bitte wählen Sie einen eindeutigen Namen.",
+      "versionError": "Diese Version ist keine gültige Semver-Version.",
+      "versionExistsError": "Diese Version existiert bereits für diesen Fall.",
       "modalTitle": "Falldefinition erstellen",
-      "key": "Falldefinitionsschlüssel",
-      "keyPlaceholder": "Der Falldefinitionsschlüssel wird hier automatisch generiert",
-      "keyTooltip": "Der Schlüssel wird für die Systemnamen, $id usw. verwendet. Leerzeichen und Sonderzeichen außer “-”. sind nicht zulässig.",
-      "name": "Falldefinitionsname",
+      "key": "Schlüssel der Falldefinition",
+      "keyPlaceholder": "Der Schlüssel wird hier automatisch generiert",
+      "keyTooltip": "Der Schlüssel wird für Systemnamen wie $id verwendet. Keine Leerzeichen oder Sonderzeichen erlaubt, außer „-“.",
+      "name": "Name der Falldefinition",
       "namePlaceholder": "Name hier eingeben",
-      "nameTooltip": "Der Name wird für den sichtbaren Namen der Falldefinition in der Benutzeroberfläche verwendet.",
-      "version": "Falldefinitionsversion.",
+      "nameTooltip": "Der Name wird in der Benutzeroberfläche als sichtbarer Name der Falldefinition angezeigt.",
+      "version": "Version der Falldefinition",
       "versionPlaceholder": "Version hier eingeben",
-      "versionTooltip": "Die Version wird für den sichtbaren Namen der Falldefinition in der Benutzeroberfläche verwendet.",
+      "versionTooltip": "Die Version wird in der Benutzeroberfläche als sichtbare Versionsbezeichnung angezeigt.",
       "description": "Beschreibung der Falldefinition",
       "descriptionPlaceholder": "Beschreibung hier eingeben",
-      "descriptionTooltip": "Die Beschreibung dient als sichtbarer Name der Falldefinition in der Benutzeroberfläche"
+      "descriptionTooltip": "Die Beschreibung wird in der Benutzeroberfläche als zusätzliche Information zur Falldefinition angezeigt."
     },
     "documentDefinition": {
       "cancelModal": {

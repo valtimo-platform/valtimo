@@ -159,34 +159,11 @@
   titleTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.title"
 ></valtimo-confirmation-modal>
 
-<valtimo-confirmation-modal
-  [showModalSubject$]="showCreateDraftVersionConfirmationModal$"
-  [content]="createDraftDescription$ | async"
-  (confirmEvent)="createDraftVersion()"
-  (cancelEvent)="closeCreateDraftVersionModal()"
-  cancelButtonType="ghost"
-  confirmButtonType="secondary"
-  confirmButtonTextTranslationKey="caseManagement.deployment.createDraftConfirmationModal.confirm"
-  cancelButtonTextTranslationKey="caseManagement.deployment.createDraftConfirmationModal.cancel"
-  titleTranslationKey="caseManagement.deployment.createDraftConfirmationModal.title"
->
-  <form [formGroup]="newDraftVersionForm" class="tag-form">
-    <cds-label
-      [invalid]="!!(versionError$ | async)"
-      [invalidText]="versionError$ | async | translate"
-    >
-      {{ 'caseManagement.deployment.createDraftConfirmationModal.input' | translate }}
-
-      <input
-        cdsText
-        formControlName="caseDefinitionVersion"
-        [invalid]="!!versionError$"
-        [attr.modal-primary-focus]="true"
-        required
-      />
-    </cds-label>
-  </form>
-</valtimo-confirmation-modal>
+<valtimo-case-management-create-draft-version
+  [open]="showCreateDraftVersionConfirmationModal$ | async"
+  [caseDefinitionPayload]="caseDefinitionPayload$ | async"
+  (closeModal)="onCloseCreateDraftVersionModal($event)"
+></valtimo-case-management-create-draft-version>
 
 <ng-template #loadingMessage let-translationKey="translationKey">
   <div>
