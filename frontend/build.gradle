@@ -20,205 +20,209 @@ defaultTasks 'buildArtifacts'
 
 // CONFIGURATION
 buildscript {
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        jcenter()
-        maven { url "https://repo.spring.io/plugins-release" }
-        maven { url "https://repo.spring.io/milestone" }
-        maven { url "https://plugins.gradle.org/m2/" }
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://repo.spring.io/plugins-release" }
+    maven { url "https://repo.spring.io/milestone" }
+    maven { url "https://plugins.gradle.org/m2/" }
 
-    }
-    dependencies {
-        classpath "com.moowork.gradle:gradle-node-plugin:0.12"
-    }
+  }
+  dependencies {
+    classpath "com.moowork.gradle:gradle-node-plugin:1.3.1"
+  }
 }
 
 ext {
-    dockerAccountName = 'ritensebv'
-    dockerRepositoryName = 'valtimo-angular-console'
-    dockerNetworkName = 'ritense_nw'
-    dockerHostname = '723485878263.dkr.ecr.eu-central-1.amazonaws.com'
-    dockerRegion = 'eu-central-1'
+  dockerAccountName = 'ritensebv'
+  dockerRepositoryName = 'valtimo-angular-console'
+  dockerNetworkName = 'ritense_nw'
+  dockerHostname = '723485878263.dkr.ecr.eu-central-1.amazonaws.com'
+  dockerRegion = 'eu-central-1'
 }
 
-if(version == 'unspecified') {
-    ext.templateVersion = ''
-    println 'build version not specified'
+if (version == 'unspecified') {
+  ext.templateVersion = ''
+  println 'build version not specified'
 } else {
-    ext.templateVersion = '-' + version
-    println 'build version specified: [' + templateVersion + ']'
+  ext.templateVersion = '-' + version
+  println 'build version specified: [' + templateVersion + ']'
 }
 
 // CUSTOM TASKS
 //
 class WriteBuildInfoFile extends DefaultTask {
-    String environment = null // 'development'
-    String gitHash = null // 'gitHash'
-    String filePath = null // 'build/resources/main/build.properties'
+  @Input
+  @Optional
+  String environment = null // 'development'
+  @Input
+  @Optional
+  String gitHash = null // 'gitHash'
+  @Input
+  String filePath = null // 'build/resources/main/build.properties'
 
-    @TaskAction
-    def doWriteBuildInfoFile() {
-        def buildPropertiesFile = new File(filePath)
-        def parentFolder = buildPropertiesFile.getParentFile();
+  @TaskAction
+  def doWriteBuildInfoFile() {
+    def buildPropertiesFile = new File(filePath)
+    def parentFolder = buildPropertiesFile.getParentFile();
 
-        if(!parentFolder.exists()) {
-            parentFolder.mkdirs()
-        }
-
-        buildPropertiesFile << "commitId=${gitHash}\n"
-        buildPropertiesFile << "environment=${environment}\n"
+    if (!parentFolder.exists()) {
+      parentFolder.mkdirs()
     }
+
+    buildPropertiesFile << "commitId=${gitHash}\n"
+    buildPropertiesFile << "environment=${environment}\n"
+  }
 }
 
 // FUNCTIONS
 //
 // From https://gist.github.com/JonasGroeger/7620911
 def getCheckedOutGitCommitHash() {
-    def gitFolder = "$projectDir/.git/"
-    def takeFromHash = 12
-    /*
-     * '.git/HEAD' contains either
-     *	  in case of detached head: the currently checked out commit hash
-     *	  otherwise: a reference to a file containing the current commit hash
-     */
-    try {
-        def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
-        def isCommit = head.length == 1 // e5a7c79edabbf7dd39888442df081b1c9d8e88fd
-        // def isRef = head.length > 1	 // ref: refs/heads/master
+  def gitFolder = "$projectDir/.git/"
+  def takeFromHash = 12
+  /*
+   * '.git/HEAD' contains either
+   *  in case of detached head: the currently checked out commit hash
+   *  otherwise: a reference to a file containing the current commit hash
+   */
+  try {
+    def head = new File(gitFolder + "HEAD").text.split(":") // .git/HEAD
+    def isCommit = head.length == 1 // e5a7c79edabbf7dd39888442df081b1c9d8e88fd
+    // def isRef = head.length > 1	 // ref: refs/heads/master
 
-        if(isCommit) return head[0].trim().take(takeFromHash) // e5a7c79edabb
+    if (isCommit) return head[0].trim().take(takeFromHash) // e5a7c79edabb
 
-        def refHead = new File(gitFolder + head[1].trim()) // .git/refs/heads/master
-        refHead.text.trim().take takeFromHash
-    }
-    catch(e) {
-        println 'Error retrieving Git Commit hash'
-        throw new Exception(e)
-    }
+    def refHead = new File(gitFolder + head[1].trim()) // .git/refs/heads/master
+    refHead.text.trim().take takeFromHash
+  }
+  catch (e) {
+    println 'Error retrieving Git Commit hash'
+    throw new Exception(e)
+  }
 }
 
-def removeDanglingImages() {
-    def sout = new StringBuffer(), serr = new StringBuffer()
-    def proc = 'docker images -a -f=dangling=true -q'.execute()
-    proc.consumeProcessOutput(sout, serr)
-    proc.waitForOrKill(1000)
+static def removeDanglingImages() {
+  def sout = new StringBuffer(), serr = new StringBuffer()
+  def proc = 'docker images -a -f=dangling=true -q'.execute()
+  proc.consumeProcessOutput(sout, serr)
+  proc.waitForOrKill(1000)
 
-    List danglingImagesList = sout.toString().split('\n')
-    danglingImagesList.each {
-        if(it != '') {
-            println "Removing old image: '${it}'"
-            "docker rmi -f ${it}".execute()
-        }
+  List danglingImagesList = sout.toString().split('\n')
+  danglingImagesList.each {
+    if (it != '') {
+      println "Removing old image: '${it}'"
+      "docker rmi -f ${it}".execute()
     }
+  }
 }
 
-def getDockerVersion() {
-    def sout = new StringBuffer(), serr = new StringBuffer()
-    def proc = "docker --version".execute()
-    proc.consumeProcessOutput(sout, serr)
-    proc.waitForOrKill(6000)
+static def getDockerVersion() {
+  def sout = new StringBuffer(), serr = new StringBuffer()
+  def proc = "docker --version".execute()
+  proc.consumeProcessOutput(sout, serr)
+  proc.waitForOrKill(6000)
 
-    def dockerVersionString = sout.toString().replaceAll("Docker version (.+),.*", "\$1").trim()
+  def dockerVersionString = sout.toString().replaceAll("Docker version (.+),.*", "\$1").trim()
 
-    return dockerVersionString
+  return dockerVersionString
 }
 
-def emailFlagIsDeprecated () {
-    def major
-    def minor
-    def patch
+static def emailFlagIsDeprecated() {
+  def major
+  def minor
+  def patch
 
-    def dockerVersionString = getDockerVersion()
-    def versionComponents = dockerVersionString.split("\\.")
-    for (n in 0..<versionComponents.size()) {
-        if(n == 0) {
-            major = versionComponents[n].toInteger()
-        }
-        if(n == 1) {
-            minor = versionComponents[n].toInteger()
-        }
-        if(n == 2) {
-            patch = versionComponents[n]
-        }
+  def dockerVersionString = getDockerVersion()
+  def versionComponents = dockerVersionString.split("\\.")
+  for (n in 0..<versionComponents.size()) {
+    if (n == 0) {
+      major = versionComponents[n].toInteger()
     }
-
-    if((major == 17 && minor >= 6) || major > 17) {
-        return true
+    if (n == 1) {
+      minor = versionComponents[n].toInteger()
     }
+    if (n == 2) {
+      patch = versionComponents[n]
+    }
+  }
 
-    return false
+  if ((major == 17 && minor >= 6) || major > 17) {
+    return true
+  }
+
+  return false
 }
 
 def ecrLogin() {
-    println 'Logging in...'
-    def sout = new StringBuffer(), serr = new StringBuffer()
-    def dir = new File(".")
-    def env = System.getenv().collect { k, v -> "$k=$v" }
-    env << "AWS_ACCESS_KEY_ID=$iamAccessKeyId"
-    env << "AWS_SECRET_ACCESS_KEY=$iamSecretAccessKey"
-    def loginCommandString = "aws ecr get-login --region ${dockerRegion}"
-    if(emailFlagIsDeprecated()) {
-        loginCommandString += " --no-include-email"
-    }
-    def proc = loginCommandString.execute(env, dir)
-    proc.consumeProcessOutput(sout, serr)
-    proc.waitForOrKill(6000)
+  println 'Logging in...'
+  def sout = new StringBuffer(), serr = new StringBuffer()
+  def dir = new File(".")
+  def env = System.getenv().collect { k, v -> "$k=$v" }
+  env << "AWS_ACCESS_KEY_ID=$iamAccessKeyId"
+  env << "AWS_SECRET_ACCESS_KEY=$iamSecretAccessKey"
+  def loginCommandString = "aws ecr get-login --region ${dockerRegion}"
+  if (emailFlagIsDeprecated()) {
+    loginCommandString += " --no-include-email"
+  }
+  def proc = loginCommandString.execute(env, dir)
+  proc.consumeProcessOutput(sout, serr)
+  proc.waitForOrKill(6000)
 
-    List loginCommandList = sout.toString().split('\n')
-    loginCommandList.each {
-        if(it != '') {
-            println "Processing response: '${it}'"
-            def loginProc = it.execute()
-            loginProc.waitForOrKill(6000)
-        }
+  List loginCommandList = sout.toString().split('\n')
+  loginCommandList.each {
+    if (it != '') {
+      println "Processing response: '${it}'"
+      def loginProc = it.execute()
+      loginProc.waitForOrKill(6000)
     }
+  }
 }
 
 def tagImage() {
-    println 'Tagging image...'
-    def sout = new StringBuffer(), serr = new StringBuffer()
-    def proc = "docker tag ${dockerAccountName}/${dockerRepositoryName}:${version} ${dockerHostname}/${dockerRepositoryName}:${version}".execute()
-    proc.consumeProcessOutput(sout, serr)
-    proc.waitForOrKill(2000)
+  println 'Tagging image...'
+  def sout = new StringBuffer(), serr = new StringBuffer()
+  def proc = "docker tag ${dockerAccountName}/${dockerRepositoryName}:${version} ${dockerHostname}/${dockerRepositoryName}:${version}".execute()
+  proc.consumeProcessOutput(sout, serr)
+  proc.waitForOrKill(2000)
 }
 
 def getEnvironmentString() {
-    String result = 'development'
-    def calledTaskNames = project.gradle.startParameter.taskNames
-    for (n in 0..<calledTaskNames.size()) {
-        def taskName = calledTaskNames[n]
-        if(taskName.toLowerCase().contains("test")) {
-            result = 'test'
-            break
-        }
-        if(taskName.toLowerCase().contains("production") || taskName.toLowerCase().contains("pushimage")) {
-            result = 'production'
-            break
-        }
+  String result = 'development'
+  def calledTaskNames = project.gradle.startParameter.taskNames
+  for (n in 0..<calledTaskNames.size()) {
+    def taskName = calledTaskNames[n]
+    if (taskName.toLowerCase().contains("test")) {
+      result = 'test'
+      break
     }
-    return result
+    if (taskName.toLowerCase().contains("production") || taskName.toLowerCase().contains("pushimage")) {
+      result = 'production'
+      break
+    }
+  }
+  return result
 }
 
 def cleanTags() {
-	"docker rmi -f ${dockerAccountName}/${dockerRepositoryName}:${version}".execute()
-	"docker rmi -f ${dockerHostname}/${dockerRepositoryName}:${version}".execute()
-	println "Removed docker images"
+  "docker rmi -f ${dockerAccountName}/${dockerRepositoryName}:${version}".execute()
+  "docker rmi -f ${dockerHostname}/${dockerRepositoryName}:${version}".execute()
+  println "Removed docker images"
 }
 
 
 // TASKS
 task makeBuildInfoFile(type: WriteBuildInfoFile) {
-    gitHash = getCheckedOutGitCommitHash()
-    filePath = 'deployment/build.properties'
+  gitHash = getCheckedOutGitCommitHash()
+  filePath = 'deployment/build.properties'
 }
 
 task copyDockerfileToDeploymentContext(type: Copy) {
-    from '.'
-    into 'deployment'
-    include 'Dockerfile'
+  from '.'
+  into 'deployment'
+  include 'Dockerfile'
 
-    outputs.files file('deployment/Dockerfile')
+  outputs.files file('deployment/Dockerfile')
 }
 
 task copyHttpdFileToDeploymentDir(type: Copy) {
@@ -228,73 +232,73 @@ task copyHttpdFileToDeploymentDir(type: Copy) {
   include('httpd.conf')
 }
 
-task copyDockerFiles(dependsOn: [copyHttpdFileToDeploymentDir,copyDockerfileToDeploymentContext]){
+task copyDockerFiles(dependsOn: [copyHttpdFileToDeploymentDir, copyDockerfileToDeploymentContext]) {
 }
 
-task buildArtifacts(type:NpmTask, dependsOn: [makeBuildInfoFile,copyDockerFiles]) {
-    ext.resolvedEnv = (project.hasProperty('env')) ? env : 'test'
-    def buildTask = "build"
-    if (ext.resolvedEnv.equalsIgnoreCase("test")) {
-      buildTask = "buildTest"
-    }
-    println "Using buildtask : ${buildTask}"
-    args = ['run', buildTask]
+task buildArtifacts(type: NpmTask, dependsOn: [makeBuildInfoFile, copyDockerFiles]) {
+  ext.resolvedEnv = (project.hasProperty('env')) ? env : 'test'
+  def buildTask = "build"
+  if (ext.resolvedEnv.equalsIgnoreCase("test")) {
+    buildTask = "buildTest"
+  }
+  println "Using buildtask : ${buildTask}"
+  args = ['run', buildTask]
 }
 
 buildArtifacts.dependsOn 'npmInstall'
 
-task runDockerBuild(type:Exec) {
-	doFirst {
-        removeDanglingImages()
-    }
+task runDockerBuild(type: Exec) {
+  doFirst {
+    removeDanglingImages()
+  }
 
-	inputs.file(new File("deployment/Dockerfile"))
+  inputs.file(new File("deployment/Dockerfile"))
   inputs.file(new File("deployment/httpd.conf"))
 
-	outputs.upToDateWhen {
-		// let execution of this task depend only on the input
-		return true
-	}
+  outputs.upToDateWhen {
+    // let execution of this task depend only on the input
+    return true
+  }
 
-	commandLine 'docker', 'build', '--no-cache','-t', "${dockerAccountName}/${dockerRepositoryName}:${version}", '-f', "deployment${File.separator}Dockerfile", 'deployment'
+  commandLine 'docker', 'build', '--no-cache', '-t', "${dockerAccountName}/${dockerRepositoryName}:${version}", '-f', "deployment${File.separator}Dockerfile", 'deployment'
 }
 
-task pushImage(type:Exec, dependsOn: [runDockerBuild]) {
-    doFirst {
-        ecrLogin()
-        tagImage()
-    }
+task pushImage(type: Exec, dependsOn: [runDockerBuild]) {
+  doFirst {
+    ecrLogin()
+    tagImage()
+  }
 
-    commandLine 'docker', 'push', "${dockerHostname}/${dockerRepositoryName}:${version}"
+  commandLine 'docker', 'push', "${dockerHostname}/${dockerRepositoryName}:${version}"
 
-    doLast {
-        cleanTags()
-    }
+  doLast {
+    cleanTags()
+  }
 }
 
 task stopDockerLocal(type: Exec) {
-    commandLine 'docker', 'rm', '-f', dockerRepositoryName
-    ignoreExitValue = true
+  commandLine 'docker', 'rm', '-f', dockerRepositoryName
+  ignoreExitValue = true
 }
 
-task deployToLocalhost(type: Exec, dependsOn: [buildArtifacts,runDockerBuild, stopDockerLocal]) {
-	group = 'deployment'
-	executable 'docker'
+task deployToLocalhost(type: Exec, dependsOn: [buildArtifacts, runDockerBuild, stopDockerLocal]) {
+  group = 'deployment'
+  executable 'docker'
 
-	args 'run', '-d', '-p', '80:80', '--name', "$dockerRepositoryName", "--net=${dockerNetworkName}"
+  args 'run', '-d', '-p', '80:80', '--name', "$dockerRepositoryName", "--net=${dockerNetworkName}"
 
-	// map local project folders to docker container
-	String sourceProjectVolume = project.projectDir.absolutePath.charAt(0)
-	String sourceProjectDirAsCygwinPath = "/${sourceProjectVolume.toLowerCase()}${project.projectDir.absolutePath.replace("${sourceProjectVolume}:", '')}".replace('\\', '/')
+  // map local project folders to docker container
+  String sourceProjectVolume = project.projectDir.absolutePath.charAt(0)
+  String sourceProjectDirAsCygwinPath = "/${sourceProjectVolume.toLowerCase()}${project.projectDir.absolutePath.replace("${sourceProjectVolume}:", '')}".replace('\\', '/')
 
-	args '-e', 'bpcHost=valtimo-engine.ritense_nw:8080'
+  args '-e', 'bpcHost=valtimo-engine.ritense_nw:8080'
 
-	args "${dockerAccountName}/${dockerRepositoryName}:${version}"
+  args "${dockerAccountName}/${dockerRepositoryName}:${version}"
 }
 
 // HELPER FUNCTIONS
-task setupApachePortForwarding(type:Exec) {
-    group = 'build setup'
-    commandLine 'vboxmanage', 'modifyvm', '"default"', '--natpf1', '"apache,tcp,127.0.0.1,80,,80"'
+task setupApachePortForwarding(type: Exec) {
+  group = 'build setup'
+  commandLine 'vboxmanage', 'modifyvm', '"default"', '--natpf1', '"apache,tcp,127.0.0.1,80,,80"'
 }
 
