@@ -60,7 +60,6 @@
       formControlName="collection"
       [attr.data-carbon-theme]="obs.theme"
       [documentDefinitionName]="documentDefinitionName$ | async"
-      [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
       [type]="ValuePathType.COLLECTION"
       (collectionSelected)="onCollectionSelected($event)"
     ></valtimo-value-path-selector>

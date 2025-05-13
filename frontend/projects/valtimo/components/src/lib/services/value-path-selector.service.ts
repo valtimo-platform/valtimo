@@ -34,7 +34,7 @@ import {isEqual} from 'lodash';
   providedIn: 'root',
 })
 export class ValuePathSelectorService extends BaseApiService implements OnDestroy {
-  private _prefixes: ValuePathSelectorPrefix[];
+  private _prefixes: (ValuePathSelectorPrefix | string)[];
   private _documentDefinitionName: string;
   private _version: ValuePathVersionArgument;
 
@@ -79,12 +79,12 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
         ? `/management/v2/value-resolver/document-definition/${documentDefinitionName}/keys`
         : `/management/v2/value-resolver/document-definition/${documentDefinitionName}/version/${version}/keys`;
 
-    const prefixesWithoutCache: ValuePathSelectorPrefix[] = prefixes.filter(
+    const prefixesWithoutCache: (ValuePathSelectorPrefix | string)[] = this._prefixes.filter(
       (prefix: ValuePathSelectorPrefix) => !this.getCacheResult(prefix, type)
     );
 
     return (
-      prefixesWithoutCache.length > 0
+      prefixesWithoutCache.length > 0 || this._prefixes.length === 0
         ? this.httpClient.post<ValuePathResponse[]>(this.getApiUrl(url), {
             prefixes: prefixesWithoutCache,
             type,
@@ -92,6 +92,8 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
         : of([])
     ).pipe(
       tap((results: ValuePathResponse[]) => {
+        if (this._prefixes.length === 0) this._prefixes = this.getPrefixesFromResults(results);
+
         if (type === ValuePathType.FIELD)
           this.cacheMapping(
             results.map((result: ValuePathResponse) => ({path: result.path})),
@@ -104,7 +106,10 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
           );
       }),
       map(() =>
-        prefixes.reduce((acc, curr) => [...acc, ...(this.getCacheResult(curr, type) ?? [])], [])
+        this._prefixes.reduce(
+          (acc, curr) => [...acc, ...(this.getCacheResult(curr, type) ?? [])],
+          []
+        )
       )
     );
   }
@@ -119,7 +124,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
   }
 
   private getCacheResult(
-    prefix: ValuePathSelectorPrefix,
+    prefix: ValuePathSelectorPrefix | string,
     type: ValuePathType
   ): ValuePathItem[] | undefined {
     return this._cache[this._documentDefinitionName]?.[this._version]?.[prefix]?.[type];
@@ -152,9 +157,11 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     const prefixResults = this._prefixes.reduce(
       (acc, curr) => ({
         ...acc,
-        [curr]: {
-          [type]: results.filter((result: ValuePathItem) => result.path.split(':')[0] === curr),
-        },
+        ...(!this.getCacheResult(curr, type) && {
+          [curr]: {
+            [type]: results.filter((result: ValuePathItem) => result.path.split(':')[0] === curr),
+          },
+        }),
       }),
       {}
     );
@@ -166,5 +173,9 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     };
 
     this._cache = deepmerge(this._cache, tempCache);
+  }
+
+  private getPrefixesFromResults(results: ValuePathResponse[]): string[] {
+    return [...new Set(results.map((result: ValuePathResponse) => result.path.split(':')[0]))];
   }
 }

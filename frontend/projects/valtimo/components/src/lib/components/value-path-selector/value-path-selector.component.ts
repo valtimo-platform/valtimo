@@ -151,8 +151,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this._version$.next(value);
   }
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
-    if (!value) return;
-    this._prefixesSubject$.next(value);
+    this._prefixes$.next(value ?? []);
   }
   @Input() public label = '';
   @Input() public tooltip = '';
@@ -182,10 +181,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     return this._documentDefinitionNameSubject$.pipe(filter(value => !!value));
   }
   private readonly _version$ = new BehaviorSubject<number | null>(null);
-  private readonly _prefixesSubject$ = new BehaviorSubject<ValuePathSelectorPrefix[] | null>(null);
-  private get _prefixes$(): Observable<ValuePathSelectorPrefix[]> {
-    return this._prefixesSubject$.pipe(filter(value => !!value));
-  }
+  private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
 
   private readonly _inputMode$ = new BehaviorSubject<ValuePathSelectorInputMode>(
     ValuePathSelectorInputMode.DROPDOWN
