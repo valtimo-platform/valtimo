@@ -13,17 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, ViewChild} from '@angular/core';
+import {Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {MenuService, ModalComponent} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/config';
 import {
   DocumentDefinition,
   DocumentService,
   UndeployDocumentDefinitionResult,
 } from '@valtimo/document';
-import {MenuService, ModalComponent} from '@valtimo/components';
-import {ToastrService} from 'ngx-toastr';
-import {Router} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
 
 @Component({
   standalone: false,
@@ -37,10 +36,10 @@ export class CaseManagementRemoveModalComponent {
 
   constructor(
     private documentService: DocumentService,
-    private toasterService: ToastrService,
     private router: Router,
     private translateService: TranslateService,
-    private menuService: MenuService
+    private menuService: MenuService,
+    private readonly globalNotificationService: GlobalNotificationService
   ) {}
 
   public openModal(documentDefinition: DocumentDefinition): void {
@@ -55,9 +54,10 @@ export class CaseManagementRemoveModalComponent {
         () => {
           this.menuService.reload();
           this.router.navigate(['/case-management']);
-          this.toasterService.success(
-            this.translateService.instant('remove-document-definition-success')
-          );
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('remove-document-definition-success'),
+            type: 'success',
+          });
         },
         (result: UndeployDocumentDefinitionResult) => {
           this.errors = result.errors;

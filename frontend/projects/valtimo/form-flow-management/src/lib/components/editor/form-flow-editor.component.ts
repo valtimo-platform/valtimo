@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
-import {FormFlowService} from '../../services/form-flow.service';
+import {ActivatedRoute, Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {
+  EditorModel,
+  PageHeaderService,
+  PageTitleService,
+} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/config';
+import {ListItem} from 'carbon-components-angular/dropdown';
 import {
   BehaviorSubject,
   combineLatest,
@@ -30,19 +37,10 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {ActivatedRoute, Router} from '@angular/router';
-import {
-  CARBON_CONSTANTS,
-  EditorModel,
-  PageHeaderService,
-  PageTitleService,
-} from '@valtimo/components';
 import {FormFlowDefinition, FormFlowDefinitionId, LoadedValue} from '../../models';
-import {TranslateService} from '@ngx-translate/core';
 import {FormFlowDownloadService} from '../../services/form-flow-download.service';
-import {ListItem} from 'carbon-components-angular/dropdown';
+import {FormFlowService} from '../../services/form-flow.service';
 import formFlowSchemaJson from './formflow.schema.json';
-import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   standalone: false,
@@ -238,8 +236,6 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
         key,
       }),
       type: 'success',
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
       title: this.translateService.instant('formFlow.savedSuccessTitle'),
     });
   }

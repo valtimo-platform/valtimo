@@ -16,7 +16,6 @@
 
 const CARBON_CONSTANTS = {
   modalAnimationMs: 240,
-  notificationDuration: 4000,
 };
 
 export {CARBON_CONSTANTS};

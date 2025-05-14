@@ -29,18 +29,17 @@ import {
 import {toObservable} from '@angular/core/rxjs-interop';
 import {Edit16, Save16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {BasicCaseWidget, CaseWidgetsRes} from '@valtimo/case';
 import {
-  CARBON_CONSTANTS,
   ConfirmationModalComponent,
   ConfirmationModalModule,
   EditorModel,
   EditorModule,
 } from '@valtimo/components';
-import {BasicCaseWidget, CaseWidgetsRes} from '@valtimo/case';
+import {GlobalNotificationService} from '@valtimo/config';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, take} from 'rxjs';
 import {WidgetJsonEditorService, WidgetTabManagementService} from '../../../../../../../services';
-import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-case-management-widgets-json-editor',
@@ -155,8 +154,6 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
             type: 'success',
             title: this.translateService.instant('interface.success'),
             message: this.translateService.instant('widgetTabManagement.notification.success'),
-            showClose: true,
-            duration: CARBON_CONSTANTS.notificationDuration,
           });
           this.widgetJsonEditorService.showPendingModal.set(false);
           this.editActive.set(false);
@@ -169,8 +166,6 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
             type: 'error',
             title: this.translateService.instant('interface.error'),
             message: this.translateService.instant('widgetTabManagement.notification.error'),
-            showClose: true,
-            duration: CARBON_CONSTANTS.notificationDuration,
           });
         },
       });

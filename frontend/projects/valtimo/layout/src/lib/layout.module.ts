@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {LayoutComponent} from './components/layout/layout.component';
+import {RouterModule} from '@angular/router';
 import {
   AlertModule,
   LeftSidebarModule,
@@ -25,10 +25,10 @@ import {
   RightSidebarModule,
   TopbarModule,
 } from '@valtimo/components';
-import {RouterModule} from '@angular/router';
-import {LayoutPublicComponent} from './components/layout-public/layout-public.component';
+import {GlobalNotificationComponent} from '@valtimo/config';
 import {LayoutInternalComponent} from './components/layout-internal/layout-internal.component';
-import {CommonModule} from '@angular/common';
+import {LayoutPublicComponent} from './components/layout-public/layout-public.component';
+import {LayoutComponent} from './components/layout/layout.component';
 
 @NgModule({
   declarations: [LayoutComponent, LayoutPublicComponent, LayoutInternalComponent],
@@ -42,6 +42,7 @@ import {CommonModule} from '@angular/common';
     AlertModule,
     CommonModule,
     PromptModule,
+    GlobalNotificationComponent,
   ],
   exports: [LayoutComponent],
 })

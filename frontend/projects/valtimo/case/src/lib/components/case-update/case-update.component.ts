@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, OnInit} from '@angular/core';
-import {TaskService} from '@valtimo/task';
-import {ActivatedRoute} from '@angular/router';
-import {ToastrService} from 'ngx-toastr';
 import {Location} from '@angular/common';
-import moment from 'moment';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {GlobalNotificationService} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
+import {TaskService} from '@valtimo/task';
+import moment from 'moment';
 import {CaseService} from '../../services/case.service';
+import {TranslateService} from '@ngx-translate/core';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -42,12 +42,13 @@ export class CaseUpdateComponent implements OnInit {
   public customDefinitions: any = {};
 
   constructor(
-    private readonly taskService: TaskService,
+    private readonly caseService: CaseService,
     private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute,
-    private readonly toastr: ToastrService,
+    private readonly globalNotificationService: GlobalNotificationService,
     private readonly location: Location,
-    private readonly caseService: CaseService
+    private readonly route: ActivatedRoute,
+    private readonly taskService: TaskService,
+    private readonly translateService: TranslateService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentDefinitionName = snapshot.get('documentDefinitionName') || '';
@@ -106,7 +107,10 @@ export class CaseUpdateComponent implements OnInit {
     };
     this.documentService.modifyDocument(document).subscribe(result => {
       this.document = result.document;
-      this.toastr.success('Document aangepast');
+      this.globalNotificationService.showToast({
+        title: this.translateService.instant('case.caseUpdated'),
+        type: 'success',
+      });
       this.location.back();
     });
   }
@@ -123,8 +127,11 @@ export class CaseUpdateComponent implements OnInit {
       taskId: this.task.task.id,
     };
 
-    this.documentService.modifyDocumentAndCompleteTask(documentData).subscribe(result => {
-      this.toastr.success(this.task.task.name + ' has successfully been completed');
+    this.documentService.modifyDocumentAndCompleteTask(documentData).subscribe(() => {
+      this.globalNotificationService.showToast({
+        title: `${this.task.task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`,
+        type: 'success',
+      });
       this.location.back();
     });
   }

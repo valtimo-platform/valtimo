@@ -152,8 +152,13 @@
       "noZaakFoundTitle": "Geen Zaak gevonden",
       "noZaakFound": "Er konden geen bestanden worden opgehaald omdat er voor dit dossier geen Zaak is gevonden.",
       "noFilesTitle": "Geen bestanden",
-      "noFiles": "Geen bestanden gevonden voor deze zaak."
+      "noFiles": "Geen bestanden gevonden voor deze zaak.",
+      "uploadSuccessful": "Document succesvol geüpload",
+      "uploadFailed": "Het uploaden van het document naar de case is mislukt",
+      "removeSuccessful": "Document succesvol uit de zaak verwijderd",
+      "removeFailed": "Het verwijderen van het document uit de zaak is mislukt"
     },
+    "caseUpdated": "Zaak aangepast",
     "startSubProcess": "Start",
     "noLinkedStartProcessNotification": "Er is geen startformulier gekoppeld",
     "noLinkedProcessNotification": "Er is geen formulier gekoppeld",
@@ -1312,6 +1317,10 @@
       "serviceTaskUnlinkFailed": "Kan servicetaak niet ontkoppelen"
     },
     "linkZaakType": "Zaaktype koppelen",
+    "linkSuccessful": "Zaaktype succesvol gekoppeld aan zaak",
+    "linkFailed": "Zaaktype kan niet aan zaak worden gekoppeld",
+    "delinkSuccessful": "Zaaktype succesvol losgekoppeld",
+    "delinkFailed": "Zaaktype kan niet worden losgekoppeld",
     "autoCreateForCase": "Automatisch aanmaken voor elk dossier",
     "selectZaakTypeForCase": "Kies zaaktype voor dossier",
     "selectZaakType": "Kies zaaktype",
@@ -1981,5 +1990,6 @@
     "submitButtonText": "Stel einddatum in",
     "dueDateText": "Einddatum:",
     "removeButtonText": "Einddatum verwijderen"
-  }
+  },
+  "processStartSuccessful": "{{processName}} is succesvol gestart"
 }

@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {ActivatedRoute, Router, RouterOutlet} from '@angular/router';
-import {CARBON_CONSTANTS} from '@valtimo/components';
-import {FormManagementCreateComponent} from '../form-management-create';
-import {FormManagementListComponent} from '../form-management-list';
+import {TranslateService} from '@ngx-translate/core';
+import {GlobalNotificationService} from '@valtimo/config';
 import {ButtonModule} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
+import {FormManagementCreateComponent} from '../form-management-create';
 import {FormManagementEditComponent} from '../form-management-edit';
-import {TranslateService} from '@ngx-translate/core';
-import {GlobalNotificationService} from '@valtimo/layout';
+import {FormManagementListComponent} from '../form-management-list';
 
 @Component({
   templateUrl: './form-management.component.html',
@@ -71,8 +69,6 @@ export class FormManagementComponent {
 
     this.notificationService.showToast({
       type: 'success',
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
       title: this.translateService.instant('formManagement.notifications.created'),
     });
 
@@ -84,8 +80,6 @@ export class FormManagementComponent {
 
     this.notificationService.showToast({
       type: 'success',
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
       title: this.translateService.instant('formManagement.notifications.created'),
     });
 

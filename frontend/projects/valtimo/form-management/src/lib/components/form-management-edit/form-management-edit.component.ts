@@ -1,3 +1,4 @@
+import {CommonModule} from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -7,25 +8,13 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {BehaviorSubject, combineLatest, map, Observable, of, Subscription} from 'rxjs';
-import {distinctUntilChanged, filter, switchMap, take, tap} from 'rxjs/operators';
+import {ArrowLeft16} from '@carbon/icons';
+import {FormioForm} from '@formio/angular';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
-  ButtonModule,
-  DialogModule,
-  IconModule,
-  IconService,
-  InputModule,
-  LoadingModule,
-  ModalModule,
-  ModalService,
-  TabsModule,
-  TagModule,
-} from 'carbon-components-angular';
-import {
   BreadcrumbService,
-  CARBON_CONSTANTS,
   CarbonListModule,
   ConfirmationModalModule,
   EditorModel,
@@ -40,16 +29,26 @@ import {
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
-import {FormManagementService} from '../../services';
+import {GlobalNotificationService} from '@valtimo/config';
+import {
+  ButtonModule,
+  DialogModule,
+  IconModule,
+  IconService,
+  InputModule,
+  LoadingModule,
+  ModalModule,
+  ModalService,
+  TabsModule,
+  TagModule,
+} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, of, Subscription} from 'rxjs';
+import {distinctUntilChanged, filter, switchMap, take, tap} from 'rxjs/operators';
 import {EDIT_TABS, FormDefinition, ModifyFormDefinitionRequest} from '../../models';
-import {FormioForm} from '@formio/angular';
-import {CommonModule} from '@angular/common';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormManagementService} from '../../services';
+import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
 import {FormManagementDuplicateComponent} from '../form-management-duplicate';
 import {FormManagementUploadComponent} from '../form-management-upload';
-import {ArrowLeft16} from '@carbon/icons';
-import {GlobalNotificationService} from '@valtimo/layout';
-import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
 
 @Component({
   selector: 'valtimo-form-management-edit',
@@ -218,8 +217,6 @@ export class FormManagementEditComponent
         next: () => {
           this.notificationService.showToast({
             type: 'success',
-            duration: CARBON_CONSTANTS.notificationDuration,
-            showClose: true,
             title: this.translateService.instant('formManagement.notifications.deleted'),
           });
           this.navigateBack();
@@ -227,8 +224,6 @@ export class FormManagementEditComponent
         error: () => {
           this.notificationService.showToast({
             type: 'error',
-            duration: CARBON_CONSTANTS.notificationDuration,
-            showClose: true,
             title: this.translateService.instant('formManagement.notifications.deletionError'),
           });
         },
@@ -273,8 +268,6 @@ export class FormManagementEditComponent
         next: () => {
           this.notificationService.showToast({
             type: 'success',
-            duration: CARBON_CONSTANTS.notificationDuration,
-            showClose: true,
             title: this.translateService.instant('formManagement.notifications.deployed'),
           });
 
@@ -284,8 +277,6 @@ export class FormManagementEditComponent
         error: () => {
           this.notificationService.showToast({
             type: 'error',
-            duration: CARBON_CONSTANTS.notificationDuration,
-            showClose: true,
             title: this.translateService.instant('formManagement.notifications.deploymentError'),
           });
         },

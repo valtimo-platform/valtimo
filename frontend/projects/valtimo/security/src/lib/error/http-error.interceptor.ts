@@ -21,7 +21,7 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ToastrService} from 'ngx-toastr';
+import {GlobalNotificationService} from '@valtimo/config';
 import {Observable, throwError} from 'rxjs';
 import {catchError} from 'rxjs/operators';
 import {InterceptorSkip} from './error';
@@ -30,7 +30,7 @@ import {InterceptorSkip} from './error';
   providedIn: 'root',
 })
 export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(private readonly toastr: ToastrService) {}
+  constructor(private readonly globalNotificationService: GlobalNotificationService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let skipStatusCodes: string[] = [];
@@ -70,9 +70,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             errorMessage = `Error Code: ${error?.status} </br>Message: ${error?.message}`;
           }
         }
-        this.toastr.warning(`${errorMessage}`, `An unexpected error occurred`, {
-          enableHtml: true,
-          tapToDismiss: false,
+        this.globalNotificationService.showToast({
+          title: 'An unexpected error occurred',
+          caption: errorMessage,
+          type: 'error',
         });
         return throwError(() => error);
       })

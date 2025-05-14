@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, OnInit} from '@angular/core';
-import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl, Validators} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ToastrService} from 'ngx-toastr';
+import {TranslateService} from '@ngx-translate/core';
+import {GlobalNotificationService} from '@valtimo/config';
 import {ProcessService} from '@valtimo/process';
 
 @Component({
@@ -34,11 +34,12 @@ export class StartProcessCustomFormComponent implements OnInit {
   public submitted = false;
 
   constructor(
-    private processService: ProcessService,
-    private route: ActivatedRoute,
-    private formBuilder: UntypedFormBuilder,
-    private toastr: ToastrService,
-    private router: Router
+    private readonly formBuilder: UntypedFormBuilder,
+    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly processService: ProcessService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly translateService: TranslateService
   ) {
     this.key = this.route.snapshot.paramMap.get('key');
   }
@@ -82,12 +83,15 @@ export class StartProcessCustomFormComponent implements OnInit {
       delete variables[this.businessKeyFieldId];
     }
     if (this.key && businessKey) {
-      this.processService
-        .startProcesInstance(this.key, businessKey, variables)
-        .subscribe(response => {
-          this.toastr.success(this.processDefinition.name + ' has successfully been started');
-          this.router.navigate(['/cases/' + this.key]);
+      this.processService.startProcesInstance(this.key, businessKey, variables).subscribe(() => {
+        this.globalNotificationService.showToast({
+          title: this.translateService.instant('processStartSuccessful', {
+            processName: this.processDefinition.name,
+          }),
+          type: 'success',
         });
+        this.router.navigate(['/cases/' + this.key]);
+      });
     }
   }
 }

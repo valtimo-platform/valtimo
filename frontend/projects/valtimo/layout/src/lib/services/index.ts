@@ -15,4 +15,3 @@
  */
 
 export * from './layout.service';
-export * from './global-notifcation-service';

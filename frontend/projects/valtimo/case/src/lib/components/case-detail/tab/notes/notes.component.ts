@@ -17,10 +17,14 @@ import {Component, HostBinding, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {Pagination, PromptService, TimelineItem, TimelineItemImpl} from '@valtimo/components';
-import {Page} from '@valtimo/config';
+import {
+  Pagination,
+  PromptService,
+  TimelineItem,
+  TimelineItemImpl,
+} from '@valtimo/components';
+import {GlobalNotificationService, Page} from '@valtimo/config';
 import moment from 'moment';
-import {ToastrService} from 'ngx-toastr';
 import {BehaviorSubject, combineLatest, map, Observable, of} from 'rxjs';
 import {switchMap, take, tap} from 'rxjs/operators';
 import {Note} from '../../../../models/notes.model';
@@ -148,11 +152,11 @@ export class CaseDetailTabNotesComponent implements OnInit {
   );
 
   constructor(
+    private readonly globalNotificationService: GlobalNotificationService,
     private readonly notesService: NotesService,
     private readonly permissionService: PermissionService,
     private readonly promptService: PromptService,
     private readonly route: ActivatedRoute,
-    private readonly toastrService: ToastrService,
     private readonly translateService: TranslateService
   ) {}
 
@@ -190,7 +194,10 @@ export class CaseDetailTabNotesComponent implements OnInit {
     this.notesService.updateNote(content.data.customData.id, content.formData).subscribe(() => {
       this.notesService.refresh();
       this.notesService.hideModal();
-      this.toastrService.success(this.translateService.instant('case.notes.editedMessage'));
+      this.globalNotificationService.showToast({
+        title: this.translateService.instant('case.notes.editedMessage'),
+        type: 'success',
+      });
     });
   }
 
@@ -215,9 +222,10 @@ export class CaseDetailTabNotesComponent implements OnInit {
       confirmCallBackFunction: () => {
         this.notesService.deleteNote(data.customData.id).subscribe(() => {
           this.notesService.refresh();
-          this.toastrService.success(
-            this.translateService.instant('case.notes.deleteConfirmation.deletedMessage')
-          );
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('case.notes.deleteConfirmation.deletedMessage'),
+            type: 'success',
+          });
         });
       },
     });

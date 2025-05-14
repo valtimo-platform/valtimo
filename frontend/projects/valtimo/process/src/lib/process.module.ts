@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
   BpmnJsDiagramModule,
   CamundaFormModule,
@@ -23,8 +23,6 @@ import {
   TimelineModule,
   WidgetModule,
 } from '@valtimo/components';
-import {ToastrModule} from 'ngx-toastr';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ProcessDiagramComponent} from './process-diagram/process-diagram.component';
 
 @NgModule({
@@ -37,10 +35,6 @@ import {ProcessDiagramComponent} from './process-diagram/process-diagram.compone
     BpmnJsDiagramModule,
     CamundaFormModule,
     BrowserAnimationsModule,
-    ToastrModule.forRoot({
-      positionClass: 'toast-bottom-full-width',
-      preventDuplicates: true,
-    }),
   ],
   exports: [ProcessDiagramComponent],
 })

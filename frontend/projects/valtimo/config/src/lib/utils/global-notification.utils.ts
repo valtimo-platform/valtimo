@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HTTP_INTERCEPTORS} from '@angular/common/http';
-import {NgModule} from '@angular/core';
-import {ErrorRoutingModule} from './error/error-routing.module';
-import {AuthGuardService} from './guard/auth-guard.service';
-import {ZoneOffsetInterceptor} from './interceptors';
 
-@NgModule({
-  imports: [ErrorRoutingModule],
-  providers: [
-    AuthGuardService,
-    {provide: HTTP_INTERCEPTORS, useClass: ZoneOffsetInterceptor, multi: true},
-  ],
-})
-export class SecurityModule {}
+import {NotificationContent} from 'carbon-components-angular';
+
+export const DEFAULT_NOTIFICATION_PARAMS = {
+  duration: 4000,
+  showClose: true,
+};
+
+export const getNotificationObject = (content: NotificationContent): NotificationContent => ({
+  ...DEFAULT_NOTIFICATION_PARAMS,
+  ...content,
+});

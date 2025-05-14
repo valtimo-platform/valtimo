@@ -6,7 +6,6 @@
     "entryFile": "src/public_api.ts"
   },
   "allowedNonPeerDependencies": [
-    "ngx-toastr",
     "@foxythemes/bootstrap-datetime-picker-bs4",
     "bpmn-js",
     "jquery",

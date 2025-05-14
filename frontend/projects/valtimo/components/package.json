@@ -17,7 +17,6 @@
     "@ngx-translate/core": "16.0.4",
     "@ngx-translate/http-loader": "16.0.1",
     "@ng-bootstrap/ng-bootstrap": "11.0.1",
-    "ngx-toastr": "19.0.0",
     "@formio/angular": "8.1.0",
     "monaco-editor": "0.52.2",
     "ngx-spinner": "19.0.0",

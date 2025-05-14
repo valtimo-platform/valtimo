@@ -152,8 +152,13 @@
       "noZaakFoundTitle": "Kein Zaak gefunden",
       "noZaakFound": "Es konnten keine Dateien abgerufen werden, da für diese Zaak kein Fall gefunden wurde.",
       "noFilesTitle": "Keine Dateien",
-      "noFiles": "Für diesen Fall wurden keine Dateien gefunden."
+      "noFiles": "Für diesen Fall wurden keine Dateien gefunden.",
+      "uploadSuccessful": "Dokument erfolgreich hochgeladen",
+      "uploadFailed": "Dokument konnte nicht in den Fall hochgeladen werden",
+      "removeSuccessful": "Dokument erfolgreich aus dem Fall entfernt",
+      "removeFailed": "Dokument konnte nicht aus dem Fall entfernt werden."
     },
+    "caseUpdated": "Fall aktualisiert",
     "startSubProcess": "Starten",
     "noLinkedStartProcessNotification": "Es ist kein Startformular verknüpft",
     "noLinkedProcessNotification": "Es ist kein formular verknüpft",
@@ -1312,6 +1317,10 @@
       "serviceTaskUnlinkFailed": "Fehler beim Aufheben der service task"
     },
     "linkZaakType": "Zaaktyp verknüpfen",
+    "linkSuccessful": "Zaaktype erfolgreich mit Fall verknüpft",
+    "linkFailed": "Zaaktype konnte nicht mit Fall verknüpft werden",
+    "delinkSuccessful": "Zaaktype erfolgreich getrennt",
+    "delinkFailed": "Zaaktype konnte nicht getrennt werden",
     "autoCreateForCase": "Für jeden Case automatisch erstellen",
     "selectZaakTypeForCase": "Wählen Sie den Zaaktyp für die Case",
     "selectZaakType": "Zaaktyp wählen",
@@ -1977,5 +1986,6 @@
     "submitButtonText": "Fälligkeitsdatum festlegen",
     "dueDateText": "Fälligkeitsdatum:",
     "removeButtonText": "Fälligkeitsdatum entfernen"
-  }
+  },
+  "processStartSuccessful": "{{processName}} wurde erfolgreich gestartet."
 }

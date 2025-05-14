@@ -16,6 +16,7 @@
 
 export * from './base-api.service';
 export * from './config.service';
+export * from './global-notification.service';
 export * from './localization.service';
 export * from './menu-include.service';
 export * from './user-settings.service';

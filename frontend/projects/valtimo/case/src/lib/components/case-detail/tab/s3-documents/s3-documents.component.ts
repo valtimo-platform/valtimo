@@ -18,11 +18,10 @@ import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentService, FileSortService, RelatedFile} from '@valtimo/document';
 import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/resource';
-import {ToastrService} from 'ngx-toastr';
 import {map, switchMap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService, GlobalNotificationService} from '@valtimo/config';
 import {PromptService} from '@valtimo/components';
 
 @Component({
@@ -76,15 +75,15 @@ export class CaseDetailTabS3DocumentsComponent implements OnInit {
   );
 
   constructor(
-    private readonly route: ActivatedRoute,
-    private readonly documentService: DocumentService,
-    private readonly toastrService: ToastrService,
-    private readonly uploadProviderService: UploadProviderService,
-    private readonly downloadService: DownloadService,
-    private readonly promptService: PromptService,
-    private readonly translateService: TranslateService,
     private readonly configService: ConfigService,
-    private readonly fileSortService: FileSortService
+    private readonly documentService: DocumentService,
+    private readonly downloadService: DownloadService,
+    private readonly fileSortService: FileSortService,
+    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly promptService: PromptService,
+    private readonly route: ActivatedRoute,
+    private readonly translateService: TranslateService,
+    private readonly uploadProviderService: UploadProviderService
   ) {
     const snapshot = this.route.snapshot.paramMap;
     this.documentId = snapshot.get('documentId') || '';
@@ -107,12 +106,18 @@ export class CaseDetailTabS3DocumentsComponent implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.toastrService.success('Successfully uploaded document to case');
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('case.documenten.uploadSuccessful'),
+            type: 'success',
+          });
           this.refetchDocuments();
           this.uploading$.next(false);
         },
         error: () => {
-          this.toastrService.error('Failed to upload document to case');
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('case.documenten.uploadFailed'),
+            type: 'error',
+          });
           this.uploading$.next(false);
         },
       });
@@ -141,11 +146,17 @@ export class CaseDetailTabS3DocumentsComponent implements OnInit {
       confirmCallBackFunction: () => {
         this.documentService.removeResource(this.documentId, relatedFile.fileId).subscribe(
           () => {
-            this.toastrService.success('Successfully removed document from case');
+            this.globalNotificationService.showToast({
+              title: this.translateService.instant('case.documenten.removeSuccessful'),
+              type: 'success',
+            });
             this.refetchDocuments();
           },
           () => {
-            this.toastrService.error('Failed to remove document from case');
+            this.globalNotificationService.showToast({
+              title: this.translateService.instant('case.documenten.removeFailed'),
+              type: 'success',
+            });
           }
         );
       },

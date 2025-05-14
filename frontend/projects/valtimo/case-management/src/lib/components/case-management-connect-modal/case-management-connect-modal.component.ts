@@ -16,6 +16,7 @@
 import {Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {ModalComponent} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/config';
 import {
   DocumentDefinition,
   DocumentService,
@@ -25,7 +26,6 @@ import {
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {switchMap, take} from 'rxjs';
 import {CaseDetailService} from '../../services';
-import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   standalone: false,

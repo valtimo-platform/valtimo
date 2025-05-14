@@ -13,24 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} from 'rxjs';
-import {CaseSettings, DocumentService} from '@valtimo/document';
-import {ActivatedRoute} from '@angular/router';
 import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
-import {NGXLogger} from 'ngx-logger';
+import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {NotificationService} from 'carbon-components-angular';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/config';
+import {CaseSettings, DocumentService} from '@valtimo/document';
 import {ProcessManagementParams} from '@valtimo/process-management';
+import {NGXLogger} from 'ngx-logger';
+import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} from 'rxjs';
 
 @Component({
   standalone: false,
   selector: 'valtimo-case-management-external-start-form',
   templateUrl: './case-management-external-start-form.component.html',
   styleUrl: './case-management-external-start-form.component.scss',
-  providers: [NotificationService],
 })
 export class CaseManagementExternalStartFormComponent implements OnInit, OnDestroy {
   @Input() public readonly isReadOnly: boolean;
@@ -66,7 +63,7 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
     private readonly logger: NGXLogger,
-    private readonly notificationService: NotificationService
+    private readonly globalNotificationService: GlobalNotificationService
   ) {}
 
   public ngOnInit(): void {
@@ -166,10 +163,8 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
         error: e => {
           this.logger.error('An error occurred while updating case definition settings', e);
 
-          this.notificationService.showToast({
+          this.globalNotificationService.showToast({
             type: 'error',
-            duration: CARBON_CONSTANTS.notificationDuration,
-            showClose: true,
             title: this.translateService.instant(
               'dossierManagement.externalStartForm.notification.error'
             ),
@@ -178,10 +173,8 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
         complete: () => {
           this.logger.debug('Finished updating case definition settings');
 
-          this.notificationService.showToast({
+          this.globalNotificationService.showToast({
             type: 'success',
-            duration: CARBON_CONSTANTS.notificationDuration,
-            showClose: true,
             title: this.translateService.instant(
               'dossierManagement.externalStartForm.notification.success'
             ),

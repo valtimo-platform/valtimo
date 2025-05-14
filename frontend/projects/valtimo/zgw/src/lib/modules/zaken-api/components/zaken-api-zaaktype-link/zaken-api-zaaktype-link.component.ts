@@ -18,9 +18,10 @@ import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16, TrashCan16} from '@carbon/icons';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 import {SpinnerModule} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/config';
 import {PluginConfiguration} from '@valtimo/plugin';
 import {
   CreateZaakTypeLinkRequest,
@@ -41,8 +42,7 @@ import {
   TilesModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {ToastrService} from 'ngx-toastr';
-import {BehaviorSubject, switchMap, finalize} from 'rxjs';
+import {BehaviorSubject, finalize, switchMap} from 'rxjs';
 import {ZakenApiZaaktypeLinkService} from '../../services';
 
 @Component({
@@ -82,10 +82,11 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
   constructor(
+    private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
     private readonly openZaakService: OpenZaakService,
     private readonly route: ActivatedRoute,
-    private readonly toasterService: ToastrService,
+    private readonly translateService: TranslateService,
     private readonly zakenApiZaaktypeLinkService: ZakenApiZaaktypeLinkService
   ) {
     this.iconService.registerAll([Edit16, TrashCan16, Save16]);
@@ -180,11 +181,17 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
       .deleteZaakTypeLink(this._caseDefinitionKey, this._caseVersionTag)
       .subscribe({
         next: () => {
-          this.toasterService.success('Successfully de-linked zaaktype');
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('openZaak.delinkSuccessful'),
+            type: 'success',
+          });
           this.zaakTypeLink$.next(null);
         },
         error: () => {
-          this.toasterService.error('Failed to de-link zaaktype');
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('openZaak.delinkFailed'),
+            type: 'error',
+          });
         },
       });
   }
@@ -206,10 +213,16 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
           };
           this.findZaakType(linkResult.zaakTypeUrl);
           this.findPluginConfiguration(linkResult.zakenApiPluginConfigurationId);
-          this.toasterService.success('Successfully linked zaaktype to case');
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('openZaak.linkSuccessful'),
+            type: 'success',
+          });
         },
         error: () => {
-          this.toasterService.error('Failed to link zaaktype to case');
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('openZaak.linkFailed'),
+            type: 'error',
+          });
         },
       });
   }

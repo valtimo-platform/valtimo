@@ -24,11 +24,11 @@ import {
   ViewChild,
 } from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
 import {ArrowLeft16, Deploy16, Download16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
-  CARBON_CONSTANTS,
   FitPageDirectiveModule,
   ModalService,
   PageHeaderService,
@@ -36,6 +36,7 @@ import {
   PendingChangesComponent,
   RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
+import {GlobalNotificationService, ManagementContext} from '@valtimo/config';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {
   ProcessLinkButtonService,
@@ -92,11 +93,8 @@ import {
   ProcessManagementWindow,
 } from '../../models';
 import {ProcessManagementEditorService, ProcessManagementService} from '../../services';
-import {ValtimoPropertiesProviderModule} from './panel';
 import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
-import {ActivatedRoute, Router} from '@angular/router';
-import {GlobalNotificationService} from '@valtimo/layout';
-import {ManagementContext} from '@valtimo/config';
+import {ValtimoPropertiesProviderModule} from './panel';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -236,21 +234,21 @@ export class ProcessManagementBuilderComponent
   private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly processService: ProcessService,
-    private readonly pageTitleService: PageTitleService,
-    private readonly translateService: TranslateService,
+    private readonly breadcrumbService: BreadcrumbService,
     private readonly iconService: IconService,
-    private readonly pageHeaderService: PageHeaderService,
-    private readonly processManagementEditorService: ProcessManagementEditorService,
+    private readonly logger: NGXLogger,
     private readonly modalService: ModalService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly pageTitleService: PageTitleService,
     private readonly processLinkService: ProcessLinkService,
     private readonly processLinkStateService: ProcessLinkStateService,
+    private readonly processManagementEditorService: ProcessManagementEditorService,
     private readonly processManagementService: ProcessManagementService,
-    private readonly logger: NGXLogger,
+    private readonly processService: ProcessService,
     private readonly route: ActivatedRoute,
-    private readonly notificationService: GlobalNotificationService,
     private readonly router: Router,
-    private readonly breadcrumbService: BreadcrumbService
+    private readonly translateService: TranslateService
   ) {
     super();
     this.iconService.registerAll([Deploy16, Download16, ArrowLeft16]);
@@ -407,8 +405,6 @@ export class ProcessManagementBuilderComponent
     this.notificationService.showToast({
       caption: this.translateService.instant(`processManagement.${notification}Notification`),
       type: notification,
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
       title: this.translateService.instant(`interface.${notification}`),
     });
   }

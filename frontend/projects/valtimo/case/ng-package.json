@@ -6,7 +6,6 @@
   },
   "allowedNonPeerDependencies": [
     "ngx-csv",
-    "ngx-toastr",
     "moment",
     "@ngx-translate/core",
     "@ngx-translate/http-loader",

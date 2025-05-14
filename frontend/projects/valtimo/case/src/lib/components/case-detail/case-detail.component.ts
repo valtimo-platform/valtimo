@@ -31,14 +31,13 @@ import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
   BreadcrumbService,
-  CARBON_CONSTANTS,
   CdsThemeService,
   CurrentCarbonTheme,
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
 } from '@valtimo/components';
-import {ConfigService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/config';
 import {
   CaseStatusService,
   CaseTag,
@@ -54,7 +53,6 @@ import {UserProviderService} from '@valtimo/security';
 import {IntermediateSubmission} from '@valtimo/task';
 import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
-import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -70,6 +68,12 @@ import {
   take,
   tap,
 } from 'rxjs';
+import {
+  CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
+  CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
+  CASE_DETAIL_GUTTER_SIZE,
+  CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
+} from '../../constants';
 import {TabImpl, TabLoaderImpl} from '../../models';
 import {
   CAN_ASSIGN_CASE_PERMISSION,
@@ -78,16 +82,9 @@ import {
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
-import {WidgetsService} from './tab/widgets/widgets.service';
-import {
-  CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
-  CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
-  CASE_DETAIL_GUTTER_SIZE,
-  CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
-} from '../../constants';
 import {CaseDetailLayoutService, CaseService, CaseTabService} from '../../services';
 import {CaseSupportingProcessStartModalComponent} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
-import {GlobalNotificationService} from '@valtimo/layout';
+import {WidgetsService} from './tab/widgets/widgets.service';
 
 @Component({
   standalone: false,
@@ -312,7 +309,6 @@ export class CaseDetailComponent
     private readonly caseStatusService: CaseStatusService,
     private readonly cdsThemeService: CdsThemeService,
     private readonly componentFactoryResolver: ComponentFactoryResolver,
-    private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
     private readonly caseDetailLayoutService: CaseDetailLayoutService,
     private readonly caseService: CaseService,
@@ -643,7 +639,6 @@ export class CaseDetailComponent
           },
         ],
       }),
-      duration: CARBON_CONSTANTS.notificationDuration,
     });
   }
 

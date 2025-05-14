@@ -152,8 +152,13 @@
       "noZaakFoundTitle": "No Zaak found",
       "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
       "noFilesTitle": "No files",
-      "noFiles": "No files found for this case."
+      "noFiles": "No files found for this case.",
+      "uploadSuccessful": "Successfully uploaded document",
+      "uploadFailed": "Failed to upload document to case",
+      "removeSuccessful": "Successfully removed document from case",
+      "removeFailed": "Failed to remove document from case"
     },
+    "caseUpdated": "Case updated",
     "startSubProcess": "Start",
     "noLinkedStartProcessNotification": "There is no start form linked",
     "noLinkedProcessNotification": "There is no form linked",
@@ -1313,6 +1318,10 @@
       "serviceTaskUnlinkFailed": "Failed to unlink Service task"
     },
     "linkZaakType": "Link zaak type",
+    "linkSuccessful": "Successfully linked zaaktype to case",
+    "linkFailed": "Failed to link zaaktype to case",
+    "delinkSuccessful": "Successfully de-linked zaaktype",
+    "delinkFailed": "Failed to de-link zaaktype",
     "autoCreateForCase": "Automatically create for each case",
     "selectZaakTypeForCase": "Select zaak type for case",
     "selectZaakType": "Select zaak type",
@@ -1980,5 +1989,6 @@
     "submitButtonText": "Set due date",
     "dueDateText": "Due date:",
     "removeButtonText": "Remove due date"
-  }
+  },
+  "processStartSuccessful": "{{processName}} has successfully been started"
 }

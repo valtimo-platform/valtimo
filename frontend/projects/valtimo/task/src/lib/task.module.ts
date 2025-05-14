@@ -45,14 +45,13 @@ import {
   TabsModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {ToastrModule} from 'ngx-toastr';
 import {AssignUserToTaskComponent} from './components/assign-user-to-task/assign-user-to-task.component';
+import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-due-date.component';
+import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
+import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
 import {TaskDetailModalComponent} from './components/task-detail-modal/task-detail-modal.component';
 import {TaskListComponent} from './components/task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
-import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
-import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-due-date.component';
 
 @NgModule({
   declarations: [TaskListComponent, TaskDetailModalComponent],
@@ -67,10 +66,6 @@ import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-d
     CamundaFormModule,
     BrowserAnimationsModule,
     FormsModule,
-    ToastrModule.forRoot({
-      positionClass: 'toast-bottom-full-width',
-      preventDuplicates: true,
-    }),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

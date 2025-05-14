@@ -19,7 +19,6 @@ import {DecisionService} from '../decision.service';
 import DmnViewer from 'dmn-js';
 import {DecisionXml} from '../models';
 import {ActivatedRoute} from '@angular/router';
-import {ToastrService} from 'ngx-toastr';
 import {migrateDiagram} from '@bpmn-io/dmn-migrate';
 
 @Component({
@@ -37,7 +36,6 @@ export class DecisionDisplayComponent implements OnInit {
   constructor(
     private readonly decisionService: DecisionService,
     private readonly route: ActivatedRoute,
-    private readonly toasterService: ToastrService
   ) {}
 
   ngOnInit() {

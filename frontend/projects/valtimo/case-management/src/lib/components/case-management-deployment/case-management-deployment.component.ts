@@ -13,21 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
-import {TranslateService} from '@ngx-translate/core';
-import {IconService, Notification} from 'carbon-components-angular';
-import {Return16, Save16, TrashCan16} from '@carbon/icons';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
-import {ActivatedRoute, Router} from '@angular/router';
-import {CaseManagementService} from '../../services';
-import {take, tap} from 'rxjs/operators';
-import {CaseDefinition} from '../../models/case-deployment.model';
-import {BreadcrumbService} from '@valtimo/components';
 import {DatePipe} from '@angular/common';
-import {GlobalNotificationService} from '@valtimo/layout';
-import * as semver from 'semver';
+import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {FormBuilder} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Return16, Save16, TrashCan16} from '@carbon/icons';
+import {TranslateService} from '@ngx-translate/core';
+import {BreadcrumbService} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/config';
+import {IconService, Notification} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
+import {take, tap} from 'rxjs/operators';
+import * as semver from 'semver';
+import {CaseDefinition} from '../../models/case-deployment.model';
+import {CaseManagementService} from '../../services';
 
 @Component({
   standalone: false,

@@ -18,12 +18,13 @@
  * Public API Surface of config
  */
 
+export * from './lib/components/global-notification.component';
 export * from './lib/config.module';
 export * from './lib/constants';
 export * from './lib/extension/extension.component';
 export * from './lib/models';
 export * from './lib/services';
+export * from './lib/testing';
 export * from './lib/translation';
 export * from './lib/utils';
-export * from './lib/testing';
 export * from './lib/zgw';
