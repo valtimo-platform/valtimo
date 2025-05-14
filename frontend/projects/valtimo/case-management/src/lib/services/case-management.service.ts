@@ -128,7 +128,7 @@ export class CaseManagementService extends BaseApiService {
     caseDefinitionVersionTag = '0'
   ): Observable<HttpResponse<Blob>> {
     return this.httpClient.get<Blob>(
-      this.getApiUrl(`management/v1/case/${caseDefinitionKey}/${caseDefinitionVersionTag}/export`),
+      this.getApiUrl(`management/v1/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/export`),
       {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
     );
   }
