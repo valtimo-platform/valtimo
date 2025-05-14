@@ -20,6 +20,7 @@
     isDraftVersion: isDraftVersion$ | async,
     hasConflictingVersions: hasConflictingVersions$ | async,
     notificationContent: notificationContent$ | async,
+    canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
   } as obs"
 >
   <div class="header-buttons">
@@ -27,24 +28,25 @@
       {{ 'caseManagement.deployment.buttons.back' | translate }}
       <svg cdsIcon="return" size="16" class="cds--btn__icon"></svg>
     </button>
+    @if (obs.canUpdateGlobalConfiguration) {
+      @if (obs.isDraftVersion) {
+        <div class="draft-buttons">
+          <button cdsButton="danger" (click)="openDeleteDraftModal()">
+            {{ 'caseManagement.deployment.buttons.delete' | translate }}
+            <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+          </button>
 
-    @if (obs.isDraftVersion) {
-      <div class="draft-buttons">
-        <button cdsButton="danger" (click)="openDeleteDraftModal()">
-          {{ 'caseManagement.deployment.buttons.delete' | translate }}
-          <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
-        </button>
-
-        <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()">
-          {{ 'caseManagement.deployment.buttons.finalize' | translate }}
+          <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()">
+            {{ 'caseManagement.deployment.buttons.finalize' | translate }}
+            <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </div>
+      } @else {
+        <button cdsButton="primary" (click)="openCreateDraftVersionConfirmationModal()">
+          {{ 'caseManagement.deployment.buttons.createDraft' | translate }}
           <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
         </button>
-      </div>
-    } @else {
-      <button cdsButton="primary" (click)="openCreateDraftVersionConfirmationModal()">
-        {{ 'caseManagement.deployment.buttons.createDraft' | translate }}
-        <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
-      </button>
+      }
     }
   </div>
 

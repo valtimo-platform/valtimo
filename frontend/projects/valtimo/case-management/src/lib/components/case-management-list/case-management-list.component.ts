@@ -23,6 +23,7 @@ import moment from 'moment';
 import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
 import {CaseListItem} from '../../models';
 import {CaseManagementService} from '../../services';
+import {EnvironmentService} from '@valtimo/config';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -47,6 +48,9 @@ export class CaseManagementListComponent {
     })
   );
 
+  public readonly canUpdateGlobalConfiguration$ =
+    this.environmentService.canUpdateGlobalConfiguration();
+
   public pagination: Pagination = {
     collectionSize: 0,
     page: 1,
@@ -69,7 +73,8 @@ export class CaseManagementListComponent {
     private readonly iconService: IconService,
     private readonly menuService: MenuService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly environmentService: EnvironmentService
   ) {
     this.iconService.registerAll([Search20, TrashCan20, Upload16]);
   }

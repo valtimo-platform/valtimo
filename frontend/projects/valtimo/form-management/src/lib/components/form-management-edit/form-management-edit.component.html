@@ -20,6 +20,7 @@
     jsonOutput: jsonOutput$ | async,
     compactMode: compactMode$ | async,
     context: context$ | async,
+    canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
   } as obs"
 >
   @if (obs.formDefinition) {
@@ -44,7 +45,7 @@
             jsonEditor;
             context: {
               data: {
-                disabled: obs.formDefinition.readOnly,
+                disabled: obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration,
                 formDefinition: obs.formDefinition,
                 model: obs.jsonFormDefinition,
               },
@@ -113,7 +114,7 @@
       'valtimo-form-management-edit__header-container-case': obs?.context === 'case',
     }"
   >
-    @if (obs.formDefinition.readOnly) {
+    @if (obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration) {
       <cds-tag size="sm" type="blue">{{ 'formManagement.readOnly' | translate }}</cds-tag>
     }
 
@@ -124,13 +125,16 @@
         </cds-overflow-menu-option>
 
         <cds-overflow-menu-option
-          [disabled]="obs.formDefinition.readOnly"
+          [disabled]="obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration"
           (selected)="showUploadModal()"
         >
           {{ 'Upload' | translate }}
         </cds-overflow-menu-option>
 
-        <cds-overflow-menu-option [disabled]="obs.formDefinition.readOnly" (selected)="delete()">
+        <cds-overflow-menu-option
+          [disabled]="obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration"
+          (selected)="delete()"
+        >
           {{ 'interface.delete' | translate }}
         </cds-overflow-menu-option>
 
@@ -153,7 +157,9 @@
 
       <button
         cdsButton="primary"
-        [disabled]="obs.formDefinition.readOnly || !validJsonChange"
+        [disabled]="
+          obs.formDefinition.readOnly || !validJsonChange || !obs.canUpdateGlobalConfiguration
+        "
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="modifyFormDefinition(obs.formDefinition)"
       >

@@ -36,7 +36,7 @@ import {
   PendingChangesComponent,
   RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
-import {GlobalNotificationService, ManagementContext} from '@valtimo/config';
+import {EnvironmentService, GlobalNotificationService, ManagementContext} from '@valtimo/config';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {
   ProcessLinkButtonService,
@@ -145,6 +145,9 @@ export class ProcessManagementBuilderComponent
   public isReadOnlyProcess$ = new BehaviorSubject<boolean>(false);
   public isSystemProcess$ = new BehaviorSubject<boolean>(false);
 
+  public readonly canUpdateGlobalConfiguration$ =
+    this.environmentService.canUpdateGlobalConfiguration();
+
   public readonly selectedProcessDefinitionXml$ =
     this.processManagementEditorService.selectionProcessDefinition$.pipe(
       filter(selectedProcessDefinition => !!selectedProcessDefinition?.id),
@@ -248,7 +251,8 @@ export class ProcessManagementBuilderComponent
     private readonly processService: ProcessService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly environmentService: EnvironmentService
   ) {
     super();
     this.iconService.registerAll([Deploy16, Download16, ArrowLeft16]);

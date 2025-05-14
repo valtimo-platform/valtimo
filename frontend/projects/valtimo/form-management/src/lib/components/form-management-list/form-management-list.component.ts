@@ -10,6 +10,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
+import {EnvironmentService} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-form-management-list',
@@ -35,6 +36,9 @@ export class FormManagementListComponent {
   public readonly searchTerm$ = new BehaviorSubject<string>('');
 
   public readonly context$ = getContextObservable(this.route);
+
+  public readonly canUpdateGlobalConfiguration$ =
+    this.environmentService.canUpdateGlobalConfiguration();
 
   public readonly caseManagementRouteParams$ = this.context$.pipe(
     switchMap(context => getCaseManagementRouteParams(context, this.route))
@@ -105,7 +109,8 @@ export class FormManagementListComponent {
   constructor(
     private readonly formManagementService: FormManagementService,
     private readonly iconService: IconService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly environmentService: EnvironmentService
   ) {
     this.iconService.registerAll([Upload16]);
   }

@@ -29,7 +29,7 @@ import {
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/config';
+import {EnvironmentService, GlobalNotificationService} from '@valtimo/config';
 import {
   ButtonModule,
   DialogModule,
@@ -113,6 +113,9 @@ export class FormManagementEditComponent
 
   private readonly _formDefinition$ = new BehaviorSubject<FormDefinition | null>(null);
 
+  public readonly canUpdateGlobalConfiguration$ =
+    this.environmentService.canUpdateGlobalConfiguration();
+
   private get _formDefinition(): FormDefinition {
     return this._formDefinition$.getValue();
   }
@@ -157,7 +160,8 @@ export class FormManagementEditComponent
     private readonly router: Router,
     private readonly translateService: TranslateService,
     private readonly notificationService: GlobalNotificationService,
-    private readonly breadcrumbService: BreadcrumbService
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly environmentService: EnvironmentService
   ) {
     super();
     this.iconService.registerAll([ArrowLeft16]);

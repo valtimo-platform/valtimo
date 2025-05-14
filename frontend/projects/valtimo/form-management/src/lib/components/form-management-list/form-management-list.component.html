@@ -19,6 +19,7 @@
     formDefinitions: formDefinitions$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async,
+    canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
   } as obs"
   [fields]="FIELDS"
   [header]="false"
@@ -32,7 +33,7 @@
   (rowClicked)="editFormDefinition($event)"
   (search)="searchTermEntered($event)"
 >
-  <ng-container carbonToolbarContent>
+  <ng-container carbonToolbarContent *ngIf="obs.canUpdateGlobalConfiguration">
     <button cdsButton="ghost" [iconOnly]="true" (click)="navigateToUploadRoute()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>

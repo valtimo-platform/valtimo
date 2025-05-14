@@ -22,7 +22,7 @@
   [loading]="loading$ | async"
   (rowClicked)="editProcessDefinition($event)"
 >
-  <ng-container carbonToolbarContent>
+  <ng-container carbonToolbarContent *ngIf="canUpdateGlobalConfiguration$ | async">
     <button cdsButton="ghost" iconOnly="true" (click)="openModal()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>

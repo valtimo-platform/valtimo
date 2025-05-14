@@ -54,7 +54,11 @@
       <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
     </button>
 
-    <button cdsButton="primary" (click)="showCreateModal()">
+    <button
+      *ngIf="canUpdateGlobalConfiguration$ | async"
+      cdsButton="primary"
+      (click)="showCreateModal()"
+    >
       {{ 'interface.create' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
