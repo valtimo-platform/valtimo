@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-export * from './versions';
-export * from './case-management-tab-token';
-export * from './form-view-model-token';
-export * from './error.constants';
+import {HttpHeaders} from '@angular/common/http';
+
+const InterceptorSkip = 'X-Skip-Interceptor';
+const InterceptorSkipHeader = new HttpHeaders().set(InterceptorSkip, 'all');
+
+export {InterceptorSkip, InterceptorSkipHeader};

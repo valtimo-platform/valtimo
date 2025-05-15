@@ -63,6 +63,9 @@
         creatingNewProcess: creatingNewProcess$ | async,
         context: context$ | async,
         canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
+        canInitializeDocument: canInitializeDocument$ | async,
+        startableByUser: startableByUser$ | async,
+        updatingProcessDefinitionCaseDefinition: updatingProcessDefinitionCaseDefinition$ | async,
       } as actionsObs"
     >
       <div class="page-header-actions__left-container">
@@ -84,7 +87,7 @@
 
         <div class="page-header-actions__tags">
           <cds-tag
-            *ngIf="actionsObs.isReadOnlyProcess || obs.canUpdateGlobalConfiguration"
+            *ngIf="actionsObs.isReadOnlyProcess || actionsObs.canUpdateGlobalConfiguration"
             type="blue"
             >{{ 'processManagement.readOnly' | translate }}</cds-tag
           >
@@ -96,6 +99,32 @@
       </div>
 
       <div class="page-header-actions__buttons">
+        @if (actionsObs.context === 'case') {
+          <cds-tooltip
+            [description]="'processCaseConnection.processCreatesCaseTooltip' | translate"
+          >
+            <cds-toggle
+              [onText]="'processManagement.canInitializeDocument' | translate"
+              [offText]="'processManagement.canInitializeDocument' | translate"
+              [checked]="actionsObs.canInitializeDocument"
+              [disabled]="actionsObs.loading || actionsObs.updatingProcessDefinitionCaseDefinition"
+              (checkedChange)="onProcessToggleChange('canInitializeDocument', $event)"
+            ></cds-toggle>
+          </cds-tooltip>
+
+          <cds-tooltip
+            [description]="'processCaseConnection.startableWithinCaseTooltip' | translate"
+          >
+            <cds-toggle
+              [onText]="'processManagement.startableByUser' | translate"
+              [offText]="'processManagement.startableByUser' | translate"
+              [checked]="actionsObs.startableByUser"
+              [disabled]="actionsObs.loading || actionsObs.updatingProcessDefinitionCaseDefinition"
+              (checkedChange)="onProcessToggleChange('startableByUser', $event)"
+            ></cds-toggle
+          ></cds-tooltip>
+        }
+
         <button
           *ngIf="actionsObs.context === 'case'"
           cdsButton="secondary"

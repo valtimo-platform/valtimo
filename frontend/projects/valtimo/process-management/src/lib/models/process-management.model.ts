@@ -36,9 +36,15 @@ interface ProcessManagementRouteData {
   context: ManagementContext;
 }
 
+interface UpdateProcessDefinitionCaseDefinitionRequest {
+  canInitializeDocument?: boolean;
+  startableByUser?: boolean;
+}
+
 export {
   OpenProcessLinkModalEvent,
   PROCESS_MANAGEMENT_ENDPOINTS,
   ProcessManagementParams,
   ProcessManagementRouteData,
+  UpdateProcessDefinitionCaseDefinitionRequest,
 };

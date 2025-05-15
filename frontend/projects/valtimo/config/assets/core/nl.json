@@ -1266,6 +1266,8 @@
     "download": "Downloaden",
     "clear": "Wissen",
     "deploy": "Deploy",
+    "name": "Naam",
+    "key": "Sleutel",
     "readOnly": "Alleen-lezen",
     "systemProcess": "Systeemproces",
     "systemProcessWarningMessage": "Dit is een systeemproces. Let goed op bij het maken van aanpassingen aan dit proces",
@@ -1285,7 +1287,9 @@
       "buttonText": "Selecteer bestand",
       "success": "Deployment succesvol",
       "failure": "Deployment mislukt"
-    }
+    },
+    "canInitializeDocument": "Start een dossier",
+    "startableByUser": "Door gebruiker te starten"
   },
   "processCaseConnection": {
     "noProcessesTitle": "Geen processen",

@@ -1266,6 +1266,8 @@
     "download": "Herunterladen",
     "clear": "Löschen",
     "deploy": "Deploy",
+    "name": "Name",
+    "key": "Schlüssel",
     "readOnly": "Schreibgeschützt",
     "systemProcess": "Systemprozess",
     "systemProcessWarningMessage": "Dies ist ein Systemprozess. Achten Sie genau darauf, wenn Sie Anpassungen an diesem Prozess vornehmen",
@@ -1285,7 +1287,9 @@
       "buttonText": "Datei auswählen",
       "success": "Deployment erfolgreich",
       "failure": "Deployment fehlgeschlagen"
-    }
+    },
+    "canInitializeDocument": "Startet Fall",
+    "startableByUser": "Vom Benutzer startbar"
   },
   "processCaseConnection": {
     "noProcessesTitle": "Keine Prozesse",

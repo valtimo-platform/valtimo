@@ -74,9 +74,31 @@ export class ProcessManagementListComponent {
     );
 
   public readonly FIELDS: ColumnConfig[] = [
-    {key: 'processDefinition.name', label: 'Name'},
-    {key: 'processDefinition.key', label: 'Key'},
-    {key: 'processDefinition.readOnly', label: 'Read-only', viewType: ViewType.BOOLEAN},
+    {key: 'processDefinition.name', label: 'processManagement.name'},
+    {key: 'processDefinition.key', label: 'processManagement.key'},
+    {
+      key: 'processDefinition.readOnly',
+      label: 'processManagement.readOnly',
+      viewType: ViewType.BOOLEAN,
+    },
+    ...(this.processManagementService.context() === 'case'
+      ? [
+          {
+            key: 'processCaseLink.canInitializeDocument',
+            label: 'processManagement.canInitializeDocument',
+            viewType: ViewType.BOOLEAN,
+          },
+        ]
+      : []),
+    ...(this.processManagementService.context() === 'case'
+      ? [
+          {
+            key: 'processCaseLink.startableByUser',
+            label: 'processManagement.startableByUser',
+            viewType: ViewType.BOOLEAN,
+          },
+        ]
+      : []),
   ];
 
   constructor(

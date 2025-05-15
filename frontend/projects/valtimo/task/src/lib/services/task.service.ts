@@ -31,11 +31,11 @@ import {
   BaseApiService,
   ConfigService,
   CustomTaskList,
+  InterceptorSkip,
   NamedUser,
   Page,
   TaskListTab,
 } from '@valtimo/config';
-import {InterceptorSkip} from '@valtimo/security';
 import {TaskProcessLinkResult} from '@valtimo/process-link';
 
 @Injectable({providedIn: 'root'})

@@ -18,13 +18,13 @@ import {Injectable} from '@angular/core';
 import {
   AssigneeFilter,
   ConfigService,
+  InterceptorSkip,
   NamedUser,
   SearchField,
   SearchFilter,
   SearchFilterRange,
   SearchOperator,
 } from '@valtimo/config';
-import {InterceptorSkip} from '@valtimo/security';
 import {catchError, Observable, of, switchMap} from 'rxjs';
 
 import {

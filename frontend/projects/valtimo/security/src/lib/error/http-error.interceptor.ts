@@ -21,10 +21,9 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService, InterceptorSkip} from '@valtimo/config';
 import {Observable, throwError} from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {InterceptorSkip} from './error';
 
 @Injectable({
   providedIn: 'root',

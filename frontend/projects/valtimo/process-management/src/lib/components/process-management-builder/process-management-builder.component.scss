@@ -87,6 +87,15 @@
   &__buttons {
     display: flex;
     gap: 16px;
+    align-items: center;
+
+    cds-toggle {
+      height: 24px;
+    }
+
+    ::ng-deep .cds--toggle__label-text {
+      display: none;
+    }
   }
 }
 

@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/config';
+import {
+  BaseApiService,
+  ConfigService,
+  InterceptorSkip,
+  InterceptorSkipHeader,
+} from '@valtimo/config';
 import {Page} from '@valtimo/document';
-import {InterceptorSkipHeader} from '@valtimo/security';
 import {Observable} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
@@ -112,7 +116,10 @@ export class CaseManagementService extends BaseApiService {
     return this.httpClient.get<CaseDefinition>(
       this.getApiUrl(
         `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
-      )
+      ),
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, '403'),
+      }
     );
   }
 
@@ -128,7 +135,9 @@ export class CaseManagementService extends BaseApiService {
     caseDefinitionVersionTag = '0'
   ): Observable<HttpResponse<Blob>> {
     return this.httpClient.get<Blob>(
-      this.getApiUrl(`management/v1/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/export`),
+      this.getApiUrl(
+        `management/v1/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/export`
+      ),
       {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
     );
   }

@@ -1267,6 +1267,8 @@
     "download": "Download",
     "clear": "Clear",
     "deploy": "Deploy",
+    "name": "Name",
+    "key": "Key",
     "readOnly": "Read-only",
     "systemProcess": "System process",
     "systemProcessWarningMessage": "This is a system process. Pay close attention when making adjustments to this process",
@@ -1286,7 +1288,9 @@
       "buttonText": "Select file",
       "success": "Deployment successful",
       "failure": "Deployment failed"
-    }
+    },
+    "canInitializeDocument": "Starts case",
+    "startableByUser": "Startable by user"
   },
   "processCaseConnection": {
     "noProcessesTitle": "No processes",

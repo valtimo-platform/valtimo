@@ -15,11 +15,13 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {map, Observable} from 'rxjs';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import {map, Observable, of} from 'rxjs';
 import {ConfigService} from './config.service';
 import {BaseApiService} from './base-api.service';
 import {GlobalConfiguration} from '../models';
+import {catchError} from 'rxjs/operators';
+import {InterceptorSkip} from '../constants';
 
 @Injectable({
   providedIn: 'root',
@@ -34,7 +36,12 @@ export class EnvironmentService extends BaseApiService {
 
   public canUpdateGlobalConfiguration(): Observable<boolean> {
     return this.httpClient
-      .get<GlobalConfiguration>(this.getApiUrl('management/v1/case-definition/check'))
-      .pipe(map(response => response.canUpdateGlobalConfiguration));
+      .get<GlobalConfiguration>(this.getApiUrl('management/v1/case-definition/check'), {
+        headers: new HttpHeaders().set(InterceptorSkip, '404'),
+      })
+      .pipe(
+        map(response => response.canUpdateGlobalConfiguration),
+        catchError(() => of(true))
+      );
   }
 }
