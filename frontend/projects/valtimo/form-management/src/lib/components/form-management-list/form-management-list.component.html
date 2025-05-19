@@ -33,15 +33,17 @@
   (rowClicked)="editFormDefinition($event)"
   (search)="searchTermEntered($event)"
 >
-  <ng-container carbonToolbarContent *ngIf="obs.canUpdateGlobalConfiguration">
+  <ng-container carbonToolbarContent>
     <button cdsButton="ghost" [iconOnly]="true" (click)="navigateToUploadRoute()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
-    <button cdsButton="primary" (click)="navigateToCreateRoute()">
-      {{ 'Create new Form' | translate }}
+    <div *ngIf="obs.canUpdateGlobalConfiguration">
+      <button cdsButton="primary" (click)="navigateToCreateRoute()">
+        {{ 'Create new Form' | translate }}
 
-      <svg cdsIcon="add" size="16"></svg>
-    </button>
+        <svg cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
   </ng-container>
 </valtimo-carbon-list>

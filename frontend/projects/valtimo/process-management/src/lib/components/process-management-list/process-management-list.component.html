@@ -22,16 +22,18 @@
   [loading]="loading$ | async"
   (rowClicked)="editProcessDefinition($event)"
 >
-  <ng-container carbonToolbarContent *ngIf="canUpdateGlobalConfiguration$ | async">
+  <ng-container carbonToolbarContent>
     <button cdsButton="ghost" iconOnly="true" (click)="openModal()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
-    <button cdsButton="primary" (click)="onCreateProcess()">
-      Create process
+    <div *ngIf="canUpdateGlobalConfiguration$ | async">
+      <button cdsButton="primary" (click)="onCreateProcess()">
+        Create process
 
-      <svg cdsIcon="add" size="16"></svg>
-    </button>
+        <svg cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
   </ng-container>
 </valtimo-carbon-list>
 

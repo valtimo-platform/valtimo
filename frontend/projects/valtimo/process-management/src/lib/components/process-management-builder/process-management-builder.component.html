@@ -30,7 +30,7 @@
 >
   <div
     class="bpmn__modeler"
-    [style.display]="obs.isReadOnlyProcess || obs.canUpdateGlobalConfiguration ? 'none' : 'flex'"
+    [style.display]="obs.isReadOnlyProcess || !obs.canUpdateGlobalConfiguration ? 'none' : 'flex'"
   >
     <div class="bpmn__modeler-canvas" #modeler></div>
 
@@ -39,7 +39,7 @@
 
   <div
     class="bpmn__modeler"
-    [style.display]="obs.isReadOnlyProcess || obs.canUpdateGlobalConfiguration ? 'flex' : 'none'"
+    [style.display]="obs.isReadOnlyProcess || !obs.canUpdateGlobalConfiguration ? 'flex' : 'none'"
   >
     <div class="bpmn__modeler-canvas" #viewer></div>
 
@@ -87,7 +87,7 @@
 
         <div class="page-header-actions__tags">
           <cds-tag
-            *ngIf="actionsObs.isReadOnlyProcess || actionsObs.canUpdateGlobalConfiguration"
+            *ngIf="actionsObs.isReadOnlyProcess || !actionsObs.canUpdateGlobalConfiguration"
             type="blue"
             >{{ 'processManagement.readOnly' | translate }}</cds-tag
           >
