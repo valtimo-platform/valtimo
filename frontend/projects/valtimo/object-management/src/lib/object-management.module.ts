@@ -19,21 +19,19 @@ import {ObjectManagementRoutingModule} from './object-management-routing.module'
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {
+  CarbonListModule,
   CarbonMultiInputModule,
   ConfirmationModalModule,
   DropzoneModule,
-  ListModule,
-  ModalModule,
-  SpinnerModule,
-  ValtimoCdsModalDirectiveModule,
-  WidgetModule,
-  ButtonModule,
   FormModule,
   InputModule,
-  VModalModule,
+  ModalModule,
   SelectModule,
-  TitleModule,
+  SpinnerModule,
   TooltipIconModule,
+  ValtimoCdsModalDirectiveModule,
+  VModalModule,
+  WidgetModule,
 } from '@valtimo/components';
 import {ObjectManagementDetailContainerComponent} from './components/object-management-detail-container/object-management-detail-container.component';
 import {ObjectManagementDetailComponent} from './components/object-management-detail-container/tabs/object-management-detail/object-management-detail.component';
@@ -69,12 +67,9 @@ import {ObjectManagementListSearchFieldsComponent} from './components/object-man
     CommonModule,
     DropzoneModule,
     WidgetModule,
-    ListModule,
     TranslateModule,
     ObjectManagementRoutingModule,
     VModalModule,
-    TitleModule,
-    ButtonModule,
     FormModule,
     InputModule,
     SelectModule,
@@ -94,6 +89,7 @@ import {ObjectManagementListSearchFieldsComponent} from './components/object-man
     SpinnerModule,
     ModalModule,
     ValtimoCdsModalDirectiveModule,
+    CarbonListModule,
   ],
   exports: [],
 })

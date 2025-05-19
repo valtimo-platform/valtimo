@@ -31,7 +31,6 @@ import {
   CaseDetailTabDocumentenApiDocumentsComponent,
   CaseDetailTabObjectTypeComponent,
   CaseManagementLinkProcessComponent,
-  CustomerModule,
   DocumentenApiMetadataModalComponent,
   DocumentenApiUploaderComponent,
 } from './modules';
@@ -48,7 +47,6 @@ import {CaseManagementZgwComponent} from './components';
     ResourceModule,
     RouterModule,
     DocumentenApiMetadataModalComponent,
-    CustomerModule,
   ],
   declarations: [DocumentenApiUploaderComponent],
   exports: [DocumentenApiUploaderComponent],

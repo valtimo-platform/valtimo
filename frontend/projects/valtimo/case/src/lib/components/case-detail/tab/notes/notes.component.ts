@@ -208,10 +208,6 @@ export class CaseDetailTabNotesComponent implements OnInit {
       bodyText: this.translateService.instant('case.notes.deleteConfirmation.description'),
       cancelButtonText: this.translateService.instant('case.deleteConfirmation.cancel'),
       confirmButtonText: this.translateService.instant('case.deleteConfirmation.delete'),
-      cancelMdiIcon: 'cancel',
-      confirmMdiIcon: 'delete',
-      cancelButtonType: 'secondary',
-      confirmButtonType: 'primary',
       closeOnConfirm: true,
       closeOnCancel: true,
       confirmCallBackFunction: () => {

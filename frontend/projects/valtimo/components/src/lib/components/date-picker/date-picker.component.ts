@@ -72,6 +72,7 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   public readonly dateValue$ = new BehaviorSubject<string>('');
 
   private _flatpickrInstance!: flatpickr.Instance;
+
   private readonly _subscriptions = new Subscription();
 
   constructor(private readonly translateService: TranslateService) {}

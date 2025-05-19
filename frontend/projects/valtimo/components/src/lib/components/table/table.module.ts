@@ -19,7 +19,7 @@ import {CommonModule} from '@angular/common';
 import {TableComponent} from './table.component';
 import {LayoutModule} from '@angular/cdk/layout';
 import {TranslateModule} from '@ngx-translate/core';
-import {ButtonModule} from '../button/button.module';
+import {ButtonModule} from 'carbon-components-angular';
 import {NgxSkeletonLoaderModule} from 'ngx-skeleton-loader';
 import {SelectModule} from '../select/select.module';
 

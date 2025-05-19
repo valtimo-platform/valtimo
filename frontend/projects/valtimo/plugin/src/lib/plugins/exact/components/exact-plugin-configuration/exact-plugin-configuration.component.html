@@ -51,7 +51,8 @@
   >
   </v-input>
 
-  <v-button [mdiIcon]="'check'" type="secondary" (click)="openAuthenticationWindow()"
-    >Give authorization
-  </v-button>
+  <button cdsButton="secondary" (click)="openAuthenticationWindow()">
+    <svg cdsIcon="close" size="16"></svg>
+    Give authorization
+  </button>
 </v-form>

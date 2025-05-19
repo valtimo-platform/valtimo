@@ -20,15 +20,14 @@ import {ObjectListComponent} from './components/object-list/object-list.componen
 import {TranslateModule} from '@ngx-translate/core';
 import {AsyncPipe, CommonModule} from '@angular/common';
 import {
+  CarbonListModule,
   ConfirmationModalModule,
   FormIoModule,
-  ListModule,
   SearchFieldsModule,
   SpinnerModule,
+  TooltipIconModule,
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
-  TooltipIconModule,
-  CarbonListModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
 import {ObjectDetailComponent} from './components/object-detail-container/tabs/object-detail/object-detail.component';
@@ -49,7 +48,6 @@ import {ReactiveFormsModule} from '@angular/forms';
     TranslateModule,
     AsyncPipe,
     WidgetModule,
-    ListModule,
     ButtonModule,
     IconModule,
     SpinnerModule,

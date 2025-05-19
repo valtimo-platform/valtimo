@@ -20,9 +20,9 @@
 >
   <div role="header">
     <div class="add-note-title">
-      <v-title [margin]="false">{{
-        (obs.modalType === 'add' ? 'case.notes.addNote' : 'case.notes.modifyNote') | translate
-      }}</v-title>
+      <h4>
+        {{ (obs.modalType === 'add' ? 'case.notes.addNote' : 'case.notes.modifyNote') | translate }}
+      </h4>
     </div>
   </div>
   <div role="content">
@@ -30,9 +30,10 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
+      <button cdsButton="secondary" [disabled]="obs.disabled" (click)="cancel()">
         {{ 'document.cancel' | translate }}
-      </v-button>
+      </button>
+
       <ng-container
         *ngTemplateOutlet="
           obs.modalType === 'add' ? addNoteButton : editNoteButton;
@@ -44,24 +45,15 @@
 </v-modal>
 
 <ng-template #addNoteButton let-obs="obs">
-  <v-button
-    (clickEvent)="emitNoteData()"
-    [disabled]="obs.disabled || !obs.valid"
-    mdiIcon="plus"
-    type="success"
-  >
+  <button cdsButton="primary" [disabled]="obs.disabled || !obs.valid" (click)="emitNoteData()">
     {{ 'case.notes.addNote' | translate }}
-  </v-button>
+  </button>
 </ng-template>
+
 <ng-template #editNoteButton let-obs="obs">
-  <v-button
-    [disabled]="obs.disabled || !obs.valid"
-    (clickEvent)="emitNoteData()"
-    mdiIcon="pencil"
-    type="success"
-  >
+  <button cdsButton="primary" [disabled]="obs.disabled || !obs.valid" (click)="emitNoteData()">
     {{ 'case.notes.modifyNote' | translate }}
-  </v-button>
+  </button>
 </ng-template>
 
 <ng-template #form>

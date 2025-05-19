@@ -15,7 +15,16 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
-import {BehaviorSubject, combineLatest, map, mergeMap, Observable, of, Subscription, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  mergeMap,
+  Observable,
+  of,
+  Subscription,
+  tap,
+} from 'rxjs';
 import {distinctUntilChanged, filter, take} from 'rxjs/operators';
 
 import {
@@ -25,7 +34,11 @@ import {
   FormSize,
   ProcessLinkEditMode,
 } from '../../models';
-import {ProcessLinkButtonService, ProcessLinkService, ProcessLinkStateService} from '../../services';
+import {
+  ProcessLinkButtonService,
+  ProcessLinkService,
+  ProcessLinkStateService,
+} from '../../services';
 import {ActivatedRoute} from '@angular/router';
 import {isEqual} from 'lodash';
 
@@ -42,19 +55,20 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   public selectedFormDefinition!: FormDefinitionListItem;
 
   public readonly saving$ = this.stateService.saving$;
-  public readonly caseDefinitionId$ = this.getCaseManagementRouteParams(this.route)
+  public readonly caseDefinitionId$ = this.getCaseManagementRouteParams(this.route);
 
-  private readonly formDefinitions$: Observable<Array<FormDefinitionOption>> = this.caseDefinitionId$.pipe(
-    mergeMap(caseDefinitionId => {
-      if (!!caseDefinitionId) {
-        return this.formService.getAllFormDefinitionsForCaseDefinition(
-          caseDefinitionId.caseDefinitionKey,
-          caseDefinitionId.caseDefinitionVersionTag
-        );
-      }
-      return this.formService.getAllUnlinkedFormDefinitions();
-    })
-  )
+  private readonly formDefinitions$: Observable<Array<FormDefinitionOption>> =
+    this.caseDefinitionId$.pipe(
+      mergeMap(caseDefinitionId => {
+        if (!!caseDefinitionId) {
+          return this.formService.getAllFormDefinitionsForCaseDefinition(
+            caseDefinitionId.caseDefinitionKey,
+            caseDefinitionId.caseDefinitionVersionTag
+          );
+        }
+        return this.formService.getAllUnlinkedFormDefinitions();
+      })
+    );
 
   public readonly formDefinitionListItems$: Observable<Array<FormDefinitionListItem>> =
     combineLatest([this.stateService.selectedProcessLink$, this.formDefinitions$]).pipe(
@@ -87,7 +101,7 @@ export class SelectFormComponent implements OnInit, OnDestroy {
     private readonly stateService: ProcessLinkStateService,
     private readonly processLinkService: ProcessLinkService,
     private readonly buttonService: ProcessLinkButtonService,
-    private readonly route: ActivatedRoute,
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngOnInit(): void {

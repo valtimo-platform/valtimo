@@ -25,12 +25,14 @@
 >
   <div role="header">
     <div class="add-title">
-      <v-title [margin]="false">{{
-        (obs.modalType === 'add'
-          ? 'objectManagement.createObjecttype'
-          : 'objectManagement.editObjecttype'
-        ) | translate
-      }}</v-title>
+      <h4>
+        {{
+          (obs.modalType === 'add'
+            ? 'objectManagement.createObjecttype'
+            : 'objectManagement.editObjecttype'
+          ) | translate
+        }}
+      </h4>
     </div>
   </div>
   <div role="content">
@@ -43,19 +45,15 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
+      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled">
         {{ 'objectManagement.cancel' | translate }}
-      </v-button>
-      <v-button
-        (clickEvent)="save()"
-        [disabled]="obs.disabled || !obs.valid"
-        mdiIcon="plus"
-        type="success"
-      >
+      </button>
+
+      <button cdsButton="primary" (click)="save()" [disabled]="obs.disabled || !obs.valid">
         {{
           (obs.modalType === 'add' ? 'objectManagement.add' : 'objectManagement.edit') | translate
         }}
-      </v-button>
+      </button>
     </div>
   </div>
 </v-modal>

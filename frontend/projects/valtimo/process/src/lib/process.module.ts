@@ -19,7 +19,6 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
   BpmnJsDiagramModule,
   CamundaFormModule,
-  ListModule,
   TimelineModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -29,7 +28,6 @@ import {ProcessDiagramComponent} from './process-diagram/process-diagram.compone
   declarations: [ProcessDiagramComponent],
   imports: [
     CommonModule,
-    ListModule,
     WidgetModule,
     TimelineModule,
     BpmnJsDiagramModule,

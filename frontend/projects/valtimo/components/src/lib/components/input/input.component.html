@@ -106,12 +106,11 @@
         [style.width.px]="widthPx"
         [type]="obs.showPassword ? 'text' : 'password'"
       />
+
       <div class="v-input__password-icon">
-        <v-button
-          [mdiIcon]="obs.showPassword ? 'eye-off' : 'eye'"
-          type="icon-grey-small"
-          (clickEvent)="toggleShowPassword()"
-        ></v-button>
+        <cds-icon-button align="top" (click)="toggleShowPassword()">
+          <svg cdsIcon="{{ obs.showPassword ? 'view-off' : 'view' }}" size="16"></svg>
+        </cds-icon-button>
       </div>
     </div>
   </ng-container>

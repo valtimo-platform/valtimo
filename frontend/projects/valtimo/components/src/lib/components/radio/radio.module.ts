@@ -20,19 +20,11 @@ import {FormsModule} from '@angular/forms';
 import {RadioComponent} from './radio.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {InputLabelModule} from '../input-label/input-label.module';
-import {ButtonModule} from '../button/button.module';
 import {RadioModule as CarbonRadioModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [RadioComponent],
-  imports: [
-    CommonModule,
-    TranslateModule,
-    FormsModule,
-    InputLabelModule,
-    ButtonModule,
-    CarbonRadioModule,
-  ],
+  imports: [CommonModule, TranslateModule, FormsModule, InputLabelModule, CarbonRadioModule],
   exports: [RadioComponent],
 })
 export class RadioModule {}

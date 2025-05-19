@@ -23,7 +23,3 @@ export * from './lib/models';
 export * from './lib/services';
 export * from './lib/modules';
 export * from './lib/zgw.module';
-
-// haalcentraal-brp
-export * from './lib/modules/haalcentraal-brp/components/cases-list/cases-list.component';
-export * from './lib/modules/haalcentraal-brp/components/customer-list/customer-list.component';

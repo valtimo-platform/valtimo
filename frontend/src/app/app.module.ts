@@ -31,7 +31,6 @@ import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
   BpmnJsDiagramModule,
-  CardModule,
   enableCustomFormioComponents,
   FormIoModule,
   MenuModule,
@@ -125,7 +124,6 @@ import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custo
 import {TaskManagementModule} from '@valtimo/task-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
 import {
-  CaseDetailTabContactMomentsComponent,
   CaseDetailTabZaakobjectenComponent,
   registerDocumentenApiFormioUploadComponent,
   ZgwModule,
@@ -162,7 +160,6 @@ export function tabsFactory() {
     BrowserModule,
     AppRoutingModule,
     LayoutModule,
-    CardModule,
     WidgetModule,
     BootstrapModule,
     ConfigModule.forRoot(environment),
@@ -253,7 +250,6 @@ export function tabsFactory() {
       useValue: {
         'custom-dossier-tab': CustomCaseTabComponent,
         zaakobjecten: CaseDetailTabZaakobjectenComponent,
-        contactmomenten: CaseDetailTabContactMomentsComponent,
       },
     },
     {

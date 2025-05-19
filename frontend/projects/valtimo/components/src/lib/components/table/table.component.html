@@ -79,9 +79,9 @@
 <ng-template #tableEditButtonCell let-item="item">
   <td *ngIf="showEditButtons" class="v-table__cell v-table__cell--with-button">
     <span class="v-table__cell-button-container">
-      <v-button type="secondary" (clickEvent)="editButtonClicked.emit(item)">{{
-        editButtonTranslationKey || 'interface.edit' | translate
-      }}</v-button>
+      <button cdsButton="secondary" (click)="editButtonClicked.emit(item)">
+        {{ editButtonTranslationKey || 'interface.edit' | translate }}
+      </button>
     </span>
   </td>
 </ng-template>
@@ -114,9 +114,9 @@
 <ng-template #tableEditButtonCellLoading>
   <td *ngIf="showEditButtons" class="v-table__cell v-table__cell--with-button">
     <span class="v-table__cell-button-container">
-      <v-button type="secondary" [disabled]="true">{{
-        editButtonTranslationKey || 'interface.edit' | translate
-      }}</v-button>
+      <button cdsButton="secondary" [disabled]="true">
+        {{ editButtonTranslationKey || 'interface.edit' | translate }}
+      </button>
     </span>
   </td>
 </ng-template>
@@ -201,14 +201,15 @@
     *ngIf="paginationObject && paginationObject.collectionSize > paginationObject.size"
   >
     <span *ngIf="paginationObject.page > 1">
-      <v-button (clickEvent)="setPage('previous')" type="text" [disabled]="loading">{{
-        'interface.previous' | translate
-      }}</v-button>
+      <button cdsButton="ghost" (click)="setPage('previous')" [disabled]="loading">
+        {{ 'interface.previous' | translate }}
+      </button>
     </span>
+
     <span *ngIf="paginationObject.page * paginationObject.size < paginationObject.collectionSize">
-      <v-button (clickEvent)="setPage('next')" type="text" [disabled]="loading">{{
-        'interface.nextArrow' | translate
-      }}</v-button>
+      <button cdsButton="ghost" (click)="setPage('next')" [disabled]="loading">
+        {{ 'interface.nextArrow' | translate }}
+      </button>
     </span>
   </div>
 </ng-template>

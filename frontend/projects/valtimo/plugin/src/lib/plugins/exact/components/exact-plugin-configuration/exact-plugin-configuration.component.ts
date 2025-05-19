@@ -19,6 +19,8 @@ import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {ExactPluginService} from '../../exact-plugin.service';
 import {ExactPluginConfig} from '../../exact-plugin';
+import {Checkmark16} from '@carbon/icons';
+import {IconService} from 'carbon-components-angular';
 
 @Component({
   standalone: false,
@@ -41,7 +43,12 @@ export class ExactPluginConfigurationComponent
   private readonly valid$ = new BehaviorSubject<boolean>(false);
   private storageCallbackFun!: (any) => void;
 
-  constructor(private exactPluginService: ExactPluginService) {}
+  constructor(
+    private readonly exactPluginService: ExactPluginService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([Checkmark16]);
+  }
 
   ngOnInit(): void {
     this.openSaveSubscription();

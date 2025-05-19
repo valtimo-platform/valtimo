@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
@@ -24,9 +31,7 @@ import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-compon
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {CaseManagementParams, WidgetContentComponent} from '../../../../../../../models';
 import {WidgetWizardService} from '../../../../../../../services';
-import {
-  CaseManagementWidgetProcessSelectorComponent,
-} from '../process-selector/case-management-widget-process-selector.component';
+import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
 import {ActivatedRoute} from '@angular/router';
 import {getCaseManagementRouteParams} from '../../../../../../../utils';
 
@@ -127,16 +132,18 @@ export class CaseManagementWidgetFormioComponent
   }
 
   private fetchFormDefinition(): void {
-    getCaseManagementRouteParams(this.route)
-      .subscribe((params: CaseManagementParams) => {
-          if (!params) return [];
+    getCaseManagementRouteParams(this.route).subscribe((params: CaseManagementParams) => {
+      if (!params) return [];
 
-          this.formService
-            .getAllFormDefinitionsForCaseDefinition(params.caseDefinitionKey, params.caseDefinitionVersionTag)
-            .subscribe(definitions => {
-              this._formDefinitionOptions$.next(definitions);
-            });
+      this.formService
+        .getAllFormDefinitionsForCaseDefinition(
+          params.caseDefinitionKey,
+          params.caseDefinitionVersionTag
+        )
+        .subscribe(definitions => {
+          this._formDefinitionOptions$.next(definitions);
         });
+    });
   }
 
   private prefill(): void {

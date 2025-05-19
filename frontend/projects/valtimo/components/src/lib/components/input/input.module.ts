@@ -20,9 +20,13 @@ import {FormsModule} from '@angular/forms';
 import {InputComponent} from './input.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {InputLabelModule} from '../input-label/input-label.module';
-import {ButtonModule} from '../button/button.module';
+import {
+  ButtonModule,
+  CheckboxModule,
+  IconModule,
+  InputModule as CarbonInputModule,
+} from 'carbon-components-angular';
 import {DigitOnlyDirective} from '../../directives/digit-only/digit-only.directive';
-import {CheckboxModule, InputModule as CarbonInputModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [InputComponent, DigitOnlyDirective],
@@ -34,6 +38,7 @@ import {CheckboxModule, InputModule as CarbonInputModule} from 'carbon-component
     ButtonModule,
     CheckboxModule,
     CarbonInputModule,
+    IconModule,
   ],
   exports: [InputComponent],
 })

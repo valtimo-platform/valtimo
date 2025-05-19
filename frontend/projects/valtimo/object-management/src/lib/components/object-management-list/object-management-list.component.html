@@ -36,7 +36,7 @@
   <ng-container *ngIf="fields$ | async as fields">
     <ng-container *ngIf="objecttypesInstances$ | async as objecttypesInstances">
       <valtimo-widget *ngIf="obs.loading === false">
-        <valtimo-list
+        <valtimo-carbon-list
           [items]="objecttypesInstances"
           [fields]="fields"
           [viewMode]="true"
@@ -52,7 +52,7 @@
               }}</sup>
             </h3>
           </div>
-        </valtimo-list>
+        </valtimo-carbon-list>
       </valtimo-widget>
     </ng-container>
   </ng-container>

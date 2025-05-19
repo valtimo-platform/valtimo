@@ -19,13 +19,13 @@ const fsPromises = require('fs').promises;
 let version;
 
 fsPromises
-  .readFile('./dist/valtimo/config/package.json', 'utf8')
+  .readFile('./dist/valtimo/shared/package.json', 'utf8')
   .then(packageJsonString => {
     const packageJson = JSON.parse(packageJsonString);
 
     if (packageJson.version) {
       version = packageJson.version;
-      return fsPromises.readFile('./projects/valtimo/config/src/lib/constants/versions.ts', 'utf8');
+      return fsPromises.readFile('./projects/valtimo/shared/src/lib/constants/versions.ts', 'utf8');
     }
   })
   .then(versionsConstantJsonString => {
@@ -36,7 +36,7 @@ fsPromises
       const toReplace = versionsConstantJsonString.substring(openQuote + 1, closeQuote);
       const newString = versionsConstantJsonString.replace(toReplace, version);
       return fsPromises.writeFile(
-        './projects/valtimo/config/src/lib/constants/versions.ts',
+        './projects/valtimo/shared/src/lib/constants/versions.ts',
         newString,
         'utf-8'
       );

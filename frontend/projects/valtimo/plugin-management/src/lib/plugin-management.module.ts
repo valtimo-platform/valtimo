@@ -27,22 +27,20 @@ import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@va
 import {PluginEditModalComponent} from './components/plugin-edit-modal/plugin-edit-modal.component';
 import {PluginEditComponent} from './components/plugin-edit/plugin-edit.component';
 import {
-  ButtonModule,
   CarbonListModule,
-  PageModule,
   ParagraphModule,
   StepperModule,
   TableModule,
-  TitleModule,
   ValtimoCdsModalDirectiveModule,
-  VCardModule,
   VModalModule,
 } from '@valtimo/components';
 import {
   ButtonModule as CarbonButtonModule,
   IconModule,
   LayerModule,
+  LoadingModule,
   ModalModule as CarbonModalModule,
+  TilesModule,
 } from 'carbon-components-angular';
 
 @NgModule({
@@ -59,14 +57,10 @@ import {
     CommonModule,
     PluginManagementRoutingModule,
     TranslateModule,
-    PageModule,
     ParagraphModule,
-    TitleModule,
     TableModule,
     StepperModule,
     VModalModule,
-    ButtonModule,
-    VCardModule,
     PluginTranslatePipeModule,
     PluginConfigurationContainerModule,
     CarbonButtonModule,
@@ -75,6 +69,8 @@ import {
     IconModule,
     ValtimoCdsModalDirectiveModule,
     LayerModule,
+    TilesModule,
+    LoadingModule,
   ],
   exports: [
     PluginManagementComponent,

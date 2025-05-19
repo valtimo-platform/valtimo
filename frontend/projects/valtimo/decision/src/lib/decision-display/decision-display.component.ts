@@ -35,7 +35,7 @@ export class DecisionDisplayComponent implements OnInit {
 
   constructor(
     private readonly decisionService: DecisionService,
-    private readonly route: ActivatedRoute,
+    private readonly route: ActivatedRoute
   ) {}
 
   ngOnInit() {

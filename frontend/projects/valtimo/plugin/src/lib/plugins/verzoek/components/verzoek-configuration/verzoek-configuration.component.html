@@ -196,9 +196,11 @@
           [tooltip]="'mappingTooltip' | pluginTranslate: pluginId | async"
         >
         </v-input-label>
-        <v-button (clickEvent)="openMappingModal(uuid)" mdiIcon="table"
-          >{{ 'setMapping' | pluginTranslate: pluginId | async }}
-        </v-button>
+
+        <button cdsButton (click)="openMappingModal(uuid)" mdiIcon="table">
+          <svg cdsIcon="data-table" size="16"></svg>
+          {{ 'setMapping' | pluginTranslate: pluginId | async }}
+        </button>
       </ng-container>
       <v-input class="hidden-input" name="uuid" [defaultValue]="uuid"> </v-input>
     </v-form>

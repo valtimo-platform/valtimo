@@ -195,8 +195,6 @@ export class KeycloakUserService implements UserService, OnDestroy {
       bodyText,
       cancelButtonText,
       confirmButtonText,
-      cancelMdiIcon: 'logout',
-      confirmMdiIcon: 'check',
       closeOnConfirm: true,
       closeOnCancel: false,
       cancelCallbackFunction: () => {

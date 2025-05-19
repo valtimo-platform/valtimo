@@ -15,9 +15,8 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, Observable, combineLatest} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {ButtonType} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -32,10 +31,6 @@ export class PromptService {
   private readonly _bodyText$ = new BehaviorSubject<string>('');
   private readonly _cancelText$ = new BehaviorSubject<string>('');
   private readonly _confirmText$ = new BehaviorSubject<string>('');
-  private readonly _cancelMdiIcon$ = new BehaviorSubject<string>('');
-  private readonly _confirmMdiIcon$ = new BehaviorSubject<string>('');
-  private readonly _cancelButtonType$ = new BehaviorSubject<ButtonType>('primary');
-  private readonly _confirmButtonType$ = new BehaviorSubject<ButtonType>('primary');
   private readonly _closeOnConfirm$ = new BehaviorSubject<boolean>(false);
   private readonly _closeOnCancel$ = new BehaviorSubject<boolean>(false);
   private readonly _closeButtonVisible$ = new BehaviorSubject<boolean>(false);
@@ -83,22 +78,6 @@ export class PromptService {
     return this._confirmText$.asObservable();
   }
 
-  get cancelMdiIcon$(): Observable<string> {
-    return this._cancelMdiIcon$.asObservable();
-  }
-
-  get confirmMdiIcon$(): Observable<string> {
-    return this._confirmMdiIcon$.asObservable();
-  }
-
-  get cancelButtonType$(): Observable<ButtonType> {
-    return this._cancelButtonType$.asObservable();
-  }
-
-  get confirmButtonType$(): Observable<ButtonType> {
-    return this._confirmButtonType$.asObservable();
-  }
-
   get closeButtonVisible$(): Observable<boolean> {
     return this._closeButtonVisible$.asObservable();
   }
@@ -109,10 +88,6 @@ export class PromptService {
     bodyText: string;
     cancelButtonText: string;
     confirmButtonText: string;
-    cancelMdiIcon?: string;
-    confirmMdiIcon?: string;
-    cancelButtonType?: ButtonType;
-    confirmButtonType?: ButtonType;
     closeOnConfirm?: boolean;
     closeOnCancel?: boolean;
     closeButtonVisible?: boolean;
@@ -125,13 +100,7 @@ export class PromptService {
     this._bodyText$.next(promptParameters.bodyText);
     this._cancelText$.next(promptParameters.cancelButtonText);
     this._confirmText$.next(promptParameters.confirmButtonText);
-    if (promptParameters.cancelMdiIcon) this._cancelMdiIcon$.next(promptParameters.cancelMdiIcon);
-    if (promptParameters.confirmMdiIcon)
-      this._confirmMdiIcon$.next(promptParameters.confirmMdiIcon);
-    if (promptParameters.cancelButtonType)
-      this._cancelButtonType$.next(promptParameters.cancelButtonType);
-    if (promptParameters.confirmButtonType)
-      this._confirmButtonType$.next(promptParameters.confirmButtonType);
+
     if (promptParameters.closeOnConfirm)
       this._closeOnConfirm$.next(promptParameters.closeOnConfirm);
     if (promptParameters.closeOnCancel) this._closeOnCancel$.next(promptParameters.closeOnCancel);
@@ -223,10 +192,6 @@ export class PromptService {
     this._bodyText$.next('');
     this._cancelText$.next('');
     this._confirmText$.next('');
-    this._cancelMdiIcon$.next('');
-    this._confirmMdiIcon$.next('');
-    this._cancelButtonType$.next('primary');
-    this._confirmButtonType$.next('primary');
     this._closeOnCancel$.next(false);
     this._closeOnConfirm$.next(false);
     this._cancelCallbackFunction$.next(() => {});

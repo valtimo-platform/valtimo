@@ -96,7 +96,7 @@
 </ng-template>
 
 <ng-template #list let-obs="obs">
-  <valtimo-list
+  <valtimo-carbon-list
     [items]="obs.listColumn"
     [fields]="obs.fields"
     [viewMode]="false"
@@ -105,7 +105,7 @@
     [lastColumnTemplate]="moveRowButtonsTemplateRef"
     (rowClicked)="columnRowClicked($event)"
   >
-  </valtimo-list>
+  </valtimo-carbon-list>
 </ng-template>
 
 <ng-template #createEditModal>

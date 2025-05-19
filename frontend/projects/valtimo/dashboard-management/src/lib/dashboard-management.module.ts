@@ -20,7 +20,6 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListModule,
   ConfirmationModalModule,
-  ListModule,
   RenderInPageHeaderDirectiveModule,
   SpinnerModule,
   ValtimoCdsModalDirectiveModule,
@@ -56,7 +55,6 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     DashboardManagementRoutingModule,
     DropdownModule,
     InputModule,
-    ListModule,
     ModalModule,
     ReactiveFormsModule,
     SpinnerModule,

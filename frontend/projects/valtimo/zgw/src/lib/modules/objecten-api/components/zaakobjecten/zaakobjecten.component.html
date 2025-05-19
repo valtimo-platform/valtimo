@@ -55,9 +55,7 @@
 
 <v-modal #viewZaakobjectModal (closeEvent)="hide()" [hideFooter]="true" [maxWidthPx]="750">
   <div role="header">
-    <v-title [margin]="false" type="h2" [fullWidth]="true" [center]="true">{{
-      objectName$ | async
-    }}</v-title>
+    <h4>{{ objectName$ | async }}</h4>
   </div>
 
   <div role="content">

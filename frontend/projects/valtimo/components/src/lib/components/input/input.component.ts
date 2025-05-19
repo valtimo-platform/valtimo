@@ -27,6 +27,8 @@ import {
 } from '@angular/core';
 import {InputType} from '../../models';
 import {BehaviorSubject, Observable, Subscription, take} from 'rxjs';
+import {IconService} from 'carbon-components-angular';
+import {View16, ViewOff16} from '@carbon/icons';
 
 @Component({
   selector: 'v-input',
@@ -79,11 +81,14 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   private valueSubscription!: Subscription;
   private clearSubscription!: Subscription;
 
+  constructor(private readonly iconService: IconService) {}
+
   public ngOnInit(): void {
     this.setInputType();
     this.setDefaultValue(this.defaultValue);
     this.openValueSubscription();
     this.openClearSubscription();
+    this.iconService.registerAll([View16, ViewOff16]);
   }
 
   public onValueChange(value: any): void {

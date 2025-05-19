@@ -19,11 +19,14 @@
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+}
+
+.buttons {
+  justify-content: flex-end;
 }
 
 .add-note-title {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 ::ng-deep .notes-input textarea {

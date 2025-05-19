@@ -17,7 +17,12 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {AlertModule, FieldAutoFocusModule, ListModule, WidgetModule} from '@valtimo/components';
+import {
+  AlertModule,
+  CarbonListModule,
+  FieldAutoFocusModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {ChoiceFieldRoutingModule} from './choice-field-routing.module';
 import {ChoiceFieldListComponent} from './choice-field-list/choice-field-list.component';
 import {ChoiceFieldDetailComponent} from './choice-field-detail/choice-field-detail.component';
@@ -38,7 +43,6 @@ import {TranslateModule} from '@ngx-translate/core';
   ],
   imports: [
     CommonModule,
-    ListModule,
     WidgetModule,
     FieldAutoFocusModule,
     FormsModule,
@@ -46,6 +50,7 @@ import {TranslateModule} from '@ngx-translate/core';
     ChoiceFieldRoutingModule,
     AlertModule,
     TranslateModule,
+    CarbonListModule,
   ],
   exports: [],
 })

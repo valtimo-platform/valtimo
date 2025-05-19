@@ -23,12 +23,11 @@ import {FormsModule} from '@angular/forms';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
 import {DecisionListComponent} from './decision-list/decision-list.component';
 import {
-  ListModule,
+  CarbonListModule,
   ModalModule,
+  SelectModule,
   SpinnerModule,
   WidgetModule,
-  SelectModule,
-  CarbonListModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
@@ -45,7 +44,6 @@ import {ButtonModule, IconModule} from 'carbon-components-angular';
   imports: [
     DecisionRoutingModule,
     WidgetModule,
-    ListModule,
     TranslateModule,
     ModalModule,
     CommonModule,

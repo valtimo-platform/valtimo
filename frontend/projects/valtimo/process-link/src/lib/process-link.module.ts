@@ -20,7 +20,6 @@ import {CommonModule} from '@angular/common';
 import {ProcessLinkRoutingModule} from './process-link-routing.module';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
-  ButtonModule,
   CarbonMultiInputModule,
   FormIoModule,
   ModalModule,
@@ -29,11 +28,9 @@ import {
   RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   StepperModule,
-  TitleModule,
   TooltipIconModule,
   TooltipModule,
   ValtimoCdsModalDirectiveModule,
-  VCardModule,
   VModalModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
@@ -98,12 +95,9 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     TranslateModule,
     StepperModule,
     VModalModule,
-    VCardModule,
     PluginTranslatePipeModule,
     ParagraphModule,
     PluginConfigurationContainerModule,
-    ButtonModule,
-    TitleModule,
     CarbonModalModule,
     ProgressIndicatorModule,
     CarbonButtonModule,

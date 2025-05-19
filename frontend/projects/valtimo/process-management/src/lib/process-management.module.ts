@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, ListModule, WidgetModule} from '@valtimo/components';
+import {CarbonListModule, WidgetModule} from '@valtimo/components';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {
   ButtonModule,
@@ -37,7 +37,6 @@ import {ProcessManagementRoutingModule} from './process-management-routing.modul
     CommonModule,
     ProcessManagementRoutingModule,
     WidgetModule,
-    ListModule,
     FormsModule,
     TranslateModule,
     ProcessLinkModule,

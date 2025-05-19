@@ -50,6 +50,8 @@ import {
 import {VerzoekPluginService} from '../../services';
 import {ProcessService} from '@valtimo/process';
 import {DocumentService} from '@valtimo/document';
+import {DataTable16} from '@carbon/icons';
+import {IconService} from 'carbon-components-angular';
 
 @Component({
   standalone: false,
@@ -165,8 +167,11 @@ export class VerzoekConfigurationComponent
     private readonly verzoekPluginService: VerzoekPluginService,
     private readonly processService: ProcessService,
     private readonly documentService: DocumentService,
-    private readonly modalService: ModalService
-  ) {}
+    private readonly modalService: ModalService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([DataTable16]);
+  }
 
   ngOnInit(): void {
     this.openSaveSubscription();
