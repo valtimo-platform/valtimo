@@ -37,7 +37,7 @@ import {
   PageTitleService,
   PendingChangesComponent,
 } from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {
   CaseStatusService,
   CaseTag,

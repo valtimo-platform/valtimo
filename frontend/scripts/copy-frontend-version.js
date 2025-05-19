@@ -44,7 +44,7 @@ fsPromises
   })
   .then(() => {
     console.log(
-      `success: copy version from @valtimo/config package.json to versions.ts: ${version}`
+      `success: copy version from @valtimo/shared package.json to versions.ts: ${version}`
     );
   })
   .catch(() => {

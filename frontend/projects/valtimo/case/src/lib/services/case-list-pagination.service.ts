@@ -19,7 +19,7 @@ import {BehaviorSubject, filter, map, Observable, take, tap} from 'rxjs';
 import {Pagination} from '@valtimo/components';
 import {NGXLogger} from 'ngx-logger';
 import {CaseParameterService} from './case-parameter.service';
-import {DefinitionColumn} from '@valtimo/config';
+import {DefinitionColumn} from '@valtimo/shared';
 import {CaseService} from './case.service';
 import {Documents, SortState, SpecifiedDocuments} from '@valtimo/document';
 

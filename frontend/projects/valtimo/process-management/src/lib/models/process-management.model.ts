@@ -15,7 +15,7 @@
  */
 
 import {ModalParams, ProcessLink} from '@valtimo/process-link';
-import {ManagementContext} from '@valtimo/config';
+import {ManagementContext} from '@valtimo/shared';
 
 interface OpenProcessLinkModalEvent {
   modalParams: ModalParams;

@@ -16,7 +16,7 @@
 import {Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {ModalComponent} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {
   DocumentDefinition,
   DocumentService,

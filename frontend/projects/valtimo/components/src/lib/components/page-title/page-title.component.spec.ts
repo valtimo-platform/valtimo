@@ -18,7 +18,7 @@ import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PageTitleComponent} from './page-title.component';
 import {TranslateService} from '@ngx-translate/core';
-import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
+import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/shared';
 import {LoggerTestingModule} from 'ngx-logger/testing';
 import {environment} from '@src/environments/environment';
 import {ActivatedRoute} from '@angular/router';

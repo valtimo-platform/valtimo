@@ -28,7 +28,7 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
-import {Page} from '@valtimo/config';
+import {Page} from '@valtimo/shared';
 import {
   ButtonModule,
   DialogModule,

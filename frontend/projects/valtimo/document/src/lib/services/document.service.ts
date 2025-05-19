@@ -24,7 +24,7 @@ import {
   SearchFilter,
   SearchFilterRange,
   SearchOperator,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {catchError, Observable, of, switchMap} from 'rxjs';
 
 import {

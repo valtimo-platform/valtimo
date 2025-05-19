@@ -16,7 +16,7 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
-import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
+import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/shared';
 import {CaseDefinition, DocumentService} from '@valtimo/document';
 import {UserProviderService} from '@valtimo/security';
 import {KeycloakService} from 'keycloak-angular';

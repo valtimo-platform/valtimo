@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/config';
+import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {ProcessDefinition, UploadProcessLink} from '../models';

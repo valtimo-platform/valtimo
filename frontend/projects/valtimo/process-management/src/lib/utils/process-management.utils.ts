@@ -17,7 +17,7 @@
 import {combineLatest, Observable, of} from 'rxjs';
 import {distinctUntilChanged, filter, map} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
-import {ManagementContext} from '@valtimo/config';
+import {ManagementContext} from '@valtimo/shared';
 import {ProcessManagementParams} from '../models';
 import {isEqual} from 'lodash';
 

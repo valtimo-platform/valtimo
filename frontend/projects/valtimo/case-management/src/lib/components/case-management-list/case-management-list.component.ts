@@ -23,7 +23,7 @@ import moment from 'moment';
 import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
 import {CaseListItem} from '../../models';
 import {CaseManagementService} from '../../services';
-import {EnvironmentService} from '@valtimo/config';
+import {EnvironmentService} from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 

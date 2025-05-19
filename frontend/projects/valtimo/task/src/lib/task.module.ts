@@ -33,7 +33,7 @@ import {
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
-import {HttpLoaderFactory} from '@valtimo/config';
+import {HttpLoaderFactory} from '@valtimo/shared';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {
   ButtonModule,

@@ -15,7 +15,7 @@
  */
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
 import {TranslationManagementComponent} from './components/translation-management/translation-management.component';
 

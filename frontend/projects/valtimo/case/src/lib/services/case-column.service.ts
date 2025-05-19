@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService, DefinitionColumn} from '@valtimo/config';
+import {ConfigService, DefinitionColumn} from '@valtimo/shared';
 import {map, Observable} from 'rxjs';
 import {CaseListColumn, DocumentService} from '@valtimo/document';
 import {ListField} from '@valtimo/components';

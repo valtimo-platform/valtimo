@@ -16,7 +16,7 @@
 
 import {CASES_WITHOUT_STATUS_KEY} from '@valtimo/components';
 import {InternalCaseStatus} from '@valtimo/document';
-import {TagColor} from '@valtimo/config';
+import {TagColor} from '@valtimo/shared';
 
 const CASE_WITHOUT_STATUS_STATUS: InternalCaseStatus = {
   key: CASES_WITHOUT_STATUS_KEY,

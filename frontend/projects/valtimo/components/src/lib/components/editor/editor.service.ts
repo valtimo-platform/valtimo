@@ -19,7 +19,7 @@ import {combineLatest, filter, map, Subject, Subscription} from 'rxjs';
 import {CurrentCarbonTheme, MonacoTheme} from '../../models';
 import {DOCUMENT} from '@angular/common';
 import {CdsThemeService} from '../../services';
-import {ValtimoWindow} from '@valtimo/config';
+import {ValtimoWindow} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',

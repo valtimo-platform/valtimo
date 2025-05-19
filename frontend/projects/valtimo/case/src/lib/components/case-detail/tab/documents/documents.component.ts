@@ -31,7 +31,7 @@ import {
   UploadProvider,
   ValtimoConfig,
   ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {BehaviorSubject, Subscription} from 'rxjs';
 import {CaseDetailTabNotFoundComponent} from '../not-found/not-found.component';
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {NgModule} from '@angular/core';
-import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/config';
+import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/shared';
 import {FormViewModelComponent} from './components/form-view-model';
 
 @NgModule({

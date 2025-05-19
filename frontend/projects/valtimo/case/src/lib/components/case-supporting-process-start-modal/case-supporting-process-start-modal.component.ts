@@ -44,7 +44,7 @@ import {
 } from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
+import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
 
 @Component({
   standalone: false,

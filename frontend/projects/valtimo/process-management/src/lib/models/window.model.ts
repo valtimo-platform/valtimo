@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ValtimoWindow} from '@valtimo/config';
+import {ValtimoWindow} from '@valtimo/shared';
 import {ProcessManagementEditorService} from '../services';
 import {TranslateService} from '@ngx-translate/core';
 

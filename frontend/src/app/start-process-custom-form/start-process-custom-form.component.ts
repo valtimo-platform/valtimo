@@ -17,7 +17,7 @@ import {Component, OnInit} from '@angular/core';
 import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {ProcessService} from '@valtimo/process';
 
 @Component({

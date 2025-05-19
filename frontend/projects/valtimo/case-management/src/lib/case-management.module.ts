@@ -41,7 +41,7 @@ import {
   ValuePathSelectorComponent,
   WidgetModule,
 } from '@valtimo/components';
-import {ConfigModule} from '@valtimo/config';
+import {ConfigModule} from '@valtimo/shared';
 import {
   ButtonModule,
   CheckboxModule,

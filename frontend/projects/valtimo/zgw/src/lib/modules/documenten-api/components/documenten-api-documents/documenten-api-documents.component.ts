@@ -30,7 +30,7 @@ import {
   SortState,
   ViewType,
 } from '@valtimo/components';
-import {ConfigService, Direction} from '@valtimo/config';
+import {ConfigService, Direction} from '@valtimo/shared';
 import {
   CAN_CREATE_RESOURCE_PERMISSION,
   CAN_DELETE_RESOURCE_PERMISSION,

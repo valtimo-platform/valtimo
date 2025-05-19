@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService, SearchField} from '@valtimo/config';
+import {ConfigService, SearchField} from '@valtimo/shared';
 import {Objecttype, SearchListColumn} from '../models/object-management.model';
 
 @Injectable({

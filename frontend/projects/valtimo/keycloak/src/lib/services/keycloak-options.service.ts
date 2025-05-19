@@ -16,7 +16,7 @@
 
 import {ValtimoKeycloakOptions} from '../models';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',

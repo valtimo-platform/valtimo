@@ -21,7 +21,7 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {GlobalNotificationService, InterceptorSkip} from '@valtimo/config';
+import {GlobalNotificationService, InterceptorSkip} from '@valtimo/shared';
 import {Observable, throwError} from 'rxjs';
 import {catchError} from 'rxjs/operators';
 

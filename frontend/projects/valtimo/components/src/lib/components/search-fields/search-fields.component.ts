@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/config';
+import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
 import {SelectItem} from '../../models';
 import {TranslateService} from '@ngx-translate/core';

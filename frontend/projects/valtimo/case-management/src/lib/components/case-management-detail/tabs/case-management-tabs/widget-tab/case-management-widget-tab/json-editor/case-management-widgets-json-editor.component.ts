@@ -36,7 +36,7 @@ import {
   EditorModel,
   EditorModule,
 } from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, take} from 'rxjs';
 import {WidgetJsonEditorService, WidgetTabManagementService} from '../../../../../../../services';

@@ -18,7 +18,7 @@ import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit} from '@ang
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
-import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/config';
+import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/shared';
 import {ComboBoxModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,

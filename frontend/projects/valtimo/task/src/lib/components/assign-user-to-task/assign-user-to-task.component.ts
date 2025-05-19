@@ -32,7 +32,7 @@ import {
 } from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, take, tap} from 'rxjs';
 import {TaskService} from '../../services';
-import {NamedUser} from '@valtimo/config';
+import {NamedUser} from '@valtimo/shared';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {

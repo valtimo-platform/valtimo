@@ -10,7 +10,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
-import {EnvironmentService} from '@valtimo/config';
+import {EnvironmentService} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-form-management-list',

@@ -21,7 +21,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {HttpLoaderFactory} from '@valtimo/config';
+import {HttpLoaderFactory} from '@valtimo/shared';
 import {NgbTooltipModule} from '@ng-bootstrap/ng-bootstrap';
 import {
   DropdownModule,

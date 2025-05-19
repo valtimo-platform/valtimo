@@ -15,7 +15,7 @@
  */
 
 import {Pipe, PipeTransform} from '@angular/core';
-import {MenuItem} from '@valtimo/config';
+import {MenuItem} from '@valtimo/shared';
 import {combineLatest, map, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 

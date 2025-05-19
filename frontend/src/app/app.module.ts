@@ -84,7 +84,7 @@ import {
   ConfigService,
   CustomMultiTranslateHttpLoaderFactory,
   LocalizationService,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {FormManagementModule} from '@valtimo/form-management';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {PluginManagementModule} from '@valtimo/plugin-management';

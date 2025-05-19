@@ -15,7 +15,7 @@
  */
 
 import {BLOB, CSPHeaderParams, DATA, SELF, UNSAFE_EVAL, UNSAFE_INLINE} from 'csp-header';
-import {UrlUtils} from '@valtimo/config';
+import {UrlUtils} from '@valtimo/shared';
 import {authenticationKeycloak} from '../auth/keycloak-config.prod';
 
 export const cspHeaderParamsProd: CSPHeaderParams = {

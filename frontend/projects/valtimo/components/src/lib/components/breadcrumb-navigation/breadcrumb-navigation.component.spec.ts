@@ -17,7 +17,7 @@
 import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {BreadcrumbNavigationComponent} from './breadcrumb-navigation.component';
-import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
+import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/shared';
 import {environment} from '@src/environments/environment';
 import {HttpClient, provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';

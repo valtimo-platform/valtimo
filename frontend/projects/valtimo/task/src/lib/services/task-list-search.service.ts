@@ -21,7 +21,7 @@ import {
   SearchFieldValues,
   SearchFilter,
   SearchFilterRange,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {BehaviorSubject, map, Observable, of, switchMap, tap} from 'rxjs';
 import {TaskListService} from './task-list.service';
 import {TaskListOtherFilters, TaskListSearchField} from '../models';

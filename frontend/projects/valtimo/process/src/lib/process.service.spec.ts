@@ -17,7 +17,7 @@
 import {TestBed} from '@angular/core/testing';
 import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {ProcessService} from './process.service';
-import {VALTIMO_CONFIG} from '@valtimo/config';
+import {VALTIMO_CONFIG} from '@valtimo/shared';
 import {environment} from '@src/environments/environment';
 import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 

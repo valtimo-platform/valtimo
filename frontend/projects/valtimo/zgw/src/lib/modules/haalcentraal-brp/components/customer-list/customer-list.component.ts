@@ -26,7 +26,7 @@ import {
   CustomerSearchRequest,
   MappedCustomer,
 } from '../../models';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {Router} from '@angular/router';
 
 /**

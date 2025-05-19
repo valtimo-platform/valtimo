@@ -15,7 +15,7 @@
  */
 
 /*
- * Public API Surface of config
+ * Public API Surface of shared
  */
 
 export * from './lib/components/global-notification.component';

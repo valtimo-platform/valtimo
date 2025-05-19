@@ -48,7 +48,7 @@ import {
   FORM_VIEW_MODEL_TOKEN,
   FormViewModel,
   GlobalNotificationService,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,

@@ -17,13 +17,8 @@ import {Component, HostBinding, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {
-  Pagination,
-  PromptService,
-  TimelineItem,
-  TimelineItemImpl,
-} from '@valtimo/components';
-import {GlobalNotificationService, Page} from '@valtimo/config';
+import {Pagination, PromptService, TimelineItem, TimelineItemImpl} from '@valtimo/components';
+import {GlobalNotificationService, Page} from '@valtimo/shared';
 import moment from 'moment';
 import {BehaviorSubject, combineLatest, map, Observable, of} from 'rxjs';
 import {switchMap, take, tap} from 'rxjs/operators';

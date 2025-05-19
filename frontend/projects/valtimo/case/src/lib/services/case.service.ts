@@ -15,7 +15,7 @@
  */
 import {Injectable} from '@angular/core';
 import {Direction, SortState} from '@valtimo/components';
-import {ConfigService, DefinitionColumn} from '@valtimo/config';
+import {ConfigService, DefinitionColumn} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 @Injectable({

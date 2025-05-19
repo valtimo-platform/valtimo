@@ -26,7 +26,7 @@ import {
   ProcessInstanceTask,
   ProcessStart,
 } from './models';
-import {ConfigService, Page} from '@valtimo/config';
+import {ConfigService, Page} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',

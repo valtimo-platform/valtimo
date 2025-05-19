@@ -25,7 +25,7 @@ import {TaskManagementTab} from '../../models';
 import {TaskManagementService} from '../../services';
 import {TaskManagementColumnsComponent} from '../task-management-columns';
 import {TaskManagementSearchFieldsComponent} from '../task-management-search-fields/task-management-search-fields.component';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 
 @Component({
   templateUrl: './task-management-detail.component.html',

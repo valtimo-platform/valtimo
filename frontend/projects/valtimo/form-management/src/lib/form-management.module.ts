@@ -15,7 +15,7 @@
  */
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ROLE_ADMIN, RouterUtils} from '@valtimo/config';
+import {ROLE_ADMIN, RouterUtils} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
 import {FormManagementComponent} from './components/form-management/form-management.component';
 import {FormManagementRouteData} from './models';

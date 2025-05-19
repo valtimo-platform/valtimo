@@ -16,12 +16,8 @@
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {
-  EditorModel,
-  PageHeaderService,
-  PageTitleService,
-} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/config';
+import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {ListItem} from 'carbon-components-angular/dropdown';
 import {
   BehaviorSubject,

@@ -21,7 +21,7 @@ import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/reso
 import {map, switchMap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
-import {ConfigService, GlobalNotificationService} from '@valtimo/config';
+import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {PromptService} from '@valtimo/components';
 
 @Component({

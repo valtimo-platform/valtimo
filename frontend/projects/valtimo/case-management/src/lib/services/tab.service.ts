@@ -20,7 +20,7 @@ import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, switchMap, Observable} from 'rxjs';
 import {CaseManagementParams, TabEnum} from '../models';
-import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig} from '@valtimo/config';
+import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 import {getCaseManagementRouteParams} from '../utils';
 
@@ -78,7 +78,7 @@ export class TabService {
     @Inject(CASE_MANAGEMENT_TAB_TOKEN)
     private readonly caseManagementTabConfig: CaseManagementTabConfig[],
     private readonly formService: FormService,
-    private readonly translateService: TranslateService,
+    private readonly translateService: TranslateService
   ) {
     this.setInjectedCaseManagementTabs(this.caseManagementTabConfig);
   }
@@ -109,22 +109,24 @@ export class TabService {
   }
 
   public getFormDefinitions(route: ActivatedRoute): Observable<ListItem[]> {
-    return getCaseManagementRouteParams(route)
-      .pipe(
-        switchMap((params: CaseManagementParams) => {
-          return this.formService
-            .getAllFormDefinitionsForCaseDefinition(params.caseDefinitionKey, params.caseDefinitionVersionTag)
-            .pipe(
-              map((formDefinitions: FormDefinitionOption[]) => {
-                return formDefinitions.map((formDefinition: FormDefinitionOption) => ({
-                  contentKey: formDefinition.name,
-                  content: formDefinition.name,
-                  selected: false,
-                }))}
-              )
-            );
-        })
-      )
+    return getCaseManagementRouteParams(route).pipe(
+      switchMap((params: CaseManagementParams) => {
+        return this.formService
+          .getAllFormDefinitionsForCaseDefinition(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag
+          )
+          .pipe(
+            map((formDefinitions: FormDefinitionOption[]) => {
+              return formDefinitions.map((formDefinition: FormDefinitionOption) => ({
+                contentKey: formDefinition.name,
+                content: formDefinition.name,
+                selected: false,
+              }));
+            })
+          );
+      })
+    );
   }
 
   private setInjectedCaseManagementTabs(

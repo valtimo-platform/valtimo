@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {Observable, switchMap} from 'rxjs';
-import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/config';
+import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/shared';
 import {CaseListService} from './case-list.service';
 import {DocumentService} from '@valtimo/document';
 import {CaseParameterService} from './case-parameter.service';

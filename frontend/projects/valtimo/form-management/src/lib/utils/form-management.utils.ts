@@ -17,7 +17,7 @@
 import {combineLatest, Observable, of} from 'rxjs';
 import {filter, map} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
-import {ManagementContext} from '@valtimo/config';
+import {ManagementContext} from '@valtimo/shared';
 import {FormManagementParams} from '../models';
 
 function getContextObservable(route: ActivatedRoute): Observable<ManagementContext | ''> {

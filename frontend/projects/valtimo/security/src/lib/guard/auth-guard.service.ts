@@ -23,7 +23,7 @@ import {
   RouterStateSnapshot,
 } from '@angular/router';
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',

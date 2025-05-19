@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {KeycloakService} from 'keycloak-angular';
 import {map, Observable, of, switchMap} from 'rxjs';
-import {ConfigService, ValtimoConfig} from '@valtimo/config';
+import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import User20 from '@carbon/icons/es/user/20';
 import {ShellService} from '../../services/shell.service';

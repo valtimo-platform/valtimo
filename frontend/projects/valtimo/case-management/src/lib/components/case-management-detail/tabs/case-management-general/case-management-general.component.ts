@@ -27,7 +27,7 @@ import {
 import {map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/config';
+import {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/shared';
 import {CaseManagementService} from '../../../../services';
 
 @Component({

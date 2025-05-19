@@ -1,6 +1,6 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable, Signal, signal} from '@angular/core';
-import {BaseApiService, ConfigService, ManagementContext} from '@valtimo/config';
+import {BaseApiService, ConfigService, ManagementContext} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
 import {toObservable} from '@angular/core/rxjs-interop';
 

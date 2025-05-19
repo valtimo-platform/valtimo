@@ -19,7 +19,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {DecisionComponent} from './decision.component';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
 

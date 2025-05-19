@@ -16,7 +16,7 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {CaseWidgetsRes} from '@valtimo/case';
 import {Observable} from 'rxjs';
 import {CaseManagementParams} from '../models';

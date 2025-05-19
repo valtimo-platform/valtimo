@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 import {ProcessManagementBuilderComponent, ProcessManagementComponent} from './components';
 import {ProcessManagementRouteData} from './models';
 import {pendingChangesGuard} from '@valtimo/components';

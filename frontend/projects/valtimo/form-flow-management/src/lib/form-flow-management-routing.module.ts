@@ -17,7 +17,7 @@
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
 import {FormFlowOverviewComponent} from './components/overview/form-flow-overview.component';
 import {FormFlowEditorComponent} from './components/editor/form-flow-editor.component';

@@ -19,7 +19,7 @@ import {Decision} from '../models';
 import {DecisionService} from '../decision.service';
 import {Router} from '@angular/router';
 import {BehaviorSubject, map, switchMap, tap} from 'rxjs';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {DecisionStateService} from '../services';
 import {DecisionDeployComponent} from '../decision-deploy/decision-deploy.component';
 import {IconService} from 'carbon-components-angular';

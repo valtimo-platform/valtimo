@@ -15,8 +15,8 @@
  */
 
 import {
-  DefinitionColumn,
   CaseListTab,
+  DefinitionColumn,
   IncludeFunction,
   Language,
   ROLE_ADMIN,
@@ -25,7 +25,7 @@ import {
   TaskListTab,
   UploadProvider,
   ValtimoConfig,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {cspHeaderParamsDev} from './csp';

@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {Direction, SortState, TaskListTab} from '@valtimo/config';
+import {Direction, SortState, TaskListTab} from '@valtimo/shared';
 import {TaskService} from './task.service';
 import {map, take} from 'rxjs/operators';
 import {TaskListService} from './task-list.service';

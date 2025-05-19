@@ -15,7 +15,7 @@
  */
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, Page} from '@valtimo/config';
+import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {DocumentenApiTag} from '../models/documenten-api-tag.model';
 

@@ -36,7 +36,7 @@ import {
   PendingChangesComponent,
   RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
-import {EnvironmentService, GlobalNotificationService, ManagementContext} from '@valtimo/config';
+import {EnvironmentService, GlobalNotificationService, ManagementContext} from '@valtimo/shared';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {
   ProcessLinkButtonService,

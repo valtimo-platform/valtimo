@@ -20,7 +20,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Return16, Save16, TrashCan16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {BreadcrumbService} from '@valtimo/components';
-import {EnvironmentService, GlobalNotificationService} from '@valtimo/config';
+import {EnvironmentService, GlobalNotificationService} from '@valtimo/shared';
 import {IconService, Notification} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
 import {take, tap} from 'rxjs/operators';

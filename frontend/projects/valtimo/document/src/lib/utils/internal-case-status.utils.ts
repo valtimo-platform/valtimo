@@ -15,7 +15,7 @@
  */
 
 import {TagType} from 'carbon-components-angular';
-import {TagColor} from '@valtimo/config';
+import {TagColor} from '@valtimo/shared';
 
 class InternalCaseStatusUtils {
   static getTagTypeFromInternalCaseStatusColor(internalCaseStatusColor: TagColor): TagType {

@@ -35,7 +35,7 @@ import {
   NamedUser,
   Page,
   TaskListTab,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {TaskProcessLinkResult} from '@valtimo/process-link';
 
 @Injectable({providedIn: 'root'})

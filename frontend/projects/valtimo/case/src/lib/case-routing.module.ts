@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {CaseDetailComponent} from './components/case-detail/case-detail.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
-import {ROLE_USER} from '@valtimo/config';
+import {ROLE_USER} from '@valtimo/shared';
 import {CaseListComponent} from './components/case-list/case-list.component';
 import {pendingChangesGuard} from '@valtimo/components';
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {Component, OnInit} from '@angular/core';
-import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/config';
+import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
 import {ParagraphModule} from '@valtimo/components';
 import {ActivatedRoute} from '@angular/router';

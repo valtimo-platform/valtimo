@@ -16,7 +16,7 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {ApiTabItem} from '@valtimo/case';
 import {BehaviorSubject, Observable, of} from 'rxjs';
 import {catchError, switchMap, take, tap} from 'rxjs/operators';

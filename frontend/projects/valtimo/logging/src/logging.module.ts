@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {HttpClient} from '@angular/common/http';
 import {NgModule} from '@angular/core';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {HttpLoaderFactory} from '@valtimo/config';
+import {HttpLoaderFactory} from '@valtimo/shared';
 import {LoggingListComponent} from './lib/components/logging-list/logging-list.component';
 import {LoggingRoutingModule} from './logging-routing.module';
 

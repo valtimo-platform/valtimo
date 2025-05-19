@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ValtimoWindow} from '@valtimo/config';
+import {ValtimoWindow} from '@valtimo/shared';
 
 const modiyEditFormApiKeyInput = (editForm: any): void => {
   const keyField = editForm?.components

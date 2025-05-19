@@ -20,7 +20,7 @@ import {
   ConfigService,
   InterceptorSkip,
   InterceptorSkipHeader,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {Page} from '@valtimo/document';
 import {Observable} from 'rxjs';
 import {CaseListItem} from '../models';

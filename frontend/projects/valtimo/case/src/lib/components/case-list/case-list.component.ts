@@ -38,7 +38,7 @@ import {
   SearchField,
   SearchFieldValues,
   SortState,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,

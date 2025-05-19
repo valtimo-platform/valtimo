@@ -26,7 +26,7 @@ import {
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {PageHeaderService} from '@valtimo/components';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {ProcessInstanceTask} from '@valtimo/process';
 import {
   AssignUserToTaskComponent,

@@ -26,7 +26,7 @@ import {
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ButtonModule,
   FileUploaderModule,

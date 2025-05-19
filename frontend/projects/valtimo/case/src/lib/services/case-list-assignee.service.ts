@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject, Subject, map, Observable, switchMap, take, tap, combineLatest} from 'rxjs';
 import {CaseListService} from './case-list.service';
 import {DocumentService} from '@valtimo/document';
-import {AssigneeFilter, ConfigService, DefinitionColumn} from '@valtimo/config';
+import {AssigneeFilter, ConfigService, DefinitionColumn} from '@valtimo/shared';
 import {TranslateService} from '@ngx-translate/core';
 import {ListField} from '@valtimo/components';
 import {CaseParameterService} from './case-parameter.service';

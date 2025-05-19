@@ -17,7 +17,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {BehaviorSubject, filter, map, Observable, of, switchMap} from 'rxjs';
-import {NamedUser} from '@valtimo/config';
+import {NamedUser} from '@valtimo/shared';
 import {tap} from 'rxjs/operators';
 
 @Component({

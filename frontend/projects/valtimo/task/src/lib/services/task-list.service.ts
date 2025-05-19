@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {TaskService} from './task.service';
-import {TaskListTab} from '@valtimo/config';
+import {TaskListTab} from '@valtimo/shared';
 
 @Injectable()
 export class TaskListService {

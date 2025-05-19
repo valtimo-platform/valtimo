@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {HttpClient} from '@angular/common/http';
 import {WidgetData} from '../models';
 import {Observable} from 'rxjs';

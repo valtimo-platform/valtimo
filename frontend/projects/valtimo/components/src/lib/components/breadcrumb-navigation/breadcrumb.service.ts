@@ -19,7 +19,7 @@ import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {BreadcrumbItem} from 'carbon-components-angular';
 import {map} from 'rxjs/operators';
 import {ActivatedRoute, Params, Router, UrlSerializer} from '@angular/router';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {MenuService} from '../menu/menu.service';
 import {TranslateService} from '@ngx-translate/core';
 

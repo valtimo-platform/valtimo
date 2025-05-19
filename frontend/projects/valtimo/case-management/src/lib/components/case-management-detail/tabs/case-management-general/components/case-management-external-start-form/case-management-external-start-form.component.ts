@@ -17,7 +17,7 @@ import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {CaseSettings, DocumentService} from '@valtimo/document';
 import {ProcessManagementParams} from '@valtimo/process-management';
 import {NGXLogger} from 'ngx-logger';

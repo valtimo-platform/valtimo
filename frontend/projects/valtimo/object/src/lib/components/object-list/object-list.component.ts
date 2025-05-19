@@ -23,7 +23,7 @@ import {
   SearchFieldValues,
   SearchFilter,
   SearchFilterRange,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {ObjectManagementService, SearchColumn} from '@valtimo/object-management';
 import {
   BehaviorSubject,

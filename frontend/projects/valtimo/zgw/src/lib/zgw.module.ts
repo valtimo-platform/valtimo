@@ -24,7 +24,7 @@ import {
   ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
   ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {DocumentModule} from '@valtimo/document';
 import {ResourceModule} from '@valtimo/resource';
 import {

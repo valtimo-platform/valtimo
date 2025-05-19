@@ -58,7 +58,7 @@ import {
   VModalModule,
   WidgetModule,
 } from '@valtimo/components';
-import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
+import {ConfigModule, HttpLoaderFactory} from '@valtimo/shared';
 import {FormModule} from '@valtimo/form';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {ProcessModule} from '@valtimo/process';

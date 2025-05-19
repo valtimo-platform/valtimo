@@ -41,7 +41,7 @@ import {
   SearchFieldDataType,
   SearchFieldFieldType,
   SearchFieldMatchType,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {

@@ -19,7 +19,7 @@ import {ApiTabType, DefaultTabs} from '@valtimo/case';
 import {ListItem} from 'carbon-components-angular';
 import {combineLatest, map, startWith, Subscription} from 'rxjs';
 import {TabService} from '../../../../../services';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
@@ -67,7 +67,7 @@ export class TabFormComponent implements OnInit, OnDestroy {
     private readonly configService: ConfigService,
     private readonly tabService: TabService,
     private readonly formGroupDirective: FormGroupDirective,
-    private readonly route: ActivatedRoute,
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngOnInit(): void {

@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {PageTitleService} from '@valtimo/components';
-import {CaseManagementTabConfig, ConfigService} from '@valtimo/config';
+import {CaseManagementTabConfig, ConfigService} from '@valtimo/shared';
 import {Tab} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, startWith, Subscription} from 'rxjs';
 import {CaseManagementParams, TabEnum} from '../../models';

@@ -15,7 +15,7 @@
  */
 
 import {ListItem} from 'carbon-components-angular';
-import {SearchFilter, SearchFilterRange, TaskListTab} from '@valtimo/config';
+import {SearchFilter, SearchFilterRange, TaskListTab} from '@valtimo/shared';
 
 interface TaskPageParams {
   page: number;

@@ -17,7 +17,7 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
-import {Localization, LocalizationService, MergedLocalizations} from '@valtimo/config';
+import {Localization, LocalizationService, MergedLocalizations} from '@valtimo/shared';
 import {
   ArbitraryInputTitles,
   MultiInputKeyValue,

@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {ROLE_USER} from '@valtimo/config';
+import {ROLE_USER} from '@valtimo/shared';
 import {CustomerListComponent} from './components/customer-list/customer-list.component';
 import {CasesListComponent} from './components/cases-list/cases-list.component';
 

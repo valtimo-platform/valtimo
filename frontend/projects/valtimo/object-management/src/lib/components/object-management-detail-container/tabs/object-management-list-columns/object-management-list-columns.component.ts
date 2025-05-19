@@ -29,7 +29,7 @@ import {
   tap,
 } from 'rxjs';
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import {ConfigService, DefinitionColumn} from '@valtimo/config';
+import {ConfigService, DefinitionColumn} from '@valtimo/shared';
 import {ListField, MultiInputValues} from '@valtimo/components';
 import {catchError, take} from 'rxjs/operators';
 import {FormControl, FormGroup, Validators} from '@angular/forms';

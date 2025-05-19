@@ -23,7 +23,7 @@ import {
   QueryFormsResponse,
 } from '../models';
 import {Observable, of} from 'rxjs';
-import {BaseApiService, ConfigService} from '@valtimo/config';
+import {BaseApiService, ConfigService} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',

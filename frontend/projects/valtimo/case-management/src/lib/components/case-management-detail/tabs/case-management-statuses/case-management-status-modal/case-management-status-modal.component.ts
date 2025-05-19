@@ -46,7 +46,7 @@ import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@v
 import {IconService, ListItem} from 'carbon-components-angular';
 import {Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {TagColor} from '@valtimo/config';
+import {TagColor} from '@valtimo/shared';
 
 @Component({
   standalone: false,

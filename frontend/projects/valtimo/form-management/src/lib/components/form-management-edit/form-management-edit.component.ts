@@ -29,7 +29,7 @@ import {
   ValtimoCdsModalDirectiveModule,
   WidgetModule,
 } from '@valtimo/components';
-import {EnvironmentService, GlobalNotificationService} from '@valtimo/config';
+import {EnvironmentService, GlobalNotificationService} from '@valtimo/shared';
 import {
   ButtonModule,
   DialogModule,

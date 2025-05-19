@@ -15,7 +15,7 @@
  */
 
 import {Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
-import {MenuItem} from '@valtimo/config';
+import {MenuItem} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-menu-item-text',

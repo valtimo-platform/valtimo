@@ -17,7 +17,7 @@
 import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {initialize, initializerFactory} from './init';
-import {ConfigService, INITIALIZERS} from '@valtimo/config';
+import {ConfigService, INITIALIZERS} from '@valtimo/shared';
 import {TranslateService} from '@ngx-translate/core';
 import {initializeCsp} from '@valtimo/security';
 import {DOCUMENT} from '@angular/common';

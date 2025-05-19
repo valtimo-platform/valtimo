@@ -29,7 +29,7 @@ import {FileSizeModule} from '../file-size/file-size.module';
 import {ResourceModule} from '@valtimo/resource';
 import {RouterModule} from '@angular/router';
 import {FormIoCurrentUserComponent} from './form-io-current-user/form-io-current-user.component';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {FormIoIbanComponent} from './form-io-iban/iban.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {FormioValueResolverSelectorComponent} from './formio-value-resolver-selector/formio-value-resolver-selector.component';

@@ -17,7 +17,7 @@ import {Component, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {MenuService, ModalComponent} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {
   DocumentDefinition,
   DocumentService,

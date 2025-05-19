@@ -16,7 +16,7 @@
 import {Location} from '@angular/common';
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {GlobalNotificationService} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {TaskService} from '@valtimo/task';
 import moment from 'moment';

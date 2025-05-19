@@ -18,7 +18,7 @@ import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {TopbarComponent} from './topbar.component';
 import {RouterTestingModule} from '@angular/router/testing';
 import {KeycloakService} from 'keycloak-angular';
-import {MockIconService, MockKeycloakService, VALTIMO_CONFIG} from '@valtimo/config';
+import {MockIconService, MockKeycloakService, VALTIMO_CONFIG} from '@valtimo/shared';
 import {environment} from '@src/environments/environment';
 import {IconService} from 'carbon-components-angular';
 

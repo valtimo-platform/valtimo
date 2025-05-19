@@ -16,7 +16,7 @@ import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.valid
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {ValtimoCdsModalDirectiveModule} from '@valtimo/components';
-import {ManagementContext} from '@valtimo/config';
+import {ManagementContext} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-form-management-duplicate-modal',

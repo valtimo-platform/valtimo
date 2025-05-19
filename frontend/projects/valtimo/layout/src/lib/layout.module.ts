@@ -25,7 +25,7 @@ import {
   RightSidebarModule,
   TopbarModule,
 } from '@valtimo/components';
-import {GlobalNotificationComponent} from '@valtimo/config';
+import {GlobalNotificationComponent} from '@valtimo/shared';
 import {LayoutInternalComponent} from './components/layout-internal/layout-internal.component';
 import {LayoutPublicComponent} from './components/layout-public/layout-public.component';
 import {LayoutComponent} from './components/layout/layout.component';

@@ -17,7 +17,7 @@
 import {Injectable, Injector} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {DocumentenApiFileReference, ResourceDto, ResourceFile, UploadService} from '../models';
-import {ConfigService, UploadProvider} from '@valtimo/config';
+import {ConfigService, UploadProvider} from '@valtimo/shared';
 import {Observable, of} from 'rxjs';
 import {OpenZaakUploadService} from './open-zaak-upload.service';
 import {S3UploadService} from './s3-upload.service';

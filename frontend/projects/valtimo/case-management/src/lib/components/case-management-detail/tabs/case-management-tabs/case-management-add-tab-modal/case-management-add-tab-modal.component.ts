@@ -13,14 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
-import {AbstractControl, FormBuilder, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewEncapsulation,
+} from '@angular/core';
+import {
+  AbstractControl,
+  FormBuilder,
+  ValidationErrors,
+  ValidatorFn,
+  Validators,
+} from '@angular/forms';
 import {Code16, Development16, TableBuilt16, WatsonHealthPageScroll16} from '@carbon/icons';
 import {ApiTabItem, ApiTabType, TabSelectItem} from '@valtimo/case';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {TabService} from '../../../../../services';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {CaseManagementParams} from '../../../../../models';
 import {ActivatedRoute} from '@angular/router';
 
@@ -90,7 +103,7 @@ export class CaseManagementAddTabModalComponent {
     private readonly iconService: IconService,
     private readonly tabService: TabService,
     private readonly configService: ConfigService,
-    private readonly route: ActivatedRoute,
+    private readonly route: ActivatedRoute
   ) {
     this.iconService.registerAll([Code16, Development16, TableBuilt16, WatsonHealthPageScroll16]);
   }

@@ -19,7 +19,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {SwaggerComponent} from './swagger.component';
-import {ROLE_USER} from '@valtimo/config';
+import {ROLE_USER} from '@valtimo/shared';
 
 const routes: Routes = [
   {

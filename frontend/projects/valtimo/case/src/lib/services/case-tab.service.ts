@@ -24,7 +24,7 @@ import {
   TabLoaderImpl,
 } from '../models';
 import {CASE_TAB_TOKEN, DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
-import {ConfigService, ZGW_OBJECT_TYPE_COMPONENT_TOKEN} from '@valtimo/config';
+import {ConfigService, ZGW_OBJECT_TYPE_COMPONENT_TOKEN} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 import {CaseTabApiService} from './case-tab-api.service';
 import {

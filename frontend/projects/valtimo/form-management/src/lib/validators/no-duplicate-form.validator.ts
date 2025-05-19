@@ -16,7 +16,7 @@
 
 import {FormManagementService} from '../services';
 import {AbstractControl, AsyncValidatorFn, ValidationErrors} from '@angular/forms';
-import {ManagementContext} from '@valtimo/config';
+import {ManagementContext} from '@valtimo/shared';
 import {map, Observable} from 'rxjs';
 import {FormManagementParams} from '../models';
 

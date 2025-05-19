@@ -18,7 +18,7 @@ import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
 import {accountInitializer} from '@valtimo/account';
 import {Injector} from '@angular/core';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {menuInitializer} from '@valtimo/components';
 
 export function initialize(

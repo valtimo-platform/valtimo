@@ -25,7 +25,7 @@ import {
 import {RecentlyViewed16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ConfirmationModalModule, TooltipModule} from '@valtimo/components';
-import {ConfigService, GlobalNotificationService} from '@valtimo/config';
+import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
 import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link';
 import {ButtonModule, IconModule, IconService, ModalModule} from 'carbon-components-angular';
 import moment from 'moment';

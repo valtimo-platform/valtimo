@@ -16,7 +16,7 @@
 
 import {Component, ViewChild} from '@angular/core';
 import {DecisionListComponent} from './decision-list/decision-list.component';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 
 @Component({
   standalone: false,

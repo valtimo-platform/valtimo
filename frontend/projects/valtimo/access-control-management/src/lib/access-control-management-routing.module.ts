@@ -16,7 +16,7 @@
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
 import {AccessControlOverviewComponent} from './components/overview/access-control-overview.component';
 import {AccessControlEditorComponent} from './components/editor/access-control-editor.component';

@@ -44,7 +44,7 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {FormIoLocalStorageService} from './services/form-io-local-storage.service';
 import {deepmerge} from 'deepmerge-ts';
-import {ConfigService, ValtimoConfig} from '@valtimo/config';
+import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
 import {Formio} from '@formio/js';
 

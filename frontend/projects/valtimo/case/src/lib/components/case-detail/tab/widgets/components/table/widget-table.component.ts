@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
-import {Page} from '@valtimo/config';
+import {Page} from '@valtimo/shared';
 import {
   ButtonModule,
   PaginationModel,

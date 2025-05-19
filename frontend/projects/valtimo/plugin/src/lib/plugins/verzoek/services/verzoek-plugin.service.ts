@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {catchError, Observable, of} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {Objecttype, Roltype} from '../models';
 
 @Injectable({

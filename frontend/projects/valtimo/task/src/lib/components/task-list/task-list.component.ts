@@ -52,7 +52,7 @@ import {
   SearchFieldValues,
   SortState,
   TaskListTab,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';

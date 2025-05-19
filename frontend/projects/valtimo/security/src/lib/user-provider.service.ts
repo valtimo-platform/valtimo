@@ -23,7 +23,7 @@ import {
   EmailNotificationSettings,
   UserIdentity,
   UserService,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {HttpClient} from '@angular/common/http';
 
 @Injectable({

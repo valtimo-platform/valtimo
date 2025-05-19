@@ -16,7 +16,7 @@
 import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ROLE_USER} from '@valtimo/config';
+import {ROLE_USER} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
 import {WidgetDashboardComponent} from './components/widget-dashboard/widget-dashboard.component';
 

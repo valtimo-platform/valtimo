@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService, Page} from '@valtimo/config';
+import {ConfigService, Page} from '@valtimo/shared';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {Note, NoteCreateRequest, NoteModal, NoteUpdateRequest} from '../models/notes.model';

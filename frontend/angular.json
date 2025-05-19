@@ -36,7 +36,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "node_modules/@valtimo/config/assets/core",
+                "input": "node_modules/@valtimo/shared/assets/core",
                 "output": "./valtimo-translation/core/"
               },
               {
@@ -1340,21 +1340,21 @@
         }
       }
     },
-    "@valtimo/config": {
+    "@valtimo/shared": {
       "projectType": "library",
-      "root": "projects/valtimo/config",
-      "sourceRoot": "projects/valtimo/config/src",
+      "root": "projects/valtimo/shared",
+      "sourceRoot": "projects/valtimo/shared/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/config/tsconfig.lib.json",
-            "project": "projects/valtimo/config/ng-package.json"
+            "tsConfig": "projects/valtimo/shared/tsconfig.lib.json",
+            "project": "projects/valtimo/shared/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/config/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/shared/tsconfig.lib.prod.json"
             }
           }
         },
@@ -1362,16 +1362,16 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/config/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/config/karma.conf.js"
+            "tsConfig": "projects/valtimo/shared/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/shared/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/config/src/**/*.ts",
-              "projects/valtimo/config/src/**/*.html"
+              "projects/valtimo/shared/src/**/*.ts",
+              "projects/valtimo/shared/src/**/*.html"
             ]
           }
         }
