@@ -93,7 +93,6 @@
     "libs:build-6:object-management": "ng build @valtimo/object-management",
     "libs:build-7:zgw": "ng build @valtimo/zgw",
     "libs:build:case-migration": "ng build @valtimo/case-migration",
-    "libs:build:sse": "ng build @valtimo/sse",
     "libs:build:keycloak": "ng build @valtimo/keycloak",
     "libs:build:form-flow-management": "ng build @valtimo/form-flow-management",
     "libs:build:form-view-model": "ng build @valtimo/form-view-model",
