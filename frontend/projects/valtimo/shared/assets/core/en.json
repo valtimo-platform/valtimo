@@ -696,6 +696,10 @@
       "zgw": "ZGW",
       "forms": "Forms",
       "generalTab": {
+        "readOnlyNotification": {
+          "title": "Read only",
+          "message": "This case cannot be updated because it is final."
+        },
         "linkUploadProcess": {
           "title": "Link upload process to case",
           "label": "Choose which process should handle file uploads",

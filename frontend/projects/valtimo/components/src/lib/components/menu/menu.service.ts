@@ -16,13 +16,19 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
-import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/shared';
+import {
+  ConfigService,
+  EnvironmentService,
+  MenuConfig,
+  MenuIncludeService,
+  MenuItem,
+} from '@valtimo/shared';
 import {CaseDefinition, DocumentService} from '@valtimo/document';
 import {UserProviderService} from '@valtimo/security';
 import {SseService} from '@valtimo/sse';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
+import {BehaviorSubject, combineLatest, switchMap, Observable, Subject} from 'rxjs';
 import {filter, map} from 'rxjs/operators';
 import {PendingChangesService} from '../pending-changes/pending-changes.service';
 
@@ -32,6 +38,15 @@ import {PendingChangesService} from '../pending-changes/pending-changes.service'
 export class MenuService {
   private readonly _activeParentSequenceNumber$ = new BehaviorSubject<string>('');
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
+
+  private readonly canUpdateGlobalConfiguration$ =
+    this.environmentService.canUpdateGlobalConfiguration();
+
+  private readonly caseDefinitions$ = this.canUpdateGlobalConfiguration$.pipe(
+    switchMap(canUpdate =>
+      this.documentService.getCaseDefinitions({active: true, final: canUpdate ? '' : true})
+    )
+  );
 
   private _menuItems$ = new BehaviorSubject<MenuItem[]>([]);
   private menuConfig: MenuConfig;
@@ -53,7 +68,8 @@ export class MenuService {
     private readonly pendingChangesService: PendingChangesService,
     private readonly router: Router,
     private readonly userProviderService: UserProviderService,
-    private readonly sseService: SseService
+    private readonly sseService: SseService,
+    private readonly environmentService: EnvironmentService
   ) {
     const config = configService?.config;
     this.menuConfig = config?.menu;
@@ -212,7 +228,7 @@ export class MenuService {
   private appendCaseSubMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {
     return new Observable(subscriber => {
       this.logger.debug('appendCasesSubMenuItems');
-      this.documentService.getCaseDefinitions({active: true}).subscribe(definitions => {
+      this.caseDefinitions$.subscribe(definitions => {
         const openDocumentCountMap =
           !this.disableCaseCount && this.getOpenCaseCountMap(definitions);
 

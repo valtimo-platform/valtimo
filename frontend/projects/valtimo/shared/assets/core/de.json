@@ -695,6 +695,10 @@
       "tags": "Etikett",
       "zgw": "ZGW",
       "generalTab": {
+        "readOnlyNotification": {
+          "title": "Schreibgeschützt",
+          "message": "Dieser Fall kann nicht aktualisiert werden, da er abgeschlossen ist."
+        },
         "linkUploadProcess": {
           "title": "Upload-Prozess mit Fall verknüpfen",
           "label": "Wählen Sie den Prozess für Datei-Uploads",

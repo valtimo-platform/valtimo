@@ -20,7 +20,7 @@ import {ColumnConfig, MenuService, Pagination} from '@valtimo/components';
 import {DocumentService, Page, TemplatePayload} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
-import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, take} from 'rxjs';
 import {CaseListItem} from '../../models';
 import {CaseManagementService} from '../../services';
 import {EnvironmentService} from '@valtimo/shared';
@@ -36,8 +36,20 @@ moment.locale(localStorage.getItem('langKey') || '');
 export class CaseManagementListComponent {
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 
-  public readonly caseListItems$: Observable<CaseListItem[]> = this.route.queryParams.pipe(
-    switchMap(params => this.caseManagementService.getCaseDefinitions({...params, active: true})),
+  public readonly canUpdateGlobalConfiguration$ =
+    this.environmentService.canUpdateGlobalConfiguration();
+
+  public readonly caseListItems$: Observable<CaseListItem[]> = combineLatest([
+    this.route.queryParams,
+    this.canUpdateGlobalConfiguration$,
+  ]).pipe(
+    switchMap(([params, canUpdate]) =>
+      this.caseManagementService.getCaseDefinitions({
+        ...params,
+        active: true,
+        final: canUpdate ? '' : true,
+      })
+    ),
     map((page: Page<CaseListItem>) => {
       this.pagination$.next({
         size: page.size,
@@ -47,9 +59,6 @@ export class CaseManagementListComponent {
       return page.content;
     })
   );
-
-  public readonly canUpdateGlobalConfiguration$ =
-    this.environmentService.canUpdateGlobalConfiguration();
 
   public pagination: Pagination = {
     collectionSize: 0,

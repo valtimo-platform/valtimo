@@ -19,6 +19,20 @@
     isReadOnly: isReadOnly$ | async,
   } as obs"
 >
+  @if (obs.isReadOnly) {
+    <cds-notification
+      class="read-only-notification"
+      [notificationObj]="{
+        type: 'info',
+        title: 'caseManagement.tabs.generalTab.readOnlyNotification.title' | translate,
+        message: 'caseManagement.tabs.generalTab.readOnlyNotification.message' | translate,
+        showClose: false,
+        lowContrast: true,
+      }"
+    >
+    </cds-notification>
+  }
+
   <div class="case-management-general-tab">
     <ng-template #extensions></ng-template>
 

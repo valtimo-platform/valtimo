@@ -695,6 +695,10 @@
       "tags": "Tags",
       "forms": "Formulieren",
       "generalTab": {
+        "readOnlyNotification": {
+          "title": "Alleen-lezen",
+          "message": "Deze case kan niet worden bijgewerkt omdat deze definitief is."
+        },
         "linkUploadProcess": {
           "title": "Uploadproces koppelen aan case",
           "label": "Kies welk proces bestanduploads moet verwerken",
