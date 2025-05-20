@@ -203,6 +203,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
     this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;
     this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
+    this.processName = processDefinitionCaseDefinition.processDefinitionName
     this.options = new FormioOptionsImpl();
     this.options.disableAlerts = true;
     const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {

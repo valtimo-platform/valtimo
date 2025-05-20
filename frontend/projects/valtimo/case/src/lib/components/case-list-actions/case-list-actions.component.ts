@@ -134,7 +134,7 @@ export class CaseListActionsComponent implements OnInit {
   }
 
   public selectProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
-    this.selectedProcessDefinitionCaseDefinition = processDefinitionCaseDefinition[0];
+    this.selectedProcessDefinitionCaseDefinition = processDefinitionCaseDefinition;
     this.startSelectionModalOpen$.next(false);
     this.showStartProcessModal();
   }
