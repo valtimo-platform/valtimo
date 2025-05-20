@@ -186,7 +186,9 @@
     "libs:lint:object": "ng lint @valtimo/object",
     "libs:lint:access-control-management": "ng lint @valtimo/access-control-management",
     "libs:lint:logging": "ng lint @valtimo/logging",
-    "copy-frontend-version": "node scripts/copy-frontend-version.js"
+    "copy-frontend-version": "node scripts/copy-frontend-version.js",
+    "libs-increment-all": "node scripts/libs.increment.all.js",
+    "libs-publish-all": "node scripts/libs.publish.all.js"
   },
   "private": true,
   "dependencies": {

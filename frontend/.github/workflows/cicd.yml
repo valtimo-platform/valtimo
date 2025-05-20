@@ -1,0 +1,180 @@
+name: CI/CD
+on:
+  pull_request:
+    branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'cicd/*']
+  push:
+    branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*']
+  workflow_dispatch:
+
+jobs:
+  # Install and cache NPM packages for other jobs
+  install_packages:
+    runs-on: ubuntu-latest
+    outputs:
+      npm_package_cachekey: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check whether NPM packages are already cached
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          lookup-only: true
+          path: node_modules
+          key: ${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install NPM packages
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+      - name: Cache NPM packages
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: node_modules
+          key: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
+
+  build_and_test:
+    runs-on: ubuntu-latest
+    outputs:
+      project_version: ${{ steps.determine_project_version.outputs.project_version }}
+    needs:
+      - install_packages
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get node_modules from cache
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          path: node_modules
+          key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
+
+      # There is a small chance the node_modules that the 'install_packages' job cached were evicted
+      - name: Install node_modules on cache miss
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Build all libraries
+        run: npm run libs-build-all
+
+      - name: Test all libraries
+        run: npm run libs-test-all-cicd
+
+      - name: Determine project version
+        id: determine_project_version
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          # replace special characters with -
+          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
+
+          PROJECT_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
+          if [[ "$BRANCH_NAME" == rc-* ]]; then
+              PROJECT_VERSION="${PROJECT_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
+          elif [[ "$BRANCH_NAME" == "next-minor" ]]; then
+              PROJECT_VERSION="${PROJECT_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
+          else
+              # Building feature branch
+              PROJECT_VERSION="${PROJECT_VERSION}-next-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
+          fi
+          echo "Version is ${PROJECT_VERSION}"
+          echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Set project version on all libraries
+        env:
+          PROJECT_VERSION: ${{ steps.determine_project_version.outputs.project_version }}
+        run: |
+          npm run libs-increment-all -- ${PROJECT_VERSION}
+          npm run copy-frontend-version
+
+          # @valtimo/config was renamed to @valtimo/shared in commit f1fed37
+          # this condition supports both cases
+          if [ -e './projects/valtimo/shared' ]; then
+              npx ng build @valtimo/shared
+          else
+              npx ng build @valtimo/config
+          fi
+
+      - name: 'Retain build artifact: dist'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 1
+
+  # 'lint' can run in parallel with 'build_and_test'
+  lint:
+    needs:
+      - install_packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get node_modules from cache
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          path: node_modules
+          key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
+
+      # There is a small chance the node_modules that the 'install_packages' job cached were evicted
+      - name: Install node_modules on cache miss
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Lint all libraries
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if [[ $BRANCH_NAME == 'rc/12.0.0' || $BRANCH_NAME == 'next-minor' || $BRANCH_NAME == 'next-major' ]]; then
+            echo "Linting in parallel"
+            npm run libs-lint-all-cicd
+          else
+            echo "Linting sequentially"
+            npm run libs-lint-all
+          fi
+
+  # 'publish' only runs on push events from certain branches
+  publish:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs:
+      - install_packages
+      - build_and_test
+      - lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: 'Restore build artifact: dist'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: 'Publish all libs'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          PROJECT_VERSION: ${{ needs.build_and_test.outputs.project_version }}
+        run: |
+          npm run libs-publish-all -- s3 $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $PROJECT_VERSION
+
+      - name: 'Publish to SNS topic'
+        env:
+          AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC: ${{ secrets.AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC }}
+          PROJECT_VERSION: ${{ needs.build_and_test.outputs.project_version }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          MESSAGE=$(cat <<EOF
+          {
+            "valtimoVersion": "${PROJECT_VERSION}",
+            "branchName": "${BRANCH}"
+          }
+          EOF)
+
+          aws sns publish --region eu-west-1 \
+            --target-arn $AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC \
+            --message "$MESSAGE"
