@@ -697,6 +697,7 @@
       "zgw": "ZGW",
       "forms": "Forms",
       "decision": "Decision tables",
+      "formFlows": "Form Flows",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",
@@ -1953,6 +1954,7 @@
     "readOnly": "Read only",
     "add": "Add new form flow",
     "deleteModalContent": "Are you sure you want to delete this form flow?",
+    "deletedSuccessfully": "{{key}} was deleted successfully",
     "savedSuccessTitle": "Saved successfully",
     "savedSuccessTitleMessage": "{{key}} was saved successfully",
     "noResults": {

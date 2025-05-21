@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   Component,
   ComponentRef,
@@ -27,26 +26,25 @@ import {
   ViewContainerRef,
   ViewEncapsulation,
 } from '@angular/core';
-import {PermissionService} from '@valtimo/access-control';
-import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {
-  FORM_CUSTOM_COMPONENT_TOKEN,
-  FormCustomComponent,
-  FormCustomComponentConfig,
-  FormFlowService,
-  FormSubmissionResult,
-  ProcessLinkService,
-  UrlResolverService,
-} from '@valtimo/process-link';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ProcessService} from '@valtimo/process';
+import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
+import {PermissionService} from '@valtimo/access-control';
 import {
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
   ValtimoFormioOptions,
 } from '@valtimo/components';
-import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
+import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {ProcessService} from '@valtimo/process';
+import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  FormCustomComponent,
+  FormCustomComponentConfig,
+  FormSubmissionResult,
+  ProcessLinkService,
+  UrlResolverService,
+} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
@@ -98,7 +96,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     private processService: ProcessService,
     private documentService: DocumentService,
     private processLinkService: ProcessLinkService,
-    private formFlowService: FormFlowService,
     private userProviderService: UserProviderService,
     private permissionService: PermissionService,
     private listService: CaseListService,

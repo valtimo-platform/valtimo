@@ -37,16 +37,6 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
-  CARBON_THEME,
-  CdsThemeService,
-  CurrentCarbonTheme,
-  InputLabelModule,
-  ValuePathItem,
-  ValuePathSelectorComponent,
-  ValuePathSelectorPrefix,
-  ValuePathType,
-} from '@valtimo/components';
-import {
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
   CaseWidgetDateTimeDisplayType,
@@ -57,6 +47,17 @@ import {
   WidgetCollectionContent,
   WidgetContentProperties,
 } from '@valtimo/case';
+import {
+  CARBON_THEME,
+  CdsThemeService,
+  CurrentCarbonTheme,
+  InputLabelModule,
+  ValuePathItem,
+  ValuePathSelectorComponent,
+  ValuePathSelectorPrefix,
+  ValuePathType,
+} from '@valtimo/components';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {
   ButtonModule,
   DropdownModule,
@@ -69,7 +70,6 @@ import {WidgetContentComponent} from '../../../../../../../models';
 import {WidgetFieldsService, WidgetWizardService} from '../../../../../../../services';
 import {CaseManagementWidgetFieldsColumnComponent} from '../fields/column/case-management-widget-fields-column.component';
 import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
-import {getCaseManagementRouteParams} from '../../../../../../../utils';
 
 @Component({
   templateUrl: './case-management-widget-collection.component.html',

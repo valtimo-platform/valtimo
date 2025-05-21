@@ -26,7 +26,6 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {getCaseManagementRouteParams} from '@valtimo/case-management';
 import {
   CdsThemeService,
   FormModule,
@@ -36,6 +35,7 @@ import {
   SpinnerModule,
   ValtimoCdsModalDirectiveModule,
 } from '@valtimo/components';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
 import {
   ButtonModule,

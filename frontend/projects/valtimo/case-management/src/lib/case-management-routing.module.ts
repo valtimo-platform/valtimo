@@ -13,38 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Inject, NgModule} from '@angular/core';
-import {Route, Router, RouterModule, Routes} from '@angular/router';
-import {pendingChangesGuard} from '@valtimo/components';
-import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig, ROLE_ADMIN} from '@valtimo/shared';
-import {
-  FormManagementComponent,
-  FormManagementEditComponent,
-  FormManagementRouteData,
-} from '@valtimo/form-management';
+import { Inject, NgModule } from '@angular/core';
+import { Route, Router, RouterModule, Routes } from '@angular/router';
+import { pendingChangesGuard } from '@valtimo/components';
+import { DecisionComponent, DecisionManagementRouteData, DecisionModelerComponent } from '@valtimo/decision';
+import { FormFlowEditorComponent, FormFlowOverviewComponent } from '@valtimo/form-flow-management';
+import { FormManagementComponent, FormManagementEditComponent, FormManagementRouteData } from '@valtimo/form-management';
 import {
   ProcessManagementBuilderComponent,
   ProcessManagementComponent,
   ProcessManagementRouteData,
 } from '@valtimo/process-management';
-import {AuthGuardService} from '@valtimo/security';
-import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
-import {CaseManagementDetailComponent} from './components/case-management-detail/case-management-detail.component';
-import {CaseManagementDocumentDefinitionComponent} from './components/case-management-detail/tabs/case-management-document-definition/case-management-document-definition.component';
-import {CaseManagementGeneralComponent} from './components/case-management-detail/tabs/case-management-general/case-management-general.component';
-import {CaseManagementListColumnsComponent} from './components/case-management-detail/tabs/case-management-list-columns/case-management-list-columns.component';
-import {CaseManagementSearchFieldsComponent} from './components/case-management-detail/tabs/case-management-search-fields/case-management-search-fields.component';
-import {CaseManagementStatusesComponent} from './components/case-management-detail/tabs/case-management-statuses/case-management-statuses.component';
-import {CaseManagementTabsComponent} from './components/case-management-detail/tabs/case-management-tabs/case-management-tabs.component';
-import {CaseManagementWidgetTabComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
-import {CaseManagementTagsComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags.component';
-import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
-import {TabEnum} from './models';
+import { AuthGuardService } from '@valtimo/security';
+import { CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig, ROLE_ADMIN } from '@valtimo/shared';
 import {
-  DecisionComponent,
-  DecisionManagementRouteData,
-  DecisionModelerComponent,
-} from '@valtimo/decision';
+  CaseManagementDeploymentComponent,
+} from './components/case-management-deployment/case-management-deployment.component';
+import { CaseManagementDetailComponent } from './components/case-management-detail/case-management-detail.component';
+import {
+  CaseManagementDocumentDefinitionComponent,
+} from './components/case-management-detail/tabs/case-management-document-definition/case-management-document-definition.component';
+import {
+  CaseManagementGeneralComponent,
+} from './components/case-management-detail/tabs/case-management-general/case-management-general.component';
+import {
+  CaseManagementListColumnsComponent,
+} from './components/case-management-detail/tabs/case-management-list-columns/case-management-list-columns.component';
+import {
+  CaseManagementSearchFieldsComponent,
+} from './components/case-management-detail/tabs/case-management-search-fields/case-management-search-fields.component';
+import {
+  CaseManagementStatusesComponent,
+} from './components/case-management-detail/tabs/case-management-statuses/case-management-statuses.component';
+import {
+  CaseManagementTabsComponent,
+} from './components/case-management-detail/tabs/case-management-tabs/case-management-tabs.component';
+import {
+  CaseManagementWidgetTabComponent,
+} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
+import {
+  CaseManagementTagsComponent,
+} from './components/case-management-detail/tabs/case-management-tags/case-management-tags.component';
+import { CaseManagementListComponent } from './components/case-management-list/case-management-list.component';
+import { TabEnum } from './models';
 
 const routes: Routes = [
   {
@@ -123,6 +134,10 @@ const routes: Routes = [
         } as FormManagementRouteData,
       },
       {
+        path: TabEnum.FORM_FLOWS,
+        component: FormFlowOverviewComponent,
+      },
+      {
         path: TabEnum.TAGS,
         component: CaseManagementTagsComponent,
       },
@@ -194,6 +209,17 @@ const routes: Routes = [
       context: 'case',
     } as ProcessManagementRouteData,
   },
+  {
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.FORM_FLOWS}/:formFlowDefinitionKey`,
+    component: FormFlowEditorComponent,
+    canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
+    data: {
+      title: 'Form flow details',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+    },
+  }
 ];
 
 @NgModule({

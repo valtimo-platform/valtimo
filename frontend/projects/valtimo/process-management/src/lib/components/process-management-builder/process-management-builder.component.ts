@@ -36,7 +36,12 @@ import {
   PendingChangesComponent,
   RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
-import {EnvironmentService, GlobalNotificationService, ManagementContext} from '@valtimo/shared';
+import {
+  EnvironmentService,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+  ManagementContext,
+} from '@valtimo/shared';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {
   ProcessLinkButtonService,
@@ -96,7 +101,7 @@ import {
   UpdateProcessDefinitionCaseDefinitionRequest,
 } from '../../models';
 import {ProcessManagementEditorService, ProcessManagementService} from '../../services';
-import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
+import {getContextObservable} from '../../utils';
 import {ValtimoPropertiesProviderModule} from './panel';
 
 @Component({
@@ -194,7 +199,8 @@ export class ProcessManagementBuilderComponent
   public readonly context$ = getContextObservable(this.route);
 
   public readonly managementParams$ = this.context$.pipe(
-    switchMap(context => getCaseManagementRouteParams(context, this.route))
+    filter(context => context === 'case'),
+    switchMap(() => getCaseManagementRouteParams(this.route))
   );
 
   private readonly _reload$ = new Subject<null>();
@@ -324,10 +330,8 @@ export class ProcessManagementBuilderComponent
               processLinks as ProcessLinkCreateEvent[],
               selectedProcessDefinition.id,
               !isReadOnlyProcess ? (result?.xml ?? '') : null,
-              params.caseDefinitionKey,
-              params.caseDefinitionVersionTag,
-              this.canInitializeDocument$.getValue(),
-              this.startableByUser$.getValue()
+              params?.caseDefinitionKey ?? '',
+              params?.caseDefinitionVersionTag ?? ''
             );
           }
 

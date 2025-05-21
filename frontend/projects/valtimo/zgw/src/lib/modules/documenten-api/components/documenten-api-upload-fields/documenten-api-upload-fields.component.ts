@@ -13,9 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, ViewChild} from '@angular/core';
-import {DocumentenApiColumnModalType, DocumentenApiColumnModalTypeCloseEvent} from '../../models';
+import {ActivatedRoute} from '@angular/router';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {
+  ActionItem,
+  CarbonListComponent,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -23,30 +34,13 @@ import {
   map,
   Observable,
   startWith,
-  Subject,
   switchMap,
   tap,
 } from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
-import {
-  ActionItem,
-  CarbonListComponent,
-  CarbonListItem,
-  CarbonListModule,
-  ColumnConfig,
-  ConfirmationModalModule,
-  ViewType,
-} from '@valtimo/components';
-import {CommonModule} from '@angular/common';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {
-  DOCUMENTEN_API_UPLOAD_KEYS,
-  DocumentenApiUploadField,
-} from '../../models/documenten-api-upload-field.model';
+import {DocumentenApiColumnModalType, DocumentenApiColumnModalTypeCloseEvent} from '../../models';
+import {DocumentenApiUploadField} from '../../models/documenten-api-upload-field.model';
 import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiUploadFieldModalComponent} from '../documenten-api-upload-field-model/documenten-api-upload-field-modal.component';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 
 @Component({
   selector: 'valtimo-documenten-api-upload-fields',

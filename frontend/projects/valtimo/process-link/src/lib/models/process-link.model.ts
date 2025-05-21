@@ -74,7 +74,7 @@ interface FormFlowProcessLinkCreateRequestDto {
   activityId: string;
   activityType: string;
   processLinkType: string;
-  formFlowDefinitionId: string;
+  formFlowDefinitionKey: string;
   subtitles: string[];
 }
 

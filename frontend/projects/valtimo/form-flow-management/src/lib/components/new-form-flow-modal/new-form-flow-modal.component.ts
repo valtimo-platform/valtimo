@@ -50,8 +50,7 @@ export class NewFormFlowModalComponent {
     }
 
     this.closeEvent.emit({
-      key: this.key.value,
-      version: 1,
+      key: this.key.value ?? '',
       startStep: 'start-step',
       steps: [],
     });

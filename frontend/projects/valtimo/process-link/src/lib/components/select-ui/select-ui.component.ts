@@ -99,9 +99,8 @@ export class SelectUIComponent implements OnInit, OnDestroy {
   public selectCustomComponent(selectedCustomComponent: ListItem): void {
     this._selectedCustomComponent = selectedCustomComponent;
 
-    this._selectedCustomComponent.content
-      ? this.buttonService.enableSaveButton()
-      : this.buttonService.disableSaveButton();
+    if (this._selectedCustomComponent.content) this.buttonService.enableSaveButton();
+    else this.buttonService.disableSaveButton();
   }
 
   private openBackButtonSubscription(): void {

@@ -66,6 +66,15 @@
       (selected)="navigateToTab(TabEnum.FORMS)"
     >
     </cds-tab>
+    
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.FORM_FLOWS"
+      [active]="obs.currentTab === TabEnum.FORM_FLOWS"
+      [heading]="'caseManagement.tabs.formFlows' | translate"
+      (selected)="navigateToTab(TabEnum.FORM_FLOWS)"
+    >
+    </cds-tab>
 
     <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"

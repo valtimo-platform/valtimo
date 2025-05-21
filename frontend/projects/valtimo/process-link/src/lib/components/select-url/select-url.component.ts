@@ -60,11 +60,8 @@ export class SelectUrlComponent implements OnInit, OnDestroy {
 
     this._subscriptions.add(
       this.urlForm.statusChanges.pipe(distinctUntilChanged()).subscribe(status => {
-        if (status === 'VALID') {
-          this.buttonService.enableSaveButton();
-        } else {
-          this.buttonService.disableSaveButton();
-        }
+        if (status === 'VALID') this.buttonService.enableSaveButton();
+        else this.buttonService.disableSaveButton();
       })
     );
 

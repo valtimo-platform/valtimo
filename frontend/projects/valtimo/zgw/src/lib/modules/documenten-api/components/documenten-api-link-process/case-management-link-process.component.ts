@@ -17,8 +17,13 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
-import {ConfigService, UploadProvider, ValtimoConfig} from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  ConfigService,
+  getCaseManagementRouteParams,
+  UploadProvider,
+  ValtimoConfig,
+} from '@valtimo/shared';
 import {ComboBoxModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,

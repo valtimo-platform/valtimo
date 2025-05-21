@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -24,6 +23,7 @@ import {
   signal,
 } from '@angular/core';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {BasicCaseWidget, CaseWidget, CaseWidgetsRes} from '@valtimo/case';
 import {
   ActionItem,
   CarbonListItem,
@@ -33,18 +33,13 @@ import {
   KeyGeneratorService,
   ViewType,
 } from '@valtimo/components';
-import {BasicCaseWidget, CaseWidget, CaseWidgetsRes} from '@valtimo/case';
+import {CaseManagementParams} from '@valtimo/shared';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
+import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rxjs';
-import {
-  AVAILABLE_WIDGETS,
-  CaseManagementParams,
-  WidgetStyle,
-  WidgetTypeTags,
-} from '../../../../../../../models';
+import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../../../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../../../../../services';
 import {CasManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
-import {cloneDeep} from 'lodash';
 
 @Component({
   selector: 'valtimo-case-management-widgets-editor',

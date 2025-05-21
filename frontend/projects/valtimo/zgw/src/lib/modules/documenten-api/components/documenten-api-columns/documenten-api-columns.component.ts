@@ -23,7 +23,6 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 import {
   ActionItem,
   CarbonListModule,
@@ -31,6 +30,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {

@@ -22,7 +22,6 @@ interface ListFormFlowDefinition {
 
 interface FormFlowDefinition {
   key: string;
-  version?: number;
   readOnly?: boolean;
   startStep: string;
   steps: Array<FormFlowStep>;

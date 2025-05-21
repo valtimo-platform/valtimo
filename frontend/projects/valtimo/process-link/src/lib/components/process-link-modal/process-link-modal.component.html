@@ -139,7 +139,7 @@
       <button
         cdsButton="primary"
         *ngIf="obs.showNextButton && !obs.saving"
-        [disabled]="obs.enableNextButton === false"
+        [disabled]="!obs.enableNextButton"
         (click)="nextButtonClick()"
       >
         {{ 'processLinkConfiguration.next' | translate }}
@@ -154,7 +154,7 @@
       <button
         cdsButton="primary"
         *ngIf="(obs.showSaveButton && !obs.saving) || obs.typeOfSelectedProgressLink"
-        [disabled]="obs.enableSaveButton === false"
+        [disabled]="!obs.enableSaveButton"
         (click)="saveButtonClick()"
       >
         {{ 'processLinkConfiguration.complete' | translate }}

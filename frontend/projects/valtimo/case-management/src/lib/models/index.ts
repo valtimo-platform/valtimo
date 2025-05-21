@@ -21,4 +21,3 @@ export * from './widget-content.model';
 export * from './widget-editor.model';
 export * from './widget-wizard.model';
 export * from './case-list.model';
-export * from './case-management.model';

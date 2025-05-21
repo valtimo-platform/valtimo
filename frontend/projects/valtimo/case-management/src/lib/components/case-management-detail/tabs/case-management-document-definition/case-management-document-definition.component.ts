@@ -21,8 +21,10 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16} from '@carbon/icons';
 import {ConfirmationModalComponent, EditorModel, PageHeaderService} from '@valtimo/components';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
@@ -32,9 +34,6 @@ import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {CaseDetailService} from '../../../../services';
-import {ActivatedRoute} from '@angular/router';
-import {CaseManagementParams} from '../../../../models';
-import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
   standalone: false,

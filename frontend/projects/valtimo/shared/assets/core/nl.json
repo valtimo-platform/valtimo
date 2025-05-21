@@ -696,6 +696,7 @@
       "tags": "Tags",
       "forms": "Formulieren",
       "decision": "Beslistabellen",
+      "formFlows": "Form flows",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
@@ -1954,6 +1955,7 @@
     "readOnly": "Alleen lezen",
     "add": "Nieuwe form flow toevoegen",
     "deleteModalContent": "Weet je zeker dat je deze form flow wilt verwijderen?",
+    "deletedSuccessfully": "{{key}} is succesvol verwijderd",
     "savedSuccessTitle": "Succesvol opgeslagen",
     "savedSuccessTitleMessage": "{{key}} is succesvol opgeslagen",
     "noResults": {

@@ -28,14 +28,13 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
 import {Code16, Development16, TableBuilt16, WatsonHealthPageScroll16} from '@carbon/icons';
 import {ApiTabItem, ApiTabType, TabSelectItem} from '@valtimo/case';
+import {CaseManagementParams, ConfigService} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {TabService} from '../../../../../services';
-import {ConfigService} from '@valtimo/shared';
-import {CaseManagementParams} from '../../../../../models';
-import {ActivatedRoute} from '@angular/router';
 
 @Component({
   standalone: false,

@@ -15,18 +15,19 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {LoadingModule, NotificationModule} from 'carbon-components-angular';
+import {isEqual} from 'lodash';
 import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
+import {distinctUntilChanged, filter} from 'rxjs/operators';
 import {ProcessDefinitionResult} from '../../models';
 import {ProcessManagementService} from '../../services';
+import {getContextObservable} from '../../utils';
 import {ProcessManagementBuilderComponent} from '../process-management-builder/process-management-builder.component';
 import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
 import {ProcessManagementUploadComponent} from '../process-management-upload/process-management-upload.component';
-import {distinctUntilChanged} from 'rxjs/operators';
-import {ActivatedRoute, Router} from '@angular/router';
-import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
-import {isEqual} from 'lodash';
 
 @Component({
   selector: 'valtimo-process-management',
@@ -48,7 +49,8 @@ export class ProcessManagementComponent implements OnInit, OnDestroy {
   public readonly context$ = getContextObservable(this.route);
 
   public readonly params$ = this.context$.pipe(
-    switchMap(context => getCaseManagementRouteParams(context, this.route)),
+    filter(context => context === 'case'),
+    switchMap(() => getCaseManagementRouteParams(this.route)),
     distinctUntilChanged((previous, current) => isEqual(previous, current))
   );
 

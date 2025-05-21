@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {getCaseManagementRouteParams, CaseManagementParams} from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
-import {
-  BehaviorSubject,
-  combineLatest,
-  map,
-  mergeMap,
-  Observable,
-  of,
-  Subscription,
-  tap,
-} from 'rxjs';
-import {distinctUntilChanged, filter, take} from 'rxjs/operators';
-
+import {BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription, tap} from 'rxjs';
+import {take} from 'rxjs/operators';
 import {
   FormDefinitionListItem,
   FormDisplayType,
@@ -39,8 +31,6 @@ import {
   ProcessLinkService,
   ProcessLinkStateService,
 } from '../../services';
-import {ActivatedRoute} from '@angular/router';
-import {isEqual} from 'lodash';
 
 @Component({
   standalone: false,
@@ -55,15 +45,16 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   public selectedFormDefinition!: FormDefinitionListItem;
 
   public readonly saving$ = this.stateService.saving$;
-  public readonly caseDefinitionId$ = this.getCaseManagementRouteParams(this.route);
+  public readonly caseDefinitionId$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
 
   private readonly formDefinitions$: Observable<Array<FormDefinitionOption>> =
     this.caseDefinitionId$.pipe(
       mergeMap(caseDefinitionId => {
         if (!!caseDefinitionId) {
           return this.formService.getAllFormDefinitionsForCaseDefinition(
-            caseDefinitionId.caseDefinitionKey,
-            caseDefinitionId.caseDefinitionVersionTag
+            caseDefinitionId?.caseDefinitionKey ?? '',
+            caseDefinitionId?.caseDefinitionVersionTag ?? ''
           );
         }
         return this.formService.getAllUnlinkedFormDefinitions();
@@ -129,9 +120,8 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   public selectFormDefinition(formDefinition: FormDefinitionListItem): void {
     this.selectedFormDefinition = formDefinition?.id ? formDefinition : null;
 
-    this.selectedFormDefinition
-      ? this.buttonService.enableSaveButton()
-      : this.buttonService.disableSaveButton();
+    if (this.selectedFormDefinition) this.buttonService.enableSaveButton();
+    else this.buttonService.disableSaveButton();
   }
 
   public selectedFormDisplayValue(formDisplay: FormDisplayType): void {
@@ -198,14 +188,14 @@ export class SelectFormComponent implements OnInit, OnDestroy {
           return;
         }
 
-        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
-          () => {
+        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
+          next: () => {
             this.stateService.closeModal();
           },
-          () => {
+          error: () => {
             this.stateService.stopSaving();
-          }
-        );
+          },
+        });
       });
   }
 
@@ -235,7 +225,6 @@ export class SelectFormComponent implements OnInit, OnDestroy {
             subtitles: this.subtitlesValue,
           }),
         };
-
         if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
           this.stateService.sendProcessLinkCreateEvent(createRequest);
           return;
@@ -251,32 +240,4 @@ export class SelectFormComponent implements OnInit, OnDestroy {
         });
       });
   }
-
-  private getCaseManagementRouteParams(
-    route: ActivatedRoute
-  ): Observable<CaseDefinitionId | undefined> {
-    const rootParams$ = route.params ? route.params : of({});
-    const parentParams$ = route.parent?.params ? route.parent.params : of({});
-
-    return combineLatest([rootParams$, parentParams$]).pipe(
-      map(([rootParams, parentParams]) => {
-        const caseDefinitionKey =
-          rootParams['caseDefinitionKey'] || parentParams['caseDefinitionKey'];
-        const caseDefinitionVersionTag =
-          rootParams['caseDefinitionVersionTag'] || parentParams['caseDefinitionVersionTag'];
-
-        if (caseDefinitionKey && caseDefinitionVersionTag) {
-          return {caseDefinitionKey, caseDefinitionVersionTag};
-        }
-
-        return null;
-      }),
-      distinctUntilChanged((prev, curr) => isEqual(prev, curr))
-    );
-  }
-}
-
-interface CaseDefinitionId {
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
 }

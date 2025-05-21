@@ -40,14 +40,6 @@ import {
 import {TrashCan16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
-  CdsThemeService,
-  CurrentCarbonTheme,
-  InputLabelModule,
-  ValuePathItem,
-  ValuePathSelectorComponent,
-  ValuePathSelectorPrefix,
-} from '@valtimo/components';
-import {
   CaseWidgetCurrencyDisplayType,
   CaseWidgetDateDisplayType,
   CaseWidgetDateTimeDisplayType,
@@ -58,6 +50,15 @@ import {
   CaseWidgetType,
   FieldsCaseWidgetValue,
 } from '@valtimo/case';
+import {
+  CdsThemeService,
+  CurrentCarbonTheme,
+  InputLabelModule,
+  ValuePathItem,
+  ValuePathSelectorComponent,
+  ValuePathSelectorPrefix,
+} from '@valtimo/components';
+import {CaseManagementParams} from '@valtimo/shared';
 import {
   AccordionModule,
   ButtonModule,
@@ -71,7 +72,6 @@ import {
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
 import {WidgetFieldsService, WidgetWizardService} from '../../../../../../../../services';
-import {CaseManagementParams} from '../../../../../../../../models';
 
 @Component({
   selector: 'valtimo-case-management-widget-fields-column',

@@ -691,6 +691,8 @@
       "listColumns": "Aufführen",
       "tabManagement": "Tabs",
       "document": "Dokument",
+      "forms": "Formulare",
+      "formFlows": "Form flows",
       "statuses": "Status",
       "tags": "Etikett",
       "zgw": "ZGW",
@@ -1948,6 +1950,7 @@
     "readOnly": "Nur lesen",
     "add": "Neuen Formularablauf hinzufügen",
     "deleteModalContent": "Sind Sie sicher, dass Sie diesen Formularablauf löschen möchten?",
+    "deletedSuccessfully": "{{key}} wurde erfolgreich gelöscht",
     "savedSuccessTitle": "Erfolgreich gespeichert",
     "savedSuccessTitleMessage": "{{key}} wurde erfolgreich gespeichert",
     "noResults": {

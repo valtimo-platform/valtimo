@@ -14,32 +14,14 @@
  * limitations under the License.
  */
 
-.loading-container {
+cds-loading {
   display: flex;
-  width: 100%;
   justify-content: center;
-}
-
-::ng-deep .page-actions {
-  width: 100%;
 }
 
 .buttons-container {
   display: flex;
-  width: 100%;
-  justify-content: space-between;
   align-items: center;
-
-  button {
-    height: min-content;
-  }
-}
-
-.buttons-container-right {
-  display: flex;
-  align-items: center;
-}
-
-.overflow-button {
-  margin-right: 16px;
+  justify-self: flex-end;
+  gap: 16px;
 }

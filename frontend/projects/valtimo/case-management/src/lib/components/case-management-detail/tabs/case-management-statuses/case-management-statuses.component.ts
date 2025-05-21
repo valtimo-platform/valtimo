@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -21,12 +20,12 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, map, Subject, switchMap, tap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
+import {BehaviorSubject, combineLatest, map, Subject, switchMap, tap} from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
-import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
   standalone: false,

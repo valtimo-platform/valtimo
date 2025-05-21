@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 import {Inject, Injectable, Optional} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {CASE_TAB_TOKEN, CaseTabConfig, DefaultTabs} from '@valtimo/case';
+import {
+  CASE_MANAGEMENT_TAB_TOKEN,
+  CaseManagementParams,
+  CaseManagementTabConfig,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {ListItem} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, switchMap, Observable} from 'rxjs';
-import {CaseManagementParams, TabEnum} from '../models';
-import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig} from '@valtimo/shared';
-import {ActivatedRoute} from '@angular/router';
-import {getCaseManagementRouteParams} from '../utils';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap} from 'rxjs';
+import {TabEnum} from '../models';
 
 @Injectable({
   providedIn: 'root',

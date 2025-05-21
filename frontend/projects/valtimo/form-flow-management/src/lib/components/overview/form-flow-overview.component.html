@@ -15,11 +15,12 @@
   -->
 
 <valtimo-carbon-list
+  [actionItems]="ACTION_ITEMS"
   [header]="false"
   [items]="formFlowDefinitions$ | async"
-  [fields]="fields"
+  [fields]="FIELDS"
   [loading]="loading$ | async"
-  (rowClicked)="onRowClick($event)"
+  (rowClicked)="editFormFlowDetails($event)"
 >
   <ng-container header> {{ 'formFlow.title' | translate }} </ng-container>
 
@@ -46,3 +47,13 @@
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
 </ng-template>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="formFlow.deleteModalContent"
+  [outputOnConfirm]="deleteDefinitionKey$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDelete($event)"
+></valtimo-confirmation-modal>

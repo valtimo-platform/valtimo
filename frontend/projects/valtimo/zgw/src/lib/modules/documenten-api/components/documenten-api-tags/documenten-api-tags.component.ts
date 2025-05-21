@@ -13,9 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, ViewChild} from '@angular/core';
-import {DocumentenApiColumnModalTypeCloseEvent} from '../../models';
+import {ActivatedRoute} from '@angular/router';
+import {TranslateModule} from '@ngx-translate/core';
+import {
+  ActionItem,
+  CarbonListComponent,
+  CarbonListItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  Pagination,
+  ViewType,
+} from '@valtimo/components';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {Page} from '@valtimo/document';
+import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -27,25 +41,10 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
-import {
-  ActionItem,
-  CarbonListComponent,
-  CarbonListItem,
-  CarbonListModule,
-  ColumnConfig,
-  ConfirmationModalModule,
-  Pagination,
-  ViewType,
-} from '@valtimo/components';
-import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
-import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
-import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
+import {DocumentenApiColumnModalTypeCloseEvent} from '../../models';
 import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
+import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
 import {DocumentenApiTagModalComponent} from '../documenten-api-tag-modal/documenten-api-tag-modal.component';
-import {Page} from '@valtimo/document';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 
 @Component({
   selector: 'valtimo-documenten-api-tags',

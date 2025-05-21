@@ -23,7 +23,6 @@ import {
   EditorModule,
   RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
-import {FormFlowManagementRoutingModule} from './form-flow-management-routing.module';
 import {FormFlowOverviewComponent} from './components/overview/form-flow-overview.component';
 import {NewFormFlowModalComponent} from './components/new-form-flow-modal/new-form-flow-modal.component';
 import {
@@ -49,7 +48,6 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
   ],
   imports: [
     CommonModule,
-    FormFlowManagementRoutingModule,
     ButtonModule,
     FormsModule,
     ModalModule,
@@ -66,6 +64,7 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
     NotificationModule,
     CarbonListModule,
     DropdownModule,
+    ConfirmationModalModule,
   ],
 })
 export class FormFlowManagementModule {}

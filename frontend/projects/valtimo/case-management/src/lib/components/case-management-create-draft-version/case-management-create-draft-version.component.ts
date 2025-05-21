@@ -22,17 +22,16 @@ import {
   Output,
 } from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Edit16, Information16} from '@carbon/icons';
+import {TranslateService} from '@ngx-translate/core';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {DocumentService, TemplatePayload} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
-import {TranslateService} from '@ngx-translate/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {take} from 'rxjs/operators';
 import * as semver from 'semver';
 import {CaseManagementService} from '../../services';
-import {take} from 'rxjs/operators';
-import {CaseManagementParams} from '../../models';
-import {getCaseManagementRouteParams} from '../../utils';
 
 @Component({
   standalone: false,

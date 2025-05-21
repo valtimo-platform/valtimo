@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {CaseManagementParams, Page, getCaseManagementRouteParams} from '@valtimo/shared';
+import {FormFlowService, ListFormFlowDefinition} from '@valtimo/form-flow-management';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
-import {take} from 'rxjs/operators';
+import {switchMap, take} from 'rxjs/operators';
+
 import {
   FormDefinitionListItem,
-  FormFlowProcessLinkUpdateRequestDto,
   FormDisplayType,
+  FormFlowProcessLinkCreateRequestDto,
+  FormFlowProcessLinkUpdateRequestDto,
   FormSize,
   ProcessLinkEditMode,
 } from '../../models';
 import {
-  FormFlowService,
   ProcessLinkButtonService,
   ProcessLinkService,
   ProcessLinkStateService,
@@ -39,19 +43,28 @@ import {
 export class SelectFormFlowComponent implements OnInit, OnDestroy {
   public formDisplayValue!: FormDisplayType;
   public formSizeValue!: FormSize;
-  public selectedFormFlowDefinition!: FormDefinitionListItem;
+  public selectedFormFlowDefinitionId: string;
   public subtitlesValue: string[] = [];
   public readonly saving$ = this.stateService.saving$;
-  private readonly formFlowDefinitions$ = this.formFlowService.getFormFlowDefinitions();
+  private readonly formFlowDefinitions$: Observable<ListFormFlowDefinition[]> =
+    getCaseManagementRouteParams(this.route).pipe(
+      switchMap((params: CaseManagementParams | undefined) =>
+        this.formFlowService.getFormFlowDefinitions(
+          params?.caseDefinitionKey ?? '',
+          params?.caseDefinitionVersionTag ?? ''
+        )
+      ),
+      map((formFlowDefinitions: Page<ListFormFlowDefinition>) => formFlowDefinitions.content)
+    );
 
   public readonly formFlowDefinitionListItems$: Observable<Array<FormDefinitionListItem>> =
     combineLatest([this.stateService.selectedProcessLink$, this.formFlowDefinitions$]).pipe(
       map(([selectedProcessLink, formFlowDefinitions]) =>
         formFlowDefinitions.map(definition => ({
-          content: definition.name,
-          id: definition.id,
+          content: definition.key,
+          id: definition.key,
           selected: selectedProcessLink
-            ? selectedProcessLink.formFlowDefinitionId === definition.id
+            ? selectedProcessLink.formFlowDefinitionId === definition.key
             : false,
         }))
       ),
@@ -74,7 +87,8 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
     private readonly formFlowService: FormFlowService,
     private readonly stateService: ProcessLinkStateService,
     private readonly processLinkService: ProcessLinkService,
-    private readonly buttonService: ProcessLinkButtonService
+    private readonly buttonService: ProcessLinkButtonService,
+    private readonly route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -107,12 +121,12 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
     this.formSizeValue = formSize;
   }
 
-  public selectFormFlowDefinition(formFlowDefinition: FormDefinitionListItem): void {
-    this.selectedFormFlowDefinition = formFlowDefinition?.id ? formFlowDefinition : null;
+  public selectFormFlowDefinition(formFlowDefinition: any): void {
+    if (!formFlowDefinition) return;
+    this.selectedFormFlowDefinitionId = formFlowDefinition.id;
 
-    this.selectedFormFlowDefinition
-      ? this.buttonService.enableSaveButton()
-      : this.buttonService.disableSaveButton();
+    if (this.selectedFormFlowDefinitionId) this.buttonService.enableSaveButton();
+    else this.buttonService.disableSaveButton();
   }
 
   public selectedSubtitlesValue(subtitles: string[]): void {
@@ -138,21 +152,18 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
 
   private saveFormFlowLink(): void {
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      if (selectedProcessLink) {
-        this.updateProcessLink();
-      } else {
-        this.saveNewProcessLink();
-      }
+      if (selectedProcessLink) this.updateProcessLink();
+      else this.saveNewProcessLink();
     });
   }
 
   private updateProcessLink(): void {
-    combineLatest(this.stateService.selectedProcessLink$, this.isUserTask$)
+    combineLatest([this.stateService.selectedProcessLink$, this.isUserTask$])
       .pipe(take(1))
       .subscribe(([selectedProcessLink, isUserTask]) => {
         const updateProcessLinkRequest: FormFlowProcessLinkUpdateRequestDto = {
           id: selectedProcessLink.id,
-          formFlowDefinitionId: this.selectedFormFlowDefinition.id,
+          formFlowDefinitionId: this.selectedFormFlowDefinitionId,
           activityId: selectedProcessLink.activityId,
           ...(isUserTask && {
             formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
@@ -166,14 +177,14 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           return;
         }
 
-        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
-          () => {
+        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
+          next: () => {
             this.stateService.closeModal();
           },
-          () => {
+          error: () => {
             this.stateService.stopSaving();
-          }
-        );
+          },
+        });
       });
   }
 
@@ -186,7 +197,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(([modalParams, processLinkTypeId, isUserTask]) => {
         const createRequest = {
-          formFlowDefinitionId: this.selectedFormFlowDefinition.id,
+          formFlowDefinitionKey: this.selectedFormFlowDefinitionId,
           activityType: modalParams.element.activityListenerType,
           processDefinitionId: modalParams.processDefinitionId,
           processLinkType: processLinkTypeId,
@@ -196,7 +207,8 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           }),
           ...(isUserTask && {formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE}),
           ...(isUserTask && {subtitles: this.subtitlesValue}),
-        };
+        } as FormFlowProcessLinkCreateRequestDto;
+
 
         if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
           this.stateService.sendProcessLinkCreateEvent(createRequest);

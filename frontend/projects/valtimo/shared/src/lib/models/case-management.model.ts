@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {Type} from '@angular/core';
 
 interface CaseManagementParams {
   caseDefinitionKey: string;
   caseDefinitionVersionTag: string;
 }
 
-export {CaseManagementParams};
+interface CaseManagementTabConfig {
+  translationKey: string;
+  component: Type<any>;
+  tabRoute?: string;
+}
+
+export {CaseManagementTabConfig, CaseManagementParams};

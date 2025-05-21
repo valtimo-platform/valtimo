@@ -25,7 +25,7 @@ import {
   ValuePathSelectorPrefix,
   ViewType,
 } from '@valtimo/components';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, getCaseManagementRouteParams} from '@valtimo/shared';
 import {
   CaseListColumn,
   CaseListColumnView,
@@ -45,9 +45,8 @@ import {
   tap,
 } from 'rxjs';
 import {take} from 'rxjs/operators';
-import {ListColumnModal} from '../../../../models';
 import {v4 as uuidv4} from 'uuid';
-import {getCaseManagementRouteParams} from '../../../../utils';
+import {ListColumnModal} from '../../../../models';
 
 @Component({
   standalone: false,

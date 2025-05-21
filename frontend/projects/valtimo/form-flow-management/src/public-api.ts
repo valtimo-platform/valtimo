@@ -20,4 +20,6 @@
 
 export * from './lib/models';
 export * from './lib/services';
+export * from './lib/components/overview/form-flow-overview.component';
+export * from './lib/components/editor/form-flow-editor.component';
 export * from './lib/form-flow-management.module';

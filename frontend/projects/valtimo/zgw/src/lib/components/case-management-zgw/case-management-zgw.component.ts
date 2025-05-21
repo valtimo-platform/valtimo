@@ -25,6 +25,7 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {ZgwTab, ZgwTabEnum} from '../../models';
@@ -36,7 +37,6 @@ import {
   SupportedDocumentenApiFeatures,
 } from '../../modules';
 import {CaseManagementZgwService} from '../../services';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 import {CaseManagementZgwGeneralComponent} from '../case-management-zgw-general/case-management-zgw-general.component';
 
 @Component({

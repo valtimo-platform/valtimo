@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -22,6 +21,9 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
 import {
   BehaviorSubject,
@@ -33,10 +35,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
-import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
-import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
   standalone: false,

@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {combineLatest, Observable, of} from 'rxjs';
-import {distinctUntilChanged, filter, map} from 'rxjs/operators';
 import {ActivatedRoute} from '@angular/router';
 import {ManagementContext} from '@valtimo/shared';
-import {ProcessManagementParams} from '../models';
-import {isEqual} from 'lodash';
+import {Observable} from 'rxjs';
+import {distinctUntilChanged, map} from 'rxjs/operators';
 
 function getContextObservable(route: ActivatedRoute): Observable<ManagementContext | null> {
   return route.data.pipe(
@@ -28,33 +25,4 @@ function getContextObservable(route: ActivatedRoute): Observable<ManagementConte
   );
 }
 
-function getCaseManagementRouteParams(
-  context: string,
-  route: ActivatedRoute
-): Observable<ProcessManagementParams | undefined> {
-  if (context !== 'case') {
-    return of(undefined);
-  }
-
-  const rootParams$ = route.params ? route.params : of({});
-  const parentParams$ = route.parent?.params ? route.parent.params : of({});
-
-  return combineLatest([rootParams$, parentParams$]).pipe(
-    map(([rootParams, parentParams]) => {
-      const caseDefinitionKey =
-        rootParams['caseDefinitionKey'] || parentParams['caseDefinitionKey'];
-      const caseDefinitionVersionTag =
-        rootParams['caseDefinitionVersionTag'] || parentParams['caseDefinitionVersionTag'];
-
-      if (caseDefinitionKey && caseDefinitionVersionTag) {
-        return {caseDefinitionKey, caseDefinitionVersionTag};
-      }
-
-      return null;
-    }),
-    filter((params): params is ProcessManagementParams => params !== null),
-    distinctUntilChanged((prev, curr) => isEqual(prev, curr))
-  );
-}
-
-export {getContextObservable, getCaseManagementRouteParams};
+export {getContextObservable};

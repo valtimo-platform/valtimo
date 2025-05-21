@@ -19,9 +19,12 @@ import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16, TrashCan16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/case-management';
 import {SpinnerModule} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {PluginConfiguration} from '@valtimo/plugin';
 import {
   CreateZaakTypeLinkRequest,

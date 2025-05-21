@@ -29,7 +29,6 @@ export * from './versions.model';
 export * from './user-settings.model';
 export * from './translation.model';
 export * from './localization.model';
-export * from './case-management-tab.model';
 export * from './form-view-model.model';
 export * from './window.model';
 export * from './management.model';
