@@ -77,10 +77,11 @@
 
               <valtimo-value-path-selector
                 formControlName="content"
-                [documentDefinitionName]="(params$ | async)?.caseDefinitionKey"
+                [documentDefinitionName]="params?.caseDefinitionKey"
                 [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
                 [parentItem]="selectedCollection"
               ></valtimo-value-path-selector>
+
             </div>
           </div>
 
