@@ -124,7 +124,9 @@ export class ProcessLinkService {
     processDefinitionId: string | null,
     processXml: string | null,
     caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
+    caseDefinitionVersionTag: string,
+    canInitializeDocument: boolean = false,
+    startableByUser: boolean = false
   ) {
     const formData = new FormData();
     const processLinksBlob = new Blob(
@@ -133,8 +135,12 @@ export class ProcessLinkService {
     );
 
     if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
+
     if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
+
     formData.append('processLinks', processLinksBlob);
+    formData.append('canInitializeDocument', String(canInitializeDocument));
+    formData.append('startableByUser', String(startableByUser));
 
     return this.http.post(
       `${this.VALTIMO_ENDPOINT_URI}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition`,

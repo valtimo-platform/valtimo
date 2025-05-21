@@ -325,7 +325,9 @@ export class ProcessManagementBuilderComponent
               selectedProcessDefinition.id,
               !isReadOnlyProcess ? (result?.xml ?? '') : null,
               params.caseDefinitionKey,
-              params.caseDefinitionVersionTag
+              params.caseDefinitionVersionTag,
+              this.canInitializeDocument$.getValue(),
+              this.startableByUser$.getValue()
             );
           }
 
@@ -379,7 +381,9 @@ export class ProcessManagementBuilderComponent
                 null,
                 result.xml ?? '',
                 params.caseDefinitionKey,
-                params.caseDefinitionVersionTag
+                params.caseDefinitionVersionTag,
+                this.canInitializeDocument$.getValue(),
+                this.startableByUser$.getValue()
               );
         })
       )
@@ -419,25 +423,9 @@ export class ProcessManagementBuilderComponent
     field: keyof UpdateProcessDefinitionCaseDefinitionRequest,
     value: boolean
   ): void {
-    this.updatingProcessDefinitionCaseDefinition$.next(true);
-
-    this.managementParams$
-      .pipe(
-        switchMap(managementParams =>
-          this.processManagementService.updateProcessDefinitionCaseDefinitionProperties(
-            managementParams.caseDefinitionKey,
-            managementParams.caseDefinitionVersionTag,
-            this.processManagementEditorService.selectionProcessDefinition.id,
-            {
-              [field]: value,
-            }
-          )
-        ),
-        take(1)
-      )
-      .subscribe(() => {
-        this.updatingProcessDefinitionCaseDefinition$.next(false);
-      });
+    if (field === 'canInitializeDocument') this.canInitializeDocument$.next(value);
+    if (field === 'startableByUser') this.startableByUser$.next(value);
+    this.changesPending$.next(true);
   }
 
   private showNotification(notification: null | 'success' | 'error'): void {
