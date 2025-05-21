@@ -15,21 +15,23 @@
  */
 
 import {Component, ViewChild} from '@angular/core';
-import {DecisionListComponent} from './decision-list/decision-list.component';
 import {ConfigService} from '@valtimo/shared';
+import {CommonModule} from '@angular/common';
+import {DecisionListComponent} from './decision-list/decision-list.component';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-decision',
+  standalone: true,
   templateUrl: './decision.component.html',
   styleUrls: ['./decision.component.scss'],
+  imports: [CommonModule, DecisionListComponent],
 })
 export class DecisionComponent {
   readonly experimentalEditing!: boolean;
 
+  @ViewChild('decisionList') list: DecisionListComponent;
+
   constructor(private readonly configService: ConfigService) {
     this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;
   }
-
-  @ViewChild('decisionList') list: DecisionListComponent;
 }

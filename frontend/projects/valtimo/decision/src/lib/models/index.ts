@@ -15,3 +15,4 @@
  */
 
 export * from './decision.model';
+export * from './decision-management.model';

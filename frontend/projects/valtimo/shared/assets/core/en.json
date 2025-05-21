@@ -474,6 +474,7 @@
   },
   "decisions": {
     "upload": {
+      "title": "Upload decision table",
       "description": "Select a .dmn file to upload"
     },
     "version": "Version",
@@ -695,6 +696,7 @@
       "tags": "Tags",
       "zgw": "ZGW",
       "forms": "Forms",
+      "decision": "Decision tables",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",

@@ -34,13 +34,6 @@ import {DecisionModelerComponent} from './decision-modeler/decision-modeler.comp
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 
 @NgModule({
-  declarations: [
-    DecisionComponent,
-    DecisionDeployComponent,
-    DecisionDisplayComponent,
-    DecisionListComponent,
-    DecisionModelerComponent,
-  ],
   imports: [
     DecisionRoutingModule,
     WidgetModule,
@@ -53,6 +46,11 @@ import {ButtonModule, IconModule} from 'carbon-components-angular';
     CarbonListModule,
     ButtonModule,
     IconModule,
+    DecisionDeployComponent,
+    DecisionModelerComponent,
+    DecisionComponent,
+    DecisionListComponent,
+    DecisionDisplayComponent,
   ],
   exports: [DecisionComponent, DecisionModelerComponent],
 })

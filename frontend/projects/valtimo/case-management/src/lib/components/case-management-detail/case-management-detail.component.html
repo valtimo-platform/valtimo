@@ -41,6 +41,15 @@
     </cds-tab>
 
     <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.DECISIONS"
+      [active]="obs.currentTab === TabEnum.DECISIONS"
+      [heading]="'caseManagement.tabs.decision' | translate"
+      (selected)="navigateToTab(TabEnum.DECISIONS)"
+    >
+    </cds-tab>
+
+    <cds-tab
       class="no-padding-left-right no-padding-top-bottom"
       [id]="TabEnum.DOCUMENT"
       [active]="obs.currentTab === TabEnum.DOCUMENT"

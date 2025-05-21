@@ -9,17 +9,16 @@
   ~
   ~ Unless required by applicable law or agreed to in writing, software
   ~ distributed under the License is distributed on an "AS IS" basis,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ WITHOUT WARRANTIESs OR CONDITIONS OF ANY KIND, either express or implied.
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
 
-<valtimo-modal
-  #decisionDeployModal
-  elementId="decisionDeployModal"
-  title="Upload Decision table"
-  [showFooter]="true"
->
+<cds-modal showFooter="true" valtimoCdsModal [open]="modalOpen$ | async" (close)="closeModal()">
+  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>{{ 'decision.upload.title' | translate }}</h3>
+  </cds-modal-header>
+
   <div body>
     <div class="mt-3">{{ 'decisions.upload.description' | translate }}</div>
     <div class="form-group mt-3 mb-3">
@@ -39,4 +38,4 @@
       </button>
     </div>
   </div>
-</valtimo-modal>
+</cds-modal>

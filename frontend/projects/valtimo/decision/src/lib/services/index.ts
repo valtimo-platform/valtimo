@@ -15,3 +15,4 @@
  */
 
 export * from './decision-state.service';
+export * from './decision.service';

@@ -105,14 +105,6 @@
     </cds-overflow-menu-option>
 
     <cds-overflow-menu-option
-      *ngIf="obs.selectedDocumentDefinition && !obs.selectedDocumentDefinition.readOnly"
-      [id]="'removeDocumentDefinition'"
-      [disabled]="obs.exporting || obs.loadingVersion"
-      (selected)="openCaseRemoveModal()"
-      >{{ 'Remove document definition' | translate }}
-    </cds-overflow-menu-option>
-
-    <cds-overflow-menu-option
       [id]="'setGlobalActiveVersion'"
       [disabled]="obs.selectedVersionIsGloballyActive"
       (selected)="openGlobalActiveVersionModal()"

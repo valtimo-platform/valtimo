@@ -14,40 +14,76 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
-import {DecisionService} from '../decision.service';
-import {ModalComponent} from '@valtimo/components';
-import {DecisionStateService} from '../services';
+import {Component, EventEmitter, Output} from '@angular/core';
+import {DecisionService, DecisionStateService} from '../services';
+import {ValtimoCdsOverflowButtonDirectiveModule} from '@valtimo/components';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {TranslateModule} from '@ngx-translate/core';
+import {ModalModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
+import {getCaseManagementRouteParams, getContextObservable} from '@valtimo/shared';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-decision-deploy',
+  standalone: true,
   templateUrl: './decision-deploy.component.html',
   styleUrls: ['./decision-deploy.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    ModalModule,
+    ValtimoCdsOverflowButtonDirectiveModule,
+    ModalModule,
+  ],
 })
 export class DecisionDeployComponent {
   public dmn: File | null = null;
   @Output() deploySuccessful = new EventEmitter();
-  @ViewChild('decisionDeployModal') modal: ModalComponent;
+
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+
+  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
+  public readonly context$ = getContextObservable(this.route);
 
   constructor(
     private readonly decisionService: DecisionService,
-    private readonly stateService: DecisionStateService
+    private readonly stateService: DecisionStateService,
+    private readonly route: ActivatedRoute
   ) {}
 
-  onChange(files: FileList): void {
+  public onChange(files: FileList): void {
     this.dmn = files.item(0);
   }
 
-  deployDmn(): void {
-    this.decisionService.deployDmn(this.dmn).subscribe(() => {
-      this.modal.hide();
-      this.deploySuccessful.emit();
-      this.stateService.refreshDecisions();
-    });
+  public deployDmn(): void {
+    combineLatest([this.caseManagementRouteParams$, this.context$])
+      .pipe(
+        take(1),
+        switchMap(([params, context]) =>
+          context === 'case'
+            ? this.decisionService.deployCaseDecisionDefinition(
+                params.caseDefinitionKey,
+                params.caseDefinitionVersionTag,
+                this.dmn
+              )
+            : this.decisionService.deployDmn(this.dmn)
+        )
+      )
+      .subscribe(() => {
+        this.closeModal();
+        this.deploySuccessful.emit();
+        this.stateService.refreshDecisions();
+      });
   }
 
-  openModal() {
-    this.modal.show();
+  public openModal() {
+    this.modalOpen$.next(true);
+  }
+
+  public closeModal(): void {
+    this.modalOpen$.next(false);
   }
 }

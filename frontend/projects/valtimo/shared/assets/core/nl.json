@@ -473,6 +473,7 @@
   },
   "decisions": {
     "upload": {
+      "title": "Beslistabel uploaden",
       "description": "Selecteer een .dmn bestand om te uploaden"
     },
     "version": "Versie",
@@ -694,6 +695,7 @@
       "zgw": "ZGW",
       "tags": "Tags",
       "forms": "Formulieren",
+      "decision": "Beslistabellen",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",

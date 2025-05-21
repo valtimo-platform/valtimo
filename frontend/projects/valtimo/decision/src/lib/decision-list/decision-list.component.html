@@ -14,28 +14,21 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="decisionsLatestVersions$ | async as decisions">
-  <ng-container *ngIf="(loading$ | async) === false">
-    <valtimo-carbon-list
-      [items]="decisions"
-      [fields]="fields"
-      (rowClicked)="viewDecisionTable($event)"
-      [header]="false"
-      [isSearchable]="true"
-    >
-      <ng-container carbonToolbarContent>
-        <button cdsButton="primary" (click)="this.deploy.openModal()">
-          {{ 'Upload' | translate }}
+<valtimo-carbon-list
+  [items]="(decisionsLatestVersions$ | async) || []"
+  [loading]="loading$ | async"
+  [fields]="fields"
+  (rowClicked)="viewDecisionTable($event)"
+  [header]="false"
+  [isSearchable]="true"
+>
+  <ng-container carbonToolbarContent>
+    <button cdsButton="primary" (click)="this.deploy.openModal()">
+      {{ 'Upload' | translate }}
 
-          <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
-        </button>
-      </ng-container>
-    </valtimo-carbon-list>
+      <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
+    </button>
   </ng-container>
-</ng-container>
+</valtimo-carbon-list>
 
 <valtimo-decision-deploy #decisionDeploy></valtimo-decision-deploy>
-
-<ng-container *ngIf="loading$ | async">
-  <valtimo-carbon-list [loading]="true"> </valtimo-carbon-list>
-</ng-container>

@@ -60,3 +60,22 @@ $border: 1px solid #dee2e6;
     cursor: pointer;
   }
 }
+
+.dmn-editor {
+  background-color: var(--cds-layer);
+  outline: 1px solid var(--cds-border-subtle);
+  outline-offset: -1px;
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+}
