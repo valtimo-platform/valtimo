@@ -166,7 +166,7 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
           this.globalNotificationService.showToast({
             type: 'error',
             title: this.translateService.instant(
-              'dossierManagement.externalStartForm.notification.error'
+              'caseManagement.externalStartForm.notification.error'
             ),
           });
         },
@@ -176,7 +176,7 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
           this.globalNotificationService.showToast({
             type: 'success',
             title: this.translateService.instant(
-              'dossierManagement.externalStartForm.notification.success'
+              'caseManagement.externalStartForm.notification.success'
             ),
           });
         },
