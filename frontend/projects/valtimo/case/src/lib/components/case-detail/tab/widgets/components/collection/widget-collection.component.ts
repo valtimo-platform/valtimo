@@ -75,7 +75,9 @@ export class WidgetCollectionComponent extends WidgetProcess implements AfterVie
   @HostBinding('class') public readonly class = 'valtimo-widget-collection';
   @ViewChild('widgetCollection') private _widgetCollectionRef: ElementRef<HTMLDivElement>;
 
-  @Input({required: true}) public documentId: string;
+  @Input({required: true}) public set documentId(value: string) {
+    this.baseDocumentId = value;
+  }
   @Input({required: true}) public tabKey: string;
   @Input() public set widgetConfiguration(value: CollectionCaseWidget) {
     if (!value) return;
@@ -133,7 +135,7 @@ export class WidgetCollectionComponent extends WidgetProcess implements AfterVie
         !queryParams
           ? of(data)
           : this.widgetApiService
-              .getWidgetData(this.documentId, this.tabKey, widgetConfiguration.key, queryParams)
+              .getWidgetData(this.baseDocumentId, this.tabKey, widgetConfiguration.key, queryParams)
               .pipe(map((res: Page<CollectionCaseWidgetCardData>) => res.content)),
         of(initialNumberOfElements),
       ])

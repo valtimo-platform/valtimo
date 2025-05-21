@@ -51,6 +51,9 @@ export class WidgetCustomComponent extends WidgetProcess implements AfterViewIni
   @ViewChild('customWidgetContainer', {read: ViewContainerRef})
   private readonly _customWidgetContainerRef: ViewContainerRef;
 
+  @Input({required: true}) public set documentId(value: string) {
+    this.baseDocumentId = value;
+  }
   @Input() public set widgetConfig(value: CustomCaseWidget) {
     if (!value) return;
     this.baseWidgetConfiguration = value;

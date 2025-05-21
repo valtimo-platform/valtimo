@@ -62,6 +62,9 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
 
   @ViewChild('widgetField') private _widgetFieldRef: ElementRef<HTMLDivElement>;
 
+  @Input({required: true}) public set documentId(value: string) {
+    this.baseDocumentId = value;
+  }
   @Input() collapseVertically = false;
   @Input() public set widgetConfiguration(value: FieldsCaseWidget) {
     if (!value) return;

@@ -332,6 +332,7 @@ export class CaseDetailComponent
     this._snapshot = this.route.snapshot.paramMap;
     this.caseDefinitionKey = this._snapshot.get('caseDefinitionKey') || '';
     this.documentId = this._snapshot.get('documentId') || '';
+    this.widgetsService.documentId = this.documentId;
   }
 
   public ngAfterViewInit(): void {
@@ -386,7 +387,7 @@ export class CaseDetailComponent
       this.widgetsService.startProcessEvent
         .pipe(switchMap(() => this.widgetsService.activeProcess$))
         .subscribe(processDefinitionCaseDefinition => {
-          this.startProcess(processDefinitionCaseDefinition[0]);
+          this.startProcess(processDefinitionCaseDefinition);
         })
     );
   }

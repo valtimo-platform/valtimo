@@ -40,6 +40,7 @@ import {WidgetsService} from '../../widgets.service';
 export class WidgetFormioComponent extends WidgetProcess {
   @Input() public set documentId(value: string) {
     if (value) this._documentIdSubject$.next(value);
+    this.baseDocumentId = value;
   }
   @Input() public set widgetConfiguration(value: FormioCaseWidgetWidgetWithUuid) {
     if (!value) return;

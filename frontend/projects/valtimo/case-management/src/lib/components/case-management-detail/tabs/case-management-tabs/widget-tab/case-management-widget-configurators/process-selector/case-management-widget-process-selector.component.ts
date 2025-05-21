@@ -96,35 +96,13 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
             const {name, processDefinitionKey} = changes;
             this.widgetWizardService.widgetActions.update(
               (value: CaseWidgetAction[] | undefined) => {
-                if (!value)
-                  return [
-                    {
-                      name: !name ? processDefinitionKey?.content : name,
-                      processDefinitionKey: processDefinitionKey?.key,
-                    },
-                  ];
-
-                const edittedProcess = value.find(
-                  (process: CaseWidgetAction) =>
-                    process.processDefinitionKey === processDefinitionKey?.key
-                );
-
-                return !!edittedProcess
-                  ? value.map((process: CaseWidgetAction) =>
-                      process.processDefinitionKey === edittedProcess.processDefinitionKey
-                        ? {
-                            ...process,
-                            name: !name ? processDefinitionKey?.content : name,
-                          }
-                        : process
-                    )
-                  : [
-                      ...value,
-                      {
-                        name: !name ? processDefinitionKey?.content : name,
-                        processDefinitionKey: processDefinitionKey?.key,
-                      },
-                    ];
+                // This can be extended in the future if we need to support multiple actions on a widget
+                return [
+                  {
+                    name: !name ? processDefinitionKey?.content : name,
+                    processDefinitionKey: processDefinitionKey?.key,
+                  },
+                ];
               }
             );
           }
