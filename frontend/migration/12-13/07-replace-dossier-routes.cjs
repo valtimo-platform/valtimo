@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 
 const fs = require('fs');
 const path = require('path');
@@ -9,7 +8,6 @@ function migrateMenuRoutes(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const original = content;
 
-  // Regex-safe replacements scoped to menu
   const replacements = [
     {from: `title: 'Dossiers'`, to: `title: 'Cases'`},
     {from: `link: ['/dossier-management']`, to: `link: ['/case-management']`},

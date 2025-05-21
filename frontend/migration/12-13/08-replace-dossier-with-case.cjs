@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 
 const fs = require('fs');
 const path = require('path');
@@ -62,13 +61,11 @@ function rewriteImportsAndReferences(symbolMap) {
     let content = fs.readFileSync(filePath, 'utf8');
     const original = content;
 
-    // Replace symbol names
     for (const [originalSymbol, {replacement}] of Object.entries(symbolMap)) {
       const symbolRegex = new RegExp(`\\b${originalSymbol}\\b`, 'g');
       content = content.replace(symbolRegex, replacement);
     }
 
-    // Replace import paths
     for (const [oldPath, newPath] of Object.entries(libPathReplacements)) {
       const pathRegex = new RegExp(`from ['"]${oldPath}['"]`, 'g');
       content = content.replace(pathRegex, `from '${newPath}'`);
@@ -76,7 +73,7 @@ function rewriteImportsAndReferences(symbolMap) {
 
     if (content !== original) {
       fs.writeFileSync(filePath, content);
-      console.log(`📝 Updated: ${filePath}`);
+      console.log(`Updated: ${filePath}`);
     }
   });
 }
@@ -103,7 +100,6 @@ function updatePackageJsonDeps() {
       if (deps[oldName]) {
         let version = deps[oldName];
 
-        // Fix the tarball URL if it's a snapshot link
         if (typeof version === 'string' && version.includes('valtimo-dossier')) {
           version = version.replace(/valtimo-dossier/g, 'valtimo-case');
         }
@@ -123,19 +119,19 @@ function updatePackageJsonDeps() {
     fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2));
     console.log('package.json updated with @valtimo/case replacements');
   } else {
-    console.log('ℹNo @valtimo/dossier dependencies found to replace');
+    console.log('No @valtimo/dossier dependencies found to replace');
   }
 }
 
 try {
-  console.log('🚀 Starting migration: Replace Dossier* symbols and @valtimo/dossier imports');
+  console.log('Starting migration: Replace Dossier* symbols and @valtimo/dossier imports');
 
   const symbolMap = collectSymbolsToReplace();
 
   if (Object.keys(symbolMap).length === 0) {
-    console.log('ℹ️ No matching Dossier* symbols found in @valtimo/* imports.');
+    console.log('No matching Dossier* symbols found in @valtimo/* imports.');
   } else {
-    console.log(`🔍 Found ${Object.keys(symbolMap).length} symbols to replace.`);
+    console.log(`Found ${Object.keys(symbolMap).length} symbols to replace.`);
   }
 
   rewriteImportsAndReferences(symbolMap);

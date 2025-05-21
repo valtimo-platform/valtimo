@@ -16,19 +16,15 @@ function updateRouterErrorHandler() {
   if (content.includes('this.router.errorHandler')) {
     console.log('🔧 Found old router.errorHandler assignment. Updating...');
 
-    // Remove the old errorHandler assignment in the constructor
     content = content.replace(
       /this\.router\.errorHandler\s*=\s*\(\)\s*=>\s*{\s*this\.router\.navigate\(\['']\);\s*};?/gm,
       ''
     );
 
-    // Remove unused `Router` import if it's no longer needed
     content = content.replace(/,\s*Router/g, '');
 
-    // Remove the `Router` constructor param if unused
     content = content.replace(/constructor\((\s*private router: Router,?\s*)\)\s*{[^}]*}/gm, '');
 
-    // Inject the new errorHandler into RouterModule.forRoot
     content = content.replace(
       /RouterModule\.forRoot\(\s*routes\s*\)/,
       `RouterModule.forRoot(routes, {

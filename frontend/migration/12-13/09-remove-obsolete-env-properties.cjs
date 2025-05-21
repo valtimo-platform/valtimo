@@ -5,31 +5,40 @@ const path = require('path');
 const {execSync} = require('child_process');
 
 const envDir = path.resolve(__dirname, '../../', 'src/environments');
-
 const rootDir = path.resolve(__dirname, '../../');
+
+function removeRoutes(content, routesToRemove) {
+  routesToRemove.forEach(route => {
+    const routeRegex = new RegExp(
+      `\\{[^{}]*?path\\s*:\\s*['"]${route}['"][^{}]*?\\}[,]?\\s*`,
+      'g'
+    );
+    content = content.replace(routeRegex, '');
+  });
+  return content;
+}
 
 function cleanEnvironmentFile(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const originalContent = content;
 
-  // 1. Remove customDefinitionTables: {...}, safely including nested arrays
   content = content.replace(
     /customDefinitionTables\s*:\s*{[^{}]*?leningen\s*:\s*\[[\s\S]*?\][\s\S]*?},?\n?/g,
     ''
   );
 
-  // 2. Replace definitions: { dossiers: [] } with definitions: { cases: [] }
   content = content.replace(
     /definitions\s*:\s*{\s*dossiers\s*:\s*\[\s*\]\s*}/g,
     'definitions: { cases: [] }'
   );
 
-  // Optional: Clean up any trailing commas before closing braces
+  content = removeRoutes(content, ['process-link', 'form-flow']);
+
   content = content.replace(/,(\s*[}\]])/g, '$1');
 
   if (content !== originalContent) {
     fs.writeFileSync(filePath, content);
-    console.log(`Cleaned up deprecated env config in: ${path.basename(filePath)}`);
+    console.log(`Cleaned up env config in: ${path.basename(filePath)}`);
   }
 }
 
@@ -55,7 +64,7 @@ function npmInstall() {
 }
 
 try {
-  console.log('Starting migration step 07: Remove deprecated env properties');
+  console.log('Starting migration step 07: Remove deprecated env properties and routes');
   runMigration();
   npmInstall();
   process.exit(0);

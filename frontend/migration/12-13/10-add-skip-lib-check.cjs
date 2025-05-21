@@ -8,15 +8,14 @@ const tsconfigPath = path.resolve(__dirname, '../../tsconfig.json');
 
 function stripJsonComments(content) {
   return content
-    .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
-    .replace(/\/\/.*$/gm, ''); // Remove line comments
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '');
 }
 
 function parseJsonSafely(content) {
   try {
     return JSON.parse(content);
   } catch {
-    // Fallback to JSON5 if regular parsing fails
     return JSON5.parse(content);
   }
 }
