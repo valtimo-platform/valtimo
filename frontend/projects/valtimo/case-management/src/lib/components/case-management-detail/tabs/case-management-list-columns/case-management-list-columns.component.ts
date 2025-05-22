@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, Component} from '@angular/core';
+import {AfterViewInit, Component, Input} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
@@ -55,6 +55,9 @@ import {getCaseManagementRouteParams} from '../../../../utils';
   styleUrls: ['./case-management-list-columns.component.scss'],
 })
 export class CaseManagementListColumnsComponent implements AfterViewInit {
+  @Input() public readonly canUpdateGlobalConfiguration;
+  @Input() public readonly isFinalVersion;
+
   readonly downloadName$ = new BehaviorSubject<string>('');
   readonly downloadUrl$ = new BehaviorSubject<string | null>(null);
 
@@ -145,10 +148,22 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     })
   );
 
-  readonly translatedCaseListColumns$: Observable<Array<CaseListColumnView>> = combineLatest([
-    this.caseListColumns$,
-    this.translateService.stream('key'),
+  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
+    this.environmentService.canUpdateGlobalConfiguration();
+
+  public readonly isFinalVersion$: Observable<boolean> = combineLatest([
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$,
   ]).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
+  );
+
+  public readonly translatedCaseListColumns$: Observable<Array<CaseListColumnView>> = combineLatest(
+    [this.caseListColumns$, this.translateService.stream('key')]
+  ).pipe(
     map(([columns]) =>
       columns.map(column => ({
         ...column,
@@ -172,15 +187,15 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     )
   );
 
-  readonly currentModalType$ = new BehaviorSubject<ListColumnModal>('create');
+  public readonly currentModalType$ = new BehaviorSubject<ListColumnModal>('create');
 
-  readonly showModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showModal$ = new BehaviorSubject<boolean>(false);
 
-  readonly modalShowing$ = this.showModal$.pipe(delay(250));
+  public readonly modalShowing$ = this.showModal$.pipe(delay(250));
 
-  readonly INVALID_KEY = 'invalid';
+  public readonly INVALID_KEY = 'invalid';
 
-  readonly formGroup = new FormGroup({
+  public readonly formGroup = new FormGroup({
     title: new FormControl(''),
     key: new FormControl('', Validators.required),
     path: new FormControl('', Validators.required),
@@ -196,7 +211,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     tagAmount: new FormControl(1),
   });
 
-  readonly disableDefaultSort$ = combineLatest([
+  public readonly disableDefaultSort$ = combineLatest([
     this.currentModalType$,
     this.formGroup.valueChanges,
   ]).pipe(
@@ -208,7 +223,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     startWith(false)
   );
 
-  readonly DISPLAY_TYPES: Array<ViewType> = [
+  public readonly DISPLAY_TYPES: Array<ViewType> = [
     ViewType.TEXT,
     ViewType.DATE,
     ViewType.BOOLEAN,
@@ -218,7 +233,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     ViewType.TAGS,
   ];
 
-  readonly showDateFormat$ = this.formGroup.valueChanges.pipe(
+  public readonly showDateFormat$ = this.formGroup.valueChanges.pipe(
     map(formValues => !!(formValues.displayType?.key === this.DISPLAY_TYPES[1])),
     tap(showDateFormat => {
       if (showDateFormat === false && !!this.formGroup.value.dateFormat) {
@@ -228,12 +243,12 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     startWith(false)
   );
 
-  readonly showTagAmount$ = this.formGroup.valueChanges.pipe(
+  public readonly showTagAmount$ = this.formGroup.valueChanges.pipe(
     map(formValues => formValues.displayType?.key === this.DISPLAY_TYPES[6]),
     startWith(this.formGroup.value.displayType?.key === this.DISPLAY_TYPES[6] ? true : false)
   );
 
-  readonly showEnum$ = this.formGroup.valueChanges.pipe(
+  public readonly showEnum$ = this.formGroup.valueChanges.pipe(
     map(
       formValues =>
         !!(
@@ -250,13 +265,13 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     startWith(false)
   );
 
-  readonly isYesNo$ = this.formGroup.valueChanges.pipe(
+  public readonly isYesNo$ = this.formGroup.valueChanges.pipe(
     map(formValues => !!(formValues.displayType?.key === this.DISPLAY_TYPES[2]))
   );
 
-  readonly selectedViewTypeItemIndex$ = new BehaviorSubject<number>(0);
+  public readonly selectedViewTypeItemIndex$ = new BehaviorSubject<number>(0);
 
-  readonly viewTypeItems$: Observable<Array<ListItem>> = combineLatest([
+  public readonly viewTypeItems$: Observable<Array<ListItem>> = combineLatest([
     this.selectedViewTypeItemIndex$,
     this.translateService.stream('key'),
   ]).pipe(
@@ -277,9 +292,9 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     )
   );
 
-  readonly selectedSortItemIndex$ = new BehaviorSubject<number>(0);
+  public readonly selectedSortItemIndex$ = new BehaviorSubject<number>(0);
 
-  readonly sortItems$: Observable<Array<ListItem>> = combineLatest([
+  public readonly sortItems$: Observable<Array<ListItem>> = combineLatest([
     this.selectedSortItemIndex$,
     this.translateService.stream('key'),
   ]).pipe(
@@ -304,7 +319,10 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     )
   );
 
-  readonly validKey$ = combineLatest([this.formGroup.valueChanges, this.currentModalType$]).pipe(
+  public readonly validKey$ = combineLatest([
+    this.formGroup.valueChanges,
+    this.currentModalType$,
+  ]).pipe(
     map(([formValues, currentModalType]) => {
       const existingKeys = this.cachedCaseListColumns.map(column => column.key);
       return currentModalType === 'create' ? !existingKeys.includes(formValues.key ?? '') : true;
@@ -312,7 +330,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     startWith(false)
   );
 
-  readonly valid$ = combineLatest([this.formGroup.valueChanges, this.validKey$]).pipe(
+  public readonly valid$ = combineLatest([this.formGroup.valueChanges, this.validKey$]).pipe(
     map(
       ([formValues, validKey]) =>
         !!(
@@ -326,11 +344,11 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     startWith(false)
   );
 
-  readonly showDeleteModal$ = new Subject<boolean>();
+  public readonly showDeleteModal$ = new Subject<boolean>();
 
-  readonly deleteRowKey$ = new BehaviorSubject<string>('');
+  public readonly deleteRowKey$ = new BehaviorSubject<string>('');
 
-  readonly defaultEnumValues$ = new BehaviorSubject<MultiInputValues | null>(null);
+  public readonly defaultEnumValues$ = new BehaviorSubject<MultiInputValues | null>(null);
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
@@ -363,6 +381,8 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   }
 
   deleteRow(caseListColumn: CaseListColumn): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     this.showDeleteModal$.next(true);
     this.deleteRowKey$.next(caseListColumn.key);
   }
@@ -413,6 +433,8 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   }
 
   columnRowClicked(row: {key: string}): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     this.resetFormGroup();
 
     combineLatest([this.viewTypeItems$, this.sortItems$])

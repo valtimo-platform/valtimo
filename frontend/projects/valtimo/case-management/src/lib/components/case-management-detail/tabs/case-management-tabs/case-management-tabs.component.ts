@@ -18,6 +18,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Input,
   signal,
   TemplateRef,
   ViewChild,
@@ -43,6 +44,9 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   @ViewChild('tabContentColumn') tabContentColumnTemplate: TemplateRef<any>;
   @ViewChild('tabTypeColumn') tabTypeColumnTemplate: TemplateRef<any>;
   @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;
+
+  @Input() public readonly canUpdateGlobalConfiguration;
+  @Input() public readonly isFinalVersion;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route).pipe(
     tap(params => {
@@ -110,11 +114,15 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   }
 
   public openEditModal(tab: ApiTabItem): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     this.tab$.next(tab);
     this.openEditModal$.next(true);
   }
 
   public onRowClicked(tab: ApiTabItem): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     this.tab$.next(tab);
 
     if (tab.type === ApiTabType.WIDGETS) {
@@ -146,6 +154,8 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   }
 
   public openDeleteConfirmationModal(tab: ApiTabItem): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     this.deleteRowKey$.next(tab.key);
   }
 
@@ -154,6 +164,8 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   }
 
   public onItemsReorderedEvent(reorderedItems: ApiTabItem[]): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     if (!reorderedItems) return;
 
     this.dragAndDropDisabled.set(true);

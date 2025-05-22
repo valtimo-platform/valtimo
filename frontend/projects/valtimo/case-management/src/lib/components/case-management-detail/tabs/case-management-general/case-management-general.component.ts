@@ -27,7 +27,7 @@ import {
 import {map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/config';
+import {EnvironmentService, ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/config';
 import {CaseManagementService} from '../../../../services';
 
 @Component({
@@ -60,6 +60,9 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     map(caseDefinition => caseDefinition.final)
   );
 
+  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
+    this.environmentService.canUpdateGlobalConfiguration();
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
@@ -67,7 +70,8 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     private readonly caseManagementService: CaseManagementService,
     @Optional()
     @Inject(ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN)
-    private readonly zgwCaseConfigurationExtensionComponents: Type<any>[]
+    private readonly zgwCaseConfigurationExtensionComponents: Type<any>[],
+    private readonly environmentService: EnvironmentService
   ) {}
 
   public ngAfterViewInit(): void {

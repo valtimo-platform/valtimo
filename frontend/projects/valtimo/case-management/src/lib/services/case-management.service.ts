@@ -22,7 +22,7 @@ import {
   InterceptorSkipHeader,
 } from '@valtimo/config';
 import {Page} from '@valtimo/document';
-import {Observable} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
 import {CaseDefinition, DraftVersion} from '../models/case-deployment.model';
@@ -121,6 +121,22 @@ export class CaseManagementService extends BaseApiService {
         headers: new HttpHeaders().set(InterceptorSkip, '403'),
       }
     );
+  }
+
+  public checkFinalVersion(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<boolean> {
+    return this.httpClient
+      .get<CaseDefinition>(
+        this.getApiUrl(
+          `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
+        ),
+        {
+          headers: new HttpHeaders().set(InterceptorSkip, '403'),
+        }
+      )
+      .pipe(map(response => response.final));
   }
 
   public importDocumentDefinitionZip(file: FormData): Observable<HttpResponse<Blob>> {

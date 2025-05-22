@@ -55,7 +55,11 @@
   </ng-template>
 
   <ng-template #addTabButton>
-    <button cdsButton="primary" (click)="openAddTabModal()">
+    <button
+      *ngIf="canUpdateGlobalConfiguration && !isFinalVersion"
+      cdsButton="primary"
+      (click)="openAddTabModal()"
+    >
       {{ 'caseManagement.tabManagement.addModal.addTab' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

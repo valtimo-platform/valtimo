@@ -53,6 +53,7 @@
   </button>
 
   <button
+    *ngIf="isFinalVersion && canUpdateGlobalConfiguration"
     cdsButton="primary"
     data-testid="case-management-search-add"
     [disabled]="loadingSearchFields || obs.disableInput"

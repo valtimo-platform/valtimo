@@ -27,6 +27,7 @@ import {
   BehaviorSubject,
   combineLatest,
   map,
+  Observable,
   Subject,
   Subscription,
   switchMap,
@@ -37,6 +38,8 @@ import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
 import {getCaseManagementRouteParams} from '../../../../utils';
+import {EnvironmentService} from '@valtimo/config';
+import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
@@ -50,9 +53,9 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
-  private readonly _params$ = getCaseManagementRouteParams(this.route);
-
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  private readonly _params$ = getCaseManagementRouteParams(this.route);
 
   public readonly caseDefinitionKey$ = this._params$.pipe(map(p => p.caseDefinitionKey));
   public readonly caseDefinitionVersionTag$ = this._params$.pipe(
@@ -88,6 +91,19 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
     })
   );
 
+  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
+    this.environmentService.canUpdateGlobalConfiguration();
+
+  public readonly isFinalVersion$: Observable<boolean> = combineLatest([
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$,
+  ]).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
+  );
+
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -111,7 +127,9 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly caseTagService: CaseTagService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly environmentService: EnvironmentService,
+    private readonly caseManagementService: CaseManagementService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -123,11 +141,15 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   }
 
   public openDeleteModal(caseTag: CaseTag): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
+
     this.caseTagToDelete$.next(caseTag);
     this.showDeleteModal$.next(true);
   }
 
   public openEditModal(caseTag: CaseTag): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
+
     this.prefillCaseTag$.next(caseTag);
     this.statusModalType$.next('edit');
   }
@@ -163,6 +185,8 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   }
 
   public onItemsReorderedEvent(reorderedItems: CaseTag[]): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
+
     if (!reorderedItems) return;
 
     combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])

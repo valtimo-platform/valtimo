@@ -37,6 +37,7 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {
+  EnvironmentService,
   SearchField,
   SearchFieldDataType,
   SearchFieldFieldType,
@@ -58,6 +59,7 @@ import {
   tap,
 } from 'rxjs';
 import {v4 as uuidv4} from 'uuid';
+import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
@@ -80,6 +82,19 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   public readonly showFields$ = new BehaviorSubject<boolean>(false);
   public readonly modalShowing$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
+    this.environmentService.canUpdateGlobalConfiguration();
+
+  public readonly isFinalVersion$: Observable<boolean> = combineLatest([
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$,
+  ]).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
+  );
 
   private _subscriptions = new Subscription();
 
@@ -349,7 +364,9 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly environmentService: EnvironmentService,
+    private readonly caseManagementService: CaseManagementService
   ) {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
   }
@@ -367,6 +384,7 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   }
 
   public searchFieldClicked(searchField: SearchField, searchFieldActionTypeIsAdd: boolean): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
     this.disableInput$.pipe(take(1)).subscribe(inputDisabled => {
       if (!inputDisabled) {
         this.searchFieldActionTypeIsAdd = searchFieldActionTypeIsAdd;
@@ -628,11 +646,13 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   }
 
   private showDeleteModal(searchField: SearchField): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
     this.selectedDeleteSearchField$.next(searchField);
     this.showDeleteModal$.next(true);
   }
 
   private showEditModal(searchField: SearchField): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
     this.searchFieldClicked(searchField, false);
   }
 }

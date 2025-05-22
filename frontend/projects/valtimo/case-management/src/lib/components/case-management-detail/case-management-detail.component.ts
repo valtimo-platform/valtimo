@@ -24,11 +24,11 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {PageTitleService} from '@valtimo/components';
-import {CaseManagementTabConfig, ConfigService} from '@valtimo/config';
+import {CaseManagementTabConfig, ConfigService, EnvironmentService} from '@valtimo/config';
 import {Tab} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, startWith, Subscription} from 'rxjs';
+import {combineLatest, filter, map, Observable, startWith, Subscription, switchMap} from 'rxjs';
 import {CaseManagementParams, TabEnum} from '../../models';
-import {CaseDetailService, TabService} from '../../services';
+import {CaseDetailService, CaseManagementService, TabService} from '../../services';
 import {CaseManagementDocumentDefinitionComponent} from './tabs/case-management-document-definition/case-management-document-definition.component';
 import {getCaseManagementRouteParams} from '../../utils';
 import {DocumentDefinition} from '@valtimo/document';
@@ -53,6 +53,23 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   public readonly caseDefinitionKey$ = this.params$.pipe(
     map(params => params?.caseDefinitionKey ?? '')
   );
+
+  public readonly caseDefinitionVersionTag$ = this.params$.pipe(
+    map(params => params?.caseDefinitionVersionTag ?? '')
+  );
+
+  public readonly isFinalVersion$: Observable<boolean> = combineLatest([
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$,
+  ]).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
+  );
+
+  public readonly canUpdateGlobalConfiguration$ =
+    this.environmentService.canUpdateGlobalConfiguration();
 
   public caseListColumn!: boolean;
   public tabManagementEnabled!: boolean;
@@ -86,7 +103,9 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
     private readonly configService: ConfigService,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
-    private readonly tabService: TabService
+    private readonly tabService: TabService,
+    private readonly environmentService: EnvironmentService,
+    private readonly caseManagementService: CaseManagementService
   ) {
     const featureToggles = this.configService.config.featureToggles;
     this.caseListColumn = featureToggles?.caseListColumn ?? true;
