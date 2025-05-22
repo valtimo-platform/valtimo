@@ -320,7 +320,7 @@ export class ProcessManagementBuilderComponent
       this.processManagementEditorService.processLinksForSelectedDefinition$,
       this.processManagementEditorService.selectionProcessDefinition$,
       this.context$,
-      this.managementParams$,
+      this.managementParams$.pipe(startWith(null)),
     ])
       .pipe(
         take(1),
@@ -364,7 +364,7 @@ export class ProcessManagementBuilderComponent
       from(this._bpmnModeler.saveXML()),
       this.processManagementEditorService.processLinksForSelectedDefinition$,
       this.context$,
-      this.managementParams$,
+      this.managementParams$.pipe(startWith(null)),
     ])
       .pipe(
         take(1),
@@ -688,18 +688,20 @@ export class ProcessManagementBuilderComponent
 
   private openParamsAndContextSubscription(): void {
     this._subscriptions.add(
-      combineLatest([this.context$, this.managementParams$]).subscribe(([context, params]) => {
-        if (context) this.processManagementService.context = context;
+      combineLatest([this.context$, this.managementParams$.pipe(startWith(null))]).subscribe(
+        ([context, params]) => {
+          if (context) this.processManagementService.context = context;
 
-        if (params) {
-          this.processManagementService.setParams(
-            params.caseDefinitionKey,
-            params.caseDefinitionVersionTag
-          );
+          if (params) {
+            this.processManagementService.setParams(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag
+            );
+          }
+
+          this.initBreadcrumbs(params, context);
         }
-
-        this.initBreadcrumbs(params, context);
-      })
+      )
     );
   }
 
@@ -724,7 +726,7 @@ export class ProcessManagementBuilderComponent
   }
 
   private initEditing(): void {
-    combineLatest([this.editParam$, this.managementParams$, this.context$])
+    combineLatest([this.editParam$, this.managementParams$.pipe(startWith(null)), this.context$])
       .pipe(
         take(1),
         switchMap(([editParam, params, context]) => {

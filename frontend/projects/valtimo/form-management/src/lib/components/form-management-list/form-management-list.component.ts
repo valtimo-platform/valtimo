@@ -23,7 +23,16 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, ColumnConfig, Pagination} from '@valtimo/components';
 import {EnvironmentService, getCaseManagementRouteParams} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {FormDefinition} from '../../models';
 import {FormManagementService} from '../../services';
 import {getContextObservable} from '../../utils';
@@ -84,7 +93,7 @@ export class FormManagementListComponent {
 
   public readonly formDefinitions$ = combineLatest([
     this.context$,
-    this.caseManagementRouteParams$,
+    this.caseManagementRouteParams$.pipe(startWith(null)),
     this._partialPagination$,
     this.searchTerm$,
   ]).pipe(

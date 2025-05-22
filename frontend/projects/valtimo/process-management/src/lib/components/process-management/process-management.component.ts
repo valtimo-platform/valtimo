@@ -20,7 +20,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {LoadingModule, NotificationModule} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
-import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, startWith, Subscription, switchMap} from 'rxjs';
 import {distinctUntilChanged, filter} from 'rxjs/operators';
 import {ProcessDefinitionResult} from '../../models';
 import {ProcessManagementService} from '../../services';
@@ -83,18 +83,20 @@ export class ProcessManagementComponent implements OnInit, OnDestroy {
 
   private openParamsAndContextSubscription(): void {
     this._subscriptions.add(
-      combineLatest([this.context$, this.params$]).subscribe(([context, params]) => {
-        if (context) this.processManagementService.context = context;
+      combineLatest([this.context$, this.params$.pipe(startWith(null))]).subscribe(
+        ([context, params]) => {
+          if (context) this.processManagementService.context = context;
 
-        if (params) {
-          this.processManagementService.setParams(
-            params.caseDefinitionKey,
-            params.caseDefinitionVersionTag
-          );
+          if (params) {
+            this.processManagementService.setParams(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag
+            );
+          }
+
+          this.paramsAreSet$.next(true);
         }
-
-        this.paramsAreSet$.next(true);
-      })
+      )
     );
   }
 }

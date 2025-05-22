@@ -62,7 +62,7 @@ import {
   TabsModule,
   TagModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, of, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, startWith, Subscription} from 'rxjs';
 import {distinctUntilChanged, filter, switchMap, take, tap} from 'rxjs/operators';
 import {EDIT_TABS, FormDefinition, ModifyFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
@@ -221,7 +221,8 @@ export class FormManagementEditComponent
   public deleteFormDefinition(definition: FormDefinition): void {
     this.pendingChanges = false;
 
-    combineLatest([this.context$, this.caseManagementRouteParams$])
+    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
+      .pipe()
       .pipe(
         switchMap(([context, caseManagementRouteParams]) => {
           switch (context) {
@@ -272,7 +273,8 @@ export class FormManagementEditComponent
       formDefinition: form,
     };
 
-    combineLatest([this.context$, this.caseManagementRouteParams$])
+    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
+      .pipe()
       .pipe(
         switchMap(([context, caseManagementRouteParams]) => {
           switch (context) {
@@ -309,7 +311,11 @@ export class FormManagementEditComponent
   }
 
   private loadFormDefinition(): void {
-    combineLatest([this.context$, this.caseManagementRouteParams$, this.editParam$])
+    combineLatest([
+      this.context$,
+      this.caseManagementRouteParams$.pipe(startWith(null)),
+      this.editParam$,
+    ])
       .pipe(
         switchMap(([context, caseManagementRouteParams, formDefinitionId]) => {
           if (!formDefinitionId) return of(null);
@@ -404,7 +410,7 @@ export class FormManagementEditComponent
   }
 
   public showDuplicateModal(definition: FormDefinition): void {
-    combineLatest([this.context$, this.caseManagementRouteParams$])
+    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
       .pipe(take(1))
       .subscribe(([context, params]) => {
         this.modalService.create({
@@ -442,7 +448,9 @@ export class FormManagementEditComponent
     });
 
     // We need to force a short delay so the formio builder is re-initialized with the new definition
-    setTimeout(() => {this.reloading$.next(false)}, 100);
+    setTimeout(() => {
+      this.reloading$.next(false);
+    }, 100);
   }
 
   protected onConfirmRedirect(): void {
@@ -471,7 +479,7 @@ export class FormManagementEditComponent
   };
 
   private initBreadcrumbs(): void {
-    combineLatest([this.context$, this.caseManagementRouteParams$])
+    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
       .pipe(take(1))
       .subscribe(([context, params]) => {
         if (context === 'independent') return;
