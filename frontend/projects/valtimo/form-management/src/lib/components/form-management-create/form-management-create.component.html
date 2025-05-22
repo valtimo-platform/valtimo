@@ -28,7 +28,7 @@
     </h3>
   </cds-modal-header>
 
-  <form [formGroup]="form" (ngSubmit)="createFormDefinition()">
+  <form *ngIf="form" [formGroup]="form" (ngSubmit)="createFormDefinition()">
     <section cdsModalContent [cdsLayer]="1">
       <cds-label
         [invalid]="formControls?.name?.touched && formControls?.name?.errors"
@@ -61,7 +61,7 @@
           {{ 'formManagement.reset' | translate | translate }}
         </button>
 
-        <button [disabled]="form.invalid" type="submit" cdsButton="primary">
+        <button [disabled]="form?.invalid" type="submit" cdsButton="primary">
           {{ 'formManagement.submit' | translate }}
         </button>
       </cds-modal-footer>

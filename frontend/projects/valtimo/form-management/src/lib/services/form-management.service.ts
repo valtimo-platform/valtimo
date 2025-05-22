@@ -69,7 +69,7 @@ export class FormManagementService extends BaseApiService {
     caseDefinitionVersionTag: string,
     formDefinitionName: string
   ): Observable<boolean> {
-    if (!formDefinitionName) return of(false);
+    if (!formDefinitionName || !caseDefinitionKey || !caseDefinitionVersionTag) return of(false);
 
     return this.httpClient.get<boolean>(
       this.getApiUrl(

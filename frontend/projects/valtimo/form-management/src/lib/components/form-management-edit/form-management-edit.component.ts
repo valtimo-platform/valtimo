@@ -48,6 +48,7 @@ import {
 import {
   EnvironmentService,
   getCaseManagementRouteParams,
+  getCaseManagementRouteParamsAndContext,
   GlobalNotificationService,
 } from '@valtimo/shared';
 import {
@@ -62,7 +63,7 @@ import {
   TabsModule,
   TagModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, of, startWith, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, Subscription} from 'rxjs';
 import {distinctUntilChanged, filter, switchMap, take, tap} from 'rxjs/operators';
 import {EDIT_TABS, FormDefinition, ModifyFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
@@ -221,15 +222,14 @@ export class FormManagementEditComponent
   public deleteFormDefinition(definition: FormDefinition): void {
     this.pendingChanges = false;
 
-    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
-      .pipe()
+    getCaseManagementRouteParamsAndContext(this.route)
       .pipe(
         switchMap(([context, caseManagementRouteParams]) => {
           switch (context) {
             case 'case':
               return this.formManagementService.deleteFormDefinitionCase(
-                caseManagementRouteParams.caseDefinitionKey,
-                caseManagementRouteParams.caseDefinitionVersionTag,
+                caseManagementRouteParams?.caseDefinitionKey,
+                caseManagementRouteParams?.caseDefinitionVersionTag,
                 definition.id
               );
 
@@ -273,8 +273,7 @@ export class FormManagementEditComponent
       formDefinition: form,
     };
 
-    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
-      .pipe()
+    getCaseManagementRouteParamsAndContext(this.route)
       .pipe(
         switchMap(([context, caseManagementRouteParams]) => {
           switch (context) {
@@ -311,12 +310,9 @@ export class FormManagementEditComponent
   }
 
   private loadFormDefinition(): void {
-    combineLatest([
-      this.context$,
-      this.caseManagementRouteParams$.pipe(startWith(null)),
-      this.editParam$,
-    ])
+    getCaseManagementRouteParamsAndContext(this.route)
       .pipe(
+        switchMap(([context, params]) => combineLatest([of(context), of(params), this.editParam$])),
         switchMap(([context, caseManagementRouteParams, formDefinitionId]) => {
           if (!formDefinitionId) return of(null);
 
@@ -410,7 +406,7 @@ export class FormManagementEditComponent
   }
 
   public showDuplicateModal(definition: FormDefinition): void {
-    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
+    getCaseManagementRouteParamsAndContext(this.route)
       .pipe(take(1))
       .subscribe(([context, params]) => {
         this.modalService.create({
@@ -479,7 +475,7 @@ export class FormManagementEditComponent
   };
 
   private initBreadcrumbs(): void {
-    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
+    getCaseManagementRouteParamsAndContext(this.route)
       .pipe(take(1))
       .subscribe(([context, params]) => {
         if (context === 'independent') return;

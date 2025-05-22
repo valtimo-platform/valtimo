@@ -20,7 +20,10 @@ import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} fr
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {ValtimoCdsModalDirectiveModule, WidgetModule} from '@valtimo/components';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {
+  getCaseManagementRouteParams,
+  getCaseManagementRouteParamsAndContext,
+} from '@valtimo/shared';
 import {
   ButtonModule,
   InputModule,
@@ -28,7 +31,7 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {combineLatest, startWith, switchMap, tap} from 'rxjs';
+import {combineLatest, of, switchMap, tap} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
 import {CreateFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
@@ -82,14 +85,17 @@ export class FormManagementCreateComponent implements OnInit {
   }
 
   private initForm(): void {
-    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
-      .pipe()
+    getCaseManagementRouteParamsAndContext(this.route)
       .pipe(
         take(1),
         tap(([context, caseManagementParams]) => {
           this.form = this.formBuilder.group({
             name: new FormControl('', Validators.required, [
-              noDuplicateFormValidator(context, caseManagementParams, this.formManagementService),
+              noDuplicateFormValidator(
+                context,
+                caseManagementParams as any,
+                this.formManagementService
+              ),
             ]),
           });
         })
@@ -120,8 +126,14 @@ export class FormManagementCreateComponent implements OnInit {
       formDefinition: JSON.stringify(emptyForm),
     };
 
-    combineLatest([this.context$, this.caseManagementRouteParams$.pipe(startWith(null))])
+    this.context$
       .pipe(
+        switchMap(context =>
+          context === 'case'
+            ? combineLatest([of(context), this.caseManagementRouteParams$])
+            : combineLatest([of(context), null])
+        ),
+        take(1),
         switchMap(([context, caseManagementParams]) =>
           context === 'case'
             ? this.formManagementService.createFormDefinitionsCase(
