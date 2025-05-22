@@ -55,6 +55,7 @@ import {
   LoadingModule,
   ModalModule as CarbonModalModule,
   NotificationModule,
+  NumberModule,
   ProgressBarModule,
   TabsModule,
   TagModule,
@@ -173,6 +174,7 @@ import {CaseManagementCreateDraftVersionComponent} from './components/case-manag
     LayerModule,
     FormManagementComponent,
     EllipsisPipe,
+    NumberModule,
   ],
   providers: [TabManagementService],
 })
