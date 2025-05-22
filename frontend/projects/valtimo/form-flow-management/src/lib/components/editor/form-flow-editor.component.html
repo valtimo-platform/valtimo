@@ -54,6 +54,16 @@
       </cds-overflow-menu>
 
       <button
+        cdsButton="secondary"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        (click)="navigateBack()"
+      >
+        {{ 'interface.back' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+      </button>
+
+      <button
         [disabled]="!obs.valid || obs.readOnly"
         cdsButton="primary"
         [size]="obs.compactMode ? 'sm' : 'md'"

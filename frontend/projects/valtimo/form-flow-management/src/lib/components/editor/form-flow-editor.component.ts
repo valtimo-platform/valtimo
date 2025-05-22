@@ -15,9 +15,20 @@
  */
 import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import {ArrowLeft16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {EditorModel, PageHeaderService, PageTitleService, BreadcrumbService} from '@valtimo/components';
-import {GlobalNotificationService, CaseManagementParams} from '@valtimo/shared';
+import {
+  BreadcrumbService,
+  EditorModel,
+  PageHeaderService,
+  PageTitleService,
+} from '@valtimo/components';
+import {
+  CaseManagementParams,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
+import {IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -28,7 +39,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {FormFlowDefinition, FormFlowDefinitionId} from '../../models';
+import {FormFlowDefinition, FormFlowDefinitionId, FormFlowEditorParams} from '../../models';
 import {FormFlowService} from '../../services';
 import {FormFlowDownloadService} from '../../services/form-flow-download.service';
 import formFlowSchemaJson from './formflow.schema.json';
@@ -47,13 +58,20 @@ export class FormFlowEditorComponent implements OnDestroy {
   public readonly formFlowDefinitionId$ = new BehaviorSubject<FormFlowDefinitionId | null>(null);
   public readonly CARBON_THEME = 'g10';
 
-  private readonly _params$: Observable<CaseManagementParams & {formFlowDefinitionKey: string}> =
-    this.route.params as Observable<CaseManagementParams & {formFlowDefinitionKey: string}>;
+  private readonly _params$: Observable<FormFlowEditorParams> = combineLatest([
+    getCaseManagementRouteParams(this.route),
+    this.route.params as Observable<{formFlowDefinitionKey: string}>,
+  ]).pipe(
+    map(([caseManagementParams, params]) => ({
+      ...(caseManagementParams ?? {caseDefinitionKey: '', caseDefinitionVersionTag: ''}),
+      ...params,
+    }))
+  );
   public readonly formFlowSchemaJson = formFlowSchemaJson;
 
   private readonly _formFlowDefinition2$ = this._params$.pipe(
     tap(() => this.loading$.next(true)),
-    switchMap((params: CaseManagementParams & {formFlowDefinitionKey: string}) => {
+    switchMap((params: FormFlowEditorParams) => {
       this.initBreadcrumbs(params);
 
       return this.formFlowService.getFormFlowDefinitionByKey(
@@ -80,13 +98,17 @@ export class FormFlowEditorComponent implements OnDestroy {
     private readonly breadcrumbService: BreadcrumbService,
     private readonly formFlowDownloadService: FormFlowDownloadService,
     private readonly formFlowService: FormFlowService,
+    private readonly iconService: IconService,
     private readonly notificationService: GlobalNotificationService,
     private readonly pageHeaderService: PageHeaderService,
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly translateService: TranslateService
-  ) {}
+  ) {
+    this.iconService.registerAll([ArrowLeft16]);
+    this.pageTitleService.disableReset();
+  }
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
@@ -156,6 +178,10 @@ export class FormFlowEditorComponent implements OnDestroy {
       );
   }
 
+  public navigateBack(): void {
+    this.router.navigate(['../'], {relativeTo: this.route});
+  }
+
   private getEditorModel(formFlowDefinition: FormFlowDefinition): EditorModel {
     const clone = {...formFlowDefinition};
     delete clone.readOnly;
@@ -175,7 +201,7 @@ export class FormFlowEditorComponent implements OnDestroy {
     });
   }
 
-  private initBreadcrumbs(params: CaseManagementParams & {formFlowDefinitionKey: string}): void {
+  private initBreadcrumbs(params: FormFlowEditorParams): void {
     const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
 
     this.breadcrumbService.setThirdBreadcrumb({

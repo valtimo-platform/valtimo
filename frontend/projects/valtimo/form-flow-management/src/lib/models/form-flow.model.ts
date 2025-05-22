@@ -68,6 +68,12 @@ interface LoadedValue<T> {
   value?: T;
 }
 
+interface FormFlowEditorParams {
+  formFlowDefinitionKey: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
+}
+
 export {
   ListFormFlowDefinition,
   FormFlowDefinition,
@@ -79,4 +85,5 @@ export {
   CustomComponentStepTypeProperties,
   DeleteFormFlowsRequest,
   LoadedValue,
+  FormFlowEditorParams,
 };
