@@ -352,6 +352,7 @@ export class ProcessManagementBuilderComponent
             this.reload();
             this.showNotification('success');
           } else {
+            this.pendingChanges = false;
             this.navigateBack('success');
           }
         },
