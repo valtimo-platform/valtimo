@@ -49,7 +49,6 @@ import {
 } from '@valtimo/components';
 import {VerzoekPluginService} from '../../services';
 import {ProcessService} from '@valtimo/process';
-import {DocumentService} from '@valtimo/document';
 import {DataTable16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
 
@@ -110,13 +109,13 @@ export class VerzoekConfigurationComponent
       )
     );
 
-  readonly documentSelectItems$: Observable<Array<SelectItem>> = this.documentService
-    .getAllDefinitions()
+  readonly caseSelectItems$: Observable<Array<SelectItem>> = this.verzoekPluginService
+    .getCaseDefinitions({active: true})
     .pipe(
-      map(documentDefinitions =>
-        documentDefinitions.content.map(documentDefinition => ({
-          id: documentDefinition.id.name,
-          text: documentDefinition.id.name,
+      map(caseDefinitions =>
+        caseDefinitions.content.map(caseDefinition => ({
+          id: caseDefinition.caseDefinitionKey,
+          text: caseDefinition.caseDefinitionKey,
         }))
       )
     );
@@ -131,8 +130,12 @@ export class VerzoekConfigurationComponent
     )
   );
 
+  readonly caseVersionTagSelectItemsObservables: {
+    [uuid: string]: {caseDefinitionKey: string; items: Observable<Array<SelectItem>>};
+  } = {};
+
   readonly rolTypeSelectItemsObservables: {
-    [uuid: string]: {caseDefinitionName: string; items: Observable<Array<SelectItem>>};
+    [uuid: string]: {caseDefinitionId: string; items: Observable<Array<SelectItem>>};
   } = {};
 
   readonly showMappingButtons: {[uuid: string]: boolean} = {};
@@ -148,12 +151,12 @@ export class VerzoekConfigurationComponent
   private readonly formValue$ = new BehaviorSubject<VerzoekConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  public getSelectedCaseDefinitionNameForIndex(index: number): Observable<string> {
+  public getSelectedDocumentDefinitionNameForIndex(index: number): Observable<string> {
     return this.formValue$.pipe(
       map(
         formValue =>
           Array.isArray(formValue.verzoekProperties) &&
-          formValue.verzoekProperties[index]?.caseDefinitionName
+          formValue.verzoekProperties[index]?.caseDefinitionKey
       )
     );
   }
@@ -166,7 +169,6 @@ export class VerzoekConfigurationComponent
     private readonly pluginTranslationService: PluginTranslationService,
     private readonly verzoekPluginService: VerzoekPluginService,
     private readonly processService: ProcessService,
-    private readonly documentService: DocumentService,
     private readonly modalService: ModalService,
     private readonly iconService: IconService
   ) {
@@ -188,34 +190,60 @@ export class VerzoekConfigurationComponent
   }
 
   verzoekTypeFormChange(formValue: VerzoekType, uuid: string): void {
-    const caseDefinitionName = formValue?.caseDefinitionName;
+    const caseDefinitionKey = formValue?.caseDefinitionKey;
+    const caseDefinitionVersionTag = formValue?.caseDefinitionVersionTag;
+    const caseDefinitionId = `${caseDefinitionKey}:${caseDefinitionVersionTag}`;
     const rolTypeSelectItemsObservables = this.rolTypeSelectItemsObservables;
+    const caseVersionTagSelectItemsObservables = this.caseVersionTagSelectItemsObservables;
 
     this.showMappingButtons[uuid] = formValue.copyStrategy === 'specified';
 
-    if (caseDefinitionName) {
+    if (caseDefinitionKey) {
+      if (
+        !caseVersionTagSelectItemsObservables[uuid] ||
+        caseVersionTagSelectItemsObservables[uuid].caseDefinitionKey !== caseDefinitionKey
+      ) {
+        caseVersionTagSelectItemsObservables[uuid] = {
+          caseDefinitionKey,
+          items: this.verzoekPluginService.getCaseDefinitions({caseDefinitionKey}).pipe(
+            map(caseDefinitions =>
+              [{text: 'Active version', id: ''}].concat(
+                caseDefinitions.content.map(caseDefinition => ({
+                  text: caseDefinition.caseDefinitionVersionTag,
+                  id: caseDefinition.caseDefinitionVersionTag,
+                }))
+              )
+            )
+          ),
+        };
+      }
       if (
         !rolTypeSelectItemsObservables[uuid] ||
-        rolTypeSelectItemsObservables[uuid].caseDefinitionName !== caseDefinitionName
+        rolTypeSelectItemsObservables[uuid].caseDefinitionId !== caseDefinitionId
       ) {
         rolTypeSelectItemsObservables[uuid] = {
-          caseDefinitionName,
+          caseDefinitionId,
           items: this.verzoekPluginService
-            .getRoltypesByDocumentDefinitionName(caseDefinitionName)
+            .getRoltypesByCaseDefinition(caseDefinitionKey, {caseDefinitionVersionTag})
             .pipe(
               map(rolTypes => rolTypes.map(rolType => ({text: rolType.name, id: rolType.url})))
             ),
         };
       }
     } else {
+      caseVersionTagSelectItemsObservables[uuid] = {
+        caseDefinitionKey,
+        items: of([]),
+      };
       rolTypeSelectItemsObservables[uuid] = {
-        caseDefinitionName,
+        caseDefinitionId,
         items: of([]),
       };
     }
   }
 
   deleteRow(uuid: string): void {
+    delete this.caseVersionTagSelectItemsObservables[uuid];
     delete this.rolTypeSelectItemsObservables[uuid];
   }
 
@@ -256,7 +284,7 @@ export class VerzoekConfigurationComponent
       type =>
         !!(
           type.type &&
-          type.caseDefinitionName &&
+          type.caseDefinitionKey &&
           type.objectManagementId &&
           type.initiatorRoltypeUrl &&
           type.processDefinitionKey &&
@@ -278,6 +306,10 @@ export class VerzoekConfigurationComponent
             verzoekProperties: formValue.verzoekProperties.map(verzoek => {
               const verzoekToReturn: VerzoekType = {...verzoek};
               delete verzoekToReturn.uuid;
+
+              if (!verzoek.caseDefinitionVersionTag) {
+                verzoekToReturn.caseDefinitionVersionTag = null;
+              }
 
               if (this.mappings[verzoek.uuid] && verzoek.copyStrategy === 'specified') {
                 verzoekToReturn.mapping = this.mappings[verzoek.uuid];

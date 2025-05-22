@@ -132,7 +132,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
 
     if (Array.isArray(selectedValue)) {
       this.setSelectedValue(selectedValue.map(value => value.id));
-    } else if (id && typeof id === 'string') {
+    } else if (selectedValue && typeof id === 'string') {
       this.setSelectedValue(id);
     }
   }

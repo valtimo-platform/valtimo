@@ -27,7 +27,8 @@ interface Mapping {
 
 interface VerzoekType {
   uuid?: string;
-  caseDefinitionName: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
   objectManagementId: string;
   processDefinitionKey: string;
   initiatorRolDescription: string;

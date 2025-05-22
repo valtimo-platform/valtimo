@@ -114,17 +114,32 @@
         placeholder=""
       >
       </v-input>
-      <ng-container *ngIf="{documentSelectItems: documentSelectItems$ | async} as vars">
+      <ng-container *ngIf="{caseSelectItems: caseSelectItems$ | async} as vars">
         <v-select
-          [items]="vars.documentSelectItems"
+          [items]="vars.caseSelectItems"
           [smallMargin]="true"
-          name="caseDefinitionName"
-          [title]="'caseDefinitionName' | pluginTranslate: pluginId | async"
+          name="caseDefinitionKey"
+          [title]="'caseDefinitionKey' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
-          [defaultSelectionId]="prefill?.caseDefinitionName"
+          [defaultSelectionId]="prefill?.caseDefinitionKey"
           [required]="true"
-          [loading]="!vars.documentSelectItems"
-          [tooltip]="'caseDefinitionNameTooltip' | pluginTranslate: pluginId | async"
+          [loading]="!vars.caseSelectItems"
+          [tooltip]="'caseDefinitionKeyTooltip' | pluginTranslate: pluginId | async"
+        ></v-select>
+      </ng-container>
+      <ng-container>
+        <v-select
+          [items]="
+            caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey &&
+            (caseVersionTagSelectItemsObservables[uuid].items | async)
+          "
+          [smallMargin]="true"
+          name="caseDefinitionVersionTag"
+          [title]="'caseDefinitionVersionTag' | pluginTranslate: pluginId | async"
+          [disabled]="obs.disabled || !caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey"
+          [defaultSelectionId]="prefill?.caseDefinitionVersionTag"
+          [required]="true"
+          [tooltip]="'caseDefinitionVersionTagTooltip' | pluginTranslate: pluginId | async"
         ></v-select>
       </ng-container>
       <ng-container
@@ -144,13 +159,13 @@
       </ng-container>
       <v-select
         [items]="
-          rolTypeSelectItemsObservables[uuid]?.caseDefinitionName &&
+          rolTypeSelectItemsObservables[uuid]?.caseDefinitionId &&
           (rolTypeSelectItemsObservables[uuid].items | async)
         "
         [smallMargin]="true"
         name="initiatorRoltypeUrl"
         [title]="'initiatorRoltypeUrl' | pluginTranslate: pluginId | async"
-        [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionName"
+        [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionId"
         [defaultSelectionId]="prefill?.initiatorRoltypeUrl"
         [required]="true"
         [tooltip]="'initiatorRoltypeUrlTooltip' | pluginTranslate: pluginId | async"
@@ -230,7 +245,7 @@
             [fullWidth]="true"
             valuePathSelectorNotation="slashes"
             [valuePathSelectorDocumentDefinitionName]="
-              getSelectedCaseDefinitionNameForIndex(index) | async
+              getSelectedDocumentDefinitionNameForIndex(index) | async
             "
             [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC]"
             [keyColumnFlex]="1"
