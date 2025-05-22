@@ -117,7 +117,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public modifyFormDefinition(request: ModifyFormDefinitionRequest): Observable<FormDefinition> {
-    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/management/v1/form/`), request);
+    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/management/v1/form`), request);
   }
 
   public modifyFormDefinitionCase(
