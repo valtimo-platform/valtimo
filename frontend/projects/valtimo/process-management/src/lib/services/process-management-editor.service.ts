@@ -44,6 +44,7 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._selectionProcessDefinitionSubject$.getValue();
   }
 
+  private _processLinkActivityIdCache: {[key: string]: string} = {};
   private readonly _processLinksForSelectedDefinition$ = new BehaviorSubject<ProcessLink[]>([]);
 
   public get processLinksForSelectedDefinition$(): Observable<ProcessLink[]> {
@@ -127,7 +128,18 @@ export class ProcessManagementEditorService implements OnDestroy {
   }
 
   public setProcessLinksForSelectedDefinition(processLinks: ProcessLink[]): void {
+    this._processLinkActivityIdCache = {};
     this._processLinksForSelectedDefinition$.next(processLinks);
+  }
+
+  public updateCacheForProcessLink(processLink: ProcessLink, elementId: string): void {
+    if (this.getCacheActivityId(elementId)) return;
+
+    this._processLinkActivityIdCache[elementId] = processLink.activityId;
+  }
+
+  public getCacheActivityId(elementId: string): string | undefined {
+    return this._processLinkActivityIdCache[elementId];
   }
 
   private openSelectedProcessDefinitionSubscription(): void {

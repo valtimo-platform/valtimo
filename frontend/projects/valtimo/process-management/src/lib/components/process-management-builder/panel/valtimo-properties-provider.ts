@@ -51,8 +51,14 @@ class ValtimoPropertiesProvider {
   public getGroups(element: BpmnElement): (groups: any[]) => any[] {
     const processLink: ProcessLink | null =
       this.processManagementEditorService.processLinksForSelectedDefinition.find(
-        processLink => processLink.activityId === element.id
+        processLink =>
+          processLink.activityId ===
+          (this.processManagementEditorService.getCacheActivityId(element.di?.id ?? '') ??
+            element.id)
       ) || null;
+
+    if (processLink && element.di?.id)
+      this.processManagementEditorService.updateCacheForProcessLink(processLink, element.di.id);
 
     return (groups: any[]) => {
       if (
