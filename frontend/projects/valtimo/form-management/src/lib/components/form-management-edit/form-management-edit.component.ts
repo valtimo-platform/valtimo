@@ -434,11 +434,15 @@ export class FormManagementEditComponent
 
     this.modifiedFormDefinition = newDefinition;
     definition.formDefinition = newDefinition;
+    this._formDefinition$.next(definition);
 
     this.jsonFormDefinition$.next({
       value: JSON.stringify(newDefinition),
       language: 'json',
     });
+
+    // We need to force a short delay so the formio builder is re-initialized with the new definition
+    setTimeout(() => {this.reloading$.next(false)}, 100);
   }
 
   protected onConfirmRedirect(): void {
