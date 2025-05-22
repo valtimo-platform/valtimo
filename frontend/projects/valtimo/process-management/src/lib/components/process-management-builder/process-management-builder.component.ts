@@ -331,7 +331,9 @@ export class ProcessManagementBuilderComponent
               selectedProcessDefinition.id,
               !isReadOnlyProcess ? (result?.xml ?? '') : null,
               params?.caseDefinitionKey ?? '',
-              params?.caseDefinitionVersionTag ?? ''
+              params?.caseDefinitionVersionTag ?? '',
+              this.canInitializeDocument$.getValue(),
+              this.startableByUser$.getValue()
             );
           }
 
