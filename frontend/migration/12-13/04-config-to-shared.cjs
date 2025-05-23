@@ -14,11 +14,7 @@ function processFiles(dir) {
   files.forEach(file => {
     const fullPath = path.join(dir, file);
 
-    if (
-      file === 'node_modules' ||
-      file.startsWith('.') ||
-      fullPath.includes('node_modules')
-    ) {
+    if (file === 'node_modules' || file.startsWith('.') || fullPath.includes('node_modules')) {
       return;
     }
 
@@ -26,9 +22,7 @@ function processFiles(dir) {
 
     if (stat.isDirectory()) {
       processFiles(fullPath);
-    } else if (
-      /\.(js|ts|html|tsx|jsx)$/.test(file)
-    ) {
+    } else if (/\.(js|ts|html|tsx|jsx)$/.test(file)) {
       let contents = fs.readFileSync(fullPath, 'utf8');
 
       const replaced = contents.replace(/@valtimo\/config/g, '@valtimo/shared');
@@ -45,13 +39,15 @@ function updatePackageJson(rootDir) {
   const pkg = readJson(pkgPath);
 
   let changed = false;
-  ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'].forEach(depType => {
-    if (pkg[depType] && pkg[depType]['@valtimo/config']) {
-      pkg[depType]['@valtimo/shared'] = pkg[depType]['@valtimo/config'];
-      delete pkg[depType]['@valtimo/config'];
-      changed = true;
+  ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'].forEach(
+    depType => {
+      if (pkg[depType] && pkg[depType]['@valtimo/config']) {
+        pkg[depType]['@valtimo/shared'] = pkg[depType]['@valtimo/config'];
+        delete pkg[depType]['@valtimo/config'];
+        changed = true;
+      }
     }
-  });
+  );
 
   if (changed) {
     writeJson(pkgPath, pkg);

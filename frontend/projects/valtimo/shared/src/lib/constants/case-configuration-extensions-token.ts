@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-.read-only-notification {
-  margin-bottom: 16px;
-  max-inline-size: 100%;
-  min-inline-size: 100%;
-}
+import {InjectionToken, Type} from '@angular/core';
+
+const CASE_CONFIGURATION_EXTENSIONS_TOKEN = new InjectionToken<Type<any>[]>(
+  'Specify components to display on on the case management general page.'
+);
+
+export {CASE_CONFIGURATION_EXTENSIONS_TOKEN};

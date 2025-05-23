@@ -16,13 +16,24 @@
 
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {DocumentObjectenApiSyncComponent, ZakenApiZaaktypeLinkComponent} from '../../modules';
+import {
+  DocumentenApiVersionComponent,
+  DocumentObjectenApiSyncComponent,
+  ZakenApiZaaktypeLinkComponent,
+} from '../../modules';
+import {MuuriDirectiveModule} from '@valtimo/components';
 
 @Component({
   templateUrl: './case-management-zgw-general.component.html',
   styleUrl: './case-management-zgw-general.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ZakenApiZaaktypeLinkComponent, DocumentObjectenApiSyncComponent],
+  imports: [
+    CommonModule,
+    ZakenApiZaaktypeLinkComponent,
+    DocumentObjectenApiSyncComponent,
+    MuuriDirectiveModule,
+    DocumentenApiVersionComponent,
+  ],
 })
 export class CaseManagementZgwGeneralComponent {}

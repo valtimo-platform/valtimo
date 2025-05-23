@@ -21,7 +21,9 @@
     caseSettings: caseSettings$ | async,
   } as obs"
 >
-  <h4>{{ 'caseManagement.externalStartForm.title' | translate }}</h4>
+  <h4 class="external-case-form-container__title">
+    {{ 'caseManagement.externalStartForm.title' | translate }}
+  </h4>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1">
     <cds-toggle

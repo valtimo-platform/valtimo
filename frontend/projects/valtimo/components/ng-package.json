@@ -36,6 +36,7 @@
     "@types/topojson",
     "@tadashi/currency",
     "semver",
-    "@formio/js"
+    "@formio/js",
+    "muuri"
   ]
 }

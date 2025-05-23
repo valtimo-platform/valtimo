@@ -20,8 +20,8 @@ import {FormioModule} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {DropzoneModule, FileSizeModule} from '@valtimo/components';
 import {
+  CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   CASE_MANAGEMENT_TAB_TOKEN,
-  ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
   ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
 } from '@valtimo/shared';
@@ -69,14 +69,8 @@ import {CaseManagementZgwComponent} from './components';
       useValue: CaseDetailTabDocumentenApiDocumentsComponent,
     },
     {
-      provide: ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
-      useValue: [
-        CaseManagementLinkProcessComponent,
-        // CaseManagementLinkUploadProcessComponent
-        // DocumentenApiVersionComponent,
-        // DocumentObjectenApiSyncComponent,
-        // ZakenApiZaaktypeLinkComponent,
-      ],
+      provide: CASE_CONFIGURATION_EXTENSIONS_TOKEN,
+      useValue: [CaseManagementLinkProcessComponent],
     },
   ],
 })

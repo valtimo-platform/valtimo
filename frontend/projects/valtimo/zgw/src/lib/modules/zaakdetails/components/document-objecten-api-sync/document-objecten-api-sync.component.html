@@ -14,13 +14,13 @@
   ~ limitations under the License.
   -->
 
-<h2>{{ 'zaakdetails.title' | translate }}</h2>
+<cds-tile cdsLayer="1">
+  <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
 
-@if (loading$ | async) {
-  <valtimo-spinner></valtimo-spinner>
-} @else {
-  @if (documentObjectenApiSync$ | async; as documentObjectenApiSync) {
-    <cds-tile cdsLayer="1">
+  @if (loading$ | async) {
+    <valtimo-spinner></valtimo-spinner>
+  } @else {
+    @if (documentObjectenApiSync$ | async; as documentObjectenApiSync) {
       <section class="valtimo-objecten-sync__card-header">
         <span class="valtimo-objecten-sync__card-title">
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
@@ -58,60 +58,64 @@
           {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
         </div>
       </section>
-    </cds-tile>
-  } @else {
-    <button cdsButton="primary" class="add-sync" (click)="showModal()">
-      {{ 'zaakdetails.submitButton' | translate }}
+    } @else {
+      <button cdsButton="primary" class="add-sync" (click)="showModal()">
+        {{ 'zaakdetails.submitButton' | translate }}
 
-      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-    </button>
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    }
   }
-}
+</cds-tile>
 
-<cds-modal
-  valtimoCdsModal
-  [title]="'zaakdetails.editModal.title' | translate"
-  [open]="modalShowing$ | async"
-  showFooter="true"
-  (close)="onModalClose()"
->
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
-    <h3 cdsModalHeaderHeading>
-      {{ 'zaakdetails.editModal.title' | translate }}
-    </h3>
-  </cds-modal-header>
+<valtimo-render-in-body>
+  <cds-modal
+    valtimoCdsModal
+    [title]="'zaakdetails.editModal.title' | translate"
+    [open]="modalShowing$ | async"
+    showFooter="true"
+    (close)="onModalClose()"
+  >
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
+      <h3 cdsModalHeaderHeading>
+        {{ 'zaakdetails.editModal.title' | translate }}
+      </h3>
+    </cds-modal-header>
 
-  <section cdsModalContent>
-    <form [formGroup]="formGroup">
-      <v-select
-        *ngIf="objectManagementConfigurationItems$ | async as objectManagementConfigurations"
-        [appendInline]="false"
-        [dropUp]="false"
-        [items]="objectManagementConfigurations"
-        [defaultSelectionId]="objectManagementConfigurationId.getRawValue()"
-        [placeholder]="'zaakdetails.editModal.objectManagementConfigurationPlaceholder' | translate"
-        [title]="'zaakdetails.editModal.objectManagementConfiguration' | translate"
-        [disabled]="false"
-        [margin]="true"
-        [required]="true"
-        name="objectManagementConfigurationId"
-        [carbonTheme]="currentTheme$ | async"
-        (selectedChange)="configSelected($event)"
-      ></v-select>
+    <section cdsModalContent [cdsLayer]="1">
+      <form [formGroup]="formGroup">
+        <v-select
+          *ngIf="objectManagementConfigurationItems$ | async as objectManagementConfigurations"
+          [appendInline]="false"
+          [dropUp]="false"
+          [items]="objectManagementConfigurations"
+          [defaultSelectionId]="objectManagementConfigurationId.getRawValue()"
+          [placeholder]="
+            'zaakdetails.editModal.objectManagementConfigurationPlaceholder' | translate
+          "
+          [title]="'zaakdetails.editModal.objectManagementConfiguration' | translate"
+          [disabled]="false"
+          [margin]="true"
+          [required]="true"
+          name="objectManagementConfigurationId"
+          [carbonTheme]="currentTheme$ | async"
+          (selectedChange)="configSelected($event)"
+        ></v-select>
 
-      <cds-checkbox formControlName="enabled"
-        >{{ 'zaakdetails.editModal.enabled' | translate }}
-      </cds-checkbox>
-    </form>
-  </section>
+        <cds-checkbox formControlName="enabled"
+          >{{ 'zaakdetails.editModal.enabled' | translate }}
+        </cds-checkbox>
+      </form>
+    </section>
 
-  <cds-modal-footer>
-    <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
-      {{ 'interface.cancel' | translate }}
-    </button>
+    <cds-modal-footer>
+      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
+        {{ 'interface.cancel' | translate }}
+      </button>
 
-    <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()">
-      {{ 'searchFieldsOverview.submit' | translate }}
-    </button>
-  </cds-modal-footer>
-</cds-modal>
+      <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()">
+        {{ 'searchFieldsOverview.submit' | translate }}
+      </button>
+    </cds-modal-footer>
+  </cds-modal>
+</valtimo-render-in-body>

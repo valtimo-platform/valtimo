@@ -16,7 +16,15 @@
 
 import {EventEmitter, Injectable} from '@angular/core';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, switchMap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  switchMap,
+} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -41,17 +49,14 @@ export class WidgetsService {
   );
 
   public get activeProcess$(): Observable<ProcessDefinitionCaseDefinition> {
-    return combineLatest([
-      this._activeProcessKey$,
-      this.documentProcesses$
-    ]).pipe(
+    return combineLatest([this._activeProcessKey$, this.documentProcesses$]).pipe(
       map(([activeProcessKey, documentProcesses]: [string, ProcessDefinitionCaseDefinition[]]) => {
         return documentProcesses.find(
           (processDefinition: ProcessDefinitionCaseDefinition) =>
             activeProcessKey === processDefinition.processDefinitionKey
-        )
+        );
       })
-    )
+    );
   }
 
   constructor(private readonly documentService: DocumentService) {}

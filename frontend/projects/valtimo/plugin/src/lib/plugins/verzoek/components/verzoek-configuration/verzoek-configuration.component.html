@@ -136,7 +136,9 @@
           [smallMargin]="true"
           name="caseDefinitionVersionTag"
           [title]="'caseDefinitionVersionTag' | pluginTranslate: pluginId | async"
-          [disabled]="obs.disabled || !caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey"
+          [disabled]="
+            obs.disabled || !caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey
+          "
           [defaultSelectionId]="prefill?.caseDefinitionVersionTag"
           [required]="true"
           [tooltip]="'caseDefinitionVersionTagTooltip' | pluginTranslate: pluginId | async"

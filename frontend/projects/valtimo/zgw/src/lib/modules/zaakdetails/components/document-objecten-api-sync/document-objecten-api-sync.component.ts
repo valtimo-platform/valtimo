@@ -30,6 +30,7 @@ import {
   CdsThemeService,
   FormModule,
   InputModule,
+  RenderInBodyComponent,
   SelectItem,
   SelectModule,
   SpinnerModule,
@@ -71,6 +72,7 @@ import {DocumentObjectenApiSyncService} from '../../services';
     TilesModule,
     TranslateModule,
     ValtimoCdsModalDirectiveModule,
+    RenderInBodyComponent,
   ],
 })
 export class DocumentObjectenApiSyncComponent implements OnInit {

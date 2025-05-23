@@ -37,6 +37,7 @@
     "@carbon/charts-angular": "1.23.6",
     "@types/topojson": "3.2.6",
     "@tadashi/currency": "3.4.0",
-    "semver": "7.7.1"
+    "semver": "7.7.1",
+    "muuri": "0.9.5"
   }
 }

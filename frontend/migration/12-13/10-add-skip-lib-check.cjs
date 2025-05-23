@@ -7,9 +7,7 @@ const JSON5 = require('json5');
 const tsconfigPath = path.resolve(__dirname, '../../tsconfig.json');
 
 function stripJsonComments(content) {
-  return content
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/.*$/gm, '');
+  return content.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
 }
 
 function parseJsonSafely(content) {

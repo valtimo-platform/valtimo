@@ -27,8 +27,9 @@ import {
 import {map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/shared';
+import {CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/shared';
 import {CaseManagementService} from '../../../../services';
+import {MuuriItemComponent} from '@valtimo/components';
 
 @Component({
   standalone: false,
@@ -66,8 +67,8 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     private readonly cdr: ChangeDetectorRef,
     private readonly caseManagementService: CaseManagementService,
     @Optional()
-    @Inject(ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN)
-    private readonly zgwCaseConfigurationExtensionComponents: Type<any>[]
+    @Inject(CASE_CONFIGURATION_EXTENSIONS_TOKEN)
+    private readonly caseConfigurationExtensionComponents: Type<any>[]
   ) {}
 
   public ngAfterViewInit(): void {
@@ -76,14 +77,19 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
 
   private renderExtensions(): void {
     if (
-      !Array.isArray(this.zgwCaseConfigurationExtensionComponents) ||
-      this.zgwCaseConfigurationExtensionComponents.length === 0
+      !Array.isArray(this.caseConfigurationExtensionComponents) ||
+      this.caseConfigurationExtensionComponents.length === 0
     ) {
       return;
     }
 
-    this.zgwCaseConfigurationExtensionComponents.forEach(extensionComponent => {
-      const componentRef = this._extensions.createComponent(extensionComponent);
+    this.caseConfigurationExtensionComponents.forEach(extensionComponent => {
+      const itemRef = this._extensions.createComponent(MuuriItemComponent);
+
+      const wrapperInstance = itemRef.instance;
+      const container = wrapperInstance.container;
+
+      const componentRef = container.createComponent(extensionComponent);
       componentRef.setInput('isReadOnly$', this.isReadOnly$);
     });
 

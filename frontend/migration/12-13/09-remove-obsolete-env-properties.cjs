@@ -9,10 +9,7 @@ const rootDir = path.resolve(__dirname, '../../');
 
 function removeRoutes(content, routesToRemove) {
   routesToRemove.forEach(route => {
-    const routeRegex = new RegExp(
-      `\\{[^{}]*?path\\s*:\\s*['"]${route}['"][^{}]*?\\}[,]?\\s*`,
-      'g'
-    );
+    const routeRegex = new RegExp(`\\{[^{}]*?path\\s*:\\s*['"]${route}['"][^{}]*?\\}[,]?\\s*`, 'g');
     content = content.replace(routeRegex, '');
   });
   return content;

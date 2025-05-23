@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-.read-only-notification {
-  margin-bottom: 16px;
-  max-inline-size: 100%;
-  min-inline-size: 100%;
-}
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MuuriDirective} from './muuri.directive';
+import {MuuriItemComponent} from './muuri-item.component';
+
+@NgModule({
+  imports: [CommonModule, MuuriItemComponent, MuuriDirective],
+  exports: [MuuriDirective, MuuriItemComponent],
+})
+export class MuuriDirectiveModule {}

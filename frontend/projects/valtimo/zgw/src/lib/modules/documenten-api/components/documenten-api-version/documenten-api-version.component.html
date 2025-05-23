@@ -13,18 +13,16 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div class="input-group mt-4 mb-2 align-items-center">
-  <div>
-    <h2>{{ 'openZaak.documentenApi.title' | translate }}</h2>
-  </div>
-</div>
 
-<ng-container
+<cds-tile
   *ngIf="{
     loading: loading$ | async,
     documentenApiVersion: documentenApiVersion$ | async,
   } as obs"
+  [cdsLayer]="1"
 >
+  <h2 class="documenten-api-version__title">{{ 'openZaak.documentenApi.title' | translate }}</h2>
+
   <ng-container *ngIf="obs.loading === false; else loading">
     <ng-container
       *ngIf="obs.documentenApiVersion.selectedVersion; else noDocumentenApiVersionWarning"
@@ -40,7 +38,7 @@
       </ng-container>
     </ng-container>
   </ng-container>
-</ng-container>
+</cds-tile>
 
 <ng-template #noDocumentenApiVersionWarning>
   <div class="pb-2">

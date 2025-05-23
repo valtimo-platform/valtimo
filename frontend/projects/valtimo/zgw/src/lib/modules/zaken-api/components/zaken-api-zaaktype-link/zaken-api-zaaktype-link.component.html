@@ -14,13 +14,13 @@
   ~ limitations under the License.
   -->
 
-<h2>{{ 'openZaak.links' | translate }}</h2>
+<cds-tile cdsLayer="1">
+  <h2 class="valtimo-zaak-type-link__title">{{ 'openZaak.links' | translate }}</h2>
 
-@if (loading$ | async) {
-  <valtimo-spinner></valtimo-spinner>
-} @else {
-  @if (zaakTypeLink$ | async; as zaakTypeLink) {
-    <cds-tile cdsLayer="1">
+  @if (loading$ | async) {
+    <valtimo-spinner></valtimo-spinner>
+  } @else {
+    @if (zaakTypeLink$ | async; as zaakTypeLink) {
       <section class="valtimo-zaak-type-link__card-header">
         <span class="valtimo-zaak-type-link__card-title">
           {{ this.selectedZaakType?.omschrijving || '-' }}
@@ -64,85 +64,87 @@
           {{ zaakTypeLink?.rsin || '-' }}
         </div>
       </section>
-    </cds-tile>
-  } @else {
-    <button
-      cdsButton="primary"
-      class="valtimo-zaak-type-link__link-button"
-      (click)="openModal(null)"
-    >
-      {{ 'openZaak.linkZaakType' | translate }}
+    } @else {
+      <button
+        cdsButton="primary"
+        class="valtimo-zaak-type-link__link-button"
+        (click)="openModal(null)"
+      >
+        {{ 'openZaak.linkZaakType' | translate }}
 
-      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-    </button>
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    }
   }
-}
+</cds-tile>
 
-<cds-modal showFooter="true" valtimoCdsModal [open]="modalOpen$ | async" (close)="closeModal()">
-  <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>Zaak types</h3>
+<valtimo-render-in-body>
+  <cds-modal showFooter="true" valtimoCdsModal [open]="modalOpen$ | async" (close)="closeModal()">
+    <cds-modal-header showCloseButton="true" (closeSelect)="closeModal()">
+      <h3 cdsModalHeaderHeading>Zaak types</h3>
 
-    <span> Connect Zaak type to Dossier</span>
-  </cds-modal-header>
+      <span> Connect Zaak type to Dossier</span>
+    </cds-modal-header>
 
-  <section cdsModalContent class="valtimo-zaak-type-link-modal__content">
-    <cds-select
-      [label]="'openZaak.selectZaakTypeForCase' | translate"
-      [(ngModel)]="this.zaakTypeLinkRequest.zaakTypeUrl"
-    >
-      <option value="default">{{ 'openZaak.selectZaakType' | translate }}</option>
+    <section cdsModalContent class="valtimo-zaak-type-link-modal__content">
+      <cds-select
+        [label]="'openZaak.selectZaakTypeForCase' | translate"
+        [(ngModel)]="this.zaakTypeLinkRequest.zaakTypeUrl"
+      >
+        <option value="default">{{ 'openZaak.selectZaakType' | translate }}</option>
 
-      @for (zaakType of zaakTypes; track zaakType.url) {
-        <option [value]="zaakType.url">
-          {{ zaakType.omschrijving || '-' }}
-        </option>
-      }
-    </cds-select>
+        @for (zaakType of zaakTypes; track zaakType.url) {
+          <option [value]="zaakType.url">
+            {{ zaakType.omschrijving || '-' }}
+          </option>
+        }
+      </cds-select>
 
-    <cds-select
-      [label]="'openZaak.selectZakenApiPluginForCase' | translate"
-      [(ngModel)]="this.zaakTypeLinkRequest.zakenApiPluginConfigurationId"
-    >
-      <option value="default">{{ 'openZaak.selectZakenApiPlugin' | translate }}</option>
+      <cds-select
+        [label]="'openZaak.selectZakenApiPluginForCase' | translate"
+        [(ngModel)]="this.zaakTypeLinkRequest.zakenApiPluginConfigurationId"
+      >
+        <option value="default">{{ 'openZaak.selectZakenApiPlugin' | translate }}</option>
 
-      @for (pluginConfiguration of pluginConfigurations; track pluginConfiguration.id) {
-        <option [value]="pluginConfiguration.id">
-          {{ pluginConfiguration?.title || '-' }}
-        </option>
-      }
-    </cds-select>
+        @for (pluginConfiguration of pluginConfigurations; track pluginConfiguration.id) {
+          <option [value]="pluginConfiguration.id">
+            {{ pluginConfiguration?.title || '-' }}
+          </option>
+        }
+      </cds-select>
 
-    <cds-text-label>
-      {{ 'openZaak.rsin' | translate }}
+      <cds-text-label>
+        {{ 'openZaak.rsin' | translate }}
 
-      <input
-        cdsText
-        cdsLayer="1"
-        placeholder="RSIN"
-        type="text"
-        [(ngModel)]="this.zaakTypeLinkRequest.rsin"
-      />
-    </cds-text-label>
+        <input
+          cdsText
+          cdsLayer="1"
+          placeholder="RSIN"
+          type="text"
+          [(ngModel)]="this.zaakTypeLinkRequest.rsin"
+        />
+      </cds-text-label>
 
-    <cds-toggle
-      [label]="'openZaak.autoCreateForCase' | translate"
-      [checked]="this.zaakTypeLinkRequest.createWithDossier"
-      (checkedChange)="onCheckedChange($event)"
-    >
-    </cds-toggle>
-  </section>
+      <cds-toggle
+        [label]="'openZaak.autoCreateForCase' | translate"
+        [checked]="this.zaakTypeLinkRequest.createWithDossier"
+        (checkedChange)="onCheckedChange($event)"
+      >
+      </cds-toggle>
+    </section>
 
-  <cds-modal-footer>
-    <button cdsButton="ghost" (click)="closeModal()">
-      {{ 'interface.cancel' | translate }}
-    </button>
+    <cds-modal-footer>
+      <button cdsButton="ghost" (click)="closeModal()">
+        {{ 'interface.cancel' | translate }}
+      </button>
 
-    <button
-      cdsButton="primary"
-      [disabled]="!this.zaakTypeLinkRequest.zaakTypeUrl"
-      (click)="submit()"
-    >
-      {{ 'interface.save' | translate }}
-    </button>
-  </cds-modal-footer>
-</cds-modal>
+      <button
+        cdsButton="primary"
+        [disabled]="!this.zaakTypeLinkRequest.zaakTypeUrl"
+        (click)="submit()"
+      >
+        {{ 'interface.save' | translate }}
+      </button>
+    </cds-modal-footer>
+  </cds-modal>
+</valtimo-render-in-body>

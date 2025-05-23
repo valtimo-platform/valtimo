@@ -1,5 +1,5 @@
 const fs = require('fs');
-const path = require("path");
+const path = require('path');
 const rootDir = path.resolve(__dirname, '../../');
 const appModulePath = path.join(rootDir, 'src/app/app.module.ts');
 

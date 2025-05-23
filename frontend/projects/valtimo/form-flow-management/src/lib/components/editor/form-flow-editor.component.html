@@ -53,11 +53,7 @@
         </cds-overflow-menu-option>
       </cds-overflow-menu>
 
-      <button
-        cdsButton="secondary"
-        [size]="obs.compactMode ? 'sm' : 'md'"
-        (click)="navigateBack()"
-      >
+      <button cdsButton="secondary" [size]="obs.compactMode ? 'sm' : 'md'" (click)="navigateBack()">
         {{ 'interface.back' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>

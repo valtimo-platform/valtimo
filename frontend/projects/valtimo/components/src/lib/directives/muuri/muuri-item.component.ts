@@ -14,10 +14,28 @@
  * limitations under the License.
  */
 
-import {InjectionToken, Type} from '@angular/core';
+import {Component, ViewChild, ViewContainerRef} from '@angular/core';
+import {CommonModule} from '@angular/common';
 
-const ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN = new InjectionToken<Type<any>[]>(
-  'Specify components to display on on the case management general page.'
-);
-
-export {ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN};
+@Component({
+  selector: 'valtimo-muuri-item',
+  standalone: true,
+  template: `
+    <div class="item">
+      <div class="item-content">
+        <ng-content></ng-content>
+        <ng-template #container></ng-template>
+      </div>
+    </div>
+  `,
+  styles: `
+    .item {
+      margin: 8px;
+    }
+  `,
+  imports: [CommonModule],
+})
+export class MuuriItemComponent {
+  @ViewChild('container', {read: ViewContainerRef, static: true})
+  public container!: ViewContainerRef;
+}

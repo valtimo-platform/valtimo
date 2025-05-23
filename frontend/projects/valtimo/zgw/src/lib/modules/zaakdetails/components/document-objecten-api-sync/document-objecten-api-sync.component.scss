@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-:host {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 .add-sync {
   align-self: flex-end;
+}
+
+.valtimo-objecten-sync__title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
 }
 
 .valtimo-objecten-sync__card {
