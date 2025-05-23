@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, OnDestroy} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {TranslateService} from '@ngx-translate/core';
+import {BreadcrumbService} from '@valtimo/components';
+import {ObjectManagementService} from '@valtimo/object-management';
+import {ToastrService} from 'ngx-toastr';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subject, throwError} from 'rxjs';
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
-import {ObjectService} from '../../../../services/object.service';
-import {ObjectStateService} from '../../../../services/object-state.service';
-import {ActivatedRoute, Router} from '@angular/router';
 import {FormType} from '../../../../models/object.model';
-import {ToastrService} from 'ngx-toastr';
-import {TranslateService} from '@ngx-translate/core';
-import {BreadcrumbService, PageTitleService} from '@valtimo/components';
-import {ObjectManagementService} from '@valtimo/object-management';
+import {ObjectService} from '../../../../services/object.service';
 
 @Component({
   selector: 'valtimo-object-detail',
@@ -55,12 +53,7 @@ export class ObjectDetailComponent implements OnDestroy {
       }
     })
   );
-  readonly objectId$: Observable<string> = this.route.params.pipe(
-    map(params => params.objectId),
-    tap(objectId => {
-      this.pageTitleService.setCustomPageTitle(objectId);
-    })
-  );
+  readonly objectId$: Observable<string> = this.route.params.pipe(map(params => params.objectId));
 
   readonly formioFormSummary$: Observable<any> = combineLatest([
     this.objectManagementId$,
@@ -103,12 +96,10 @@ export class ObjectDetailComponent implements OnDestroy {
 
   constructor(
     private readonly objectService: ObjectService,
-    private readonly objectState: ObjectStateService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly translate: TranslateService,
     private readonly toastr: ToastrService,
-    private readonly pageTitleService: PageTitleService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly objectManagementService: ObjectManagementService
   ) {}
