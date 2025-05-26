@@ -29,7 +29,7 @@ function cleanEnvironmentFile(filePath) {
     'definitions: { cases: [] }'
   );
 
-  content = removeRoutes(content, ['process-link', 'form-flow']);
+  content = removeRoutes(content, ['process-link', 'process-links', 'form-flow']);
 
   content = content.replace(/,(\s*[}\]])/g, '$1');
 
