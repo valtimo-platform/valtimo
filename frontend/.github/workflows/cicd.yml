@@ -145,6 +145,8 @@ jobs:
       - build_and_test
       - lint
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: 'Restore build artifact: dist'
         uses: actions/download-artifact@v4
         with:
