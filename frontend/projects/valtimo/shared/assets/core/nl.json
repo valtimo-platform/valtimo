@@ -477,7 +477,7 @@
       "description": "Selecteer een .dmn bestand om te uploaden"
     },
     "version": "Versie",
-    "deploy": "Deploy",
+    "deploy": "Opslaan",
     "loadFailure": "Er is iets misgegaan bij het laden van het beslistabel.",
     "deploySuccess": "Het beslistabel is succesvol opgeslagen.",
     "deployFailure": "Er is iets misgegaan bij het opslaan van het beslistabel."
@@ -501,7 +501,7 @@
     "reset": "Resetten",
     "submit": "Indienen",
     "delete": "Verwijderen",
-    "deploy": "Deploy",
+    "deploy": "Opslaan",
     "duplicate": "Dupliceren",
     "readOnly": "Alleen-lezen",
     "add": "Formulier toevoegen",
@@ -1272,7 +1272,7 @@
   "processManagement": {
     "download": "Downloaden",
     "clear": "Wissen",
-    "deploy": "Deploy",
+    "deploy": "Opslaan",
     "name": "Naam",
     "key": "Sleutel",
     "readOnly": "Alleen-lezen",

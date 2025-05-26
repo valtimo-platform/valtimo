@@ -478,7 +478,7 @@
       "description": "Select a .dmn file to upload"
     },
     "version": "Version",
-    "deploy": "Deploy",
+    "deploy": "Save",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
     "deployFailure": "Something went wrong with deploying your decision table."
@@ -502,7 +502,7 @@
     "reset": "Reset",
     "submit": "Submit",
     "delete": "Delete",
-    "deploy": "Deploy",
+    "deploy": "Save",
     "duplicate": "Duplicate",
     "readOnly": "Read-only",
     "add": "Add form",
@@ -1273,7 +1273,7 @@
   "processManagement": {
     "download": "Download",
     "clear": "Clear",
-    "deploy": "Deploy",
+    "deploy": "Save",
     "name": "Name",
     "key": "Key",
     "readOnly": "Read-only",

@@ -477,7 +477,7 @@
       "description": "Wähle eine .dmn Datei für den Upload"
     },
     "version": "Version",
-    "deploy": "Deploy",
+    "deploy": "Speichern",
     "loadFailure": "Beim Laden Ihrer Entscheidungstabelle ist etwas schief gelaufen.",
     "deploySuccess": "Die Entscheidungstabelle wurde erfolgreich bereitgestellt.",
     "deployFailure": "Beim Bereitstellen Ihrer Entscheidungstabelle ist ein Fehler aufgetreten."
@@ -501,7 +501,7 @@
     "reset": "Zurücksetzen",
     "submit": "Einreichen",
     "delete": "Löschen",
-    "deploy": "Deploy",
+    "deploy": "Speichern",
     "duplicate": "Duplizieren",
     "readOnly": "Schreibgeschützt",
     "add": "Formular hinzufügen",
@@ -1271,7 +1271,7 @@
   "processManagement": {
     "download": "Herunterladen",
     "clear": "Löschen",
-    "deploy": "Deploy",
+    "deploy": "Speichern",
     "name": "Name",
     "key": "Schlüssel",
     "readOnly": "Schreibgeschützt",
