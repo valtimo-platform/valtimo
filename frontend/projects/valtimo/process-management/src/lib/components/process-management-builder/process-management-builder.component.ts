@@ -39,6 +39,7 @@ import {
 import {
   EnvironmentService,
   getCaseManagementRouteParams,
+  getCaseManagementRouteParamsAndContext,
   GlobalNotificationService,
   ManagementContext,
 } from '@valtimo/shared';
@@ -711,20 +712,18 @@ export class ProcessManagementBuilderComponent
 
   private openParamsAndContextSubscription(): void {
     this._subscriptions.add(
-      combineLatest([this.context$, this.managementParams$.pipe(startWith(null))]).subscribe(
-        ([context, params]) => {
-          if (context) this.processManagementService.context = context;
+      getCaseManagementRouteParamsAndContext(this.route).subscribe(([context, params]) => {
+        if (context) this.processManagementService.context = context;
 
-          if (params) {
-            this.processManagementService.setParams(
-              params.caseDefinitionKey,
-              params.caseDefinitionVersionTag
-            );
-          }
-
-          this.initBreadcrumbs(params, context);
+        if (params) {
+          this.processManagementService.setParams(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag
+          );
         }
-      )
+
+        this.initBreadcrumbs(params, context);
+      })
     );
   }
 

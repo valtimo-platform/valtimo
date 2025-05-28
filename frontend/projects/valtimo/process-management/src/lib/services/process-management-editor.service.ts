@@ -137,7 +137,13 @@ export class ProcessManagementEditorService implements OnDestroy {
   }
 
   public updateProcessLinksOnIdChange(activityId: string, newBusinessId: string): void {
-    if (!this._activityIdBusinessIdMap[activityId]) return;
+    if (
+      !this._activityIdBusinessIdMap[activityId] ||
+      this._activityIdBusinessIdMap[activityId] === newBusinessId
+    ) {
+      return;
+    }
+
     this.updateProcessLinkId(this._activityIdBusinessIdMap[activityId], newBusinessId);
     this._activityIdBusinessIdMap = {...this._activityIdBusinessIdMap, [activityId]: newBusinessId};
   }
