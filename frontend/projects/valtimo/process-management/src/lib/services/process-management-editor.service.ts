@@ -70,6 +70,8 @@ export class ProcessManagementEditorService implements OnDestroy {
 
   private _updateBpmnViewFunction!: () => void;
 
+  private _activityIdBusinessIdMap: Record<string, string> = {};
+
   constructor(private readonly processLinkService: ProcessLinkService) {
     this.openSelectedProcessDefinitionSubscription();
   }
@@ -130,6 +132,16 @@ export class ProcessManagementEditorService implements OnDestroy {
     this._processLinksForSelectedDefinition$.next(processLinks);
   }
 
+  public setActivityIdBusinessIdMap(activityIdBusinessIdMap: Record<string, string>): void {
+    this._activityIdBusinessIdMap = activityIdBusinessIdMap;
+  }
+
+  public updateProcessLinksOnIdChange(activityId: string, newBusinessId: string): void {
+    if (!this._activityIdBusinessIdMap[activityId]) return;
+    this.updateProcessLinkId(this._activityIdBusinessIdMap[activityId], newBusinessId);
+    this._activityIdBusinessIdMap = {...this._activityIdBusinessIdMap, [activityId]: newBusinessId};
+  }
+
   private openSelectedProcessDefinitionSubscription(): void {
     this._subscriptions.add(
       this.selectionProcessDefinition$.subscribe(definition => {
@@ -147,5 +159,19 @@ export class ProcessManagementEditorService implements OnDestroy {
   private updateBpmnView(): void {
     if (!this._updateBpmnViewFunction) return;
     this._updateBpmnViewFunction();
+  }
+
+  private updateProcessLinkId(oldBusinessId: string, newBusinessId: string): void {
+    this.setProcessLinksForSelectedDefinition(
+      this.processLinksForSelectedDefinition.map(processLink => {
+        if (processLink.activityId === oldBusinessId) {
+          return {...processLink, activityId: newBusinessId};
+        }
+
+        return processLink;
+      })
+    );
+
+    this.updateBpmnView();
   }
 }
