@@ -50,6 +50,7 @@ import {ListColumnModal} from '../../../../models';
 
 @Component({
   standalone: false,
+  selector: 'valtimo-case-management-list-columns',
   templateUrl: './case-management-list-columns.component.html',
   styleUrls: ['./case-management-list-columns.component.scss'],
 })

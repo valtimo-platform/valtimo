@@ -13,14 +13,14 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <valtimo-carbon-list
   *ngIf="{
     formDefinitions: formDefinitions$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async,
-    canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
+    context: context$ | async,
   } as obs"
+  [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [header]="false"
   [isSearchable]="true"
@@ -38,12 +38,35 @@
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
-    <div *ngIf="obs.canUpdateGlobalConfiguration">
-      <button cdsButton="primary" (click)="navigateToCreateRoute()">
-        {{ 'Create new Form' | translate }}
-
-        <svg cdsIcon="add" size="16"></svg>
-      </button>
-    </div>
+    <ng-container [ngTemplateOutlet]="createFormButton"></ng-container>
   </ng-container>
+
+  <valtimo-no-results
+    [action]="createFormButton"
+    [description]="'formManagement.noResults.' + obs.context + 'Description' | translate"
+    [title]="'formManagement.noResults.title' | translate"
+  ></valtimo-no-results>
 </valtimo-carbon-list>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="interface.deleteConfirmation"
+  cancelButtonTextTranslationKey="interface.cancel"
+  [outputOnConfirm]="formDefinitionToDelete$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="dashboardManagement.delete"
+  (confirmEvent)="deleteFormDefinition($event)"
+></valtimo-confirmation-modal>
+
+<ng-template #createFormButton>
+  <button
+    *ngIf="canUpdateGlobalConfiguration$ | async"
+    cdsButton="primary"
+    (click)="navigateToCreateRoute()"
+  >
+    {{ 'Create Form' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>

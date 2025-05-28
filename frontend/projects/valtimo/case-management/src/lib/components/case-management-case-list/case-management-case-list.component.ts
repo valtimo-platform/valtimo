@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-cds-tile {
-  background: var(--cds-layer-02);
-  width: 100%;
-}
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {BehaviorSubject} from 'rxjs';
+import {TabEnum} from '../../models';
 
-.documenten-api-version__title {
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
+@Component({
+  standalone: false,
+  templateUrl: './case-management-case-list.component.html',
+  styleUrl: './case-management-case-list.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CaseManagementCaseListComponent {
+  public readonly currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.SEARCH);
+  public readonly TabEnum = TabEnum;
 
-.loading-container {
-  display: flex;
-  width: 100%;
-  justify-content: center;
+  public switchTab(tab: TabEnum): void {
+    this.currentTab$.next(tab);
+  }
 }

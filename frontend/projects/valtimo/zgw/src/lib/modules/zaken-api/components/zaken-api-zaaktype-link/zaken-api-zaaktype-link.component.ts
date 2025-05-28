@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component, OnInit} from '@angular/core';
+import {Component, HostBinding, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16, TrashCan16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {RenderInBodyComponent, SpinnerModule} from '@valtimo/components';
-import {
-  CaseManagementParams,
-  getCaseManagementRouteParams,
-  GlobalNotificationService,
-} from '@valtimo/shared';
 import {PluginConfiguration} from '@valtimo/plugin';
 import {
   CreateZaakTypeLinkRequest,
@@ -33,6 +28,11 @@ import {
   ZaakType,
   ZaakTypeLink,
 } from '@valtimo/resource';
+import {
+  CaseManagementParams,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {
   ButtonModule,
   IconModule,

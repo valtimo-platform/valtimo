@@ -25,28 +25,26 @@
     compactMode: compactMode$ | async,
   } as obs"
 >
-  <div class="cds--toolbar-content">
-    <ng-container *ngIf="!obs.editActive; else editActive">
-      <button
-        cdsButton="ghost"
-        (click)="downloadDefinition()"
-        [disabled]="obs.loadingDocumentDefinition || !obs.selectedDocumentDefinition"
-      >
-        {{ 'interface.download' | translate }}
+  <div *ngIf="!obs.editActive; else editActive" class="cds--toolbar-content">
+    <button
+      cdsButton="ghost"
+      [disabled]="obs.loadingDocumentDefinition || !obs.selectedDocumentDefinition"
+      (click)="downloadDefinition()"
+    >
+      {{ 'interface.download' | translate }}
 
-        <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
-      </button>
+      <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
+    </button>
 
-      <button
-        cdsButton="primary"
-        [disabled]="obs.selectedDocumentDefinition?.readOnly"
-        (click)="onEditClick()"
-      >
-        {{ 'interface.edit' | translate }}
+    <button
+      cdsButton="primary"
+      [disabled]="obs.selectedDocumentDefinition?.readOnly"
+      (click)="onEditClick()"
+    >
+      {{ 'interface.edit' | translate }}
 
-        <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
-      </button>
-    </ng-container>
+      <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
+    </button>
   </div>
 
   <valtimo-editor

@@ -14,20 +14,6 @@
  * limitations under the License.
  */
 
-cds-tile {
-  background: var(--cds-layer-02);
-  width: 100%;
-}
-
-.documenten-api-version__title {
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.loading-container {
-  display: flex;
-  width: 100%;
-  justify-content: center;
+:host ::ng-deep .cds--tab-content {
+  margin: 0 !important;
 }

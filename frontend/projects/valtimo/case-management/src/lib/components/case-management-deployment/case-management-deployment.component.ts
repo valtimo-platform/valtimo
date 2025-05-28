@@ -72,12 +72,13 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
     this.environmentService.canUpdateGlobalConfiguration();
 
   private getDraftDescription$(translationKey: string): Observable<string> {
-    return combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$]).pipe(
+    return combineLatest([
+      this.caseDefinitionKey$,
+      this.caseDefinitionVersionTag$,
+      this.translateService.stream('key'),
+    ]).pipe(
       switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-        this.translateService.get(translationKey, {
-          caseDefinitionKey,
-          caseDefinitionVersionTag,
-        })
+        this.translateService.get(translationKey, {caseDefinitionKey, caseDefinitionVersionTag})
       )
     );
   }
@@ -218,18 +219,7 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
 
   public goBack(): void {
     this.breadcrumbService.clearThirdBreadcrumb();
-    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
-      .pipe(
-        tap(([caseDefinitionKey, caseDefinitionVersionTag]) => {
-          this.router.navigate([
-            '/case-management/case',
-            caseDefinitionKey,
-            'version',
-            caseDefinitionVersionTag,
-          ]);
-        })
-      )
-      .subscribe();
+    this.router.navigate(['../'], {relativeTo: this.route});
   }
 
   public openDeleteDraftModal(): void {

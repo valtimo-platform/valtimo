@@ -52,15 +52,12 @@ export class ProcessManagementListComponent {
     ProcessDefinitionResult | 'create'
   >();
 
+  public readonly context = this.processManagementService.context;
   public readonly processToDelete$ = new BehaviorSubject<ProcessDefinition | null>(null);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly ACTION_ITEMS: ActionItem[] = [
-    {
-      label: 'Delete',
-      callback: this.onDeleteProcess.bind(this),
-      type: 'danger',
-    },
+    {label: 'Delete', callback: this.onDeleteProcess.bind(this), type: 'danger'},
   ];
 
   public readonly canUpdateGlobalConfiguration$ =
@@ -125,9 +122,7 @@ export class ProcessManagementListComponent {
   }
 
   public onDeleteConfirm(processDefinition: ProcessDefinition): void {
-    const context = this.processManagementService.context();
-
-    (context === 'case'
+    (this.context() === 'case'
       ? this.processManagementService.deleteProcess(processDefinition.key)
       : this.processManagementService.deleteUnlinkedProcess(processDefinition.key)
     ).subscribe(() => {

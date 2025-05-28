@@ -27,14 +27,14 @@
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
-    <div *ngIf="canUpdateGlobalConfiguration$ | async">
-      <button cdsButton="primary" (click)="onCreateProcess()">
-        Create process
-
-        <svg cdsIcon="add" size="16"></svg>
-      </button>
-    </div>
+    <ng-container [ngTemplateOutlet]="createProcess"></ng-container>
   </ng-container>
+
+  <valtimo-no-results
+    [action]="createProcess"
+    [title]="'processManagement.noResults.title' | translate"
+    [description]="('processManagement.noResults.' + context() + 'Description') | translate"
+  ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <valtimo-confirmation-modal
@@ -46,3 +46,15 @@
   titleTranslationKey="processManagement.deleteModal.title"
   (confirmEvent)="onDeleteConfirm($event)"
 ></valtimo-confirmation-modal>
+
+<ng-template #createProcess>
+  <button
+    *ngIf="canUpdateGlobalConfiguration$ | async"
+    cdsButton="primary"
+    (click)="onCreateProcess()"
+  >
+    {{ 'processManagement.createProcess' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>

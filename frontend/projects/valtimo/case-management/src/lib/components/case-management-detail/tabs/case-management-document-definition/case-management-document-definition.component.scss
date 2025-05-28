@@ -23,6 +23,6 @@
 }
 
 :host ::ng-deep .cds--toolbar-content {
-  margin-bottom: 16px;
-  gap: 8px;
+  width: 100%;
+  background: var(--cds-layer-01);
 }

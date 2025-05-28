@@ -15,11 +15,7 @@
   -->
 
 <cds-tile
-  *ngIf="{
-    loading: loading$ | async,
-    documentenApiVersion: documentenApiVersion$ | async,
-  } as obs"
-  [cdsLayer]="1"
+  *ngIf="{loading: loading$ | async, documentenApiVersion: documentenApiVersion$ | async} as obs"
 >
   <h2 class="documenten-api-version__title">{{ 'openZaak.documentenApi.title' | translate }}</h2>
 

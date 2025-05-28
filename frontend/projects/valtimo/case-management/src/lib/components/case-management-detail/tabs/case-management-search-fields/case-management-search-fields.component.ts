@@ -61,13 +61,12 @@ import {v4 as uuidv4} from 'uuid';
 
 @Component({
   standalone: false,
+  selector: 'valtimo-case-management-search-fields',
   templateUrl: './case-management-search-fields.component.html',
   styleUrls: ['./case-management-search-fields.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, AfterViewInit {
-  @Output() searchField: EventEmitter<SearchField> = new EventEmitter();
-
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<string | undefined>(undefined);
   public readonly disableInput$ = new BehaviorSubject<boolean>(false);

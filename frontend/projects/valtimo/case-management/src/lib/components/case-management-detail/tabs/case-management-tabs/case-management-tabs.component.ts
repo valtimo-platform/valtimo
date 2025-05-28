@@ -35,6 +35,7 @@ import {TabManagementService, TabService} from '../../../../services';
 
 @Component({
   standalone: false,
+  selector: 'valtimo-case-management-tabs',
   templateUrl: './case-management-tabs.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

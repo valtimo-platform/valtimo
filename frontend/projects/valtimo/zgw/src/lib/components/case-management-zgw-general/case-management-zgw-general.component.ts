@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {MuuriDirectiveModule} from '@valtimo/components';
 import {
   DocumentenApiVersionComponent,
   DocumentObjectenApiSyncComponent,
   ZakenApiZaaktypeLinkComponent,
 } from '../../modules';
-import {MuuriDirectiveModule} from '@valtimo/components';
 
 @Component({
   templateUrl: './case-management-zgw-general.component.html',

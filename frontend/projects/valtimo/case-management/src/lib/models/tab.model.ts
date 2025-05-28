@@ -27,4 +27,6 @@ export enum TabEnum {
   FORM_FLOWS = 'form-flows',
   TAGS = 'tags',
   DECISIONS = 'decisions',
+  CASE_LIST = 'case-list',
+  CASE_DETAIL = 'case-detail'
 }

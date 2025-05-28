@@ -24,13 +24,13 @@ import {
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {PageTitleService} from '@valtimo/components';
+import {DocumentDefinition} from '@valtimo/document';
 import {
   CaseManagementParams,
   CaseManagementTabConfig,
   ConfigService,
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
-import {DocumentDefinition} from '@valtimo/document';
 import {Tab} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, startWith, Subscription} from 'rxjs';
 import {TabEnum} from '../../models';

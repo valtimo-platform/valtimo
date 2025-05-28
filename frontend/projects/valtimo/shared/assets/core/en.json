@@ -35,40 +35,22 @@
       "confirm": "Change tab"
     },
     "noResults": {
-      "ALL": {
-        "description": "There is nothing to do here.",
-        "title": "There are no cases"
-      },
-      "MINE": {
-        "description": "Time for a short break.",
-        "title": "No cases assigned to you"
-      },
-      "OPEN": {
-        "description": "Come back later.",
-        "title": "All cases have been assigned"
-      },
+      "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
+      "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
+      "OPEN": {"description": "Come back later.", "title": "All cases have been assigned"},
       "search": {
         "description": "There are no cases that match your search criteria.",
         "title": "No cases found"
       }
     },
-    "noAccess": {
-      "description": "You do not have access to this case",
-      "title": "Access denied"
-    },
+    "noAccess": {"description": "You do not have access to this case", "title": "Access denied"},
     "pagination": {
       "itemsPerPage": "Cases per page",
       "totalItem": "{{start}}-{{end}} of {{total}} case",
       "totalItems": "{{start}}-{{end}} of {{total}} cases"
     },
-    "select": {
-      "single": "1 case selected",
-      "multiple": "{{count}} cases selected"
-    },
-    "title": {
-      "single": "Case",
-      "plural": "Cases"
-    },
+    "select": {"single": "1 case selected", "multiple": "{{count}} cases selected"},
+    "title": {"single": "Case", "plural": "Cases"},
     "tabs": {
       "noResults": "No tabs configured",
       "noResultsDescription": "No tabs are configured for this case type.",
@@ -117,27 +99,20 @@
       "title": "Title",
       "noFormDefinitionComponent": "No form definition for this object could be found.",
       "noObjectType": "No objects found for this object type.",
-      "objectType": {
-        "viewObject": "View object"
-      }
+      "objectType": {"viewObject": "View object"}
     },
     "notes": {
       "addNote": "Add note",
       "modifyNote": "Edit note",
       "tableItemsText": "Notes",
-      "input": {
-        "content": "Note"
-      },
+      "input": {"content": "Note"},
       "deleteConfirmation": {
         "title": "Delete note",
         "description": "Are you sure you want to delete this note?",
         "deletedMessage": "The note was deleted successfully."
       },
       "editedMessage": "The note was edited successfully.",
-      "noResults": {
-        "title": "No notes",
-        "description": "There are no notes in this case."
-      }
+      "noResults": {"title": "No notes", "description": "There are no notes in this case."}
     },
     "documenten": {
       "deleteConfirmationModal": {
@@ -190,10 +165,7 @@
     }
   },
   "document": {
-    "title": {
-      "single": "Document",
-      "plural": "Documents"
-    },
+    "title": {"single": "Document", "plural": "Documents"},
     "id": "Reference ID",
     "createdBy": "Created by",
     "createdOn": "Created on",
@@ -301,50 +273,23 @@
     "of": "of"
   },
   "dashboard": {
-    "openTasks": {
-      "title": "All tasks"
-    },
-    "openTask": {
-      "title": "Open task"
-    },
-    "activeProcess": {
-      "title": "Active process"
-    },
-    "activeProcesses": {
-      "title": "Active processes"
-    },
-    "tasksCompleted": {
-      "title": "Tasks completed"
-    },
-    "taskCompleted": {
-      "title": "Task completed"
-    },
-    "statistics": {
-      "title": "Statistics"
-    },
-    "processes": {
-      "title": "Processes"
-    },
-    "process": {
-      "title": "Process",
-      "details": "Process details"
-    },
-    "startProcess": {
-      "title": "Start"
-    },
-    "version": {
-      "title": "Version"
-    },
+    "openTasks": {"title": "All tasks"},
+    "openTask": {"title": "Open task"},
+    "activeProcess": {"title": "Active process"},
+    "activeProcesses": {"title": "Active processes"},
+    "tasksCompleted": {"title": "Tasks completed"},
+    "taskCompleted": {"title": "Task completed"},
+    "statistics": {"title": "Statistics"},
+    "processes": {"title": "Processes"},
+    "process": {"title": "Process", "details": "Process details"},
+    "startProcess": {"title": "Start"},
+    "version": {"title": "Version"},
     "processingLeadTime": {
       "title": "Processing lead time",
       "description": "average over the last 30 days"
     },
-    "tasks": {
-      "title": "Tasks"
-    },
-    "task": {
-      "title": "Task"
-    },
+    "tasks": {"title": "Tasks"},
+    "task": {"title": "Task"},
     "noDashboards": "No dashboards",
     "noDashboardsDescription": "It's possible that the system administrator hasn't configured any dashboards yet, or you don't have the rights to view dashboards.",
     "noWidgets": "No widgets",
@@ -433,17 +378,11 @@
     "title": "Settings",
     "language": {
       "title": "Language",
-      "options": {
-        "nl": "Nederlands",
-        "en": "English",
-        "de": "Deutsch"
-      }
+      "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
     },
     "notification": {
       "title": "Notifications",
-      "frequency": {
-        "title": "Notification frequency"
-      },
+      "frequency": {"title": "Notification frequency"},
       "taskNotifications": "Task notifications",
       "taskNotificationsIntro": "Receive an email when a task is assigned to you",
       "emailNotifications": "Daily task overview",
@@ -456,40 +395,26 @@
       "emailNotificationOnSaturday": "Saturday",
       "emailNotificationOnSunday": "Sunday"
     },
-    "version": {
-      "title": "Version information"
-    },
+    "version": {"title": "Version information"},
     "interface": {
       "title": "Interface",
       "themePreference": "Theme",
-      "themes": {
-        "light": "Light",
-        "dark": "Dark (Beta)",
-        "system": "System (Beta)"
-      },
+      "themes": {"light": "Light", "dark": "Dark (Beta)", "system": "System (Beta)"},
       "collapsibleMenu": "Navigation bar always collapsible",
       "compactMode": "Compact mode",
       "showUserName": "Show name of user"
     }
   },
   "decisions": {
-    "upload": {
-      "title": "Upload decision table",
-      "description": "Select a .dmn file to upload"
-    },
+    "upload": {"title": "Upload decision table", "description": "Select a .dmn file to upload"},
     "version": "Version",
     "deploy": "Save",
     "loadFailure": "Something went wrong with loading your decision table.",
     "deploySuccess": "Decision table has been deployed successfully.",
     "deployFailure": "Something went wrong with deploying your decision table."
   },
-  "message": {
-    "empty": "No result found"
-  },
-  "cta": {
-    "close": "Close",
-    "moreDetails": "More details"
-  },
+  "message": {"empty": "No result found"},
+  "cta": {"close": "Close", "moreDetails": "More details"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To link a form go to Admin menu > Process links.",
     "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
@@ -506,11 +431,7 @@
     "duplicate": "Duplicate",
     "readOnly": "Read-only",
     "add": "Add form",
-    "tabs": {
-      "formBuilder": "Form builder",
-      "jsonEditor": "JSON editor",
-      "output": "Output"
-    },
+    "tabs": {"formBuilder": "Form builder", "jsonEditor": "JSON editor", "output": "Output"},
     "intermediateSave": {
       "save": "Save progress",
       "clear": "Undo latest changes",
@@ -534,6 +455,11 @@
       "buttonText": "Select file",
       "success": "Upload successful",
       "failure": "Upload failed"
+    },
+    "noResults": {
+      "title": "No form definitions found",
+      "caseDescription": "Click here to create a form definition associated with this case",
+      "independentDescription": "Click here to create a standalone form definition"
     }
   },
   "caseManagement": {
@@ -556,11 +482,7 @@
     "setGlobalActiveVersionSuccessTitle": "Global active version updated",
     "globallyActive": "Globally active",
     "unlinkProcess": "Unlink",
-    "listColumns": {
-      "name": "Name",
-      "key": "Key",
-      "version": "Version"
-    },
+    "listColumns": {"name": "Name", "key": "Key", "version": "Version"},
     "globalActiveVersionModal": {
       "title": "Set as global active version",
       "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
@@ -578,11 +500,7 @@
     "allVersionsModal": {
       "title": "All {{value}} versions",
       "closeButton": "Close",
-      "columns": {
-        "version": "Version",
-        "release": "Released on",
-        "description": "Description"
-      },
+      "columns": {"version": "Version", "release": "Released on", "description": "Description"},
       "noResults": {
         "title": "There are no case versions",
         "description": "No version has been configured for this case"
@@ -601,7 +519,6 @@
         "title": "Delete draft",
         "description": "Are you sure you want to delete the draft?",
         "confirm": "Delete",
-        "cancel": "Close",
         "successTitle": "Draft deleted",
         "errorTitle": "Error",
         "errorMessage": "Something went wrong"
@@ -611,7 +528,6 @@
         "title": "Finalize draft",
         "description": "You are about to finalize {{caseDefinitionKey}} {{caseDefinitionVersionTag}} After finalization you can't make any more changes. Are you sure?",
         "confirm": "Finalize",
-        "cancel": "Close",
         "successMessage": "Draft finalized",
         "errorTitle": "Error",
         "errorMessage": "Something went wrong"
@@ -629,10 +545,7 @@
       },
       "releaseVersion": {
         "title": "Release version",
-        "fields": {
-          "caseDefinitionVersionTag": "Version",
-          "basedOnVersionTag": "Based on"
-        },
+        "fields": {"caseDefinitionVersionTag": "Version", "basedOnVersionTag": "Based on"},
         "warning": {
           "title": "Warning",
           "description": "There is another draft based on {{ basedOnVersionTag }} called {{ conflictingVersions }}"
@@ -688,12 +601,7 @@
       "general": "General",
       "cases": "Configuration",
       "processes": "Processes",
-      "searchFields": "Search Fields",
-      "listColumns": "List",
-      "tabManagement": "Tabs",
       "document": "Document",
-      "statuses": "Statuses",
-      "tags": "Tags",
       "zgw": "ZGW",
       "forms": "Forms",
       "decision": "Decision tables",
@@ -712,11 +620,15 @@
           "title": "Case handler",
           "canHaveHandler": "Case type can have a handler",
           "assignUser": "Automatically assign user tasks to case handler",
-          "toggle": {
-            "onText": "Yes",
-            "offText": "No"
-          }
+          "toggle": {"onText": "Yes", "offText": "No"}
         }
+      },
+      "caseListTab": {"title": "Case list", "searchFields": "Search Fields", "columns": "Columns"},
+      "caseDetailTab": {
+        "title": "Case detail",
+        "tabs": "Tabs",
+        "statuses": "Statuses",
+        "tags": "Tags"
       }
     },
     "tabManagement": {
@@ -758,20 +670,13 @@
         "formio": "Choose FormIO component",
         "standard": "Choose standard content"
       },
-      "editModal": {
-        "title": "Edit tab {{name}}",
-        "updateTab": "Update tab"
-      },
+      "editModal": {"title": "Edit tab {{name}}", "updateTab": "Update tab"},
       "deleteModal": {
         "title": "Delete tab?",
         "description": "Are you sure you want to delete this tab? This acction cannot be undone."
       }
     },
-    "tabType": {
-      "custom": "Custom",
-      "formio": "FormIO",
-      "standard": "Standard"
-    },
+    "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
     "importDefinition": {
       "title": "Import case definition",
       "overwriteWarning": "If your case definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
@@ -857,8 +762,8 @@
         "color": "Color"
       },
       "noResults": {
-        "title": "No statuses",
-        "description": "Add a status to start"
+        "title": "No statuses configured",
+        "description": "Click here to configure a status for this case type"
       }
     },
     "caseTags": {
@@ -870,15 +775,10 @@
       "deleteText": "Are you sure you want to delete this tag? This action cannot be undone.",
       "keyAutoGenerated": "Key will be auto-generated",
       "colorPlaceholder": "Choose a color",
-      "columns": {
-        "title": "Name",
-        "key": "Key",
-        "visible": "Visible by default",
-        "color": "Color"
-      },
+      "columns": {"title": "Name", "key": "Key", "visible": "Visible by default", "color": "Color"},
       "noResults": {
-        "title": "No tags",
-        "description": "Add a tag to start"
+        "title": "No tags configured",
+        "description": "Click here to configure a tag for this case type"
       }
     }
   },
@@ -889,15 +789,9 @@
       "editWidgetTab": "Edit widget tab",
       "cancel": "Cancel",
       "save": "Save",
-      "form": {
-        "tabName": "Tab name"
-      }
+      "form": {"tabName": "Tab name"}
     },
-    "columns": {
-      "highContrast": "High contrast",
-      "type": "Type",
-      "width": "Width"
-    },
+    "columns": {"highContrast": "High contrast", "type": "Type", "width": "Width"},
     "list": {
       "add": "Add widget",
       "noResults": {
@@ -921,58 +815,25 @@
     },
     "types": {
       "description": "Choose the widget type you want to configure.",
-      "fields": {
-        "title": "Fields",
-        "description": "Text data with content and a label"
-      },
-      "custom": {
-        "title": "Custom component",
-        "description": "For complex content"
-      },
-      "formio": {
-        "title": "Form.io",
-        "description": "Prefilled Form.io form"
-      },
-      "table": {
-        "title": "Table",
-        "description": "Create a table"
-      },
-      "collection": {
-        "title": "Collection",
-        "description": "Create a collection"
-      }
+      "fields": {"title": "Fields", "description": "Text data with content and a label"},
+      "custom": {"title": "Custom component", "description": "For complex content"},
+      "formio": {"title": "Form.io", "description": "Prefilled Form.io form"},
+      "table": {"title": "Table", "description": "Create a table"},
+      "collection": {"title": "Collection", "description": "Create a collection"}
     },
     "width": {
       "description": "Select the desired width for the widget.",
       "fullWidth": "Full-width",
       "half": "Half",
-      "small": {
-        "title": "Small",
-        "subtitle": "Contains 1 column of content"
-      },
-      "medium": {
-        "title": "Medium",
-        "subtitle": "Contains up to 2 columns of content"
-      },
-      "large": {
-        "title": "Large",
-        "subtitle": "Contains up to 3 columns of content"
-      },
-      "xtraLarge": {
-        "title": "Xtra large",
-        "subtitle": "Contains up to 4 columns of content"
-      }
+      "small": {"title": "Small", "subtitle": "Contains 1 column of content"},
+      "medium": {"title": "Medium", "subtitle": "Contains up to 2 columns of content"},
+      "large": {"title": "Large", "subtitle": "Contains up to 3 columns of content"},
+      "xtraLarge": {"title": "Xtra large", "subtitle": "Contains up to 4 columns of content"}
     },
     "style": {
       "description": "Select the desired style for the widget",
-      "default": {
-        "title": "Default",
-        "description": "For regular content"
-      },
-      "highContrast": {
-        "title": "High contrast",
-        "description": "For higher priority content"
-      }
+      "default": {"title": "Default", "description": "For regular content"},
+      "highContrast": {"title": "High contrast", "description": "For higher priority content"}
     },
     "content": {
       "description": "Enter the content for each column. Keep in mind that not all fields are the same height. For the best result make sure items are properly distributed.",
@@ -1023,14 +884,8 @@
         "number": "Number",
         "percent": "Percentage"
       },
-      "custom": {
-        "selectComponent": "Angular component",
-        "placeholder": "Select a component"
-      },
-      "formio": {
-        "selectForm": "Form definition",
-        "placeholder": "Select a form definition"
-      },
+      "custom": {"selectComponent": "Angular component", "placeholder": "Select a component"},
+      "formio": {"selectForm": "Form definition", "placeholder": "Select a form definition"},
       "table": {
         "addColumn": "Add column",
         "defaultPageSize": "Rows per page",
@@ -1106,7 +961,7 @@
         "filterDescription": "There are no documents that match your search criteria"
       },
       "noColumns": {
-        "description": "Please configure columns for this document",
+        "description": "Click here to configure a column for this document",
         "title": "No configured columns"
       }
     },
@@ -1115,13 +970,8 @@
       "add": "Add tag",
       "deleteText": "Are you sure you want to delete this tag?",
       "deleteMultipleText": "Are you sure you want to delete these tags?",
-      "addModal": {
-        "header": "Add tag"
-      },
-      "list": {
-        "noResultsTitle": "No tags",
-        "noResultsDescription": "Add a tag to start"
-      },
+      "addModal": {"header": "Add tag"},
+      "list": {"noResultsTitle": "No tags", "noResultsDescription": "Add a tag to start"},
       "search": {
         "noResultsTitle": "No results",
         "noResultsDescription": "Try adjusting your search or filter options to find what you're looking for."
@@ -1137,12 +987,8 @@
       "add": "Add upload field",
       "deleteText": "Are you sure you want to delete this upload field?",
       "deleteMultipleText": "Are you sure you want to delete these upload fields?",
-      "addModal": {
-        "header": "Add upload field"
-      },
-      "editModal": {
-        "header": "Edit upload field"
-      },
+      "addModal": {"header": "Add upload field"},
+      "editModal": {"header": "Edit upload field"},
       "list": {
         "noResultsTitle": "No upload fields",
         "noResultsDescription": "Add a upload field to start"
@@ -1237,7 +1083,7 @@
   "Create new Milestone Set": "Create new Milestone Set",
   "Forms": "Forms",
   "Overview of all Forms": "Overview of all Forms",
-  "Create new Form": "Create new Form",
+  "Create Form": "Create Form",
   "Form Builder": "Form Builder",
   "Process links": "Process links",
   "Translations": "Translations",
@@ -1277,10 +1123,16 @@
     "name": "Name",
     "key": "Key",
     "readOnly": "Read-only",
+    "createProcess": "Create process",
     "systemProcess": "System process",
     "systemProcessWarningMessage": "This is a system process. Pay close attention when making adjustments to this process",
     "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified.",
     "version": "Version: ",
+    "noResults": {
+      "title": "No processes found",
+      "caseDescription": "Click here to create a process associated with this case",
+      "independentDescription": "Click here to create an standalone process"
+    },
     "deleteModal": {
       "title": "Delete process",
       "content": "Are you sure you want to delete this process?"
@@ -1441,19 +1293,13 @@
       "outline": "Outline",
       "orange": "Orange"
     },
-    "labels": {
-      "dateCreationFrom": "Date creation from",
-      "dateCreationTo": "Date creation to"
-    },
+    "labels": {"dateCreationFrom": "Date creation from", "dateCreationTo": "Date creation to"},
     "sorting": {
       "ascending": "Ascending",
       "descending": "Descending",
       "noDefault": "No default sort"
     },
-    "editor": {
-      "visualEditor": "Visual editor",
-      "jsonEditor": "JSON editor"
-    },
+    "editor": {"visualEditor": "Visual editor", "jsonEditor": "JSON editor"},
     "key": "Key",
     "value": "Value",
     "title": "Title",
@@ -1461,10 +1307,7 @@
     "no": "No",
     "upload": "Upload"
   },
-  "taskDetail": {
-    "taskCreated": "Created",
-    "taskCompleted": "has successfully been completed"
-  },
+  "taskDetail": {"taskCreated": "Created", "taskCompleted": "has successfully been completed"},
   "assignTask": {
     "assignedTo": "Assigned to",
     "header": "Assign a user to this task",
@@ -1525,11 +1368,7 @@
     "automaticallyGenerated": "Automatically generated",
     "search": "Search..."
   },
-  "webcam": {
-    "takePicture": "Take picture",
-    "save": "Save",
-    "redo": "Redo"
-  },
+  "webcam": {"takePicture": "Take picture", "save": "Save", "redo": "Redo"},
   "customers": {
     "name": "Name",
     "citizenServiceNumber": "Citizen service number",
@@ -1549,10 +1388,7 @@
     "completeButtonText": "Complete"
   },
   "pages": {
-    "plugins": {
-      "title": "Plugins",
-      "noResults": "There are no plugins configured yet"
-    },
+    "plugins": {"title": "Plugins", "noResults": "There are no plugins configured yet"},
     "customercases": {
       "title": "Cases",
       "description": "On this page you can view the cases of a specific customer."
@@ -1589,11 +1425,7 @@
   },
   "customerCases": {
     "tableItemsText": "cases",
-    "labels": {
-      "zaakNummer": "Case number",
-      "zaakStatus": "Status",
-      "zaakType": "Type"
-    }
+    "labels": {"zaakNummer": "Case number", "zaakStatus": "Status", "zaakType": "Type"}
   },
   "processLink": {
     "create": "Create process link",
@@ -1687,12 +1519,8 @@
     "configFile": "Use a config file with dropdown values. The config value must be present on the server",
     "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value."
   },
-  "searchFieldDataType": {
-    "select": "Select a data type"
-  },
-  "searchFieldFieldType": {
-    "select": "Select a field type"
-  },
+  "searchFieldDataType": {"select": "Select a data type"},
+  "searchFieldFieldType": {"select": "Select a field type"},
   "listColumn": {
     "title": "Title",
     "titleTitle": "Title (optional)",
@@ -1750,14 +1578,9 @@
     "createObject": "New object",
     "editObject": "Edit object",
     "deleteObject": "Delete object",
-    "labels": {
-      "recordIndex": "Record index",
-      "objectUrl": "Object URL"
-    },
+    "labels": {"recordIndex": "Record index", "objectUrl": "Object URL"},
     "header": "Object details",
-    "tabs": {
-      "general": "General"
-    },
+    "tabs": {"general": "General"},
     "close": "Close",
     "save": "Save object",
     "delete": "Delete object",
@@ -1800,11 +1623,7 @@
     "edit": "Change object",
     "download": "Download",
     "visibleInMenu": "Visible in menu",
-    "tabs": {
-      "general": "General",
-      "list": "List",
-      "searchFields": "Search Fields"
-    }
+    "tabs": {"general": "General", "list": "List", "searchFields": "Search Fields"}
   },
   "formioTranslations": {
     "Submit": "Submit",
@@ -1813,23 +1632,16 @@
     "Remove": "Remove",
     "Next": "Next",
     "Previous": "Previous",
-    "formioIbanComponent": {
-      "errorMessage": "Not a valid IBAN. Please enter a valid IBAN."
-    },
+    "formioIbanComponent": {"errorMessage": "Not a valid IBAN. Please enter a valid IBAN."},
     "formioCurrencyComponent": {
       "errorMessage": "Not a valid decimal number. Please enter a valid decimal number."
     },
-    "formioFormViewModelComponent": {
-      "submitError": "Invalid submissions"
-    }
+    "formioFormViewModelComponent": {"submitError": "Invalid submissions"}
   },
   "viewTypeConverter": {
     "Yes": "Yes",
     "No": "No",
-    "errors": {
-      "boolean": "Value is not a valid boolean",
-      "number": "Value is not a valid number"
-    }
+    "errors": {"boolean": "Value is not a valid boolean", "number": "Value is not a valid number"}
   },
   "processLinkConfiguration": {
     "configureStep": "Configure process step",
@@ -1873,10 +1685,7 @@
     "displayType": {
       "label": "Select form display type",
       "placeholder": "Select how to display the form",
-      "options": {
-        "modal": "Modal",
-        "panel": "Panel"
-      }
+      "options": {"modal": "Modal", "panel": "Panel"}
     },
     "formSize": {
       "label": "Select modal size",
@@ -1974,11 +1783,7 @@
     "selectDocDefPlaceholder": "Select a case"
   },
   "logging": {
-    "columns": {
-      "timestamp": "Timestamp",
-      "formattedMessage": "Message",
-      "level": "Log level"
-    },
+    "columns": {"timestamp": "Timestamp", "formattedMessage": "Message", "level": "Log level"},
     "search": {
       "addProperty": "Add property",
       "afterTimestamp": "From timestamp",

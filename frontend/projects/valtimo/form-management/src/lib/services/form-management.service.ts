@@ -29,8 +29,6 @@ import {BaseApiService, ConfigService} from '@valtimo/shared';
   providedIn: 'root',
 })
 export class FormManagementService extends BaseApiService {
-  private valtimoApiConfig: any;
-
   constructor(
     protected readonly httpClient: HttpClient,
     protected readonly configService: ConfigService

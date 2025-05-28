@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-:host {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  background: var(--cds-layer-01);
-}
-
 .muuri-container {
-  padding: 8px;
   margin-bottom: -16px;
+  padding: 16px;
+  background-color: var(--cds-layer-01);
 }

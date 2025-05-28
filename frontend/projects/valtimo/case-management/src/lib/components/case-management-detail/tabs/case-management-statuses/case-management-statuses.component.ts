@@ -29,6 +29,7 @@ import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
 
 @Component({
   standalone: false,
+  selector: 'valtimo-case-management-statuses',
   templateUrl: './case-management-statuses.component.html',
   styleUrls: ['./case-management-statuses.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

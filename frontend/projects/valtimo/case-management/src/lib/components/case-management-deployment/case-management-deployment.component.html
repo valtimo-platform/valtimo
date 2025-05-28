@@ -69,9 +69,7 @@
     <ng-container
       *ngTemplateOutlet="
         releaseInformationPanel;
-        context: {
-          data: obs.releaseInformationDataEntries,
-        }
+        context: {data: obs.releaseInformationDataEntries}
       "
     ></ng-container>
   </div>
@@ -144,7 +142,7 @@
   cancelButtonType="ghost"
   confirmButtonType="danger"
   confirmButtonTextTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.confirm"
-  cancelButtonTextTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.cancel"
+  cancelButtonTextTranslationKey="interface.cancel"
   titleTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.title"
   contentTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.description"
 >
@@ -156,9 +154,9 @@
   (confirmEvent)="finalizeDraftCaseVersion()"
   (cancelEvent)="closeFinalizeDraftModal()"
   cancelButtonType="ghost"
-  confirmButtonType="secondary"
+  confirmButtonType="primary"
   confirmButtonTextTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.confirm"
-  cancelButtonTextTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.cancel"
+  cancelButtonTextTranslationKey="interface.cancel"
   titleTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.title"
 ></valtimo-confirmation-modal>
 

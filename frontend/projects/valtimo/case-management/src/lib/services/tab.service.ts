@@ -70,7 +70,7 @@ export class TabService {
     map(() =>
       Object.values(DefaultTabs).map((key: string) => ({
         contentKey: key,
-        content: this.translateService.instant(`dossier.tabs.${key}`),
+        content: this.translateService.instant(`case.tabs.${key}`),
         selected: false,
       }))
     )

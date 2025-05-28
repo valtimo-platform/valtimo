@@ -17,15 +17,9 @@
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  LayerModule,
-  LoadingModule,
-  NotificationModule,
-  TilesModule,
-} from 'carbon-components-angular';
+import {LoadingModule, NotificationModule, TilesModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, switchMap, tap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
-
 import {DocumentenApiManagementVersion} from '../../models';
 import {DocumentenApiVersionService} from '../../services';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
@@ -35,14 +29,7 @@ import {getCaseManagementRouteParams} from '@valtimo/shared';
   templateUrl: './documenten-api-version.component.html',
   styleUrls: ['./documenten-api-version.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    TranslateModule,
-    LoadingModule,
-    NotificationModule,
-    TilesModule,
-    LayerModule,
-  ],
+  imports: [CommonModule, TranslateModule, LoadingModule, NotificationModule, TilesModule],
 })
 export class DocumentenApiVersionComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -54,7 +41,7 @@ export class DocumentenApiVersionComponent {
   ).pipe(
     tap(() => this.loading$.next(true)),
     switchMap(([params]) =>
-      this.documentenApiVersionService.getManagementApiVersion(params.caseDefinitionKey)
+      this.documentenApiVersionService.getManagementApiVersion(params?.caseDefinitionKey ?? '')
     ),
     tap(() => this.loading$.next(false))
   );

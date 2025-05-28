@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-tile cdsLayer="1">
+<cds-tile>
   <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
 
   @if (loading$ | async) {
@@ -59,7 +59,7 @@
         </div>
       </section>
     } @else {
-      <button cdsButton="primary" class="add-sync" (click)="showModal()">
+      <button cdsButton="primary" (click)="showModal()">
         {{ 'zaakdetails.submitButton' | translate }}
 
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

@@ -31,6 +31,7 @@
       [appendInline]="true"
       [dropUp]="false"
       [label]="'caseManagement.tabs.generalTab.linkUploadProcess.label' | translate"
+      [placeholder]="'processLinkConfiguration.selectProcess' | translate"
       [disabled]="obs.disabled || !obs.processItems || obs.isReadOnly"
       (selected)="selectProcess($event)"
     >
