@@ -300,7 +300,6 @@
     "@valtimo/case-migration": "file:dist/valtimo/case-migration",
     "@valtimo/choice-field": "file:dist/valtimo/choice-field",
     "@valtimo/components": "file:dist/valtimo/components",
-    "@valtimo/connector-management": "file:dist/valtimo/connector-management",
     "@valtimo/dashboard": "file:dist/valtimo/dashboard",
     "@valtimo/dashboard-management": "file:dist/valtimo/dashboard-management",
     "@valtimo/decision": "file:dist/valtimo/decision",
