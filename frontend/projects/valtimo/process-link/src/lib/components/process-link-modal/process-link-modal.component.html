@@ -91,12 +91,15 @@
       >
         <valtimo-select-form-flow></valtimo-select-form-flow>
       </ng-container>
+
       <ng-container *ngIf="obs.currentStepId === 'choosePluginConfiguration'">
         <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
       </ng-container>
+
       <ng-container *ngIf="obs.currentStepId === 'choosePluginAction'">
         <valtimo-select-plugin-action></valtimo-select-plugin-action>
       </ng-container>
+
       <ng-container
         *ngIf="
           obs.currentStepId === 'configurePluginAction' ||
@@ -108,9 +111,7 @@
         ></valtimo-plugin-action-configuration>
       </ng-container>
     </ng-container>
-    <valtimo-select-url
-      *ngIf="obs.currentStepId === 'selectURL' || obs.typeOfSelectedProgressLink === 'url'"
-    ></valtimo-select-url>
+
     <ng-container
       *ngIf="
         obs.currentStepId === 'uiComponent' || obs.typeOfSelectedProgressLink === 'ui-component'

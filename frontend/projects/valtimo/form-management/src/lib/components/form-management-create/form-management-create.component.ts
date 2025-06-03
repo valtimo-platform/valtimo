@@ -31,7 +31,7 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {combineLatest, of, switchMap, tap} from 'rxjs';
+import {switchMap, tap} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
 import {CreateFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
@@ -126,13 +126,8 @@ export class FormManagementCreateComponent implements OnInit {
       formDefinition: JSON.stringify(emptyForm),
     };
 
-    this.context$
+    getCaseManagementRouteParamsAndContext(this.route)
       .pipe(
-        switchMap(context =>
-          context === 'case'
-            ? combineLatest([of(context), this.caseManagementRouteParams$])
-            : combineLatest([of(context), null])
-        ),
         take(1),
         switchMap(([context, caseManagementParams]) =>
           context === 'case'

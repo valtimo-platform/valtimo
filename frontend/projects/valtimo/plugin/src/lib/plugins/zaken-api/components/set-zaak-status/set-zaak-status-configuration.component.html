@@ -25,6 +25,7 @@
     caseDefinitionItems: caseDefinitionSelectItems$ | async,
     statusTypeItems: statusTypeSelectItems$ | async,
     selectedCaseDefinitionId: selectedCaseDefinitionId$ | async,
+    context: context$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
@@ -39,7 +40,9 @@
       [fullWidth]="true"
     >
     </v-input>
+
     <v-radio
+      *ngIf="obs?.context?.[0] === 'case'"
       name="inputTypeZaakStatusToggle"
       [disabled]="obs.disabled"
       [title]="'inputTypeZaakStatusToggle' | pluginTranslate: obs.pluginId | async"
@@ -48,6 +51,7 @@
       [margin]="true"
     >
     </v-radio>
+
     <v-input
       *ngIf="obs.selectedInputOption === 'text'"
       name="statustypeUrl"
@@ -61,6 +65,7 @@
       [fullWidth]="true"
     >
     </v-input>
+
     <ng-container *ngIf="obs.selectedInputOption === 'selection'">
       <v-select
         [items]="obs.caseDefinitionItems"

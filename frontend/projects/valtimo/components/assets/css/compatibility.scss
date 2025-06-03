@@ -629,6 +629,9 @@ valtimo-case-assign-user {
   top: 32px;
   right: 32px;
   z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .cds--overflow-menu-options--open {

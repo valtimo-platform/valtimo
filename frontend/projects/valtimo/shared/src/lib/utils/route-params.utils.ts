@@ -50,18 +50,23 @@ function getContextObservable(route: ActivatedRoute): Observable<ManagementConte
 function getCaseManagementRouteParamsAndContext(
   route: ActivatedRoute
 ): Observable<[ManagementContext, CaseManagementParams]> {
-  const params$ = getCaseManagementRouteParams(route, false);
+  const params$ = getCaseManagementRouteParams(route, true);
   const context$ = getContextObservable(route);
 
   return context$.pipe(
-    switchMap(
-      context =>
-        (context === 'case'
-          ? combineLatest([of(context), params$])
-          : combineLatest([of(context), {} as CaseManagementParams])) as Observable<
+    switchMap(context => {
+      if (context === 'case') {
+        return combineLatest([of(context), params$]) as Observable<
           [ManagementContext, CaseManagementParams]
-        >
-    )
+        >;
+      }
+
+      const fallbackParams: CaseManagementParams = {
+        caseDefinitionKey: '',
+        caseDefinitionVersionTag: '',
+      };
+      return of([context, fallbackParams] as [ManagementContext, CaseManagementParams]);
+    })
   );
 }
 

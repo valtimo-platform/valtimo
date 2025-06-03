@@ -22,12 +22,14 @@
     selectedInputOption: selectedInputOption$ | async,
     zaakTypeSelectItems: zaakTypeItems$ | async,
     loading: loading$ | async,
+    context: context$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-paragraph [margin]="true" [italic]="true">
       {{ 'createZaakInformation' | pluginTranslate: obs.pluginId | async }}
     </v-paragraph>
+
     <v-form (valueChange)="formValueChange($event)">
       <v-input
         name="rsin"
@@ -41,7 +43,9 @@
         [widthPx]="350"
       >
       </v-input>
+
       <v-radio
+        *ngIf="obs?.context?.[0] === 'case'"
         name="inputTypeZaakTypeToggle"
         [disabled]="obs.disabled"
         [title]="'inputTypeZaakTypeToggle' | pluginTranslate: obs.pluginId | async"
@@ -50,6 +54,7 @@
         [margin]="true"
       >
       </v-radio>
+
       <v-input
         *ngIf="obs.selectedInputOption === 'text'"
         name="zaaktypeUrl"
@@ -63,6 +68,7 @@
         [fullWidth]="true"
       >
       </v-input>
+
       <ng-container *ngIf="obs.selectedInputOption === 'selection'">
         <v-select
           [items]="obs.zaakTypeSelectItems"
@@ -153,6 +159,7 @@
         placement="bottom"
       >
         {{ 'addZaakProperty' | pluginTranslate: obs.pluginId | async }}
+
         <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
       </button>
     </v-form>
@@ -172,12 +179,14 @@
   >
     {{ 'beschrijving' | pluginTranslate: (pluginId$ | async) | async }}
   </cds-overflow-menu-option>
+
   <cds-overflow-menu-option
     (click)="addCaseProperty('plannedEndDate')"
     *ngIf="!hasPropertyBeenAdded('plannedEndDate')"
   >
     {{ 'plannedEndDate' | pluginTranslate: (pluginId$ | async) | async }}
   </cds-overflow-menu-option>
+
   <cds-overflow-menu-option
     (click)="addCaseProperty('finalDeliveryDate')"
     *ngIf="!hasPropertyBeenAdded('finalDeliveryDate')"

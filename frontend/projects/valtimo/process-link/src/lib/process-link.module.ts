@@ -60,7 +60,6 @@ import {SelectFormComponent} from './components/select-form';
 import {FormFlowComponent} from './components/form-flow/form-flow.component';
 import {SelectFormFlowComponent} from './components/select-form-flow';
 import {FormFlowConfigurationContainerComponent} from './components/form-flow-configuration-container';
-import {SelectUrlComponent} from './components/select-url/select-url.component';
 import {UrlValidatorService} from './services/url-validator.service';
 import {UrlResolverService} from './services/url-resolver.service';
 import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
@@ -80,7 +79,6 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     FormFlowComponent,
     SelectFormFlowComponent,
     FormFlowConfigurationContainerComponent,
-    SelectUrlComponent,
     FormDisplayConfigurationComponent,
     SelectUIComponentComponent,
     ImportPluginConfigurationComponent,
@@ -131,7 +129,6 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     PluginActionConfigurationComponent,
     ProcessLinkModalComponent,
     FormFlowComponent,
-    SelectUrlComponent,
   ],
   providers: [UrlValidatorService, UrlResolverService],
 })

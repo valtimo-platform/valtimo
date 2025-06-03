@@ -114,7 +114,48 @@
   padding: 8px 12px 16px 12px;
   width: 100%;
   display: flex;
+  flex-direction: column;
   gap: 16px;
+
+  &__buttons,
+  &__header {
+    width: 100%;
+    display: flex;
+    gap: 16px;
+  }
+
+  &__header {
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--cds-border-subtle-00);
+    padding-bottom: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  &__title {
+    color: var(--cds-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    margin: auto 0;
+  }
+
+  &__title-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    :last-child {
+      color: var(--cds-text-helper);
+      font-style: italic;
+    }
+  }
+
+  .cds--tag {
+    margin: 0;
+  }
 
   .cds--btn {
     flex-shrink: 1;

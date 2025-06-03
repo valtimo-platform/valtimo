@@ -18,16 +18,16 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {DecisionComponent} from './decision.component';
 import {ROLE_ADMIN} from '@valtimo/shared';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
 import {DecisionManagementRouteData} from './models/decision-management.model';
+import {DecisionListComponent} from './decision-list/decision-list.component';
 
 const routes: Routes = [
   {
     path: 'decision-tables',
-    component: DecisionComponent,
+    component: DecisionListComponent,
     canActivate: [AuthGuardService],
     data: {
       title: 'Decision tables',

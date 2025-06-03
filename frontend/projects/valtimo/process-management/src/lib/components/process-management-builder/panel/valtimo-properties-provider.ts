@@ -23,6 +23,7 @@ import {ModalParams, ProcessLink} from '@valtimo/process-link';
 import {TranslateService} from '@ngx-translate/core';
 import {mapActivityTypeToActivityListenerType} from '../../../utils';
 import {VNode} from 'preact';
+import {PluginTranslationService} from '@valtimo/plugin';
 
 class ValtimoPropertiesProvider {
   static $inject = ['propertiesPanel', 'translate'];
@@ -33,6 +34,10 @@ class ValtimoPropertiesProvider {
 
   private get translateService(): TranslateService {
     return (window as any as ProcessManagementWindow).translateService;
+  }
+
+  private get pluginTranslationService(): PluginTranslationService {
+    return (window as any as ProcessManagementWindow).pluginTranslationService;
   }
 
   constructor(propertiesPanel: any) {
@@ -77,6 +82,7 @@ class ValtimoPropertiesProvider {
     return {
       translateService: this.translateService,
       processManagementEditorService: this.processManagementEditorService,
+      pluginTranslationService: this.pluginTranslationService,
       id: 'customRootElement',
       processLink,
       element,
@@ -89,11 +95,18 @@ class ValtimoPropertiesProvider {
 const CustomRootElement = (props: {
   translateService: TranslateService;
   processManagementEditorService: ProcessManagementEditorService;
+  pluginTranslationService: PluginTranslationService;
   id: string;
   processLink: ProcessLink;
   element: BpmnElement;
 }): VNode => {
-  const {element, processLink, translateService, processManagementEditorService} = props;
+  const {
+    element,
+    processLink,
+    translateService,
+    processManagementEditorService,
+    pluginTranslationService,
+  } = props;
   const modeling = useService('modeling');
   const editProcessLinkText = translateService.instant('interface.edit');
   const unlinkText = translateService.instant('processLink.unlink');
@@ -137,29 +150,181 @@ const CustomRootElement = (props: {
     });
   };
 
-  return processLink
-    ? html`<div class="process-link-properties-panel">
+  const processLinkFormDefinitionId = processLink?.formDefinitionId;
+  const processLinkFormDefinitionName = processManagementEditorService.formDefinitionOptions.find(
+    option => option.id === processLinkFormDefinitionId
+  )?.name;
+
+  if (processLinkFormDefinitionName) {
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title">${processLinkFormDefinitionName}</span>
+
+        <cds-tag
+          class="cds--tag cds--tag--blue cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.form')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
         <button
-          class="cds--btn cds--btn--primary cds--btn--md cds--layout--size-md"
-          onClick=${handleEditClick}
-        >
-          ${editProcessLinkText}
-        </button>
-        <button
-          class="cds--btn cds--btn--danger cds--btn--md cds--layout--side-md"
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
           onClick=${handleUnlinkClick}
         >
           ${unlinkText}
         </button>
-      </div>`
-    : html`<div class="process-link-properties-panel">
+
         <button
-          class="cds--btn cds--btn--primary cds--btn--md cds--layout--size-md"
-          onClick=${handleCreateClick}
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
         >
-          ${createText}
+          ${editProcessLinkText}
         </button>
-      </div>`;
+      </div>
+    </div>`;
+  }
+
+  const processLinkFormFlowDefinitionKey = processLink?.formFlowDefinitionKey;
+
+  if (processLinkFormFlowDefinitionKey) {
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title"
+          >${processLinkFormFlowDefinitionKey}</span
+        >
+
+        <cds-tag
+          class="cds--tag cds--tag--teal cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.form-flow')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>
+    </div>`;
+  }
+
+  const pluginActionKey = processLink?.pluginActionDefinitionKey;
+  const pluginActionTranslation =
+    pluginTranslationService.instantByPluginActionKey(pluginActionKey);
+  const pluginTitleTranslation =
+    pluginTranslationService.instantPluginTitleByPluginActionKey(pluginActionKey);
+
+  if (pluginActionKey) {
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title-container">
+          <span class="process-link-properties-panel__title">${pluginTitleTranslation}</span>
+
+          <span class="process-link-properties-panel__title">${pluginActionTranslation}</span>
+        </span>
+
+        <cds-tag
+          class="cds--tag cds--tag--purple cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.plugin')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>
+    </div>`;
+  }
+
+  const uiComponentKey = processLink?.componentKey;
+
+  if (uiComponentKey) {
+    return html`<div class="process-link-properties-panel">
+      <div class="process-link-properties-panel__header">
+        <span class="process-link-properties-panel__title">${uiComponentKey}</span>
+
+        <cds-tag
+          class="cds--tag cds--tag--magenta cds--tag--md cds--layout--size-md  cds-tag--no-margin"
+          ><span class="cds--tag__label">
+            ${translateService.instant('processLinkType.ui-component')}
+          </span>
+        </cds-tag>
+      </div>
+
+      <div class="process-link-properties-panel__buttons">
+        <button
+          class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+          onClick=${handleUnlinkClick}
+        >
+          ${unlinkText}
+        </button>
+
+        <button
+          class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+          onClick=${handleEditClick}
+        >
+          ${editProcessLinkText}
+        </button>
+      </div>
+    </div>`;
+  }
+
+  const genericLinkedPanel = html`<div class="process-link-properties-panel">
+    <div class="process-link-properties-panel__buttons">
+      <button
+        class="cds--btn cds--btn--danger cds--btn--sm cds--layout--side-md"
+        onClick=${handleUnlinkClick}
+      >
+        ${unlinkText}
+      </button>
+
+      <button
+        class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+        onClick=${handleEditClick}
+      >
+        ${editProcessLinkText}
+      </button>
+    </div>
+  </div>`;
+
+  const genericCreatePanel = html`<div class="process-link-properties-panel">
+    <div class="process-link-properties-panel__buttons">
+      <button
+        class="cds--btn cds--btn--primary cds--btn--sm cds--layout--size-md"
+        onClick=${handleCreateClick}
+      >
+        ${createText}
+      </button>
+    </div>
+  </div>`;
+
+  return processLink ? genericLinkedPanel : genericCreatePanel;
 };
 
 const ValtimoPropertiesProviderModule = {

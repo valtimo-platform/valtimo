@@ -26,14 +26,17 @@
     pluginId: pluginId$ | async,
     selectedCaseDefinitionId: selectedCaseDefinitionId$ | async,
     loading: loading$ | async,
+    context: context$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-paragraph [margin]="true" [italic]="true">
       {{ 'createZaakBesluitInformation' | pluginTranslate: obs.pluginId | async }}
     </v-paragraph>
+
     <v-form (valueChange)="formValueChange($event)">
       <v-radio
+        *ngIf="obs.context && obs.context[0] && obs.context[0] === 'case'"
         name="inputTypeBesluitToggle"
         [disabled]="obs.disabled"
         [title]="'inputTypeBesluitToggle' | pluginTranslate: obs.pluginId | async"
@@ -42,6 +45,7 @@
         [margin]="true"
       >
       </v-radio>
+
       <v-input
         *ngIf="obs.selectedInputOption === 'text'"
         name="besluittypeUrl"
@@ -55,6 +59,7 @@
         [widthPx]="350"
       >
       </v-input>
+
       <ng-container *ngIf="obs.selectedInputOption === 'selection'">
         <v-select
           [items]="obs.caseDefinitionItems"
@@ -74,6 +79,7 @@
           (selectedChange)="selectCaseDefinition($event)"
           [defaultSelectionId]="obs?.selectedCaseDefinitionId"
         ></v-select>
+
         <v-select
           [items]="obs.besluitTypeItems && obs.besluitTypeItems[obs.selectedCaseDefinitionId]"
           [margin]="true"
@@ -93,6 +99,7 @@
           [clearSelectionSubject$]="clearBesluitSelection$"
         ></v-select>
       </ng-container>
+
       <v-input
         name="toelichting"
         [title]="'toelichting' | pluginTranslate: obs.pluginId | async"
@@ -104,6 +111,7 @@
         [widthPx]="350"
       >
       </v-input>
+
       <v-input
         name="bestuursorgaan"
         [title]="'bestuursorgaan' | pluginTranslate: obs.pluginId | async"
@@ -116,15 +124,17 @@
         [widthPx]="350"
       >
       </v-input>
+
       <v-radio
         name="inputTypeStartingDateToggle"
         [disabled]="obs.disabled"
         [title]="'inputTypeStartingDateToggle' | pluginTranslate: obs.pluginId | async"
         [radioValues]="startDateInputTypeOptions$ | async"
-        [defaultValue]="obs.prefill?.inputTypeStartingDateToggle"
+        [defaultValue]="obs.prefill?.inputTypeStartingDateToggle || 'selection'"
         [margin]="true"
       >
       </v-radio>
+
       <v-input
         *ngIf="obs.selectedStartDateInputOption === 'text'"
         name="ingangsdatum"
@@ -138,6 +148,7 @@
         [margin]="true"
       >
       </v-input>
+
       <v-date-picker
         *ngIf="obs.selectedStartDateInputOption === 'selection'"
         name="ingangsdatum"
@@ -149,15 +160,17 @@
         [widthPx]="100"
         [margin]="true"
       ></v-date-picker>
+
       <v-radio
         name="inputTypeExpirationDateToggle"
         [disabled]="obs.disabled"
         [title]="'inputTypeExpirationDateToggle' | pluginTranslate: obs.pluginId | async"
         [radioValues]="expirationDateInputTypeOptions$ | async"
-        [defaultValue]="obs.prefill?.inputTypeExpirationDateToggle"
+        [defaultValue]="obs.prefill?.inputTypeExpirationDateToggle || 'selection'"
         [margin]="true"
       >
       </v-radio>
+
       <v-input
         *ngIf="obs.selectedExpirationDateInputOption === 'text'"
         name="vervaldatum"
@@ -171,6 +184,7 @@
         [margin]="true"
       >
       </v-input>
+
       <v-date-picker
         *ngIf="obs.selectedExpirationDateInputOption === 'selection'"
         name="vervaldatum"
@@ -182,6 +196,7 @@
         [widthPx]="100"
         [margin]="true"
       ></v-date-picker>
+
       <v-select
         name="vervalreden"
         [title]="'vervalreden' | pluginTranslate: obs.pluginId | async"
@@ -193,6 +208,7 @@
         [widthInPx]="350"
         [margin]="true"
       ></v-select>
+
       <v-date-picker
         name="publicatiedatum"
         [title]="'publicatiedatum' | pluginTranslate: obs.pluginId | async"
@@ -203,6 +219,7 @@
         [widthPx]="100"
         [margin]="true"
       ></v-date-picker>
+
       <v-date-picker
         name="verzenddatum"
         [title]="'verzenddatum' | pluginTranslate: obs.pluginId | async"
@@ -213,6 +230,7 @@
         [widthPx]="100"
         [margin]="true"
       ></v-date-picker>
+
       <v-date-picker
         name="uiterlijkeReactieDatum"
         [title]="'uiterlijkeReactieDatum' | pluginTranslate: obs.pluginId | async"
@@ -223,6 +241,7 @@
         [widthPx]="100"
         [margin]="true"
       ></v-date-picker>
+
       <v-input
         name="createdBesluitUrl"
         [title]="'besluitUrlProcessVariable' | pluginTranslate: obs.pluginId | async"

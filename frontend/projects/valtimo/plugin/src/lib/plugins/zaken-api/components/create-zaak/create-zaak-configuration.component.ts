@@ -34,7 +34,8 @@ import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
-import {ExtraPropertiesOptions, ExtraProperties} from '../../models/create-zaak-properties';
+import {ExtraProperties, ExtraPropertiesOptions} from '../../models/create-zaak-properties';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -51,6 +52,8 @@ export class CreateZaakConfigurationComponent
   @Input() set pluginId(value: string) {
     this.pluginId$.next(value);
   }
+  @Input() context$: Observable<[ManagementContext, CaseManagementParams]>;
+
   @Input() prefillConfiguration$: Observable<CreateZaakConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakConfig> = new EventEmitter<CreateZaakConfig>();
@@ -83,27 +86,30 @@ export class CreateZaakConfigurationComponent
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly zaakTypeItems$: Observable<Array<SelectItem>> = this.modalService.modalData$.pipe(
-    switchMap(params =>
-      this.documentService.findProcessDocumentDefinitionsByProcessDefinitionKey(
-        params?.processDefinitionKey
-      )
-    ),
-    switchMap(processDocumentDefinitions =>
+    switchMap(() => this.context$),
+    tap(([context]) => {
+      if (context === 'independent') {
+        this.selectedInputOption$.next('text');
+        this.loading$.next(false);
+      }
+    }),
+    filter(([context]) => context === 'case'),
+    switchMap(([context, params]) =>
       combineLatest([
         this.openZaakService.getZaakTypes(),
-        ...processDocumentDefinitions.map(processDocumentDefinition =>
-          this.openZaakService.getZaakTypeLink(
-            processDocumentDefinition.id.documentDefinitionId.caseDefinitionId.key,
-            processDocumentDefinition.id.documentDefinitionId.caseDefinitionId.versionTag
-          )
-        ),
+        context === 'case'
+          ? this.openZaakService.getZaakTypeLink(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag
+            )
+          : null,
       ])
     ),
     map(results => {
       const zaakTypes = results[0] as Array<ZaakType>;
-      const zaakTypeLinks = results.filter((result, index) => index !== 0) as Array<ZaakTypeLink>;
+      const zaakTypeLink = results[1] as ZaakTypeLink;
 
-      return zaakTypeLinks
+      return [zaakTypeLink]
         .filter(zaakTypeLink => !!zaakTypeLink?.zaakTypeUrl)
         .map(zaakTypeLink => ({
           id: zaakTypeLink.zaakTypeUrl,
@@ -143,7 +149,7 @@ export class CreateZaakConfigurationComponent
     this.openSaveSubscription();
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      ExtraPropertiesOptions.filter(property => !!prefill[property]).forEach(property =>
+      ExtraPropertiesOptions.filter(property => prefill && !!prefill[property]).forEach(property =>
         this.addCaseProperty(property)
       );
     });

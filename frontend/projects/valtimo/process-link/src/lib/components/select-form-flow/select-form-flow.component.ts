@@ -15,7 +15,7 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {CaseManagementParams, Page, getCaseManagementRouteParams} from '@valtimo/shared';
+import {CaseManagementParams, getCaseManagementRouteParams, Page} from '@valtimo/shared';
 import {FormFlowService, ListFormFlowDefinition} from '@valtimo/form-flow-management';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
@@ -64,7 +64,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           content: definition.key,
           id: definition.key,
           selected: selectedProcessLink
-            ? selectedProcessLink.formFlowDefinitionId === definition.key
+            ? selectedProcessLink.formFlowDefinitionKey === definition.key
             : false,
         }))
       ),

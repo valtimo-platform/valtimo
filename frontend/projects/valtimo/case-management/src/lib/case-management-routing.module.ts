@@ -17,7 +17,7 @@ import {Inject, NgModule} from '@angular/core';
 import {Route, Router, RouterModule, Routes} from '@angular/router';
 import {pendingChangesGuard} from '@valtimo/components';
 import {
-  DecisionComponent,
+  DecisionListComponent,
   DecisionManagementRouteData,
   DecisionModelerComponent,
 } from '@valtimo/decision';
@@ -84,7 +84,7 @@ const routes: Routes = [
       },
       {
         path: TabEnum.DECISIONS,
-        component: DecisionComponent,
+        component: DecisionListComponent,
         data: {context: 'case'} as DecisionManagementRouteData,
       },
       {path: TabEnum.CASE_LIST, component: CaseManagementCaseListComponent},

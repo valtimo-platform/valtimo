@@ -15,7 +15,6 @@
  */
 
 import {NgModule} from '@angular/core';
-import {DecisionComponent} from './decision.component';
 import {DecisionRoutingModule} from './decision-routing.module';
 import {DecisionDeployComponent} from './decision-deploy/decision-deploy.component';
 import {CommonModule} from '@angular/common';
@@ -48,10 +47,9 @@ import {ButtonModule, IconModule} from 'carbon-components-angular';
     IconModule,
     DecisionDeployComponent,
     DecisionModelerComponent,
-    DecisionComponent,
     DecisionListComponent,
     DecisionDisplayComponent,
   ],
-  exports: [DecisionComponent, DecisionModelerComponent],
+  exports: [DecisionModelerComponent],
 })
 export class DecisionModule {}

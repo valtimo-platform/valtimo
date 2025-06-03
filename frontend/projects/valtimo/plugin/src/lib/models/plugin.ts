@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Type} from '@angular/core';
+import {EventEmitter, Type} from '@angular/core';
 import {Observable} from 'rxjs';
 import {SafeResourceUrl} from '@angular/platform-browser';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 interface PluginConfigurationData {
   configurationId: string;
@@ -37,6 +38,7 @@ interface ConfigurationComponent {
   disabled$: Observable<boolean>;
   pluginId: string;
   valid: EventEmitter<boolean>;
+  context$?: Observable<[ManagementContext, CaseManagementParams]>;
 }
 
 interface PluginConfigurationComponent extends ConfigurationComponent {

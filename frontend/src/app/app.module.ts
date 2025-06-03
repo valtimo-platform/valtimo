@@ -75,7 +75,11 @@ import {ProcessManagementModule} from '@valtimo/process-management';
 import {DecisionModule} from '@valtimo/decision';
 import {MilestoneModule} from '@valtimo/milestone';
 import {LoggerModule} from 'ngx-logger';
-import {FORM_FLOW_COMPONENT_TOKEN, ProcessLinkModule} from '@valtimo/process-link';
+import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  FORM_FLOW_COMPONENT_TOKEN,
+  ProcessLinkModule,
+} from '@valtimo/process-link';
 import {MigrationModule} from '@valtimo/migration';
 import {BootstrapModule} from '@valtimo/bootstrap';
 import {
@@ -131,6 +135,7 @@ import {
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
+import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -265,6 +270,12 @@ export function tabsFactory() {
       provide: CUSTOM_CASE_WIDGET_TOKEN,
       useValue: {
         caseWidgetComponent: CustomCaseTabComponent,
+      },
+    },
+    {
+      provide: FORM_CUSTOM_COMPONENT_TOKEN,
+      useValue: {
+        dummy: CustomFormComponent,
       },
     },
   ],
