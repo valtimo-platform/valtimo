@@ -69,6 +69,7 @@ export * from './lib/plugins/zaken-api/components/end-hersteltermijn/end-herstel
 export * from './lib/plugins/zaken-api/components/create-zaakeigenschap/create-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/update-zaakeigenschap/update-zaakeigenschap.component';
 export * from './lib/plugins/zaken-api/components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+export * from './lib/plugins/zaken-api/components/relateer-zaken/relateer-zaken.component';
 /* objecten api plugin */
 export * from './lib/plugins/objecten-api/objecten-api-plugin-module';
 export * from './lib/plugins/objecten-api/objecten-api-plugin.specification';

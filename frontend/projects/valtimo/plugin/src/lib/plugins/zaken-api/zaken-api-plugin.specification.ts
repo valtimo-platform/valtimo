@@ -30,6 +30,7 @@ import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-he
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -49,6 +50,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaakeigenschap': CreateZaakeigenschapComponent,
     'update-zaakeigenschap': UpdateZaakeigenschapComponent,
     'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
+    'relateer-zaken': RelateerZakenComponent,
   },
   pluginTranslations: {
     nl: {
@@ -162,6 +164,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       finalDeliveryDate: 'Laatste opleverings datum',
       dateformatTooltip:
         'Een datum in formaat van yyyy-mm-dd. Kan ook een verwijzing zijn naar het document of process, bijvoorbeeld doc:customer/startDatum of pv:startDatum',
+      'relateer-zaken': 'Relateer zaken',
+      teRelaterenZaakUri: 'URL naar de te relateren zaak',
+      aardRelatie: 'Aard van de relatie',
+      'option-vervolg': 'De andere zaak gaf aanleiding tot het starten van de onderhanden zaak.',
+      'option-onderwerp': 'De andere zaak is relevant voor cq. is onderwerp van de onderhanden zaak.',
+      'option-bijdrage': 'Aan het bereiken van de uitkomst van de andere zaak levert de onderhanden zaak een bijdrage.',
     },
     en: {
       title: 'Zaken API',
@@ -274,6 +282,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       finalDeliveryDate: 'Final delivery date',
       dateformatTooltip:
         'A date in the format of yyyy-mm-dd. Can also be a reference to the document or process, for example doc:customer/startDate or pv:startDate',
+      'relateer-zaken': 'Add relation between two Zaken',
+      teRelaterenZaakUri: 'URL to the Zaak to be related',
+      aardRelatie: 'Nature of the relationship',
+      'option-vervolg': 'The other Zaak prompted the start of the current Zaak.',
+      'option-onderwerp': 'The other Zaak is relevant to or the subject of the current Zaak.',
+      'option-bijdrage': 'The current Zaak contributes to the outcome of the other Zaak.',
     },
     de: {
       title: 'Zaken API',
@@ -386,6 +400,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       finalDeliveryDate: 'Endgültiger Liefertermin',
       dateformatTooltip:
         'Ein Datum im Format yyyy-mm-dd. Kann auch ein Verweis auf das Dokument oder den Prozess sein, zum Beispiel doc:kunde/startDatum oder pv:startDatum',
+      'relateer-zaken': 'Beziehung zwischen Zaken herstellen',
+      teRelaterenZaakUri: 'URL zum zu verknüpfenden Zaak',
+      aardRelatie: 'Art der Beziehung',
+      'option-vervolg': 'Der andere Zaak gab Anlass zur Einleitung des aktuellen Zaak.',
+      'option-onderwerp': 'Der andere Zaak ist relevant für bzw. Gegenstand des aktuellen Zaak.',
+      'option-bijdrage': 'Der aktuelle Zaak trägt zum Ergebnis des anderen Zaak bei.',
     },
   },
 };

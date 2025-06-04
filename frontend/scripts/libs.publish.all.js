@@ -35,7 +35,7 @@ let destinationRegistry = 'localhost';
 let accessModifier = '';
 let bucketName = '';
 switch (destinationArg) {
-  case 's3-snapshots':
+  case 's3':
     destinationRegistry = 's3';
     if (!accessKeyIdOrNpmToken) throw 'Access key id must be set';
     if (!secretAccessKey) throw 'Secret access key must be set';

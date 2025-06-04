@@ -16,7 +16,7 @@
 import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {BreadcrumbService, PageTitleService} from '@valtimo/components';
+import {BreadcrumbService} from '@valtimo/components';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {ObjectManagementService} from '@valtimo/object-management';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subject, throwError} from 'rxjs';
@@ -54,12 +54,7 @@ export class ObjectDetailComponent implements OnDestroy {
       }
     })
   );
-  readonly objectId$: Observable<string> = this.route.params.pipe(
-    map(params => params.objectId),
-    tap(objectId => {
-      this.pageTitleService.setCustomPageTitle(objectId);
-    })
-  );
+  readonly objectId$: Observable<string> = this.route.params.pipe(map(params => params.objectId));
 
   readonly formioFormSummary$: Observable<any> = combineLatest([
     this.objectManagementId$,
@@ -105,7 +100,6 @@ export class ObjectDetailComponent implements OnDestroy {
     private readonly globalNotificationService: GlobalNotificationService,
     private readonly objectManagementService: ObjectManagementService,
     private readonly objectService: ObjectService,
-    private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly translate: TranslateService
