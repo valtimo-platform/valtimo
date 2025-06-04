@@ -39,7 +39,7 @@ function transformProxyConfig(config) {
       newKey = newKey.replace(/\/\*$/, '/**');
     }
 
-    let newValue = { ...value };
+    let newValue = {...value};
 
     if (key === '/api/*') {
       newValue.changeOrigin = false;

@@ -92,6 +92,11 @@ interface DeleteZaakeigenschapConfig {
   inputTypeEigenschapToggle?: InputOption;
 }
 
+interface RelateerZakenConfig {
+  teRelaterenZaakUri: string;
+  aardRelatie: string;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -105,4 +110,5 @@ export {
   CreateZaakeigenschapConfig,
   UpdateZaakeigenschapConfig,
   DeleteZaakeigenschapConfig,
+  RelateerZakenConfig,
 };

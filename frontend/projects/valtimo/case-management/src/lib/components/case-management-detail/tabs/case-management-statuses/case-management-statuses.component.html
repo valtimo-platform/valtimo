@@ -26,10 +26,7 @@
   (rowClicked)="openEditModal($event)"
   (itemsReordered)="onItemsReordered($event)"
 >
-  <ng-container
-    carbonToolbarContent
-    *ngTemplateOutlet="addStatusButton"
-  ></ng-container>
+  <ng-container carbonToolbarContent *ngTemplateOutlet="addStatusButton"></ng-container>
 
   <valtimo-no-results
     [action]="addStatusButton"
