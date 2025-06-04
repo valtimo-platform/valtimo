@@ -25,6 +25,7 @@
   <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1">
     <cds-toggle
       valtimoReadOnly
+      [isReadOnly]="isReadOnly"
       [disabled]="isReadOnly"
       formControlName="hasExternalForm"
       label="{{ 'caseManagement.externalStartForm.enabledToggle' | translate }}"
@@ -38,6 +39,7 @@
       <input
         cdsText
         valtimoReadOnly
+        [isReadOnly]="isReadOnly"
         type="text"
         formControlName="externalFormUrl"
         [placeholder]="
@@ -53,6 +55,7 @@
       <input
         cdsText
         valtimoReadOnly
+        [isReadOnly]="isReadOnly"
         type="text"
         formControlName="description"
         [placeholder]="

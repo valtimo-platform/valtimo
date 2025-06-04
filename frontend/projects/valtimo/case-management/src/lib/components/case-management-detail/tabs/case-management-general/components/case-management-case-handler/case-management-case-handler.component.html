@@ -32,6 +32,7 @@
   <div class="case-handler-process__toggles">
     <cds-toggle
       valtimoReadOnly
+      [isReadOnly]="isReadOnly"
       [checked]="obs?.currentValue?.canHaveAssignee"
       [disabled]="obs.disabled || isReadOnly"
       (checkedChange)="
@@ -44,6 +45,7 @@
 
     <cds-toggle
       valtimoReadOnly
+      [isReadOnly]="isReadOnly"
       [checked]="obs?.currentValue?.autoAssignTasks"
       [disabled]="!obs?.currentValue?.canHaveAssignee || isReadOnly"
       (checkedChange)="
