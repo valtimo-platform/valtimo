@@ -65,19 +65,18 @@ export class ProcessLinkStateService implements OnDestroy {
   public get elementName$(): Observable<string> {
     return this._elementName$.asObservable();
   }
-  get availableProcessLinkTypes$(): Observable<Array<ProcessLinkType>> {
-    return this._availableProcessLinkTypes$.asObservable().pipe(
-      map(types => {
-        if (!this.formCustomComponentConfig) {
-          return types.map(type => {
-            if (type.processLinkType === 'ui-component') {
-              type.enabled = false;
-            }
-            return type;
-          });
-        }
-        return types;
-      })
+
+  public get availableProcessLinkTypes$(): Observable<ProcessLinkType[]> {
+    return this._availableProcessLinkTypes$.pipe(
+      map(types =>
+        (!this.formCustomComponentConfig
+          ? types.map(type => ({
+              ...type,
+              enabled: type.processLinkType === 'ui-component' ? false : type.enabled,
+            }))
+          : types
+        ).filter(type => type.processLinkType !== 'url')
+      )
     );
   }
 
