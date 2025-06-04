@@ -13,29 +13,30 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<ng-container
+<div
   *ngIf="{
     processItems: processItems$ | async,
     disabled: disabled$ | async,
     isReadOnly: isReadOnly$ | async,
   } as obs"
+  class="link-upload-process"
 >
-  <div class="link-upload-process">
-    <p class="link-upload-process__title">
-      {{ 'caseManagement.tabs.generalTab.linkUploadProcess.title' | translate }}
-    </p>
+  <p class="link-upload-process__title">
+    {{ 'caseManagement.tabs.generalTab.linkUploadProcess.title' | translate }}
+  </p>
 
-    <cds-combo-box
-      [cdsLayer]="1"
-      [appendInline]="true"
-      [dropUp]="false"
-      [label]="'caseManagement.tabs.generalTab.linkUploadProcess.label' | translate"
-      [placeholder]="'processLinkConfiguration.selectProcess' | translate"
-      [disabled]="obs.disabled || !obs.processItems || obs.isReadOnly"
-      (selected)="selectProcess($event)"
-    >
-      <cds-dropdown-list [items]="obs.processItems || []"></cds-dropdown-list>
-    </cds-combo-box>
-  </div>
-</ng-container>
+  <cds-combo-box
+    [cdsLayer]="1"
+    valtimoReadOnly
+    [appendInline]="true"
+    [dropUp]="false"
+    [label]="'caseManagement.tabs.generalTab.linkUploadProcess.label' | translate"
+    [placeholder]="
+      'processLinkConfiguration.' + (obs.isReadOnly ? 'noProcess' : 'selectProcess') | translate
+    "
+    [disabled]="obs.disabled || !obs.processItems || obs.isReadOnly"
+    (selected)="selectProcess($event)"
+  >
+    <cds-dropdown-list [items]="obs.processItems || []"></cds-dropdown-list>
+  </cds-combo-box>
+</div>

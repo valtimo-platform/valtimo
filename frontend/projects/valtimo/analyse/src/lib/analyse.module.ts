@@ -19,7 +19,7 @@ import {AnalyseComponent} from './analyse.component';
 import {CommonModule} from '@angular/common';
 import {AnalyseRoutingModule} from './analyse-routing.module';
 import {ProcessModule} from '@valtimo/process';
-import {RenderInPageHeaderDirectiveModule, WidgetModule} from '@valtimo/components';
+import {RenderInPageHeaderDirective, WidgetModule} from '@valtimo/components';
 import {AnalyseProcessDiagramComponent} from './analyse-process-diagram/analyse-process-diagram.component';
 import {SelectModule, ToggleModule} from 'carbon-components-angular';
 
@@ -31,7 +31,7 @@ import {SelectModule, ToggleModule} from 'carbon-components-angular';
     ProcessModule,
     WidgetModule,
     SelectModule,
-    RenderInPageHeaderDirectiveModule,
+    RenderInPageHeaderDirective,
     ToggleModule,
   ],
   exports: [AnalyseComponent],

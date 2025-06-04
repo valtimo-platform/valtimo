@@ -21,7 +21,7 @@ import {PageTitleModule} from '../page-title/page-title.module';
 import {MenuModule} from '../menu/menu.module';
 import {IconModule, UIShellModule} from 'carbon-components-angular';
 import {CaseCountPipe, ComponentsPipesModule} from '../../pipes';
-import {CommandClickDirectiveModule} from '../../directives/command-click/command-click-directive.module';
+import {CtrlClickDirective} from '../../directives/ctrl-click/ctrl-click.directive';
 
 @NgModule({
   declarations: [LeftSidebarComponent, CaseCountPipe],
@@ -32,7 +32,7 @@ import {CommandClickDirectiveModule} from '../../directives/command-click/comman
     IconModule,
     UIShellModule,
     ComponentsPipesModule,
-    CommandClickDirectiveModule,
+    CtrlClickDirective,
   ],
   exports: [LeftSidebarComponent],
 })

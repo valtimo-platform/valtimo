@@ -19,7 +19,7 @@ import {CommonModule} from '@angular/common';
 import {PageHeaderComponent} from './page-header.component';
 import {PageTitleModule} from '../page-title/page-title.module';
 import {BreadcrumbNavigationModule} from '../breadcrumb-navigation/breadcrumb-navigation.module';
-import {RenderPageHeaderDirectiveModule} from '../../directives/render-page-header/render-page-header-directive.module';
+import {RenderPageHeaderDirective} from '../../directives/render-page-header/render-page-header.directive';
 import {PageActionsComponent} from '../page-actions/page-actions.component';
 import {PageSubtitleComponent} from '../page-subtitle/page-subtitle.component';
 
@@ -29,7 +29,7 @@ import {PageSubtitleComponent} from '../page-subtitle/page-subtitle.component';
     CommonModule,
     PageTitleModule,
     BreadcrumbNavigationModule,
-    RenderPageHeaderDirectiveModule,
+    RenderPageHeaderDirective,
     PageActionsComponent,
     PageSubtitleComponent,
   ],

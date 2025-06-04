@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Output} from '@angular/core';
 import {DecisionService, DecisionStateService} from '../services';
-import {ValtimoCdsOverflowButtonDirectiveModule} from '@valtimo/components';
+import {ValtimoCdsOverflowButtonDirective} from '@valtimo/components';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
@@ -35,7 +35,7 @@ import {ActivatedRoute} from '@angular/router';
     FormsModule,
     TranslateModule,
     ModalModule,
-    ValtimoCdsOverflowButtonDirectiveModule,
+    ValtimoCdsOverflowButtonDirective,
     ModalModule,
   ],
 })

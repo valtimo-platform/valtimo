@@ -229,31 +229,27 @@ directives
  */
 // valtimo cds modal
 export * from './lib/directives/valtimo-cds-modal/valtimo-cds-modal.directive';
-export * from './lib/directives/valtimo-cds-modal/valtimo-cds-modal-directive.module';
 // tooltip
 export * from './lib/directives/tooltip/tooltip.directive';
 export * from './lib/directives/tooltip/tooltip.component';
 export * from './lib/directives/tooltip/tooltip.module';
 // render in page header
 export * from './lib/directives/render-in-page-header/render-in-page-header.directive';
-export * from './lib/directives/render-in-page-header/render-in-page-header-directive.module';
 // render page header
 export * from './lib/directives/render-page-header/render-page-header.directive';
-export * from './lib/directives/render-page-header/render-page-header-directive.module';
 // fit page
 export * from './lib/directives/fit-page/fit-page.directive';
-export * from './lib/directives/fit-page/fit-page-directive.module';
 // digit only
 export * from './lib/directives/digit-only/digit-only.directive';
 // command click
-export * from './lib/directives/command-click/command-click.directive';
-export * from './lib/directives/command-click/command-click-directive.module';
+export * from './lib/directives/ctrl-click/ctrl-click.directive';
 // cds overflow button
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
-export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button-directive.module';
 // remove toggletip button class
 export * from './lib/directives/remove-classnames/remove-classnames.directive';
 // muuri
 export * from './lib/directives/muuri/muuri-directive.module';
 export * from './lib/directives/muuri/muuri.directive';
 export * from './lib/directives/muuri/muuri-item.component';
+// read-only
+export * from './lib/directives/read-only.directive';

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DatePipe} from '@angular/common';
+import {DatePipe, Location as AngularLocation} from '@angular/common';
 import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
 import {FormBuilder} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -185,16 +185,16 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   private _currentNotification!: Notification;
 
   constructor(
-    private readonly caseManagementService: CaseManagementService,
-    private readonly iconService: IconService,
     private readonly breadcrumbService: BreadcrumbService,
-    private readonly translateService: TranslateService,
+    private readonly caseManagementService: CaseManagementService,
+    private readonly datePipe: DatePipe,
+    private readonly environmentService: EnvironmentService,
+    private readonly iconService: IconService,
+    private readonly location: AngularLocation,
+    private readonly notificationService: GlobalNotificationService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly datePipe: DatePipe,
-    private readonly notificationService: GlobalNotificationService,
-    private readonly fb: FormBuilder,
-    private readonly environmentService: EnvironmentService
+    private readonly translateService: TranslateService,
   ) {
     this.iconService.register(Return16);
     this.iconService.register(TrashCan16);
@@ -219,7 +219,7 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
 
   public goBack(): void {
     this.breadcrumbService.clearThirdBreadcrumb();
-    this.router.navigate(['../'], {relativeTo: this.route});
+    this.location.back();
   }
 
   public openDeleteDraftModal(): void {

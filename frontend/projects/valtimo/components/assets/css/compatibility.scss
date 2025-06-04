@@ -753,3 +753,48 @@ valtimo-analyse-process-diagram {
 .cds--modal-header {
   position: relative !important;
 }
+
+.valtimo-read-only {
+  &.cds--toggle--disabled .cds--toggle {
+    &__label-text {
+      color: var(--cds-text-secondary);
+    }
+
+    &__text {
+      color: var(--cds-text-primary);
+    }
+
+    &__switch {
+      background-color: white !important;
+      border: 1px solid var(--cds-border-disabled);
+
+      &::before {
+        transform: translate(1.5rem, -1px);
+        background-color: var(--cds-text-primary);
+      }
+    }
+  }
+
+  &.cds--text-input:read-only {
+    -webkit-text-fill-color: var(--cds-text-primary);
+    border-color: var(--cds-border-subtle-01);
+    background-color: var(--cds-field-01);
+    outline: none;
+  }
+
+  &.cds--list-box__wrapper {
+    .cds--label {
+      color: var(--cds-text-secondary);
+    }
+
+    .cds--text-input {
+      background-color: var(--cds-field-01);
+      -webkit-text-fill-color: var(--cds-text-primary);
+    }
+
+    .cds--list-box__menu-icon,
+    .cds--list-box__selection {
+      display: none;
+    }
+  }
+}

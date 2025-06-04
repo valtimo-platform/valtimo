@@ -620,6 +620,7 @@
           "title": "Case handler",
           "canHaveHandler": "Case type can have a handler",
           "assignUser": "Automatically assign user tasks to case handler",
+          "disabledAutoAssignTooltip": "Automatically assigning a user task to the case handler can only be enabled when the case itself can have a handler.",
           "toggle": {"onText": "Yes", "offText": "No"}
         }
       },
@@ -1668,7 +1669,8 @@
     "version": "Version",
     "selectVersion": "Select version",
     "activity": "Process activity",
-    "selectActivity": "Select process activity"
+    "selectActivity": "Select process activity",
+    "noProcess": "No upload process"
   },
   "processLinkType": {
     "plugin": "Plugin",

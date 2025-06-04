@@ -32,7 +32,7 @@ import {
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
-  RenderInPageHeaderDirectiveModule,
+  RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
@@ -59,7 +59,7 @@ import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-manag
     CaseManagementWidgetsEditorComponent,
     CaseManagementWidgetTabEditModalComponent,
     CaseManagementWidgetsJsonEditorComponent,
-    RenderInPageHeaderDirectiveModule,
+    RenderInPageHeaderDirective,
     ButtonModule,
     IconModule,
     TabsModule,

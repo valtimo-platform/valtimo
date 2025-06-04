@@ -17,11 +17,11 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {EditorComponent} from './editor.component';
-import {FitPageDirectiveModule} from '../../directives/fit-page/fit-page-directive.module';
+import { FitPageDirective } from '../../directives/fit-page/fit-page.directive';
 
 @NgModule({
   declarations: [EditorComponent],
-  imports: [CommonModule, FitPageDirectiveModule],
+  imports: [CommonModule, FitPageDirective],
   exports: [EditorComponent],
 })
 export class EditorModule {}

@@ -19,7 +19,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {ValtimoCdsModalDirectiveModule, WidgetModule} from '@valtimo/components';
+import {ValtimoCdsModalDirective, WidgetModule} from '@valtimo/components';
 import {
   getCaseManagementRouteParams,
   getCaseManagementRouteParamsAndContext,
@@ -54,7 +54,7 @@ import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.valid
     TilesModule,
     LayerModule,
     ModalModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
     ButtonModule,
   ],
 })

@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Component, Input} from '@angular/core';
-import {CaseSettings, DocumentService} from '@valtimo/document';
-import {BehaviorSubject, finalize, map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
+import {Information16} from '@carbon/icons';
+import {CaseSettings, DocumentService} from '@valtimo/document';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {IconService} from 'carbon-components-angular';
+import {BehaviorSubject, finalize, map, Observable, switchMap, of, debounceTime, startWith} from 'rxjs';
 import {tap} from 'rxjs/operators';
 
 @Component({
@@ -33,10 +35,12 @@ export class CaseManagementCaseHandlerComponent {
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
-    map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
-      caseDefinitionKey: caseDefinitionKey,
-      caseDefinitionVersionTag: caseDefinitionVersionTag,
+  public readonly params$: Observable<CaseManagementParams> = getCaseManagementRouteParams(
+    this.route
+  ).pipe(
+    map((params: CaseManagementParams | undefined) => ({
+      caseDefinitionKey: params?.caseDefinitionKey ?? '',
+      caseDefinitionVersionTag: params?.caseDefinitionVersionTag ?? '',
     }))
   );
 
@@ -60,8 +64,11 @@ export class CaseManagementCaseHandlerComponent {
 
   constructor(
     private readonly documentService: DocumentService,
+    private readonly iconService: IconService,
     private route: ActivatedRoute
-  ) {}
+  ) {
+    this.iconService.registerAll([Information16]);
+  }
 
   public updateCaseSettings(
     caseSettings: CaseSettings,
@@ -73,9 +80,7 @@ export class CaseManagementCaseHandlerComponent {
     this.documentService
       .patchCaseSettingsForManagement(caseDefinitionKey, caseDefinitionVersionTag, caseSettings)
       .pipe(finalize(() => this.enableInput()))
-      .subscribe({
-        next: () => this.refreshSettings(),
-      });
+      .subscribe(() => this.refreshSettings());
   }
 
   public disableInput(): void {

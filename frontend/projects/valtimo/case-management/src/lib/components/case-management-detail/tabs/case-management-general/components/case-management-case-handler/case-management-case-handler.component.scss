@@ -24,10 +24,19 @@
     font-weight: 600;
     margin-bottom: 16px;
   }
-}
 
-.case-handler-process__toggles {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
+  &__toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__helper-text {
+    font-size: 12px;
+    color: var(--cds-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 0;
+  }
 }

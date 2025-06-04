@@ -28,7 +28,7 @@ import {
   TableModule,
   TagModule,
 } from 'carbon-components-angular';
-import {ValtimoCdsModalDirectiveModule} from '../../directives/valtimo-cds-modal/valtimo-cds-modal-directive.module';
+import {ValtimoCdsModalDirective} from '../../directives/valtimo-cds-modal/valtimo-cds-modal.directive';
 import {EllipsisPipe} from '../../pipes';
 import {ViewContentModule} from '../view-content/view-content.module';
 import {CarbonListComponent} from './carbon-list.component';
@@ -58,7 +58,7 @@ import {CarbonTagsModalComponent} from './tags-modal/tags-modal.component';
     NgbTooltipModule,
     TagModule,
     ModalModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
     ViewContentModule,
   ],
   exports: [CarbonListComponent, CarbonListFilterPipe, CarbonNoResultsComponent],

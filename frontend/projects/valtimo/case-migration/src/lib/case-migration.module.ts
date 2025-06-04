@@ -21,7 +21,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
   CarbonMultiInputModule,
   ConfirmationModalModule,
-  RenderInPageHeaderDirectiveModule,
+  RenderInPageHeaderDirective,
   TooltipIconModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -45,7 +45,7 @@ import {
     FormsModule,
     TranslateModule,
     DropdownModule,
-    RenderInPageHeaderDirectiveModule,
+    RenderInPageHeaderDirective,
     InputModule,
     TooltipIconModule,
     ButtonModule,

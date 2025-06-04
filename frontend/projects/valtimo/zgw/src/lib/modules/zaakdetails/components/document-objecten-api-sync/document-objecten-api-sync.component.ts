@@ -34,7 +34,7 @@ import {
   SelectItem,
   SelectModule,
   SpinnerModule,
-  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
@@ -71,7 +71,7 @@ import {DocumentObjectenApiSyncService} from '../../services';
     SpinnerModule,
     TilesModule,
     TranslateModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
     RenderInBodyComponent,
   ],
 })

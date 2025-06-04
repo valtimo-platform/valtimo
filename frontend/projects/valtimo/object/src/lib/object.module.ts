@@ -26,7 +26,7 @@ import {
   SearchFieldsModule,
   SpinnerModule,
   TooltipIconModule,
-  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsModalDirective,
   WidgetModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
@@ -59,7 +59,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     TooltipIconModule,
     ConfirmationModalModule,
     SearchFieldsModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
     CarbonListModule,
   ],
   exports: [],

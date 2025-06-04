@@ -22,7 +22,7 @@ import {
   CarbonMultiInputModule,
   MultiInputValues,
   TooltipIconModule,
-  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsModalDirective,
   ViewType,
 } from '@valtimo/components';
 import {CommonModule} from '@angular/common';
@@ -76,7 +76,7 @@ import {isEqual} from 'lodash';
     TooltipIconModule,
     CarbonMultiInputModule,
     ButtonModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
   ],
 })
 export class TaskManagementColumnModalComponent {

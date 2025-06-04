@@ -27,7 +27,7 @@ import {
 import {OverflowMenu} from 'carbon-components-angular';
 import {v4 as uuidv4} from 'uuid';
 
-@Directive({selector: '[valtimoCdsOverflowButton]', standalone: false})
+@Directive({selector: '[valtimoCdsOverflowButton]', standalone: true})
 export class ValtimoCdsOverflowButtonDirective implements AfterViewInit, OnDestroy {
   @Input() width = 0;
 

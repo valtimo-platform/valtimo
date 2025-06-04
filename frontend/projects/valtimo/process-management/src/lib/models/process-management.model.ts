@@ -27,11 +27,6 @@ const PROCESS_MANAGEMENT_ENDPOINTS = {
   independent: '/management/v1/process-definition',
 };
 
-interface ProcessManagementParams {
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-}
-
 interface ProcessManagementRouteData {
   context: ManagementContext;
 }
@@ -44,7 +39,6 @@ interface UpdateProcessDefinitionCaseDefinitionRequest {
 export {
   OpenProcessLinkModalEvent,
   PROCESS_MANAGEMENT_ENDPOINTS,
-  ProcessManagementParams,
   ProcessManagementRouteData,
   UpdateProcessDefinitionCaseDefinitionRequest,
 };

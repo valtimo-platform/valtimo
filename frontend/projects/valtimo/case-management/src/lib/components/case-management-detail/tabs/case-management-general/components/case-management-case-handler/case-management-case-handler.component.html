@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<ng-container
+<div
   *ngIf="{
     currentValue: currentValue$ | async,
     caseDefinitionKey: caseDefinitionKey$ | async,
@@ -22,42 +22,50 @@
     loading: loading$ | async,
     disabled: disabled$ | async,
   } as obs"
+  class="case-handler-process"
+  [cdsLayer]="0"
 >
-  <div class="case-handler-process" [cdsLayer]="0">
-    <p class="case-handler-process__title">
-      {{ 'caseManagement.tabs.generalTab.caseHandler.title' | translate }}
-    </p>
+  <p class="case-handler-process__title">
+    {{ 'caseManagement.tabs.generalTab.caseHandler.title' | translate }}
+  </p>
 
-    <div class="case-handler-process__toggles">
-      <ng-container>
-        <cds-toggle
-          [checked]="obs?.currentValue?.canHaveAssignee"
-          [disabled]="obs.disabled || isReadOnly"
-          (checkedChange)="
-            toggleAssignee(obs?.currentValue, obs.caseDefinitionKey, obs.caseDefinitionVersionTag)
-          "
-          [label]="'caseManagement.tabs.generalTab.caseHandler.canHaveHandler' | translate"
-          [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
-          [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
-        ></cds-toggle>
-      </ng-container>
+  <div class="case-handler-process__toggles">
+    <cds-toggle
+      valtimoReadOnly
+      [checked]="obs?.currentValue?.canHaveAssignee"
+      [disabled]="obs.disabled || isReadOnly"
+      (checkedChange)="
+        toggleAssignee(obs?.currentValue, obs.caseDefinitionKey, obs.caseDefinitionVersionTag)
+      "
+      [label]="'caseManagement.tabs.generalTab.caseHandler.canHaveHandler' | translate"
+      [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
+      [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
+    ></cds-toggle>
 
-      <ng-container>
-        <cds-toggle
-          [checked]="obs?.currentValue?.autoAssignTasks"
-          [disabled]="!obs?.currentValue?.canHaveAssignee || isReadOnly"
-          (checkedChange)="
-            toggleTaskAssignment(
-              obs?.currentValue,
-              obs?.caseDefinitionKey,
-              obs.caseDefinitionVersionTag
-            )
-          "
-          [label]="'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate"
-          [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
-          [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
-        ></cds-toggle>
-      </ng-container>
-    </div>
+    <cds-toggle
+      valtimoReadOnly
+      [checked]="obs?.currentValue?.autoAssignTasks"
+      [disabled]="!obs?.currentValue?.canHaveAssignee || isReadOnly"
+      (checkedChange)="
+        toggleTaskAssignment(
+          obs?.currentValue,
+          obs?.caseDefinitionKey,
+          obs.caseDefinitionVersionTag
+        )
+      "
+      [label]="'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate"
+      [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
+      [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
+    ></cds-toggle>
+
+    <span
+      *ngIf="!obs?.currentValue?.canHaveAssignee"
+      [attr.title]="
+        'caseManagement.tabs.generalTab.caseHandler.disabledAutoAssignTooltip' | translate
+      "
+      class="case-handler-process__helper-text"
+    >
+      {{ 'caseManagement.tabs.generalTab.caseHandler.disabledAutoAssignTooltip' | translate }}
+    </span>
   </div>
-</ng-container>
+</div>

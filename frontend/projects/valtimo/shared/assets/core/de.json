@@ -629,6 +629,7 @@
           "title": "Fallbearbeiter",
           "canHaveHandler": "Falltyp kann einen Bearbeiter haben",
           "assignUser": "Benutzeraufgaben automatisch dem Fallbearbeiter zuweisen",
+          "disabledAutoAssignTooltip": "Die automatische Zuweisung einer Benutzeraufgabe an den Fallbearbeiter kann nur aktiviert werden, wenn der Fall selbst einen Bearbeiter haben kann.",
           "toggle": {"onText": "Ja", "offText": "Nein"}
         }
       },
@@ -1698,7 +1699,8 @@
     "version": "Version",
     "selectVersion": "Wählen Sie eine Version aus",
     "activity": "Prozessaktivität",
-    "selectActivity": "Wählen Sie eine Prozessaktivität aus"
+    "selectActivity": "Wählen Sie eine Prozessaktivität aus",
+    "noProcess": "Kein Upload-Prozess"
   },
   "processLinkType": {
     "plugin": "Plugin",

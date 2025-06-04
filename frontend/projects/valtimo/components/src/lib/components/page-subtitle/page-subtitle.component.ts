@@ -20,8 +20,8 @@ import {SkeletonModule} from 'carbon-components-angular';
 import {map, Observable, startWith, switchMap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PageHeaderService, PageTitleService} from '../../services';
-import {RenderPageSubtitleDirectiveModule} from '../../directives/render-page-subtitle/render-page-subtitle-directive.module';
-import {RenderPageHeaderDirectiveModule} from '../../directives/render-page-header/render-page-header-directive.module';
+import {RenderPageSubtitleDirective} from '../../directives/render-page-subtitle/render-page-subtitle.directive';
+import {RenderPageHeaderDirective} from '../../directives/render-page-header/render-page-header.directive';
 
 @Component({
   selector: 'valtimo-page-subtitle',
@@ -31,8 +31,8 @@ import {RenderPageHeaderDirectiveModule} from '../../directives/render-page-head
   imports: [
     CommonModule,
     SkeletonModule,
-    RenderPageSubtitleDirectiveModule,
-    RenderPageHeaderDirectiveModule,
+    RenderPageSubtitleDirective,
+    RenderPageHeaderDirective,
   ],
   encapsulation: ViewEncapsulation.None,
 })

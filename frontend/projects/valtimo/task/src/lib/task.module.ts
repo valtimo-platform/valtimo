@@ -26,11 +26,11 @@ import {
   ConfirmationModalModule,
   FormIoModule,
   PageHeaderModule,
-  RenderInPageHeaderDirectiveModule,
+  RenderInPageHeaderDirective,
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SpinnerModule,
-  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsModalDirective,
   WidgetModule,
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/shared';
@@ -80,7 +80,7 @@ import {TaskRoutingModule} from './task-routing.module';
     ProcessLinkModule,
     TabsModule,
     ContentSwitcherModule,
-    RenderInPageHeaderDirectiveModule,
+    RenderInPageHeaderDirective,
     DropdownModule,
     ButtonModule,
     IconModule,
@@ -91,7 +91,7 @@ import {TaskRoutingModule} from './task-routing.module';
     TaskDetailContentComponent,
     TaskDetailIntermediateSaveComponent,
     SetTaskDueDateComponent,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })

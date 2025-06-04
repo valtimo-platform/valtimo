@@ -625,6 +625,7 @@
           "title": "Casehandler",
           "canHaveHandler": "Casetype kan een handler hebben",
           "assignUser": "Gebruikerstaken automatisch toewijzen aan casehandler",
+          "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de casehandler kan alleen worden ingeschakeld als de case zelf een handler kan hebben.",
           "toggle": {"onText": "Ja", "offText": "Nee"}
         }
       },
@@ -1692,7 +1693,8 @@
     "version": "Versie",
     "selectVersion": "Selecteer een versie",
     "activity": "Procesactiviteit",
-    "selectActivity": "Selecteer een procesactiviteit"
+    "selectActivity": "Selecteer een procesactiviteit",
+    "noProcess": "Geen uploadproces"
   },
   "processLinkType": {
     "plugin": "Plugin",

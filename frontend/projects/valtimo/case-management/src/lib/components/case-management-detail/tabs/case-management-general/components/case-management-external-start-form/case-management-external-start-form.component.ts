@@ -17,9 +17,12 @@ import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {GlobalNotificationService} from '@valtimo/shared';
 import {CaseSettings, DocumentService} from '@valtimo/document';
-import {ProcessManagementParams} from '@valtimo/process-management';
+import {
+  CaseManagementParams,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} from 'rxjs';
 
@@ -30,7 +33,21 @@ import {BehaviorSubject, map, Observable, Subscription, switchMap, take, tap} fr
   styleUrl: './case-management-external-start-form.component.scss',
 })
 export class CaseManagementExternalStartFormComponent implements OnInit, OnDestroy {
-  @Input() public readonly isReadOnly: boolean;
+  private _isReadOnly: boolean;
+  @Input() public set isReadOnly(value: boolean) {
+    this._isReadOnly = value;
+
+    if (value) {
+      this.form.get('externalFormUrl')?.disable();
+      this.form.get('description')?.disable();
+    } else {
+      this.form.get('externalFormUrl')?.enable();
+      this.form.get('description')?.enable();
+    }
+  }
+  public get isReadOnly(): boolean {
+    return this._isReadOnly;
+  }
 
   private readonly _URL_PATTERN = new RegExp(
     '^(https?:\\/\\/)(([a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}|\\d{1,3}(\\.\\d{1,3}){3})(:\\d+)?(\\/\\S*)?(\\?\\S*)?(#\\S*)?$'
@@ -45,15 +62,16 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
     description: [''],
   });
 
-  public readonly params$: Observable<ProcessManagementParams> | undefined =
-    this.route.parent?.params.pipe(
-      map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
-        caseDefinitionKey: caseDefinitionKey,
-        caseDefinitionVersionTag: caseDefinitionVersionTag,
-      }))
-    );
+  public readonly params$: Observable<CaseManagementParams> = getCaseManagementRouteParams(
+    this.route
+  ).pipe(
+    map((params: CaseManagementParams | undefined) => ({
+      caseDefinitionKey: params?.caseDefinitionKey ?? '',
+      caseDefinitionVersionTag: params?.caseDefinitionVersionTag ?? '',
+    }))
+  );
 
-  public readonly caseSettings$: BehaviorSubject<CaseSettings> = new BehaviorSubject(null);
+  public readonly caseSettings$ = new BehaviorSubject<CaseSettings | null>(null);
 
   private readonly _subscriptions = new Subscription();
 
@@ -68,19 +86,6 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
 
   public ngOnInit(): void {
     this.logger.debug('External Case Start Form - onInit');
-
-    this._subscriptions.add(
-      this.hasExternalForm?.valueChanges.subscribe(isEnabled => {
-        if (isEnabled) {
-          this.externalFormUrl.enable();
-          this.description.enable();
-        } else {
-          this.form.patchValue({externalFormUrl: '', description: ''});
-          this.description.disable();
-          this.externalFormUrl.disable();
-        }
-      })
-    );
 
     this._subscriptions.add(
       this.params$
@@ -100,13 +105,13 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
     );
 
     this._subscriptions.add(
-      this.caseSettings$.subscribe(caseSettings => {
-        if (caseSettings) {
+      this.caseSettings$.subscribe((caseSettings: CaseSettings | null) => {
+        if (!!caseSettings) {
           this.logger.debug('Applying case definition settings to form', caseSettings);
           this.form.setValue({
-            hasExternalForm: caseSettings.hasExternalStartForm,
-            externalFormUrl: caseSettings.externalStartFormUrl,
-            description: caseSettings.externalStartFormDescription,
+            hasExternalForm: caseSettings.hasExternalStartForm ?? false,
+            externalFormUrl: caseSettings.externalStartFormUrl ?? '',
+            description: caseSettings.externalStartFormDescription ?? '',
           });
         }
       })

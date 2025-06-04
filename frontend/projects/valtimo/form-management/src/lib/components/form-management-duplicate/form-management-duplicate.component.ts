@@ -31,7 +31,7 @@ import {FormManagementService} from '../../services';
 import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.validator';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {ValtimoCdsModalDirectiveModule} from '@valtimo/components';
+import {ValtimoCdsModalDirective} from '@valtimo/components';
 import {ManagementContext} from '@valtimo/shared';
 
 @Component({
@@ -48,7 +48,7 @@ import {ManagementContext} from '@valtimo/shared';
     ReactiveFormsModule,
     FormsModule,
     LayerModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
   ],
 })
 export class FormManagementDuplicateComponent extends BaseModal implements OnInit {

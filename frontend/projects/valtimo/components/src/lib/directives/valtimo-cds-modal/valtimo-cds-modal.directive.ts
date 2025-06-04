@@ -28,7 +28,7 @@ import {
 
 @Directive({
   selector: '[valtimoCdsModal]',
-  standalone: false,
+  standalone: true,
 })
 export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   @Input() public readonly enableOverflow = false;

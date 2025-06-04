@@ -24,7 +24,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirectiveModule} from '@valtimo/components';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {TabManagementService} from '../../../../../../services';
 import {ApiTabItem, ApiTabType} from '@valtimo/case';
 import {ButtonModule, InputModule, ModalModule} from 'carbon-components-angular';
@@ -43,7 +43,7 @@ import {TranslateModule} from '@ngx-translate/core';
     CommonModule,
     TranslateModule,
     ModalModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
     ReactiveFormsModule,
     InputModule,
     ButtonModule,
