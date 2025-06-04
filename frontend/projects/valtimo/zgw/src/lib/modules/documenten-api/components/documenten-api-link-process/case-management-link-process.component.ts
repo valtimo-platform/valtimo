@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  HostListener,
+  Input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
@@ -47,7 +54,11 @@ import {DocumentenApiLinkProcessService, DocumentenApiVersionService} from '../.
 })
 export class CaseManagementLinkProcessComponent implements OnInit, OnDestroy {
   @Input() isReadOnly$: Observable<boolean>;
-
+  //Necessary to trigger outside click detection for combo-box
+  @HostListener('document:click', ['$event'])
+  public emptyCallback(): void {
+    return;
+  }
   public readonly documentenApiUploadProviders$ = new BehaviorSubject<boolean>(false);
   public readonly selectedProcessKey$ = new BehaviorSubject<string>('');
   public readonly processItems$: Observable<Array<ListItem>> = combineLatest([
