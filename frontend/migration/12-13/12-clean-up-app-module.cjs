@@ -12,7 +12,7 @@ const modulesToRemove = [
   'ButtonModule',
   'PageModule',
   'TitleModule',
-  'VCardModule'
+  'VCardModule',
 ];
 
 // Remove import line if it includes any of the target modules from @valtimo/components

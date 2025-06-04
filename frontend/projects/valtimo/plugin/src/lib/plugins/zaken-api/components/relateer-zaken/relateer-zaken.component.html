@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,27 +15,27 @@
   -->
 
 <v-form
-        (valueChange)="formValueChange($event)"
-        *ngIf="{
-        pluginId: pluginId$ | async,
-        disabled: disabled$ | async,
-        prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
-    } as obs"
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    pluginId: pluginId$ | async,
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+  } as obs"
 >
   <v-input
-          name="teRelaterenZaakUri"
-          [title]="'teRelaterenZaakUri' | pluginTranslate: obs.pluginId | async"
-          [margin]="true"
-          [defaultValue]="obs.prefill?.teRelaterenZaakUri"
-          [disabled]="obs.disabled"
-          [required]="true"
+    name="teRelaterenZaakUri"
+    [title]="'teRelaterenZaakUri' | pluginTranslate: obs.pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.teRelaterenZaakUri"
+    [disabled]="obs.disabled"
+    [required]="true"
   ></v-input>
-    <v-select
-            [items]="aardRelatieOptions$ | async"
-            name="aardRelatie"
-            [title]="'aardRelatie' | pluginTranslate: obs.pluginId | async"
-            [disabled]="obs.disabled"
-            [defaultSelectionId]="obs.prefill?.aardRelatie"
-            [required]="true"
-    ></v-select>
+  <v-select
+    [items]="aardRelatieOptions$ | async"
+    name="aardRelatie"
+    [title]="'aardRelatie' | pluginTranslate: obs.pluginId | async"
+    [disabled]="obs.disabled"
+    [defaultSelectionId]="obs.prefill?.aardRelatie"
+    [required]="true"
+  ></v-select>
 </v-form>

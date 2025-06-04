@@ -85,7 +85,7 @@
         <valtimo-value-path-selector
           formControlName="value"
           [attr.data-carbon-theme]="obs.theme"
-          [params]="params$ | async"
+          [documentDefinitionName]="(params$ | async).caseDefinitionKey"
           [parentItem]="selectedCollection$ | async"
         ></valtimo-value-path-selector>
       </div>
