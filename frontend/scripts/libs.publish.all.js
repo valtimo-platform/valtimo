@@ -55,7 +55,8 @@ switch (destinationArg) {
     bucketName = 'valtimo-releases';
     break;
   default:
-    console.log('Invalid publishing option');
+    console.error(`Invalid publishing option ${destinationArg}`);
+    exit(1);
 }
 
 const distDir = './dist/valtimo';
