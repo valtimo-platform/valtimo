@@ -187,7 +187,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
 
   public gotoProcessLinkScreen(): void {
     this.closeCdsModal();
-    this.router.navigate(['process-links'], {queryParams: {process: this.processDefinitionKey}});
+    this.router.navigate(['case-management']);
   }
 
   public get modalTitle() {
@@ -302,10 +302,12 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   private openCdsModal(): void {
-    this.modalOpen$.next(true);
+    this.modalOpen$.next(false);
+    setTimeout(() => this.modalOpen$.next(true));
   }
 
   private closeCdsModal(): void {
-    this.modalOpen$.next(false);
+    this.modalOpen$.next(true);
+    setTimeout(() => this.modalOpen$.next(false));
   }
 }

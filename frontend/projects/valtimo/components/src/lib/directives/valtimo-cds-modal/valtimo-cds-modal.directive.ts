@@ -102,7 +102,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
     if (this.enableOverflow) {
       const modalElements = this.document.querySelectorAll('.cds--modal, .cds--modal-content');
       modalElements.forEach((el: Element) => {
-        this.renderer.setStyle(el, 'overflow', 'visible');
+        this.renderer.setStyle(el, 'overflow', 'auto');
       });
     }
   }

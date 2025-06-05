@@ -194,7 +194,7 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
     private readonly notificationService: GlobalNotificationService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly translateService: TranslateService,
+    private readonly translateService: TranslateService
   ) {
     this.iconService.register(Return16);
     this.iconService.register(TrashCan16);

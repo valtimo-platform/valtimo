@@ -15,9 +15,9 @@
   -->
 
 <cds-modal
-  #taskDetailModal
   id="taskDetailModal"
   [size]="size$ | async"
+  [open]="modalOpen$ | async"
   (close)="closeModal()"
   valtimoCdsModal
   [enableOverflow]="true"

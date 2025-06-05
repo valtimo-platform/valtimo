@@ -40,6 +40,11 @@ export class CaseDetailLayoutService {
   private readonly _formDisplaySize$ = new BehaviorSubject<FormSize>(
     CASE_DETAIL_DEFAULT_DISPLAY_SIZE
   );
+  private readonly _refreshTasks$ = new BehaviorSubject<null>(null);
+
+  public get refreshTasks$(): Observable<null> {
+    return this._refreshTasks$.asObservable();
+  }
 
   public get tabContentContainerWidth$(): Observable<number | null> {
     return this._tabContentContainerWidth$.pipe(filter(width => typeof width === 'number'));
@@ -102,6 +107,10 @@ export class CaseDetailLayoutService {
 
   public setFormDisplaySize(size: FormSize): void {
     this._formDisplaySize$.next(size);
+  }
+
+  public refreshTasks(): void {
+    this._refreshTasks$.next(null);
   }
 
   private getInitialLayout(): CaseDetailLayout {

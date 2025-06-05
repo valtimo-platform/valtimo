@@ -514,9 +514,8 @@ export class CaseDetailComponent
 
   public onFormSubmitEvent(): void {
     this.caseDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
-
-    if (!this.tabLoader) return;
-    this.tabLoader.refreshView();
+    this.caseDetailLayoutService.refreshTasks();
+    this.tabLoader?.refreshView();
   }
 
   protected onConfirmRedirect(): void {

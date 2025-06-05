@@ -23,13 +23,7 @@ import {ValtimoCdsModalDirective} from '../../directives/valtimo-cds-modal/valti
 
 @NgModule({
   declarations: [ConfirmationModalComponent],
-  imports: [
-    CommonModule,
-    ModalModule,
-    TranslateModule,
-    ButtonModule,
-    ValtimoCdsModalDirective,
-  ],
+  imports: [CommonModule, ModalModule, TranslateModule, ButtonModule, ValtimoCdsModalDirective],
   exports: [ConfirmationModalComponent],
 })
 export class ConfirmationModalModule {}

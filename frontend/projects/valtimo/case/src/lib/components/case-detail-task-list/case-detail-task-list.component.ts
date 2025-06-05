@@ -43,9 +43,9 @@ import {
   TASK_DETAIL_PERMISSION_RESOURCE,
   TaskDetailModalComponent,
   TaskModule,
+  TaskUpdateSseEvent,
 } from '@valtimo/task';
 import {SseService} from '@valtimo/sse';
-import {TaskUpdateSseEvent} from '@valtimo/task';
 import {DocumentService} from '@valtimo/document';
 import {ActivatedRoute} from '@angular/router';
 import {PermissionService} from '@valtimo/access-control';
@@ -88,8 +88,6 @@ export class CaseDetailTaskListComponent {
 
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
 
-  private readonly _refresh$ = new BehaviorSubject<null>(null);
-
   private readonly _documentId$ = this.route.params.pipe(
     map(params => params?.documentId),
     filter(documentId => !!documentId)
@@ -107,7 +105,7 @@ export class CaseDetailTaskListComponent {
   public readonly processInstanceTasks$: Observable<{
     myTasks: TaskWithProcessLink[];
     otherTasks: TaskWithProcessLink[];
-  }> = combineLatest([this._refresh$, this._taskUpdateSseEvent$]).pipe(
+  }> = combineLatest([this.caseDetailLayoutService.refreshTasks$, this._taskUpdateSseEvent$]).pipe(
     switchMap(() => this._documentId$),
     switchMap(documentId => this.documentService.findProcessDocumentInstances(documentId)),
     switchMap(processDocumentInstances =>
@@ -174,7 +172,7 @@ export class CaseDetailTaskListComponent {
   }
 
   public refresh(): void {
-    this._refresh$.next(null);
+    this.caseDetailLayoutService.refreshTasks();
   }
 
   private mapTasksWithProcessLinks(

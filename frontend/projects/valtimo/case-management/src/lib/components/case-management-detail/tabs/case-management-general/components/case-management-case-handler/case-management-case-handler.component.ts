@@ -19,7 +19,16 @@ import {Information16} from '@carbon/icons';
 import {CaseSettings, DocumentService} from '@valtimo/document';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
-import {BehaviorSubject, finalize, map, Observable, switchMap, of, debounceTime, startWith} from 'rxjs';
+import {
+  BehaviorSubject,
+  finalize,
+  map,
+  Observable,
+  switchMap,
+  of,
+  debounceTime,
+  startWith,
+} from 'rxjs';
 import {tap} from 'rxjs/operators';
 
 @Component({

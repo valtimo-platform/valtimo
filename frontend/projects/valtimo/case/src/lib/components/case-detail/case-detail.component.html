@@ -134,7 +134,7 @@
 
   <valtimo-case-supporting-process-start-modal
     [isAdmin]="isAdmin$ | async"
-    (formSubmit)="tabLoader.refreshView()"
+    (formSubmit)="onFormSubmitEvent()"
     #supportingProcessStartModal
   ></valtimo-case-supporting-process-start-modal>
 </div>

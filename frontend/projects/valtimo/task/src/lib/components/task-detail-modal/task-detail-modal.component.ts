@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
-  OnInit,
   OnDestroy,
+  OnInit,
   Output,
   ViewChild,
   ViewEncapsulation,
@@ -29,7 +30,6 @@ import {PermissionService} from '@valtimo/access-control';
 import {CarbonModalSize} from '@valtimo/components';
 import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
-import {Modal} from 'carbon-components-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
@@ -53,7 +53,6 @@ moment.locale(localStorage.getItem('langKey') || '');
   encapsulation: ViewEncapsulation.None,
 })
 export class TaskDetailModalComponent implements OnInit, OnDestroy {
-  @ViewChild('taskDetailModal') private readonly _modal: Modal;
   @ViewChild(TaskDetailIntermediateSaveComponent)
   private readonly _intermediateSaveComponent: TaskDetailIntermediateSaveComponent;
 
@@ -81,6 +80,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   public readonly modalCloseEvent$ = new BehaviorSubject<boolean>(false);
 
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -89,7 +90,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly logger: NGXLogger,
     private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
-    private readonly sseService: SseService
+    private readonly sseService: SseService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
@@ -187,12 +189,17 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   public closeModal(): void {
-    this._modal.open = false;
+    this.modalOpen$.next(false);
     this.taskIntermediateSaveService.setSubmission({});
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
   }
 
   private openModal(): void {
-    this._modal.open = true;
+    this.modalOpen$.next(false);
+
+    setTimeout(() => {
+      this.modalOpen$.next(true);
+      this.cdr.detectChanges();
+    });
   }
 }

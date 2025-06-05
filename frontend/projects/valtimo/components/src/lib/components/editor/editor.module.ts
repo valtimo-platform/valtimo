@@ -17,7 +17,7 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {EditorComponent} from './editor.component';
-import { FitPageDirective } from '../../directives/fit-page/fit-page.directive';
+import {FitPageDirective} from '../../directives/fit-page/fit-page.directive';
 
 @NgModule({
   declarations: [EditorComponent],

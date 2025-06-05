@@ -28,12 +28,7 @@ import {RenderPageHeaderDirective} from '../../directives/render-page-header/ren
   templateUrl: './page-subtitle.component.html',
   styleUrls: ['./page-subtitle.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    SkeletonModule,
-    RenderPageSubtitleDirective,
-    RenderPageHeaderDirective,
-  ],
+  imports: [CommonModule, SkeletonModule, RenderPageSubtitleDirective, RenderPageHeaderDirective],
   encapsulation: ViewEncapsulation.None,
 })
 export class PageSubtitleComponent {
