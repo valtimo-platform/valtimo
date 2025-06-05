@@ -13,15 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
@@ -37,6 +29,7 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {
+  EditPermissionsService,
   SearchField,
   SearchFieldDataType,
   SearchFieldFieldType,
@@ -70,6 +63,7 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<string | undefined>(undefined);
   public readonly disableInput$ = new BehaviorSubject<boolean>(false);
+  public readonly showActionItems$ = new BehaviorSubject<boolean>(false);
   public readonly selectedSearchField$ = new BehaviorSubject<SearchField | undefined>(undefined);
   public readonly selectedDeleteSearchField$ = new BehaviorSubject<SearchField | undefined>(
     undefined
@@ -213,6 +207,11 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
     tap((caseDefinitionKey: string) => (this._caseDefinitionKey = caseDefinitionKey))
   );
 
+  public readonly caseDefinitionVersionTag$: Observable<string> = this.route.parent.params.pipe(
+    map(params => params.caseDefinitionVersionTag || ''),
+    filter(caseDefinitionVersionTag => !!caseDefinitionVersionTag)
+  );
+
   private cachedSearchFields!: Array<SearchField>;
 
   public searchFieldActionTypeIsAdd: boolean;
@@ -259,6 +258,15 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
         fieldType: this.translateService.instant(`searchFieldsOverview.${searchField.fieldType}`),
       }));
     })
+  );
+
+  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$,
+  ]).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
+    )
   );
 
   public readonly fieldTypeIsDropdown$ = new BehaviorSubject<boolean>(false);
@@ -348,7 +356,8 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly editPermissionsService: EditPermissionsService
   ) {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
   }
@@ -366,16 +375,19 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   }
 
   public searchFieldClicked(searchField: SearchField, searchFieldActionTypeIsAdd: boolean): void {
-    this.disableInput$.pipe(take(1)).subscribe(inputDisabled => {
-      if (!inputDisabled) {
+    combineLatest([this.disableInput$, this.hasEditPermissions$])
+      .pipe(
+        take(1),
+        filter(([inputDisabled, hasPermission]) => !inputDisabled && hasPermission)
+      )
+      .subscribe(() => {
         this.searchFieldActionTypeIsAdd = searchFieldActionTypeIsAdd;
         const searchFieldToSelect = this.cachedSearchFields.find(
           field => field.key === searchField.key
         );
         this.selectedSearchField$.next(searchFieldToSelect || ({} as SearchField));
         this.showModal();
-      }
-    });
+      });
   }
 
   public formValueChange(data: SearchField): void {

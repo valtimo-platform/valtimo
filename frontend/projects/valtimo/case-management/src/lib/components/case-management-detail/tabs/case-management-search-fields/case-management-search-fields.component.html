@@ -22,6 +22,8 @@
     caseDefinitionKey: caseDefinitionKey$ | async,
     valid: valid$ | async,
     disableInput: disableInput$ | async,
+    hasEditPermissions: hasEditPermissions$ | async,
+    showActionItems: showActionItems$ | async,
   } as obs"
 >
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
@@ -55,6 +57,7 @@
   <button
     cdsButton="primary"
     data-testid="case-management-search-add"
+    *ngIf="obs.hasEditPermissions"
     [disabled]="loadingSearchFields || obs.disableInput"
     (click)="searchFieldClicked($event, true)"
   >
@@ -67,6 +70,7 @@
 <ng-template #list let-obs="obs">
   <valtimo-carbon-list
     [actionItems]="actionItems"
+    [showActionItems]="obs.hasEditPermissions"
     [fields]="fields"
     [header]="false"
     [items]="obs.searchFields"

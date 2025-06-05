@@ -19,7 +19,9 @@
     pagination: pagination$ | async,
     loading: loading$ | async,
     context: context$ | async,
+    hasEditPermissions: hasEditPermissions$ | async,
   } as obs"
+  [showActionItems]="obs.hasEditPermissions"
   [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [header]="false"
@@ -33,7 +35,7 @@
   (rowClicked)="editFormDefinition($event)"
   (search)="searchTermEntered($event)"
 >
-  <ng-container carbonToolbarContent>
+  <ng-container *ngIf="obs.hasEditPermissions" carbonToolbarContent>
     <button cdsButton="ghost" [iconOnly]="true" (click)="navigateToUploadRoute()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>
@@ -60,11 +62,7 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #createFormButton>
-  <button
-    *ngIf="canUpdateGlobalConfiguration$ | async"
-    cdsButton="primary"
-    (click)="navigateToCreateRoute()"
-  >
+  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="navigateToCreateRoute()">
     {{ 'Create Form' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

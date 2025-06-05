@@ -41,7 +41,7 @@
 ></valtimo-new-form-flow-modal>
 
 <ng-template #addFormFlowButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="openAddModal()">
     {{ 'formFlow.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

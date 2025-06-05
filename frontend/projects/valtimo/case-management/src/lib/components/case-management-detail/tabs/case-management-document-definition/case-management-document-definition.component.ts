@@ -24,7 +24,11 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16} from '@carbon/icons';
 import {ConfirmationModalComponent, EditorModel, PageHeaderService} from '@valtimo/components';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
 import {
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
@@ -87,6 +91,15 @@ export class CaseManagementDocumentDefinitionComponent {
     this.route
   );
 
+  public readonly hasEditPermissions$: Observable<boolean> = this.params$.pipe(
+    switchMap(params =>
+      this.editPermissionsService.hasEditPermissions(
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag
+      )
+    )
+  );
+
   private _changesToSave: any;
   private _initialId: string;
 
@@ -95,7 +108,8 @@ export class CaseManagementDocumentDefinitionComponent {
     private readonly caseDetailService: CaseDetailService,
     private readonly iconService: IconService,
     private readonly pageHeaderService: PageHeaderService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly editPermissionsService: EditPermissionsService
   ) {
     this.iconService.registerAll([Edit16, Save16]);
   }

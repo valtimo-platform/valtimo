@@ -44,7 +44,6 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   private readonly _deleteDraftMessageTemplateRef: TemplateRef<HTMLDivElement>;
 
   public caseDefinitionVersions: string[] = [];
-  public readonly isDraftVersion$ = new BehaviorSubject<boolean>(false);
   public readonly hasConflictingVersions$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly showFinalizeDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
@@ -118,9 +117,17 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
       this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
     ),
     tap(caseDefinition => {
-      this.isDraftVersion$.next(!caseDefinition.final);
       this.hasConflictingVersions$.next(!!caseDefinition.conflictingVersions);
     })
+  );
+
+  public readonly isDraftVersion$: Observable<boolean> = combineLatest([
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$,
+  ]).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
+    )
   );
 
   public readonly caseDefinitionPayload$ = combineLatest([
@@ -319,7 +326,6 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
       .subscribe({
         next: response => {
           this.closeCurrentNotification();
-          this.isDraftVersion$.next(false);
           this._currentNotification = this.notificationService.showNotification({
             type: 'success',
             title: this.translateService.instant(

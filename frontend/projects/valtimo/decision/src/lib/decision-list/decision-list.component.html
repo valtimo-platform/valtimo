@@ -23,7 +23,11 @@
   [isSearchable]="true"
 >
   <ng-container carbonToolbarContent>
-    <button cdsButton="primary" (click)="this.deploy.openModal()">
+    <button
+      *ngIf="hasEditPermissions$ | async"
+      cdsButton="primary"
+      (click)="this.deploy.openModal()"
+    >
       {{ 'Upload' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>

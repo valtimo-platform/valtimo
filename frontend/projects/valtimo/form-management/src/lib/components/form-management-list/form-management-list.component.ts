@@ -28,10 +28,12 @@ import {
   Pagination,
 } from '@valtimo/components';
 import {
+  DraftVersionService,
+  EditPermissionsService,
   EnvironmentService,
-  GlobalNotificationService,
   getCaseManagementRouteParams,
   getCaseManagementRouteParamsAndContext,
+  GlobalNotificationService,
 } from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {
@@ -42,8 +44,8 @@ import {
   Observable,
   startWith,
   switchMap,
-  tap,
   take,
+  tap,
 } from 'rxjs';
 import {FormDefinition} from '../../models';
 import {FormManagementService} from '../../services';
@@ -71,7 +73,10 @@ export class FormManagementListComponent {
   @Output() public readonly navigateToEditEvent = new EventEmitter<string>();
 
   public readonly ACTION_ITEMS: ActionItem[] = [
-    {callback: this.editFormDefinition.bind(this), label: 'interface.edit'},
+    {
+      callback: this.editFormDefinition.bind(this),
+      label: 'interface.edit',
+    },
     {callback: this.showDeleteModal.bind(this), label: 'interface.delete', type: 'danger'},
   ];
 
@@ -82,12 +87,22 @@ export class FormManagementListComponent {
 
   public readonly context$ = getContextObservable(this.route);
 
-  public readonly canUpdateGlobalConfiguration$ =
-    this.environmentService.canUpdateGlobalConfiguration();
-
   public readonly caseManagementRouteParams$ = this.context$.pipe(
     filter(context => context === 'case'),
     switchMap(() => getCaseManagementRouteParams(this.route))
+  );
+
+  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
+    getCaseManagementRouteParams(this.route),
+    this.context$,
+  ]).pipe(
+    switchMap(([params, context]) =>
+      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag,
+        context
+      )
+    )
   );
 
   private readonly _collectionSize$ = new BehaviorSubject<number>(0);
@@ -157,8 +172,10 @@ export class FormManagementListComponent {
     private readonly iconService: IconService,
     private readonly route: ActivatedRoute,
     private readonly environmentService: EnvironmentService,
+    private readonly draftVersionService: DraftVersionService,
     private readonly notificationService: GlobalNotificationService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly editPermissionsService: EditPermissionsService
   ) {
     this.iconService.registerAll([Upload16]);
   }

@@ -92,6 +92,7 @@
 <ng-template #exportMenu let-obs="obs">
   <cds-overflow-menu
     valtimoCdsOverflowButton
+    [disabled]="!(hasEditPermissions$ | async)"
     [width]="250"
     [customTrigger]="customTrigger"
     [offset]="{y: 48, x: 37}"
@@ -106,7 +107,7 @@
 
     <cds-overflow-menu-option
       [id]="'setGlobalActiveVersion'"
-      [disabled]="obs.selectedVersionIsGloballyActive"
+      [disabled]="obs.selectedVersionIsGloballyActive || !(hasEditPermissions$ | async)"
       (selected)="openGlobalActiveVersionModal()"
       >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
     </cds-overflow-menu-option>

@@ -23,6 +23,7 @@
     saveButtonDisabled: saveButtonDisabled$ | async,
     selectedDocumentDefinition: selectedDocumentDefinition$ | async,
     compactMode: compactMode$ | async,
+    hasEditPermissions: hasEditPermissions$ | async,
   } as obs"
 >
   <div *ngIf="!obs.editActive; else editActive" class="cds--toolbar-content">
@@ -37,6 +38,7 @@
     </button>
 
     <button
+      *ngIf="obs.hasEditPermissions"
       cdsButton="primary"
       [disabled]="obs.selectedDocumentDefinition?.readOnly"
       (click)="onEditClick()"

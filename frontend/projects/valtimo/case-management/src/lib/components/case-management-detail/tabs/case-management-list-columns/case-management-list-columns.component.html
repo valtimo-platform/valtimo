@@ -22,6 +22,7 @@
     downloadName: downloadName$ | async,
     loadingCaseListColumns: loadingCaseListColumns$ | async,
     disableInput: disableInput$ | async,
+    hasEditPermissions: hasEditPermissions$ | async,
   } as obs"
 >
   <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
@@ -73,7 +74,12 @@
     <svg cdsIcon="download" size="16"></svg>
   </button>
 
-  <button (click)="openModal('create')" cdsButton="primary" [disabled]="obs.loadingCaseListColumns">
+  <button
+    *ngIf="obs.hasEditPermissions"
+    (click)="openModal('create')"
+    cdsButton="primary"
+    [disabled]="obs.loadingCaseListColumns || !(hasEditPermissions$ | async)"
+  >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>

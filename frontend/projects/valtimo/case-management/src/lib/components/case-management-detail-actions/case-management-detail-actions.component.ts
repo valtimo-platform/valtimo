@@ -29,7 +29,11 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Deploy16, Version16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PageHeaderService} from '@valtimo/components';
-import {getCaseManagementRouteParams, GlobalNotificationService} from '@valtimo/shared';
+import {
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {IconService, ListItem, Notification} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -78,6 +82,15 @@ export class CaseManagementDetailActionsComponent {
       this.caseManagementService
         .getGlobalActiveCase(caseDefinitionKey)
         .pipe(map(result => result.caseDefinitionVersionTag))
+    )
+  );
+
+  public readonly hasEditPermissions$: Observable<boolean> = combineLatest(
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$
+  ).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
     )
   );
 
@@ -184,7 +197,8 @@ export class CaseManagementDetailActionsComponent {
     private readonly pageHeaderService: PageHeaderService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly editPermissionsService: EditPermissionsService
   ) {
     this.iconService.register(Version16);
     this.iconService.register(Deploy16);

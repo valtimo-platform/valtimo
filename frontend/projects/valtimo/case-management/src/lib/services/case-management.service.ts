@@ -22,7 +22,7 @@ import {
   InterceptorSkipHeader,
 } from '@valtimo/shared';
 import {Page} from '@valtimo/document';
-import {Observable} from 'rxjs';
+import {map, Observable} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
 import {CaseDefinition, DraftVersion} from '../models/case-deployment.model';
@@ -59,6 +59,22 @@ export class CaseManagementService extends BaseApiService {
       this.getApiUrl(`management/v1/case-definition/draft`),
       payload
     );
+  }
+
+  public isDraftVersion(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<boolean> {
+    return this.httpClient
+      .get<CaseDefinition>(
+        this.getApiUrl(
+          `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
+        ),
+        {
+          headers: new HttpHeaders().set(InterceptorSkip, '403'),
+        }
+      )
+      .pipe(map(caseDefinition => !caseDefinition.final));
   }
 
   public getGlobalActiveCase(caseDefinitionKey: string): Observable<any> {

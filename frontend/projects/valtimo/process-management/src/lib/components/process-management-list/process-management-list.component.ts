@@ -24,12 +24,19 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {EnvironmentService, GlobalNotificationService} from '@valtimo/shared';
+import {
+  EditPermissionsService,
+  EnvironmentService,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {ProcessDefinition} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, switchMap, tap} from 'rxjs';
 import {ProcessDefinitionResult} from '../../models';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
+import {ActivatedRoute} from '@angular/router';
+import {getContextObservable} from '../../utils';
 
 @Component({
   selector: 'valtimo-process-management-list',
@@ -60,8 +67,7 @@ export class ProcessManagementListComponent {
     {label: 'Delete', callback: this.onDeleteProcess.bind(this), type: 'danger'},
   ];
 
-  public readonly canUpdateGlobalConfiguration$ =
-    this.environmentService.canUpdateGlobalConfiguration();
+  public readonly context$ = getContextObservable(this.route);
 
   public readonly processDefinitions$: Observable<ProcessDefinitionResult[]> =
     this.processManagementStateService.reloadDefinitions$.pipe(
@@ -69,6 +75,19 @@ export class ProcessManagementListComponent {
       switchMap(() => this.processManagementService.processes$),
       tap(() => this.loading$.next(false))
     );
+
+  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
+    getCaseManagementRouteParams(this.route),
+    this.context$,
+  ]).pipe(
+    switchMap(([params, context]) => {
+      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag,
+        context
+      );
+    })
+  );
 
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'processDefinition.name', label: 'processManagement.name'},
@@ -104,7 +123,9 @@ export class ProcessManagementListComponent {
     private readonly processManagementService: ProcessManagementService,
     private readonly processManagementStateService: ProcessManagementStateService,
     private readonly translateService: TranslateService,
-    private readonly environmentService: EnvironmentService
+    private readonly environmentService: EnvironmentService,
+    private readonly route: ActivatedRoute,
+    private readonly editPermissionsService: EditPermissionsService
   ) {
     this.iconService.registerAll([Upload16]);
   }

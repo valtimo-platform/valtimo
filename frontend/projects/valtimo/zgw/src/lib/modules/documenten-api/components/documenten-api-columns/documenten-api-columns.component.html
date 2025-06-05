@@ -32,6 +32,7 @@
     [items]="obs.configuredColumns"
     [loading]="obs.loading || !fields"
     [dragAndDrop]="true"
+    [dragAndDropDisabled]="!(hasEditPermissions$ | async)"
     (itemsReordered)="onItemsReordered(obs.caseDefinitionKey, $event)"
     (rowClicked)="openEditModal($event)"
   >
@@ -67,7 +68,12 @@
 </ng-container>
 
 <ng-template #addButton>
-  <button cdsButton="primary" [disabled]="loading$ | async" (click)="openAddModal()">
+  <button
+    *ngIf="hasEditPermissions$ | async"
+    cdsButton="primary"
+    [disabled]="loading$ | async"
+    (click)="openAddModal()"
+  >
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
 
     {{ 'zgw.columns.add' | translate }}

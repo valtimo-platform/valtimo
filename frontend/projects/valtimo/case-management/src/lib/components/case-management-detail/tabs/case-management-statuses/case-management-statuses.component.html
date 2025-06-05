@@ -21,7 +21,7 @@
   [header]="false"
   [loading]="obs.loading"
   [dragAndDrop]="true"
-  [dragAndDropDisabled]="obs.loading"
+  [dragAndDropDisabled]="obs.loading || !(hasEditPermissions$ | async)"
   [actionItems]="ACTION_ITEMS"
   (rowClicked)="openEditModal($event)"
   (itemsReordered)="onItemsReordered($event)"
@@ -54,7 +54,12 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #addStatusButton>
-  <button cdsButton="primary" [disabled]="loading$ | async" (click)="openAddModal()">
+  <button
+    *ngIf="hasEditPermissions$ | async"
+    cdsButton="primary"
+    [disabled]="loading$ | async"
+    (click)="openAddModal()"
+  >
     {{ 'caseManagement.statuses.add' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

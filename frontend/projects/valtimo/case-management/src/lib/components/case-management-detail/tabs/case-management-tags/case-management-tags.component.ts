@@ -23,12 +23,14 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {EditPermissionsService, getCaseManagementRouteParams} from '@valtimo/shared';
 import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   map,
+  Observable,
   Subject,
   Subscription,
   switchMap,
@@ -56,6 +58,15 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   public readonly caseDefinitionKey$ = this._params$.pipe(map(p => p.caseDefinitionKey));
   public readonly caseDefinitionVersionTag$ = this._params$.pipe(
     map(p => p.caseDefinitionVersionTag)
+  );
+
+  public readonly hasEditPermissions$: Observable<boolean> = combineLatest(
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$
+  ).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
+    )
   );
 
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
@@ -110,7 +121,8 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly caseTagService: CaseTagService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly editPermissionsService: EditPermissionsService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -127,8 +139,10 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   }
 
   public openEditModal(caseTag: CaseTag): void {
-    this.prefillCaseTag$.next(caseTag);
-    this.statusModalType$.next('edit');
+    this.hasEditPermissions$.pipe(filter(hasPermission => hasPermission)).subscribe(() => {
+      this.prefillCaseTag$.next(caseTag);
+      this.statusModalType$.next('edit');
+    });
   }
 
   public openAddModal(): void {
@@ -164,9 +178,12 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   public onItemsReorderedEvent(reorderedItems: CaseTag[]): void {
     if (!reorderedItems) return;
 
-    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
+    this.hasEditPermissions$
       .pipe(
-        take(1),
+        filter(hasPermission => hasPermission),
+        switchMap(() =>
+          combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$]).pipe(take(1))
+        ),
         switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
           this.caseTagService.updateCaseTags(
             caseDefinitionKey,

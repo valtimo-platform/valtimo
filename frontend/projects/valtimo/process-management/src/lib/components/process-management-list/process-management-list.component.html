@@ -23,7 +23,7 @@
   (rowClicked)="editProcessDefinition($event)"
 >
   <ng-container carbonToolbarContent>
-    <button cdsButton="ghost" iconOnly="true" (click)="openModal()">
+    <button *ngIf="hasEditPermissions$ | async" cdsButton="ghost" iconOnly="true" (click)="openModal()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
@@ -49,7 +49,7 @@
 
 <ng-template #createProcess>
   <button
-    *ngIf="canUpdateGlobalConfiguration$ | async"
+    *ngIf="hasEditPermissions$ | async"
     cdsButton="primary"
     (click)="onCreateProcess()"
   >

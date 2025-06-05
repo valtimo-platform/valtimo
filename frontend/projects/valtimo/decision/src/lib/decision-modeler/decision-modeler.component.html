@@ -66,6 +66,7 @@
         isCreating: isCreating$ | async,
         context: context$ | async,
         compactMode: compactMode$ | async,
+        hasEditPermissions: hasEditPermissions$ | async,
       } as obs"
     >
       <div class="header">
@@ -86,7 +87,12 @@
           </button>
 
           @if (obs.selectionId && !obs.isCreating) {
-            <button cdsButton="primary" (click)="deploy()" [size]="obs.compactMode ? 'sm' : 'md'">
+            <button
+              *ngIf="obs.hasEditPermissions"
+              cdsButton="primary"
+              (click)="deploy()"
+              [size]="obs.compactMode ? 'sm' : 'md'"
+            >
               {{ 'decisions.deploy' | translate }}
 
               <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>

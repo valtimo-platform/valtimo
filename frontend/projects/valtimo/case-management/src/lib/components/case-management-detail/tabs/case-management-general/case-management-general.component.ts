@@ -27,7 +27,7 @@ import {
 import {map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/shared';
+import {CASE_CONFIGURATION_EXTENSIONS_TOKEN, EditPermissionsService} from '@valtimo/shared';
 import {CaseManagementService} from '../../../../services';
 import {MuuriItemComponent} from '@valtimo/components';
 
@@ -54,11 +54,12 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     )
   );
 
-  public readonly isReadOnly$ = this.params$.pipe(
-    switchMap(({caseDefinitionKey, caseDefinitionVersionTag}) =>
-      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
-    ),
-    map(caseDefinition => caseDefinition.final)
+  public readonly isReadOnly$: Observable<boolean> = this.params$.pipe(
+    switchMap(params =>
+      this.editPermissionsService
+        .hasEditPermissions(params?.caseDefinitionKey, params?.caseDefinitionVersionTag)
+        .pipe(map(hasPermissions => !hasPermissions))
+    )
   );
 
   constructor(
@@ -68,7 +69,8 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     private readonly caseManagementService: CaseManagementService,
     @Optional()
     @Inject(CASE_CONFIGURATION_EXTENSIONS_TOKEN)
-    private readonly caseConfigurationExtensionComponents: Type<any>[]
+    private readonly caseConfigurationExtensionComponents: Type<any>[],
+    private readonly editPermissionsService: EditPermissionsService
   ) {}
 
   public ngAfterViewInit(): void {

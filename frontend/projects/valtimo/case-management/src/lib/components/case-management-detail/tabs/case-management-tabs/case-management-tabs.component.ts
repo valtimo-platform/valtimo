@@ -28,9 +28,13 @@ import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {ApiTabItem, ApiTabType} from '@valtimo/case';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {
+  CaseManagementParams,
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
-import {BehaviorSubject, map, Observable, tap} from 'rxjs';
+import {BehaviorSubject, filter, map, Observable, switchMap, take, tap} from 'rxjs';
 import {TabManagementService, TabService} from '../../../../services';
 
 @Component({
@@ -86,6 +90,18 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
   public readonly dragAndDropDisabled = signal(false);
 
+  private readonly params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
+
+  public readonly hasEditPermissions$: Observable<boolean> = this.params$.pipe(
+    switchMap(params =>
+      this.editPermissionsService.hasEditPermissions(
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag
+      )
+    )
+  );
+
   constructor(
     private readonly cd: ChangeDetectorRef,
     private readonly iconService: IconService,
@@ -93,7 +109,8 @@ export class CaseManagementTabsComponent implements AfterViewInit {
     private readonly tabService: TabService,
     private readonly translateService: TranslateService,
     private readonly router: Router,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly editPermissionsService: EditPermissionsService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -116,13 +133,20 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   }
 
   public onRowClicked(tab: ApiTabItem): void {
-    this.tab$.next(tab);
+    this.hasEditPermissions$
+      .pipe(
+        filter(hasPermission => hasPermission),
+        take(1)
+      )
+      .subscribe(() => {
+        this.tab$.next(tab);
 
-    if (tab.type === ApiTabType.WIDGETS) {
-      this.router.navigate(['widget-tab', tab.key], {relativeTo: this.route});
-    } else {
-      this.openEditModal$.next(true);
-    }
+        if (tab.type === ApiTabType.WIDGETS) {
+          this.router.navigate(['widget-tab', tab.key], {relativeTo: this.route});
+        } else {
+          this.openEditModal$.next(true);
+        }
+      });
   }
 
   public onCloseAddModalEvent(tab: ApiTabItem | null): void {

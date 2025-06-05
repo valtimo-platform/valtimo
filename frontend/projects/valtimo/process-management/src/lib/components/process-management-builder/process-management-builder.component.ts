@@ -35,6 +35,15 @@ import {
   PendingChangesComponent,
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
+import {
+    CaseManagementParams,
+
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+  getCaseManagementRouteParamsAndContext,
+  GlobalNotificationService,
+  ManagementContext,
+} from '@valtimo/shared';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {
   ProcessLinkButtonService,
@@ -45,14 +54,6 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '@valtimo/process-link';
-import {
-  CaseManagementParams,
-  EnvironmentService,
-  getCaseManagementRouteParams,
-  getCaseManagementRouteParamsAndContext,
-  GlobalNotificationService,
-  ManagementContext,
-} from '@valtimo/shared';
 import {
   BpmnPropertiesPanelModule,
   BpmnPropertiesProviderModule,
@@ -159,9 +160,6 @@ export class ProcessManagementBuilderComponent
   public readonly canInitializeDocument$ = new BehaviorSubject<boolean>(false);
   public readonly startableByUser$ = new BehaviorSubject<boolean>(false);
 
-  public readonly canUpdateGlobalConfiguration$ =
-    this.environmentService.canUpdateGlobalConfiguration();
-
   public readonly selectedProcessDefinitionXml$ =
     this.processManagementEditorService.selectionProcessDefinition$.pipe(
       filter(selectedProcessDefinition => !!selectedProcessDefinition?.id),
@@ -202,6 +200,21 @@ export class ProcessManagementBuilderComponent
   public readonly managementParams$ = this.context$.pipe(
     filter(context => context === 'case'),
     switchMap(() => getCaseManagementRouteParams(this.route))
+  );
+
+  public readonly params$: Observable<any> | undefined = getCaseManagementRouteParams(this.route);
+
+  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
+    this.params$,
+    this.context$,
+  ]).pipe(
+    switchMap(([params, context]) =>
+      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag,
+        context
+      )
+    )
   );
 
   private readonly _reload$ = new Subject<null>();
@@ -269,8 +282,8 @@ export class ProcessManagementBuilderComponent
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly translateService: TranslateService,
-    private readonly environmentService: EnvironmentService,
-    private readonly pluginTranslationService: PluginTranslationService
+    private readonly pluginTranslationService: PluginTranslationService,
+    private readonly editPermissionsService: EditPermissionsService
   ) {
     super();
     this.setProcessManagementWindow();

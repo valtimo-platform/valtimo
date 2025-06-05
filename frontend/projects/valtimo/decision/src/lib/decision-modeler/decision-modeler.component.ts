@@ -27,6 +27,7 @@ import {
   filter,
   from,
   map,
+  Observable,
   of,
   switchMap,
   take,
@@ -56,6 +57,7 @@ import {
 } from 'carbon-components-angular';
 import {
   CaseManagementParams,
+  EditPermissionsService,
   getCaseManagementRouteParams,
   getContextObservable,
   GlobalNotificationService,
@@ -95,10 +97,10 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
   private $tabs!: any;
   private dmnModeler!: DmnJS;
 
-  readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
-  readonly isCreating$ = new BehaviorSubject<boolean>(false);
-  readonly selectionId$ = new BehaviorSubject<string>('');
-  readonly createdDecisionVersionSelectItems$ = new BehaviorSubject<Array<SelectItem>>([]);
+  public readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
+  public readonly isCreating$ = new BehaviorSubject<boolean>(false);
+  public readonly selectionId$ = new BehaviorSubject<string>('');
+  public readonly createdDecisionVersionSelectItems$ = new BehaviorSubject<Array<SelectItem>>([]);
 
   private _fileName!: string;
 
@@ -106,6 +108,26 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
   public readonly context$ = getContextObservable(this.route);
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
+    map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
+      caseDefinitionKey: caseDefinitionKey,
+      caseDefinitionVersionTag: caseDefinitionVersionTag,
+    }))
+  );
+
+  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
+    this.params$,
+    this.context$,
+  ]).pipe(
+    switchMap(([params, context]) =>
+      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag,
+        context
+      )
+    )
+  );
 
   private readonly decisionId$ = this.route.params.pipe(
     map(params => params?.id),
@@ -116,7 +138,7 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
     filter(id => !!id && id !== 'create')
   );
 
-  readonly decision$ = this.decisionId$.pipe(
+  public readonly decision$ = this.decisionId$.pipe(
     switchMap(id => this.decisionService.getDecisionById(id)),
     tap(decision => {
       this._fileName = decision.resource;
@@ -124,12 +146,12 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
     })
   );
 
-  readonly decisionTitle$ = this.decision$.pipe(
+  public readonly decisionTitle$ = this.decision$.pipe(
     map(d => d?.name || d?.key || '-'),
     tap(title => this.pageTitleService.setCustomPageTitle(title))
   );
 
-  readonly decisionVersionSelectItems$ = combineLatest([
+  public readonly decisionVersionSelectItems$ = combineLatest([
     this.decision$,
     this.decisionService.getDecisions(),
     this.createdDecisionVersionSelectItems$,
@@ -143,7 +165,7 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
     tap(() => this.versionSelectionDisabled$.next(false))
   );
 
-  readonly decisionXml$ = this.decisionId$.pipe(
+  public readonly decisionXml$ = this.decisionId$.pipe(
     switchMap(id => this.decisionService.getDecisionXml(id)),
     tap(xml => xml && this.loadDecisionXml(xml))
   );
@@ -157,7 +179,8 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
     private readonly breadcrumbService: BreadcrumbService,
     private readonly iconService: IconService,
     private readonly pageHeaderService: PageHeaderService,
-    private readonly notificationService: GlobalNotificationService
+    private readonly notificationService: GlobalNotificationService,
+    private readonly editPermissionsService: EditPermissionsService
   ) {
     super();
     this.iconService.registerAll([Deploy16, Download16, ArrowLeft16]);

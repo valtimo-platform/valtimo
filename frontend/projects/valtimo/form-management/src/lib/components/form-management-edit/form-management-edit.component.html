@@ -21,6 +21,7 @@
     compactMode: compactMode$ | async,
     context: context$ | async,
     canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
+    isDraftVersion: isDraftVersion$ | async,
   } as obs"
 >
   @if (obs.formDefinition) {
@@ -157,10 +158,9 @@
       }
 
       <button
+        *ngIf="obs.canUpdateGlobalConfiguration && obs.isDraftVersion"
         cdsButton="primary"
-        [disabled]="
-          obs.formDefinition.readOnly || !validJsonChange || !obs.canUpdateGlobalConfiguration
-        "
+        [disabled]="obs.formDefinition.readOnly || !validJsonChange"
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="modifyFormDefinition(obs.formDefinition)"
       >

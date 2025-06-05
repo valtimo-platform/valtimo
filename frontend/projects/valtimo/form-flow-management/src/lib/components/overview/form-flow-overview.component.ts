@@ -19,6 +19,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {ActionItem, CarbonListComponent, ColumnConfig, ViewType} from '@valtimo/components';
 import {
   CaseManagementParams,
+  EditPermissionsService,
   getCaseManagementRouteParams,
   GlobalNotificationService,
   Page,
@@ -94,12 +95,24 @@ export class FormFlowOverviewComponent {
   );
   public readonly showAddModal$ = new BehaviorSubject<boolean>(false);
 
+  public readonly params$ = getCaseManagementRouteParams(this.route);
+
+  public readonly hasEditPermissions$: Observable<boolean> = this.params$.pipe(
+    switchMap(params =>
+      this.editPermissionsService.hasEditPermissions(
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag
+      )
+    )
+  );
+
   constructor(
     private readonly formFlowService: FormFlowService,
     private readonly globalNotificationService: GlobalNotificationService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly editPermissionsService: EditPermissionsService
   ) {}
 
   public openAddModal(): void {

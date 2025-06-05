@@ -46,6 +46,7 @@ import {
   WidgetModule,
 } from '@valtimo/components';
 import {
+  DraftVersionService,
   EnvironmentService,
   getCaseManagementRouteParams,
   getCaseManagementRouteParamsAndContext,
@@ -138,6 +139,17 @@ export class FormManagementEditComponent
   public readonly canUpdateGlobalConfiguration$ =
     this.environmentService.canUpdateGlobalConfiguration();
 
+  public readonly isDraftVersion$: Observable<boolean> = getCaseManagementRouteParams(
+    this.route
+  ).pipe(
+    switchMap(params =>
+      this.draftVersionService.isDraftVersion(
+        params.caseDefinitionKey,
+        params.caseDefinitionVersionTag
+      )
+    )
+  );
+
   private get _formDefinition(): FormDefinition {
     return this._formDefinition$.getValue();
   }
@@ -183,7 +195,8 @@ export class FormManagementEditComponent
     private readonly translateService: TranslateService,
     private readonly notificationService: GlobalNotificationService,
     private readonly breadcrumbService: BreadcrumbService,
-    private readonly environmentService: EnvironmentService
+    private readonly environmentService: EnvironmentService,
+    private readonly draftVersionService: DraftVersionService
   ) {
     super();
     this.iconService.registerAll([ArrowLeft16]);

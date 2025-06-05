@@ -100,6 +100,7 @@
 
 <ng-template #actionsMenuTemplate let-data="data">
   <cds-overflow-menu
+    *ngIf="showActionItems"
     [open]="currentOpenActionId === data.item"
     (openChange)="handleActionOpenChange(data.item, $event)"
     [flip]="true"
