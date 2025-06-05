@@ -116,7 +116,7 @@ const routes: Routes = [
     } as FormManagementRouteData,
   },
   {
-    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.TABS}/widget-tab/:key`,
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.CASE_DETAIL}/widget-tab/:key`,
     component: CaseManagementWidgetTabComponent,
     canActivate: [AuthGuardService],
     canDeactivate: [pendingChangesGuard],

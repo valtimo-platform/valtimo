@@ -217,9 +217,9 @@ export class CaseManagementWidgetTabComponent
       });
 
       this.breadcrumbService.setFourthBreadcrumb({
-        route: [`${route}/tabs`],
-        content: this.translateService.instant('caseManagement.tabs.tabManagement'),
-        href: `${route}/tabs`,
+        route: [`${route}/case-detail`],
+        content: this.translateService.instant('caseManagement.tabs.caseDetailTab.title'),
+        href: `${route}/case-detail`,
       });
     });
   }
