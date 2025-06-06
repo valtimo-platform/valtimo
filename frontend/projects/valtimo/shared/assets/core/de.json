@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Aufgabefrist gesetzt > {{taskName}}"
   },
   "case": {
+    "summaryFormNotFound": "Zusammenfassungsformular für '{{caseDefinitionKey}}' wurde nicht gefunden. Es muss ein Formular mit dem Namen '{{caseDefinitionKey}}.summary' existieren, das den Falldefinitionsschlüssel verwendet.",
     "bulkAssign": {
       "assign": "Zuweisen",
       "modal": {

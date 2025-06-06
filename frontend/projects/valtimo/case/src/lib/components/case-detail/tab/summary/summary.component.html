@@ -14,9 +14,12 @@
   ~ limitations under the License.
   -->
 
-<valtimo-form-io
-  *ngIf="formDefinition && document"
-  class="valtimo-summary-form"
-  [form]="formDefinition"
-  [options]="options"
-></valtimo-form-io>
+@if ((loading$ | async) && formDefinition && document) {
+  <valtimo-form-io
+    class="valtimo-summary-form"
+    [form]="formDefinition"
+    [options]="options"
+  ></valtimo-form-io>
+} @else if (notificationObj$ !== null) {
+  <cds-inline-notification [notificationObj]="notificationObj$ | async"></cds-inline-notification>
+}

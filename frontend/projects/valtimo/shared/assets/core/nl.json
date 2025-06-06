@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
   },
   "case": {
+    "summaryFormNotFound": "Samenvattingsformulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary' dat de dossierdefinitiesleutel gebruikt.",
     "bulkAssign": {
       "assign": "Toewijzen",
       "modal": {

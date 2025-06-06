@@ -68,6 +68,7 @@ import {
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
+  NotificationModule,
   SelectModule as CarbonSelectModule,
   SkeletonModule,
   TabsModule,
@@ -191,6 +192,7 @@ export type TabsFactory = () => Map<string, object>;
     ValtimoCdsModalDirective,
     TilesModule,
     LayerModule,
+    NotificationModule,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
 })

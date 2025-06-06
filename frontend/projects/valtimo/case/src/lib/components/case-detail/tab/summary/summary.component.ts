@@ -21,7 +21,10 @@ import {FormService} from '@valtimo/form';
 import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
-import {Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, Subscription, tap} from 'rxjs';
+import {NotificationContent} from 'carbon-components-angular';
+import {TranslateService} from '@ngx-translate/core';
+import {catchError} from 'rxjs/operators';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -40,13 +43,20 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
   private snapshot: ParamMap;
   public moment!: typeof moment;
   public formDefinition: FormioForm = null;
+
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
   public options: ValtimoFormioOptions;
+
+  public notificationObj$: Observable<NotificationContent> | null = null;
+
   private _subscriptions = new Subscription();
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
-    private readonly formService: FormService
+    private readonly formService: FormService,
+    private readonly translateService: TranslateService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.caseDefinitionKey = this.snapshot.get('caseDefinitionKey') || '';
@@ -63,19 +73,41 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
+
   public init(): void {
     this._subscriptions.add(
-      this.documentService.getDocument(this.documentId).subscribe(document => {
-        this.document = document;
-      })
-    );
+      combineLatest([
+        this.documentService.getDocument(this.documentId).pipe(catchError(() => of(null))),
+        this.formService
+          .getFormDefinitionByNamePreFilled(`${this.caseDefinitionKey}.summary`, this.documentId)
+          .pipe(catchError(() => of(null))),
+      ])
+        .pipe(
+          tap(([document, formDefinition]) => {
+            this.document = document;
+            this.formDefinition = formDefinition;
 
-    this._subscriptions.add(
-      this.formService
-        .getFormDefinitionByNamePreFilled(`${this.caseDefinitionKey}.summary`, this.documentId)
-        .subscribe(formDefinition => {
-          this.formDefinition = formDefinition;
-        })
+            if (!formDefinition || !document) {
+              this.notificationObj$ = combineLatest([
+                this.translateService.stream('interface.warning'),
+                this.translateService.stream('case.summaryFormNotFound', {
+                  summary: this.caseDefinitionKey,
+                }),
+              ]).pipe(
+                map(([title, message]) => ({
+                  type: 'warning',
+                  title,
+                  message,
+                  showClose: false,
+                  lowContrast: true,
+                }))
+              );
+            }
+
+            this.loading$.next(false);
+          })
+        )
+        .subscribe()
     );
   }
 }
