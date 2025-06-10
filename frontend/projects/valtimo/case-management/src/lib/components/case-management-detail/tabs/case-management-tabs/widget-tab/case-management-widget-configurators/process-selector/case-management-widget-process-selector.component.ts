@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
-import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
+import {AbstractControl, FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseWidgetAction} from '@valtimo/case';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {CaseManagementParams} from '@valtimo/shared';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
+import {CaseManagementParams} from '@valtimo/shared';
+import {ComboBoxModule, InputModule, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   debounceTime,
@@ -40,7 +38,7 @@ import {WidgetWizardService} from '../../../../../../../services';
   styleUrl: './case-management-widget-process-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, DropdownModule, InputModule, ReactiveFormsModule],
+  imports: [CommonModule, TranslateModule, InputModule, ReactiveFormsModule, ComboBoxModule],
 })
 export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
   private readonly _params$ = new BehaviorSubject<CaseManagementParams | null>(null);
@@ -110,25 +108,27 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
         .subscribe(
           (changes: Partial<{name: string | null; processDefinitionKey: ListItem | null}>) => {
             const {name, processDefinitionKey} = changes;
-            this.widgetWizardService.widgetActions.update(
-              (value: CaseWidgetAction[] | undefined) => {
-                // This can be extended in the future if we need to support multiple actions on a widget
-                return [
-                  {
-                    name: !name ? processDefinitionKey?.content : name,
-                    processDefinitionKey: processDefinitionKey?.key,
-                  },
-                ];
-              }
+            this.widgetWizardService.widgetActions.update(() =>
+              // This can be extended in the future if we need to support multiple actions on a widget
+              !Array.isArray(processDefinitionKey)
+                ? [
+                    {
+                      name: !name ? processDefinitionKey?.content : name,
+                      processDefinitionKey: processDefinitionKey?.key,
+                    },
+                  ]
+                : []
             );
           }
         )
     );
   }
 
-  public onProcessSelected(): void {
-    if (!this.formGroup.get('name')?.disabled) return;
+  public onProcessSelected(selection: ListItem | Array<object>): void {
+    const nameFormControl: AbstractControl | null = this.formGroup.get('name');
+    if (!nameFormControl) return;
 
-    this.formGroup.get('name')?.enable();
+    if (Array.isArray(selection) && selection.length === 0) nameFormControl.disable();
+    else nameFormControl.enable();
   }
 }
