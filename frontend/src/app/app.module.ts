@@ -135,6 +135,7 @@ import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
 import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
+import {IkoModule} from '@valtimo/iko';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -226,6 +227,7 @@ export function tabsFactory() {
     BpmnJsDiagramModule,
     MenuModule,
     WidgetModule,
+    IkoModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

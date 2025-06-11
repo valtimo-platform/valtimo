@@ -28,7 +28,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 
 import {ShellService} from '../../services/shell.service';
-import {MenuService} from '../menu/menu.service';
+import {MenuService} from '../menu/services/menu.service';
 
 @Component({
   selector: 'valtimo-left-sidebar',

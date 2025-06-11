@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-export * from './versions';
-export * from './case-management-tab-token';
-export * from './form-view-model-token';
-export * from './error.constants';
-export * from './case-configuration-extensions-token';
-export * from './iko.token';
+import {InjectionToken} from '@angular/core';
+
+const IKO_TOKEN = new InjectionToken<any>('IKO is enabled when this token is provided');
+
+export {IKO_TOKEN};
