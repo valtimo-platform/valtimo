@@ -1,0 +1,165 @@
+import {HttpClient} from '@angular/common/http';
+import {Injectable} from '@angular/core';
+import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
+import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/shared';
+import {UserProviderService} from '@valtimo/security';
+import {SseService} from '@valtimo/sse';
+import {KeycloakService} from 'keycloak-angular';
+import {NGXLogger} from 'ngx-logger';
+import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
+import {filter, map} from 'rxjs/operators';
+import {CaseMenuService} from './case-menu.service';
+import {ObjectMenuService} from './object-menu.service';
+import {PendingChangesService} from '../../pending-changes/pending-changes.service';
+
+@Injectable({providedIn: 'root'})
+export class MenuService {
+  private readonly _activeParentSequenceNumber$ = new BehaviorSubject<string>('');
+  private readonly _menuItems$ = new BehaviorSubject<MenuItem[]>([]);
+  private readonly dossierItemsAppended$ = new BehaviorSubject<boolean>(false);
+  private readonly objectsItemsAppended$ = new BehaviorSubject<boolean>(false);
+
+  public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
+
+  private readonly menuConfig: MenuConfig;
+  private readonly disableCaseCount: boolean;
+  private readonly enableObjectManagement: boolean;
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient,
+    private readonly keycloakService: KeycloakService,
+    private readonly logger: NGXLogger,
+    private readonly menuIncludeService: MenuIncludeService,
+    private readonly pendingChangesService: PendingChangesService,
+    private readonly router: Router,
+    private readonly userProviderService: UserProviderService,
+    private readonly sseService: SseService,
+    private readonly caseMenuService: CaseMenuService,
+    private readonly objectMenuService: ObjectMenuService
+  ) {
+    const config = configService.config;
+    this.menuConfig = config?.menu;
+    this.disableCaseCount = config?.featureToggles?.disableCaseCount;
+    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement ?? true;
+  }
+
+  public get menuItems$(): Observable<MenuItem[]> {
+    return this._menuItems$.asObservable();
+  }
+
+  public get activeParentSequenceNumber$(): Observable<string> {
+    return this._activeParentSequenceNumber$.asObservable();
+  }
+
+  private readonly currentRoute$ = this.router.events.pipe(
+    filter(
+      event =>
+        event instanceof NavigationEnd ||
+        event instanceof NavigationStart ||
+        event instanceof ResolveEnd
+    ),
+    map(event => (event as NavigationEnd)?.url),
+    filter(url => !!url)
+  );
+
+  public init(): void {
+    this.reload();
+    this.logger.debug('Menu initialized');
+  }
+
+  public reload(): void {
+    const roles = this.keycloakService.getUserRoles(true);
+    let menuItems = this.loadMenuItems(roles);
+
+    this.caseMenuService
+      .appendCaseSubMenuItems(menuItems, this.disableCaseCount, this.sseService)
+      .subscribe(updatedItems => {
+        this.dossierItemsAppended$.next(true);
+
+        if (this.enableObjectManagement) {
+          this.objectMenuService
+            .appendObjectsSubMenuItems(
+              updatedItems,
+              this.configService.config.valtimoApi.endpointUri,
+              this.http
+            )
+            .subscribe(finalItems => {
+              this.objectsItemsAppended$.next(true);
+              this._menuItems$.next(this.applyMenuRoleSecurity(finalItems));
+            });
+        } else {
+          this._menuItems$.next(this.applyMenuRoleSecurity(updatedItems));
+        }
+      });
+  }
+
+  private loadMenuItems(userRoles: string[]): MenuItem[] {
+    let menuItems: MenuItem[] = [];
+
+    this.menuConfig.menuItems.forEach(menuItem => {
+      if (menuItem.includeFunction) {
+        this.includeFunctionObservables[menuItem.title] =
+          this.menuIncludeService.getIncludeFunction(menuItem.includeFunction);
+      }
+
+      menuItem.show = true;
+
+      if (!menuItem.roles || menuItem.roles.some(role => userRoles.includes(role))) {
+        const filteredChildren = menuItem.children?.filter(
+          child => !child.roles || child.roles.some(role => userRoles.includes(role))
+        );
+        menuItems.push({...menuItem, ...(filteredChildren && {children: filteredChildren})});
+      }
+    });
+
+    return menuItems.sort((a, b) => a.sequence - b.sequence);
+  }
+
+  private applyMenuRoleSecurity(menuItems: MenuItem[]): MenuItem[] {
+    this.userProviderService.getUserSubject().subscribe(user => {
+      const roles = user?.roles || [];
+      menuItems.forEach(item => {
+        item.show = !item.roles || item.roles.some(role => roles.includes(role));
+      });
+    });
+    return menuItems;
+  }
+
+  get closestSequence$(): Observable<string> {
+    return combineLatest([
+      this.dossierItemsAppended$,
+      this.objectsItemsAppended$,
+      this.currentRoute$,
+      this.menuItems$,
+    ]).pipe(
+      filter(() => !this.pendingChangesService.pendingChanges),
+      filter(([dossier, objects]) => dossier || objects),
+      map(([_1, _2, currentRoute, menuItems]) => {
+        let closestSequence = '0';
+        let highestDiff = 0;
+
+        const checkItemMatch = (url: string, seq: string, parentSeq?: string): void => {
+          const diff = currentRoute.length - currentRoute.replace(url, '').length;
+          if (diff > highestDiff) {
+            highestDiff = diff;
+            closestSequence = seq;
+            this._activeParentSequenceNumber$.next(parentSeq || '');
+          }
+        };
+
+        menuItems.forEach(item => {
+          checkItemMatch(item.link?.join('') || '', `${item.sequence}`);
+          item.children?.forEach(child => {
+            if (Array.isArray(child.link)) {
+              const fullLink = [...(item.link || []), ...child.link].join('');
+              checkItemMatch(fullLink, `${item.sequence}${child.sequence}`, `${item.sequence}`);
+            }
+          });
+        });
+
+        return closestSequence;
+      })
+    );
+  }
+}

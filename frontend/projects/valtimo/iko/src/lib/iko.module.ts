@@ -13,10 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {IKO_TOKEN} from '@valtimo/shared';
 
-export * from './versions';
-export * from './case-management-tab-token';
-export * from './form-view-model-token';
-export * from './error.constants';
-export * from './case-configuration-extensions-token';
-export * from './iko.token';
+@NgModule({
+  imports: [CommonModule],
+  declarations: [],
+  exports: [],
+  providers: [
+    {
+      provide: IKO_TOKEN,
+      useValue: {},
+    },
+  ],
+})
+export class IkoModule {}

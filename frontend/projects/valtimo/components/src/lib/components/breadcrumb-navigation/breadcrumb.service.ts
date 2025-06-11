@@ -20,7 +20,7 @@ import {ConfigService} from '@valtimo/shared';
 import {BreadcrumbItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {MenuService} from '../menu/menu.service';
+import {MenuService} from '../menu/services/menu.service';
 
 @Injectable({
   providedIn: 'root',
