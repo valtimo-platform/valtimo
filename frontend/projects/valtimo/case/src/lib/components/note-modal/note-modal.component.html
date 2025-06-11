@@ -14,63 +14,34 @@
   ~ limitations under the License.
   -->
 
-<v-modal
-  #noteModal
-  *ngIf="{disabled: disabled$ | async, valid: valid$ | async, modalType: modalType$ | async} as obs"
->
-  <div role="header">
-    <div class="add-note-title">
-      <h4>
-        {{ (obs.modalType === 'add' ? 'case.notes.addNote' : 'case.notes.modifyNote') | translate }}
-      </h4>
-    </div>
-  </div>
-  <div role="content">
-    <ng-container *ngTemplateOutlet="form"></ng-container>
-  </div>
-  <div role="footer">
-    <div class="buttons">
-      <button cdsButton="secondary" [disabled]="obs.disabled" (click)="cancel()">
-        {{ 'document.cancel' | translate }}
-      </button>
+<cds-modal valtimoCdsModal [open]="open" size="sm" showFooter="true" (close)="onCancel()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'case.notes.' + modalType + 'Note' | translate }}
+    </h3>
+  </cds-modal-header>
 
-      <ng-container
-        *ngTemplateOutlet="
-          obs.modalType === 'add' ? addNoteButton : editNoteButton;
-          context: {obs: obs}
-        "
-      ></ng-container>
-    </div>
-  </div>
-</v-modal>
+  <form [formGroup]="formGroup" cdsModalContent>
+    <cds-textarea-label>
+      {{ 'case.notes.input.content' | translate }}
 
-<ng-template #addNoteButton let-obs="obs">
-  <button cdsButton="primary" [disabled]="obs.disabled || !obs.valid" (click)="emitNoteData()">
-    {{ 'case.notes.addNote' | translate }}
-  </button>
-</ng-template>
-
-<ng-template #editNoteButton let-obs="obs">
-  <button cdsButton="primary" [disabled]="obs.disabled || !obs.valid" (click)="emitNoteData()">
-    {{ 'case.notes.modifyNote' | translate }}
-  </button>
-</ng-template>
-
-<ng-template #form>
-  <ng-container *ngIf="showForm$ | async">
-    <v-form (valueChange)="formValueChange($event)">
-      <v-input
-        class="notes-input"
-        type="textarea"
-        [margin]="true"
-        [required]="true"
-        [title]="'case.notes.input.content' | translate"
-        name="content"
-        [fullWidth]="true"
+      <textarea
+        cdsTextArea
+        cdsLayer="1"
+        class="valtimo-note-modal__textarea"
+        formControlName="content"
         [rows]="10"
-        [defaultValue]="customData?.summaryTranslationKey || ''"
-      >
-      </v-input>
-    </v-form>
-  </ng-container>
-</ng-template>
+      ></textarea>
+    </cds-textarea-label>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button [disabled]="!formGroup.valid" cdsButton="primary" (click)="onConfirm()">
+      {{ 'case.notes.' + modalType + 'Note' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {TimelineComponent} from './timeline.component';
+import {NgModule} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {DialogModule} from 'carbon-components-angular';
 import {CarbonListModule} from '../carbon-list/carbon-list.module';
+import {TimelineComponent} from './timeline.component';
 
 @NgModule({
   declarations: [TimelineComponent],
-  imports: [CommonModule, TranslateModule, CarbonListModule],
+  imports: [CommonModule, TranslateModule, CarbonListModule, DialogModule],
   exports: [TimelineComponent],
 })
 export class TimelineModule {}
