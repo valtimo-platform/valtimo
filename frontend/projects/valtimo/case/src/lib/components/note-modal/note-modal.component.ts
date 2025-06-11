@@ -14,116 +14,50 @@
  * limitations under the License.
  */
 
-import {
-  AfterViewInit,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  Output,
-  ViewChild,
-} from '@angular/core';
-import {VModalComponent, ModalService} from '@valtimo/components';
-import {BehaviorSubject, combineLatest, Observable, Subject, Subscription} from 'rxjs';
-import {take} from 'rxjs/operators';
-import {NotesService} from '../../services/notes.service';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {FormBuilder, Validators} from '@angular/forms';
+import {TimelineItem} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-note-modal',
   templateUrl: './note-modal.component.html',
-  styleUrls: ['./note-modal.component.scss'],
+  styleUrl: './note-modal.component.scss',
+  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class NoteModalComponent implements AfterViewInit, OnDestroy {
-  @ViewChild('noteModal') noteModal: VModalComponent;
-  @Input() customData;
-  @Output() createNoteEvent: EventEmitter<any> = new EventEmitter();
-  @Output() editNoteEvent: EventEmitter<any> = new EventEmitter();
+export class NoteModalComponent {
+  @Input() modalType: 'add' | 'modify';
+  private _customData: TimelineItem | null;
+  @Input() public set customData(value: TimelineItem | null) {
+    this._customData = value;
+    if (!value) {
+      this.formGroup.reset();
+      return;
+    }
 
-  readonly disabled$!: Observable<boolean>;
-  readonly valid$ = new BehaviorSubject<boolean>(false);
-  readonly showForm$: Observable<boolean> = this.modalService.modalVisible$;
-  readonly formData$ = new BehaviorSubject<any>(null);
-  readonly modalType$: Observable<string> = this.notesService.modalType$;
+    this.formGroup.get('content')?.setValue(value.summaryTranslationKey ?? '');
+  }
+  @Input() public open;
+  @Output() public readonly modalClosed = new EventEmitter<null | Partial<{
+    id: string;
+    content: string;
+  }>>();
 
-  showSubscription!: Subscription;
-  hideSubscription!: Subscription;
+  public readonly formGroup = this.fb.group({
+    content: this.fb.control('', Validators.required),
+  });
 
-  readonly returnToFirstStepSubject$ = new Subject<boolean>();
+  constructor(private readonly fb: FormBuilder) {}
 
-  constructor(
-    private readonly notesService: NotesService,
-    private readonly modalService: ModalService
-  ) {}
-
-  ngAfterViewInit(): void {
-    this.openShowSubscription();
-    this.openHideSubscription();
+  public onCancel(): void {
+    this.modalClosed.emit(null);
   }
 
-  ngOnDestroy(): void {
-    this.showSubscription?.unsubscribe();
-    this.hideSubscription?.unsubscribe();
-  }
-
-  hide(): void {
-    this.formData$.next(null);
-    this.valid$.next(false);
-    this.modalService.closeModal();
-  }
-
-  cancel(): void {
-    this.hide();
-  }
-
-  save(): void {
-    combineLatest([this.valid$, this.formData$])
-      .pipe(take(1))
-      .subscribe(([valid, formData]) => {
-        if (valid) {
-          this.createNoteEvent.emit(formData);
-        }
-      });
-  }
-
-  emitNoteData(): void {
-    combineLatest([this.valid$, this.formData$, this.modalType$])
-      .pipe(take(1))
-      .subscribe(([valid, formData, modalType]) => {
-        if (valid) {
-          if (modalType === 'add') {
-            this.createNoteEvent.emit(formData);
-          } else {
-            this.editNoteEvent.emit({formData, data: this.customData});
-          }
-        }
-      });
-  }
-
-  private openShowSubscription(): void {
-    this.showSubscription = this.notesService.showModal$.subscribe(() => {
-      this.show();
+  public onConfirm(): void {
+    const content = this.formGroup.get('content')?.value ?? '';
+    this.modalClosed.emit({
+      content,
+      ...(!!this._customData && {id: this._customData?.customData?.['id'] ?? ''}),
     });
-  }
-
-  private openHideSubscription(): void {
-    this.hideSubscription = this.notesService.hideModal$.subscribe(() => {
-      this.hide();
-    });
-  }
-
-  private show(): void {
-    this.notesService.modalType$.pipe(take(1)).subscribe(() => {
-      this.modalService.openModal(this.noteModal);
-    });
-  }
-
-  formValueChange(data: any): void {
-    this.formData$.next(data);
-    this.setValid(data);
-  }
-
-  private setValid(data: any): void {
-    this.valid$.next(!!data.content);
   }
 }

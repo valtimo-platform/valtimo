@@ -13,22 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-.buttons,
-.add-note-title {
+:host textarea {
   width: 100%;
-  display: flex;
-  flex-direction: row;
-}
-
-.buttons {
-  justify-content: flex-end;
-}
-
-.add-note-title {
-  justify-content: flex-start;
-}
-
-::ng-deep .notes-input textarea {
-  padding: 8px;
 }

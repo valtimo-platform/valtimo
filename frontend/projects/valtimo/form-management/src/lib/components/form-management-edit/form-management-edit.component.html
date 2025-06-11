@@ -158,7 +158,10 @@
       }
 
       <button
-        *ngIf="obs.canUpdateGlobalConfiguration && obs.isDraftVersion"
+        *ngIf="
+          (obs?.canUpdateGlobalConfiguration && obs?.isDraftVersion) ||
+          obs.context === 'independent'
+        "
         cdsButton="primary"
         [disabled]="obs.formDefinition.readOnly || !validJsonChange"
         [size]="obs.compactMode ? 'sm' : 'md'"

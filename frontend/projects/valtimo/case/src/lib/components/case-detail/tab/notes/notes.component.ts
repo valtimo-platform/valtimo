@@ -17,10 +17,10 @@ import {Component, HostBinding, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {Pagination, PromptService, TimelineItem, TimelineItemImpl} from '@valtimo/components';
+import {Pagination, TimelineItem, TimelineItemImpl} from '@valtimo/components';
 import {GlobalNotificationService, Page} from '@valtimo/shared';
 import moment from 'moment';
-import {BehaviorSubject, combineLatest, map, Observable, of} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, Subject} from 'rxjs';
 import {switchMap, take, tap} from 'rxjs/operators';
 import {Note} from '../../../../models/notes.model';
 import {
@@ -42,8 +42,11 @@ export class CaseDetailTabNotesComponent implements OnInit {
   public timelineItems: TimelineItem[] = [];
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
-  public readonly fields$ = new BehaviorSubject<Array<{key: string; label: string}>>([]);
-  public readonly customData$ = new BehaviorSubject<object>({});
+  public readonly customData$ = new BehaviorSubject<TimelineItem | null>(null);
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly modalType$ = new Subject<'add' | 'modify'>();
+  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+  public readonly idToDelete$ = new BehaviorSubject<string | null>(null);
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
   public readonly actions = [
@@ -133,8 +136,8 @@ export class CaseDetailTabNotesComponent implements OnInit {
             {},
             {id: note.id},
             [
-              ...(deletePermissions[index] ? ['delete'] : []),
               ...(editPermissions[index] ? ['edit'] : []),
+              ...(deletePermissions[index] ? ['delete'] : []),
             ]
           )
         );
@@ -150,7 +153,6 @@ export class CaseDetailTabNotesComponent implements OnInit {
     private readonly globalNotificationService: GlobalNotificationService,
     private readonly notesService: NotesService,
     private readonly permissionService: PermissionService,
-    private readonly promptService: PromptService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService
   ) {}
@@ -168,27 +170,53 @@ export class CaseDetailTabNotesComponent implements OnInit {
   }
 
   public showAddModal(): void {
-    this.customData$.next({});
-    this.notesService.setModalType('add');
-    this.notesService.showModal();
+    this.customData$.next(null);
+    this.modalType$.next('add');
+    this.modalOpen$.next(true);
   }
 
-  public createNewNote(content): void {
+  public editNote(data: TimelineItem): void {
+    this.customData$.next(data);
+    this.modalType$.next('modify');
+    this.modalOpen$.next(true);
+  }
+
+  public onModalClosed(note: Partial<{id: string; content: string}> | null): void {
+    this.modalOpen$.next(false);
+
+    if (!note || !note.content) return;
+    const {id, content} = note;
+
+    if (!id) this.createNewNote(content);
+    else this.editNoteConfirmed({id, content});
+  }
+
+  public onDeleteConfirm(noteId: string): void {
+    this.notesService.deleteNote(noteId).subscribe(() => {
+      this.notesService.refresh();
+      this.globalNotificationService.showToast({
+        title: this.translateService.instant('case.notes.deleteConfirmation.deletedMessage'),
+        type: 'success',
+      });
+    });
+  }
+
+  private createNewNote(content): void {
     this.documentId$
       .pipe(
         take(1),
-        switchMap((documentId: string) => this.notesService.createDocumentNote(documentId, content))
+        switchMap((documentId: string) =>
+          this.notesService.createDocumentNote(documentId, {content})
+        )
       )
       .subscribe(() => {
         this.notesService.refresh();
-        this.notesService.hideModal();
       });
   }
 
-  public editNoteEvent(content): void {
-    this.notesService.updateNote(content.data.customData.id, content.formData).subscribe(() => {
+  private editNoteConfirmed(note: {id: string; content: string}): void {
+    this.notesService.updateNote(note.id, note).subscribe(() => {
       this.notesService.refresh();
-      this.notesService.hideModal();
       this.globalNotificationService.showToast({
         title: this.translateService.instant('case.notes.editedMessage'),
         type: 'success',
@@ -196,29 +224,8 @@ export class CaseDetailTabNotesComponent implements OnInit {
     });
   }
 
-  public editNote(data): void {
-    this.customData$.next(data);
-    this.notesService.setModalType('modify');
-    this.notesService.showModal();
-  }
-
-  public deleteNote(data): void {
-    this.promptService.openPrompt({
-      headerText: this.translateService.instant('case.notes.deleteConfirmation.title'),
-      bodyText: this.translateService.instant('case.notes.deleteConfirmation.description'),
-      cancelButtonText: this.translateService.instant('case.deleteConfirmation.cancel'),
-      confirmButtonText: this.translateService.instant('case.deleteConfirmation.delete'),
-      closeOnConfirm: true,
-      closeOnCancel: true,
-      confirmCallBackFunction: () => {
-        this.notesService.deleteNote(data.customData.id).subscribe(() => {
-          this.notesService.refresh();
-          this.globalNotificationService.showToast({
-            title: this.translateService.instant('case.notes.deleteConfirmation.deletedMessage'),
-            type: 'success',
-          });
-        });
-      },
-    });
+  private deleteNote(data: TimelineItem): void {
+    this.idToDelete$.next(data.customData?.['id'] ?? '');
+    this.showDeleteModal$.next(true);
   }
 }
