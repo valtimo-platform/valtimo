@@ -70,6 +70,7 @@ import {
   ModalModule as CarbonModalModule,
   NotificationModule,
   SelectModule as CarbonSelectModule,
+  InputModule as CarbonInputModule,
   SkeletonModule,
   TabsModule,
   TagModule,
@@ -193,6 +194,7 @@ export type TabsFactory = () => Map<string, object>;
     TilesModule,
     LayerModule,
     NotificationModule,
+    CarbonInputModule,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
 })

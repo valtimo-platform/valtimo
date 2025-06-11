@@ -25,67 +25,40 @@ import {Note, NoteCreateRequest, NoteModal, NoteUpdateRequest} from '../models/n
 })
 export class NotesService {
   private readonly VALTIMO_API_ENDPOINT_URI = this.configService.config.valtimoApi.endpointUri;
-  private readonly _showModal$ = new Subject();
-  private readonly _hideModal$ = new Subject();
   private readonly _refresh$ = new BehaviorSubject<null>(null);
-  private readonly _modalType$ = new BehaviorSubject<NoteModal>('add');
 
   constructor(
     private readonly configService: ConfigService,
     private readonly http: HttpClient
   ) {}
 
-  getDocumentNotes(documentId: string, params?: any): Observable<Page<Note>> {
+  public get refresh$(): Observable<any> {
+    return this._refresh$.asObservable();
+  }
+
+  public getDocumentNotes(documentId: string, params?: any): Observable<Page<Note>> {
     return this.http.get<Page<Note>>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/document/${documentId}/note`,
       {params}
     );
   }
 
-  createDocumentNote(documentId: string, request: NoteCreateRequest): Observable<Note> {
+  public createDocumentNote(documentId: string, request: NoteCreateRequest): Observable<Note> {
     return this.http.post<Note>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/document/${documentId}/note`,
       request
     );
   }
 
-  updateNote(noteId: string, request: NoteUpdateRequest): Observable<Note> {
+  public updateNote(noteId: string, request: NoteUpdateRequest): Observable<Note> {
     return this.http.put<Note>(`${this.VALTIMO_API_ENDPOINT_URI}v1/note/${noteId}`, request);
   }
 
-  deleteNote(noteId: string): Observable<Note> {
+  public deleteNote(noteId: string): Observable<Note> {
     return this.http.delete<Note>(`${this.VALTIMO_API_ENDPOINT_URI}v1/note/${noteId}`);
   }
 
-  get showModal$(): Observable<any> {
-    return this._showModal$.asObservable();
-  }
-
-  get hideModal$(): Observable<any> {
-    return this._hideModal$.asObservable();
-  }
-
-  get refresh$(): Observable<any> {
-    return this._refresh$.asObservable();
-  }
-
-  get modalType$(): Observable<NoteModal> {
-    return this._modalType$.asObservable();
-  }
-
-  showModal(): void {
-    this._showModal$.next(null);
-  }
-
-  hideModal(): void {
-    this._hideModal$.next(null);
-  }
-
-  refresh(): void {
+  public refresh(): void {
     this._refresh$.next(null);
-  }
-
-  setModalType(type: NoteModal): void {
-    this._modalType$.next(type);
   }
 }

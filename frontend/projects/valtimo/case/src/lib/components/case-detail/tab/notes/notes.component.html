@@ -75,6 +75,17 @@
 
 <valtimo-note-modal
   [customData]="customData$ | async"
-  (createNoteEvent)="createNewNote($event)"
-  (editNoteEvent)="editNoteEvent($event)"
+  [modalType]="modalType$ | async"
+  [open]="modalOpen$ | async"
+  (modalClosed)="onModalClosed($event)"
 ></valtimo-note-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="case.notes.deleteConfirmation.description"
+  [outputOnConfirm]="idToDelete$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="case.notes.deleteConfirmation.title"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>
