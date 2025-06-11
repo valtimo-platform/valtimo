@@ -336,6 +336,15 @@ export class DocumentService {
     });
   }
 
+  public getCaseDefinitionsManagement(params: any): Observable<Page<CaseDefinition>> {
+    return this.http.get<Page<CaseDefinition>>(
+      `${this.valtimoEndpointUri}management/v1/case-definition`,
+      {
+        params,
+      }
+    );
+  }
+
   public findProcessDocumentDefinitionsByVersion(
     documentDefinitionName: string,
     version: string

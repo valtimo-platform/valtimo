@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {CaseDefinitionId} from '@valtimo/document';
+
 interface LoadedValue<T> {
   isLoading: boolean;
   value?: T;
@@ -21,17 +23,17 @@ interface LoadedValue<T> {
 
 interface DocumentMigrationConflictRequest {
   documentDefinitionNameSource: string;
-  documentDefinitionVersionSource: number;
+  caseDefinitionIdSource: CaseDefinitionId;
   documentDefinitionNameTarget: string;
-  documentDefinitionVersionTarget: number;
+  caseDefinitionIdTarget: CaseDefinitionId;
   patches: DocumentMigrationPatch[];
 }
 
 interface DocumentMigrationConflictResponse {
   documentDefinitionNameSource: string;
-  documentDefinitionVersionSource: number;
+  caseDefinitionIdSource: CaseDefinitionId;
   documentDefinitionNameTarget: string;
-  documentDefinitionVersionTarget: number;
+  caseDefinitionIdTarget: CaseDefinitionId;
   conflicts: DocumentMigrationPatch[];
   errors: Array<string>;
   documentCount: number;
