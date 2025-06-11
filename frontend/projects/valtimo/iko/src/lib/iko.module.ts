@@ -24,7 +24,7 @@ import {IKO_TOKEN} from '@valtimo/shared';
   providers: [
     {
       provide: IKO_TOKEN,
-      useValue: {},
+      useValue: true,
     },
   ],
 })

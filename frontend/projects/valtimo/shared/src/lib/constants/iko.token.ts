@@ -16,6 +16,6 @@
 
 import {InjectionToken} from '@angular/core';
 
-const IKO_TOKEN = new InjectionToken<any>('IKO is enabled when this token is provided');
+const IKO_TOKEN = new InjectionToken<boolean>('IKO is enabled when this token is provided');
 
 export {IKO_TOKEN};
