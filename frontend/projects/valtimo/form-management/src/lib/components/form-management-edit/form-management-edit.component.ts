@@ -203,7 +203,7 @@ export class FormManagementEditComponent
   }
 
   public ngOnInit(): void {
-    this.loadFormDefinition();
+    this.loadFormDefinition().subscribe();
     this.checkToOpenUploadModal();
     this.pageTitleService.disableReset();
     this.initBreadcrumbs();
@@ -274,84 +274,94 @@ export class FormManagementEditComponent
   }
 
   public modifyFormDefinition(definition: FormDefinition): void {
-    this.pendingChanges = true;
+    combineLatest([this.pageTitleService.customPageTitle$, this.editParam$])
+      .pipe(take(1))
+      .subscribe(([customPageTitle, formDefinitionId]) => {
+        if (!customPageTitle || !formDefinitionId) return;
 
-    const form = JSON.stringify(
-      this.modifiedFormDefinition !== null ? this.modifiedFormDefinition : definition.formDefinition
-    );
+        this.pendingChanges = true;
 
-    const request: ModifyFormDefinitionRequest = {
-      id: definition.id,
-      name: definition.name,
-      formDefinition: form,
-    };
+        const form = JSON.stringify(
+          this.modifiedFormDefinition !== null
+            ? this.modifiedFormDefinition
+            : definition.formDefinition
+        );
 
-    getCaseManagementRouteParamsAndContext(this.route)
-      .pipe(
-        switchMap(([context, caseManagementRouteParams]) => {
-          switch (context) {
-            case 'case':
-              return this.formManagementService.modifyFormDefinitionCase(
-                caseManagementRouteParams.caseDefinitionKey,
-                caseManagementRouteParams.caseDefinitionVersionTag,
-                request
-              );
+        const request: ModifyFormDefinitionRequest = {
+          id: formDefinitionId,
+          name: customPageTitle,
+          formDefinition: form,
+        };
 
-            case 'independent':
-            default:
-              return this.formManagementService.modifyFormDefinition(request);
-          }
-        })
-      )
-      .subscribe({
-        next: () => {
-          this.notificationService.showToast({
-            type: 'success',
-            title: this.translateService.instant('formManagement.notifications.deployed'),
+        getCaseManagementRouteParamsAndContext(this.route)
+          .pipe(
+            switchMap(([context, caseManagementRouteParams]) => {
+              switch (context) {
+                case 'case':
+                  return this.formManagementService.modifyFormDefinitionCase(
+                    caseManagementRouteParams.caseDefinitionKey,
+                    caseManagementRouteParams.caseDefinitionVersionTag,
+                    request
+                  );
+
+                case 'independent':
+                default:
+                  return this.formManagementService.modifyFormDefinition(request);
+              }
+            })
+          )
+          .subscribe({
+            next: () => {
+              this.notificationService.showToast({
+                type: 'success',
+                title: this.translateService.instant('formManagement.notifications.deployed'),
+              });
+
+              this.pendingChanges = false;
+              this.navigateBack();
+            },
+            error: () => {
+              this.notificationService.showToast({
+                type: 'error',
+                title: this.translateService.instant(
+                  'formManagement.notifications.deploymentError'
+                ),
+              });
+            },
           });
-
-          this.pendingChanges = false;
-          this.navigateBack();
-        },
-        error: () => {
-          this.notificationService.showToast({
-            type: 'error',
-            title: this.translateService.instant('formManagement.notifications.deploymentError'),
-          });
-        },
       });
   }
 
-  private loadFormDefinition(): void {
-    getCaseManagementRouteParamsAndContext(this.route)
-      .pipe(
-        switchMap(([context, params]) => combineLatest([of(context), of(params), this.editParam$])),
-        switchMap(([context, caseManagementRouteParams, formDefinitionId]) => {
-          if (!formDefinitionId) return of(null);
+  private loadFormDefinition(setDefinition = true): Observable<FormDefinition> {
+    return getCaseManagementRouteParamsAndContext(this.route).pipe(
+      switchMap(([context, params]) => combineLatest([of(context), of(params), this.editParam$])),
+      switchMap(([context, caseManagementRouteParams, formDefinitionId]) => {
+        if (!formDefinitionId) return of(null);
 
-          switch (context) {
-            case 'case':
-              return this.formManagementService.getFormDefinitionCase(
-                caseManagementRouteParams.caseDefinitionKey,
-                caseManagementRouteParams.caseDefinitionVersionTag,
-                formDefinitionId
-              );
-            case 'independent':
-            default:
-              return this.formManagementService.getFormDefinition(formDefinitionId);
-          }
-        })
-      )
-      .subscribe((definition: FormDefinition | null) => {
+        switch (context) {
+          case 'case':
+            return this.formManagementService.getFormDefinitionCase(
+              caseManagementRouteParams.caseDefinitionKey,
+              caseManagementRouteParams.caseDefinitionVersionTag,
+              formDefinitionId
+            );
+          case 'independent':
+          default:
+            return this.formManagementService.getFormDefinition(formDefinitionId);
+        }
+      }),
+      tap((definition: FormDefinition | null) => {
         if (!definition) return;
 
-        this._formDefinition$.next(definition);
+        if (setDefinition) this._formDefinition$.next(definition);
+        if (setDefinition)
+          this.jsonFormDefinition$.next({
+            value: JSON.stringify(definition.formDefinition),
+            language: 'json',
+          });
         this.pageTitleService.setCustomPageTitle(definition.name);
-        this.jsonFormDefinition$.next({
-          value: JSON.stringify(definition.formDefinition),
-          language: 'json',
-        });
-      });
+      })
+    );
   }
 
   public downloadFormDefinition(definition: FormDefinition): void {
@@ -456,10 +466,7 @@ export class FormManagementEditComponent
       language: 'json',
     });
 
-    // We need to force a short delay so the formio builder is re-initialized with the new definition
-    setTimeout(() => {
-      this.reloading$.next(false);
-    }, 100);
+    this.loadFormDefinition(false).subscribe();
   }
 
   protected onConfirmRedirect(): void {
