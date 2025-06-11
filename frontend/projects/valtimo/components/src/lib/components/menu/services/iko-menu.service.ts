@@ -4,6 +4,61 @@ import {Observable, of} from 'rxjs';
 import {IkoMenuItem} from '../../../models';
 import {delay, map} from 'rxjs/operators';
 
+const mockIkoMenuItems: IkoMenuItem[] = [
+  {
+    title: 'Person',
+    profile: {
+      url: 'https://iko.example.com/person/profile',
+      identifierColumn: 'personId',
+    },
+    queryParams: [
+      {
+        placeholder: 'Enter BSN or name',
+        title: 'Search by BSN or name',
+        key: 'bsn',
+      },
+    ],
+  },
+  {
+    title: 'Object',
+    profile: {
+      url: 'https://iko.example.com/object/details',
+      identifierColumn: 'objectCode',
+    },
+    queryParams: [
+      {
+        placeholder: 'Enter object code',
+        title: 'Search by object code',
+        key: 'code',
+      },
+      {
+        placeholder: 'Enter postcode',
+        title: 'Search by postcode',
+        key: 'postcode',
+      },
+    ],
+  },
+  {
+    title: 'Company',
+    profile: {
+      url: 'https://iko.example.com/company/info',
+      identifierColumn: 'kvkNumber',
+    },
+    queryParams: [
+      {
+        placeholder: 'Enter KvK number',
+        title: 'Search by KvK number',
+        key: 'kvk',
+      },
+      {
+        placeholder: 'Enter company name',
+        title: 'Search by company name',
+        key: 'name',
+      },
+    ],
+  },
+];
+
 @Injectable({providedIn: 'root'})
 export class IkoMenuService {
   constructor(@Optional() @Inject(IKO_TOKEN) private readonly ikoEnabled: boolean) {}
@@ -17,7 +72,7 @@ export class IkoMenuService {
     return this.getIkoMenuItems().pipe(
       map(ikoItems => {
         const ikoSubMenu: MenuItem[] = ikoItems.map((item, index) => ({
-          link: ['/iko', this.valueToBase64(item.profileUrl)],
+          link: ['/iko', this.valueToBase64(item.profile.url)],
           title: item.title,
           sequence: index,
           show: true,
@@ -46,20 +101,7 @@ export class IkoMenuService {
   }
 
   private getIkoMenuItems(): Observable<IkoMenuItem[]> {
-    return of([
-      {
-        title: 'Person',
-        searchUrl: 'person.com',
-        profileUrl: 'person.com',
-        queryParam: 'person',
-      },
-      {
-        title: 'Object',
-        searchUrl: 'object.com',
-        profileUrl: 'object.com',
-        queryParam: 'object',
-      },
-    ]).pipe(delay(500));
+    return of(mockIkoMenuItems).pipe(delay(500));
   }
 
   private valueToBase64(value: object | string): string {

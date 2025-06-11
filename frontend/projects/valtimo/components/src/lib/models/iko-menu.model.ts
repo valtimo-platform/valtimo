@@ -15,10 +15,16 @@
  */
 
 interface IkoMenuItem {
-  searchUrl: string;
-  profileUrl: string;
-  queryParam: string;
   title: string;
+  profile: {
+    url: string;
+    identifierColumn: string;
+  };
+  queryParams: {
+    placeholder: string;
+    title: string;
+    key: string;
+  }[];
 }
 
 export {IkoMenuItem};
