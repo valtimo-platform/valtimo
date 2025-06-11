@@ -13,21 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
-import {NgModule} from '@angular/core';
-import {IKO_TOKEN} from '@valtimo/shared';
-import {IkoRoutingModule} from './iko-routing.module';
-import {IkoSearchComponent} from './components/iko-search/iko-search.component';
 
-@NgModule({
-  imports: [CommonModule, IkoRoutingModule, IkoSearchComponent],
-  declarations: [],
-  exports: [],
-  providers: [
-    {
-      provide: IKO_TOKEN,
-      useValue: true,
-    },
-  ],
-})
-export class IkoModule {}
+interface IkoMenuItem {
+  searchUrl: string;
+  profileUrl: string;
+  queryParam: string;
+  title: string;
+}
+
+export {IkoMenuItem};

@@ -19,6 +19,7 @@ export class MenuService {
   private readonly _menuItems$ = new BehaviorSubject<MenuItem[]>([]);
   private readonly dossierItemsAppended$ = new BehaviorSubject<boolean>(false);
   private readonly objectsItemsAppended$ = new BehaviorSubject<boolean>(false);
+  private readonly ikoItemsAppended$ = new BehaviorSubject<boolean>(false);
 
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
 
@@ -49,16 +50,25 @@ export class MenuService {
     return combineLatest([
       this.dossierItemsAppended$,
       this.objectsItemsAppended$,
+      this.ikoItemsAppended$,
       this.currentRoute$,
       this.menuItems$,
     ]).pipe(
       filter(() => !this.pendingChangesService.pendingChanges),
-      map(([_1, _2, currentRoute, menuItems]) => {
+      map(([_0, _1, _2, currentRoute, menuItems]) => {
         let closestSequence = '0';
         let highestDiff = 0;
 
-        const checkItemMatch = (url: string, seq: string, parentSeq?: string): void => {
-          const diff = currentRoute.length - currentRoute.replace(url, '').length;
+        const normalize = (value: string): string =>
+          ('/' + decodeURIComponent(value).toLowerCase().replace(/^\/+/, '')).replace(/\/+$/, '');
+
+        const normalizedCurrent = normalize(currentRoute);
+
+        const checkItemMatch = (rawUrl: string, seq: string, parentSeq?: string): void => {
+          const normalizedUrl = normalize(rawUrl);
+          const diff =
+            normalizedCurrent.length - normalizedCurrent.replace(normalizedUrl, '').length;
+
           if (diff > highestDiff) {
             highestDiff = diff;
             closestSequence = seq;
@@ -67,10 +77,12 @@ export class MenuService {
         };
 
         menuItems.forEach(item => {
-          checkItemMatch(item.link?.join('') || '', `${item.sequence}`);
+          const topLink = Array.isArray(item.link) ? item.link.join('/') : '';
+          checkItemMatch(topLink, `${item.sequence}`);
+
           item.children?.forEach(child => {
             if (Array.isArray(child.link)) {
-              const fullLink = [...(item.link || []), ...child.link].join('');
+              const fullLink = [...(item.link || []), ...child.link].join('/');
               checkItemMatch(fullLink, `${item.sequence}${child.sequence}`, `${item.sequence}`);
             }
           });
@@ -125,7 +137,11 @@ export class MenuService {
                 .pipe(tap(() => this.objectsItemsAppended$.next(true)))
             : of(items)
         ),
-        switchMap(items => this.ikoMenuService.appendIkoMenuItems(items)),
+        switchMap(items =>
+          this.ikoMenuService
+            .appendIkoMenuItems(items)
+            .pipe(tap(() => this.ikoItemsAppended$.next(true)))
+        ),
         map(items => this.applyMenuRoleSecurity(items))
       )
       .subscribe(items => this._menuItems$.next(items));

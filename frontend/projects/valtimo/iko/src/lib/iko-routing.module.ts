@@ -13,21 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+
 import {NgModule} from '@angular/core';
-import {IKO_TOKEN} from '@valtimo/shared';
-import {IkoRoutingModule} from './iko-routing.module';
+import {RouterModule, Routes} from '@angular/router';
+import {CommonModule} from '@angular/common';
+import {AuthGuardService} from '@valtimo/security';
 import {IkoSearchComponent} from './components/iko-search/iko-search.component';
 
-@NgModule({
-  imports: [CommonModule, IkoRoutingModule, IkoSearchComponent],
-  declarations: [],
-  exports: [],
-  providers: [
-    {
-      provide: IKO_TOKEN,
-      useValue: true,
+const routes: Routes = [
+  {
+    path: 'iko/:profileUrl',
+    component: IkoSearchComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Iko',
     },
-  ],
+  },
+];
+
+@NgModule({
+  declarations: [],
+  imports: [CommonModule, RouterModule.forChild(routes)],
+  exports: [RouterModule],
 })
-export class IkoModule {}
+export class IkoRoutingModule {}
