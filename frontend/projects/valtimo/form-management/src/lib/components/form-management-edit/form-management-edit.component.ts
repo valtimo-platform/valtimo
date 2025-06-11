@@ -144,8 +144,8 @@ export class FormManagementEditComponent
   ).pipe(
     switchMap(params =>
       this.draftVersionService.isDraftVersion(
-        params.caseDefinitionKey,
-        params.caseDefinitionVersionTag
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag
       )
     )
   );
