@@ -1,6 +1,8 @@
 import {Inject, Injectable, Optional} from '@angular/core';
 import {IKO_TOKEN, MenuItem} from '@valtimo/shared';
 import {Observable, of} from 'rxjs';
+import {IkoMenuItem} from '../../../models';
+import {delay, map} from 'rxjs/operators';
 
 @Injectable({providedIn: 'root'})
 export class IkoMenuService {
@@ -8,40 +10,66 @@ export class IkoMenuService {
 
   public appendIkoMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {
     const ikoAlreadyExists = menuItems.some(item => item.title === 'IKO');
+    const shouldAdd = !ikoAlreadyExists && this.ikoEnabled;
 
-    if (!ikoAlreadyExists && this.ikoEnabled) {
-      const ikoMenu: MenuItem = {
-        title: 'IKO',
-        iconClass: 'icon mdi mdi-account',
-        show: true,
-        sequence: this.getIkoSequenceAfterCases(menuItems),
-        children: [
-          {
-            link: ['/iko/person'],
-            title: 'Person',
-            sequence: 0,
-            show: true,
-          },
-          {
-            link: ['/iko/object'],
-            title: 'Object',
-            sequence: 1,
-            show: true,
-          },
-        ],
-      };
+    if (!shouldAdd) return of(menuItems);
 
-      menuItems.push(ikoMenu);
-      menuItems.sort((a, b) => a.sequence - b.sequence);
-    }
+    return this.getIkoMenuItems().pipe(
+      map(ikoItems => {
+        const ikoSubMenu: MenuItem[] = ikoItems.map((item, index) => ({
+          link: ['/iko', this.valueToBase64(item.profileUrl)],
+          title: item.title,
+          sequence: index,
+          show: true,
+        }));
 
-    return of(menuItems);
+        const ikoMenu: MenuItem = {
+          title: 'IKO',
+          iconClass: 'icon mdi mdi-account',
+          show: true,
+          sequence: this.getIkoSequenceAfterCases(menuItems),
+          children: ikoSubMenu,
+        };
+
+        menuItems.push(ikoMenu);
+        menuItems.sort((a, b) => a.sequence - b.sequence);
+
+        return menuItems;
+      })
+    );
   }
 
   private getIkoSequenceAfterCases(menuItems: MenuItem[]): number {
     const casesItem = menuItems.find(item => item.title === 'Cases' || item.title === 'Dossiers');
-    const casesSequence = Number(casesItem?.sequence) ?? 0;
-
+    const casesSequence = Number(casesItem?.sequence ?? 0);
     return casesSequence + 0.5;
+  }
+
+  private getIkoMenuItems(): Observable<IkoMenuItem[]> {
+    return of([
+      {
+        title: 'Person',
+        searchUrl: 'person.com',
+        profileUrl: 'person.com',
+        queryParam: 'person',
+      },
+      {
+        title: 'Object',
+        searchUrl: 'object.com',
+        profileUrl: 'object.com',
+        queryParam: 'object',
+      },
+    ]).pipe(delay(500));
+  }
+
+  private valueToBase64(value: object | string): string {
+    const json =
+      typeof value === 'string' ? JSON.stringify({__string: value}) : JSON.stringify(value);
+    return btoa(json);
+  }
+
+  private base64ToValue<T = any>(base64: string): T | string {
+    const parsed = JSON.parse(atob(base64));
+    return parsed && typeof parsed === 'object' && '__string' in parsed ? parsed.__string : parsed;
   }
 }
