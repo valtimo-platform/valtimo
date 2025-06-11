@@ -6,11 +6,12 @@ import {UserProviderService} from '@valtimo/security';
 import {SseService} from '@valtimo/sse';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {filter, map} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
+import {filter, map, tap} from 'rxjs/operators';
 import {CaseMenuService} from './case-menu.service';
 import {ObjectMenuService} from './object-menu.service';
 import {PendingChangesService} from '../../pending-changes/pending-changes.service';
+import {IkoMenuService} from './iko-menu.service';
 
 @Injectable({providedIn: 'root'})
 export class MenuService {
@@ -25,33 +26,6 @@ export class MenuService {
   private readonly disableCaseCount: boolean;
   private readonly enableObjectManagement: boolean;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly http: HttpClient,
-    private readonly keycloakService: KeycloakService,
-    private readonly logger: NGXLogger,
-    private readonly menuIncludeService: MenuIncludeService,
-    private readonly pendingChangesService: PendingChangesService,
-    private readonly router: Router,
-    private readonly userProviderService: UserProviderService,
-    private readonly sseService: SseService,
-    private readonly caseMenuService: CaseMenuService,
-    private readonly objectMenuService: ObjectMenuService
-  ) {
-    const config = configService.config;
-    this.menuConfig = config?.menu;
-    this.disableCaseCount = config?.featureToggles?.disableCaseCount;
-    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement ?? true;
-  }
-
-  public get menuItems$(): Observable<MenuItem[]> {
-    return this._menuItems$.asObservable();
-  }
-
-  public get activeParentSequenceNumber$(): Observable<string> {
-    return this._activeParentSequenceNumber$.asObservable();
-  }
-
   private readonly currentRoute$ = this.router.events.pipe(
     filter(
       event =>
@@ -63,6 +37,70 @@ export class MenuService {
     filter(url => !!url)
   );
 
+  public get menuItems$(): Observable<MenuItem[]> {
+    return this._menuItems$.asObservable();
+  }
+
+  public get activeParentSequenceNumber$(): Observable<string> {
+    return this._activeParentSequenceNumber$.asObservable();
+  }
+
+  public get closestSequence$(): Observable<string> {
+    return combineLatest([
+      this.dossierItemsAppended$,
+      this.objectsItemsAppended$,
+      this.currentRoute$,
+      this.menuItems$,
+    ]).pipe(
+      filter(() => !this.pendingChangesService.pendingChanges),
+      map(([_1, _2, currentRoute, menuItems]) => {
+        let closestSequence = '0';
+        let highestDiff = 0;
+
+        const checkItemMatch = (url: string, seq: string, parentSeq?: string): void => {
+          const diff = currentRoute.length - currentRoute.replace(url, '').length;
+          if (diff > highestDiff) {
+            highestDiff = diff;
+            closestSequence = seq;
+            this._activeParentSequenceNumber$.next(parentSeq || '');
+          }
+        };
+
+        menuItems.forEach(item => {
+          checkItemMatch(item.link?.join('') || '', `${item.sequence}`);
+          item.children?.forEach(child => {
+            if (Array.isArray(child.link)) {
+              const fullLink = [...(item.link || []), ...child.link].join('');
+              checkItemMatch(fullLink, `${item.sequence}${child.sequence}`, `${item.sequence}`);
+            }
+          });
+        });
+
+        return closestSequence;
+      })
+    );
+  }
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly http: HttpClient,
+    private readonly keycloakService: KeycloakService,
+    private readonly logger: NGXLogger,
+    private readonly menuIncludeService: MenuIncludeService,
+    private readonly pendingChangesService: PendingChangesService,
+    private readonly router: Router,
+    private readonly userProviderService: UserProviderService,
+    private readonly sseService: SseService,
+    private readonly caseMenuService: CaseMenuService,
+    private readonly objectMenuService: ObjectMenuService,
+    private readonly ikoMenuService: IkoMenuService
+  ) {
+    const config = configService.config;
+    this.menuConfig = config?.menu;
+    this.disableCaseCount = config?.featureToggles?.disableCaseCount;
+    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement ?? true;
+  }
+
   public init(): void {
     this.reload();
     this.logger.debug('Menu initialized');
@@ -70,28 +108,27 @@ export class MenuService {
 
   public reload(): void {
     const roles = this.keycloakService.getUserRoles(true);
-    let menuItems = this.loadMenuItems(roles);
+    const menuItems = this.loadMenuItems(roles);
 
     this.caseMenuService
       .appendCaseSubMenuItems(menuItems, this.disableCaseCount, this.sseService)
-      .subscribe(updatedItems => {
-        this.dossierItemsAppended$.next(true);
-
-        if (this.enableObjectManagement) {
-          this.objectMenuService
-            .appendObjectsSubMenuItems(
-              updatedItems,
-              this.configService.config.valtimoApi.endpointUri,
-              this.http
-            )
-            .subscribe(finalItems => {
-              this.objectsItemsAppended$.next(true);
-              this._menuItems$.next(this.applyMenuRoleSecurity(finalItems));
-            });
-        } else {
-          this._menuItems$.next(this.applyMenuRoleSecurity(updatedItems));
-        }
-      });
+      .pipe(
+        tap(() => this.dossierItemsAppended$.next(true)),
+        switchMap(items =>
+          this.enableObjectManagement
+            ? this.objectMenuService
+                .appendObjectsSubMenuItems(
+                  items,
+                  this.configService.config.valtimoApi.endpointUri,
+                  this.http
+                )
+                .pipe(tap(() => this.objectsItemsAppended$.next(true)))
+            : of(items)
+        ),
+        switchMap(items => this.ikoMenuService.appendIkoMenuItems(items)),
+        map(items => this.applyMenuRoleSecurity(items))
+      )
+      .subscribe(items => this._menuItems$.next(items));
   }
 
   private loadMenuItems(userRoles: string[]): MenuItem[] {
@@ -124,42 +161,5 @@ export class MenuService {
       });
     });
     return menuItems;
-  }
-
-  get closestSequence$(): Observable<string> {
-    return combineLatest([
-      this.dossierItemsAppended$,
-      this.objectsItemsAppended$,
-      this.currentRoute$,
-      this.menuItems$,
-    ]).pipe(
-      filter(() => !this.pendingChangesService.pendingChanges),
-      filter(([dossier, objects]) => dossier || objects),
-      map(([_1, _2, currentRoute, menuItems]) => {
-        let closestSequence = '0';
-        let highestDiff = 0;
-
-        const checkItemMatch = (url: string, seq: string, parentSeq?: string): void => {
-          const diff = currentRoute.length - currentRoute.replace(url, '').length;
-          if (diff > highestDiff) {
-            highestDiff = diff;
-            closestSequence = seq;
-            this._activeParentSequenceNumber$.next(parentSeq || '');
-          }
-        };
-
-        menuItems.forEach(item => {
-          checkItemMatch(item.link?.join('') || '', `${item.sequence}`);
-          item.children?.forEach(child => {
-            if (Array.isArray(child.link)) {
-              const fullLink = [...(item.link || []), ...child.link].join('');
-              checkItemMatch(fullLink, `${item.sequence}${child.sequence}`, `${item.sequence}`);
-            }
-          });
-        });
-
-        return closestSequence;
-      })
-    );
   }
 }
