@@ -60,7 +60,7 @@ export class FormIoUploaderComponent implements FormioCustomComponent<Array<Reso
     }
   }
 
-  downloadFile(resourceFile: ResourceFile) {
+  public downloadFile(resourceFile: ResourceFile) {
     this.uploadProviderService
       .getResource(resourceFile.data.resourceId)
       .subscribe((resource: ResourceDto) => {
@@ -68,7 +68,7 @@ export class FormIoUploaderComponent implements FormioCustomComponent<Array<Reso
       });
   }
 
-  fileSelected(file: File) {
+  public fileSelected(file: File) {
     this.domService.toggleSubmitButton(true);
     this.uploading$.next(true);
     this.stateService.documentDefinitionName$.pipe(take(1)).subscribe(name => {
@@ -81,7 +81,7 @@ export class FormIoUploaderComponent implements FormioCustomComponent<Array<Reso
     });
   }
 
-  deleteFile(resourceId: string): void {
+  public deleteFile(resourceId: string): void {
     this.domService.toggleSubmitButton(true);
     this._value = this._value.filter((file: ResourceFile) =>
       file?.data ? file?.data?.resourceId !== resourceId : true
