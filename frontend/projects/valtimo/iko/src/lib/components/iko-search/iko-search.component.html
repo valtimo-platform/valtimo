@@ -1,36 +1,53 @@
-<!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
-  ~
-  ~ Licensed under EUPL, Version 1.2 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" basis,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
-
 <ng-container *ngIf="{ikoMenuItem: ikoMenuItem$ | async} as obs">
-  @if (obs.ikoMenuItem?.queryParams) {
-    @for (queryParam of obs.ikoMenuItem.queryParams; track queryParam.key) {
-      <div class="query-param">
-        <div class="query-param__input">
-          <label [for]="queryParam.key" class="query-param__label">
-            {{ queryParam.title || '-' }}
-          </label>
-
-          <input
-            ibmText
-            [id]="queryParam.key"
-            [placeholder]="queryParam.placeholder"
-            [(ngModel)]="formValues[queryParam.key]"
-          />
-        </div>
-      </div>
-    }
+  @if (obs.ikoMenuItem?.queryParams?.length) {
+    <div class="query-group">
+      @for (param of obs.ikoMenuItem.queryParams; track param.key ?? param.fields?.[0]?.key) {
+        @if (!isQueryGroup(param)) {
+          <div class="query-group__row">
+            <div class="query-group__field">
+              <label [for]="param.key" class="query-group__label">{{ param.title }}</label>
+              <input
+                ibmText
+                [id]="param.key"
+                [placeholder]="param.placeholder"
+                [(ngModel)]="formValues[param.key]"
+              />
+            </div>
+            <button
+              cdsButton="primary"
+              class="query-group__search-button"
+              [disabled]="!formValues[param.key]"
+              (click)="searchGroup([param])"
+            >
+              {{ 'searchFields.searchButtonText' | translate }}
+              <svg cdsIcon="search" size="16"></svg>
+            </button>
+          </div>
+        } @else {
+          <div class="query-group__row">
+            @for (field of param.fields; track field.key) {
+              <div class="query-group__field">
+                <label [for]="field.key" class="query-group__label">{{ field.title }}</label>
+                <input
+                  ibmText
+                  [id]="field.key"
+                  [placeholder]="field.placeholder"
+                  [(ngModel)]="formValues[field.key]"
+                />
+              </div>
+            }
+            <button
+              cdsButton="primary"
+              class="query-group__search-button"
+              [disabled]="!hasAnyInput(param.fields)"
+              (click)="searchGroup(param.fields)"
+            >
+              {{ 'searchFields.searchButtonText' | translate }}
+              <svg cdsIcon="search" size="16"></svg>
+            </button>
+          </div>
+        }
+      }
+    </div>
   }
 </ng-container>
