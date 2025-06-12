@@ -96,21 +96,49 @@ export class IkoMenuService {
   }
 
   public valueToBase64(value: object | string): string {
-    const json =
-      typeof value === 'string' ? JSON.stringify({__string: value}) : JSON.stringify(value);
-    return btoa(json);
+    let json: string;
+
+    if (typeof value === 'string') {
+      try {
+        const decoded = this.base64UrlDecode(value);
+        const parsed = JSON.parse(decoded);
+        if (parsed && typeof parsed === 'object' && '__string' in parsed) {
+          return value;
+        }
+      } catch {}
+      json = JSON.stringify({__string: value});
+    } else {
+      json = JSON.stringify(value);
+    }
+
+    return this.base64UrlEncode(json);
   }
 
   public base64ToValue<T = any>(encoded: string): T | string {
     try {
-      const json = atob(encoded); // No decodeURIComponent
-      const parsed = JSON.parse(json);
-      return parsed && typeof parsed === 'object' && '__string' in parsed
-        ? parsed.__string
-        : parsed;
+      let decoded = this.base64UrlDecode(encoded);
+      let parsed = JSON.parse(decoded);
+
+      if (parsed && typeof parsed === 'object') {
+        return '__string' in parsed ? parsed.__string : parsed;
+      }
+
+      return parsed;
     } catch {
       return encoded;
     }
+  }
+
+  private base64UrlEncode(value: string): string {
+    return btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  private base64UrlDecode(value: string): string {
+    let base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4 !== 0) {
+      base64 += '=';
+    }
+    return atob(base64);
   }
 
   private getIkoSequenceAfterCases(menuItems: MenuItem[]): number {
