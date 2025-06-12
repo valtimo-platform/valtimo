@@ -782,6 +782,10 @@
         "title": "No tags configured",
         "description": "Click here to configure a tag for this case type"
       }
+    },
+    "draftWarning": {
+      "title": "Not linked to a version of the case",
+      "description": "When updating {{name}}, the {{name}} will change for all versions of this case. Not just the selected version!"
     }
   },
   "widgetTabManagement": {

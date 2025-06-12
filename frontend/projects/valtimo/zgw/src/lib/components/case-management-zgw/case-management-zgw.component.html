@@ -14,6 +14,13 @@
   ~ limitations under the License.
   -->
 
+@if (currentTab$ | async; as currentTab) {
+  <valtimo-case-management-draft-warning
+    *ngIf="(isDraftVersion$ | async) === true && currentTab !== ZgwTabEnum.GENERAL"
+    [name]="DRAFT_WARNING_MESSAGE[currentTab] | translate | lowercase"
+  ></valtimo-case-management-draft-warning>
+}
+
 <cds-tabs class="case-management-tabs" type="contained">
   @for (zgwTab of (zgwTabs$ | async) || []; track zgwTab.tab) {
     <cds-tab

@@ -13,8 +13,12 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 @if (currentTab$ | async; as currentTab) {
+  <valtimo-case-management-draft-warning
+    *ngIf="isDraftVersion$ | async"
+    [name]="DRAFT_WARNING_MESSAGE[currentTab] | translate | lowercase"
+  ></valtimo-case-management-draft-warning>
+
   <cds-tabs class="case-management-tabs" type="contained">
     <cds-tab
       [active]="currentTab === TabEnum.SEARCH"

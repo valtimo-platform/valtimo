@@ -796,6 +796,10 @@
         "title": "Keine Tags konfiguriert",
         "description": "Klicken Sie hier, um einen Tag für diesen Casetyp zu konfigurieren"
       }
+    },
+    "draftWarning": {
+      "title": "Nicht mit einer Version des Case verknüpft",
+      "description": "Beim Aktualisieren {name} ändert sich der {name} für alle Versionen dieses Case. Nicht nur für die ausgewählte Version!"
     }
   },
   "widgetTabManagement": {

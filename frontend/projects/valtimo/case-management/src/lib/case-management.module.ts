@@ -95,6 +95,7 @@ import {CaseManagementSelectVersionModalComponent} from './components/case-manag
 import {CaseManagementUploadComponent} from './components/case-management-upload/case-management-upload.component';
 import {CaseManagementUploadStepComponent} from './components/case-management-upload/step/case-management-upload-step.component';
 import {TabManagementService} from './services';
+import {CaseManagementDraftWarningComponent} from './components/case-management-draft-warning/case-management-draft-warning.component';
 
 @NgModule({
   declarations: [
@@ -180,6 +181,7 @@ import {TabManagementService} from './services';
     MuuriDirectiveModule,
     NumberModule,
     ReadOnlyDirective,
+    CaseManagementDraftWarningComponent,
   ],
   providers: [TabManagementService],
 })
