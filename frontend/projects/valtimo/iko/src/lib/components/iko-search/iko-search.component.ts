@@ -69,6 +69,8 @@ export class IkoSearchComponent implements OnDestroy {
     })
   );
 
+  public readonly formValues: Record<string, string> = {};
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
