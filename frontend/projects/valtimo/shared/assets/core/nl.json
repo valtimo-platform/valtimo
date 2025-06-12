@@ -792,6 +792,10 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit casetype te configureren"
       }
+    },
+    "draftWarning": {
+      "title": "Niet gekoppeld aan een versie van de zaak",
+      "description": "Bij het bijwerken van {name} verandert de {name} voor alle versies van deze zaak. Niet alleen voor de geselecteerde versie!"
     }
   },
   "widgetTabManagement": {

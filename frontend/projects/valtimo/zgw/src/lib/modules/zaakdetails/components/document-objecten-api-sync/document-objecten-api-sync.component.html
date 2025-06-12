@@ -15,6 +15,11 @@
   -->
 
 <cds-tile>
+  <valtimo-case-management-draft-warning
+    *ngIf="isDraftVersion$ | async"
+    [name]="'zaakdetails.title' | translate | lowercase"
+  ></valtimo-case-management-draft-warning>
+
   <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
 
   @if (loading$ | async) {

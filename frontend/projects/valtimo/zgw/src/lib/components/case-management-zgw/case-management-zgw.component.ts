@@ -25,9 +25,14 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {CaseManagementDraftWarningComponent} from '@valtimo/case-management';
+import {
+  CaseManagementParams,
+  DraftVersionService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
 import {TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
 import {ZgwTab, ZgwTabEnum} from '../../models';
 import {
   DocumentenApiColumnsComponent,
@@ -44,7 +49,7 @@ import {CaseManagementZgwGeneralComponent} from '../case-management-zgw-general/
   styleUrl: './case-management-zgw.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TabsModule, TranslateModule],
+  imports: [CommonModule, TabsModule, TranslateModule, CaseManagementDraftWarningComponent],
 })
 export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
   @ViewChild('zgwTabContent', {read: ViewContainerRef})
@@ -52,8 +57,10 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
 
   private readonly _viewInitialized$ = new BehaviorSubject<boolean>(false);
 
+  private readonly _params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
   private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    getCaseManagementRouteParams(this.route).pipe(
+    this._params$.pipe(
       map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
       filter((caseDefinitionKey: string) => !!caseDefinitionKey),
       switchMap((caseDefinitionKey: string) =>
@@ -61,9 +68,20 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
       )
     );
 
+  public readonly isDraftVersion$ = this._params$.pipe(
+    switchMap((params: CaseManagementParams | undefined) =>
+      !params
+        ? of(false)
+        : this.draftVersionService.isDraftVersion(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag
+          )
+    )
+  );
+  public readonly currentTab$ = this.caseManagementZgwService.currentTab$;
   public readonly zgwTabs$: Observable<ZgwTab[]> = combineLatest([
     this._viewInitialized$,
-    this.caseManagementZgwService.currentTab$,
+    this.currentTab$,
     this._supportedDocumentenApiFeatures$,
   ]).pipe(
     filter(([viewInitialized]) => viewInitialized),
@@ -109,10 +127,17 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
     })
   );
 
+  public readonly ZgwTabEnum = ZgwTabEnum;
+  public readonly DRAFT_WARNING_MESSAGE = {
+    [ZgwTabEnum.DOCUMENTEN_API_COLUMNS]: 'zgw.tabs.documentColumns',
+    [ZgwTabEnum.DOCUMENTEN_API_UPLOAD_FIELDS]: 'zgw.tabs.documentUploadFields',
+  };
+
   constructor(
     private readonly caseManagementZgwService: CaseManagementZgwService,
     private readonly cdr: ChangeDetectorRef,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
+    private readonly draftVersionService: DraftVersionService,
     private readonly route: ActivatedRoute
   ) {}
 
