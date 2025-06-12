@@ -13,28 +13,21 @@ const mockIkoMenuItems: IkoMenuItem[] = [
     },
     queryParams: [
       {
-        placeholder: 'Enter BSN or name',
-        title: 'Search by BSN or name',
+        group: true,
+        fields: [
+          {placeholder: 'Enter first name', title: 'First name', key: 'firstName'},
+          {placeholder: 'Enter last name', title: 'Last name', key: 'lastName'},
+        ],
+      },
+      {
+        placeholder: 'Enter BSN',
+        title: 'BSN',
         key: 'bsn',
       },
-    ],
-  },
-  {
-    title: 'Object',
-    profile: {
-      url: 'https://iko.example.com/object/details',
-      identifierColumn: 'objectCode',
-    },
-    queryParams: [
       {
-        placeholder: 'Enter object code',
-        title: 'Search by object code',
-        key: 'code',
-      },
-      {
-        placeholder: 'Enter postcode',
-        title: 'Search by postcode',
-        key: 'postcode',
+        placeholder: 'Enter birth date',
+        title: 'Birth date',
+        key: 'birthDate',
       },
     ],
   },
@@ -47,13 +40,15 @@ const mockIkoMenuItems: IkoMenuItem[] = [
     queryParams: [
       {
         placeholder: 'Enter KvK number',
-        title: 'Search by KvK number',
+        title: 'KvK number',
         key: 'kvk',
       },
       {
-        placeholder: 'Enter company name',
-        title: 'Search by company name',
-        key: 'name',
+        group: true,
+        fields: [
+          {placeholder: 'Enter company name', title: 'Company name', key: 'companyName'},
+          {placeholder: 'Enter contact email', title: 'Contact email', key: 'email'},
+        ],
       },
     ],
   },

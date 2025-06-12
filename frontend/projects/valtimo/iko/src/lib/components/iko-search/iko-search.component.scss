@@ -22,7 +22,25 @@
 .query-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 32px;
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+  }
+
+  &__field {
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+
+    input {
+      width: 100%;
+    }
+  }
 
   &__row {
     display: flex;
