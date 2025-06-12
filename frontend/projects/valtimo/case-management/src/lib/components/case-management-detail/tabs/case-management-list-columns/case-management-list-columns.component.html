@@ -112,6 +112,7 @@
       showEnum: showEnum$ | async,
       isYesNo: isYesNo$ | async,
       showTagAmount: showTagAmount$ | async,
+      params: params$ | async,
     } as modalObs"
     [open]="modalObs.show"
     size="sm"
@@ -178,7 +179,8 @@
 
       <valtimo-value-path-selector
         formControlName="path"
-        [documentDefinitionName]="(params$ | async)?.caseDefinitionKey"
+        [caseDefinitionKey]="modalObs.params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="modalObs.params?.caseDefinitionVersionTag"
       ></valtimo-value-path-selector>
     </cds-label>
 

@@ -28,8 +28,8 @@
     [formGroup]="formGroup"
     class="value-path-selector__form"
     [ngClass]="{
-      'value-path-selector__form--doc-def-selection':
-        showDocumentDefinitionSelector && obs.inputModeIsDropdown,
+      'value-path-selector__form--case-def-selection':
+        showCaseDefinitionSelector && obs.inputModeIsDropdown,
     }"
   >
     <cds-toggle
@@ -45,25 +45,25 @@
     @if (obs.inputModeIsDropdown) {
       <ng-container
         *ngIf="
-          showDocumentDefinitionSelector && {
-            loadingDocumentDefinitionItems: loadingDocumentDefinitionItems$ | async,
-            documentDefinitionListItems: documentDefinitionListItems$ | async,
-          } as docObs
+          showCaseDefinitionSelector && {
+            loadingCaseDefinitionItems: loadingCaseDefinitionItems$ | async,
+            caseDefinitionListItems: caseDefinitionListItems$ | async,
+          } as caseObs
         "
       >
         <cds-dropdown
-          data-testid="value-path-selector-documentDefinition"
+          data-testid="value-path-selector-caseDefinition"
           [appendInline]="appendInline"
           [disabled]="
             obs.disabled ||
-            docObs.loadingDocumentDefinitionItems ||
-            !docObs.documentDefinitionListItems ||
-            (docObs.documentDefinitionListItems || []).length === 0
+            caseObs.loadingCaseDefinitionItems ||
+            !caseObs.caseDefinitionListItems ||
+            (caseObs.caseDefinitionListItems || []).length === 0
           "
-          (selected)="onDocumentDefinitionSelected($event)"
-          [placeholder]="'valuePathSelector.selectDocDefPlaceholder' | translate"
+          (selected)="onCaseDefinitionSelected($event)"
+          [placeholder]="'valuePathSelector.selectCaseDefPlaceholder' | translate"
         >
-          <cds-dropdown-list [items]="docObs.documentDefinitionListItems || []"></cds-dropdown-list>
+          <cds-dropdown-list [items]="caseObs.caseDefinitionListItems || []"></cds-dropdown-list>
         </cds-dropdown>
       </ng-container>
 

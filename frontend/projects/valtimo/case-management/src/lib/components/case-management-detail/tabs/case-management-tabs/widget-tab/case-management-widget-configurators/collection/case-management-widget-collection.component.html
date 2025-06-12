@@ -14,7 +14,10 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{theme: theme$ | async} as obs">
+<ng-container *ngIf="{
+    theme: theme$ | async,
+    params: params$ | async,
+  } as obs">
   <form [formGroup]="widgetForm" class="valtimo-case-management-widget-collection__form">
     <cds-text-label [attr.data-carbon-theme]="obs.theme">
       <v-input-label
@@ -58,7 +61,8 @@
       <valtimo-value-path-selector
         formControlName="collection"
         [attr.data-carbon-theme]="obs.theme"
-        [documentDefinitionName]="(params$ | async)?.caseDefinitionKey"
+        [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+        [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
         [type]="ValuePathType.COLLECTION"
         (collectionSelected)="onCollectionSelected($event)"
       ></valtimo-value-path-selector>
@@ -85,7 +89,8 @@
         <valtimo-value-path-selector
           formControlName="value"
           [attr.data-carbon-theme]="obs.theme"
-          [documentDefinitionName]="(params$ | async).caseDefinitionKey"
+          [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+          [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
           [parentItem]="selectedCollection$ | async"
         ></valtimo-value-path-selector>
       </div>

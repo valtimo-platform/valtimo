@@ -47,9 +47,9 @@ export class KeyValuePathSelectorComponent {
   @Input() @HostBinding('class.--full-width') public readonly fullWidth = false;
   @Input() public readonly disabled = false;
 
-  @Input() public readonly documentDefinitionName = '';
+  @Input() public readonly caseDefinitionKey = '';
   @Input() public readonly prefixes: ValuePathSelectorPrefix[] = [];
-  @Input() public readonly showDocumentDefinitionSelector = false;
+  @Input() public readonly showCaseDefinitionSelector = false;
   @Input() public readonly notation: ValuePathSelectorNotation = 'dots';
   @Input() public readonly keyColumnFlex = 1;
   @Input() public readonly valueColumnFlex = 1;

@@ -43,19 +43,6 @@ interface Page<T> {
   number: number;
 }
 
-interface DocumentDefinitions {
-  content: DocumentDefinition[];
-  empty: boolean;
-  first: boolean;
-  last: boolean;
-  number: number;
-  numberOfElements: number;
-  size: number;
-  sort: any;
-  totalElements: number;
-  totalPages: number;
-}
-
 interface DocumentDefinition {
   id: DocumentDefinitionId;
   schema: any;
@@ -419,7 +406,6 @@ export {
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
-  DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
   DocumentRole,

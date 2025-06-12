@@ -15,7 +15,10 @@
   -->
 
 <form
-  *ngIf="{theme: theme$ | async} as obs"
+  *ngIf="{
+    theme: theme$ | async,
+    params: params$ | async
+  } as obs"
   [formGroup]="form"
   class="valtimo-case-management-widget-table__form"
 >
@@ -59,7 +62,8 @@
     <valtimo-value-path-selector
       formControlName="collection"
       [attr.data-carbon-theme]="obs.theme"
-      [documentDefinitionName]="(params$ | async)?.caseDefinitionKey"
+      [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+      [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
       [type]="ValuePathType.COLLECTION"
       (collectionSelected)="onCollectionSelected($event)"
     ></valtimo-value-path-selector>

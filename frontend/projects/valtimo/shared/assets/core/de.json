@@ -1814,7 +1814,7 @@
     "placeholder": "Wählen Sie einen Pfad",
     "dropdown": "Dropdown",
     "manual": "Manuell",
-    "selectDocDefPlaceholder": "Wählen Sie einen Fall"
+    "selectCaseDefPlaceholder": "Wählen Sie einen Fall"
   },
   "logging": {
     "columns": {"timestamp": "Zeit", "formattedMessage": "Nachricht", "level": "Protokollebene"},
