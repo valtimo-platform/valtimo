@@ -34,7 +34,7 @@ export * from './lib/components/camunda/form/camunda-form.module';
 export * from './lib/components/topbar/topbar.component';
 export * from './lib/components/topbar/topbar.module';
 
-export * from './lib/components/menu/services/menu.service';
+export * from './lib/components/menu/services';
 export * from './lib/components/menu/menu-routing.module';
 export * from './lib/components/menu/menu.module';
 export * from './lib/components/menu/menu.init';
