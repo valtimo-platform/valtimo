@@ -14,41 +14,50 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest, filter, map, Observable, tap} from 'rxjs';
-import {IkoMenuItem, IkoMenuService} from '@valtimo/components';
+import {IkoMenuItem, IkoMenuService, PageTitleService} from '@valtimo/components';
+import {ButtonModule, IconModule, InputModule} from 'carbon-components-angular';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 @Component({
   selector: 'valtimo-iko-search',
   standalone: true,
   templateUrl: './iko-search.component.html',
   styleUrls: ['./iko-search.component.scss'],
-  imports: [CommonModule],
+  imports: [CommonModule, InputModule, ButtonModule, IconModule, FormsModule, ReactiveFormsModule],
 })
-export class IkoSearchComponent {
+export class IkoSearchComponent implements OnDestroy {
   private readonly _profileUrl$ = this.route.params.pipe(
     map(params => params?.profileUrl),
     filter(url => !!url),
-    tap(params => console.log(params)),
-    map(url => this.ikoMenuService.base64ToValue(url)),
-    tap(params => console.log(params))
+    map(url => this.ikoMenuService.base64ToValue(url))
   );
 
-  private readonly _ikoMenuItem$: Observable<IkoMenuItem> = combineLatest([
+  public readonly ikoMenuItem$: Observable<IkoMenuItem> = combineLatest([
     this._profileUrl$,
     this.ikoMenuService.cachedMenuItems$,
   ]).pipe(
     map(([profileUrl, cachedMenuItems]) =>
       cachedMenuItems.find(item => item.profile.url === profileUrl)
-    )
+    ),
+    tap(menuItem => {
+      if (!menuItem.title) return;
+      this.pageTitleService.setCustomPageTitle(menuItem.title, true);
+    })
   );
+
+  public readonly formValues: Record<string, string> = {};
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly ikoMenuService: IkoMenuService
-  ) {
-    this._ikoMenuItem$.subscribe(x => console.log(x));
+    private readonly ikoMenuService: IkoMenuService,
+    private readonly pageTitleService: PageTitleService
+  ) {}
+
+  public ngOnDestroy(): void {
+    this.pageTitleService.enableReset();
   }
 }
