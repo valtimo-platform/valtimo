@@ -24,10 +24,9 @@ import {
   ValuePathSelectorCache,
   ValuePathSelectorPrefix,
   ValuePathType,
-  ValuePathVersionArgument,
 } from '../models';
 import {deepmerge} from 'deepmerge-ts';
-import {DocumentDefinitions} from '@valtimo/document';
+import {CaseDefinition} from '@valtimo/document';
 import {isEqual} from 'lodash';
 
 @Injectable({
@@ -35,11 +34,11 @@ import {isEqual} from 'lodash';
 })
 export class ValuePathSelectorService extends BaseApiService implements OnDestroy {
   private _prefixes: (ValuePathSelectorPrefix | string)[];
-  private _documentDefinitionName: string;
-  private _version: ValuePathVersionArgument;
+  private _caseDefinitionKey: string;
+  private _caseDefinitionVersionTag: string;
 
   private _cache: ValuePathSelectorCache = {};
-  private _documentDefinitionCache$ = new BehaviorSubject<DocumentDefinitions | null>(null);
+  private _caseDefinitionCache$ = new BehaviorSubject<CaseDefinition[] | null>(null);
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -54,30 +53,29 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     this._subscriptions.unsubscribe();
   }
 
-  public setDocumentDefinitionCache(cache: DocumentDefinitions): void {
-    this._documentDefinitionCache$.pipe(take(1)).subscribe(currentCache => {
-      if (!isEqual(cache, currentCache)) this._documentDefinitionCache$.next(cache);
+  public setCaseDefinitionCache(cache: CaseDefinition[]): void {
+    this._caseDefinitionCache$.pipe(take(1)).subscribe(currentCache => {
+      if (!isEqual(cache, currentCache)) this._caseDefinitionCache$.next(cache);
     });
   }
 
-  public getDocumentDefinitionCache(): Observable<DocumentDefinitions | null> {
-    return this._documentDefinitionCache$.asObservable();
+  public getCaseDefinitionCache(): Observable<CaseDefinition[] | null> {
+    return this._caseDefinitionCache$.asObservable();
   }
 
   public getResolvableKeys(
     prefixes: ValuePathSelectorPrefix[],
-    documentDefinitionName: string,
+    caseDefinitionKey: string,
     type: ValuePathType = ValuePathType.FIELD,
-    version: ValuePathVersionArgument = 'latest'
+    caseDefinitionVersionTag: string = null
   ): Observable<ValuePathItem[]> {
     this._prefixes = prefixes;
-    this._documentDefinitionName = documentDefinitionName;
-    this._version = version;
+    this._caseDefinitionKey = caseDefinitionKey;
+    this._caseDefinitionVersionTag = caseDefinitionVersionTag;
 
-    const url =
-      typeof version !== 'number'
-        ? `/management/v2/value-resolver/document-definition/${documentDefinitionName}/keys`
-        : `/management/v2/value-resolver/document-definition/${documentDefinitionName}/version/${version}/keys`;
+    const url = !caseDefinitionVersionTag
+      ? `/management/v1/value-resolver/case-definition/${caseDefinitionKey}/keys`
+      : `/management/v1/value-resolver/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/keys`;
 
     const prefixesWithoutCache: (ValuePathSelectorPrefix | string)[] = this._prefixes.filter(
       (prefix: ValuePathSelectorPrefix) => !this.getCacheResult(prefix, type)
@@ -118,7 +116,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     this._subscriptions.add(
       interval(60 * 1000).subscribe(() => {
         this._cache = {};
-        this._documentDefinitionCache$.next(null);
+        this._caseDefinitionCache$.next(null);
       })
     );
   }
@@ -127,7 +125,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     prefix: ValuePathSelectorPrefix | string,
     type: ValuePathType
   ): ValuePathItem[] | undefined {
-    return this._cache[this._documentDefinitionName]?.[this._version]?.[prefix]?.[type];
+    return this._cache[this._caseDefinitionKey]?.[this._caseDefinitionVersionTag]?.[prefix]?.[type];
   }
 
   private mapCollectionItem(item: ValuePathResponse, parentPath?: string): ValuePathItem[] {
@@ -167,8 +165,8 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     );
 
     const tempCache: ValuePathSelectorCache = {
-      [this._documentDefinitionName]: {
-        [this._version]: prefixResults,
+      [this._caseDefinitionKey]: {
+        [this._caseDefinitionVersionTag]: prefixResults,
       },
     };
 

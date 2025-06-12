@@ -1788,7 +1788,7 @@
     "placeholder": "Select a path",
     "dropdown": "Dropdown",
     "manual": "Manual",
-    "selectDocDefPlaceholder": "Select a case"
+    "selectCaseDefPlaceholder": "Select a case"
   },
   "logging": {
     "columns": {"timestamp": "Timestamp", "formattedMessage": "Message", "level": "Log level"},

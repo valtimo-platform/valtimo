@@ -246,8 +246,8 @@
             [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
             [fullWidth]="true"
             valuePathSelectorNotation="slashes"
-            [valuePathSelectorDocumentDefinitionName]="
-              getSelectedDocumentDefinitionNameForIndex(index) | async
+            [valuePathSelectorCaseDefinitionKey]="
+              getSelectedCaseDefinitionKeyForIndex(index) | async
             "
             [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC]"
             [keyColumnFlex]="1"

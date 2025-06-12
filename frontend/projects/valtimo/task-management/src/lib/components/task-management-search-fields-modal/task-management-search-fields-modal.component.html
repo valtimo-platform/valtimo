@@ -56,7 +56,7 @@
 
         <valtimo-value-path-selector
           formControlName="path"
-          [documentDefinitionName]="documentDefinitionName$ | async"
+          [caseDefinitionKey]="documentDefinitionName$ | async"
           [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
         ></valtimo-value-path-selector>
       </div>

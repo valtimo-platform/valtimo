@@ -151,7 +151,7 @@ export class VerzoekConfigurationComponent
   private readonly formValue$ = new BehaviorSubject<VerzoekConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  public getSelectedDocumentDefinitionNameForIndex(index: number): Observable<string> {
+  public getSelectedCaseDefinitionKeyForIndex(index: number): Observable<string> {
     return this.formValue$.pipe(
       map(
         formValue =>

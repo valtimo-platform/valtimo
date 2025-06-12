@@ -37,7 +37,6 @@ import {
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
-  DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
   Documents,
@@ -91,8 +90,8 @@ export class DocumentService {
   }
 
   // Document-calls
-  public getAllDefinitions(): Observable<DocumentDefinitions> {
-    return this.http.get<DocumentDefinitions>(
+  public getAllDefinitions(): Observable<Page<DocumentDefinition>> {
+    return this.http.get<Page<DocumentDefinition>>(
       `${this.valtimoEndpointUri}v1/document-definition?size=1000`
     );
   }

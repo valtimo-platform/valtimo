@@ -49,9 +49,9 @@ export class ValuePathSelectorDropdownValueComponent {
   @Input() public readonly index!: number;
   @Input() public readonly value!: MultiInputKeyValue;
   @Input() public readonly dropdownItems$!: Observable<Array<ListItemWithId>>;
-  @Input() public readonly documentDefinitionName = '';
+  @Input() public readonly caseDefinitionKey = '';
   @Input() public readonly prefixes: ValuePathSelectorPrefix[] = [];
-  @Input() public readonly showDocumentDefinitionSelector = false;
+  @Input() public readonly showCaseDefinitionSelector = false;
   @Input() public readonly notation: ValuePathSelectorNotation = 'dots';
   @Input() public readonly dropdownWidth = 250;
   @Input() @HostBinding('class.--full-width') public readonly fullWidth = false;

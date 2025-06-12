@@ -1812,7 +1812,7 @@
     "placeholder": "Kies een pad",
     "dropdown": "Dropdown",
     "manual": "Handmatig",
-    "selectDocDefPlaceholder": "Kies een dossier"
+    "selectCaseDefPlaceholder": "Kies een dossier"
   },
   "logging": {
     "columns": {"timestamp": "Tijd", "formattedMessage": "Bericht", "level": "Logniveau"},

@@ -85,9 +85,9 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public type: MultiInputType = 'value';
   @Input() public valueColumnTitle = '';
 
-  @Input() public readonly valuePathSelectorDocumentDefinitionName = '';
+  @Input() public readonly valuePathSelectorCaseDefinitionKey = '';
   @Input() public readonly valuePathSelectorPrefixes: ValuePathSelectorPrefix[] = [];
-  @Input() public readonly valuePathSelectorShowDocumentDefinitionSelector = false;
+  @Input() public readonly valuePathSelectorShowCaseDefinitionSelector = false;
   @Input() public readonly valuePathSelectorNotation: ValuePathSelectorNotation = 'dots';
 
   @Input() public readonly keyColumnFlex = 1;
