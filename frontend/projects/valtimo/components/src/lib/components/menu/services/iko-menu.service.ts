@@ -101,16 +101,15 @@ export class IkoMenuService {
     return btoa(json);
   }
 
-  public base64ToValue<T = any>(base64: string): T | string {
+  public base64ToValue<T = any>(encoded: string): T | string {
     try {
-      const decodedBase64 = decodeURIComponent(base64);
-      const jsonString = atob(decodedBase64);
-      const parsed = JSON.parse(jsonString);
+      const json = atob(encoded); // No decodeURIComponent
+      const parsed = JSON.parse(json);
       return parsed && typeof parsed === 'object' && '__string' in parsed
         ? parsed.__string
         : parsed;
     } catch {
-      return base64;
+      return encoded;
     }
   }
 

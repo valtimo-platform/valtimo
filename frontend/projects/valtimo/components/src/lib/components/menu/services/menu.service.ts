@@ -1,25 +1,25 @@
 import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
 import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
 import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/shared';
 import {UserProviderService} from '@valtimo/security';
 import {SseService} from '@valtimo/sse';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
-import {filter, map, tap} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable, of, Subscription, switchMap} from 'rxjs';
+import {delay, filter, map, tap} from 'rxjs/operators';
 import {CaseMenuService} from './case-menu.service';
 import {ObjectMenuService} from './object-menu.service';
 import {PendingChangesService} from '../../pending-changes/pending-changes.service';
 import {IkoMenuService} from './iko-menu.service';
 
 @Injectable({providedIn: 'root'})
-export class MenuService {
+export class MenuService implements OnDestroy {
   private readonly _activeParentSequenceNumber$ = new BehaviorSubject<string>('');
   private readonly _menuItems$ = new BehaviorSubject<MenuItem[]>([]);
-  private readonly dossierItemsAppended$ = new BehaviorSubject<boolean>(false);
-  private readonly objectsItemsAppended$ = new BehaviorSubject<boolean>(false);
-  private readonly ikoItemsAppended$ = new BehaviorSubject<boolean>(false);
+
+  private readonly reloadActiveSequence$ = new BehaviorSubject<null>(null);
+  private readonly reload$ = new BehaviorSubject<null>(null);
 
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
 
@@ -48,14 +48,12 @@ export class MenuService {
 
   public get closestSequence$(): Observable<string> {
     return combineLatest([
-      this.dossierItemsAppended$,
-      this.objectsItemsAppended$,
-      this.ikoItemsAppended$,
       this.currentRoute$,
       this.menuItems$,
+      this.reloadActiveSequence$.pipe(delay(0)),
     ]).pipe(
       filter(() => !this.pendingChangesService.pendingChanges),
-      map(([_0, _1, _2, currentRoute, menuItems]) => {
+      map(([currentRoute, menuItems]) => {
         let closestSequence = '0';
         let highestDiff = 0;
 
@@ -93,6 +91,8 @@ export class MenuService {
     );
   }
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly configService: ConfigService,
     private readonly http: HttpClient,
@@ -114,37 +114,16 @@ export class MenuService {
   }
 
   public init(): void {
-    this.reload();
+    this.initReload();
     this.logger.debug('Menu initialized');
   }
 
-  public reload(): void {
-    const roles = this.keycloakService.getUserRoles(true);
-    const menuItems = this.loadMenuItems(roles);
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
 
-    this.caseMenuService
-      .appendCaseSubMenuItems(menuItems, this.disableCaseCount, this.sseService)
-      .pipe(
-        tap(() => this.dossierItemsAppended$.next(true)),
-        switchMap(items =>
-          this.enableObjectManagement
-            ? this.objectMenuService
-                .appendObjectsSubMenuItems(
-                  items,
-                  this.configService.config.valtimoApi.endpointUri,
-                  this.http
-                )
-                .pipe(tap(() => this.objectsItemsAppended$.next(true)))
-            : of(items)
-        ),
-        switchMap(items =>
-          this.ikoMenuService
-            .appendIkoMenuItems(items)
-            .pipe(tap(() => this.ikoItemsAppended$.next(true)))
-        ),
-        map(items => this.applyMenuRoleSecurity(items))
-      )
-      .subscribe(items => this._menuItems$.next(items));
+  public reload(): void {
+    this.reloadActiveSequence$.next(null);
   }
 
   private loadMenuItems(userRoles: string[]): MenuItem[] {
@@ -177,5 +156,36 @@ export class MenuService {
       });
     });
     return menuItems;
+  }
+
+  private initReload(): void {
+    const roles = this.keycloakService.getUserRoles(true);
+    const menuItems = this.loadMenuItems(roles);
+
+    this._subscriptions.add(
+      this.reload$
+        .pipe(
+          switchMap(() =>
+            this.caseMenuService.appendCaseSubMenuItems(
+              menuItems,
+              this.disableCaseCount,
+              this.sseService
+            )
+          ),
+          switchMap(items =>
+            this.enableObjectManagement
+              ? this.objectMenuService.appendObjectsSubMenuItems(
+                  items,
+                  this.configService.config.valtimoApi.endpointUri,
+                  this.http
+                )
+              : of(items)
+          ),
+          switchMap(items => this.ikoMenuService.appendIkoMenuItems(items)),
+          map(items => this.applyMenuRoleSecurity(items)),
+          tap(items => this._menuItems$.next(items))
+        )
+        .subscribe()
+    );
   }
 }

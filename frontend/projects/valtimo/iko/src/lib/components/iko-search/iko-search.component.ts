@@ -2,7 +2,7 @@ import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest, filter, map, Observable, tap} from 'rxjs';
-import {IkoMenuItem, IkoMenuService, PageTitleService} from '@valtimo/components';
+import {IkoMenuItem, IkoMenuService, MenuService, PageTitleService} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Search16} from '@carbon/icons';
@@ -43,6 +43,8 @@ export class IkoSearchComponent implements OnDestroy {
       if (menuItem?.title) {
         this.pageTitleService.setCustomPageTitle(menuItem.title, true);
       }
+
+      this.menuService.reload();
     })
   );
 
@@ -50,7 +52,8 @@ export class IkoSearchComponent implements OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly ikoMenuService: IkoMenuService,
     private readonly pageTitleService: PageTitleService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly menuService: MenuService
   ) {
     this.iconService.register(Search16);
   }
