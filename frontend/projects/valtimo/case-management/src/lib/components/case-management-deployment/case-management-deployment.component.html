@@ -32,7 +32,11 @@
     @if (obs.canUpdateGlobalConfiguration) {
       @if (obs.isDraftVersion) {
         <div class="draft-buttons">
-          <button *ngIf="!obs.isGloballyActive" cdsButton="danger" (click)="openDeleteDraftModal()">
+          <button
+            *ngIf="caseDefinitionVersions.length === 1 || !obs.isGloballyActive"
+            cdsButton="danger"
+            (click)="openDeleteDraftModal()"
+          >
             {{ 'caseManagement.deployment.buttons.delete' | translate }}
             <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
           </button>
