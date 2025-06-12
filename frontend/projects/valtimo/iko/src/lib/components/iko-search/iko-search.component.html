@@ -14,4 +14,23 @@
   ~ limitations under the License.
   -->
 
-test
+<ng-container *ngIf="{ikoMenuItem: ikoMenuItem$ | async} as obs">
+  @if (obs.ikoMenuItem?.queryParams) {
+    @for (queryParam of obs.ikoMenuItem.queryParams; track queryParam.key) {
+      <div class="query-param">
+        <div class="query-param__input">
+          <label [for]="queryParam.key" class="query-param__label">
+            {{ queryParam.title || '-' }}
+          </label>
+
+          <input
+            ibmText
+            [id]="queryParam.key"
+            [placeholder]="queryParam.placeholder"
+            [(ngModel)]="formValues[queryParam.key]"
+          />
+        </div>
+      </div>
+    }
+  }
+</ng-container>

@@ -27,6 +27,7 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {
       title: 'Iko',
+      customPageTitle: true,
     },
   },
 ];
