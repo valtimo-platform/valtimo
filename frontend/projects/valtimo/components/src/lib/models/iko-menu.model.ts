@@ -20,11 +20,18 @@ interface IkoMenuItem {
     url: string;
     identifierColumn: string;
   };
-  queryParams: {
-    placeholder: string;
-    title: string;
-    key: string;
-  }[];
+  queryParams: (QueryParam | QueryParamGroup)[];
+}
+
+interface QueryParam {
+  placeholder: string;
+  title: string;
+  key: string;
+}
+
+interface QueryParamGroup {
+  group: true;
+  fields: QueryParam[];
 }
 
 export {IkoMenuItem};

@@ -1,13 +1,44 @@
-.query-param {
+.query-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 32px;
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+  }
+
+  &__field {
+    flex: 1 1 200px;
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+
+    input {
+      width: 100%;
+    }
+  }
 
   &__label {
-    color: var(--cds-text-color-primary);
+    font-size: 14px;
     font-weight: 600;
-    font-size: 16px;
-    line-height: 24px;
-    letter-spacing: 0px;
+    margin-bottom: 8px;
+    color: var(--cds-text-primary);
+  }
+
+  &__search-button {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    max-height: 40px;
+    min-height: 40px;
+    padding: 8px 16px;
+    min-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
   }
 }
