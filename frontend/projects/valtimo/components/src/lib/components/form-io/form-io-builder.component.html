@@ -22,6 +22,7 @@
   <form-builder
     [form]="formDefinition"
     [rebuild]="triggerRebuild"
+    [options]="{builder: {resource: false}}"
     (change)="onChange($event)"
   ></form-builder>
 </div>

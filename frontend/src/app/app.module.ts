@@ -34,7 +34,6 @@ import {
   enableCustomFormioComponents,
   FormIoModule,
   MenuModule,
-  registerFormioCurrencyComponent,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
@@ -136,6 +135,8 @@ import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
 import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
+import {FormIoCurrencyComponent} from '../../projects/valtimo/components/src/lib/components/form-io/form-io-currency/currency.component';
+import {Formio} from '@formio/js';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -158,6 +159,7 @@ export function tabsFactory() {
     UploadShowcaseComponent,
     CustomCaseTabComponent,
     CustomMapsTabComponent,
+    FormIoCurrencyComponent,
   ],
   bootstrap: [AppComponent],
   imports: [
@@ -288,7 +290,7 @@ export class AppModule {
     registerFormioFileSelectorComponent(injector);
     registerDocumentenApiFormioUploadComponent(injector);
     registerFormioIbanComponent(injector);
-    registerFormioCurrencyComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
+    Formio.Components.addComponent('currency', FormIoCurrencyComponent);
   }
 }
