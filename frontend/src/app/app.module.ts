@@ -105,6 +105,8 @@ import {
   objecttypenApiPluginSpecification,
   OpenNotificatiesPluginModule,
   openNotificatiesPluginSpecification,
+  OpenProductPluginModule,
+  openProductPluginSpecification,
   OpenZaakPluginModule,
   openZaakPluginSpecification,
   PLUGINS_TOKEN,
@@ -226,6 +228,7 @@ export function tabsFactory() {
     ZgwModule,
     FormViewModelModule,
     LoggingModule,
+    OpenProductPluginModule
   ],
   providers: [
     FormioComponent,
@@ -245,6 +248,7 @@ export function tabsFactory() {
         smartDocumentsPluginSpecification,
         zakenApiPluginSpecification,
         verzoekPluginSpecification,
+        openProductPluginSpecification
       ],
     },
     {
