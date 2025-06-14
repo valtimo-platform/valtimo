@@ -114,6 +114,8 @@ import {
   portaaltaakPluginSpecification,
   SmartDocumentsPluginModule,
   smartDocumentsPluginSpecification,
+  TokenAuthenticationPluginModule,
+  tokenAuthenticationPluginSpecification,
   VerzoekPluginModule,
   verzoekPluginSpecification,
   ZakenApiPluginModule,
@@ -228,7 +230,8 @@ export function tabsFactory() {
     ZgwModule,
     FormViewModelModule,
     LoggingModule,
-    OpenProductPluginModule
+    OpenProductPluginModule,
+    TokenAuthenticationPluginModule
   ],
   providers: [
     FormioComponent,
@@ -248,7 +251,8 @@ export function tabsFactory() {
         smartDocumentsPluginSpecification,
         zakenApiPluginSpecification,
         verzoekPluginSpecification,
-        openProductPluginSpecification
+        openProductPluginSpecification,
+        tokenAuthenticationPluginSpecification
       ],
     },
     {
