@@ -109,3 +109,14 @@ export * from './lib/plugins/besluiten-api/components/link-document-to-besluit/l
 /* exact */
 export * from './lib/plugins/exact/exact.plugin.specification';
 export * from './lib/plugins/exact/exact-plugin.module';
+/* open product plugin*/
+export * from './lib/plugins/open-product/open-product-plugin.specification';
+export * from './lib/plugins/open-product/open-product-plugin.module';
+export * from './lib/plugins/open-product/components/create-product/create-product-configuration.component';
+export * from './lib/plugins/open-product/components/delete-product/delete-product-configuration.component';
+export * from './lib/plugins/open-product/components/update-product/update-product-configuration.component';
+export * from './lib/plugins/open-product/components/open-product-configuration/open-product-configuration.component';
+/* token authentication*/
+export * from './lib/plugins/token-authentication/token-authentication-plugin.specification';
+export * from './lib/plugins/token-authentication/token-authentication-plugin.module';
+export * from './lib/plugins/token-authentication/components/token-authentication-configuration/token-authentication-configuration.component';
