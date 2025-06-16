@@ -22,11 +22,11 @@ import {
   Output,
 } from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {Edit16, Information16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
+import {TemplatePayload} from '@valtimo/document';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
-import {DocumentService, TemplatePayload} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, map, Observable, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -83,13 +83,11 @@ export class CaseManagementCreateDraftVersionComponent implements OnInit {
   );
 
   constructor(
-    private readonly documentService: DocumentService,
     private readonly fb: FormBuilder,
     private readonly iconService: IconService,
     private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
-    private readonly caseManagementService: CaseManagementService,
-    private readonly router: Router
+    private readonly caseManagementService: CaseManagementService
   ) {
     this.iconService.registerAll([Edit16, Information16]);
   }
@@ -136,7 +134,7 @@ export class CaseManagementCreateDraftVersionComponent implements OnInit {
       name: payload.name || '',
       caseDefinitionKey: payload.caseDefinitionKey || '',
       caseDefinitionVersion: '',
-      description: payload.description || '',
+      description: '',
       basedOnCaseDefinitionVersion: payload.basedOnCaseDefinitionVersion || '',
     });
   }
