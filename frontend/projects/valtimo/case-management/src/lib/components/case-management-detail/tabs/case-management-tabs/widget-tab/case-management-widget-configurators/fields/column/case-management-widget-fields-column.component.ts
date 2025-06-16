@@ -175,7 +175,7 @@ export class CaseManagementWidgetFieldsColumnComponent implements OnInit, OnDest
           null,
           Validators.pattern('[1-9][0-9]*')
         ),
-        hideWhenEmpty: this.fb.control<boolean | false>(false),
+        hideWhenEmpty: this.fb.control<boolean>(false),
       })
     );
   }
@@ -188,7 +188,11 @@ export class CaseManagementWidgetFieldsColumnComponent implements OnInit, OnDest
   }
 
   public onTypeSelected(formRow: FormGroup, event: {item: ListItem}): void {
-    this.widgetFieldsService.onDisplayTypeSelected(['title', 'content', 'type'], formRow, event);
+    this.widgetFieldsService.onDisplayTypeSelected(
+      ['title', 'content', 'type', 'hideWhenEmpty'],
+      formRow,
+      event
+    );
   }
 
   public onAddEnumValueClick(valuesFormArray: FormArray): void {
