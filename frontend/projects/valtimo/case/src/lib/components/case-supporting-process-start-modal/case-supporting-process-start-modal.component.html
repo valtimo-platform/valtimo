@@ -47,7 +47,12 @@
       ></valtimo-form-flow>
     }
 
-    @if (!(formDefinition$ | async) && !(formFlowInstanceId$ | async) && !isUIComponent) {
+    @if (
+      !(isLoading$ | async) &&
+      !(formDefinition$ | async) &&
+      !(formFlowInstanceId$ | async) &&
+      !isUIComponent
+    ) {
       <div class="bg-warning text-black mb-0 p-3 text-center">
         {{
           isAdmin
