@@ -132,7 +132,10 @@
           {{ 'Upload' | translate }}
         </cds-overflow-menu-option>
 
-        <cds-overflow-menu-option (selected)="showDuplicateModal(obs.formDefinition)">
+        <cds-overflow-menu-option
+          *ngIf="(obs.context === 'case' && obs.isDraftVersion) || obs.context === 'independent'"
+          (selected)="showDuplicateModal(obs.formDefinition)"
+        >
           {{ 'formManagement.duplicate' | translate }}
         </cds-overflow-menu-option>
 
