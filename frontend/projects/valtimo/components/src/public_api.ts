@@ -125,6 +125,7 @@ export * from './lib/components/form-io/form-io-resource-selector/form-io-resour
 
 export * from './lib/components/form-io/services/form-io-state.service';
 export * from './lib/components/form-io/services/form-io-dom.service';
+export * from './lib/components/form-io/services/form-io.tags.service';
 
 export * from './lib/components/webcam/webcam.module';
 export * from './lib/components/webcam/webcam.component';

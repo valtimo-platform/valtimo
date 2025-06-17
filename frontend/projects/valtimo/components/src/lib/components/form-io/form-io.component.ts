@@ -18,6 +18,7 @@ import {
   Component,
   EventEmitter,
   HostListener,
+  Injector,
   Input,
   OnChanges,
   OnDestroy,
@@ -46,7 +47,8 @@ import {FormIoLocalStorageService} from './services/form-io-local-storage.servic
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
-import {Formio} from '@formio/js';
+import {Formio} from 'formiojs';
+import {FormIoTagsService} from './services/form-io.tags.service';
 
 @Component({
   selector: 'valtimo-form-io',
@@ -144,9 +146,12 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly localStorageService: FormIoLocalStorageService,
     private readonly modalService: ValtimoModalService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly tagsService: FormIoTagsService,
+    private readonly injector: Injector
   ) {
     this.setOverrideOptions(configService.config);
+    this.tagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit(): void {

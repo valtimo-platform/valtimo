@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {Components} from '@formio/js';
+import {Component, EventEmitter, Injector, Input, OnInit, Output} from '@angular/core';
+import {Components} from 'formiojs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
-import {FormioOptions} from '@formio/angular';
+import {FormioOptions} from '@formio/angular/';
 import {FormIoStateService} from './services/form-io-state.service';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
   modiyEditFormApiKeyInput,
 } from './form-io-builder.utils';
+import {ValtimoFormioOptions} from '../../models';
+import {deepmerge} from 'deepmerge-ts';
+import {isEqual} from 'lodash';
+import {ConfigService, ValtimoConfig} from '@valtimo/shared';
+import {FormIoTagsService} from './services/form-io.tags.service';
 
 @Component({
   selector: 'valtimo-form-io-builder',
@@ -47,33 +52,51 @@ export class FormioBuilderComponent implements OnInit {
 
   public readonly currentLanguage$ = this.translateService.stream('key').pipe(
     map(() => this.translateService.currentLang),
-    distinctUntilChanged()
+    distinctUntilChanged(),
+    tap(language => this.languageEventEmitter.emit(language))
   );
 
-  public readonly formioOptions$: Observable<FormioOptions> = this.currentLanguage$.pipe(
-    map(language => {
-      const formioTranslations = this.translateService.instant('formioTranslations');
-      const options =
-        typeof formioTranslations === 'object'
-          ? {
-              language,
-              i18n: {
-                [language]: this.stateService.flattenTranslationsObject(formioTranslations),
-              },
-            }
-          : {};
+  public readonly languageEventEmitter = new EventEmitter<string>();
 
-      return options;
+  public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
+
+  private readonly _overrideOptions$ = new BehaviorSubject<FormioOptions>({});
+
+  public readonly formioOptions$: Observable<ValtimoFormioOptions | FormioOptions> = combineLatest([
+    this.options$.pipe(startWith({})),
+    this.currentLanguage$,
+    this._overrideOptions$,
+  ]).pipe(
+    map(([options, language, overrideOptions]) => {
+      const formioTranslations = this.translateService.instant('formioTranslations');
+
+      const defaultOptions = {
+        ...options,
+        ...(formioTranslations === 'object' && {
+          i18n: {
+            [language]: this.stateService.flattenTranslationsObject(formioTranslations),
+          },
+        }),
+      };
+
+      return deepmerge(defaultOptions, overrideOptions);
     }),
-    tap(options => this.triggerRebuild.emit(options))
+    distinctUntilChanged((prev, curr) => isEqual(prev, curr)),
+    tap(() => this.triggerRebuild.emit())
   );
 
   public readonly editFormModified$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly translateService: TranslateService,
-    private readonly stateService: FormIoStateService
-  ) {}
+    private readonly stateService: FormIoStateService,
+    private readonly configService: ConfigService,
+    private readonly injector: Injector,
+    private readonly tagsService: FormIoTagsService
+  ) {
+    this.setOverrideOptions(this.configService.config);
+    this.tagsService.reregisterTags(this.injector);
+  }
 
   public ngOnInit() {
     this.modifyEditForm();
@@ -95,4 +118,10 @@ export class FormioBuilderComponent implements OnInit {
 
     setTimeout(() => this.editFormModified$.next(true));
   };
+
+  private setOverrideOptions(config: ValtimoConfig): void {
+    if (!config.formioOptions) return;
+
+    this._overrideOptions$.next(config.formioOptions);
+  }
 }

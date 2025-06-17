@@ -21,6 +21,7 @@
 >
   <form-builder
     [form]="formDefinition"
+    [options]="formioOptions$ | async"
     [rebuild]="triggerRebuild"
     (change)="onChange($event)"
   ></form-builder>

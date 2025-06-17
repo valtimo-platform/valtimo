@@ -19,6 +19,7 @@ import {
   Component,
   EventEmitter,
   HostBinding,
+  Injector,
   OnDestroy,
   OnInit,
   Output,
@@ -36,9 +37,9 @@ import {
   EditorModel,
   EditorModule,
   FormIoModule,
+  FormIoTagsService,
   PageHeaderService,
   PageTitleService,
-  PendingChangesComponent,
   RenderInPageHeaderDirective,
   ShellService,
   SpinnerModule,
@@ -103,10 +104,7 @@ import {FormManagementUploadComponent} from '../form-management-upload';
     LoadingModule,
   ],
 })
-export class FormManagementEditComponent
-  extends PendingChangesComponent
-  implements OnInit, OnDestroy
-{
+export class FormManagementEditComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-form-management-edit';
 
   @Output() public readonly deleteEvent = new EventEmitter<void>();
@@ -166,8 +164,6 @@ export class FormManagementEditComponent
         this._editorInitialized = true;
         return;
       }
-
-      this.pendingChanges = true;
     })
   );
 
@@ -196,10 +192,12 @@ export class FormManagementEditComponent
     private readonly notificationService: GlobalNotificationService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly environmentService: EnvironmentService,
-    private readonly draftVersionService: DraftVersionService
+    private readonly draftVersionService: DraftVersionService,
+    private readonly formIoTagsService: FormIoTagsService,
+    private readonly injector: Injector
   ) {
-    super();
     this.iconService.registerAll([ArrowLeft16]);
+    this.formIoTagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit(): void {
@@ -233,8 +231,6 @@ export class FormManagementEditComponent
   }
 
   public deleteFormDefinition(definition: FormDefinition): void {
-    this.pendingChanges = false;
-
     getCaseManagementRouteParamsAndContext(this.route)
       .pipe(
         switchMap(([context, caseManagementRouteParams]) => {
@@ -279,8 +275,6 @@ export class FormManagementEditComponent
       .subscribe(([customPageTitle, formDefinitionId]) => {
         if (!customPageTitle || !formDefinitionId) return;
 
-        this.pendingChanges = true;
-
         const form = JSON.stringify(
           this.modifiedFormDefinition !== null
             ? this.modifiedFormDefinition
@@ -317,7 +311,6 @@ export class FormManagementEditComponent
                 title: this.translateService.instant('formManagement.notifications.deployed'),
               });
 
-              this.pendingChanges = false;
               this.navigateBack();
             },
             error: () => {
@@ -378,6 +371,7 @@ export class FormManagementEditComponent
 
   public onSelectedTab(tab: EDIT_TABS): void {
     this.activeTab = tab;
+    this.formIoTagsService.reregisterTags(this.injector);
 
     if (tab === EDIT_TABS.BUILDER) {
       return;
@@ -436,7 +430,6 @@ export class FormManagementEditComponent
           component: FormManagementDuplicateComponent,
           inputs: {
             formToDuplicate: definition,
-            disabledPendingChangesCallback: this.disablePendingChanges,
             context,
             params,
           },
@@ -489,10 +482,6 @@ export class FormManagementEditComponent
   private navigateBack(): void {
     this.router.navigate(['../'], {relativeTo: this.route});
   }
-
-  private disablePendingChanges = () => {
-    this.pendingChanges = false;
-  };
 
   private initBreadcrumbs(): void {
     getCaseManagementRouteParamsAndContext(this.route)
