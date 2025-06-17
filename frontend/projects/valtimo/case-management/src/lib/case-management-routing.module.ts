@@ -107,7 +107,6 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.FORMS}/:formDefinitionId`,
     component: FormManagementEditComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Forms',
       roles: [ROLE_ADMIN],

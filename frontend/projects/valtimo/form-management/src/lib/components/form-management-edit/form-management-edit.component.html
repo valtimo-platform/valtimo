@@ -41,18 +41,20 @@
       </cds-tab>
 
       <cds-tab [heading]="TABS.EDITOR | translate" (selected)="onSelectedTab(TABS.EDITOR)">
-        <ng-container
-          *ngTemplateOutlet="
-            jsonEditor;
-            context: {
-              data: {
-                disabled: obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration,
-                formDefinition: obs.formDefinition,
-                model: obs.jsonFormDefinition,
-              },
-            }
-          "
-        ></ng-container>
+        @if (activeTab === TABS.EDITOR) {
+          <ng-container
+            *ngTemplateOutlet="
+              jsonEditor;
+              context: {
+                data: {
+                  disabled: obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration,
+                  formDefinition: obs.formDefinition,
+                  model: obs.jsonFormDefinition,
+                },
+              }
+            "
+          ></ng-container>
+        }
       </cds-tab>
 
       <cds-tab
@@ -61,18 +63,21 @@
         class="valtimo-form-management-edit__output"
       >
         <valtimo-form-io
+          *ngIf="activeTab === TABS.OUTPUT"
           [form]="obs.formDefinition.formDefinition"
           (change)="onOutputChange($event)"
         ></valtimo-form-io>
 
-        <ng-container
-          *ngTemplateOutlet="
-            jsonEditor;
-            context: {
-              data: {disabled: true, formDefinition: obs.formDefinition, model: obs.jsonOutput},
-            }
-          "
-        ></ng-container>
+        @if (activeTab === TABS.OUTPUT) {
+          <ng-container
+            *ngTemplateOutlet="
+              jsonEditor;
+              context: {
+                data: {disabled: true, formDefinition: obs.formDefinition, model: obs.jsonOutput},
+              }
+            "
+          ></ng-container>
+        }
       </cds-tab>
     </cds-tabs>
   } @else {
@@ -166,7 +171,7 @@
           obs.context === 'independent'
         "
         cdsButton="primary"
-        [disabled]="obs.formDefinition.readOnly || !validJsonChange"
+        [disabled]="obs.formDefinition.readOnly"
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="modifyFormDefinition(obs.formDefinition)"
       >

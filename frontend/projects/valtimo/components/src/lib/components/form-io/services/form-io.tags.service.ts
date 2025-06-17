@@ -14,13 +14,26 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
+import {Injectable, Injector} from '@angular/core';
+import {registerCustomTag} from '../../../modules';
 
-@Injectable({providedIn: 'root'})
-export class CustomTagsService {
-  tags: string[] = [];
+@Injectable({
+  providedIn: 'root',
+})
+export class FormIoTagsService {
+  private _tagsToRegister: string[] = [];
 
-  addCustomTag(tag: string) {
-    this.tags.push(tag);
+  public get tagsToRegister(): string[] {
+    return this._tagsToRegister;
+  }
+
+  public markTagForRegistration(tag: string): void {
+    this._tagsToRegister = [...this._tagsToRegister, tag];
+  }
+
+  public reregisterTags(injector: Injector): void {
+    this.tagsToRegister.forEach(tag => {
+      registerCustomTag(tag, injector);
+    });
   }
 }

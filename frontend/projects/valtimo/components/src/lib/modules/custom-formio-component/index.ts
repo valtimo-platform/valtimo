@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-export * from './custom-tags.service';
 export * from './create-custom-component';
 export * from './elements.common';
 export * from './register-custom-component';

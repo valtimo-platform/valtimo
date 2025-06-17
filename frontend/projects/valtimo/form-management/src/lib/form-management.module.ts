@@ -20,7 +20,6 @@ import {AuthGuardService} from '@valtimo/security';
 import {FormManagementComponent} from './components/form-management/form-management.component';
 import {FormManagementRouteData} from './models';
 import {FormManagementEditComponent} from './components';
-import {pendingChangesGuard} from '@valtimo/components';
 
 const routes: Routes = [
   {
@@ -33,7 +32,6 @@ const routes: Routes = [
     path: 'form-management/:formDefinitionId',
     component: FormManagementEditComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Forms',
       roles: [ROLE_ADMIN],
