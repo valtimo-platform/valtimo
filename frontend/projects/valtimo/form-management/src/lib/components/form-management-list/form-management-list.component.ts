@@ -154,10 +154,14 @@ export class FormManagementListComponent {
           return this.formManagementService.queryFormDefinitions(params);
       }
     }),
-    map(res => {
+    map((res: any) => {
       this._collectionSize$.next(res?.totalElements);
 
-      return res?.content || [];
+      return res?.content
+        ? [...res.content].sort((firstForm, secondForm) =>
+            (firstForm.name ?? '').localeCompare(secondForm.name ?? '')
+          )
+        : [];
     }),
     tap(() => this.loading$.next(false))
   );
