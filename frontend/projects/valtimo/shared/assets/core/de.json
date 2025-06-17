@@ -452,7 +452,8 @@
       "deleted": "Formular gelöscht",
       "deletionError": "Fehler beim Löschen des Formulars",
       "deployed": "Formular bereitgestellt",
-      "deploymentError": "Fehler beim Bereitstellen des Formulars"
+      "deploymentError": "Fehler beim Bereitstellen des Formulars",
+      "duplicated": "Formular dupliziert"
     },
     "upload": {
       "modalTitle": "Formulardefinition hochladen",

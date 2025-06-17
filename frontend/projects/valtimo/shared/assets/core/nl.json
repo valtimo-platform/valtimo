@@ -452,7 +452,8 @@
       "deleted": "Formulier verwijderd",
       "deletionError": "Fout bij het verwijderen van het formulier",
       "deployed": "Formulier gedeployed",
-      "deploymentError": "Fout bij het deployen van het formulier"
+      "deploymentError": "Fout bij het deployen van het formulier",
+      "duplicated": "Formulier gedupliceerd"
     },
     "upload": {
       "modalTitle": "Formulierdefinitie uploaden",
