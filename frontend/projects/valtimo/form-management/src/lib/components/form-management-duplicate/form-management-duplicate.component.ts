@@ -30,9 +30,9 @@ import {CreateFormDefinitionRequest, FormDefinition, FormManagementParams} from 
 import {FormManagementService} from '../../services';
 import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.validator';
 import {CommonModule} from '@angular/common';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
-import {ManagementContext} from '@valtimo/shared';
+import {GlobalNotificationService, ManagementContext} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-form-management-duplicate-modal',
@@ -71,7 +71,9 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
     protected modalService: ModalService,
     protected formManagementService: FormManagementService,
     protected route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly translateService: TranslateService
   ) {
     super();
   }
@@ -93,7 +95,7 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
 
   public duplicate(): void {
     const control = this.duplicateFormName;
-
+    this.formToDuplicate.name = this.duplicateForm.controls['duplicateFormName'].value;
     const request: CreateFormDefinitionRequest = {
       name: control.value.toString(),
       formDefinition: JSON.stringify(this.formToDuplicate.formDefinition),
@@ -111,7 +113,13 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
       .subscribe({
         next: formDefinition => {
           this.disablePendingChangesCallback();
-          this.navigateWithNewId(formDefinition.id).then(() => window.location.reload());
+          this.navigateWithNewId(formDefinition.id).then(() => {
+            this.closeModal();
+            this.notificationService.showToast({
+              type: 'success',
+              title: this.translateService.instant('formManagement.notifications.duplicated'),
+            });
+          });
         },
         error: err => {
           if (err.toString().includes('Duplicate name')) {
