@@ -77,6 +77,15 @@
     </cds-tab>
 
     <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TASKS"
+      [active]="obs.currentTab === TabEnum.TASKS"
+      [heading]="'caseManagement.tabs.tasks' | translate"
+      (selected)="navigateToTab(TabEnum.TASKS)"
+    >
+    </cds-tab>
+
+    <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"
       [id]="TabEnum.CASE_LIST"
       [active]="obs.currentTab === TabEnum.CASE_LIST"
@@ -87,10 +96,10 @@
 
     <cds-tab
       class="main-content no-padding-left-right no-padding-bottom"
-      [id]="TabEnum.CASE_DETAIL"
-      [active]="obs.currentTab === TabEnum.CASE_DETAIL"
-      [heading]="'caseManagement.tabs.caseDetailTab.title' | translate"
-      (selected)="navigateToTab(TabEnum.CASE_DETAIL)"
+      [id]="TabEnum.CASE_DETAILS"
+      [active]="obs.currentTab === TabEnum.CASE_DETAILS"
+      [heading]="'caseManagement.tabs.caseDetailsTab.title' | translate"
+      (selected)="navigateToTab(TabEnum.CASE_DETAILS)"
     >
     </cds-tab>
 

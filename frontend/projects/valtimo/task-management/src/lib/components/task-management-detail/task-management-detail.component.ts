@@ -23,7 +23,7 @@ import {TabsModule} from 'carbon-components-angular';
 import {filter, map, Observable, switchMap, tap} from 'rxjs';
 import {TaskManagementTab} from '../../models';
 import {TaskManagementService} from '../../services';
-import {TaskManagementColumnsComponent} from '../task-management-columns';
+import {TaskManagementColumnsComponent} from '../task-management-columns/task-management-columns.component';
 import {TaskManagementSearchFieldsComponent} from '../task-management-search-fields/task-management-search-fields.component';
 import {ConfigService} from '@valtimo/shared';
 

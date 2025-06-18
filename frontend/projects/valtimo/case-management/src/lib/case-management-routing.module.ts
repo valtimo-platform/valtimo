@@ -43,6 +43,7 @@ import {CaseManagementGeneralComponent} from './components/case-management-detai
 import {CaseManagementWidgetTabComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
 import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
 import {TabEnum} from './models';
+import {TaskManagementComponent} from '@valtimo/task-management';
 
 const routes: Routes = [
   {
@@ -88,13 +89,14 @@ const routes: Routes = [
         data: {context: 'case'} as DecisionManagementRouteData,
       },
       {path: TabEnum.CASE_LIST, component: CaseManagementCaseListComponent},
-      {path: TabEnum.CASE_DETAIL, component: CaseManagementCaseDetailComponent},
+      {path: TabEnum.CASE_DETAILS, component: CaseManagementCaseDetailComponent},
       {
         path: TabEnum.FORMS,
         component: FormManagementComponent,
         data: {context: 'case'} as FormManagementRouteData,
       },
       {path: TabEnum.FORM_FLOWS, component: FormFlowOverviewComponent},
+      {path: TabEnum.TASKS, component: TaskManagementComponent},
     ],
   },
   {
@@ -115,7 +117,7 @@ const routes: Routes = [
     } as FormManagementRouteData,
   },
   {
-    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.CASE_DETAIL}/widget-tab/:key`,
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.CASE_DETAILS}/widget-tab/:key`,
     component: CaseManagementWidgetTabComponent,
     canActivate: [AuthGuardService],
     canDeactivate: [pendingChangesGuard],
