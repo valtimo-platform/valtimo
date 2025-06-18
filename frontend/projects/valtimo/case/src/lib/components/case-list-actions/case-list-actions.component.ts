@@ -16,8 +16,8 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {GlobalNotificationService} from '@valtimo/shared';
 import {CaseSettings, DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {
   BehaviorSubject,
   combineLatest,
@@ -50,7 +50,7 @@ export class CaseListActionsComponent implements OnInit {
   @Output() public readonly formFlowComplete = new EventEmitter();
   @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
 
-  private readonly _caseSettings$: BehaviorSubject<CaseSettings> = new BehaviorSubject(null);
+  private readonly _caseSettings$ = new BehaviorSubject<CaseSettings | null>(null);
 
   public readonly caseSettings$ = this._caseSettings$.pipe(filter(settings => !!settings));
 
@@ -76,7 +76,7 @@ export class CaseListActionsComponent implements OnInit {
     map(([processDocumentDefinitions, loading, caseSettings]) => {
       this._cachedAssociatedProcessDocumentDefinitions = processDocumentDefinitions;
       this.startButtonDisableEvent.emit(
-        loading || (processDocumentDefinitions.length === 0 && !caseSettings.hasExternalStartForm)
+        loading || (processDocumentDefinitions.length === 0 && !caseSettings?.hasExternalStartForm)
       );
       return processDocumentDefinitions.filter(definition => definition.canInitializeDocument);
     })
@@ -143,7 +143,7 @@ export class CaseListActionsComponent implements OnInit {
     this.formFlowComplete.emit(null);
   }
 
-  public onNoProcessLinked(): void {
+  public onNoProcessLinked(processDefinitionKey: string): void {
     this.notificationService.ngOnDestroy();
 
     this.notificationService.showActionable({
@@ -153,7 +153,10 @@ export class CaseListActionsComponent implements OnInit {
       actions: [
         {
           text: this.translateService.instant('case.configure'),
-          click: () => this.router.navigate(['/process-links']),
+          click: () =>
+            this.router.navigate([
+              `/case-management/case/${this._caseSettings?.caseDefinitionKey}/version/${this._caseSettings?.caseDefinitionVersionTag}/processes/${processDefinitionKey}`,
+            ]),
         },
       ],
     });

@@ -81,7 +81,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
   public formCustomComponentDynamicContainer: ViewContainerRef;
   @Output() formFlowComplete = new EventEmitter();
-  @Output() noProcessLinked = new EventEmitter();
+  @Output() noProcessLinked = new EventEmitter<string>();
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
@@ -180,7 +180,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
               break;
           }
         } else {
-          this.noProcessLinked.emit();
+          this.noProcessLinked.emit(this.processDefinitionKey);
         }
       });
   }
@@ -200,6 +200,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
     this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;
     this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
+    this.processDefinitionKey = processDefinitionCaseDefinition.processDefinitionKey;
     this.processName = processDefinitionCaseDefinition.processDefinitionName;
     this.options = new FormioOptionsImpl();
     this.options.disableAlerts = true;
