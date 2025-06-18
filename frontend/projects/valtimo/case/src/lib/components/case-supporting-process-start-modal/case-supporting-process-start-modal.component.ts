@@ -82,6 +82,7 @@ export class CaseSupportingProcessStartModalComponent {
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
   >({});
+  private _caseDefinitionVersionTag: string;
 
   public readonly closeModalEvent = new EventEmitter();
 
@@ -112,8 +113,8 @@ export class CaseSupportingProcessStartModalComponent {
         )
       )
       .subscribe(startProcessResult => {
+        this.isLoading$.next(false);
         if (startProcessResult) {
-          this.isLoading$.next(false);
           this.isUIComponent = false;
           this.isFormViewModel = false;
           switch (startProcessResult.type) {
@@ -146,6 +147,7 @@ export class CaseSupportingProcessStartModalComponent {
   ): void {
     this.documentId$.next(documentId);
     this.caseDefinitionKey$.next(processDefinitionCaseDefinition.id.caseDefinitionId.key);
+    this._caseDefinitionVersionTag = processDefinitionCaseDefinition.id.caseDefinitionId.versionTag;
     this.processDefinitionKey$.next(processDefinitionCaseDefinition.processDefinitionKey);
     this.processDefinitionId$.next(processDefinitionCaseDefinition.id.processDefinitionId);
     this.processName$.next(processDefinitionCaseDefinition.processDefinitionName);
@@ -195,9 +197,9 @@ export class CaseSupportingProcessStartModalComponent {
 
   public gotoFormLinkScreen(): void {
     this.closeCdsModal();
-    this.router.navigate(['process-links'], {
-      queryParams: {process: this.processDefinitionKey$.getValue()},
-    });
+    this.router.navigate([
+      `/case-management/case/${this.caseDefinitionKey$.getValue()}/version/${this._caseDefinitionVersionTag}/processes/${this.processDefinitionKey$.getValue()}`,
+    ]);
   }
 
   public onCloseSelect(): void {
