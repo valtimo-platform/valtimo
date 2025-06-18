@@ -60,10 +60,16 @@ export class EditorService implements OnDestroy {
     }
 
     const onGotAmdLoader = () => {
-      (window as any).require.config({paths: {vs: `${baseUrl}`}});
-      (window as any).require([`vs/editor/editor.main`], () => {
-        this.finishLoading();
-      });
+      const win = window as any;
+
+      if (typeof win.require === 'function' && typeof win.require.config === 'function') {
+        win.require.config({paths: {vs: `${baseUrl}`}});
+        win.require(['vs/editor/editor.main'], () => {
+          this.finishLoading();
+        });
+      } else {
+        setTimeout(onGotAmdLoader, 10);
+      }
     };
 
     if (!(window as any).require) {
