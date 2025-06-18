@@ -33,8 +33,8 @@ export class CaseDetailTabAuditComponent implements OnInit {
   @Output() paginationClicked: EventEmitter<any> = new EventEmitter();
 
   public timelineItems: TimelineItem[];
-  private readonly documentId: string;
   public pagination: any;
+  private readonly documentId: string;
   private defaultAuditPage = 0;
   private currentAuditPage: number;
 
@@ -54,13 +54,13 @@ export class CaseDetailTabAuditComponent implements OnInit {
     return 'events.' + eventName;
   }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.loadAuditPage(this.defaultAuditPage);
   }
 
-  public loadAuditPage(pageNumber: number) {
+  public loadAuditPage(pageNumber: number): void {
     this.documentService.getAuditLog(this.documentId, pageNumber).subscribe(page => {
-      const timelineItems = [];
+      const timelineItems: TimelineItemImpl[] = [];
       page.content.forEach(auditRecord => {
         const occurredOn = moment(auditRecord.metaData.occurredOn);
         const fromNow = occurredOn.fromNow();
@@ -71,7 +71,8 @@ export class CaseDetailTabAuditComponent implements OnInit {
             auditRecord.metaData.user,
             fromNow,
             CaseDetailTabAuditComponent.getTranslationKey(auditRecord.auditEvent),
-            auditRecord.auditEvent
+            auditRecord.auditEvent,
+            {id: `${auditRecord.metaData.user}-${auditRecord.metaData.occurredOn}`}
           )
         );
       });
@@ -82,7 +83,7 @@ export class CaseDetailTabAuditComponent implements OnInit {
     });
   }
 
-  public onChangePagination(page) {
+  public onChangePagination(page): void {
     this.paginationClicked.emit(page);
     this.currentAuditPage = page - 1;
     this.loadAuditPage(this.currentAuditPage);

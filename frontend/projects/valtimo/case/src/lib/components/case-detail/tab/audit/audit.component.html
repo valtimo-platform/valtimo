@@ -13,10 +13,9 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<div *ngIf="timelineItems">
+@if (timelineItems) {
   <valtimo-timeline [items]="timelineItems"></valtimo-timeline>
-</div>
+}
 
 <valtimo-spinner
   [useBootstrapSpinner]="false"
