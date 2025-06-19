@@ -44,6 +44,7 @@ import {
 } from 'rxjs';
 import {TaskManagementSearchFieldsService} from '../../services';
 import {TaskManagementSearchFieldsModalComponent} from '../task-management-search-fields-modal/task-management-search-fields-modal.component';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-task-management-search-fields',
@@ -61,16 +62,19 @@ import {TaskManagementSearchFieldsModalComponent} from '../task-management-searc
   ],
 })
 export class TaskManagementSearchFieldsComponent {
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || ''),
-    filter(docDefName => !!docDefName),
-    tap((docDefName: string) => this.searchFieldsService.setDocumentDefinitionName(docDefName))
+  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
+    this.route
+  ).pipe(
+    map((params: CaseManagementParams | undefined) => (!params ? '' : params.caseDefinitionKey)),
+    tap((caseDefinitionKey: string) =>
+      this.searchFieldsService.setCaseDefinitionKey(caseDefinitionKey)
+    )
   );
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
 
   public readonly searchFields$: Observable<TaskListSearchField[]> = combineLatest([
-    this.documentDefinitionName$,
+    this.caseDefinitionKey$,
     this._refresh$,
     this.trasnlateService.stream('key'),
   ]).pipe(

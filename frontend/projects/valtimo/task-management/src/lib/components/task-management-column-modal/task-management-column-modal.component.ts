@@ -32,6 +32,7 @@ import {
   CheckboxModule,
   DropdownModule,
   InputModule,
+  LayerModule,
   ModalModule,
   TabsModule,
 } from 'carbon-components-angular';
@@ -77,6 +78,7 @@ import {isEqual} from 'lodash';
     CarbonMultiInputModule,
     ButtonModule,
     ValtimoCdsModalDirective,
+    LayerModule
   ],
 })
 export class TaskManagementColumnModalComponent {
@@ -97,7 +99,7 @@ export class TaskManagementColumnModalComponent {
     if (showModal) this.enable();
     if (!showModal) this.resetFormAfterTimeout();
   }
-  @Input() public documentDefinitionName!: string;
+  @Input() public caseDefinitionKey!: string;
   @Input() public set selectedTaskListColumn(column: TaskListColumn) {
     if (column) this.prefillForm(column);
   }
@@ -330,7 +332,7 @@ export class TaskManagementColumnModalComponent {
 
     this.taskManagementApiService
       .updateTaskListColumn(
-        this.documentDefinitionName,
+        this.caseDefinitionKey,
         this.getTaskListColumnFromFormValue(this._showEnum, this._showDateFormat, this._showYesNo)
       )
       .subscribe({

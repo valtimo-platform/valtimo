@@ -34,6 +34,7 @@ import {
 } from '@valtimo/process-management';
 import {AuthGuardService} from '@valtimo/security';
 import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig, ROLE_ADMIN} from '@valtimo/shared';
+import {TaskManagementDetailComponent} from '@valtimo/task-management';
 import {CaseManagementCaseDetailComponent} from './components/case-management-case-detail/case-management-case-detail.component';
 import {CaseManagementCaseListComponent} from './components/case-management-case-list/case-management-case-list.component';
 import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
@@ -43,7 +44,6 @@ import {CaseManagementGeneralComponent} from './components/case-management-detai
 import {CaseManagementWidgetTabComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/case-management-widget-tab.component';
 import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
 import {TabEnum} from './models';
-import {TaskManagementComponent} from '@valtimo/task-management';
 
 const routes: Routes = [
   {
@@ -96,7 +96,7 @@ const routes: Routes = [
         data: {context: 'case'} as FormManagementRouteData,
       },
       {path: TabEnum.FORM_FLOWS, component: FormFlowOverviewComponent},
-      {path: TabEnum.TASKS, component: TaskManagementComponent},
+      {path: TabEnum.TASKS, component: TaskManagementDetailComponent},
     ],
   },
   {

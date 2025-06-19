@@ -56,6 +56,7 @@ import {
   IconModule,
   IconService,
   InputModule,
+  LayerModule,
   ListItem,
   ModalModule,
 } from 'carbon-components-angular';
@@ -69,7 +70,6 @@ import {
   startWith,
   switchMap,
 } from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-task-management-search-fields-modal',
@@ -89,11 +89,17 @@ import {ActivatedRoute} from '@angular/router';
     CarbonListModule,
     InputLabelModule,
     ValuePathSelectorComponent,
+    LayerModule
   ],
 })
 export class TaskManagementSearchFieldsModalComponent implements OnInit {
   @Input({required: true}) open: boolean;
-  @Input({required: true}) documentDefinitionName: string;
+
+  public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
+  @Input({required: true}) public set caseDefinitionKey(value: string) {
+
+    this.caseDefinitionKey$.next(value);
+  }
 
   private _prefillData: TaskListSearchField | null;
   @Input() public set prefillData(value: TaskListSearchField | null) {
@@ -206,7 +212,7 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     switchMap((provider: TaskListSearchDropdownDataProvider | null | undefined) =>
       this.documentService.getDropdownData(
         provider ?? '',
-        this.documentDefinitionName ?? '',
+        this.caseDefinitionKey$.getValue() ?? '',
         this.keyValue ?? ''
       )
     ),
@@ -324,19 +330,13 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
       )
     );
 
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || ''),
-    filter(docDefName => !!docDefName)
-  );
-
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly fb: FormBuilder,
-    private readonly translateService: TranslateService,
-    private readonly route: ActivatedRoute
+    private readonly translateService: TranslateService
   ) {
     this.iconService.registerAll([TrashCan16, InformationFilled16]);
   }
