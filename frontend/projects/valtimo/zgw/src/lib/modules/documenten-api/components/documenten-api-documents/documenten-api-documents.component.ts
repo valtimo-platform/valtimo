@@ -18,6 +18,7 @@ import {Component, ElementRef, OnDestroy, OnInit, TemplateRef, ViewChild} from '
 import {ActivatedRoute, Router} from '@angular/router';
 import {Filter16, TagGroup16, Upload16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {PermissionRequest, PermissionService} from '@valtimo/access-control';
 import {
   ActionItem,
   CarbonListModule,
@@ -30,7 +31,7 @@ import {
   SortState,
   ViewType,
 } from '@valtimo/components';
-import {ConfigService, Direction} from '@valtimo/shared';
+import {CaseSettings, DocumentService} from '@valtimo/document';
 import {
   CAN_CREATE_RESOURCE_PERMISSION,
   CAN_DELETE_RESOURCE_PERMISSION,
@@ -41,6 +42,7 @@ import {
   UploadProviderService,
 } from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
+import {ConfigService, Direction} from '@valtimo/shared';
 import {ButtonModule, DialogModule, IconModule, IconService} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -60,15 +62,14 @@ import {
   DocumentenApiRelatedFile,
   SupportedDocumentenApiFeatures,
 } from '../../models';
-import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
-import {DocumentenApiDocumentService} from '../../services/documenten-api-document.service';
-import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
-import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 import {
   DocumentenApiUploadFieldDefaultValues,
   DocumentenApiUploadFields,
 } from '../../models/documenten-api-upload-field.model';
-import {PermissionRequest, PermissionService} from '@valtimo/access-control';
+import {DocumentenApiColumnService, DocumentenApiVersionService} from '../../services';
+import {DocumentenApiDocumentService} from '../../services/documenten-api-document.service';
+import {DocumentenApiFilterComponent} from '../documenten-api-filter/documenten-api-filter.component';
+import {DocumentenApiMetadataModalComponent} from '../documenten-api-metadata-modal/documenten-api-metadata-modal.component';
 
 @Component({
   selector: 'valtimo-case-detail-tab-documenten-api-documents',
@@ -94,6 +95,11 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   private readonly _caseDefinitionKey$ = this.route.params.pipe(
     map(params => params?.caseDefinitionKey ?? ''),
     filter((caseDefinitionKey: string) => !!caseDefinitionKey)
+  );
+  private readonly _caseSettings$ = this._caseDefinitionKey$.pipe(
+    switchMap((caseDefinitionKey: string) =>
+      this.documentService.getCaseSettings(caseDefinitionKey)
+    )
   );
 
   public readonly supportedDocumentenApiFeatures$ =
@@ -315,18 +321,19 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   private readonly _subscriptions = new Subscription();
 
   constructor(
+    private readonly configService: ConfigService,
+    private readonly documentenApiColumnService: DocumentenApiColumnService,
+    private readonly documentenApiDocumentService: DocumentenApiDocumentService,
+    private readonly documentenApiVersionService: DocumentenApiVersionService,
+    private readonly documentService: DocumentService,
+    private readonly downloadService: DownloadService,
+    private readonly iconService: IconService,
+    private readonly permissionService: PermissionService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly uploadProviderService: UploadProviderService,
-    private readonly downloadService: DownloadService,
     private readonly translateService: TranslateService,
-    private readonly configService: ConfigService,
-    private readonly userProviderService: UserProviderService,
-    private readonly iconService: IconService,
-    private readonly documentenApiDocumentService: DocumentenApiDocumentService,
-    private readonly documentenApiColumnService: DocumentenApiColumnService,
-    private readonly documentenApiVersionService: DocumentenApiVersionService,
-    private readonly permissionService: PermissionService
+    private readonly uploadProviderService: UploadProviderService,
+    private readonly userProviderService: UserProviderService
   ) {
     this.iconService.register(Filter16);
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
@@ -471,8 +478,10 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
   }
 
   public onNavigateToCaseAdminClick(): void {
-    this._caseDefinitionKey$.pipe(take(1)).subscribe((caseDefinitionKey: string) => {
-      this.router.navigate([`/case-management/case/${caseDefinitionKey}`]);
+    this._caseSettings$.pipe(take(1)).subscribe((caseSettings: CaseSettings) => {
+      this.router.navigate([
+        `/case-management/case/${caseSettings.caseDefinitionKey}/version/${caseSettings.caseDefinitionVersionTag}/zgw`,
+      ]);
     });
   }
 
