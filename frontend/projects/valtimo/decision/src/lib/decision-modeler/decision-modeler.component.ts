@@ -109,12 +109,7 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly params$: Observable<any> | undefined = this.route.parent?.params.pipe(
-    map(({caseDefinitionKey, caseDefinitionVersionTag}) => ({
-      caseDefinitionKey: caseDefinitionKey,
-      caseDefinitionVersionTag: caseDefinitionVersionTag,
-    }))
-  );
+  public readonly params$: Observable<any> | undefined = getCaseManagementRouteParams(this.route);
 
   public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
     this.params$,
