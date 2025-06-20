@@ -11,5 +11,4 @@ export enum TagColor {
   CoolGray = 'COOLGRAY',
   HighContrast = 'HIGHCONTRAST',
   Outline = 'OUTLINE',
-  Orange = 'ORANGE',
 }
