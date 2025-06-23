@@ -447,8 +447,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     const dataTypeControlValue: ListItem | null | undefined =
       control.parent?.get('dataType')?.value;
 
-    console.log({controlValue, dataTypeControlValue});
-
     if (
       dataTypeControlValue?.id === TaskListSearchFieldDataType.TEXT &&
       (!controlValue || !controlValue.selected)

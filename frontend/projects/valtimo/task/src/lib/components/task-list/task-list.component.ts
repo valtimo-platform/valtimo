@@ -492,29 +492,29 @@ export class TaskListComponent implements OnInit, OnDestroy {
   ): Task[] | MappedSpecifiedTask[] {
     const MOMENT_FORMAT = 'DD MMM YYYY HH:mm';
 
-    // if (isSpecified) {
-    //   return (tasks as Page<SpecifiedTask>).content.map((specifiedTask, specifiedTaskIndex) =>
-    //     specifiedTask.items.reduce(
-    //       (acc, curr) =>
-    //         ({
-    //           id: specifiedTask.id,
-    //           businessKey: specifiedTask.businessKey,
-    //           processInstanceId: specifiedTask.processInstanceId,
-    //           name: specifiedTask.name,
-    //           ...(moment(specifiedTask.created).isValid() && {
-    //             created: moment(specifiedTask.created).format(MOMENT_FORMAT),
-    //           }),
-    //           ...(canViewTaskPermissions && {locked: !canViewTaskPermissions[specifiedTaskIndex]}),
-    //           ...(canViewCasePermissions && {
-    //             caseLocked: !canViewCasePermissions[specifiedTaskIndex],
-    //           }),
-    //           ...acc,
-    //           [curr.key]: curr.value,
-    //         }) as MappedSpecifiedTask,
-    //       {}
-    //     )
-    //   ) as MappedSpecifiedTask[];
-    // }
+    if (isSpecified) {
+      return (tasks as Page<SpecifiedTask>).content.map((specifiedTask, specifiedTaskIndex) =>
+        specifiedTask.items.reduce(
+          (acc, curr) =>
+            ({
+              id: specifiedTask.id,
+              businessKey: specifiedTask.businessKey,
+              processInstanceId: specifiedTask.processInstanceId,
+              name: specifiedTask.name,
+              ...(moment(specifiedTask.created).isValid() && {
+                created: moment(specifiedTask.created).format(MOMENT_FORMAT),
+              }),
+              ...(canViewTaskPermissions && {locked: !canViewTaskPermissions[specifiedTaskIndex]}),
+              ...(canViewCasePermissions && {
+                caseLocked: !canViewCasePermissions[specifiedTaskIndex],
+              }),
+              ...acc,
+              [curr.key]: curr.value,
+            }) as MappedSpecifiedTask,
+          {}
+        )
+      ) as MappedSpecifiedTask[];
+    }
 
     return (tasks as Page<Task>)?.content?.map((task, taskIndex) => {
       const createdDate = moment(task.created);

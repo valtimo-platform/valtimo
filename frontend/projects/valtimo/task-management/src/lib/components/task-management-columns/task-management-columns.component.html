@@ -22,7 +22,6 @@
     loadingColumns: loadingColumns$ | async,
     modalType: modalType$ | async,
     showModal: showModal$ | async,
-    disabled: disabled$ | async,
   } as obs"
 >
   <valtimo-carbon-list
@@ -35,17 +34,10 @@
     (rowClicked)="editColumn($event)"
     (itemsReordered)="onItemsReordered($event, obs.caseDefinitionKey)"
   >
-    <button
-      carbonToolbarContent
-      cdsButton="primary"
-      (click)="showModal('add')"
-      [disabled]="obs.disabled"
-    >
-      {{ 'listColumn.addButtonText' | translate }}
-      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-    </button>
+    <ng-container carbonToolbarContent [ngTemplateOutlet]="addButton"></ng-container>
 
     <valtimo-no-results
+      [action]="addButton"
       [title]="'listColumn.noConfigWarningTitle' | translate"
       [description]="'listColumn.noConfigWarning' | translate"
       illustration="valtimo-layout/img/emptystate-empty.svg"
@@ -71,4 +63,14 @@
   ></valtimo-confirmation-modal>
 </ng-container>
 
-<ng-template #buttons let-obs="obs"> </ng-template>
+<ng-template #addButton>
+  <button
+    carbonToolbarContent
+    cdsButton="primary"
+    [disabled]="disabled$ | async"
+    (click)="showModal('add')"
+  >
+    {{ 'listColumn.addButtonText' | translate }}
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>
