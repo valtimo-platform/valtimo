@@ -18,4 +18,3 @@ export * from './task-management-column-modal/task-management-column-modal.compo
 export * from './task-management-columns/task-management-columns.component';
 export * from './task-management-detail/task-management-detail.component';
 export * from './task-management-search-fields/task-management-search-fields.component';
-export * from './task-management/task-management.component';

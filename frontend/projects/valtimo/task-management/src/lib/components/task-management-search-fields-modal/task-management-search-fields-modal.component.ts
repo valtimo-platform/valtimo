@@ -67,6 +67,7 @@ import {
   filter,
   map,
   Observable,
+  of,
   startWith,
   switchMap,
 } from 'rxjs';
@@ -89,7 +90,7 @@ import {
     CarbonListModule,
     InputLabelModule,
     ValuePathSelectorComponent,
-    LayerModule
+    LayerModule,
   ],
 })
 export class TaskManagementSearchFieldsModalComponent implements OnInit {
@@ -97,7 +98,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
 
   public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
   @Input({required: true}) public set caseDefinitionKey(value: string) {
-
     this.caseDefinitionKey$.next(value);
   }
 
@@ -122,32 +122,35 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     dropdownValues: this.fb.array<{key: string; value: string}>([]),
   });
 
-  public get dataType(): AbstractControl<ListItem | null> {
+  public get dataType(): AbstractControl<ListItem | null> | null {
     return this.form.get('dataType');
   }
   public get dataTypeValue$(): Observable<ListItem | null> {
-    return this.dataType.valueChanges.pipe(startWith(this.dataType.value));
+    return this.dataType?.valueChanges.pipe(startWith(this.dataType.value)) ?? of(null);
   }
 
-  public get matchType(): AbstractControl<ListItem | null> {
+  public get matchType(): AbstractControl<ListItem | null> | null {
     return this.form.get('matchType');
   }
   public get matchTypeValue$(): Observable<ListItem | null> {
-    return this.matchType.valueChanges.pipe(startWith(this.matchType.value));
+    return this.matchType?.valueChanges.pipe(startWith(this.matchType.value)) ?? of(null);
   }
 
-  public get dropdownDataProvider(): AbstractControl<ListItem | null> {
+  public get dropdownDataProvider(): AbstractControl<ListItem | null> | null {
     return this.form.get('dropdownDataProvider');
   }
   public get dropdownDataProviderValue$(): Observable<ListItem | null> {
-    return this.dropdownDataProvider.valueChanges.pipe(startWith(this.dropdownDataProvider.value));
+    return (
+      this.dropdownDataProvider?.valueChanges.pipe(startWith(this.dropdownDataProvider.value)) ??
+      of(null)
+    );
   }
 
-  public get fieldType(): AbstractControl<ListItem | null> {
+  public get fieldType(): AbstractControl<ListItem | null> | null {
     return this.form.get('fieldType');
   }
   public get fieldTypeValue$(): Observable<ListItem | null> {
-    return this.fieldType.valueChanges.pipe(startWith(this.fieldType.value));
+    return this.fieldType?.valueChanges.pipe(startWith(this.fieldType.value)) ?? of(null);
   }
 
   public readonly TaskListSearchFieldDataType = TaskListSearchFieldDataType;
@@ -444,6 +447,8 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     const dataTypeControlValue: ListItem | null | undefined =
       control.parent?.get('dataType')?.value;
 
+    console.log({controlValue, dataTypeControlValue});
+
     if (
       dataTypeControlValue?.id === TaskListSearchFieldDataType.TEXT &&
       (!controlValue || !controlValue.selected)
@@ -453,8 +458,8 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return null;
   }
 
-  private dropdownDataProviderValidator(group: typeof this.form): ValidationErrors {
-    const controlValue: ListItem | undefined = group.get('dropdownDataProvider')?.value;
+  private dropdownDataProviderValidator(group: typeof this.form): ValidationErrors | null {
+    const controlValue: ListItem | undefined | null = group.get('dropdownDataProvider')?.value;
     const fieldTypeControlValue: ListItem | null | undefined = group.get('fieldType')?.value;
 
     if (
@@ -469,8 +474,8 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return null;
   }
 
-  private dropdownValuesValidator(group: typeof this.form): ValidationErrors {
-    const controlValue: {key: string; value: string}[] | undefined =
+  private dropdownValuesValidator(group: typeof this.form): ValidationErrors | null {
+    const controlValue: ({key: string; value: string} | null)[] | undefined =
       group.get('dropdownValues')?.value;
     const fieldTypeControlValue = group.get('fieldType')?.value?.id;
     const dropdownProviderValue = group.get('dropdownDataProvider')?.value?.id;
