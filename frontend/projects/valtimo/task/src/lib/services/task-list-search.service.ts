@@ -41,7 +41,7 @@ export class TaskListSearchService {
   }
 
   public readonly searchFields$: Observable<SearchField[]> =
-    this.taskListService.caseDefinitionName$.pipe(
+    this.taskListService.caseDefinitionKey$.pipe(
       tap(() => this._loadingSearchFields$.next(true)),
       switchMap(caseDefinitionName =>
         caseDefinitionName

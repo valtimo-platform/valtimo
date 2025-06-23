@@ -31,9 +31,9 @@
     [loading]="obs.loadingColumns"
     [fields]="fields"
     [header]="false"
-    [movingRowsEnabled]="true"
-    (rowClicked)="columnRowClicked($event)"
-    (moveRow)="onMoveRowClick($event, obs.caseDefinitionKey)"
+    [dragAndDrop]="true"
+    (rowClicked)="editColumn($event)"
+    (itemsReordered)="onItemsReordered($event, obs.caseDefinitionKey)"
   >
     <button
       carbonToolbarContent
@@ -63,8 +63,8 @@
 
   <valtimo-confirmation-modal
     [showModalSubject$]="showDeleteModal$"
-    [outputOnConfirm]="deleteRowKey$ | async"
-    (confirmEvent)="deleteRowConfirmation($event, obs.caseDefinitionKey)"
+    [outputOnConfirm]="deleteColumnKey$ | async"
+    (confirmEvent)="deleteColumnConfirmation($event, obs.caseDefinitionKey)"
     confirmButtonTextTranslationKey="listColumn.deleteColumn"
     titleTranslationKey="listColumn.deleteColumn"
     contentTranslationKey="listColumn.deleteColumnConfirmation"

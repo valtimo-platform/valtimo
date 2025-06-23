@@ -57,7 +57,7 @@ export class TaskListColumnService {
 
   private readonly _DEFAULT_SPECIFIED_TASK_LIST_FIELDS: ColumnConfig[] = [
     {
-      key: 'createTime',
+      key: 'created',
       label: `task-list.fieldLabels.created`,
       viewType: ViewType.DATE,
       sortable: true,
@@ -75,7 +75,7 @@ export class TaskListColumnService {
       viewType: ViewType.TEXT,
     },
     {
-      key: 'dueDate',
+      key: 'due',
       label: `task-list.fieldLabels.due`,
       viewType: ViewType.TEXT,
       sortable: true,
@@ -93,7 +93,7 @@ export class TaskListColumnService {
   }
 
   public get taskListColumnsForCase$(): Observable<TaskListColumn[]> {
-    return this.taskListService.caseDefinitionName$.pipe(
+    return this.taskListService.caseDefinitionKey$.pipe(
       tap(caseDefinitionName => {
         if (caseDefinitionName === this.taskListService.ALL_CASES_ID) {
           this.resetTaskListFields();

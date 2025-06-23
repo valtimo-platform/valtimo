@@ -162,7 +162,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   @Input() actions: any[] = [];
   @Input() actionItems: ActionItem[];
-  @Input() showActionItems: boolean;
+  @Input() showActionItems: boolean = true;
   @Input() header: boolean;
   @Input() hideColumnHeader: boolean;
   private _isSortInit = false;

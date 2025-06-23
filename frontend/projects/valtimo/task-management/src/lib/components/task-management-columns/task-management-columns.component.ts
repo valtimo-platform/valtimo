@@ -115,7 +115,7 @@ export class TaskManagementColumnsComponent {
   );
 
   public readonly showDeleteModal$ = new Subject<boolean>();
-  public readonly deleteRowKey$ = new BehaviorSubject<string>('');
+  public readonly deleteColumnKey$ = new BehaviorSubject<string>('');
 
   public readonly disabled$ = new BehaviorSubject<boolean>(true);
 
@@ -166,8 +166,12 @@ export class TaskManagementColumnsComponent {
 
   public readonly actionItems: ActionItem[] = [
     {
+      label: 'interface.edit',
+      callback: this.editColumn.bind(this),
+    },
+    {
       label: 'interface.delete',
-      callback: this.deleteRow.bind(this),
+      callback: this.deleteColumn.bind(this),
       type: 'danger',
     },
   ];
@@ -179,32 +183,25 @@ export class TaskManagementColumnsComponent {
     private readonly route: ActivatedRoute,
     private readonly taskManagementApiService: TaskManagementApiService,
     private readonly translateService: TranslateService
-  ) {}
+  ) {
+  }
 
   public refreshColumns(noAnimation = false): void {
     this._refreshColumns$.next(noAnimation ? 'noAnimation' : null);
   }
 
-  public deleteRow(taskListColumn: TaskListColumn): void {
+  public deleteColumn(taskListColumn: TaskListColumn): void {
     this.showDeleteModal$.next(true);
-    this.deleteRowKey$.next(taskListColumn.key);
+    this.deleteColumnKey$.next(taskListColumn.key);
   }
 
-  public onMoveRowClick(event: MoveRowEvent, caseDefinitionKey: string): void {
-    const {direction, index} = event;
-
+  public onItemsReordered(reorderedItems: TaskListColumn[], caseDefinitionKey: string): void {
     this.disable();
 
-    this.cachedTaskListColumns$
-      .pipe(
-        take(1),
-        switchMap(taskListColumns =>
-          this.taskManagementApiService.swapTaskListColumns(
-            caseDefinitionKey,
-            taskListColumns[index],
-            taskListColumns[direction === MoveRowDirection.UP ? index - 1 : index + 1]
-          )
-        )
+    this.taskManagementApiService
+      .updateTaskListColumnOrder(
+        caseDefinitionKey,
+        reorderedItems.map((column: TaskListColumn) => column.key)
       )
       .subscribe({
         next: () => {
@@ -214,9 +211,11 @@ export class TaskManagementColumnsComponent {
       });
   }
 
-  public columnRowClicked(row: {key: string}): void {
+  public editColumn(columnItem: TaskListColumn): void {
     this.cachedTaskListColumns$.pipe(take(1)).subscribe(cachedTaskListColumns => {
-      const selectedTaskListColumn = cachedTaskListColumns.find(column => column.key === row.key);
+      const selectedTaskListColumn = cachedTaskListColumns.find(
+        column => column.key === columnItem.key
+      );
 
       this.selectedTaskListColumn$.next(selectedTaskListColumn ?? null);
       this.showModal('edit');
@@ -241,7 +240,7 @@ export class TaskManagementColumnsComponent {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public deleteRowConfirmation(columnKey: string, caseDefinitionKey: string): void {
+  public deleteColumnConfirmation(columnKey: string, caseDefinitionKey: string): void {
     this.disable();
 
     this.taskManagementApiService.deleteTaskListColumn(caseDefinitionKey, columnKey).subscribe({
