@@ -614,6 +614,7 @@
       "processes": "Prozesse",
       "document": "Dokument",
       "formFlows": "Form flows",
+      "tasks": "Aufgaben",
       "zgw": "ZGW",
       "forms": "Formulare",
       "decision": "Entscheidungstabellen",
@@ -636,7 +637,7 @@
         }
       },
       "caseListTab": {"title": "Caseliste", "searchFields": "Suchfelder", "columns": "Spalten"},
-      "caseDetailTab": {
+      "caseDetailsTab": {
         "title": "Casedetails",
         "tabs": "Tabs",
         "statuses": "Status",

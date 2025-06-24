@@ -144,14 +144,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
 
-  public readonly caseDefinitionName$ = this.taskListService.caseDefinitionName$;
+  public readonly caseDefinitionKey$ = this.taskListService.caseDefinitionKey$;
 
   public readonly tasks$: Observable<Task[] | MappedSpecifiedTask[]> = combineLatest([
     this.taskListService.loadingStateForCaseDefinition$,
     this.selectedTaskType$,
     this.taskListPaginationService.paginationForCurrentTaskType$,
     this.taskListSortService.sortStringForCurrentTaskType$,
-    this.caseDefinitionName$,
+    this.caseDefinitionKey$,
     this._enableLoadingAnimation$,
     this._reload$,
     this.taskListSearchService.otherFilters$,
@@ -164,7 +164,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
         selectedTaskType,
         paginationForSelectedTaskType,
         sortStringForSelectedTaskType,
-        caseDefinitionName,
+        caseDefinitionKey,
         enableLoadingAnimation,
         reload,
         otherFilters,
@@ -174,7 +174,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
           paginationForSelectedTaskType,
           overrideSortStateString || sortStringForSelectedTaskType,
           selectedTaskType,
-          caseDefinitionName,
+          caseDefinitionKey,
           enableLoadingAnimation,
           reload,
           otherFilters
@@ -190,10 +190,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
         this.taskService.queryTasksPageV3(
           params.selectedTaskType,
           params.params,
-          params.caseDefinitionName,
+          params.caseDefinitionKey,
           params.otherFilters
         ),
-        of(!!params.caseDefinitionName),
+        of(!!params.caseDefinitionKey),
       ])
     ),
     switchMap(([tasksResult, isSpecified]) =>
@@ -290,12 +290,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       combineLatest([
         this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-        this.caseDefinitionName$,
+        this.caseDefinitionKey$,
       ])
         .pipe(
           filter(
-            ([event, caseDefinitionName]) =>
-              caseDefinitionName === null || event.caseDefinitionName === caseDefinitionName
+            ([event, caseDefinitionKey]) =>
+              caseDefinitionKey === null || event.caseDefinitionKey === caseDefinitionKey
           )
         )
         .subscribe(() => this.reload())
@@ -371,7 +371,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     if (definition.item.id) {
       this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
-      this.taskListService.setCaseDefinitionName(definition.item.id);
+      this.taskListService.setCaseDefinitionKey(definition.item.id);
     }
   }
 
@@ -425,7 +425,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     paginationForSelectedTaskType: TaskPageParams,
     sortStringForSelectedTaskType: string,
     selectedTaskType: TaskListTab,
-    caseDefinitionName: string,
+    caseDefinitionKey: string,
     enableLoadingAnimation: boolean,
     reload: boolean,
     otherFilters?: TaskListOtherFilters
@@ -442,7 +442,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
         reload,
         selectedTaskType,
         params,
-        ...(caseDefinitionName && caseDefinitionName !== this.ALL_CASES_ID && {caseDefinitionName}),
+        ...(caseDefinitionKey &&
+          caseDefinitionKey !== this.ALL_CASES_ID && {caseDefinitionKey: caseDefinitionKey}),
         ...(otherFilters && {otherFilters}),
       },
       enableLoadingAnimation,
@@ -531,9 +532,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
   private setParamsFromQueryParams(): void {
     const decodedParams = this.taskListQueryParamService.getTaskListQueryParams();
 
-    if (decodedParams.caseDefinitionName) {
-      this.taskListService.setCaseDefinitionName(decodedParams.caseDefinitionName);
-      this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionName);
+    if (decodedParams.caseDefinitionKey) {
+      this.taskListService.setCaseDefinitionKey(decodedParams.caseDefinitionKey);
+      this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionKey);
     }
 
     if (decodedParams.otherFilters?.length > 0) {

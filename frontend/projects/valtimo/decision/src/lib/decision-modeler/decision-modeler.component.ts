@@ -43,6 +43,7 @@ import {
   SelectedValue,
   SelectItem,
   WidgetModule,
+  SelectModule as ValtimoSelectModule,
 } from '@valtimo/components';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {EMPTY_DECISION} from './empty-decision';
@@ -78,6 +79,7 @@ declare const $: any;
     ModalModule,
     SelectModule,
     WidgetModule,
+    ValtimoSelectModule,
     TranslateModule,
     RenderInPageHeaderDirective,
     ButtonModule,
@@ -104,22 +106,21 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
 
   private _fileName!: string;
 
-  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
-  public readonly context$ = getContextObservable(this.route);
+  public readonly caseManagementRouteParams$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
+  public readonly context$: Observable<ManagementContext | null> = getContextObservable(this.route);
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly params$: Observable<any> | undefined = getCaseManagementRouteParams(this.route);
-
   public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.params$,
+    this.caseManagementRouteParams$,
     this.context$,
   ]).pipe(
     switchMap(([params, context]) =>
       this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
+        params?.caseDefinitionKey ?? '',
+        params?.caseDefinitionVersionTag ?? '',
+        context ?? ''
       )
     )
   );
@@ -154,7 +155,7 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
     map(([current, list, created]) => {
       const filtered = list.filter(d => d.key === current.key);
       return [...filtered.map(d => ({id: d.id, text: d.version.toString()})), ...created].sort(
-        (a, b) => +b.text - +a.text
+        (a, b) => +(b.text ?? '') - +(a.text ?? '')
       );
     }),
     tap(() => this.versionSelectionDisabled$.next(false))
@@ -189,12 +190,16 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
     combineLatest([this.caseManagementRouteParams$, this.context$])
       .pipe(take(1))
       .subscribe(([params, context]) => {
+        if (!params || !context) return;
+
         this.initBreadcrumbs(params, context);
       });
   }
 
   public switchVersion(decisionId: string | SelectedValue): void {
-    if (decisionId) this.router.navigate(['/decision-tables/edit', decisionId]);
+    if (!decisionId) return;
+
+    this.router.navigate(['../', decisionId], {relativeTo: this.route});
   }
 
   public deploy(): void {
@@ -208,30 +213,15 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
             : this.caseManagementRouteParams$.pipe(
                 switchMap(params =>
                   this.decisionService.deployCaseDecisionDefinition(
-                    params.caseDefinitionKey,
-                    params.caseDefinitionVersionTag,
+                    params?.caseDefinitionKey ?? '',
+                    params?.caseDefinitionVersionTag ?? '',
                     file
                   )
                 )
               )
         ),
-        tap(res => {
-          const deployed = res?.deployedDecisionDefinitions;
-          const id = deployed && deployed[Object.keys(deployed)[0]]?.id;
-
-          if (!id) return;
-
-          this.createdDecisionVersionSelectItems$.pipe(take(1)).subscribe(existing => {
-            this.createdDecisionVersionSelectItems$.next([
-              ...existing,
-              {id, text: deployed[id].version.toString()},
-            ]);
-            setTimeout(() => {
-              this.switchVersion(id);
-            });
-          });
-        }),
-        tap(() => {
+        tap((res: {identifier: string}) => {
+          this.switchVersion(res.identifier);
           this.showNotification('success', 'decisions.deploySuccess');
         }),
         catchError(() => {
@@ -268,6 +258,8 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
   }
 
   private showNotification(notification: null | 'success' | 'error', message: string): void {
+    if (!notification) return;
+
     this.notificationService.showToast({
       caption: this.translateService.instant(message),
       type: notification,

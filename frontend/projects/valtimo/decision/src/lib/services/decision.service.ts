@@ -31,13 +31,16 @@ export class DecisionService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public deployDmn(dmn: File): Observable<any> {
+  public deployDmn(dmn: File): Observable<{identifier: string}> {
     const formData: FormData = new FormData();
     formData.append('file', dmn);
     formData.append('deployment-name', 'dmnTableDeploy');
     formData.append('deployment-source', 'process application');
 
-    return this.httpClient.post<any>(this.getApiUrl('/v1/process/definition/deployment'), formData);
+    return this.httpClient.post<{identifier: string}>(
+      this.getApiUrl('/v1/process/definition/deployment'),
+      formData
+    );
   }
 
   public getDecisions(): Observable<Decision[]> {
@@ -79,11 +82,11 @@ export class DecisionService extends BaseApiService {
     caseDefinitionKey: string,
     versionTag: string,
     dmn: File
-  ): Observable<any> {
+  ): Observable<{identifier: string}> {
     const formData = new FormData();
     formData.append('file', dmn);
 
-    return this.httpClient.post<any>(
+    return this.httpClient.post<{identifier: string}>(
       this.getApiUrl(
         `/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/decision-definition`
       ),

@@ -43,7 +43,7 @@
   </valtimo-carbon-list>
 
   <valtimo-task-management-search-fields-modal
-    [documentDefinitionName]="documentDefinitionName$ | async"
+    [caseDefinitionKey]="caseDefinitionKey$ | async"
     [open]="obs.fieldModalOpen"
     [prefillData]="obs.prefillData"
     (closeEvent)="onCloseEvent($event, obs.prefillData)"

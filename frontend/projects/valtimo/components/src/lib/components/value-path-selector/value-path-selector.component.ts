@@ -38,6 +38,7 @@ import {DocumentService} from '@valtimo/document';
 import {
   DropdownModule,
   InputModule,
+  LayerModule,
   ListItem,
   LoadingModule,
   ToggleModule,
@@ -80,6 +81,7 @@ import {InputLabelModule} from '../input-label/input-label.module';
     InputLabelModule,
     InputLabelModule,
     TranslateModule,
+    LayerModule
   ],
   providers: [
     {
