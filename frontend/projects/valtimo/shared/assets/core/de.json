@@ -411,7 +411,10 @@
   "decisions": {
     "upload": {
       "title": "Entscheidungstabelle hochladen",
-      "description": "Wähle eine .dmn Datei für den Upload"
+      "description": "Wähle eine .dmn Datei für den Upload",
+      "fileUploaderTitle": "DMN-Datei hochladen",
+      "fileUploaderDescription": "Nur Dateien mit der Endung .dmn sind erlaubt.",
+      "fileUploaderButton": "DMN-Datei auswählen"
     },
     "version": "Version",
     "deploy": "Speichern",

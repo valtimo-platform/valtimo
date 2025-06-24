@@ -411,7 +411,10 @@
   "decisions": {
     "upload": {
       "title": "Beslistabel uploaden",
-      "description": "Selecteer een .dmn bestand om te uploaden"
+      "description": "Selecteer een .dmn bestand om te uploaden",
+      "fileUploaderTitle": "Upload DMN-bestand",
+      "fileUploaderDescription": "Alleen bestanden met de extensie .dmn zijn toegestaan.",
+      "fileUploaderButton": "Kies DMN-bestand"
     },
     "version": "Versie",
     "deploy": "Opslaan",
