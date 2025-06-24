@@ -71,11 +71,7 @@ $border: 1px solid #dee2e6;
 .header {
   display: flex;
   width: 100%;
-  justify-content: center;
-
-  &__right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 16px;
 }
