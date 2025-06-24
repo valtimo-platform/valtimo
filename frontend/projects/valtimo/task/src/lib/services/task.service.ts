@@ -66,7 +66,6 @@ export class TaskService extends BaseApiService {
     caseDefinitionKey?: string,
     otherFilters?: TaskListOtherFilters
   ): Observable<Page<Task> | Page<SpecifiedTask>> {
-    console.log({caseDefinitionKey});
     let httpParams = new HttpParams().set('page', pageParams.page).set('size', pageParams.size);
 
     if (pageParams.sort) {

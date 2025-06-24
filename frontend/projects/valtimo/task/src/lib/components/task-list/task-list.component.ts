@@ -196,10 +196,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
         of(!!params.caseDefinitionKey),
       ])
     ),
-    switchMap(([tasksResult, isSpecified]) => {
-      console.log({tasksResult});
-      return this.getTaskListPermissionsRequest(tasksResult, isSpecified);
-    }),
+    switchMap(([tasksResult, isSpecified]) =>
+      this.getTaskListPermissionsRequest(tasksResult, isSpecified)
+    ),
     map(([isSpecified, taskResult, canViewTaskPermissions, canViewCasePermissions]) => {
       this.updateTaskListPaginationAfterResponse(Number(taskResult.totalElements));
 

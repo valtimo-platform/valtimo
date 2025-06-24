@@ -57,7 +57,7 @@ export class TaskListColumnService {
 
   private readonly _DEFAULT_SPECIFIED_TASK_LIST_FIELDS: ColumnConfig[] = [
     {
-      key: 'created',
+      key: 'createTime',
       label: `task-list.fieldLabels.created`,
       viewType: ViewType.DATE,
       sortable: true,
@@ -75,7 +75,7 @@ export class TaskListColumnService {
       viewType: ViewType.TEXT,
     },
     {
-      key: 'due',
+      key: 'dueDate',
       label: `task-list.fieldLabels.due`,
       viewType: ViewType.TEXT,
       sortable: true,
