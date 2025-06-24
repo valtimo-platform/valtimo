@@ -34,25 +34,29 @@ export class ZakenApiService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  public getStatusTypesByCaseDefinition(caseDefinitionKey: string): Observable<Array<StatusType>> {
+  public getStatusTypesByCaseAndVersion(
+    caseDefinitionKey: string,
+    versionTag: string
+  ): Observable<Array<StatusType>> {
     return this.http.get<Array<StatusType>>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/statustype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/statustype`
     );
   }
 
-  public getResultaatTypesByCaseDefinition(
-    caseDefinitionKey: string
+  public getResultaatTypesByCaseAndVersion(
+    caseDefinitionKey: string,
+    versionTag: string
   ): Observable<Array<ResultaatType>> {
     return this.http.get<Array<ResultaatType>>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/resultaattype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/resultaattype`
     );
   }
-
-  public getEigenschappenByCaseDefinition(
-    caseDefinitionKey: string
+  public getEigenschappenByCaseAndVersion(
+    caseDefinitionKey: string,
+    versionTag: string
   ): Observable<Array<Eigenschap>> {
     return this.http.get<Array<Eigenschap>>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/catalogi-eigenschappen`
+      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/catalogi-eigenschappen`
     );
   }
 }

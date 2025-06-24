@@ -23,7 +23,12 @@
   (rowClicked)="editProcessDefinition($event)"
 >
   <ng-container carbonToolbarContent>
-    <button *ngIf="hasEditPermissions$ | async" cdsButton="ghost" iconOnly="true" (click)="openModal()">
+    <button
+      *ngIf="hasEditPermissions$ | async"
+      cdsButton="ghost"
+      iconOnly="true"
+      (click)="openModal()"
+    >
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
@@ -48,11 +53,7 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #createProcess>
-  <button
-    *ngIf="hasEditPermissions$ | async"
-    cdsButton="primary"
-    (click)="onCreateProcess()"
-  >
+  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="onCreateProcess()">
     {{ 'processManagement.createProcess' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

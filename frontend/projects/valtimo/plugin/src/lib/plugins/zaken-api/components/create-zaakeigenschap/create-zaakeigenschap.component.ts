@@ -21,15 +21,13 @@ import {
   combineLatest,
   filter,
   Observable,
-  of,
-  Subject,
   Subscription,
   switchMap,
   take,
   tap,
 } from 'rxjs';
 import {CreateZaakeigenschapConfig, InputOption} from '../../models';
-import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
+import {RadioValue, SelectItem} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {map} from 'rxjs/operators';
 import {ZakenApiService} from '../../services';
@@ -57,18 +55,12 @@ export class CreateZaakeigenschapComponent
   @Output() configuration: EventEmitter<CreateZaakeigenschapConfig> =
     new EventEmitter<CreateZaakeigenschapConfig>();
 
-  readonly caseDefinitionSelectItems$ = new BehaviorSubject<Array<SelectItem>>(null);
-  readonly selectedCaseDefinitionName$ = new BehaviorSubject<string>('');
-  readonly clearEigenschapSelection$ = new Subject<void>();
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly formValue$ = new BehaviorSubject<CreateZaakeigenschapConfig | null>(null);
   readonly valid$ = new BehaviorSubject<boolean>(false);
-  readonly eigenschapSelectItems$ = new BehaviorSubject<{
-    [caseDefinitionId: string]: Array<SelectItem>;
-  }>(null);
-
+  readonly eigenschapSelectItems$ = new BehaviorSubject<SelectItem[]>([]);
   readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>
@@ -86,7 +78,6 @@ export class CreateZaakeigenschapComponent
   private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly modalService: ModalService,
     private readonly documentService: DocumentService,
     private readonly zakenApiService: ZakenApiService,
     private readonly pluginTranslatePipe: PluginTranslatePipe
@@ -110,11 +101,6 @@ export class CreateZaakeigenschapComponent
     }
   }
 
-  public selectCaseDefinition(caseDefinitionName: string): void {
-    this.selectedCaseDefinitionName$.next(caseDefinitionName);
-    this.clearEigenschapSelection$.next();
-  }
-
   public oneSelectItem(selectItems: Array<SelectItem>): boolean {
     return Array.isArray(selectItems) && selectItems.length === 1;
   }
@@ -134,62 +120,15 @@ export class CreateZaakeigenschapComponent
           return context === 'case';
         }),
         switchMap(([_, params]) =>
-          this.documentService.findProcessDefinitionCaseDefinitions(params.caseDefinitionKey)
+          this.zakenApiService.getEigenschappenByCaseAndVersion(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag
+          )
         ),
-        tap(processDocumentDefinitions => {
-          const caseDefSelectItems = processDocumentDefinitions.map(doc => ({
-            text: doc.id.caseDefinitionId.key,
-            id: doc.id.caseDefinitionId.key,
-          }));
-
-          this.caseDefinitionSelectItems$.next(caseDefSelectItems);
-
-          if (this.oneSelectItem(caseDefSelectItems)) {
-            this.selectedCaseDefinitionName$.next(caseDefSelectItems[0].id);
-          }
-        }),
-        switchMap(processDocumentDefinitions =>
-          combineLatest([
-            of(processDocumentDefinitions.map(doc => doc.id.caseDefinitionId.key)),
-            ...processDocumentDefinitions.map(doc =>
-              this.zakenApiService.getEigenschappenByCaseDefinition(doc.id.caseDefinitionId.key)
-            ),
-          ])
-        ),
-        map(res => {
-          const caseDefinitionIds = res[0];
-          const eigenschappen = res.slice(1);
-          const selectObject = {};
-
-          caseDefinitionIds.forEach((id, index) => {
-            selectObject[id] = eigenschappen[index].map(eigenschap => ({
-              id: eigenschap.url,
-              text: eigenschap.name,
-            }));
-          });
-
-          return selectObject;
-        }),
-        tap(selectObject => {
-          this.prefillConfiguration$.pipe(take(1)).subscribe(prefillConfig => {
-            const eigenschapUrl = prefillConfig?.eigenschapUrl;
-            let selectedCaseDefinitionId: string | null = null;
-
-            Object.keys(selectObject).forEach(caseDefinitionId => {
-              if (selectObject[caseDefinitionId].find(item => item.id === eigenschapUrl)) {
-                selectedCaseDefinitionId = caseDefinitionId;
-              }
-            });
-
-            if (selectedCaseDefinitionId) {
-              this.selectedCaseDefinitionName$.next(selectedCaseDefinitionId);
-            } else {
-              this.selectedInputOption$.next('text');
-            }
-          });
-        }),
-        tap(selectObject => {
-          this.eigenschapSelectItems$.next(selectObject);
+        tap(eigenschappen => {
+          this.eigenschapSelectItems$.next(
+            eigenschappen.map(item => ({id: item.url, text: item.name}))
+          );
           this.selectedInputOption$.next('selection');
           this.loading$.next(false);
         })

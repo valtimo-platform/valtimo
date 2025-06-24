@@ -45,8 +45,8 @@ export class CaseManagementCaseListComponent {
   public readonly currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.SEARCH);
   public readonly DRAFT_WARNING_MESSAGE = {
     [TabEnum.SEARCH]: 'caseManagement.tabs.caseListTab.searchFields',
-    [TabEnum.LIST]: 'caseManagement.tabs.caseListTab.columns'
-  }
+    [TabEnum.LIST]: 'caseManagement.tabs.caseListTab.columns',
+  };
   public readonly TabEnum = TabEnum;
 
   constructor(

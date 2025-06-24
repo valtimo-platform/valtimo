@@ -17,7 +17,7 @@
 <form
   *ngIf="{
     theme: theme$ | async,
-    params: params$ | async
+    params: params$ | async,
   } as obs"
   [formGroup]="form"
   class="valtimo-case-management-widget-table__form"
