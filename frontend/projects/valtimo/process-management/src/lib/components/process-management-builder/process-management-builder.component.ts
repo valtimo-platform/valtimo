@@ -36,8 +36,7 @@ import {
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {
-    CaseManagementParams,
-
+  CaseManagementParams,
   EditPermissionsService,
   getCaseManagementRouteParams,
   getCaseManagementRouteParamsAndContext,

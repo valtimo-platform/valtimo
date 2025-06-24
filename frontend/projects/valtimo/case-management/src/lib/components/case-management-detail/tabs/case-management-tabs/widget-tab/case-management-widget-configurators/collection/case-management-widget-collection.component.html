@@ -14,10 +14,12 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{
+<ng-container
+  *ngIf="{
     theme: theme$ | async,
     params: params$ | async,
-  } as obs">
+  } as obs"
+>
   <form [formGroup]="widgetForm" class="valtimo-case-management-widget-collection__form">
     <cds-text-label [attr.data-carbon-theme]="obs.theme">
       <v-input-label

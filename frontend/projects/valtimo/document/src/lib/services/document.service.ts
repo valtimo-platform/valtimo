@@ -504,9 +504,18 @@ export class DocumentService {
     return this.http.post(`${this.valtimoEndpointUri}v1/document/${documentId}/message`, request);
   }
 
-  public getDocumentTypes(caseDefinitionKey: string): Observable<Array<DocumentType>> {
-    return this.http.get<Array<DocumentType>>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/documenttype`
+  public getDocumentTypesForCase(
+    caseDefinitionKey: string,
+    versionTag: string
+  ): Observable<DocumentType[]> {
+    return this.http.get<DocumentType[]>(
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`
+    );
+  }
+
+  public getDocumentTypesForDocument(documentId: string): Observable<DocumentType[]> {
+    return this.http.get<DocumentType[]>(
+      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`
     );
   }
 

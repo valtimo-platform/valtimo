@@ -20,11 +20,9 @@
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
     besluitTypeItems: besluitTypeSelectItems$ | async,
     selectedInputOption: selectedInputOption$ | async,
-    caseDefinitionItems: caseDefinitionSelectItems$ | async,
     selectedStartDateInputOption: selectedStartDateInputOption$ | async,
     selectedExpirationDateInputOption: selectedExpirationDateInputOption$ | async,
     pluginId: pluginId$ | async,
-    selectedCaseDefinitionId: selectedCaseDefinitionId$ | async,
     loading: loading$ | async,
     context: context$ | async,
   } as obs"
@@ -62,36 +60,12 @@
 
       <ng-container *ngIf="obs.selectedInputOption === 'selection'">
         <v-select
-          [items]="obs.caseDefinitionItems"
-          [margin]="true"
-          [widthInPx]="350"
-          name="caseDefinition"
-          [title]="'caseDefinition' | pluginTranslate: obs.pluginId | async"
-          [disabled]="
-            obs.disabled ||
-            obs.selectedInputOption === 'text' ||
-            !obs.caseDefinitionItems ||
-            oneSelectItem(obs.caseDefinitionItems)
-          "
-          [required]="true"
-          [loading]="!obs.caseDefinitionItems"
-          [tooltip]="'caseDefinitionTooltip' | pluginTranslate: obs.pluginId | async"
-          (selectedChange)="selectCaseDefinition($event)"
-          [defaultSelectionId]="obs?.selectedCaseDefinitionId"
-        ></v-select>
-
-        <v-select
-          [items]="obs.besluitTypeItems && obs.besluitTypeItems[obs.selectedCaseDefinitionId]"
+          [items]="obs.besluitTypeItems"
           [margin]="true"
           [widthInPx]="350"
           name="besluittypeUrl"
           [title]="'besluittypeUrlSelect' | pluginTranslate: obs.pluginId | async"
-          [disabled]="
-            obs.disabled ||
-            obs.selectedInputOption === 'text' ||
-            !obs.besluitTypeItems ||
-            !obs.besluitTypeItems[obs.selectedCaseDefinitionId]
-          "
+          [disabled]="obs.disabled || obs.selectedInputOption === 'text' || !obs.besluitTypeItems"
           [defaultSelectionId]="obs.prefill?.besluittypeUrl"
           [required]="true"
           [loading]="!obs.besluitTypeItems"

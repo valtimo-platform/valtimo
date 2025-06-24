@@ -22,7 +22,6 @@ import {
   filter,
   map,
   Observable,
-  of,
   Subject,
   Subscription,
   switchMap,
@@ -78,17 +77,13 @@ export class CreateZaakBesluitConfigurationComponent
       )
     );
 
-  readonly caseDefinitionSelectItems$ = new BehaviorSubject<Array<SelectItem>>(null);
-  readonly selectedCaseDefinitionId$ = new BehaviorSubject<string>('');
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly selectedStartDateInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly selectedExpirationDateInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly loading$ = new BehaviorSubject<boolean>(true);
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly clearBesluitSelection$ = new Subject<void>();
-  readonly besluitTypeSelectItems$ = new BehaviorSubject<{
-    [caseDefinitionId: string]: Array<SelectItem>;
-  }>(null);
+  readonly besluitTypeSelectItems$ = new BehaviorSubject<SelectItem[]>([]);
 
   readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
@@ -150,11 +145,6 @@ export class CreateZaakBesluitConfigurationComponent
     return Array.isArray(selectItems) && selectItems.length === 1;
   }
 
-  public selectCaseDefinition(caseDefinitionId: string): void {
-    this.selectedCaseDefinitionId$.next(caseDefinitionId);
-    this.clearBesluitSelection$.next();
-  }
-
   private initBesluitHandling(): void {
     if (!this.context$) return;
 
@@ -168,62 +158,15 @@ export class CreateZaakBesluitConfigurationComponent
           return context === 'case';
         }),
         switchMap(([_, params]) =>
-          this.documentService.findProcessDefinitionCaseDefinitions(params.caseDefinitionKey)
+          this.besluitenApiService.getBesluitTypesByCaseAndVersion(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag
+          )
         ),
-        tap(processDocumentDefinitions => {
-          const selectItems = processDocumentDefinitions.map(doc => ({
-            text: doc.id.caseDefinitionId.key,
-            id: doc.id.caseDefinitionId.key,
-          }));
-
-          this.caseDefinitionSelectItems$.next(selectItems);
-
-          if (this.oneSelectItem(selectItems)) {
-            this.selectedCaseDefinitionId$.next(selectItems[0].id);
-          }
-        }),
-        switchMap(processDocumentDefinitions =>
-          combineLatest([
-            of(processDocumentDefinitions.map(doc => doc.id.caseDefinitionId.key)),
-            ...processDocumentDefinitions.map(doc =>
-              this.besluitenApiService.getBesluitTypesByCaseDefinition(doc.id.caseDefinitionId.key)
-            ),
-          ])
-        ),
-        map(res => {
-          const caseDefinitionIds = res[0];
-          const besluitTypes = res.slice(1);
-          const selectObject = {};
-
-          caseDefinitionIds.forEach((id, index) => {
-            selectObject[id] = besluitTypes[index].map(besluit => ({
-              id: besluit.url,
-              text: besluit.name,
-            }));
-          });
-
-          return selectObject;
-        }),
-        tap(selectObject => {
-          this.prefillConfiguration$.pipe(take(1)).subscribe(prefillConfig => {
-            const besluittypeUrl = prefillConfig?.besluittypeUrl;
-            let selectedCaseDefinitionId: string | null = null;
-
-            Object.keys(selectObject).forEach(caseDefinitionId => {
-              if (selectObject[caseDefinitionId].find(item => item.id === besluittypeUrl)) {
-                selectedCaseDefinitionId = caseDefinitionId;
-              }
-            });
-
-            if (selectedCaseDefinitionId) {
-              this.selectedCaseDefinitionId$.next(selectedCaseDefinitionId);
-            } else {
-              this.selectedInputOption$.next('text');
-            }
-          });
-        }),
-        tap(selectObject => {
-          this.besluitTypeSelectItems$.next(selectObject);
+        tap(besluitTypes => {
+          this.besluitTypeSelectItems$.next(
+            besluitTypes.map(item => ({id: item.url, text: item.name}))
+          );
           this.selectedInputOption$.next('selection');
           this.loading$.next(false);
         })

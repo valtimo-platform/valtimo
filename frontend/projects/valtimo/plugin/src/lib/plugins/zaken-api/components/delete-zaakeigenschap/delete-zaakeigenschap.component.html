@@ -22,13 +22,13 @@
     pluginId: pluginId$ | async,
     selectedInputOption: selectedInputOption$ | async,
     loading: loading$ | async,
-    caseDefinitionItems: caseDefinitionSelectItems$ | async,
     eigenschapItems: eigenschapSelectItems$ | async,
-    selectedCaseDefinitionId: selectedCaseDefinitionName$ | async,
+    context: context$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-radio
+      *ngIf="obs?.context?.[0] === 'case'"
       name="inputTypeEigenschapToggle"
       [disabled]="obs.disabled"
       [title]="'inputTypeEigenschapToggle' | pluginTranslate: obs.pluginId | async"
@@ -37,6 +37,7 @@
       [margin]="true"
     >
     </v-radio>
+
     <v-input
       *ngIf="obs.selectedInputOption === 'text'"
       name="eigenschapUrl"
@@ -50,42 +51,19 @@
       [fullWidth]="true"
     >
     </v-input>
+
     <ng-container *ngIf="obs.selectedInputOption === 'selection'">
       <v-select
-        [items]="obs.caseDefinitionItems"
-        [margin]="true"
-        [widthInPx]="350"
-        name="caseDefinition"
-        [title]="'caseDefinition' | pluginTranslate: obs.pluginId | async"
-        [disabled]="
-          obs.disabled ||
-          obs.selectedInputOption === 'text' ||
-          !obs.caseDefinitionItems ||
-          oneSelectItem(obs.caseDefinitionItems)
-        "
-        [required]="true"
-        [loading]="!obs.caseDefinitionItems"
-        [tooltip]="'caseDefinitionTooltipEigenschap' | pluginTranslate: obs.pluginId | async"
-        (selectedChange)="selectCaseDefinition($event)"
-        [defaultSelectionId]="obs?.selectedCaseDefinitionId"
-      ></v-select>
-      <v-select
-        [items]="obs.eigenschapItems && obs.eigenschapItems[obs.selectedCaseDefinitionId]"
+        [items]="obs.eigenschapItems"
         [margin]="true"
         [widthInPx]="350"
         name="eigenschapUrl"
         [title]="'eigenschapUrlSelect' | pluginTranslate: obs.pluginId | async"
-        [disabled]="
-          obs.disabled ||
-          obs.selectedInputOption === 'text' ||
-          !obs.eigenschapItems ||
-          !obs.eigenschapItems[obs.selectedCaseDefinitionId]
-        "
+        [disabled]="obs.disabled || obs.selectedInputOption === 'text' || !obs.eigenschapItems"
         [defaultSelectionId]="obs.prefill?.eigenschapUrl"
         [required]="true"
         [loading]="!obs.eigenschapItems"
         [tooltip]="'eigenschapUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
-        [clearSelectionSubject$]="clearEigenschapSelection$"
       ></v-select>
     </ng-container>
   </ng-container>

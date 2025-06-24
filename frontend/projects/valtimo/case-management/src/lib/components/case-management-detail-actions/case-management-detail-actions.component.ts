@@ -46,7 +46,7 @@ import {CaseDetailService, CaseManagementService} from '../../services';
 export class CaseManagementDetailActionsComponent {
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
-  
+
   @Input() public documentDefinitionTitle = '';
   @Input() public set caseDefinitionKey(value: string) {
     this.caseDetailService.setSelectedCaseDefinitionKey(value);
