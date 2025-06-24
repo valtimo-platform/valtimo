@@ -54,7 +54,7 @@
       [loading]="obs.loading"
       [searchFields]="objectSearchFields$ | async"
       (doSearch)="search($event)"
-      [documentDefinitionName]="objectManagementId$ | async"
+      [objectManagementId]="objectManagementId$ | async"
       [setValuesSubject$]="null"
     ></valtimo-search-fields>
   </div>

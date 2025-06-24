@@ -93,7 +93,7 @@ export class TaskListColumnService {
   }
 
   public get taskListColumnsForCase$(): Observable<TaskListColumn[]> {
-    return this.taskListService.caseDefinitionName$.pipe(
+    return this.taskListService.caseDefinitionKey$.pipe(
       tap(caseDefinitionName => {
         if (caseDefinitionName === this.taskListService.ALL_CASES_ID) {
           this.resetTaskListFields();

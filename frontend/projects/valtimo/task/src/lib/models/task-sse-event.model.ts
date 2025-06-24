@@ -19,7 +19,7 @@ import {BaseSseEvent} from '@valtimo/sse';
 interface TaskUpdateSseEvent extends BaseSseEvent {
   taskId: string;
   documentId: string;
-  caseDefinitionName: string;
+  caseDefinitionKey: string;
 }
 
 export {TaskUpdateSseEvent};

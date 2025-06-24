@@ -613,6 +613,7 @@
       "forms": "Formulieren",
       "decision": "Beslistabellen",
       "formFlows": "Form flows",
+      "tasks": "Taken",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
@@ -632,8 +633,8 @@
         }
       },
       "caseListTab": {"title": "Caselijst", "searchFields": "Zoekvelden", "columns": "Kolommen"},
-      "caseDetailTab": {
-        "title": "Casedetail",
+      "caseDetailsTab": {
+        "title": "Casedetails",
         "tabs": "Tabbladen",
         "tags": "Tags",
         "statuses": "Statussen"

@@ -63,7 +63,7 @@ export class TaskService extends BaseApiService {
   public queryTasksPageV3(
     assigneeFilter: TaskListTab = TaskListTab.ALL,
     pageParams: TaskPageParams,
-    caseDefinitionName?: string,
+    caseDefinitionKey?: string,
     otherFilters?: TaskListOtherFilters
   ): Observable<Page<Task> | Page<SpecifiedTask>> {
     let httpParams = new HttpParams().set('page', pageParams.page).set('size', pageParams.size);
@@ -72,29 +72,29 @@ export class TaskService extends BaseApiService {
       httpParams = httpParams.append('sort', pageParams.sort);
     }
 
-    if (caseDefinitionName && (otherFilters || []).length > 0) {
-      return this.searchTasks(httpParams, caseDefinitionName, otherFilters, assigneeFilter);
+    if (caseDefinitionKey && (otherFilters || []).length > 0) {
+      return this.searchTasks(httpParams, caseDefinitionKey, otherFilters, assigneeFilter);
     }
 
     httpParams = httpParams.append('filter', assigneeFilter.toUpperCase());
 
     return this.httpClient.post<Page<Task>>(
       this.getApiUrl('/v3/task'),
-      {...(caseDefinitionName && {caseDefinitionName})},
+      {...(caseDefinitionKey && {caseDefinitionKey})},
       {params: httpParams}
     );
   }
 
   private searchTasks(
     params: HttpParams,
-    caseDefinitionName: string,
+    caseDefinitionKey: string,
     otherFilters: TaskListOtherFilters,
     assigneeFilter: TaskListTab = TaskListTab.ALL
   ): Observable<Page<SpecifiedTask>> {
     return this.httpClient.post<Page<SpecifiedTask>>(
-      this.getApiUrl(`/v1/document-definition/${caseDefinitionName}/task/search`),
+      this.getApiUrl(`/v1/document-definition/${caseDefinitionKey}/task/search`),
       {
-        caseDefinitionName,
+        caseDefinitionKey,
         assigneeFilter: assigneeFilter.toUpperCase(),
         ...(otherFilters && {otherFilters}),
       },
@@ -136,9 +136,9 @@ export class TaskService extends BaseApiService {
     );
   }
 
-  public getTaskListColumns(caseDefinitionName: string): Observable<TaskListColumn[]> {
+  public getTaskListColumns(caseDefinitionKey: string): Observable<TaskListColumn[]> {
     return this.httpClient.get<TaskListColumn[]>(
-      this.getApiUrl(`/v1/case/${caseDefinitionName}/task-list-column`)
+      this.getApiUrl(`/v1/case/${caseDefinitionKey}/task-list-column`)
     );
   }
 
@@ -146,9 +146,9 @@ export class TaskService extends BaseApiService {
     return this.configService.config.customTaskList;
   }
 
-  public getTaskListSearchFields(caseDefinitionName: string): Observable<TaskListSearchField[]> {
+  public getTaskListSearchFields(caseDefinitionKey: string): Observable<TaskListSearchField[]> {
     return this.httpClient.get<TaskListSearchField[]>(
-      this.getApiUrl(`v1/search/field/TaskListSearchColumns/${caseDefinitionName}`)
+      this.getApiUrl(`v1/search/field/TaskListSearchColumns/${caseDefinitionKey}`)
     );
   }
 

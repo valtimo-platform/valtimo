@@ -62,6 +62,7 @@
           "
           (selected)="onCaseDefinitionSelected($event)"
           [placeholder]="'valuePathSelector.selectCaseDefPlaceholder' | translate"
+          cdsLayer
         >
           <cds-dropdown-list [items]="caseObs.caseDefinitionListItems || []"></cds-dropdown-list>
         </cds-dropdown>
@@ -77,6 +78,7 @@
           (obs.valuePathListItems || []).length === 0
         "
         (selected)="onPathSelected($event)"
+        cdsLayer
         [placeholder]="'valuePathSelector.placeholder' | translate"
       >
         <cds-dropdown-list [items]="obs.valuePathListItems || []"></cds-dropdown-list>
@@ -87,6 +89,7 @@
         cdsText
         type="text"
         formControlName="selectedPath"
+        cdsLayer
       />
     }
   </form>

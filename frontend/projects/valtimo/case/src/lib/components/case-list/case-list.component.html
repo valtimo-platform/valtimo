@@ -60,7 +60,7 @@
   <valtimo-search-fields
     [searchFields]="obs.searchFields"
     (doSearch)="search($event)"
-    [documentDefinitionName]="caseDefinitionKey$ | async"
+    [caseDefinitionKey]="caseDefinitionKey$ | async"
     [defaultValues]="searchFieldValues$ | async"
     [inputDisabled]="!obs.loaded"
     [externalSearchField]="obs.showStatusSelector"

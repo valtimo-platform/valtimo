@@ -17,14 +17,14 @@
 import {Component, EventEmitter, HostBinding, Input, Output} from '@angular/core';
 import {MultiInputChangeEventType, MultiInputKeyValue} from '../../../../models';
 import {CommonModule} from '@angular/common';
-import {InputModule} from 'carbon-components-angular';
+import {InputModule, LayerModule} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-key-value',
   templateUrl: './key-value.component.html',
   styleUrls: ['key-value.component.scss'],
   standalone: true,
-  imports: [CommonModule, InputModule],
+  imports: [CommonModule, InputModule, LayerModule],
 })
 export class KeyValueComponent {
   @Input() public readonly keyColumnTitle!: string;

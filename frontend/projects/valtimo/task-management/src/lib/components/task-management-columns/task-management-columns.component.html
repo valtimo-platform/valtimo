@@ -18,60 +18,58 @@
   *ngIf="{
     taskListColumns: taskListColumns$ | async,
     cachedTaskListColumns: cachedTaskListColumns$ | async,
-    documentDefinitionName: documentDefinitionName$ | async,
+    caseDefinitionKey: caseDefinitionKey$ | async,
     loadingColumns: loadingColumns$ | async,
     modalType: modalType$ | async,
     showModal: showModal$ | async,
-    disabled: disabled$ | async,
   } as obs"
 >
-  <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
-
-  <valtimo-task-management-column-modal
-    [taskListColumns]="obs.cachedTaskListColumns"
-    [type]="obs.modalType"
-    [show]="obs.showModal"
-    [documentDefinitionName]="obs.documentDefinitionName"
-    [selectedTaskListColumn]="selectedTaskListColumn$ | async"
-    (closeEvent)="onModalCloseEvent($event)"
-  ></valtimo-task-management-column-modal>
-
-  <valtimo-confirmation-modal
-    [showModalSubject$]="showDeleteModal$"
-    [outputOnConfirm]="deleteRowKey$ | async"
-    (confirmEvent)="deleteRowConfirmation($event, obs.documentDefinitionName)"
-    confirmButtonTextTranslationKey="listColumn.deleteColumn"
-    titleTranslationKey="listColumn.deleteColumn"
-    contentTranslationKey="listColumn.deleteColumnConfirmation"
-  ></valtimo-confirmation-modal>
-</ng-container>
-
-<ng-template #list let-obs="obs">
   <valtimo-carbon-list
     [actionItems]="actionItems"
     [items]="obs.taskListColumns"
     [loading]="obs.loadingColumns"
     [fields]="fields"
     [header]="false"
-    [movingRowsEnabled]="true"
-    (rowClicked)="columnRowClicked($event)"
-    (moveRow)="onMoveRowClick($event, obs.documentDefinitionName)"
+    [dragAndDrop]="true"
+    (rowClicked)="editColumn($event)"
+    (itemsReordered)="onItemsReordered($event, obs.caseDefinitionKey)"
   >
-    <ng-container
-      carbonToolbarContent
-      *ngTemplateOutlet="buttons; context: {obs: obs}"
-    ></ng-container>
+    <ng-container carbonToolbarContent [ngTemplateOutlet]="addButton"></ng-container>
 
     <valtimo-no-results
+      [action]="addButton"
       [title]="'listColumn.noConfigWarningTitle' | translate"
       [description]="'listColumn.noConfigWarning' | translate"
       illustration="valtimo-layout/img/emptystate-empty.svg"
     ></valtimo-no-results>
   </valtimo-carbon-list>
-</ng-template>
 
-<ng-template #buttons let-obs="obs">
-  <button cdsButton="primary" (click)="showModal('add')" [disabled]="obs.disabled">
+  <valtimo-task-management-column-modal
+    [taskListColumns]="obs.cachedTaskListColumns"
+    [type]="obs.modalType"
+    [show]="obs.showModal"
+    [caseDefinitionKey]="obs.caseDefinitionKey"
+    [selectedTaskListColumn]="selectedTaskListColumn$ | async"
+    (closeEvent)="onModalCloseEvent($event)"
+  ></valtimo-task-management-column-modal>
+
+  <valtimo-confirmation-modal
+    [showModalSubject$]="showDeleteModal$"
+    [outputOnConfirm]="deleteColumnKey$ | async"
+    (confirmEvent)="deleteColumnConfirmation($event, obs.caseDefinitionKey)"
+    confirmButtonTextTranslationKey="listColumn.deleteColumn"
+    titleTranslationKey="listColumn.deleteColumn"
+    contentTranslationKey="listColumn.deleteColumnConfirmation"
+  ></valtimo-confirmation-modal>
+</ng-container>
+
+<ng-template #addButton>
+  <button
+    carbonToolbarContent
+    cdsButton="primary"
+    [disabled]="disabled$ | async"
+    (click)="showModal('add')"
+  >
     {{ 'listColumn.addButtonText' | translate }}
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>

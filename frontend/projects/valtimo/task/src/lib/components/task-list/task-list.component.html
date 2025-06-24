@@ -27,13 +27,13 @@
     overrideSortState: overrideSortState$ | async,
     searchFields: searchFields$ | async,
     loadingSearchFields: loadingSearchFields$ | async,
-    caseDefinitionName: caseDefinitionName$ | async,
+    caseDefinitionKey: caseDefinitionKey$ | async,
     noResultsMessage: noResultsMessage$ | async,
   } as obs"
   class="main-content"
 >
   <div class="container-fluid">
-    @if (obs.caseDefinitionName && obs.caseDefinitionName !== ALL_CASES_ID) {
+    @if (obs.caseDefinitionKey && obs.caseDefinitionKey !== ALL_CASES_ID) {
       <ng-container
         *ngTemplateOutlet="
           searchFields;
@@ -182,7 +182,7 @@
     <valtimo-search-fields
       [searchFields]="obs.searchFields"
       [inputDisabled]="obs.loadingSearchFields"
-      [documentDefinitionName]="obs.caseDefinitionName"
+      [caseDefinitionKey]="obs.caseDefinitionKey"
       [setValuesSubject$]="setSearchFieldValuesSubject$"
       [clearValuesSubject$]="clearSearchFieldValuesSubject$"
       (doSearch)="search($event)"
