@@ -407,7 +407,13 @@
     }
   },
   "decisions": {
-    "upload": {"title": "Upload decision table", "description": "Select a .dmn file to upload"},
+    "upload": {
+      "title": "Upload decision table",
+      "description": "Select a .dmn file to upload",
+      "fileUploaderTitle": "Upload DMN file",
+      "fileUploaderDescription": "Only files with the .dmn extension are allowed.",
+      "fileUploaderButton": "Choose DMN file"
+    },
     "version": "Version",
     "deploy": "Save",
     "loadFailure": "Something went wrong with loading your decision table.",

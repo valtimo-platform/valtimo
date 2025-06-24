@@ -19,23 +19,26 @@
     <h3 cdsModalHeaderHeading>{{ 'decisions.upload.title' | translate }}</h3>
   </cds-modal-header>
 
-  <div body>
-    <div class="mt-3">{{ 'decisions.upload.description' | translate }}</div>
-    <div class="form-group mt-3 mb-3">
-      <input type="file" id="file" accept=".dmn" (change)="onChange($event.target.files)" />
-    </div>
-  </div>
-  <div footer>
-    <div class="mb-0 p-3 text-right">
-      <button
-        [disabled]="!dmn"
-        class="btn btn-primary btn-space"
-        type="button"
-        (click)="deployDmn()"
-      >
-        <i class="icon mdi mdi-upload mr-1"></i>
-        {{ 'Upload' | translate }}
-      </button>
-    </div>
-  </div>
+  <section cdsModalContent [cdsLayer]="1" [formGroup]="form">
+    <cds-file-uploader
+      [accept]="ACCEPTED_FILES"
+      [multiple]="false"
+      buttonType="primary"
+      [title]="'decisions.upload.fileUploaderTitle' | translate"
+      [description]="'decisions.upload.fileUploaderDescription' | translate"
+      [buttonText]="'decisions.upload.fileUploaderButton' | translate"
+      formControlName="file"
+    >
+    </cds-file-uploader>
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button cdsButton="primary" [disabled]="!selectedDmnFile" (click)="deployDmn()">
+      {{ 'interface.upload' | translate }}
+    </button>
+  </cds-modal-footer>
 </cds-modal>
