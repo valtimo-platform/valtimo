@@ -40,12 +40,7 @@ import {
 } from '@valtimo/process-link';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ProcessService} from '@valtimo/process';
-import {
-  FormioComponent,
-  FormioOptionsImpl,
-  FormioSubmission,
-  ValtimoFormioOptions,
-} from '@valtimo/components';
+import {FormioComponent, FormioOptionsImpl, FormioSubmission, ValtimoFormioOptions,} from '@valtimo/components';
 import {FormioBeforeSubmit} from '@formio/angular/formio.common';
 import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
@@ -91,6 +86,8 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
   >({});
+  public readonly closeModalEvent = new EventEmitter();
+
 
   constructor(
     private route: ActivatedRoute,
@@ -142,16 +139,16 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(startProcessResult => {
         if (startProcessResult) {
+          this.isUIComponent = false;
+          this.isFormViewModel = false;
           switch (startProcessResult.type) {
             case 'form':
               this.formDefinition = startProcessResult.properties.prefilledForm;
               this.processLinkId = startProcessResult.processLinkId;
-              this.isFormViewModel = false;
               this.openCdsModal();
               break;
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
-              this.isFormViewModel = false;
               this.openCdsModal();
               break;
             case 'form-view-model':
@@ -289,6 +286,12 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
         this.closeCdsModal();
       })
     );
+
+    this._subscriptions.add(
+      this.closeModalEvent.subscribe(() => {
+        formViewModelComponent.destroy();
+      })
+    );
   }
 
   private setFormCustomComponent(formCustomComponentKey: string): void {
@@ -306,6 +309,12 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
       renderedComponent.instance.submittedEvent.subscribe(() => {
         this.closeCdsModal();
       });
+
+      this._subscriptions.add(
+        this.closeModalEvent.subscribe(() => {
+          renderedComponent.destroy();
+        })
+      );
     });
   }
 
@@ -315,5 +324,6 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
 
   private closeCdsModal(): void {
     this.modalOpen$.next(false);
+    this.closeModalEvent.emit();
   }
 }
