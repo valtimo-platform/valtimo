@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-export * from './menu.service';
-export * from './object-menu.service';
-export * from './case-menu.service';
+export * from './ico-api.service';
+export * from './ico-api.service';

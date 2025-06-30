@@ -14,6 +14,29 @@
  * limitations under the License.
  */
 
-export * from './menu.service';
-export * from './object-menu.service';
-export * from './case-menu.service';
+interface IkoDataAggregate {
+  key: string;
+  title: string;
+}
+
+interface IkoDataRequestUser {
+  key: string;
+  title: string;
+  searchFields: SearchFieldV2[];
+}
+
+interface SearchFieldV2 {
+  id: string;
+  ownerId: string;
+  ownerType: string;
+  key: string;
+  title?: string;
+  path: string;
+  order: number;
+  dataType: string;
+  fieldType: string;
+  matchType?: string;
+  dropdownDataProvider?: string;
+}
+
+export {IkoDataAggregate, IkoDataRequestUser, SearchFieldV2};
