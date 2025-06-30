@@ -1,8 +1,8 @@
-import {Inject, Injectable, Optional} from '@angular/core';
-import {IKO_TOKEN, MenuItem} from '@valtimo/shared';
+import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable, of} from 'rxjs';
-import {IkoMenuItem} from '../../../models';
 import {delay, map, tap} from 'rxjs/operators';
+import {MenuItem} from '@valtimo/shared';
+import {IkoMenuItem} from '../models';
 
 const mockIkoMenuItems: IkoMenuItem[] = [
   {
@@ -62,13 +62,12 @@ export class IkoMenuService {
     return this._cachedMenuItems$.asObservable();
   }
 
-  constructor(@Optional() @Inject(IKO_TOKEN) private readonly ikoEnabled: boolean) {}
-
-  public appendIkoMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {
-    const ikoAlreadyExists = menuItems.some(item => item.title === 'IKO');
-    const shouldAdd = !ikoAlreadyExists && this.ikoEnabled;
-
-    if (!shouldAdd) return of(menuItems);
+  /**
+   * Appends IKO menu items to the provided list, if not already present.
+   */
+  public appendIkoMenuItems = (menuItems: MenuItem[]): Observable<MenuItem[]> => {
+    const ikoExists = menuItems.some(item => item.title === 'IKO');
+    if (ikoExists) return of(menuItems);
 
     return this.getIkoMenuItems().pipe(
       map(ikoItems => {
@@ -87,12 +86,25 @@ export class IkoMenuService {
           children: ikoSubMenu,
         };
 
-        menuItems.push(ikoMenu);
-        menuItems.sort((a, b) => a.sequence - b.sequence);
-
-        return menuItems;
+        return [...menuItems, ikoMenu].sort((a, b) => a.sequence - b.sequence);
       })
     );
+  };
+
+  /**
+   * Simulates an async API call for IKO menu items.
+   */
+  private getIkoMenuItems(): Observable<IkoMenuItem[]> {
+    return of(mockIkoMenuItems).pipe(
+      delay(1500), // Simulate API delay
+      tap(items => this._cachedMenuItems$.next(items))
+    );
+  }
+
+  private getIkoSequenceAfterCases(menuItems: MenuItem[]): number {
+    const casesItem = menuItems.find(item => item.title === 'Cases' || item.title === 'Dossiers');
+    const casesSequence = Number(casesItem?.sequence ?? 0);
+    return casesSequence + 0.5;
   }
 
   public valueToBase64(value: object | string): string {
@@ -139,18 +151,5 @@ export class IkoMenuService {
       base64 += '=';
     }
     return atob(base64);
-  }
-
-  private getIkoSequenceAfterCases(menuItems: MenuItem[]): number {
-    const casesItem = menuItems.find(item => item.title === 'Cases' || item.title === 'Dossiers');
-    const casesSequence = Number(casesItem?.sequence ?? 0);
-    return casesSequence + 0.5;
-  }
-
-  private getIkoMenuItems(): Observable<IkoMenuItem[]> {
-    return of(mockIkoMenuItems).pipe(
-      delay(1500),
-      tap(items => this._cachedMenuItems$.next(items))
-    );
   }
 }

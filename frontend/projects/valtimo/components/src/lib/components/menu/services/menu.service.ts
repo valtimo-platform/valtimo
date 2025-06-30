@@ -6,12 +6,21 @@ import {UserProviderService} from '@valtimo/security';
 import {SseService} from '@valtimo/sse';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, of, Subscription, switchMap} from 'rxjs';
-import {delay, filter, map, tap} from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  of,
+  OperatorFunction,
+  Subscription,
+  switchMap,
+} from 'rxjs';
+import {delay, distinctUntilChanged, filter, map, tap} from 'rxjs/operators';
 import {CaseMenuService} from './case-menu.service';
 import {ObjectMenuService} from './object-menu.service';
 import {PendingChangesService} from '../../pending-changes/pending-changes.service';
-import {IkoMenuService} from './iko-menu.service';
+import {AppendMenuItemsFunction} from '../../../models';
+import {isEqual} from 'lodash';
 
 @Injectable({providedIn: 'root'})
 export class MenuService implements OnDestroy {
@@ -39,7 +48,11 @@ export class MenuService implements OnDestroy {
   );
 
   public get menuItems$(): Observable<MenuItem[]> {
-    return this._menuItems$.asObservable();
+    return this._menuItems$.pipe(distinctUntilChanged((prev, curr) => isEqual(prev, curr)));
+  }
+
+  public get initializedMenuItems$(): Observable<MenuItem[]> {
+    return this._menuItems$.pipe(filter(items => Array.isArray(items) && items.length > 0));
   }
 
   public get activeParentSequenceNumber$(): Observable<string> {
@@ -87,11 +100,14 @@ export class MenuService implements OnDestroy {
         });
 
         return closestSequence;
-      })
+      }),
+      distinctUntilChanged()
     );
   }
 
   private readonly _subscriptions = new Subscription();
+
+  private readonly _appendMenuItemFunctions$ = new BehaviorSubject<AppendMenuItemsFunction[]>([]);
 
   constructor(
     private readonly configService: ConfigService,
@@ -104,8 +120,7 @@ export class MenuService implements OnDestroy {
     private readonly userProviderService: UserProviderService,
     private readonly sseService: SseService,
     private readonly caseMenuService: CaseMenuService,
-    private readonly objectMenuService: ObjectMenuService,
-    private readonly ikoMenuService: IkoMenuService
+    private readonly objectMenuService: ObjectMenuService
   ) {
     const config = configService.config;
     this.menuConfig = config?.menu;
@@ -124,6 +139,7 @@ export class MenuService implements OnDestroy {
 
   public reload(): void {
     this.reloadActiveSequence$.next(null);
+    this.reload$.next(null);
   }
 
   private loadMenuItems(userRoles: string[]): MenuItem[] {
@@ -158,16 +174,19 @@ export class MenuService implements OnDestroy {
     return menuItems;
   }
 
-  private initReload(): void {
+  public initReload(): void {
     const roles = this.keycloakService.getUserRoles(true);
-    const menuItems = this.loadMenuItems(roles);
+    const existingMenuItemsValue = this._menuItems$.getValue();
+    const existingMenuItems =
+      Array.isArray(existingMenuItemsValue) && existingMenuItemsValue.length > 0;
+    const menuItems = existingMenuItems || this.loadMenuItems(roles);
 
     this._subscriptions.add(
       this.reload$
         .pipe(
           switchMap(() =>
             this.caseMenuService.appendCaseSubMenuItems(
-              menuItems,
+              menuItems as MenuItem[],
               this.disableCaseCount,
               this.sseService
             )
@@ -181,11 +200,33 @@ export class MenuService implements OnDestroy {
                 )
               : of(items)
           ),
-          switchMap(items => this.ikoMenuService.appendIkoMenuItems(items)),
+          switchMap(items => combineLatest([of(items), this._appendMenuItemFunctions$])),
+          switchMap(([items, appendMenuItemsFunctions]) => {
+            const sourceObs = of(items);
+
+            if (!Array.isArray(appendMenuItemsFunctions) || appendMenuItemsFunctions.length === 0) {
+              return sourceObs;
+            }
+
+            const operators = appendMenuItemsFunctions.map(fn => switchMap(fn)) as [
+              OperatorFunction<MenuItem[], MenuItem[]>,
+              ...OperatorFunction<MenuItem[], MenuItem[]>[],
+            ];
+
+            // @ts-ignore
+            return sourceObs.pipe(...operators);
+          }),
           map(items => this.applyMenuRoleSecurity(items)),
           tap(items => this._menuItems$.next(items))
         )
         .subscribe()
     );
+  }
+
+  public registerAppendMenuItemsFunction(functionValue: AppendMenuItemsFunction): void {
+    this._appendMenuItemFunctions$.next([
+      ...this._appendMenuItemFunctions$.getValue(),
+      functionValue,
+    ]);
   }
 }

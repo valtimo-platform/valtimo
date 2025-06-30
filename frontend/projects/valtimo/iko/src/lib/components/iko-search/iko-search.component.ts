@@ -2,11 +2,14 @@ import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest, filter, map, Observable, tap} from 'rxjs';
-import {IkoMenuItem, IkoMenuService, MenuService, PageTitleService} from '@valtimo/components';
+import {MenuService, PageTitleService} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
+import {IkoApiService} from '../../services';
+import {IkoMenuItem} from '../../models';
+import {IkoMenuService} from '../../services/iko-menu.service';
 
 @Component({
   selector: 'valtimo-iko-search',
@@ -48,12 +51,17 @@ export class IkoSearchComponent implements OnDestroy {
     })
   );
 
+  public readonly searchFields$ = combineLatest([this.ikoApiService.getIkoDataAggregates()]).pipe(
+    tap(x => console.log(x))
+  );
+
   constructor(
     private readonly route: ActivatedRoute,
     private readonly ikoMenuService: IkoMenuService,
     private readonly pageTitleService: PageTitleService,
     private readonly iconService: IconService,
-    private readonly menuService: MenuService
+    private readonly menuService: MenuService,
+    private readonly ikoApiService: IkoApiService
   ) {
     this.iconService.register(Search16);
   }
