@@ -22,7 +22,7 @@ import {IkoSearchComponent} from './components/iko-search/iko-search.component';
 
 const routes: Routes = [
   {
-    path: 'iko/:profileUrl',
+    path: 'iko/:key',
     component: IkoSearchComponent,
     canActivate: [AuthGuardService],
     data: {

@@ -1,13 +1,23 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 import {IkoDataAggregate, IkoDataRequestUser} from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class IkoApiService extends BaseApiService {
+  private readonly _cachedMenuItems$ = new BehaviorSubject<IkoDataAggregate[]>([]);
+
+  public get cachedMenuItems$(): Observable<IkoDataAggregate[]> {
+    return this._cachedMenuItems$.asObservable();
+  }
+
+  public setCachedMenuItems(items: IkoDataAggregate[]): void {
+    this._cachedMenuItems$.next(items);
+  }
+
   constructor(
     protected readonly httpClient: HttpClient,
     protected readonly configService: ConfigService
@@ -29,9 +39,9 @@ export class IkoApiService extends BaseApiService {
     params.append('size', size.toString());
     params.append('sort', sort);
 
-    return this.httpClient.get<{content: IkoDataAggregate[]}>(
-      this.getApiUrl(`/v1/iko-data-aggregate?${params.toString()}`)
-    );
+    return this.httpClient.get<{
+      content: IkoDataAggregate[];
+    }>(this.getApiUrl(`/v1/iko-data-aggregate?${params.toString()}`));
   }
 
   public getIkoDataRequests(ikoDataAggregateKey: string): Observable<IkoDataRequestUser[]> {

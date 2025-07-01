@@ -31,3 +31,4 @@ export * from './case-widgets-layout.service';
 export * from './case-detail-layout.service';
 export * from './case-list-case-tag.service';
 export * from './case-export.service';
+export * from './case-menu.service';

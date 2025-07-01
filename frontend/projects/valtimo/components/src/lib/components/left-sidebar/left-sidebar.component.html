@@ -19,79 +19,83 @@
     closestSequence: closestSequence$ | async,
     overflowMenuSequence: overflowMenuSequence$ | async,
     sideBarExpanded: sideBarExpanded$ | async,
+    menuItemsLoaded: menuItemsLoaded$ | async,
+    menuItems: menuItems$ | async,
   } as obs"
   [allowExpansion]="false"
   [expanded]="obs.sideBarExpanded"
 >
-  <ng-container *ngFor="let menuItem of menuItems$ | async">
-    <ng-container *ngIf="!menuItem.children">
-      <ng-container
-        *ngTemplateOutlet="
-          topMenuItem;
-          context: {
-            menuItem: menuItem,
-            closestSequence: obs.closestSequence,
-            overflowMenuSequence: obs.overflowMenuSequence,
-          }
-        "
-      ></ng-container>
-    </ng-container>
+  <ng-container *ngIf="obs.menuItemsLoaded; else loadingTemplate">
+    <ng-container *ngFor="let menuItem of obs.menuItems">
+      <ng-container *ngIf="!menuItem.children">
+        <ng-container
+          *ngTemplateOutlet="
+            topMenuItem;
+            context: {
+              menuItem: menuItem,
+              closestSequence: obs.closestSequence,
+              overflowMenuSequence: obs.overflowMenuSequence,
+            }
+          "
+        ></ng-container>
+      </ng-container>
 
-    <ng-container *ngIf="menuItem.children">
-      <ng-container
-        *ngTemplateOutlet="
-          topMenuItem;
-          context: {
-            closestSequence: obs.closestSequence,
-            menuItem: menuItem,
-            overflowMenuSequence: obs.overflowMenuSequence,
-          }
-        "
-      ></ng-container>
+      <ng-container *ngIf="menuItem.children">
+        <ng-container
+          *ngTemplateOutlet="
+            topMenuItem;
+            context: {
+              closestSequence: obs.closestSequence,
+              menuItem: menuItem,
+              overflowMenuSequence: obs.overflowMenuSequence,
+            }
+          "
+        ></ng-container>
 
-      <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
+        <ng-container *ngTemplateOutlet="subMenuIcon; context: {menuItem: menuItem}"></ng-container>
 
-      <cds-sidenav-menu
-        [title]="menuItem | menuItemTranslate | async"
-        [attr.data-testid]="'sidenav-item-' + menuItem.title"
-      >
-        <ng-container *ngFor="let childMenuItem of menuItem.children">
-          <ng-container
-            *ngIf="{
-              count: childMenuItem?.count$ && (childMenuItem?.count$ | async),
-              sequence: '' + menuItem.sequence + childMenuItem.sequence,
-            } as vars"
-          >
-            <cds-sidenav-item
-              [attr.data-testid]="'sidenav-item-' + childMenuItem?.title"
-              [ngClass]="{
-                'cds--side-nav__item--empty': !childMenuItem.link,
-                'menu-item--hidden': childMenuItem.includeFunction !== undefined,
-                'menu-item--visible':
-                  childMenuItem.includeFunction !== undefined &&
-                  (includeFunctionObservables[childMenuItem.title] | async),
-              }"
-              [active]="vars.sequence === obs.closestSequence"
-              [href]="vars?.count ? 'javascript:return false;' : 'javascript:void(0);'"
-              (click)="navigateToRoute(childMenuItem.link, $event)"
-              (contextmenu)="onRightClick(vars.sequence)"
-              (ctrl-click)="openInNewTab(childMenuItem.link)"
+        <cds-sidenav-menu
+          [title]="menuItem | menuItemTranslate | async"
+          [attr.data-testid]="'sidenav-item-' + menuItem.title"
+        >
+          <ng-container *ngFor="let childMenuItem of menuItem.children">
+            <ng-container
+              *ngIf="{
+                count: childMenuItem?.count$ && (childMenuItem?.count$ | async),
+                sequence: '' + menuItem.sequence + childMenuItem.sequence,
+              } as vars"
             >
-              <valtimo-menu-item-text
-                [accent]="!childMenuItem.link"
-                [menuItem]="childMenuItem"
-                [showOverFlowMenu]="obs.overflowMenuSequence === vars.sequence"
-                (openInNewTab)="openInNewTab(childMenuItem.link)"
-                (overflowMenuClosed)="onOverflowMenuClosed(vars.sequence)"
-              ></valtimo-menu-item-text>
+              <cds-sidenav-item
+                [attr.data-testid]="'sidenav-item-' + childMenuItem?.title"
+                [ngClass]="{
+                  'cds--side-nav__item--empty': !childMenuItem.link,
+                  'menu-item--hidden': childMenuItem.includeFunction !== undefined,
+                  'menu-item--visible':
+                    childMenuItem.includeFunction !== undefined &&
+                    (includeFunctionObservables[childMenuItem.title] | async),
+                }"
+                [active]="vars.sequence === obs.closestSequence"
+                [href]="vars?.count ? 'javascript:return false;' : 'javascript:void(0);'"
+                (click)="navigateToRoute(childMenuItem.link, $event)"
+                (contextmenu)="onRightClick(vars.sequence)"
+                (ctrl-click)="openInNewTab(childMenuItem.link)"
+              >
+                <valtimo-menu-item-text
+                  [accent]="!childMenuItem.link"
+                  [menuItem]="childMenuItem"
+                  [showOverFlowMenu]="obs.overflowMenuSequence === vars.sequence"
+                  (openInNewTab)="openInNewTab(childMenuItem.link)"
+                  (overflowMenuClosed)="onOverflowMenuClosed(vars.sequence)"
+                ></valtimo-menu-item-text>
 
-              <ng-container
-                *ngTemplateOutlet="countTemplate; context: {count: vars.count}"
-              ></ng-container>
-            </cds-sidenav-item>
+                <ng-container
+                  *ngTemplateOutlet="countTemplate; context: {count: vars.count}"
+                ></ng-container>
+              </cds-sidenav-item>
+            </ng-container>
           </ng-container>
-        </ng-container>
-      </cds-sidenav-menu>
+        </cds-sidenav-menu>
+      </ng-container>
     </ng-container>
   </ng-container>
 </cds-sidenav>
@@ -137,4 +141,10 @@
       {{ count | caseCount }}
     </span>
   </ng-container>
+</ng-template>
+
+<ng-template #loadingTemplate>
+  <div class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
 </ng-template>
