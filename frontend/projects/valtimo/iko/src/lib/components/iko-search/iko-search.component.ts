@@ -1,15 +1,14 @@
 import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
-import {combineLatest, filter, map, Observable, tap} from 'rxjs';
-import {MenuService, PageTitleService} from '@valtimo/components';
+import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
+import {PageTitleService} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {IkoApiService} from '../../services';
-import {IkoMenuItem} from '../../models';
-import {IkoMenuService} from '../../services/iko-menu.service';
+import {IkoDataRequestUser} from '../../models';
 
 @Component({
   selector: 'valtimo-iko-search',
@@ -29,38 +28,34 @@ import {IkoMenuService} from '../../services/iko-menu.service';
 export class IkoSearchComponent implements OnDestroy {
   public readonly formValues: Record<string, string> = {};
 
-  private readonly _profileUrl$ = this.route.params.pipe(
-    map(params => params?.profileUrl),
-    filter(url => !!url),
-    map(url => this.ikoMenuService.base64ToValue(url))
+  private readonly _key$ = this.route.params.pipe(
+    map(params => params?.key),
+    filter(key => !!key)
   );
 
-  public readonly ikoMenuItem$: Observable<IkoMenuItem> = combineLatest([
-    this._profileUrl$,
-    this.ikoMenuService.cachedMenuItems$,
-  ]).pipe(
-    map(([profileUrl, cachedMenuItems]) =>
-      cachedMenuItems.find(item => item.profile.url === profileUrl)
+  public readonly dataRequests$: Observable<IkoDataRequestUser[]> = this._key$.pipe(
+    switchMap(key =>
+      combineLatest([
+        of(key),
+        this.ikoApiService.cachedMenuItems$,
+        this.ikoApiService.getIkoDataRequests(key),
+      ])
     ),
-    tap(menuItem => {
-      if (menuItem?.title) {
-        this.pageTitleService.setCustomPageTitle(menuItem.title, true);
+    map(([key, menuItems, dataRequests]) => {
+      const currentMenuItem = menuItems.find(item => item.key === key);
+
+      if (currentMenuItem && currentMenuItem?.title) {
+        this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
       }
 
-      this.menuService.reload();
+      return dataRequests;
     })
-  );
-
-  public readonly searchFields$ = combineLatest([this.ikoApiService.getIkoDataAggregates()]).pipe(
-    tap(x => console.log(x))
   );
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly ikoMenuService: IkoMenuService,
     private readonly pageTitleService: PageTitleService,
     private readonly iconService: IconService,
-    private readonly menuService: MenuService,
     private readonly ikoApiService: IkoApiService
   ) {
     this.iconService.register(Search16);

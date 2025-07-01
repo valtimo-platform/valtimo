@@ -1,7 +1,7 @@
-<ng-container *ngIf="{ikoMenuItem: ikoMenuItem$ | async} as obs">
+<ng-container *ngIf="{dataRequests: dataRequests$ | async} as obs">
   @if (obs.ikoMenuItem?.queryParams?.length) {
     <div class="query-group">
-      @for (param of obs.ikoMenuItem.queryParams; track param.key ?? param.fields?.[0]?.key) {
+      @for (param of obs.dataRequests; track param.key ?? param.fields?.[0]?.key) {
         @if (!isQueryGroup(param)) {
           <div class="query-group__row">
             <div class="query-group__field">
@@ -25,7 +25,7 @@
           </div>
         } @else {
           <div class="query-group__row">
-            @for (field of param.fields; track field.key) {
+            @for (field of param.searchFields; track field.key) {
               <div class="query-group__field">
                 <label [for]="field.key" class="query-group__label">{{ field.title }}</label>
                 <input

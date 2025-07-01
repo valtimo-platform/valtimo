@@ -3,8 +3,6 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
 import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/shared';
 import {UserProviderService} from '@valtimo/security';
-import {SseService} from '@valtimo/sse';
-import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -15,12 +13,11 @@ import {
   Subscription,
   switchMap,
 } from 'rxjs';
-import {delay, distinctUntilChanged, filter, map, tap} from 'rxjs/operators';
-import {CaseMenuService} from './case-menu.service';
-import {ObjectMenuService} from './object-menu.service';
+import {distinctUntilChanged, filter, map, tap} from 'rxjs/operators';
 import {PendingChangesService} from '../../pending-changes/pending-changes.service';
 import {AppendMenuItemsFunction} from '../../../models';
 import {isEqual} from 'lodash';
+import {KeycloakService} from 'keycloak-angular';
 
 @Injectable({providedIn: 'root'})
 export class MenuService implements OnDestroy {
@@ -33,8 +30,6 @@ export class MenuService implements OnDestroy {
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
 
   private readonly menuConfig: MenuConfig;
-  private readonly disableCaseCount: boolean;
-  private readonly enableObjectManagement: boolean;
 
   private readonly currentRoute$ = this.router.events.pipe(
     filter(
@@ -51,8 +46,8 @@ export class MenuService implements OnDestroy {
     return this._menuItems$.pipe(distinctUntilChanged((prev, curr) => isEqual(prev, curr)));
   }
 
-  public get initializedMenuItems$(): Observable<MenuItem[]> {
-    return this._menuItems$.pipe(filter(items => Array.isArray(items) && items.length > 0));
+  public get menuItemsLoaded$(): Observable<boolean> {
+    return this._menuItems$.pipe(map(items => Array.isArray(items) && items.length > 0));
   }
 
   public get activeParentSequenceNumber$(): Observable<string> {
@@ -60,11 +55,7 @@ export class MenuService implements OnDestroy {
   }
 
   public get closestSequence$(): Observable<string> {
-    return combineLatest([
-      this.currentRoute$,
-      this.menuItems$,
-      this.reloadActiveSequence$.pipe(delay(0)),
-    ]).pipe(
+    return combineLatest([this.currentRoute$, this.menuItems$]).pipe(
       filter(() => !this.pendingChangesService.pendingChanges),
       map(([currentRoute, menuItems]) => {
         let closestSequence = '0';
@@ -112,20 +103,15 @@ export class MenuService implements OnDestroy {
   constructor(
     private readonly configService: ConfigService,
     private readonly http: HttpClient,
-    private readonly keycloakService: KeycloakService,
     private readonly logger: NGXLogger,
     private readonly menuIncludeService: MenuIncludeService,
     private readonly pendingChangesService: PendingChangesService,
     private readonly router: Router,
     private readonly userProviderService: UserProviderService,
-    private readonly sseService: SseService,
-    private readonly caseMenuService: CaseMenuService,
-    private readonly objectMenuService: ObjectMenuService
+    private readonly keycloakService: KeycloakService
   ) {
     const config = configService.config;
     this.menuConfig = config?.menu;
-    this.disableCaseCount = config?.featureToggles?.disableCaseCount;
-    this.enableObjectManagement = config?.featureToggles?.enableObjectManagement ?? true;
   }
 
   public init(): void {
@@ -184,22 +170,7 @@ export class MenuService implements OnDestroy {
     this._subscriptions.add(
       this.reload$
         .pipe(
-          switchMap(() =>
-            this.caseMenuService.appendCaseSubMenuItems(
-              menuItems as MenuItem[],
-              this.disableCaseCount,
-              this.sseService
-            )
-          ),
-          switchMap(items =>
-            this.enableObjectManagement
-              ? this.objectMenuService.appendObjectsSubMenuItems(
-                  items,
-                  this.configService.config.valtimoApi.endpointUri,
-                  this.http
-                )
-              : of(items)
-          ),
+          switchMap(() => of(menuItems as MenuItem[])),
           switchMap(items => combineLatest([of(items), this._appendMenuItemFunctions$])),
           switchMap(([items, appendMenuItemsFunctions]) => {
             const sourceObs = of(items);
@@ -217,7 +188,9 @@ export class MenuService implements OnDestroy {
             return sourceObs.pipe(...operators);
           }),
           map(items => this.applyMenuRoleSecurity(items)),
-          tap(items => this._menuItems$.next(items))
+          tap(items => {
+            if (!isEqual(this._menuItems$.getValue(), items)) this._menuItems$.next(items);
+          })
         )
         .subscribe()
     );

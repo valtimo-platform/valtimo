@@ -19,7 +19,7 @@ import {CommonModule} from '@angular/common';
 import {LeftSidebarComponent} from './left-sidebar.component';
 import {PageTitleModule} from '../page-title/page-title.module';
 import {MenuModule} from '../menu/menu.module';
-import {IconModule, UIShellModule} from 'carbon-components-angular';
+import {IconModule, LoadingModule, UIShellModule} from 'carbon-components-angular';
 import {CaseCountPipe, ComponentsPipesModule} from '../../pipes';
 import {CtrlClickDirective} from '../../directives/ctrl-click/ctrl-click.directive';
 
@@ -33,6 +33,7 @@ import {CtrlClickDirective} from '../../directives/ctrl-click/ctrl-click.directi
     UIShellModule,
     ComponentsPipesModule,
     CtrlClickDirective,
+    LoadingModule,
   ],
   exports: [LeftSidebarComponent],
 })

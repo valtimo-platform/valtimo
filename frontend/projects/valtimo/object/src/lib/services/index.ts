@@ -14,5 +14,8 @@
  * limitations under the License.
  */
 
-export * from './iko-api.service';
-export * from './iko-api.service';
+export * from './object-menu.service';
+export * from './object.service';
+export * from './object-column.service';
+export * from './object-state.service';
+export * from './tab.service';

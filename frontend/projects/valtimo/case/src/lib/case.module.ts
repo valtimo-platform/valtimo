@@ -38,6 +38,7 @@ import {
   InputLabelModule,
   InputModule,
   IsArrayPipe,
+  MenuService,
   ModalModule,
   ParagraphModule,
   RenderInPageHeaderDirective,
@@ -65,12 +66,12 @@ import {
   DialogModule,
   DropdownModule,
   IconModule,
+  InputModule as CarbonInputModule,
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
   NotificationModule,
   SelectModule as CarbonSelectModule,
-  InputModule as CarbonInputModule,
   SkeletonModule,
   TabsModule,
   TagModule,
@@ -93,7 +94,7 @@ import {CaseRoutingModule} from './case-routing.module';
 import {CaseSupportingProcessStartModalComponent} from './components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
 import {TAB_MAP} from './constants';
-import {CaseBulkAssignService, CaseService} from './services';
+import {CaseBulkAssignService, CaseMenuService, CaseService} from './services';
 import {CaseDetailTabFormioComponent} from './components/case-detail/tab/formio/formio.component';
 import {TabTranslatePipeModule} from './pipes';
 import {CaseDetailTabNotFoundComponent} from './components/case-detail/tab/not-found/not-found.component';
@@ -211,5 +212,12 @@ export class CaseModule {
         },
       ],
     };
+  }
+
+  constructor(
+    private readonly caseMenuService: CaseMenuService,
+    private readonly menuService: MenuService
+  ) {
+    this.menuService.registerAppendMenuItemsFunction(this.caseMenuService.appendCaseMenuItems);
   }
 }

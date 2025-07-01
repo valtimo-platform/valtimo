@@ -15,5 +15,3 @@
  */
 
 export * from './menu.service';
-export * from './object-menu.service';
-export * from './case-menu.service';
