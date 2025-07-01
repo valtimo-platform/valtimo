@@ -81,7 +81,7 @@ import {InputLabelModule} from '../input-label/input-label.module';
     InputLabelModule,
     InputLabelModule,
     TranslateModule,
-    LayerModule
+    LayerModule,
   ],
   providers: [
     {
