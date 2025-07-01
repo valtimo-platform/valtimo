@@ -14,30 +14,17 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-<<<<<<< HEAD
 import {Component, OnDestroy} from '@angular/core';
-=======
-import {ActivatedRoute} from '@angular/router';
-import {combineLatest, filter, map, Observable, tap} from 'rxjs';
-import {MenuService, PageTitleService} from '@valtimo/components';
-import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
->>>>>>> fb1f477a4 (build menu from later external lib)
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-<<<<<<< HEAD
 import {CarbonListModule, PageTitleService} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
 import {IkoApiService} from '../../services';
 import {IkoListComponent} from '../iko-list/iko-list.component';
-=======
-import {IkoApiService} from '../../services';
-import {IkoMenuItem} from '../../models';
-import {IkoMenuService} from '../../services/iko-menu.service';
->>>>>>> fb1f477a4 (build menu from later external lib)
 
 @Component({
   selector: 'valtimo-iko-search',
@@ -75,20 +62,16 @@ export class IkoSearchComponent implements OnDestroy {
     map(([key, menuItems, dataRequests]) => {
       const currentMenuItem = menuItems.find(item => item.key === key);
 
-      if (currentMenuItem && currentMenuItem?.title)
+      if (currentMenuItem && currentMenuItem?.title) {
         this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
+      }
 
       return dataRequests;
     })
   );
 
-  public readonly searchFields$ = combineLatest([this.ikoApiService.getIkoDataAggregates()]).pipe(
-    tap(x => console.log(x))
-  );
-
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
     private readonly pageTitleService: PageTitleService,
     private readonly iconService: IconService,
     private readonly ikoApiService: IkoApiService
