@@ -21,8 +21,8 @@ enum PERMISSION_ACTION {
 }
 
 enum WIDGET_PERMISSION_RESOURCE {
-  camundaExecution = 'com.ritense.valtimo.camunda.domain.CamundaExecution',
-  camundaProcessDefinition = 'com.ritense.valtimo.camunda.domain.CamundaProcessDefinition',
+  camundaExecution = 'com.ritense.valtimo.operaton.domain.OperatonExecution',
+  camundaProcessDefinition = 'com.ritense.valtimo.operaton.domain.OperatonProcessDefinition',
 }
 
 const CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION: PermissionRequest = {
