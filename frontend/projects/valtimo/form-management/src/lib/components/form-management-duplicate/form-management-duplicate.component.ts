@@ -64,8 +64,6 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
 
   constructor(
     @Inject('formToDuplicate') public readonly formToDuplicate: FormDefinition,
-    @Inject('disabledPendingChangesCallback')
-    public readonly disablePendingChangesCallback: () => void,
     @Inject('context') public readonly context: ManagementContext,
     @Inject('params') public readonly params: FormManagementParams,
     protected modalService: ModalService,
@@ -112,7 +110,6 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
       .pipe(take(1))
       .subscribe({
         next: formDefinition => {
-          this.disablePendingChangesCallback();
           this.navigateWithNewId(formDefinition.id).then(() => {
             this.closeModal();
             this.notificationService.showToast({

@@ -131,6 +131,7 @@ export class CaseManagementZgwComponent implements AfterViewInit, OnDestroy {
   public readonly DRAFT_WARNING_MESSAGE = {
     [ZgwTabEnum.DOCUMENTEN_API_COLUMNS]: 'zgw.tabs.documentColumns',
     [ZgwTabEnum.DOCUMENTEN_API_UPLOAD_FIELDS]: 'zgw.tabs.documentUploadFields',
+    [ZgwTabEnum.DOCUMENTEN_API_TAGS]: 'zgw.tabs.documentUploadFields',
   };
 
   constructor(
