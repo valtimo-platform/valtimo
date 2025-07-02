@@ -26,27 +26,41 @@
     hasEditPermissions: hasEditPermissions$ | async,
   } as obs"
 >
-  <div *ngIf="!obs.editActive; else editActive" class="cds--toolbar-content">
-    <button
-      cdsButton="ghost"
-      [disabled]="obs.loadingDocumentDefinition || !obs.selectedDocumentDefinition"
-      (click)="downloadDefinition()"
-    >
-      {{ 'interface.download' | translate }}
+  <div class="cds--toolbar-content">
+    @if (!obs.editActive) {
+      <button
+        cdsButton="ghost"
+        [disabled]="obs.loadingDocumentDefinition || !obs.selectedDocumentDefinition"
+        (click)="downloadDefinition()"
+      >
+        {{ 'interface.download' | translate }}
 
-      <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
-    </button>
+        <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
+      </button>
 
-    <button
-      *ngIf="obs.hasEditPermissions"
-      cdsButton="primary"
-      [disabled]="obs.selectedDocumentDefinition?.readOnly"
-      (click)="onEditClick()"
-    >
-      {{ 'interface.edit' | translate }}
+      <button
+        *ngIf="obs.hasEditPermissions"
+        cdsButton="primary"
+        [disabled]="obs.selectedDocumentDefinition?.readOnly"
+        (click)="onEditClick()"
+      >
+        {{ 'interface.edit' | translate }}
 
-      <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
-    </button>
+        <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
+      </button>
+    } @else {
+      <button cdsButton="secondary" (click)="onCancelClick(obs.pendingChanges)">
+        {{ 'interface.cancel' | translate }}
+
+        <svg cdsIcon="close" size="16" class="cds--btn__icon"></svg>
+      </button>
+
+      <button cdsButton="primary" [disabled]="obs.saveButtonDisabled" (click)="onSaveClick()">
+        {{ 'interface.save' | translate }}
+
+        <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+      </button>
+    }
   </div>
 
   <valtimo-editor
@@ -61,20 +75,6 @@
   </valtimo-editor>
 
   <a id="downloadAnchorElement" style="display: none"></a>
-
-  <ng-template #editActive>
-    <button cdsButton="secondary" (click)="onCancelClick(obs.pendingChanges)">
-      {{ 'interface.cancel' | translate }}
-
-      <svg cdsIcon="close" size="16" class="cds--btn__icon"></svg>
-    </button>
-
-    <button cdsButton="primary" [disabled]="obs.saveButtonDisabled" (click)="onSaveClick()">
-      {{ 'interface.save' | translate }}
-
-      <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
-    </button>
-  </ng-template>
 
   <valtimo-confirmation-modal
     [showModalSubject$]="showSaveConfirmation$"
