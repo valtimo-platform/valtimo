@@ -24,7 +24,7 @@ enum PERMISSION_ACTION {
 
 enum TASK_DETAIL_PERMISSION_RESOURCE {
   jsonSchemaDocument = 'com.ritense.document.domain.impl.JsonSchemaDocument',
-  task = 'com.ritense.valtimo.camunda.domain.CamundaTask',
+  task = 'com.ritense.valtimo.operaton.domain.OperatonTask',
 }
 
 const CAN_ASSIGN_TASK_PERMISSION: PermissionRequest = {
