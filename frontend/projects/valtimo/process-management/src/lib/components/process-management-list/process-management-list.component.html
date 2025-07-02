@@ -16,6 +16,7 @@
 
 <valtimo-carbon-list
   [actionItems]="ACTION_ITEMS"
+  [showActionItems]="hasEditPermissions$ | async"
   [fields]="FIELDS"
   [header]="false"
   [items]="processDefinitions$ | async"
