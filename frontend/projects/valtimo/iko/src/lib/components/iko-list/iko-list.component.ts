@@ -42,7 +42,6 @@ export class IkoListComponent implements OnDestroy {
         content: currentMenuItem?.title ?? '',
         href: `/iko/${params.key}`,
       });
-
       return this.ikoApiService.searchIkoDataRequest(params.key, params.searchKey, {
         filters: queryParams,
       });
