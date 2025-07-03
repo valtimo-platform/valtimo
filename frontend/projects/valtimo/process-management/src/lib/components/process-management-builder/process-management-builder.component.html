@@ -145,7 +145,6 @@
         </button>
 
         <button
-          *ngIf="actionsObs.hasEditPermissions"
           [disabled]="!actionsObs.changesPending"
           cdsButton="primary"
           (click)="
