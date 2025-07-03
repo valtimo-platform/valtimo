@@ -36,15 +36,15 @@ function runMigration() {
     migrateMenuRoutes(fullPath);
   }
 
-  console.log('Migration step 06 completed.');
+  console.log('Migration step completed.');
 }
 
 try {
-  console.log('Starting migration step 06: Replace dossier menu routes');
+  console.log('Starting migration step: Replace dossier menu routes');
   runMigration();
   process.exit(0);
 } catch (err) {
-  console.error('Migration step 06 failed');
+  console.error('Migration step failed');
   console.error(err);
   process.exit(1);
 }

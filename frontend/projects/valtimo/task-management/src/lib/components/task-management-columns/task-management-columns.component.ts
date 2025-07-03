@@ -183,8 +183,7 @@ export class TaskManagementColumnsComponent {
     private readonly route: ActivatedRoute,
     private readonly taskManagementApiService: TaskManagementApiService,
     private readonly translateService: TranslateService
-  ) {
-  }
+  ) {}
 
   public refreshColumns(noAnimation = false): void {
     this._refreshColumns$.next(noAnimation ? 'noAnimation' : null);

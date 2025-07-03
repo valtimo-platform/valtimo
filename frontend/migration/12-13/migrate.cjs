@@ -3,6 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
 
+// ANSI escape code for green text
+const green = text => `\x1b[32m${text}\x1b[0m`;
+
 function startPrompt(callback) {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -53,7 +56,7 @@ function runMigrationSteps() {
 
   for (const step of stepFiles) {
     const stepPath = path.join(stepsDir, step);
-    console.log(`Running step: ${step}`);
+    console.log(`Running step: ${green(step)}`);
 
     const result = spawnSync('node', [stepPath], {stdio: 'inherit'});
 
@@ -63,7 +66,7 @@ function runMigrationSteps() {
     }
   }
 
-  console.log('All migration steps completed successfully.');
+  console.log(green('All migration steps completed successfully.'));
 }
 
 startPrompt(runMigrationSteps);

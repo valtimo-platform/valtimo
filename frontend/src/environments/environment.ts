@@ -113,7 +113,11 @@ export const environment: ValtimoConfig = {
         sequence: 4,
       },
       {
-        roles: [ROLE_ADMIN], title: 'Admin', iconClass: 'icon mdi mdi-tune', sequence: 5, children: [
+        roles: [ROLE_ADMIN],
+        title: 'Admin',
+        iconClass: 'icon mdi mdi-tune',
+        sequence: 5,
+        children: [
           {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
           {link: ['/case-management'], title: 'Cases', sequence: 2},
           {link: ['/plugins'], title: 'Plugins', sequence: 3},
@@ -122,11 +126,19 @@ export const environment: ValtimoConfig = {
           {link: ['/translation-management'], title: 'Translations', sequence: 6},
           {link: ['/choice-fields'], title: 'Choice fields', sequence: 7},
 
-          {title: 'Object management', textClass: 'text-dark font-weight-bold c-default', sequence: 8},
+          {
+            title: 'Object management',
+            textClass: 'text-dark font-weight-bold c-default',
+            sequence: 8,
+          },
           {link: ['/object-management'], title: 'Objects', sequence: 9},
           {link: ['/form-management'], title: 'Forms', sequence: 10},
 
-          {title: 'System processes', textClass: 'text-dark font-weight-bold c-default', sequence: 11},
+          {
+            title: 'System processes',
+            textClass: 'text-dark font-weight-bold c-default',
+            sequence: 11,
+          },
           {link: ['/processes'], title: 'Processes', sequence: 12},
           {link: ['/decision-tables'], title: 'Decision tables', sequence: 13},
 
@@ -134,8 +146,8 @@ export const environment: ValtimoConfig = {
           {link: ['/logging'], title: 'Logs', sequence: 15},
           {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 16},
           {link: ['/process-migration'], title: 'Process migration', sequence: 17},
-          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 18}
-        ]
+          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 18},
+        ],
       },
       {
         roles: [ROLE_DEVELOPER],
