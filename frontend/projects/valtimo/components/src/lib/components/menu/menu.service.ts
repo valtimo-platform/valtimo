@@ -237,7 +237,7 @@ export class MenuService {
         });
         this.logger.debug('found dossierMenuItems', dossierMenuItems);
         const menuItemIndex = menuItems.findIndex(
-          ({title}) => title === 'Cases' || title === 'Dossiers'
+          ({title}) => title === 'Cases' || title === 'Dossiers' || title === 'Zaakdossiers'
         );
         if (menuItemIndex > 0) {
           const dossierMenu = menuItems[menuItemIndex];
