@@ -15,7 +15,7 @@
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
   },
   "case": {
-    "summaryFormNotFound": "Samenvattingsformulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary' dat de dossierdefinitiesleutel gebruikt.",
+    "summaryFormNotFound": "Formulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary'.",
     "bulkAssign": {
       "assign": "Toewijzen",
       "modal": {
@@ -26,14 +26,14 @@
       }
     },
     "changePageModal": {
-      "title": "Wijzig pagina",
-      "content": "Weet je zeker dat je van pagina wilt wisselen? Alle selectie gaat verloren.",
-      "confirm": "Wijzig pagina"
+      "title": "Pagina wisselen",
+      "content": "Weet je zeker dat je van pagina wilt veranderen? Alle gemaakte selecties gaan verloren.",
+      "confirm": "Pagina wisselen"
     },
     "changeTabModal": {
-      "title": "Wijzig tabblad",
-      "content": "Weet je zeker dat je van tabblad wilt wisselen? Alle selectie gaat verloren.",
-      "confirm": "Wijzig tabblad"
+      "title": "Tabblad wisselen",
+      "content": "Weet je zeker dat je van tabblad wilt wisselen? Alle gemaakte selecties gaan verloren.",
+      "confirm": "Tabblad wisselen"
     },
     "noResults": {
       "ALL": {"description": "Er is hier niets te doen.", "title": "Er zijn geen dossiers"},
@@ -110,9 +110,9 @@
       "deleteConfirmation": {
         "title": "Notitie verwijderen",
         "description": "Weet je zeker dat je deze notitie wilt verwijderen?",
-        "deletedMessage": "De notitie is met succes verwijderd."
+        "deletedMessage": "De notitie is succesvol verwijderd."
       },
-      "editedMessage": "De notitie is met succes bewerkt.",
+      "editedMessage": "De notitie is succesvol bewerkt.",
       "noResults": {
         "title": "Geen notities",
         "description": "Er zijn geen notities in dit dossier."
@@ -121,21 +121,21 @@
     "documenten": {
       "deleteConfirmationModal": {
         "title": "Document verwijderen",
-        "content": "Weet u zeker dat u dit document wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+        "content": "Weet u zeker dat u dit document wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
       },
       "noProcessLinked": {
-        "regularUser": "Het uploaden van documenten is in dit geval niet beschikbaar. Neem contact op met een beheerder",
+        "regularUser": "Het uploaden van documenten is voor dit dossiertype niet beschikbaar. Neem contact op met een beheerder",
         "adminRole": "Het proces voor het uploaden van documenten is niet geconfigureerd. Configureer dit proces op de dossierbeheerpagina"
       },
       "navigateToCaseAdmin": "Configureer Zaak",
       "noZaakFoundTitle": "Geen Zaak gevonden",
       "noZaakFound": "Er konden geen bestanden worden opgehaald omdat er voor dit dossier geen Zaak is gevonden.",
       "noFilesTitle": "Geen bestanden",
-      "noFiles": "Geen bestanden gevonden voor deze zaak.",
+      "noFiles": "Geen bestanden gevonden voor dit dossier.",
       "uploadSuccessful": "Document succesvol geüpload",
-      "uploadFailed": "Het uploaden van het document naar de case is mislukt",
-      "removeSuccessful": "Document succesvol uit de zaak verwijderd",
-      "removeFailed": "Het verwijderen van het document uit de zaak is mislukt"
+      "uploadFailed": "Het uploaden van het document naar het dossier is mislukt",
+      "removeSuccessful": "Document succesvol uit het dossier verwijderd",
+      "removeFailed": "Het verwijderen van het document uit het dossier is mislukt"
     },
     "caseUpdated": "Zaak aangepast",
     "startSubProcess": "Start",
@@ -161,11 +161,11 @@
     "rowLocked": "Je hebt geen toegang tot dit dossier",
     "widgets": {
       "noData": "Geen data gevonden",
-      "emptyFields": "Nichts hier",
+      "emptyFields": "Niks hier",
       "noWidgets": "Geen widgets",
       "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
       "noWidget": "Widget niet beschikbaar",
-      "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden."
+      "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget is niet beschikbaar."
     }
   },
   "document": {
@@ -174,15 +174,15 @@
     "createdBy": "Aangemaakt door",
     "createdOn": "Aanmaakdatum",
     "sequence": "Volgnummer",
-    "fillInMetadata": "Voeg metadata van bestanden toe",
-    "editMetadata": "Metadata bewerken",
+    "fillInMetadata": "Voeg metadata van bestand toe",
+    "editMetadata": "Metadata van bestand bewerken",
     "cancel": "Annuleren",
     "upload": "Uploaden",
     "save": "Opslaan",
     "size": "Omvang",
     "tags": "Trefwoorden (optioneel)",
-    "tagsTooltip": "Tags worden gebruikt voor het makkelijk zoeken en filteren van documenten. Je kunt meerdere tags aan een document toevoegen.",
-    "tagsPlaceholder": "Kies tags",
+    "tagsTooltip": "Trefwoorden worden gebruikt voor het makkelijk zoeken en filteren van documenten. Je kunt meerdere trefwoorden aan een document toevoegen.",
+    "tagsPlaceholder": "Kies trefwoorden",
     "format": "Bestandsformaat",
     "trefwoorden": "Trefwoorden",
     "filename": "Bestandsnaam (optioneel)",
@@ -190,7 +190,7 @@
     "filenamePlaceholder": "Bestandsnaam toevoegen",
     "confidentialityLevel": "Vertrouwelijkheidsaanduiding (optioneel)",
     "confidentialityLevelTooltip": "Aanduiding van de mate waarin het document voor de openbaarheid bestemd is",
-    "confidentialityPlaceholder": "Vertrouwelijkheidaanduiding kiezen",
+    "confidentialityPlaceholder": "Vertrouwelijkheidsaanduiding kiezen",
     "inputTitle": "Titel",
     "inputTitleTooltip": "De naam waaronder het document formeel bekend is",
     "inputTitlePlaceholder": "Titel toevoegen",
@@ -304,8 +304,8 @@
     "addDashboard": "Nieuw dashboard toevoegen",
     "addModal": {
       "descriptionPlaceholder": "Vul hier een omschrijving in",
-      "descriptionHelperText": "*Beschrijving is alleen zichtbaar op de dashboardconfiguratiepagina",
-      "name": "Dashboardnaam",
+      "descriptionHelperText": "*Beschrijving is alleen zichtbaar op de dashboard-configuratiepagina",
+      "name": "Dashboard-naam",
       "namePlaceholder": "Vul hier de naam in"
     },
     "assignedTo": "Toegewezen aan",
@@ -313,14 +313,15 @@
     "confirm": "Bevestigen",
     "create": "Creëren",
     "delete": "Verwijderen",
-    "deleteModalContent": "Weet u zeker dat u dit dashboard wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+    "deleteModalContent": "Weet u zeker dat u dit dashboard wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
     "description": "Beschrijving",
-    "key": "Sleutel",
+    "key": "Key",
     "name": "Naam",
     "noResults": {
       "description": "Klik op <strong>Nieuw dashboard toevoegen</strong> om een dashboard te maken",
       "title": "Er zijn geen dashboards"
     },
+    "title": "Alle dashboards",
     "widgets": {
       "complete": "Voltooien",
       "editDashboard": "Dashboard bewerken",
@@ -332,24 +333,24 @@
       "save": "Opslaan",
       "cancel": "Annuleren",
       "delete": "Verwijderen",
-      "deleteDescription": "Weet u zeker dat u deze widget wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
-      "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Dashboard-sleutel</b> {{key}}",
+      "deleteDescription": "Weet u zeker dat u deze widget wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Dashboard-key</b> {{key}}",
       "form": {
-        "title": "Widgettitel (vereist)",
-        "titleHelperText": "De naam van de widgetconfiguratie",
-        "key": "Widgetsleutel (vereist)",
-        "keyHelperText": "Wijs een unieke sleutel toe aan deze widget",
-        "keyTitle": "Sleutel kopiëren",
-        "keyCopied": "Sleutel gekopieerd naar klembord",
+        "title": "Widget-titel (vereist)",
+        "titleHelperText": "De naam van de widget-configuratie",
+        "key": "Widget-key (vereist)",
+        "keyHelperText": "Wijs een unieke key toe aan deze widget",
+        "keyTitle": "Key kopiëren",
+        "keyCopied": "Key gekopieerd naar klembord",
         "keyCopiedTitle": "Geslaagd",
         "dataSource": "Databron (vereist)",
         "dataSourceHelperText": "Selecteer de bron van de data die u in de widget wilt weergeven",
         "chartType": "Grafiektype (vereist)",
         "dataSourceField": "Databronveld (vereist)",
-        "dashboardTitle": "Dashboardnaam (vereist)",
+        "dashboardTitle": "Dashboard-naam (vereist)",
         "dashboardDescription": "Beschrijving (vereist)",
         "dashboardDescriptionHelperText": "*Beschrijving is alleen zichtbaar op de configuratiepagina van het dashboard",
-        "roles": "Zichtbaarheid",
+        "roles": "Stel zichtbaarheid in",
         "displayType": "Weergavetype",
         "displayTypeHelperText": "Selecteer de manier waarop de gegevens van uw widget moeten worden weergegeven",
         "url": "URL pad",
@@ -359,8 +360,7 @@
         "description": "Klik op <strong>Nieuwe widget toevoegen</strong> om te beginnen met het ontwerpen van uw dashboard. <br/> Sleep uw widgets naar de gewenste positie.",
         "title": "Geen widgets toegevoegd"
       }
-    },
-    "title": "Alle dashboards"
+    }
   },
   "account": {
     "title": "Account",
@@ -372,7 +372,7 @@
       "help": "Help",
       "feedback": "Feedback",
       "resetPassword": "Wachtwoord resetten",
-      "signOut": "Afmelden",
+      "signOut": "Uitloggen",
       "plantATree": "Plant een boom"
     },
     "plantATreeMailBody": "subject=Plant een boom voor Valtimo&body=Hallo Valtimo gebruiker,%0D%0DMet het versturen van deze e-mail gaan we gelijk aan de slag om een boom te planten. Hiermee%0Dcompenseren dus voor een deel de CO2 uitstoot van je Valtimo gebruik.%0D%0DMet Groene Groet,%0D%0DHet Valtimo team%0D%0D*Deze bomen plant actie kan 1 keer ingezet worden door elke geregistreerde Valtimo gebruiker.%0D%0D** Ritense plant ook jaarlijks ook bomen voor alle Valtimo installaties die in gebruik zijn."
@@ -385,7 +385,7 @@
     },
     "notification": {
       "title": "Notificaties",
-      "frequency": {"title": "Notificaties frequentie"},
+      "frequency": {"title": "Frequentie van notificaties"},
       "taskNotifications": "Taakmeldingen",
       "taskNotificationsIntro": "Ontvang een e-mail wanneer een taak aan jou is toegewezen",
       "emailNotifications": "Dagelijks taakoverzicht",
@@ -426,7 +426,7 @@
   "cta": {"close": "Sluiten", "moreDetails": "Meer details"},
   "formManagement": {
     "noFormDefinitionFoundAdmin": "Er is geen formulier gekoppeld aan de start event/user task. Om een formulier te koppelen ga naar Admin menu > Proceskoppelingen",
-    "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een admin gebruiker om hulp.",
+    "noFormDefinitionFoundUser": "Er is geen formulier gekoppeld aan de start event/user task. Vraag een beheerder om hulp.",
     "gotoProcessLinksButton": "Configureer nu",
     "loading": "Formulier wordt geladen...",
     "name": "Naam",
@@ -440,11 +440,11 @@
     "duplicate": "Dupliceren",
     "readOnly": "Alleen-lezen",
     "add": "Formulier toevoegen",
-    "tabs": {"formBuilder": "Formulier editor", "jsonEditor": "JSON editor", "output": "Uitvoer"},
+    "tabs": {"formBuilder": "Formulier-bewerker", "jsonEditor": "JSON-bewerker", "output": "Resultaat"},
     "intermediateSave": {
       "save": "Voortgang opslaan",
       "clear": "Laatste wijzigingen ongedaan maken",
-      "clearConfirm": "Weet u zeker dat u uw invoervelden wilt wissen? Deze actie kan niet ongedaan worden gemaakt.",
+      "clearConfirm": "Weet u zeker dat u uw invoervelden wilt leegmaken? Deze actie kan niet ongedaan worden gemaakt.",
       "success": "Voortgang succesvol opgeslagen",
       "error": "Voortgang kon niet worden opgeslagen",
       "lastSavedBy": "Laatst opgeslagen door",
@@ -454,22 +454,22 @@
       "created": "Nieuw formulier aangemaakt",
       "deleted": "Formulier verwijderd",
       "deletionError": "Fout bij het verwijderen van het formulier",
-      "deployed": "Formulier gedeployed",
-      "deploymentError": "Fout bij het deployen van het formulier",
+      "deployed": "Formulier gepubliceerd",
+      "deploymentError": "Fout bij het publiceren van het formulier",
       "duplicated": "Formulier gedupliceerd"
     },
     "upload": {
       "modalTitle": "Formulierdefinitie uploaden",
       "title": "Bestand uploaden",
-      "description": "Alleen formulierdefinitiebestanden worden ondersteund.",
+      "description": "Alleen formulier-definitiebestanden worden ondersteund.",
       "buttonText": "Bestand selecteren",
       "success": "Upload succesvol",
       "failure": "Upload mislukt"
     },
     "noResults": {
       "title": "Geen formulierdefinities gevonden",
-      "caseDescription": "Klik hier om een formulierdefinitie aan te maken dat aan deze case is gekoppeld",
-      "independentDescription": "Klik hier om een zelfstandig formulierdefinitie aan te maken"
+      "caseDescription": "Klik hier om een formulierdefinitie aan te maken die aan dit dossier is gekoppeld.",
+      "independentDescription": "Klik hier om een losstaande formulierdefinitie aan te maken."
     }
   },
   "caseManagement": {
@@ -487,17 +487,17 @@
     "seeAllVersions": "Bekijk alle versies",
     "selectProcessDef": "Procesdefinitie kiezen",
     "setGlobalActiveVersion": "Instellen als actieve versie",
-    "setGlobalActiveVersionErrorTitle": "Fout",
+    "setGlobalActiveVersionErrorTitle": "Oeps",
     "setGlobalActiveVersionErrorMessage": "Er is iets misgegaan",
     "setGlobalActiveVersionSuccessTitle": "Globaal actieve versie bijgewerkt",
     "globallyActive": "Globaal actief",
     "unlinkProcess": "Ontkoppelen",
-    "listColumns": {"name": "Naam", "key": "Sleutel", "version": "Versie"},
+    "listColumns": {"name": "Naam", "key": "Key", "version": "Versie"},
     "globalActiveVersionModal": {
       "title": "Instellen als globaal actieve versie",
       "description": "Stel de momenteel geselecteerde versie in als de globaal actieve versie. Houd er rekening mee dat dingen kapot kunnen gaan of niet werken zoals bedoeld.",
       "warningTitle": "Waarschuwing: Oudere versie",
-      "warningMessage": "U probeert een caseversie de globaal actieve versie te maken, maar deze is ouder dan de versie die momenteel actief is.",
+      "warningMessage": "U probeert een dossierversie de globaal actieve versie te maken, maar deze is ouder dan de versie die momenteel actief is.",
       "continue": "Doorgaan",
       "cancel": "Annuleren"
     },
@@ -512,16 +512,16 @@
       "closeButton": "Sluiten",
       "columns": {"version": "Versie", "release": "Uitgebracht op", "description": "Beschrijving"},
       "noResults": {
-        "title": "Er zijn geen caseversies",
-        "description": "Er is geen versie geconfigureerd voor deze case"
+        "title": "Er zijn geen dossierversies",
+        "description": "Er is geen versie geconfigureerd voor dit dossier"
       }
     },
     "deployment": {
-      "title": "Implementatie",
+      "title": "Versiebeheer",
       "buttons": {
         "back": "Terug",
         "delete": "Concept verwijderen",
-        "finalize": "Concept finaliseren",
+        "finalize": "Concept definitief maken",
         "createDraft": "Conceptversie maken"
       },
       "deleteDraftConfirmationModal": {
@@ -536,9 +536,9 @@
       "finalizeDraftConfirmationModal": {
         "loadingText": "Conceptversie afronden...",
         "title": "Concept finaliseren",
-        "description": "U staat op het punt {{caseDefinitionKey}} {{caseDefinitionVersionTag}} te finaliseren. Na het finaliseren kunt u geen wijzigingen meer aanbrengen. Weet u het zeker?",
+        "description": "U staat op het punt {{caseDefinitionKey}} {{caseDefinitionVersionTag}} te definitief te maken. Na het definitief maken kunt u geen wijzigingen meer aanbrengen. Weet u het zeker?",
         "confirm": "Finaliseren",
-        "successMessage": "Concept gefinaliseerd",
+        "successMessage": "Concept definitief gemaakt",
         "errorTitle": "Fout",
         "errorMessage": "Er is iets misgegaan"
       },
@@ -558,7 +558,7 @@
         "fields": {"caseDefinitionVersionTag": "Versie", "basedOnVersionTag": "Gebaseerd op"},
         "warning": {
           "title": "Waarschuwing",
-          "description": "Er is een ander concept gebaseerd op {{ basedOnVersionTag }} concept, genaamd {{ conflictingVersions }}"
+          "description": "Er is een ander concept gebaseerd op {{ basedOnVersionTag }} concept, met de versie {{ conflictingVersions }}"
         }
       },
       "releaseInformation": {
@@ -571,14 +571,14 @@
       }
     },
     "processLinkNotification": {
-      "linkSuccess": "Succesvol gekoppeld proces",
+      "linkSuccess": "Proces succesvol gekoppeld",
       "linkFailure": "Kan het proces niet koppelen",
       "unlinkSuccess": "Het proces is ontkoppeld",
       "unlinkFailure": "Kan het proces niet ontkoppelen"
     },
     "noResults": {
-      "title": "Er zijn geen case-definities",
-      "description": "Voeg een case-definitie toe om te beginnen"
+      "title": "Er zijn geen dossier-definities",
+      "description": "Voeg een dossier-definitie toe om te beginnen"
     },
     "linkProcess": {
       "title": "Uploadproces koppelen aan dossier",
@@ -620,24 +620,24 @@
       "generalTab": {
         "readOnlyNotification": {
           "title": "Alleen-lezen",
-          "message": "Deze case kan niet worden bijgewerkt omdat deze definitief is."
+          "message": "Het dossier kan niet worden bijgewerkt omdat deze definitief is."
         },
         "linkUploadProcess": {
-          "title": "Uploadproces koppelen aan case",
-          "label": "Kies welk proces bestanduploads moet verwerken",
+          "title": "Uploadproces koppelen aan dossierdefinitie",
+          "label": "Kies welk proces het uploaden van bestanden moet afhandelen.",
           "placeholder": "Documenten API document uploaden"
         },
         "caseHandler": {
-          "title": "Casehandler",
-          "canHaveHandler": "Casetype kan een handler hebben",
-          "assignUser": "Gebruikerstaken automatisch toewijzen aan casehandler",
-          "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de casehandler kan alleen worden ingeschakeld als de case zelf een handler kan hebben.",
+          "title": "dossierbehandelaar",
+          "canHaveHandler": "Dossiertype kan een behandelaar hebben",
+          "assignUser": "Gebruikerstaken automatisch toewijzen aan dossierbehandelaar",
+          "disabledAutoAssignTooltip": "Het automatisch toewijzen van een gebruikerstaak aan de dossierbehandelaar kan alleen worden ingeschakeld als de dossier zelf een behandelaar kan hebben.",
           "toggle": {"onText": "Ja", "offText": "Nee"}
         }
       },
-      "caseListTab": {"title": "Caselijst", "searchFields": "Zoekvelden", "columns": "Kolommen"},
+      "caseListTab": {"title": "Dossierlijst", "searchFields": "Zoekvelden", "columns": "Kolommen"},
       "caseDetailsTab": {
-        "title": "Casedetails",
+        "title": "Dossierdetails",
         "tabs": "Tabbladen",
         "tags": "Tags",
         "statuses": "Statussen"
@@ -646,26 +646,26 @@
     "tabManagement": {
       "columns": {
         "content": "Inhoud",
-        "key": "Tab sleutel",
+        "key": "Tab-key",
         "name": "Tab naam",
         "type": "Type",
         "showTasks": "Takenlijst zichtbaar"
       },
       "addModal": {
         "addTab": "Tabblad toevoegen",
-        "customComponent": "Aangepaste component",
-        "customComponentDisabled": "Er zijn geen aangepaste componenten beschikbaar, of ze zijn allemaal al toegevoegd.",
+        "customComponent": "Maatwerkcomponent",
+        "customComponentDisabled": "Er zijn geen maatwerkcomponenten beschikbaar, of ze zijn allemaal al toegevoegd.",
         "description": "Selecteer een van de opties om een nieuw tabblad toe te voegen aan uw dossierdefinitie",
         "formIOComponent": "FormIO component",
         "formIOComponentDisabled": "Geen Form.io-formulierdefinities beschikbaar",
         "standardTab": "Standaardtabblad",
         "standardTabDisabled": "Alle standaardtabbladen zijn al toegevoegd aan je configuratie",
         "tabContentLabel": "Kies inhoud",
-        "tabKeyLabel": "Sleutel",
+        "tabKeyLabel": "Key",
         "tabNameLabel": "Tabblad naam (optioneel)",
         "title": "Nieuw tabblad toevoegen {{documentDefinitionName}}",
-        "uniqueKeyError": "De sleutel voor deze tab moet uniek zijn.",
-        "invalidKeyError": "De sleutel voor deze tab mag alleen letters, nummers en dashes bevatten.",
+        "uniqueKeyError": "De key voor deze tab moet uniek zijn.",
+        "invalidKeyError": "De key voor deze tab mag alleen letters, nummers en dashes bevatten.",
         "widgetsComponent": "Widgets component",
         "visibleTitle": "Takenlijst zichtbaar op tabblad",
         "visible": "Zichtbaar",
@@ -699,7 +699,7 @@
       },
       "info": {
         "title": "Let op",
-        "message": "Zorg er vóór het importeren voor dat de plug-inconfiguraties waarnaar wordt verwezen in proceslinks aanwezig zijn."
+        "message": "Controleer of de plugin-configuraties die gebruikt worden in de proceskoppelingen aanwezig zijn."
       },
       "upload": {
         "title": "Upload bestand",
@@ -707,10 +707,10 @@
         "buttonText": "Selecteer bestand"
       },
       "progressBar": {
-        "active": "Dit kan een tijdje duren",
-        "error": "Kan case-definitie niet importeren. Er is niets geïmporteerd vanwege een fout aan onze kant. Probeer het later opnieuw. Neem contact op met de ondersteuning als het probleem zich blijft voordoen.",
-        "finished": "Case-definitie succesvol geïmporteerd",
-        "label": "Case-definitie importeren"
+        "active": "Dit kan even duren",
+        "error": "Kan dossier-definitie niet importeren. Er is niets geïmporteerd vanwege een fout aan onze kant. Probeer het later opnieuw. Neem contact op met de helpdesk als het probleem zich blijft voordoen.",
+        "finished": "Dossier-definitie succesvol geïmporteerd",
+        "label": "Dossier-definitie importeren"
       },
       "invalidJsonError": {
         "text": "Zorg ervoor dat deze een geldige JSON-waarde bevat.",
@@ -734,27 +734,27 @@
     "createDefinition": {
       "idError": "Deze naam voor de dossierdefinitie is al in gebruik. Kies een unieke naam.",
       "versionError": "Deze versie is geen geldige Semver-versie.",
-      "versionExistsError": "Deze versie bestaat al voor deze dossier.",
+      "versionExistsError": "Voor deze dossierdefinitie bestaat deze versie al.",
       "modalTitle": "Dossierdefinitie aanmaken",
-      "key": "Sleutel voor dossierdefinitie",
-      "keyPlaceholder": "Sleutel wordt hier automatisch gegenereerd",
-      "keyTooltip": "De sleutel wordt gebruikt voor systeemnamen zoals $id. Geen spaties of speciale tekens toegestaan behalve “-”.",
+      "key": "Key voor dossierdefinitie",
+      "keyPlaceholder": "Key wordt hier automatisch gegenereerd",
+      "keyTooltip": "De key wordt gebruikt voor systeemnamen zoals $id. Geen spaties of speciale tekens toegestaan behalve “-”.",
       "name": "Naam van de dossierdefinitie",
       "namePlaceholder": "Voer hier een naam in",
-      "nameTooltip": "De naam wordt zichtbaar in de gebruikersinterface als aanduiding van de dossierdefinitie.",
+      "nameTooltip": "De naam die de gebruiker te zien krijgt.",
       "version": "Versie van de dossierdefinitie",
       "versionPlaceholder": "Voer hier een versie in",
       "versionTooltip": "De versie wordt zichtbaar in de gebruikersinterface als aanduiding van deze dossierdefinitie.",
       "description": "Beschrijving van de dossierdefinitie",
       "descriptionPlaceholder": "Voer hier een beschrijving in",
-      "descriptionTooltip": "De beschrijving wordt weergegeven in de gebruikersinterface als extra context voor de dossierdefinitie."
+      "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie."
     },
     "documentDefinition": {
       "cancelModal": {
         "title": "De editor verlaten",
-        "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut de dossierdefinitie kan beschadigen."
+        "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan."
       },
-      "saveModalContent": "Weet je zeker dat je de dossierdefinitie wilt opslaan? Het verwijderen of wijzigen van een attribuut kan de dossierdefinitie verbreken."
+      "saveModalContent": "Weet je zeker dat je de dossierdefinitie wilt opslaan?"
     },
     "statuses": {
       "withoutStatus": "Toon dossiers zonder status",
@@ -764,18 +764,18 @@
       "visibleTitle": "Standaardzichtbaarheid in dossierlijst",
       "visible": "Zichtbaar",
       "invisible": "Niet zichtbaar",
-      "deleteText": "Weet je zeker dat je deze status wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
-      "keyAutoGenerated": "De sleutel wordt automatisch gegenereerd",
+      "deleteText": "Weet je zeker dat je deze status wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "keyAutoGenerated": "De key wordt automatisch gegenereerd",
       "colorPlaceholder": "Kies een kleur",
       "columns": {
         "title": "Statusnaam",
-        "key": "Statussleutel",
+        "key": "Status-key",
         "visible": "Standaard zichtbaar",
         "color": "Kleur"
       },
       "noResults": {
         "title": "Er zijn geen statussen geconfigureerd",
-        "description": "Klik hier om een status voor dit casetype te configureren"
+        "description": "Klik hier om een status voor dit dossiertype te configureren"
       }
     },
     "caseTags": {
@@ -784,28 +784,28 @@
       "edit": "Tag bewerken",
       "visible": "Zichtbaar",
       "invisible": "Niet zichtbaar",
-      "deleteText": "Weet je zeker dat je deze tag wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
-      "keyAutoGenerated": "De sleutel wordt automatisch gegenereerd",
+      "deleteText": "Weet je zeker dat je deze tag wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "keyAutoGenerated": "De key wordt automatisch gegenereerd",
       "colorPlaceholder": "Kies een kleur",
       "columns": {
         "title": "Naam",
-        "key": "Sleutel",
+        "key": "Key",
         "visible": "Standaard zichtbaar",
         "color": "Kleur"
       },
       "noResults": {
         "title": "Er zijn geen tags geconfigureerd",
-        "description": "Klik hier om een tag voor dit casetype te configureren"
+        "description": "Klik hier om een tag voor dit dossiertype te configureren"
       }
     },
     "draftWarning": {
-      "title": "Niet gekoppeld aan een versie van de zaak",
-      "description": "Bij het bijwerken van {name} verandert de {name} voor alle versies van deze zaak. Niet alleen voor de geselecteerde versie!"
+      "title": "Niet gekoppeld aan een versie van het dossiertype",
+      "description": "Bij het bijwerken van {name} verandert de {name} voor alle versies van dit dossiertype. Niet alleen voor de geselecteerde versie!"
     }
   },
   "widgetTabManagement": {
     "tab": {
-      "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Sleutel</b> {{key}}",
+      "metadata": "<b>Aangemaakt door</b> {{createdBy}} | <b>Aangemaakt op</b> {{createdOn}} | <b>Key</b> {{key}}",
       "editButton": "Bewerk",
       "editWidgetTab": "Bewerk widget tab",
       "cancel": "Annuleren",
@@ -824,18 +824,18 @@
       "create": "Widget aanmaken",
       "edit": "Widget bewerken",
       "steps": {
-        "content": "Kies widgetinhoud",
-        "style": "Kies widgetstijl",
-        "type": "Kies widgettype",
-        "width": "Kies widgetbreedte"
+        "content": "Kies widget-inhoud",
+        "style": "Kies widget-stijl",
+        "type": "Kies widget-type",
+        "width": "Kies widget-breedte"
       }
     },
     "notification": {
-      "success": "Widgetconfiguratie succesvol bijgewerkt",
-      "error": "Widgetconfiguratie kan niet worden bijgewerkt"
+      "success": "Widget-configuratie succesvol bijgewerkt",
+      "error": "Widget-configuratie kan niet worden bijgewerkt"
     },
     "types": {
-      "description": "Kies het widgettype dat je wilt configureren.",
+      "description": "Kies het widget-type dat je wilt configureren.",
       "fields": {"title": "Velden", "description": "Tekstgegevens met inhoud en een label"},
       "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},
       "formio": {"title": "Form.io", "description": "Ingevuld Form.io-formulier"},
@@ -864,7 +864,7 @@
       "widgetTitle": "Widget titel",
       "widgetTitlePlaceholder": "Kies een korte naam",
       "widgetTitleTooltip": "Titel die bovenaan de widget wordt weergegeven",
-      "hideWhenEmpty": "Verbergen als leeg",
+      "hideWhenEmpty": "Verbergen indien leeg",
       "column": "Kolom {{number}}",
       "fields": {
         "add": "Veld toevoegen",
@@ -894,9 +894,9 @@
         "typePlaceholder": "Kies type",
         "value": "Waarde",
         "valuePlaceholder": "Pad naar waarde",
-        "ellipsisCharacterLimit": "Tekenlimiet met beletseltekens",
-        "ellipsisCharacterLimitTooltip": "Voer het aantal tekens in dat wordt weergegeven voordat er een weglatingsteken wordt weergegeven",
-        "ellipsisCharacterLimitPlaceholder": "Kies een aantal karakters (optioneel)"
+        "ellipsisCharacterLimit": "Tekenlimiet met beletselteken",
+        "ellipsisCharacterLimitTooltip": "Voer het aantal tekens in dat wordt weergegeven voordat er een beletselteken wordt weergegeven",
+        "ellipsisCharacterLimitPlaceholder": "Kies een aantal tekens (optioneel)"
       },
       "displayType": {
         "text": "Tekst",
@@ -925,7 +925,7 @@
         "options": "Opties",
         "firstColumnAsTitle": "Eerste kolom is de titel van de rij",
         "titleTooltip": "Title voor de kolom",
-        "valueTooltip": "Naam van de eigenschap waartoe je toegang wilt krijgen binnen het eerder ingevulde tabelgegevenspad"
+        "valueTooltip": "Naam van de eigenschap waartoe je toegang wilt krijgen binnen het eerder ingevulde tabelgegevens-pad"
       },
       "collection": {
         "defaultPageSize": "Kaarten per pagina",
@@ -939,12 +939,12 @@
         "fieldWidth": "Veldbreedte",
         "fieldWidthPlaceholder": "Kies veldbreedte",
         "titleTooltip": "Titel van de eigenschap",
-        "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevenspad"
+        "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevens-pad"
       }
     },
     "cancelModal": {
       "title": "De editor verlaten",
-      "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut de widget configuratie kan beschadigen."
+      "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan."
     },
     "processes": {
       "buttonTextLabel": "Nieuwe procesknoptekst (Optioneel)",
@@ -952,7 +952,7 @@
       "selectorLabel": "Nieuwe procesknop (Optioneel)",
       "selectorPlaceholder": "Kies een proces"
     },
-    "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan? Het verwijderen of wijzigen van een attribuut kan de widget configuratie verbreken."
+    "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
   },
   "zgw": {
     "columns": {
@@ -980,7 +980,7 @@
       "titel": "Titel",
       "trefwoorden": "Trefwoorden",
       "versie": "Versie",
-      "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding"
+      "vertrouwelijkheidaanduiding": "Vertrouwelijkheidsaanduiding"
     },
     "documents": {
       "noResults": {
@@ -989,7 +989,7 @@
       },
       "noColumns": {
         "description": "Klik hier om een kolom voor dit document te configureren",
-        "title": "Er zijn geen kolommen geconfigureerd voor deze zaak."
+        "title": "Er zijn geen kolommen geconfigureerd voor dit document."
       }
     },
     "tags": {
@@ -1016,11 +1016,11 @@
       "uploadField": "Uploadveld",
       "add": "Uploadveld toevoegen",
       "deleteText": "Weet je zeker dat je dit uploadveld wilt verwijderen?",
-      "deleteMultipleText": "Weet je zeker dat je deze uploadvelden wilt verwijderen?",
+      "deleteMultipleText": "Weet je zeker dat je deze upload-velden wilt verwijderen?",
       "addModal": {"header": "Uploadveld toevoegen"},
       "editModal": {"header": "Uploadveld bewerken"},
       "list": {
-        "noResultsTitle": "Geen uploadvelden",
+        "noResultsTitle": "Geen upload-velden",
         "noResultsDescription": "Voeg een uploadveld toe om te beginnen"
       },
       "search": {
@@ -1039,7 +1039,7 @@
         "auteur": "Auteur",
         "beschrijving": "Beschrijving",
         "taal": "Taal",
-        "vertrouwelijkheidaanduiding": "Vertrouwelijkheidaanduiding",
+        "vertrouwelijkheidaanduiding": "Vertrouwelijkheidsaanduiding",
         "creatiedatum": "Creatiedatum",
         "informatieobjecttype": "Informatieobjecttype",
         "status": "Status",
@@ -1052,7 +1052,7 @@
     "tabs": {
       "documentColumns": "Document kolommen",
       "documentTags": "Document trefwoorden",
-      "documentUploadFields": "Document uploadvelden"
+      "documentUploadFields": "Document upload-velden"
     }
   },
   "task-list": {
@@ -1109,8 +1109,8 @@
   "Edit decision table": "Beslistabel bewerken",
   "Create decision table": "Beslistabel aanmaken",
   "Overview of all Decision tables": "Overzicht van alle Beslistabellen",
-  "Create new Milestone": "Maak nieuw Milestone",
-  "Create new Milestone Set": "Maak nieuw Milestone Set",
+  "Create new Milestone": "Maak een nieuwe mijlpaal",
+  "Create new Milestone Set": "Maak een nieuwe mijlpaal Set",
   "Forms": "Formulieren",
   "Overview of all Forms": "Overzicht van alle Formulieren",
   "Create Form": "Formulier creëren",
@@ -1119,7 +1119,7 @@
   "Translations": "Vertalingen",
   "uploadFormDefinition": "Upload formulier-definitie",
   "Process migration": "Procesmigratie",
-  "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestartte processen krijgen de nieuwe candidate group)",
+  "Process migration warning": "<b>Let op:</b> Bij het migreren van een proces worden de candidate groups van de lopende proces instanties niet meegenomen. Dit kan gedaan worden in de database indien nodig. (Voorbeeld: wanneer een specifieke gebruikerstaak op de ROLE_USER stond en de candidate group voor deze taak is veranderd in het proces naar ROLE_ADMIN blijft de taak beschikbaar voor ROLE_USER. Enkel nieuw gestarte processen krijgen de nieuwe candidate group)",
   "Case": "Dossier",
   "Cases": "Dossiers",
   "Deployment": "Implementatie",
@@ -1141,7 +1141,7 @@
   "Download": "Downloaden",
   "Upload": "Uploaden",
   "Import": "Import",
-  "Select process definition for document definition": "Selecteer een processdefinitie voor de documentdefinitie",
+  "Select process definition for document definition": "Selecteer een process-definitie voor de documentdefinitie",
   "Select options for the selected process": "Kies opties voor het geselecteerde proces",
   "Save": "Opslaan",
   "Customers": "Klanten",
@@ -1151,7 +1151,7 @@
     "clear": "Wissen",
     "deploy": "Opslaan",
     "name": "Naam",
-    "key": "Sleutel",
+    "key": "Key",
     "readOnly": "Alleen-lezen",
     "createProcess": "Proces creëren",
     "systemProcess": "Systeemproces",
@@ -1160,15 +1160,15 @@
     "version": "Versie: ",
     "noResults": {
       "title": "Geen processen gevonden",
-      "caseDescription": "Klik hier om een proces aan te maken dat aan deze case is gekoppeld",
-      "independentDescription": "Klik hier om een zelfstandig proces aan te maken"
+      "caseDescription": "Klik hier om een proces aan te maken dat aan deze dossierdefinitie is gekoppeld",
+      "independentDescription": "Klik hier om een op zichzelf staand proces aan te maken"
     },
     "deleteModal": {
       "title": "Proces verwijderen",
       "content": "Weet u zeker dat u dit proces wilt verwijderen?"
     },
-    "successNotification": "Proces succesvol gedeployed",
-    "errorNotification": "Er ging iets mis bij het deployen van het proces",
+    "successNotification": "Proces succesvol gepubliceerd",
+    "errorNotification": "Er ging iets mis bij het publiceren van het proces",
     "deleteNotification": "Proces succesvol verwijderd",
     "upload": {
       "modalTitle": "Upload procesdefinitie",
@@ -1183,7 +1183,7 @@
   },
   "processCaseConnection": {
     "noProcessesTitle": "Geen processen",
-    "noProcessesDescription": "Er zijn nog geen processen gekoppeld aan deze Case definitie",
+    "noProcessesDescription": "Er zijn nog geen processen gekoppeld aan deze dossierdefinitie",
     "processCreatesCase": "Proces maakt nieuw dossier aan",
     "processCreatesCaseTooltip": "Wanneer deze optie is geselecteerd wordt bij het starten van dit proces een nieuw dossier aangemaakt. Hiervoor moet er een startformulier gekoppeld zijn aan de eerste stap in het proces.",
     "startableWithinCase": "Kan gestart worden binnen bestaand dossier",
@@ -1197,7 +1197,7 @@
       "noVersionWarningTitle": "Geen Documenten API-plugin versie gedetecteerd",
       "noVersionWarningMessage": "Configureer de Documenten API-plugin versie en configureer het uploadproces",
       "multipleVersionsWarningTitle": "Meerdere Documenten API-plugins gedetecteerd",
-      "multipleVersionsWarningMessage": "Het uploadproces is gekoppelt aan meerdere Documenten API's met verschillende versies"
+      "multipleVersionsWarningMessage": "Het uploadproces is gekoppeld aan meerdere Documenten API's met verschillende versies"
     },
     "success": {
       "serviceTaskLinked": "Servicetaak gekoppeld",
@@ -1225,14 +1225,14 @@
     "selectInfoObjectType": "Kies informatieobject-type"
   },
   "zaakdetails": {
-    "title": "Zaakdetail-synchronisatie",
+    "title": "Zaakdetails-synchronisatie",
     "enabled": "Ingeschakeld",
     "yes": "Ja",
     "no": "Nee",
     "objectManagementConfigurationTitle": "Object management-configuratie",
-    "submitButton": "Configureer zaakdetail-synchronisatie",
+    "submitButton": "Configureer zaakdetails-synchronisatie",
     "editModal": {
-      "title": "Voeg zaakdetail-synchronisatie toe",
+      "title": "Voeg zaakdetails-synchronisatie toe",
       "objectManagementConfiguration": "Object management-configuratie",
       "objectManagementConfigurationPlaceholder": "Selecteer een object management-configuratie",
       "enabled": "Ingeschakeld"
@@ -1329,7 +1329,7 @@
       "noDefault": "Geen standaardsortering"
     },
     "editor": {"visualEditor": "Visuele editor", "jsonEditor": "JSON editor"},
-    "key": "Sleutel",
+    "key": "Key",
     "value": "Waarde",
     "title": "Titel",
     "yes": "Ja",
@@ -1428,7 +1428,7 @@
     "step1": "Kies je configuratie",
     "step2": "Kies je actie",
     "step3": "Actie configureren",
-    "complete": "Pluginactie koppelen"
+    "complete": "Plugin-actie koppelen"
   },
   "plugin": {
     "noConfigurationComponent": "Er is geen configuratie-component beschikbaar.",
@@ -1461,7 +1461,7 @@
     "edit": "Proceskoppeling wijzigen",
     "saveChanges": "Wijzigingen opslaan",
     "unlink": "Ontkoppelen",
-    "noPluginFunctions": "Deze plugin ondersteunt geen pluginacties."
+    "noPluginFunctions": "Deze plugin ondersteunt geen plugin-acties."
   },
   "keycloak": {
     "expiryPromptTitle": "De sessie verloopt bijna",
@@ -1501,7 +1501,7 @@
   },
   "searchFieldsOverview": {
     "title": "Titel",
-    "key": "Sleutel",
+    "key": "Key",
     "add": "Zoekveld toevoegen",
     "edit": "Zoekveld bewerken",
     "path": "Pad",
@@ -1537,8 +1537,8 @@
     "noSearchfieldsDescription": "Er zijn geen zoekvelden geconfigureerd voor dit dossiertype."
   },
   "searchFieldsOverviewTooltips": {
-    "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de sleutelvertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke sleutelwaarde weergegeven).",
-    "key": "Een unieke sleutel waarmee het zoekveld wordt geïdentificeerd. Als de sleutel niet uniek is, kan het zoekveld niet worden opgeslagen.",
+    "title": "De titel is een optioneel veld dat wordt weergegeven als een label voor het huidige zoekveld. Als de titel niet is ingesteld, is de standaardwaarde de key-vertaling van het zoekveld (als er geen vertaling beschikbaar is, wordt de oorspronkelijke key-waarde weergegeven).",
+    "key": "Een unieke key waarmee het zoekveld wordt geïdentificeerd. Als de key niet uniek is, kan het zoekveld niet worden opgeslagen.",
     "path": "Een pad dat leidt naar de eigenschap waarop u wilt zoeken. Volg dit voorbeeld om te zoeken in het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden om te zoeken in de documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
     "objectsApiPath": "Een pad dat leidt naar het object waarop u wilt zoeken. Voor het zoeken in de objecten API JSON volgt u dit voorbeeld: 'object:/customer/firstName'.",
     "dataType": "Het datatype bepaalt welke invoer aan de gebruiker wordt getoond. Voor het datatype 'Datum' wordt bijvoorbeeld een datumkiezer getoond.",
@@ -1554,8 +1554,8 @@
     "title": "Titel",
     "titleTitle": "Titel (optioneel)",
     "titleTooltip": "Als dit veld is ingevuld, wordt deze titel weergegeven als de kolomkop, met prioriteit boven eventueel beschikbare vertalingen.",
-    "key": "Sleutel",
-    "keyTooltip": "Een unieke sleutel waarmee de kolom wordt geïdentificeerd. Als de sleutel niet uniek is, kan de kolom niet worden opgeslagen.",
+    "key": "Key",
+    "keyTooltip": "Een unieke key waarmee de kolom wordt geïdentificeerd. Als de key niet uniek is, kan de kolom niet worden opgeslagen.",
     "path": "Pad",
     "pathTooltip": "Een pad dat leidt naar de eigenschap die u wilt weergeven. Volg dit voorbeeld voor het JSON-schema van het document: 'doc:customer.firstName'. Volg deze voorbeelden voor documenteigenschappen: 'case:createdBy', of 'case:sequence', of 'case:assigneeFullName'. Let op: wanneer er speciale tekens in een eigenschap zitten, moet de eigenschap binnen aanhalingstekens staan. Bijvoorbeeld: case:\"loan-accepted\".",
     "objectsApiPathTooltip": "Een pad dat leidt naar het object waarop u wilt zoeken. Voor het zoeken in de objecten API JSON volgt u dit voorbeeld: 'object:/customer/firstName'.",
@@ -1571,8 +1571,8 @@
     "sortableNo": "Nee",
     "sortableAsc": "Oplopend",
     "sortableDesc": "Aflopend",
-    "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolomconfiguratie",
-    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolomconfiguratie in de omgevingsconfiguratie. Verwijder deze om kolommen hier te configureren.",
+    "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolom-configuratie",
+    "hasEnvConfigWarning": "Dit dossiertype heeft al een kolom-configuratie in de omgevingsconfiguratie. Verwijder deze om kolommen hier te configureren.",
     "noConfigWarningTitle": "Geen kolommen",
     "noConfigWarning": "Er zijn geen kolommen geconfigureerd voor dit dossiertype.",
     "addButtonText": "Kolom toevoegen",
@@ -1581,10 +1581,10 @@
     "save": "Kolom opslaan",
     "dateFormat": "Datumnotatie (optioneel)",
     "dateFormatTooltip": "Een datumnotatie die ondersteund wordt door Moment.js (https://momentjs.com/docs/).",
-    "uniqueKeyWarning": "De sleutel voor deze kolom moet uniek zijn.",
+    "uniqueKeyWarning": "De key voor deze kolom moet uniek zijn.",
     "enumTitle": "Opsommingswaarden",
     "enumTitleOptional": "Waarden (optioneel)",
-    "enumTooltip": "De sleutels en waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
+    "enumTooltip": "De keys en waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
     "enumTooltipOptional": "De waarden die gebruikt worden om weergavedata om te zetten in de tabel.",
     "downloadButtonText": "Download configuratie",
     "deleteColumn": "Kolom verwijderen",
@@ -1684,7 +1684,7 @@
     "chooseProcessLinkTypeDescription": "Een processtap kan verschillende acties uitvoeren. Kies hieronder aan welk type actie je deze stap wilt koppelen.",
     "chooseFormDescription": "Kies hier het formulier dat je aan de processtap wilt koppelen.",
     "chooseFormFlowDescription": "Kies hier de FormFlow die je aan de processtap wilt koppelen.",
-    "choosePluginConfigurationDescription": "Kies hier de pluginconfiguratie die je aan de processtap wilt koppelen.",
+    "choosePluginConfigurationDescription": "Kies hier de plugin-configuratie die je aan de processtap wilt koppelen.",
     "choosePluginActionDescription": "Kies de actie die je met de plugin wilt uitvoeren.",
     "chooseForm": "Selecteer formulier",
     "cancel": "Annuleren",
@@ -1724,8 +1724,8 @@
       "options": {"modal": "Modaal", "panel": "Panel"}
     },
     "formSize": {
-      "label": "Selecteer modalgrootte",
-      "placeholder": "Selecteer een modalgrootte",
+      "label": "Selecteer modaal-grootte",
+      "placeholder": "Selecteer een modaal-grootte",
       "options": {
         "extraSmall": "Extra klein",
         "small": "Klein",
@@ -1734,7 +1734,7 @@
       }
     },
     "selectFormFlow": "Selecteer je FormFlow",
-    "choosePluginConfiguration": "Kies pluginconfiguratie",
+    "choosePluginConfiguration": "Kies plugin-configuratie",
     "choosePluginAction": "Kies je actie",
     "configurePluginAction": "Configureer je actie",
     "selectURL": "Configureer je URL",
@@ -1743,19 +1743,19 @@
     "uiComponent": "Selecteer UI component"
   },
   "processLinkTypeDisabledTooltip": {
-    "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een pluginconfiguratie aan om deze te kunnen koppelen aan een processtap.",
+    "plugin": "Er zijn geen plugin-configuraties beschikbaar. Maak een plugin-configuratie aan om deze te kunnen koppelen aan een processtap.",
     "form": "Er zijn geen formulieren beschikbaar. Maak een formulier aan om deze te kunnen koppelen aan een processtap.",
     "form-flow": "Er zijn geen FormFlows beschikbaar. Maak een FormFlow aan om deze te kunnen koppelen aan een processtap.",
-    "ui-component": "Er zijn geen custom componenten geregistreerd maak er een aan om deze optie te kunnen gebruiken."
+    "ui-component": "Er zijn geen maatwerkcomponenten geregistreerd maak er een aan om deze optie te kunnen gebruiken."
   },
   "processLinkUrlInvalid": "Ongeldige URL {{ URL }}",
   "accessControl": {
     "roles": {
       "title": "Alle rollen",
-      "key": "Rolsleutel",
+      "key": "Rol-key",
       "add": "Nieuwe rol toevoegen",
-      "name": "Rolnaam",
-      "deleteModalContent": "Weet u zeker dat u deze rollen en alle onderliggende machtigingen wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+      "name": "Rol-naam",
+      "deleteModalContent": "Weet u zeker dat u deze rollen en alle onderliggende machtigingen wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "editMetadata": "Metadata bewerken",
       "editRole": "Rol bewerken",
       "savedSuccessTitle": "Succesvol opgeslagen",
@@ -1778,14 +1778,14 @@
   "caseMigration": {
     "warningBeta": "Dossier migratie is nog in bèta. Het migreren van dossiers kan onverwachte resultaten opleveren. Wees voorzichtig.",
     "caseDefinition": "Dossier definitie",
-    "sourceCaseDefinitionKey": "Bron dossier definitienaam",
-    "sourceCaseDefinitionVersionTag": "Bron dossier definitieversie",
-    "targetCaseDefinitionKey": "Doel dossier definitienaam",
-    "targetCaseDefinitionVersionTag": "Doel dossier definitieversie",
+    "sourceCaseDefinitionKey": "Bron dossierdefinitie-naam",
+    "sourceCaseDefinitionVersionTag": "Bron dossierdefinitie-versie",
+    "targetCaseDefinitionKey": "Doel dossierdefinitie-naam",
+    "targetCaseDefinitionVersionTag": "Doel dossierdefinitie-versie",
     "patches": "Patches",
     "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
-    "patchSource": "Bron dossier veld",
-    "patchTarget": "Doel dossier veld",
+    "patchSource": "Bron-dossierveld",
+    "patchTarget": "Doel-dossierveld",
     "errors": "Fouten",
     "noErrors": "Klaar. Geen errors gevonden.",
     "checkPatches": "Controleer patches",
@@ -1795,7 +1795,7 @@
   },
   "formFlow": {
     "title": "Alle form flows",
-    "key": "Sleutel",
+    "key": "Key",
     "version": "Versie",
     "readOnly": "Alleen lezen",
     "add": "Nieuwe form flow toevoegen",
@@ -1820,7 +1820,7 @@
     "selectCaseDefPlaceholder": "Kies een dossier"
   },
   "logging": {
-    "columns": {"timestamp": "Tijd", "formattedMessage": "Bericht", "level": "Logniveau"},
+    "columns": {"timestamp": "Tijd", "formattedMessage": "Bericht", "level": "Log-niveau"},
     "search": {
       "addProperty": "Eigenschap toevoegen",
       "afterTimestamp": "Van tijd",
@@ -1829,7 +1829,7 @@
     },
     "noResults": {
       "description": "Er zijn nog geen lijnen geregistreerd",
-      "searchDescription": "Er zijn geen logregels die overeenkomen met je zoekcriteria",
+      "searchDescription": "Er zijn geen log-regels die overeenkomen met je zoekcriteria",
       "title": "Er zijn geen logboeken"
     },
     "detailsTitle": "Loggegevens",

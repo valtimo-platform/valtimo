@@ -359,7 +359,6 @@
       }
     }
   },
-  "cancel": "Cancel22",
   "account": {
     "title": "Account",
     "informationTitle": "Information",
@@ -515,7 +514,7 @@
       }
     },
     "deployment": {
-      "title": "Deployment",
+      "title": "Version management",
       "buttons": {
         "back": "Back",
         "delete": "Delete draft",
@@ -556,7 +555,7 @@
         "fields": {"caseDefinitionVersionTag": "Version", "basedOnVersionTag": "Based on"},
         "warning": {
           "title": "Warning",
-          "description": "There is another draft based on {{ basedOnVersionTag }} called {{ conflictingVersions }}"
+          "description": "There is another draft based on {{ basedOnVersionTag }} with version {{ conflictingVersions }}"
         }
       },
       "releaseInformation": {
@@ -683,7 +682,7 @@
       "editModal": {"title": "Edit tab {{name}}", "updateTab": "Update tab"},
       "deleteModal": {
         "title": "Delete tab?",
-        "description": "Are you sure you want to delete this tab? This acction cannot be undone."
+        "description": "Are you sure you want to delete this tab? This action cannot be undone."
       }
     },
     "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
@@ -732,7 +731,7 @@
     "createDefinition": {
       "idError": "This definition name is already in use. Please change to a unique name",
       "versionError": "This version is not a valid Semver version",
-      "versionExistsError": "This version already exists for this case",
+      "versionExistsError": "This version already exists for this definition",
       "modalTitle": "Create case definition",
       "key": "Case definition key",
       "keyPlaceholder": "Case definition key will be auto-generated here",
@@ -931,7 +930,7 @@
     },
     "cancelModal": {
       "title": "Leaving the editor",
-      "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the widget configuration."
+      "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost."
     },
     "processes": {
       "buttonTextLabel": "New process button text (Optional)",
@@ -939,7 +938,7 @@
       "selectorLabel": "New process button (Optional)",
       "selectorPlaceholder": "Choose a process"
     },
-    "saveModalContent": "Are you sure you want to save the widget configuration? Removing or changing an attribute can break the widget configuration."
+    "saveModalContent": "Are you sure you want to save the widget configuration?"
   },
   "zgw": {
     "columns": {
@@ -1209,7 +1208,7 @@
     "selectInfoObjectType": "Select information object type"
   },
   "zaakdetails": {
-    "title": "Case detail synchronisation",
+    "title": "Zaak detail synchronisation",
     "enabled": "Enabled",
     "yes": "Yes",
     "no": "No",

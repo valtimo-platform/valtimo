@@ -17,13 +17,13 @@
 @if (currentTab$ | async; as currentTab) {
   <valtimo-case-management-draft-warning
     *ngIf="(isDraftVersion$ | async) === true && currentTab === TabEnum.STATUSES"
-    [name]="'caseManagement.tabs.caseDetailTab.statuses' | translate | lowercase"
+    [name]="'caseManagement.tabs.caseDetailsTab.statuses' | translate | lowercase"
   ></valtimo-case-management-draft-warning>
 
   <cds-tabs class="case-management-tabs" type="contained">
     <cds-tab
       [active]="currentTab === TabEnum.TABS"
-      [heading]="'caseManagement.tabs.caseDetailTab.tabs' | translate"
+      [heading]="'caseManagement.tabs.caseDetailsTab.tabs' | translate"
       (selected)="switchTab(TabEnum.TABS)"
     >
       <valtimo-case-management-tabs
@@ -33,7 +33,7 @@
 
     <cds-tab
       [active]="currentTab === TabEnum.STATUSES"
-      [heading]="'caseManagement.tabs.caseDetailTab.statuses' | translate"
+      [heading]="'caseManagement.tabs.caseDetailsTab.statuses' | translate"
       (selected)="switchTab(TabEnum.STATUSES)"
     >
       <valtimo-case-management-statuses
@@ -43,7 +43,7 @@
 
     <cds-tab
       [active]="currentTab === TabEnum.TAGS"
-      [heading]="'caseManagement.tabs.caseDetailTab.tags' | translate"
+      [heading]="'caseManagement.tabs.caseDetailsTab.tags' | translate"
       (selected)="switchTab(TabEnum.TAGS)"
     >
       <valtimo-case-management-tags
