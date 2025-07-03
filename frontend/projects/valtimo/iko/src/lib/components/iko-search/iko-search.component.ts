@@ -16,7 +16,7 @@
 
 import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {PageTitleService} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
@@ -25,6 +25,7 @@ import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {IkoApiService} from '../../services';
 import {IkoDataRequestUser} from '../../models';
+import {IkoListComponent} from '../iko-list/iko-list.component';
 
 @Component({
   selector: 'valtimo-iko-search',
@@ -39,6 +40,7 @@ import {IkoDataRequestUser} from '../../models';
     FormsModule,
     ReactiveFormsModule,
     TranslateModule,
+    IkoListComponent,
   ],
 })
 export class IkoSearchComponent implements OnDestroy {
@@ -60,9 +62,8 @@ export class IkoSearchComponent implements OnDestroy {
     map(([key, menuItems, dataRequests]) => {
       const currentMenuItem = menuItems.find(item => item.key === key);
 
-      if (currentMenuItem && currentMenuItem?.title) {
+      if (currentMenuItem && currentMenuItem?.title)
         this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
-      }
 
       return dataRequests;
     })
@@ -70,6 +71,7 @@ export class IkoSearchComponent implements OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
     private readonly pageTitleService: PageTitleService,
     private readonly iconService: IconService,
     private readonly ikoApiService: IkoApiService
@@ -89,16 +91,15 @@ export class IkoSearchComponent implements OnDestroy {
     return param && param.group === true && Array.isArray(param.fields);
   }
 
-  public searchGroup(params: {key: string}[]): void {
-    const query: Record<string, string> = {};
+  public searchGroup(paramKey: string, params: {key: string}[]): void {
+    const queryParams: Record<string, string> = {};
     for (const param of params) {
       const value = this.formValues[param.key];
       if (value) {
-        query[param.key] = value;
+        queryParams[param.key] = value;
       }
     }
 
-    console.log('Search triggered with:', query);
-    // Actual search logic goes here
+    this.router.navigate([`${paramKey}`], {relativeTo: this.route, queryParams});
   }
 }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {Page} from '@valtimo/shared';
+
 interface IkoDataAggregate {
   key: string;
   title: string;
@@ -39,4 +41,32 @@ interface SearchFieldV2 {
   dropdownDataProvider?: string;
 }
 
-export {IkoDataAggregate, IkoDataRequestUser, SearchFieldV2};
+interface IkoListHeader {
+  key: string;
+  title: string;
+  displayType: {
+    type: string;
+    displayTypeParameters: object;
+  };
+  sortable: boolean;
+  defaultSort: null | 'ASC' | 'DESC';
+}
+
+interface IkoListItem {
+  key: string;
+  value: string;
+}
+
+interface IkoListResponse {
+  headers: IkoListHeader[];
+  rows: Page<{items: IkoListItem[]}>;
+}
+
+export {
+  IkoDataAggregate,
+  IkoDataRequestUser,
+  SearchFieldV2,
+  IkoListHeader,
+  IkoListItem,
+  IkoListResponse,
+};
