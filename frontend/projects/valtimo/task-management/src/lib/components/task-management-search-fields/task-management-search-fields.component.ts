@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import {
 } from 'rxjs';
 import {TaskManagementSearchFieldsService} from '../../services';
 import {TaskManagementSearchFieldsModalComponent} from '../task-management-search-fields-modal/task-management-search-fields-modal.component';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-task-management-search-fields',
@@ -61,16 +62,19 @@ import {TaskManagementSearchFieldsModalComponent} from '../task-management-searc
   ],
 })
 export class TaskManagementSearchFieldsComponent {
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || ''),
-    filter(docDefName => !!docDefName),
-    tap((docDefName: string) => this.searchFieldsService.setDocumentDefinitionName(docDefName))
+  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
+    this.route
+  ).pipe(
+    map((params: CaseManagementParams | undefined) => (!params ? '' : params.caseDefinitionKey)),
+    tap((caseDefinitionKey: string) =>
+      this.searchFieldsService.setCaseDefinitionKey(caseDefinitionKey)
+    )
   );
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
 
   public readonly searchFields$: Observable<TaskListSearchField[]> = combineLatest([
-    this.documentDefinitionName$,
+    this.caseDefinitionKey$,
     this._refresh$,
     this.trasnlateService.stream('key'),
   ]).pipe(

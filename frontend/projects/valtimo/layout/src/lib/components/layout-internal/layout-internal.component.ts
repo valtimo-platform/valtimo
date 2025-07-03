@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import {AfterViewInit, Component, ElementRef, OnDestroy, Renderer2, ViewChild} from '@angular/core';
-import {LayoutService} from '../../services/layout/layout.service';
+import {LayoutService} from '../../services/layout.service';
 import {ShellService, UserInterfaceService} from '@valtimo/components';
 
 // eslint-disable-next-line no-var
@@ -25,6 +25,7 @@ declare var App;
   selector: 'valtimo-layout-internal',
   templateUrl: './layout-internal.component.html',
   styleUrls: ['./layout-internal.component.scss'],
+  standalone: false,
 })
 export class LayoutInternalComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mainContent') mainContentRef: ElementRef;

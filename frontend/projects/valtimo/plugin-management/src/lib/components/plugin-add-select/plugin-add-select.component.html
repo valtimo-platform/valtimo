@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -37,25 +37,23 @@
 </ng-template>
 
 <ng-template #pluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
-  <div *ngFor="let pluginDefinition of pluginDefinitions" class="plugin-definition__item">
-    <v-card
-      [title]="'title' | pluginTranslate: pluginDefinition.key | async"
-      [description]="'description' | pluginTranslate: pluginDefinition.key | async"
-      [selectable]="true"
+  <cds-tile-group [multiple]="false" (selected)="selectPluginDefinition($event)" [cdsLayer]="1">
+    <cds-selection-tile
+      *ngFor="let pluginDefinition of pluginDefinitions"
+      [value]="pluginDefinition"
       [selected]="(selectedPluginDefinition$ | async)?.key === pluginDefinition.key"
-      [fullHeight]="true"
-      (selectEvent)="selectPluginDefinition(pluginDefinition)"
-      (deselectEvent)="deselectPluginDefinition()"
     >
-      <div *ngIf="pluginDefinition.pluginLogoBase64" role="header">
-        <img
-          class="plugin-definition-logo"
-          [title]="'title' | pluginTranslate: pluginDefinition.key | async"
-          [src]="pluginDefinition.pluginLogoBase64"
-        />
-      </div>
-    </v-card>
-  </div>
+      <img
+        class="plugin-definition-logo"
+        [title]="'title' | pluginTranslate: pluginDefinition.key | async"
+        [src]="pluginDefinition.pluginLogoBase64"
+      />
+
+      <h5>{{ 'title' | pluginTranslate: pluginDefinition.key | async }}</h5>
+
+      <p>{{ 'description' | pluginTranslate: pluginDefinition.key | async }}</p>
+    </cds-selection-tile>
+  </cds-tile-group>
 </ng-template>
 
 <ng-template #loading>
@@ -68,6 +66,6 @@
 
 <ng-template #loadingCard>
   <div class="plugin-definition__item">
-    <v-card [loading]="true" [loadingDescription]="true" [loadingTitle]="true"></v-card>
+    <cds-loading size="sm"></cds-loading>
   </div>
 </ng-template>

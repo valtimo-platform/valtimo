@@ -1,5 +1,5 @@
-/*!
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import {GetEigenschapConfig} from '../../models';
 import {FunctionConfigurationComponent} from '../../../../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-get-eigenschap-configuration',
   templateUrl: './get-eigenschap-configuration.component.html',
   styleUrls: ['./get-eigenschap-configuration.component.scss'],

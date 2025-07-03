@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import {ChoiceFieldDetailComponent} from './choice-field-detail/choice-field-det
 import {ChoiceFieldCreateComponent} from './choice-field-create/choice-field-create.component';
 import {ChoiceFieldValueCreateComponent} from './choice-field-value-create/choice-field-value-create.component';
 import {ChoiceFieldValueDetailComponent} from './choice-field-value-detail/choice-field-value-detail.component';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 
 const routes: Routes = [
   {

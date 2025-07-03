@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {WidgetTranslationService} from '../../../../services';
 
 @Component({
+  standalone: false,
   templateUrl: './task-count-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./task-count-configuration.component.scss'],

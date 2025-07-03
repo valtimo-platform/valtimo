@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,10 +51,6 @@ export * from './lib/components/carbon-list/carbon-list.module';
 export * from './lib/components/carbon-list/CarbonListFilterPipe.directive';
 export * from './lib/components/carbon-list/no-results/carbon-no-results.component';
 
-export * from './lib/components/list/list.component';
-export * from './lib/components/list/ListFilterPipe.directive';
-export * from './lib/components/list/list.module';
-
 export * from './lib/components/page-header/page-header.component';
 export * from './lib/components/page-header/page-header.module';
 
@@ -71,9 +67,6 @@ export * from './lib/components/widget/widget.module';
 
 export * from './lib/components/field-auto-focus/field-auto-focus.directive';
 export * from './lib/components/field-auto-focus/field-auto-focus.module';
-
-export * from './lib/components/card/card.component';
-export * from './lib/components/card/card.module';
 
 export * from './lib/components/bpmn-js-diagram/bpmn-js-diagram.component';
 export * from './lib/components/bpmn-js-diagram/bpmn-js-diagram.module';
@@ -132,6 +125,7 @@ export * from './lib/components/form-io/form-io-resource-selector/form-io-resour
 
 export * from './lib/components/form-io/services/form-io-state.service';
 export * from './lib/components/form-io/services/form-io-dom.service';
+export * from './lib/components/form-io/services/form-io.tags.service';
 
 export * from './lib/components/webcam/webcam.module';
 export * from './lib/components/webcam/webcam.component';
@@ -170,11 +164,6 @@ export * from './lib/components/form-io/formio-value-resolver-selector/formio-va
 // formio dummy
 export * from './lib/components/form-io/form-io-dummy/dummy.component';
 export * from './lib/components/form-io/form-io-dummy/dummy.formio';
-
-// Button component
-export * from './lib/components/button/button.module';
-export * from './lib/components/button/button.component';
-
 // Table component
 export * from './lib/components/table/table.module';
 export * from './lib/components/table/table.component';
@@ -192,25 +181,12 @@ export * from './lib/components/stepper/stepper-content/stepper-content.componen
 export * from './lib/components/stepper/stepper-container/stepper-container.component';
 export * from './lib/components/stepper/stepper-step/stepper-step.component';
 export * from './lib/components/stepper/stepper-footer-step/stepper-footer-step.component';
-// Card component
-export * from './lib/components/v-card/card.component';
-export * from './lib/components/v-card/card.module';
-// Title component
-export * from './lib/components/title/title.component';
-export * from './lib/components/title/title.module';
 // Text input
 export * from './lib/components/input/input.component';
 export * from './lib/components/input/input.module';
 // Input label
 export * from './lib/components/input-label/input-label.component';
 export * from './lib/components/input-label/input-label.module';
-// Page components
-export * from './lib/components/page/page.module';
-export * from './lib/components/page/page-container/page-container.component';
-export * from './lib/components/page/page-content/page-content.component';
-export * from './lib/components/page/page-header/page-header.component';
-export * from './lib/components/page/page-header-introduction/page-header-introduction.component';
-export * from './lib/components/page/page-header-actions/page-header-actions.component';
 // Paragraph
 export * from './lib/components/paragraph/paragraph.module';
 export * from './lib/components/paragraph/paragraph.component';
@@ -242,34 +218,39 @@ export * from './lib/services/choice-field.service';
 export * from './lib/models/choice-field.model';
 export * from './lib/models/choicefield-value.model';
 
+// case tag selector
+export * from './lib/components/case-tags-selector/case-tags-selector.component';
+export * from './lib/components/case-tags-selector/case-tags-selector.component';
+
+// render in body
+export * from './lib/components/render-in-body/render-in-body.component';
+
 /*
 directives
  */
 // valtimo cds modal
 export * from './lib/directives/valtimo-cds-modal/valtimo-cds-modal.directive';
-export * from './lib/directives/valtimo-cds-modal/valtimo-cds-modal-directive.module';
 // tooltip
 export * from './lib/directives/tooltip/tooltip.directive';
 export * from './lib/directives/tooltip/tooltip.component';
 export * from './lib/directives/tooltip/tooltip.module';
 // render in page header
 export * from './lib/directives/render-in-page-header/render-in-page-header.directive';
-export * from './lib/directives/render-in-page-header/render-in-page-header-directive.module';
 // render page header
 export * from './lib/directives/render-page-header/render-page-header.directive';
-export * from './lib/directives/render-page-header/render-page-header-directive.module';
 // fit page
 export * from './lib/directives/fit-page/fit-page.directive';
-export * from './lib/directives/fit-page/fit-page-directive.module';
 // digit only
 export * from './lib/directives/digit-only/digit-only.directive';
 // command click
-export * from './lib/directives/command-click/command-click.directive';
-export * from './lib/directives/command-click/command-click-directive.module';
+export * from './lib/directives/ctrl-click/ctrl-click.directive';
 // cds overflow button
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
-export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button-directive.module';
 // remove toggletip button class
 export * from './lib/directives/remove-classnames/remove-classnames.directive';
-// case tag selector
-export * from './lib/components/case-tags-selector/case-tags-selector.component';
+// muuri
+export * from './lib/directives/muuri/muuri-directive.module';
+export * from './lib/directives/muuri/muuri.directive';
+export * from './lib/directives/muuri/muuri-item.component';
+// read-only
+export * from './lib/directives/read-only.directive';

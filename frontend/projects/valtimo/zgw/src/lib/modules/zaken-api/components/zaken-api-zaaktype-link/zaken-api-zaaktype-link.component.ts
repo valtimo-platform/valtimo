@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Component, HostBinding, OnInit} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
+import {Edit16, Save16, TrashCan16} from '@carbon/icons';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {RenderInBodyComponent, SpinnerModule} from '@valtimo/components';
+import {PluginConfiguration} from '@valtimo/plugin';
 import {
-  CreateInformatieObjectTypeLinkRequest,
   CreateZaakTypeLinkRequest,
   InformatieObjectType,
   OpenZaakService,
   ZaakType,
   ZaakTypeLink,
 } from '@valtimo/resource';
-import {FormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
-import {AlertService, ModalComponent, ModalModule} from '@valtimo/components';
-import {ToastrService} from 'ngx-toastr';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {BehaviorSubject, map, Observable} from 'rxjs';
-import {ConfigService, UploadProvider} from '@valtimo/config';
-import {PluginConfiguration} from '@valtimo/plugin';
-import {CommonModule} from '@angular/common';
-import {NotificationModule} from 'carbon-components-angular';
+import {
+  CaseManagementParams,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
+import {
+  ButtonModule,
+  IconModule,
+  IconService,
+  InputModule,
+  LayerModule,
+  ModalModule,
+  NotificationModule,
+  SelectModule,
+  TilesModule,
+  ToggleModule,
+} from 'carbon-components-angular';
+import {BehaviorSubject, finalize, switchMap} from 'rxjs';
 import {ZakenApiZaaktypeLinkService} from '../../services';
 
 @Component({
@@ -40,92 +53,105 @@ import {ZakenApiZaaktypeLinkService} from '../../services';
   templateUrl: './zaken-api-zaaktype-link.component.html',
   styleUrls: ['./zaken-api-zaaktype-link.component.scss'],
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalModule, NotificationModule, TranslateModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NotificationModule,
+    TranslateModule,
+    ButtonModule,
+    IconModule,
+    TilesModule,
+    LayerModule,
+    SpinnerModule,
+    ModalModule,
+    SelectModule,
+    InputModule,
+    ToggleModule,
+    RenderInBodyComponent,
+  ],
 })
 export class ZakenApiZaaktypeLinkComponent implements OnInit {
   public zaakTypes: ZaakType[];
   public pluginConfigurations: PluginConfiguration[];
   public zaakTypeLinkRequest: CreateZaakTypeLinkRequest;
-  public informatieObjectTypeSelectionEnabled: boolean;
   public informatieObjectTypes: InformatieObjectType[];
-  public selectedZaakType: ZaakType = null;
-  public selectedPluginConfiguration: PluginConfiguration = null;
-  public selectedInformatieObjectTypeUrl: string = null;
-  private readonly documentDefinitionName: string;
+  public selectedZaakType: ZaakType | null = null;
+  public selectedPluginConfiguration: PluginConfiguration | null = null;
+  public selectedInformatieObjectTypeUrl: string | null = null;
+  private _caseDefinitionKey: string;
+  private _caseVersionTag: string;
 
-  readonly loading$ = new BehaviorSubject<boolean>(true);
-  readonly zaakTypeLink$ = new BehaviorSubject<ZaakTypeLink>(null);
-
-  readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || '')
-  );
-
-  @ViewChild('openZaakTypeLinkModal') modal: ModalComponent;
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly zaakTypeLink$ = new BehaviorSubject<ZaakTypeLink | null>(null);
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
   constructor(
-    private readonly route: ActivatedRoute,
+    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly iconService: IconService,
     private readonly openZaakService: OpenZaakService,
-    private readonly alertService: AlertService,
-    private readonly toasterService: ToastrService,
+    private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
-    private readonly zakenApiZaaktypeLinkService: ZakenApiZaaktypeLinkService,
-    private readonly configService: ConfigService
+    private readonly zakenApiZaaktypeLinkService: ZakenApiZaaktypeLinkService
   ) {
-    this.documentDefinitionName = this.route.snapshot.paramMap.get('name');
-    this.informatieObjectTypeSelectionEnabled =
-      this.configService.config.uploadProvider === UploadProvider.OPEN_ZAAK;
+    this.iconService.registerAll([Edit16, TrashCan16, Save16]);
   }
 
   public ngOnInit(): void {
-    this.zaakTypeLinkRequest = {
-      documentDefinitionName: this.documentDefinitionName,
-      createWithDossier: false,
-    };
-    this.openZaakService.getZaakTypeLink(this.documentDefinitionName).subscribe(zaakTypeLink => {
-      if (zaakTypeLink !== null) {
-        this.zaakTypeLinkRequest = {
-          documentDefinitionName: this.documentDefinitionName,
-          createWithDossier: zaakTypeLink?.createWithDossier,
-          rsin: zaakTypeLink?.rsin,
-          zakenApiPluginConfigurationId: zaakTypeLink?.zakenApiPluginConfigurationId,
-          zaakTypeUrl: zaakTypeLink?.zaakTypeUrl,
-        };
-      }
-      this.zaakTypeLink$.next(zaakTypeLink);
-      this.loadZaakTypes();
-      this.loadZakenApiPluginConfigurations();
-    });
-    this.loading$.next(false);
+    getCaseManagementRouteParams(this.route)
+      .pipe(
+        switchMap((params: CaseManagementParams | undefined) => {
+          this._caseDefinitionKey = params?.caseDefinitionKey ?? '';
+          this._caseVersionTag = params?.caseDefinitionVersionTag ?? '';
+          this.zaakTypeLinkRequest = {
+            caseDefinitionKey: this._caseDefinitionKey,
+            caseVersionTag: this._caseVersionTag,
+            createWithDossier: false,
+          };
+
+          return this.openZaakService.getZaakTypeLink(
+            this._caseDefinitionKey,
+            this._caseVersionTag
+          );
+        })
+      )
+      .subscribe(zaakTypeLink => {
+        if (zaakTypeLink !== null) {
+          this.zaakTypeLinkRequest = {
+            caseDefinitionKey: this._caseDefinitionKey,
+            caseVersionTag: this._caseVersionTag,
+            createWithDossier: zaakTypeLink?.createWithDossier,
+            rsin: zaakTypeLink?.rsin,
+            zakenApiPluginConfigurationId: zaakTypeLink?.zakenApiPluginConfigurationId,
+            zaakTypeUrl: zaakTypeLink?.zaakTypeUrl,
+          };
+        }
+        this.zaakTypeLink$.next(zaakTypeLink);
+        this.loadZaakTypes();
+        this.loadZakenApiPluginConfigurations();
+        this.loading$.next(false);
+      });
   }
 
-  private findZaakType(zaakTypeUrl: string) {
-    this.selectedZaakType = this.zaakTypes.find(zaakType => zaakType.url === zaakTypeUrl);
-  }
-
-  private findPluginConfiguration(pluginConfigurationId: string) {
-    this.selectedPluginConfiguration = this.pluginConfigurations.find(
-      pluginConfiguration => pluginConfiguration.id === pluginConfigurationId
-    );
-  }
-
-  loadZaakTypes() {
-    return this.openZaakService.getZaakTypes().subscribe((zaakTypes: ZaakType[]) => {
+  public loadZaakTypes(): void {
+    this.openZaakService.getZaakTypes().subscribe((zaakTypes: ZaakType[]) => {
       this.zaakTypes = zaakTypes;
-      this.findZaakType(this.zaakTypeLink$.getValue()?.zaakTypeUrl);
+      this.findZaakType(this.zaakTypeLink$.getValue()?.zaakTypeUrl ?? '');
       this.loading$.next(false);
     });
   }
 
-  loadZakenApiPluginConfigurations() {
-    return this.zakenApiZaaktypeLinkService
+  public loadZakenApiPluginConfigurations(): void {
+    this.zakenApiZaaktypeLinkService
       .getPluginConfigurationsByPluginDefinitionKey('zakenapi')
       .subscribe((plugins: PluginConfiguration[]) => {
         this.pluginConfigurations = plugins;
-        this.findPluginConfiguration(this.zaakTypeLink$.getValue()?.zakenApiPluginConfigurationId);
+        this.findPluginConfiguration(
+          this.zaakTypeLink$.getValue()?.zakenApiPluginConfigurationId ?? ''
+        );
       });
   }
 
-  loadInformatieObjectTypeUrls() {
+  public loadInformatieObjectTypeUrls(): void {
     this.openZaakService
       .getInformatieObjectTypes()
       .subscribe((informatieObjectTypes: InformatieObjectType[]) => {
@@ -133,81 +159,86 @@ export class ZakenApiZaaktypeLinkComponent implements OnInit {
       });
   }
 
-  openModal(zaakTypeLink: ZaakTypeLink) {
+  public closeModal(): void {
+    this.modalOpen$.next(false);
+  }
+
+  public openModal(zaakTypeLink: ZaakTypeLink): void {
     this.zaakTypeLinkRequest = {
-      documentDefinitionName: this.documentDefinitionName,
+      caseDefinitionKey: this._caseDefinitionKey,
+      caseVersionTag: this._caseVersionTag,
       createWithDossier: zaakTypeLink?.createWithDossier,
       rsin: zaakTypeLink?.rsin,
       zakenApiPluginConfigurationId: zaakTypeLink?.zakenApiPluginConfigurationId,
       zaakTypeUrl: zaakTypeLink?.zaakTypeUrl,
     };
-    if (this.informatieObjectTypeSelectionEnabled) {
-      this.openZaakService.getOpenZaakConfig().subscribe(config => {
-        if (config === null) {
-          this.alertService.error(this.translateService.instant('openZaak.error.configNotFound'));
-        } else {
-          this.loadInformatieObjectTypeUrls();
-          this.openZaakService
-            .getInformatieObjectTypeLink(this.documentDefinitionName)
-            .subscribe(informatieObjectTypeLink => {
-              if (informatieObjectTypeLink !== null) {
-                this.selectedInformatieObjectTypeUrl =
-                  informatieObjectTypeLink.informatieObjectType;
-              }
-            });
-        }
-        this.modal.show();
+
+    this.modalOpen$.next(true);
+  }
+
+  public onCheckedChange(checked: boolean): void {
+    this.zaakTypeLinkRequest.createWithDossier = checked;
+  }
+
+  public removeZaakTypeLink(): void {
+    this.openZaakService
+      .deleteZaakTypeLink(this._caseDefinitionKey, this._caseVersionTag)
+      .subscribe({
+        next: () => {
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('openZaak.delinkSuccessful'),
+            type: 'success',
+          });
+          this.zaakTypeLink$.next(null);
+        },
+        error: () => {
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('openZaak.delinkFailed'),
+            type: 'error',
+          });
+        },
       });
-    } else {
-      this.modal.show();
-    }
   }
 
-  removeZaakTypeLink() {
-    this.openZaakService.deleteZaakTypeLink(this.documentDefinitionName).subscribe(
-      () => {
-        if (this.selectedInformatieObjectTypeUrl !== null) {
-          this.openZaakService.deleteInformatieObjectTypeLink(this.documentDefinitionName);
-        }
-        this.toasterService.success('Successfully de-linked zaaktype');
-        this.zaakTypeLink$.next(null);
-      },
-      () => {
-        this.toasterService.error('Failed to de-link zaaktype');
-      }
-    );
+  public submit(): void {
+    this.openZaakService
+      .createZaakTypeLink(this.zaakTypeLinkRequest)
+      .pipe(finalize(() => this.modalOpen$.next(false)))
+      .subscribe({
+        next: linkResult => {
+          this.zaakTypeLink$.next(linkResult);
+          this.zaakTypeLinkRequest = {
+            caseDefinitionKey: this._caseDefinitionKey,
+            caseVersionTag: this._caseVersionTag,
+            createWithDossier: linkResult?.createWithDossier,
+            rsin: linkResult?.rsin,
+            zakenApiPluginConfigurationId: linkResult?.zakenApiPluginConfigurationId,
+            zaakTypeUrl: linkResult?.zaakTypeUrl,
+          };
+          this.findZaakType(linkResult.zaakTypeUrl);
+          this.findPluginConfiguration(linkResult.zakenApiPluginConfigurationId);
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('openZaak.linkSuccessful'),
+            type: 'success',
+          });
+        },
+        error: () => {
+          this.globalNotificationService.showToast({
+            title: this.translateService.instant('openZaak.linkFailed'),
+            type: 'error',
+          });
+        },
+      });
   }
 
-  submit() {
-    const requestInformatieObjectTypeLink: CreateInformatieObjectTypeLinkRequest = {
-      documentDefinitionName: this.documentDefinitionName,
-      zaakType: this.zaakTypeLinkRequest.zaakTypeUrl,
-      informatieObjectType: this.selectedInformatieObjectTypeUrl,
-    };
-    this.openZaakService.createZaakTypeLink(this.zaakTypeLinkRequest).subscribe(
-      linkResult => {
-        this.zaakTypeLink$.next(linkResult);
-        this.zaakTypeLinkRequest = {
-          documentDefinitionName: this.documentDefinitionName,
-          createWithDossier: linkResult?.createWithDossier,
-          rsin: linkResult?.rsin,
-          zakenApiPluginConfigurationId: linkResult?.zakenApiPluginConfigurationId,
-          zaakTypeUrl: linkResult?.zaakTypeUrl,
-        };
-        this.findZaakType(linkResult.zaakTypeUrl);
-        this.findPluginConfiguration(linkResult.zakenApiPluginConfigurationId);
-        if (requestInformatieObjectTypeLink.informatieObjectType !== null) {
-          this.openZaakService
-            .createInformatieObjectTypeLink(requestInformatieObjectTypeLink)
-            .subscribe(() => {
-              this.toasterService.success('Successfully linked object informatie type to dossier');
-            });
-        }
-        this.toasterService.success('Successfully linked zaaktype to dossier');
-      },
-      err => {
-        this.toasterService.error('Failed to link zaaktype to dossier');
-      }
-    );
+  private findZaakType(zaakTypeUrl: string): void {
+    this.selectedZaakType = this.zaakTypes.find(zaakType => zaakType.url === zaakTypeUrl) ?? null;
+  }
+
+  private findPluginConfiguration(pluginConfigurationId: string): void {
+    this.selectedPluginConfiguration =
+      this.pluginConfigurations.find(
+        pluginConfiguration => pluginConfiguration.id === pluginConfigurationId
+      ) ?? null;
   }
 }

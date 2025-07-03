@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,20 @@ import {
   combineLatest,
   filter,
   Observable,
-  of,
-  Subject,
   Subscription,
   switchMap,
   take,
   tap,
 } from 'rxjs';
 import {InputOption, UpdateZaakeigenschapConfig} from '../../models';
-import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
-import {DocumentService} from '@valtimo/document';
-import {map} from 'rxjs/operators';
+import {RadioValue, SelectItem} from '@valtimo/components';
 import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import {map} from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-update-zaakeigenschap',
   templateUrl: './update-zaakeigenschap.component.html',
   providers: [PluginTranslatePipe],
@@ -43,96 +42,25 @@ import {PluginTranslatePipe} from '../../../../pipes';
 export class UpdateZaakeigenschapComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() save$: Observable<void>;
-  @Input() disabled$: Observable<boolean>;
-  @Input() set pluginId(value: string) {
+  @Input() public save$: Observable<void>;
+  @Input() public disabled$: Observable<boolean>;
+  @Input() public set pluginId(value: string) {
     this.pluginId$.next(value);
   }
-  @Input() prefillConfiguration$: Observable<UpdateZaakeigenschapConfig>;
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<UpdateZaakeigenschapConfig> =
-    new EventEmitter<UpdateZaakeigenschapConfig>();
+  @Input() public prefillConfiguration$: Observable<UpdateZaakeigenschapConfig>;
+  @Input() public context$: Observable<[ManagementContext, CaseManagementParams]>;
 
-  readonly caseDefinitionSelectItems$ = new BehaviorSubject<Array<SelectItem>>(null);
-  readonly selectedCaseDefinitionName$ = new BehaviorSubject<string>('');
-  readonly clearEigenschapSelection$ = new Subject<void>();
+  @Output() public valid = new EventEmitter<boolean>();
+  @Output() public configuration = new EventEmitter<UpdateZaakeigenschapConfig>();
 
-  readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+  public readonly pluginId$ = new BehaviorSubject<string>('');
+  public readonly formValue$ = new BehaviorSubject<UpdateZaakeigenschapConfig | null>(null);
+  public readonly valid$ = new BehaviorSubject<boolean>(false);
+  public readonly eigenschapSelectItems$ = new BehaviorSubject<SelectItem[]>([]);
 
-  readonly eigenschapSelectItems$: Observable<{[caseDefinitionId: string]: Array<SelectItem>}> =
-    this.modalService.modalData$.pipe(
-      switchMap(params =>
-        this.documentService.findProcessDocumentDefinitionsByProcessDefinitionKey(
-          params?.processDefinitionKey
-        )
-      ),
-      tap(processDocumentDefinitions => {
-        const caseDefSelectItems = processDocumentDefinitions.map(processDocDef => ({
-          text: processDocDef.id.documentDefinitionId.name,
-          id: processDocDef.id.documentDefinitionId.name,
-        }));
-
-        this.caseDefinitionSelectItems$.next(caseDefSelectItems);
-
-        if (this.oneSelectItem(caseDefSelectItems)) {
-          this.selectedCaseDefinitionName$.next(caseDefSelectItems[0].id);
-        }
-      }),
-      switchMap(processDocumentDefinitions =>
-        combineLatest([
-          of(processDocumentDefinitions.map(processDoc => processDoc.id.documentDefinitionId.name)),
-          ...processDocumentDefinitions.map(processDocDef =>
-            this.zakenApiService.getEigenschappenByCaseDefinition(
-              processDocDef.id.documentDefinitionId.name
-            )
-          ),
-        ])
-      ),
-      map(res => {
-        const caseDefinitionIds = res[0];
-        const eigenschappen = res.filter((curr, index) => index !== 0);
-        const selectObject = {};
-
-        caseDefinitionIds.forEach((caseDefinitionId, index) => {
-          selectObject[caseDefinitionId] = eigenschappen[index].map(eigenschap => ({
-            id: eigenschap.url,
-            text: eigenschap.name,
-          }));
-        });
-
-        return selectObject;
-      }),
-      tap(selectObject => {
-        this.prefillConfiguration$.pipe(take(1)).subscribe(prefillConfig => {
-          const eigenschapUrl = prefillConfig?.eigenschapUrl;
-
-          if (eigenschapUrl) {
-            let selectedCaseDefinitionId!: string;
-
-            Object.keys(selectObject).forEach(caseDefinitionId => {
-              if (selectObject[caseDefinitionId].find(item => item.id === eigenschapUrl)) {
-                selectedCaseDefinitionId = caseDefinitionId;
-              }
-
-              if (selectedCaseDefinitionId) {
-                this.selectedCaseDefinitionName$.next(selectedCaseDefinitionId);
-              } else {
-                this.selectedInputOption$.next('text');
-              }
-            });
-          }
-        });
-      }),
-      tap(() => {
-        this.loading$.next(false);
-      })
-    );
-
-  readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
-
-  readonly pluginId$ = new BehaviorSubject<string>('');
-
-  readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+  public readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>
       combineLatest([
@@ -146,27 +74,23 @@ export class UpdateZaakeigenschapComponent
     ])
   );
 
-  private saveSubscription!: Subscription;
-
-  private readonly formValue$ = new BehaviorSubject<UpdateZaakeigenschapConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
+  private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly modalService: ModalService,
-    private readonly documentService: DocumentService,
     private readonly zakenApiService: ZakenApiService,
     private readonly pluginTranslatePipe: PluginTranslatePipe
   ) {}
 
-  ngOnInit(): void {
-    this.openSaveSubscription();
+  public ngOnInit(): void {
+    this.initEigenschapHandling();
+    this.initSaveHandling();
   }
 
-  ngOnDestroy() {
-    this.saveSubscription?.unsubscribe();
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
-  formValueChange(formValue: UpdateZaakeigenschapConfig): void {
+  public formValueChange(formValue: UpdateZaakeigenschapConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
 
@@ -175,28 +99,46 @@ export class UpdateZaakeigenschapComponent
     }
   }
 
-  selectCaseDefinition(caseDefinitionName: string): void {
-    this.selectedCaseDefinitionName$.next(caseDefinitionName);
-    this.clearEigenschapSelection$.next();
+  private initEigenschapHandling(): void {
+    if (!this.context$) return;
+
+    const sub = this.context$
+      .pipe(
+        filter(([context]) => {
+          if (context === 'independent') {
+            this.selectedInputOption$.next('text');
+            this.loading$.next(false);
+          }
+          return context === 'case';
+        }),
+        switchMap(([_, params]) =>
+          combineLatest([
+            this.zakenApiService.getEigenschappenByCaseAndVersion(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag
+            ),
+            this.prefillConfiguration$.pipe(take(1)),
+          ])
+        ),
+        tap(([eigenschappen, prefill]) => {
+          const selectItems = eigenschappen.map(item => ({id: item.url, text: item.name}));
+          this.eigenschapSelectItems$.next(selectItems);
+
+          const matched = selectItems.find(item => item.id === prefill?.eigenschapUrl);
+          this.selectedInputOption$.next(matched ? 'selection' : 'text');
+
+          this.loading$.next(false);
+        })
+      )
+      .subscribe();
+
+    this._subscriptions.add(sub);
   }
 
-  oneSelectItem(selectItems: Array<SelectItem>): boolean {
-    if (Array.isArray(selectItems)) {
-      return selectItems.length === 1;
-    }
+  private initSaveHandling(): void {
+    if (!this.save$) return;
 
-    return false;
-  }
-
-  private handleValid(formValue: UpdateZaakeigenschapConfig): void {
-    const valid = !!formValue.eigenschapUrl;
-
-    this.valid$.next(valid);
-    this.valid.emit(valid);
-  }
-
-  private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
+    const sub = this.save$.subscribe(() => {
       combineLatest([this.formValue$, this.valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
@@ -208,5 +150,13 @@ export class UpdateZaakeigenschapComponent
           }
         });
     });
+
+    this._subscriptions.add(sub);
+  }
+
+  private handleValid(formValue: UpdateZaakeigenschapConfig): void {
+    const valid = !!formValue.eigenschapUrl;
+    this.valid$.next(valid);
+    this.valid.emit(valid);
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,6 +120,10 @@ export class PageTitleService implements OnDestroy {
 
   public setPageTitleHidden(hidden: boolean): void {
     this._pageTitleHidden$.next(hidden);
+  }
+
+  public clearPageActionsViewContainerRef(): void {
+    this._pageActionsViewContainerRef$.getValue()?.clear();
   }
 
   private openRouteSubscription(): void {

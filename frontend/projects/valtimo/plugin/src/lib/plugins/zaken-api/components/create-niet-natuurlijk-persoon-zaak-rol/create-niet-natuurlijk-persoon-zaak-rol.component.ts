@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {CreateNietNatuurlijkePersoonZaakRolConfig} from '../../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-create-niet-natuurlijk-persoon-zaak-rol-configuration',
   templateUrl: './create-niet-natuurlijk-persoon-zaak-rol.component.html',
   styleUrls: ['./create-niet-natuurlijk-persoon-zaak-rol.component.scss'],

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ export class StatusSelectorComponent {
       statuses.map(status => ({
         content:
           status.key === this.CASES_WITHOUT_STATUS_KEY
-            ? this.translateService.instant('dossierManagement.statuses.withoutStatus')
+            ? this.translateService.instant('caseManagement.statuses.withoutStatus')
             : status.title,
         selected: !!selectedStatuses.find(selectedStatus => selectedStatus.key === status.key),
         key: status.key,

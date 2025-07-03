@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -22,9 +22,8 @@
     pluginId: pluginId$ | async,
     selectedInputOption: selectedInputOption$ | async,
     loading: loading$ | async,
-    caseDefinitionItems: caseDefinitionSelectItems$ | async,
     statusTypeItems: statusTypeSelectItems$ | async,
-    selectedCaseDefinitionId: selectedCaseDefinitionId$ | async,
+    context: context$ | async,
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
@@ -39,7 +38,9 @@
       [fullWidth]="true"
     >
     </v-input>
+
     <v-radio
+      *ngIf="obs?.context?.[0] === 'case'"
       name="inputTypeZaakStatusToggle"
       [disabled]="obs.disabled"
       [title]="'inputTypeZaakStatusToggle' | pluginTranslate: obs.pluginId | async"
@@ -48,6 +49,7 @@
       [margin]="true"
     >
     </v-radio>
+
     <v-input
       *ngIf="obs.selectedInputOption === 'text'"
       name="statustypeUrl"
@@ -61,37 +63,15 @@
       [fullWidth]="true"
     >
     </v-input>
+
     <ng-container *ngIf="obs.selectedInputOption === 'selection'">
       <v-select
-        [items]="obs.caseDefinitionItems"
-        [margin]="true"
-        [widthInPx]="350"
-        name="caseDefinition"
-        [title]="'caseDefinition' | pluginTranslate: obs.pluginId | async"
-        [disabled]="
-          obs.disabled ||
-          obs.selectedInputOption === 'text' ||
-          !obs.caseDefinitionItems ||
-          oneSelectItem(obs.caseDefinitionItems)
-        "
-        [required]="true"
-        [loading]="!obs.caseDefinitionItems"
-        [tooltip]="'caseDefinitionTooltip' | pluginTranslate: obs.pluginId | async"
-        (selectedChange)="selectCaseDefinition($event)"
-        [defaultSelectionId]="obs?.selectedCaseDefinitionId"
-      ></v-select>
-      <v-select
-        [items]="obs.statusTypeItems && obs.statusTypeItems[obs.selectedCaseDefinitionId]"
+        [items]="obs.statusTypeItems"
         [margin]="true"
         [widthInPx]="350"
         name="statustypeUrl"
         [title]="'statustypeUrlSelect' | pluginTranslate: obs.pluginId | async"
-        [disabled]="
-          obs.disabled ||
-          obs.selectedInputOption === 'text' ||
-          !obs.statusTypeItems ||
-          !obs.statusTypeItems[obs.selectedCaseDefinitionId]
-        "
+        [disabled]="obs.disabled || obs.selectedInputOption === 'text' || !obs.statusTypeItems"
         [defaultSelectionId]="obs.prefill?.statustypeUrl"
         [required]="true"
         [loading]="!obs.statusTypeItems"

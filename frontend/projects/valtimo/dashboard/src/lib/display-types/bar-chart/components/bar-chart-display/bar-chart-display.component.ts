@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import {CdsThemeService} from '@valtimo/components';
 import {BehaviorSubject, filter, map, Observable} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-bar-chart-display',
   templateUrl: './bar-chart-display.component.html',
   styleUrls: ['./bar-chart-display.component.scss'],

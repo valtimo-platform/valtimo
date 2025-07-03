@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest, filter, map, Observable, Subscription, switchMap} from 'rxjs';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {TabService} from '../../services/tab.service';
 import {TabEnum} from '../../services/tab.enum';
 import {ObjectManagementService} from '../../services/object-management.service';
@@ -26,6 +26,7 @@ import {PageTitleService} from '@valtimo/components';
 import {tap} from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-detail-container',
   templateUrl: './object-management-detail-container.component.html',
   styleUrls: ['./object-management-detail-container.component.css'],

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,11 @@ import {FormFlowService} from '../../services';
 import {FormFlowInstance, FormFlowStepType} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {Step} from 'carbon-components-angular';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {map} from 'rxjs/operators';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-form-flow',
   templateUrl: './form-flow.component.html',
   styleUrls: ['./form-flow.component.scss'],

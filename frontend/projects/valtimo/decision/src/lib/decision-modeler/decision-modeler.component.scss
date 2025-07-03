@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,4 +59,19 @@ $border: 1px solid #dee2e6;
   > i {
     cursor: pointer;
   }
+}
+
+.dmn-editor {
+  background-color: var(--cds-layer);
+  outline: 1px solid var(--cds-border-subtle);
+  outline-offset: -1px;
+  padding: 16px;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 16px;
 }

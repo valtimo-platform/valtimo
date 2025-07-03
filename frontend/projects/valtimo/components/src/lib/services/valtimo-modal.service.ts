@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,23 +23,21 @@ import {filter, tap} from 'rxjs/operators';
 })
 export class ValtimoModalService {
   private readonly _scrollToTop$ = new Subject<null>();
-  private readonly _documentDefinitionName$ = new BehaviorSubject<string>('');
+  private readonly _caseDefinitionKey$ = new BehaviorSubject<string>('');
 
-  get scrollToTop$(): Observable<null> {
+  public get scrollToTop$(): Observable<null> {
     return this._scrollToTop$.asObservable();
   }
 
-  get documentDefinitionName$(): Observable<string> {
-    return this._documentDefinitionName$.pipe(
-      filter(documentDefinitionName => !!documentDefinitionName)
-    );
+  public get caseDefinitionKey$(): Observable<string> {
+    return this._caseDefinitionKey$.pipe(filter(caseDefinitionKey => !!caseDefinitionKey));
   }
 
-  scrollToTop(): void {
+  public scrollToTop(): void {
     this._scrollToTop$.next(null);
   }
 
-  setDocumentDefinitionName(documentDefinitionName: string): void {
-    this._documentDefinitionName$.next(documentDefinitionName);
+  public setCaseDefinitionKey(caseDefinitionKey: string): void {
+    this._caseDefinitionKey$.next(caseDefinitionKey);
   }
 }

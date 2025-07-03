@@ -1,0 +1,187 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="case-actions"
+  *ngIf="{
+    exporting: exporting$ | async,
+    loadingVersion: loadingVersion$ | async,
+    versionItems: versionSelectorItems$ | async,
+    selectedDocumentDefinition: selectedDocumentDefinition$ | async,
+    selectedDocumentDefinitionIsReadOnly: selectedDocumentDefinitionIsReadOnly$ | async,
+    selectedVersionIsGloballyActive: selectedVersionIsGloballyActive$ | async,
+    compactMode: compactMode$ | async,
+  } as obs"
+  [ngClass]="{'--compact': obs.compactMode}"
+>
+  <div class="case-metadata">
+    <ng-container *ngTemplateOutlet="versionSelection; context: {obs: obs}"></ng-container>
+
+    <ng-container *ngTemplateOutlet="readOnly; context: {obs: obs}"></ng-container>
+  </div>
+
+  <div class="case-buttons">
+    <ng-container *ngTemplateOutlet="deploymentButton; context: {obs: obs}"></ng-container>
+
+    <ng-container *ngTemplateOutlet="exportMenu; context: {obs: obs}"></ng-container>
+  </div>
+</div>
+
+<ng-template #versionSelection let-obs="obs">
+  <cds-dropdown
+    class="version-selector"
+    selectionFeedback="fixed"
+    [displayValue]="versionItemTemplate"
+    [size]="obs.compactMode ? 'sm' : 'md'"
+    [appendInline]="false"
+    [disabled]="!obs?.versionItems?.length || obs?.versionItems?.length === 1"
+    [skeleton]="obs.loadingVersion"
+    (selected)="selectVersion($event)"
+  >
+    <cds-dropdown-list
+      [items]="obs?.versionItems || []"
+      [listTpl]="versionItemTemplate"
+    ></cds-dropdown-list>
+  </cds-dropdown>
+</ng-template>
+
+<ng-template #versionItemTemplate let-item="item">
+  <ng-container *ngIf="item?.isAllVersionsOption; else regularVersionTemplate">
+    <span>{{ item?.content }}</span>
+    <svg cdsIcon="version" size="16"></svg>
+  </ng-container>
+
+  <ng-template #regularVersionTemplate>
+    <div class="version-selector-dropdown-template">
+      <cds-tag class="cds-tag--no-margin" [type]="item?.tagType" [title]="item?.content">
+        {{ item?.draft ? 'DRAFT: ' + item?.content : item?.content }}
+      </cds-tag>
+
+      <cds-tag *ngIf="item?.active" class="cds-tag--no-margin" type="high-contrast">
+        {{ 'caseManagement.globallyActive' | translate }}
+      </cds-tag>
+    </div>
+  </ng-template>
+</ng-template>
+
+<ng-template #deploymentButton let-obs="obs">
+  <button
+    cdsButton="secondary"
+    [size]="obs.compactMode ? 'sm' : 'md'"
+    (click)="redirectToDeployment()"
+  >
+    {{ 'caseManagement.deployment.title' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #exportMenu let-obs="obs">
+  <cds-overflow-menu
+    valtimoCdsOverflowButton
+    [width]="250"
+    [customTrigger]="customTrigger"
+    [offset]="{y: 48, x: 37}"
+    class="overflow-button"
+  >
+    <cds-overflow-menu-option
+      [id]="'exportDocumentDefinition'"
+      [disabled]="obs.exporting || obs.loadingVersion"
+      (selected)="export()"
+      >{{ 'caseManagement.export' | translate: {value: documentDefinitionTitle} }}
+    </cds-overflow-menu-option>
+
+    <cds-overflow-menu-option
+      [id]="'setGlobalActiveVersion'"
+      [disabled]="obs.selectedVersionIsGloballyActive"
+      (selected)="openGlobalActiveVersionModal()"
+      >{{ 'caseManagement.setGlobalActiveVersion' | translate }}
+    </cds-overflow-menu-option>
+  </cds-overflow-menu>
+</ng-template>
+
+<ng-template #customTrigger>
+  <button cdsButton="tertiary" [size]="(compactMode$ | async) ? 'sm' : 'md'">
+    {{ 'caseManagement.more' | translate }}
+
+    <svg
+      class="cds--btn__icon case-management-overflow-icon"
+      cdsIcon="overflow-menu--vertical"
+      size="16"
+    ></svg>
+  </button>
+</ng-template>
+
+<ng-template #exportingMessage>
+  <div class="exporting-message">
+    <span class="cds--inline-notification__title">{{
+      'caseManagement.preparingDownload' | translate
+    }}</span>
+
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>
+
+<ng-template #readOnly let-obs="obs">
+  <cds-tag *ngIf="obs.selectedDocumentDefinitionIsReadOnly" type="blue">{{
+    'caseManagement.readonly' | translate
+  }}</cds-tag>
+</ng-template>
+
+<valtimo-case-management-select-version-modal
+  [open]="showAllVersionsModal$ | async"
+  [caseDefinitionTitle]="_caseDefinitionTitle$ | async"
+  [caseDefinitionKey]="caseDefinitionKey$ | async"
+  [previousSelectedVersion]="selectedVersion$ | async"
+  (closeEvent)="closeAllVersionsModal()"
+  (selectedVersion)="selectVersionFromModal($event)"
+></valtimo-case-management-select-version-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showGlobalVersionModal$"
+  cancelButtonType="ghost"
+  cancelButtonTextTranslationKey="caseManagement.globalActiveVersionModal.cancel"
+  confirmButtonTextTranslationKey="caseManagement.globalActiveVersionModal.continue"
+  titleTranslationKey="caseManagement.globalActiveVersionModal.title"
+  contentTranslationKey="caseManagement.globalActiveVersionModal.description"
+  (cancelEvent)="closeGlobalVersionCaseModal()"
+  (confirmEvent)="openGlobalCaseVersionConfirmationModal()"
+>
+  <cds-notification
+    *ngIf="isOlderVersionSelected$ | async"
+    class="full-width-notification"
+    [notificationObj]="{
+      type: 'warning',
+      title: 'caseManagement.globalActiveVersionModal.warningTitle' | translate,
+      message: 'caseManagement.globalActiveVersionModal.warningMessage' | translate,
+      showClose: false,
+      lowContrast: true,
+    }"
+  >
+  </cds-notification>
+</valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showGlobalVersionConfirmationModal$"
+  cancelButtonType="ghost"
+  cancelButtonTextTranslationKey="caseManagement.confirmationGlobalVersionModal.cancel"
+  confirmButtonType="danger"
+  confirmButtonTextTranslationKey="caseManagement.confirmationGlobalVersionModal.confirm"
+  contentTranslationKey="caseManagement.confirmationGlobalVersionModal.description"
+  titleTranslationKey="caseManagement.confirmationGlobalVersionModal.title"
+  (cancelEvent)="closeGlobalCaseConfirmationModal()"
+  (confirmEvent)="setGlobalActiveCaseVersion()"
+></valtimo-confirmation-modal>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,34 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {NgModule} from '@angular/core';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
   BpmnJsDiagramModule,
   CamundaFormModule,
-  ListModule,
   TimelineModule,
   WidgetModule,
 } from '@valtimo/components';
-import {ToastrModule} from 'ngx-toastr';
-import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {ProcessDiagramComponent} from './process-diagram/process-diagram.component';
 
 @NgModule({
   declarations: [ProcessDiagramComponent],
   imports: [
     CommonModule,
-    ListModule,
     WidgetModule,
     TimelineModule,
     BpmnJsDiagramModule,
     CamundaFormModule,
     BrowserAnimationsModule,
-    ToastrModule.forRoot({
-      positionClass: 'toast-bottom-full-width',
-      preventDuplicates: true,
-    }),
   ],
   exports: [ProcessDiagramComponent],
 })

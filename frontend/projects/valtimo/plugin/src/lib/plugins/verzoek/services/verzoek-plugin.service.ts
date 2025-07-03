@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 import {Injectable} from '@angular/core';
 import {catchError, Observable, of} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/config';
-import {Objecttype, Roltype} from '../models';
+import {ConfigService, Page} from '@valtimo/shared';
+import {CaseListItem, Objecttype, Roltype} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -39,11 +39,28 @@ export class VerzoekPluginService {
     );
   }
 
-  getRoltypesByDocumentDefinitionName(documentDefinitionName: string): Observable<Array<Roltype>> {
+  getRoltypesByCaseDefinition(
+    caseDefinitionKey: string,
+    params: {caseDefinitionVersionTag?: string}
+  ): Observable<Array<Roltype>> {
+    Object.keys(params).forEach(paramKey => {
+      const paramValue = params[paramKey];
+      if (paramValue == null) {
+        params[paramKey] = '';
+      }
+    });
+
     return this.http
       .get<
         Array<Roltype>
-      >(`${this.valtimoEndpointUri}v1/case-definition/${documentDefinitionName}/zaaktype/roltype`)
+      >(`${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/roltype`, {params})
       .pipe(catchError(() => of([])));
+  }
+
+  public getCaseDefinitions(params: any): Observable<Page<CaseListItem>> {
+    return this.http.get<Page<CaseListItem>>(
+      `${this.valtimoEndpointUri}management/v1/case-definition`,
+      {params}
+    );
   }
 }

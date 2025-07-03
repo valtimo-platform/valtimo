@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ import {CommonModule} from '@angular/common';
 import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiUploadField} from '../../models/documenten-api-upload-field.model';
 import {DocumentService} from '@valtimo/document';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-documenten-api-upload-field-modal',
@@ -67,7 +69,7 @@ import {DocumentService} from '@valtimo/document';
   ],
 })
 export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
-  @Input() public documentDefinitionName!: string;
+  @Input() public caseDefinitionKey!: string;
   @Input() public type!: string;
   protected key: string;
 
@@ -127,13 +129,20 @@ export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
       }))
     )
   );
+
+  private readonly _context = getCaseManagementRouteParams(this.route);
+
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
+    this._context,
     this.defaultValue.valueChanges,
     this.translateService.stream('key'),
   ]).pipe(
-    switchMap(([selectedItem]) =>
+    switchMap(([params, selectedItem]) =>
       combineLatest([
-        this.documentService.getDocumentTypes(this.documentDefinitionName),
+        this.documentService.getDocumentTypesForCase(
+          params.caseDefinitionKey,
+          params.caseDefinitionVersionTag
+        ),
         of(selectedItem),
       ])
     ),
@@ -172,7 +181,8 @@ export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
     private readonly fb: FormBuilder,
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
     private readonly translateService: TranslateService,
-    private readonly documentService: DocumentService
+    private readonly documentService: DocumentService,
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngOnDestroy(): void {
@@ -199,7 +209,7 @@ export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
     } as DocumentenApiUploadField;
 
     this.documentenApiDocumentService
-      .updateUploadField(this.documentDefinitionName, formField)
+      .updateUploadField(this.caseDefinitionKey, formField)
       .subscribe({
         next: () => {
           this.enable();

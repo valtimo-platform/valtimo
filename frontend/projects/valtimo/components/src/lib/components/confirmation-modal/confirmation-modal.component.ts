@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
   selector: 'valtimo-confirmation-modal',
   templateUrl: './confirmation-modal.component.html',
   styleUrls: ['./confirmation-modal.component.scss'],
+  standalone: false,
 })
 export class ConfirmationModalComponent implements OnInit, OnDestroy {
   @Input() public titleTranslationKey = '';

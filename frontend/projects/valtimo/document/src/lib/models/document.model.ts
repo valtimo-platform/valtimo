@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,29 +43,16 @@ interface Page<T> {
   number: number;
 }
 
-interface DocumentDefinitions {
-  content: DocumentDefinition[];
-  empty: boolean;
-  first: boolean;
-  last: boolean;
-  number: number;
-  numberOfElements: number;
-  size: number;
-  sort: any;
-  totalElements: number;
-  totalPages: number;
-}
-
 interface DocumentDefinition {
-  id: DefinitionId;
+  id: DocumentDefinitionId;
   schema: any;
   createdOn: string;
   readOnly: boolean;
 }
 
-interface DefinitionId {
+interface DocumentDefinitionId {
   name: string;
-  version: number;
+  caseDefinitionId: CaseDefinitionId;
 }
 
 interface CreateDocumentDefinitionResponse {
@@ -120,14 +107,9 @@ interface Document {
   caseTags?: CaseTag[];
 }
 
-interface DocumentDefinitionId {
-  name: string;
-  version: number;
-}
-
 interface ProcessDocumentDefinitionId {
   processDefinitionKey: string;
-  documentDefinitionId: DefinitionId;
+  documentDefinitionId: DocumentDefinitionId;
 }
 
 interface ProcessDocumentDefinition {
@@ -136,6 +118,24 @@ interface ProcessDocumentDefinition {
   canInitializeDocument: boolean;
   startableByUser: boolean;
   latestVersionId: string;
+}
+
+interface CaseDefinitionId {
+  key: string;
+  versionTag: string;
+}
+
+interface ProcessDefinitionCaseDefinitionId {
+  processDefinitionId: string;
+  caseDefinitionId: CaseDefinitionId;
+}
+
+interface ProcessDefinitionCaseDefinition {
+  id: ProcessDefinitionCaseDefinitionId;
+  canInitializeDocument: boolean;
+  startableByUser: boolean;
+  processDefinitionName: string;
+  processDefinitionKey: string;
 }
 
 interface ProcessDocumentInstanceId {
@@ -269,8 +269,8 @@ class ModifyDocumentAndStartProcessRequestImpl
 
 interface ProcessDocumentDefinitionRequest {
   processDefinitionKey: string;
-  documentDefinitionName: string;
-  documentDefinitionVersion: number;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
   canInitializeDocument: boolean;
   startableByUser: boolean;
 }
@@ -313,7 +313,8 @@ interface ExternalStartFormConfiguration {
 }
 
 interface CaseSettings extends ExternalStartFormConfiguration {
-  name?: string;
+  caseDefinitionKey?: string;
+  caseDefinitionVersionTag?: string;
   canHaveAssignee?: boolean;
   autoAssignTasks?: boolean;
 }
@@ -330,6 +331,7 @@ interface CaseListColumn {
   displayType: DisplayType;
   sortable: boolean;
   defaultSort: string;
+  uuid?: string;
 }
 
 interface CaseListColumnView {
@@ -340,6 +342,7 @@ interface CaseListColumnView {
   displayTypeParameters: string;
   sortable: boolean;
   defaultSort: string;
+  uuid?: string;
 }
 
 interface DisplayType {
@@ -366,8 +369,10 @@ interface LoadedValue<T> {
 }
 
 interface TemplatePayload {
-  documentDefinitionId: string;
-  documentDefinitionTitle: string;
+  name: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersion: string;
+  description: string;
 }
 
 interface TemplateResponse {
@@ -379,20 +384,29 @@ interface TemplateResponse {
   type: string;
 }
 
+interface CaseDefinition {
+  name: string;
+  active: boolean;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
+  canHaveAssignee: boolean;
+  autoAssignTasks: boolean;
+}
+
 export {
   AssignHandlerToDocumentResult,
+  CaseDefinition,
+  CaseDefinitionId,
   CaseListColumn,
   CaseListColumnView,
   CaseSettings,
   CreateDocumentDefinitionResponse,
-  DefinitionId,
+  DocumentDefinitionId,
   DisplayType,
   DisplayTypeParameters,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
-  DocumentDefinitionId,
-  DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
   DocumentRole,
@@ -400,6 +414,7 @@ export {
   Documents,
   DocumentSendMessageRequest,
   DocumentType,
+  ExternalStartFormConfiguration,
   LoadedValue,
   ModifyDocumentAndCompleteTaskRequest,
   ModifyDocumentAndCompleteTaskRequestImpl,
@@ -417,6 +432,8 @@ export {
   OpenDocumentCount,
   Page,
   Pageable,
+  ProcessDefinitionCaseDefinition,
+  ProcessDefinitionCaseDefinitionId,
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionId,
   ProcessDocumentDefinitionRequest,
@@ -429,5 +446,4 @@ export {
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
-  ExternalStartFormConfiguration,
 };

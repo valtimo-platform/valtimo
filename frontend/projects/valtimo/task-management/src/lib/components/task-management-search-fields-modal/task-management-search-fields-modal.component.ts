@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ import {
   IconModule,
   IconService,
   InputModule,
+  LayerModule,
   ListItem,
   ModalModule,
 } from 'carbon-components-angular';
@@ -66,10 +67,10 @@ import {
   filter,
   map,
   Observable,
+  of,
   startWith,
   switchMap,
 } from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-task-management-search-fields-modal',
@@ -89,11 +90,16 @@ import {ActivatedRoute} from '@angular/router';
     CarbonListModule,
     InputLabelModule,
     ValuePathSelectorComponent,
+    LayerModule,
   ],
 })
 export class TaskManagementSearchFieldsModalComponent implements OnInit {
   @Input({required: true}) open: boolean;
-  @Input({required: true}) documentDefinitionName: string;
+
+  public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
+  @Input({required: true}) public set caseDefinitionKey(value: string) {
+    this.caseDefinitionKey$.next(value);
+  }
 
   private _prefillData: TaskListSearchField | null;
   @Input() public set prefillData(value: TaskListSearchField | null) {
@@ -116,32 +122,35 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     dropdownValues: this.fb.array<{key: string; value: string}>([]),
   });
 
-  public get dataType(): AbstractControl<ListItem | null> {
+  public get dataType(): AbstractControl<ListItem | null> | null {
     return this.form.get('dataType');
   }
   public get dataTypeValue$(): Observable<ListItem | null> {
-    return this.dataType.valueChanges.pipe(startWith(this.dataType.value));
+    return this.dataType?.valueChanges.pipe(startWith(this.dataType.value)) ?? of(null);
   }
 
-  public get matchType(): AbstractControl<ListItem | null> {
+  public get matchType(): AbstractControl<ListItem | null> | null {
     return this.form.get('matchType');
   }
   public get matchTypeValue$(): Observable<ListItem | null> {
-    return this.matchType.valueChanges.pipe(startWith(this.matchType.value));
+    return this.matchType?.valueChanges.pipe(startWith(this.matchType.value)) ?? of(null);
   }
 
-  public get dropdownDataProvider(): AbstractControl<ListItem | null> {
+  public get dropdownDataProvider(): AbstractControl<ListItem | null> | null {
     return this.form.get('dropdownDataProvider');
   }
   public get dropdownDataProviderValue$(): Observable<ListItem | null> {
-    return this.dropdownDataProvider.valueChanges.pipe(startWith(this.dropdownDataProvider.value));
+    return (
+      this.dropdownDataProvider?.valueChanges.pipe(startWith(this.dropdownDataProvider.value)) ??
+      of(null)
+    );
   }
 
-  public get fieldType(): AbstractControl<ListItem | null> {
+  public get fieldType(): AbstractControl<ListItem | null> | null {
     return this.form.get('fieldType');
   }
   public get fieldTypeValue$(): Observable<ListItem | null> {
-    return this.fieldType.valueChanges.pipe(startWith(this.fieldType.value));
+    return this.fieldType?.valueChanges.pipe(startWith(this.fieldType.value)) ?? of(null);
   }
 
   public readonly TaskListSearchFieldDataType = TaskListSearchFieldDataType;
@@ -206,7 +215,7 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     switchMap((provider: TaskListSearchDropdownDataProvider | null | undefined) =>
       this.documentService.getDropdownData(
         provider ?? '',
-        this.documentDefinitionName ?? '',
+        this.caseDefinitionKey$.getValue() ?? '',
         this.keyValue ?? ''
       )
     ),
@@ -324,19 +333,13 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
       )
     );
 
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || ''),
-    filter(docDefName => !!docDefName)
-  );
-
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly fb: FormBuilder,
-    private readonly translateService: TranslateService,
-    private readonly route: ActivatedRoute
+    private readonly translateService: TranslateService
   ) {
     this.iconService.registerAll([TrashCan16, InformationFilled16]);
   }
@@ -453,8 +456,8 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return null;
   }
 
-  private dropdownDataProviderValidator(group: typeof this.form): ValidationErrors {
-    const controlValue: ListItem | undefined = group.get('dropdownDataProvider')?.value;
+  private dropdownDataProviderValidator(group: typeof this.form): ValidationErrors | null {
+    const controlValue: ListItem | undefined | null = group.get('dropdownDataProvider')?.value;
     const fieldTypeControlValue: ListItem | null | undefined = group.get('fieldType')?.value;
 
     if (
@@ -469,8 +472,8 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return null;
   }
 
-  private dropdownValuesValidator(group: typeof this.form): ValidationErrors {
-    const controlValue: {key: string; value: string}[] | undefined =
+  private dropdownValuesValidator(group: typeof this.form): ValidationErrors | null {
+    const controlValue: ({key: string; value: string} | null)[] | undefined =
       group.get('dropdownValues')?.value;
     const fieldTypeControlValue = group.get('fieldType')?.value?.id;
     const dropdownProviderValue = group.get('dropdownDataProvider')?.value?.id;

@@ -3,5 +3,6 @@
   "dest": "../../../dist/valtimo/migration",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["bpmn-js"]
 }

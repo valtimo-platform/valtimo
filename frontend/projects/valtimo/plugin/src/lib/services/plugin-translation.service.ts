@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ export class PluginTranslationService {
     private readonly pluginService: PluginService
   ) {}
 
-  translate(translateKey: string, pluginDefinitionKey: string): Observable<string> {
+  public translate(translateKey: string, pluginDefinitionKey: string): Observable<string> {
     return combineLatest([
       this.pluginService.pluginSpecifications$,
       this.translateService.stream('key'),
@@ -41,12 +41,20 @@ export class PluginTranslationService {
     );
   }
 
-  instant(translateKey: string, pluginDefinitionKey: string): string {
+  public instant(translateKey: string, pluginDefinitionKey: string): string {
     return this.getTranslation(
       this.pluginService.pluginSpecifications,
       pluginDefinitionKey,
       translateKey
     );
+  }
+
+  public instantByPluginActionKey(pluginActionKey: string): string {
+    return this.getTranslationFromPluginActionKey(pluginActionKey);
+  }
+
+  public instantPluginTitleByPluginActionKey(pluginActionKey: string): string {
+    return this.getPluginTitleFromPluginActionKey(pluginActionKey);
   }
 
   private getTranslation(
@@ -60,5 +68,31 @@ export class PluginTranslationService {
     );
     const translation = pluginSpecification?.pluginTranslations[currentLang][translateKey];
     return translation || `${pluginDefinitionKey}.${translateKey}`;
+  }
+
+  private getTranslationFromPluginActionKey(pluginActionKey: string): string {
+    const currentLang = this.translateService.currentLang;
+    const pluginSpecifications = this.pluginService.pluginSpecifications;
+    const pluginActionTranslation = pluginSpecifications.reduce((acc, curr) => {
+      const currentLanguageTranslations = curr.pluginTranslations[currentLang];
+      const pluginActionTranslation =
+        currentLanguageTranslations && currentLanguageTranslations[pluginActionKey];
+      return pluginActionTranslation || acc;
+    }, '');
+
+    return pluginActionTranslation || pluginActionKey;
+  }
+
+  private getPluginTitleFromPluginActionKey(pluginActionKey: string): string {
+    const currentLang = this.translateService.currentLang;
+    const pluginSpecifications = this.pluginService.pluginSpecifications;
+    return pluginSpecifications.reduce((acc, curr) => {
+      const currentLanguageTranslations = curr.pluginTranslations[currentLang];
+      const pluginActionTranslation =
+        currentLanguageTranslations && currentLanguageTranslations[pluginActionKey];
+      const pluginTitleTranslation =
+        currentLanguageTranslations && currentLanguageTranslations['title'];
+      return (pluginActionTranslation && pluginTitleTranslation) || acc;
+    }, '-');
   }
 }

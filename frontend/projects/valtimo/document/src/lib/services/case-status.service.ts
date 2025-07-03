@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/config';
+import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {InternalCaseStatus} from '../models';
@@ -31,58 +31,61 @@ export class CaseStatusService extends BaseApiService {
     super(httpClient, configService);
   }
 
+  public getInternalCaseStatuses(caseDefinitionKey: string): Observable<InternalCaseStatus[]> {
+    return this.httpClient.get<InternalCaseStatus[]>(
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/internal-status`)
+    );
+  }
+
   public getInternalCaseStatusesManagement(
-    caseDefinitionName: string
+    caseDefinitionKey: string
   ): Observable<InternalCaseStatus[]> {
     return this.httpClient.get<InternalCaseStatus[]>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/internal-status`)
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionKey}/internal-status`)
     );
   }
 
-  public getInternalCaseStatuses(caseDefinitionName: string): Observable<InternalCaseStatus[]> {
-    return this.httpClient.get<InternalCaseStatus[]>(
-      this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/internal-status`)
-    );
-  }
-
-  public saveInternalCaseStatus(
-    caseDefinitionName: string,
-    status: InternalCaseStatus
+  public createInternalCaseStatus(
+    caseDefinitionKey: string,
+    internalCaseStatus: InternalCaseStatus
   ): Observable<InternalCaseStatus> {
     return this.httpClient.post<InternalCaseStatus>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/internal-status`),
-      status
-    );
-  }
-
-  public deleteInternalCaseStatus(caseDefinitionName: string, statusKey: string): Observable<void> {
-    return this.httpClient.delete<void>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionName}/internal-status/${statusKey}`
-      )
-    );
-  }
-
-  public updateInternalCaseStatus(
-    caseDefinitionName: string,
-    currentStatusKey: string,
-    updatedStatus: InternalCaseStatus
-  ): Observable<InternalCaseStatus> {
-    return this.httpClient.put<InternalCaseStatus>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionName}/internal-status/${currentStatusKey}`
-      ),
-      updatedStatus
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionKey}/internal-status`),
+      internalCaseStatus
     );
   }
 
   public updateInternalCaseStatuses(
-    caseDefinitionName: string,
-    reorderedStatus: InternalCaseStatus[]
+    caseDefinitionKey: string,
+    internalCaseStatuses: InternalCaseStatus[]
   ): Observable<InternalCaseStatus[]> {
     return this.httpClient.put<InternalCaseStatus[]>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/internal-status`),
-      reorderedStatus
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionKey}/internal-status`),
+      internalCaseStatuses
+    );
+  }
+
+  public updateInternalCaseStatus(
+    caseDefinitionKey: string,
+    internalStatusKey: string,
+    internalCaseStatus: InternalCaseStatus
+  ): Observable<void> {
+    return this.httpClient.put<void>(
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionKey}/internal-status/${internalStatusKey}`
+      ),
+      internalCaseStatus
+    );
+  }
+
+  public deleteInternalCaseStatus(
+    caseDefinitionKey: string,
+    internalStatusKey: string
+  ): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionKey}/internal-status/${internalStatusKey}`
+      )
     );
   }
 }

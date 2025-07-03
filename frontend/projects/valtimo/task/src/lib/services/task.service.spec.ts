@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,22 @@
  */
 
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule} from '@angular/common/http/testing';
+import {provideHttpClientTesting} from '@angular/common/http/testing';
 import {TaskService} from './task.service';
-import {VALTIMO_CONFIG} from '@valtimo/config';
+import {VALTIMO_CONFIG} from '@valtimo/shared';
 import {environment} from '@src/environments/environment';
+import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 
 describe('TaskService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [TaskService, {provide: VALTIMO_CONFIG, useValue: environment}],
-      imports: [HttpClientTestingModule],
+      imports: [],
+      providers: [
+        TaskService,
+        {provide: VALTIMO_CONFIG, useValue: environment},
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     });
   });
 

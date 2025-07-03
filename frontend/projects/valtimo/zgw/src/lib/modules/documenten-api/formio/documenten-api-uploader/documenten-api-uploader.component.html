@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@
   <div *ngIf="obs.linked === false">
     <div
       *ngIf="obs.isAdmin"
-      [translate]="'dossier.documenten.noProcessLinked.adminRole'"
+      [translate]="'case.documenten.noProcessLinked.adminRole'"
       class="bg-warning text-black mb-2 p-3 text-center"
     ></div>
     <div
       *ngIf="!obs.isAdmin"
-      [translate]="'dossier.documenten.noProcessLinked.regularUser'"
+      [translate]="'case.documenten.noProcessLinked.regularUser'"
       class="bg-warning text-black mb-2 p-3 text-center"
     ></div>
   </div>

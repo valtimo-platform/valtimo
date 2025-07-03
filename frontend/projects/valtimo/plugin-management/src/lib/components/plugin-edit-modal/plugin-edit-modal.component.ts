@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import {
 import {NGXLogger} from 'ngx-logger';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-plugin-edit-modal',
   templateUrl: './plugin-edit-modal.component.html',
   styleUrls: ['./plugin-edit-modal.component.scss'],

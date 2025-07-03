@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {FormioForm} from '@formio/angular';
-import {ConfigService} from '@valtimo/config';
-import {InterceptorSkip} from '@valtimo/security';
+import {ConfigService, InterceptorSkip} from '@valtimo/shared';
 import {FormDefinitionOption} from './models';
 
 @Injectable({
@@ -53,9 +52,18 @@ export class FormService {
     );
   }
 
-  getAllFormDefinitions(): Observable<Array<FormDefinitionOption>> {
+  getAllUnlinkedFormDefinitions(): Observable<Array<FormDefinitionOption>> {
     return this.http.get<Array<FormDefinitionOption>>(
-      `${this.valtimoApiConfig.endpointUri}v1/form-definition`
+      `${this.valtimoApiConfig.endpointUri}management/v1/form-option`
+    );
+  }
+
+  getAllFormDefinitionsForCaseDefinition(
+    caseDefinitionKey: string,
+    versionTag: string
+  ): Observable<Array<FormDefinitionOption>> {
+    return this.http.get<Array<FormDefinitionOption>>(
+      `${this.valtimoApiConfig.endpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form-option`
     );
   }
 }

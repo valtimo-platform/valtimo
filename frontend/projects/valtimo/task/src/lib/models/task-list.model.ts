@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import {ListItem} from 'carbon-components-angular';
-import {SearchFilter, SearchFilterRange, TaskListTab} from '@valtimo/config';
+import {SearchFilter, SearchFilterRange, TaskListTab} from '@valtimo/shared';
 
 interface TaskPageParams {
   page: number;
@@ -66,7 +66,7 @@ type TaskListOtherFilters = Array<SearchFilter | SearchFilterRange>;
 interface TaskListQueryParams {
   selectedTaskType: TaskListTab;
   params: TaskPageParams;
-  caseDefinitionName?: string;
+  caseDefinitionKey?: string;
   otherFilters?: TaskListOtherFilters;
 }
 

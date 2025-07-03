@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
-  CreateInformatieObjectTypeLinkRequest,
   CreateZaakTypeLinkRequest,
   DocumentenApiFileReference,
   InformatieObjectType,
-  InformatieObjectTypeLink,
   OpenZaakConfig,
   OpenZaakResource,
   ResourceDto,
@@ -43,104 +41,80 @@ export class OpenZaakService {
     private http: HttpClient,
     private configService: ConfigService
   ) {
-    this.valtimoApiConfig = configService.config.valtimoApi;
-    this.catalogus = configService.config.openZaak.catalogus;
+    this.valtimoApiConfig = this.configService.config.valtimoApi;
+    this.catalogus = this.configService.config.openZaak.catalogus;
   }
 
-  getOpenZaakConfig(): Observable<OpenZaakConfig> {
+  public getOpenZaakConfig(): Observable<OpenZaakConfig> {
     return this.http.get<OpenZaakConfig>(`${this.valtimoApiConfig.endpointUri}v1/openzaak/config`);
   }
 
-  getResource(resourceId: string): Observable<ResourceDto> {
+  public getResource(resourceId: string): Observable<ResourceDto> {
     return this.http.get<ResourceDto>(
       `${this.valtimoApiConfig.endpointUri}v1/resource/${resourceId}`
     );
   }
 
-  getZaakTypes(): Observable<ZaakType[]> {
+  public getZaakTypes(): Observable<ZaakType[]> {
     return this.http.get<ZaakType[]>(
       `${this.valtimoApiConfig.endpointUri}management/v1/zgw/zaaktype`
     );
   }
 
-  getBesluittypen(): Observable<any> {
+  public getBesluittypen(): Observable<any> {
     return this.http.get(`${this.valtimoApiConfig.endpointUri}v1/besluittype`);
   }
 
-  getInformatieObjectTypes(): Observable<InformatieObjectType[]> {
+  public getInformatieObjectTypes(): Observable<InformatieObjectType[]> {
     return this.http.get<InformatieObjectType[]>(
       `${this.valtimoApiConfig.endpointUri}v1/openzaak/informatie-object-typen/${this.catalogus}`
     );
   }
 
-  getZaakTypeLink(documentDefinitionName: string): Observable<ZaakTypeLink> {
+  public getZaakTypeLink(
+    caseDefinitionKey: string,
+    caseVersionTag: string
+  ): Observable<ZaakTypeLink> {
     return this.http.get<ZaakTypeLink>(
-      `${this.valtimoApiConfig.endpointUri}management/v1/zaak-type-link/${documentDefinitionName}`
+      `${this.valtimoApiConfig.endpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseVersionTag}/zaak-type-link`
     );
   }
 
-  /**
-   * @deprecated This method will be removed in the future.
-   */
-  getInformatieObjectTypeLink(id: string): Observable<InformatieObjectTypeLink> {
-    return this.http.get<InformatieObjectTypeLink>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/informatie-object-type-link/${id}`
-    );
-  }
-
-  createZaakTypeLink(request: CreateZaakTypeLinkRequest): Observable<any> {
+  public createZaakTypeLink(request: CreateZaakTypeLinkRequest): Observable<any> {
     return this.http.post<any>(
-      `${this.valtimoApiConfig.endpointUri}management/v1/zaak-type-link`,
+      `${this.valtimoApiConfig.endpointUri}management/v1/case-definition/${request.caseDefinitionKey}/version/${request.caseVersionTag}/zaak-type-link`,
       request
     );
   }
-
-  /**
-   * @deprecated This method will be removed in the future.
-   */
-  createInformatieObjectTypeLink(request: CreateInformatieObjectTypeLinkRequest): Observable<any> {
-    return this.http.post<any>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/informatie-object-type-link`,
-      request
-    );
-  }
-
-  deleteZaakTypeLink(documentDefinitionName: string): Observable<any> {
+  public deleteZaakTypeLink(caseDefinitionKey: string, caseVersionTag: string): Observable<any> {
     return this.http.delete<any>(
-      `${this.valtimoApiConfig.endpointUri}management/v1/zaak-type-link/${documentDefinitionName}`
+      `${this.valtimoApiConfig.endpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseVersionTag}/zaak-type-link`
     );
   }
 
-  /**
-   * @deprecated This method will be removed in the future.
-   */
-  deleteInformatieObjectTypeLink(id: string): Observable<any> {
-    return this.http.delete<any>(
-      `${this.valtimoApiConfig.endpointUri}v1/openzaak/informatie-object-type-link/${id}`
-    );
-  }
-
-  getZaakTypeLinkListByProcess(processDefinitionKey: string): Observable<Array<ZaakTypeLink>> {
+  public getZaakTypeLinkListByProcess(
+    processDefinitionKey: string
+  ): Observable<Array<ZaakTypeLink>> {
     return this.http.get<Array<ZaakTypeLink>>(
       `${this.valtimoApiConfig.endpointUri}management/v1/zaak-type-link/process/${processDefinitionKey}`
     );
   }
 
-  getStatusTypes(zaakTypeRequest: ZaakTypeRequest): Observable<any> {
+  public getStatusTypes(zaakTypeRequest: ZaakTypeRequest): Observable<any> {
     return this.http.post(
       `${this.valtimoApiConfig.endpointUri}v1/openzaak/status`,
       zaakTypeRequest
     );
   }
 
-  getStatusResults(zaakTypeRequest): Observable<any> {
+  public getStatusResults(zaakTypeRequest): Observable<any> {
     return this.http.post(
       `${this.valtimoApiConfig.endpointUri}v1/openzaak/resultaat`,
       zaakTypeRequest
     );
   }
 
-  upload(file: File, documentDefinitionName: string): Observable<OpenZaakResource> {
+  public upload(file: File, documentDefinitionName: string): Observable<OpenZaakResource> {
     const formData: FormData = new FormData();
     formData.append('file', file);
     formData.append('documentDefinitionName', documentDefinitionName);
@@ -155,7 +129,7 @@ export class OpenZaakService {
     );
   }
 
-  uploadWithMetadata(
+  public uploadWithMetadata(
     file: File,
     documentId: string,
     metadata: {[key: string]: any}
@@ -178,7 +152,7 @@ export class OpenZaakService {
     });
   }
 
-  uploadTempFileWithMetadata(
+  public uploadTempFileWithMetadata(
     file: File,
     metadata: {[key: string]: any}
   ): Observable<DocumentenApiFileReference> {

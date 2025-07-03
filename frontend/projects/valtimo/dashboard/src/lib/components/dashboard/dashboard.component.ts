@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],

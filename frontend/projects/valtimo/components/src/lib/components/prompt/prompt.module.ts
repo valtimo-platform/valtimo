@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {PromptComponent} from './prompt.component';
-import {ButtonModule} from '../button/button.module';
-import {TitleModule} from '../title/title.module';
+import {ButtonModule} from 'carbon-components-angular';
 import {ParagraphModule} from '../paragraph/paragraph.module';
 
 /**
@@ -26,7 +25,7 @@ import {ParagraphModule} from '../paragraph/paragraph.module';
  */
 @NgModule({
   declarations: [PromptComponent],
-  imports: [CommonModule, ButtonModule, TitleModule, ParagraphModule],
+  imports: [CommonModule, ButtonModule, ParagraphModule],
   exports: [PromptComponent],
 })
 export class PromptModule {}

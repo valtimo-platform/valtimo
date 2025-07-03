@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-export * from './custom-tags.service';
 export * from './create-custom-component';
 export * from './elements.common';
 export * from './register-custom-component';

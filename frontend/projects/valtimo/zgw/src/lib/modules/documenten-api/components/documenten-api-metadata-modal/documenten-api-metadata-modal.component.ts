@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import {
   take,
 } from 'rxjs';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import {tap} from 'rxjs/operators';
@@ -362,13 +362,13 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   public readonly tagItems$: Observable<Array<ListItem>> = combineLatest([
-    this.valtimoModalService.documentDefinitionName$,
+    this.valtimoModalService.caseDefinitionKey$,
     this.tagFormControl.valueChanges.pipe(startWith(this.tagFormControl.value)),
   ]).pipe(
-    filter(([documentDefinitionName]) => !!documentDefinitionName),
-    switchMap(([documentDefinitionName, tagFormControlValue]) =>
+    filter(([caseDefinitionKey]) => !!caseDefinitionKey),
+    switchMap(([caseDefinitionKey, tagFormControlValue]) =>
       combineLatest([
-        this.documentenApiTagService.getTags(documentDefinitionName),
+        this.documentenApiTagService.getTags(caseDefinitionKey),
         of(tagFormControlValue),
       ])
     ),
@@ -398,15 +398,26 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     })
   );
 
+  public readonly documentId$: Observable<string | null> = this.router.events.pipe(
+    filter(event => event instanceof NavigationEnd),
+    startWith(null),
+    map(() => {
+      const segments = window.location.pathname.split('/');
+      const i = segments.indexOf('document');
+      return i !== -1 && segments.length > i + 1 ? segments[i + 1] : null;
+    })
+  );
+
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this.valtimoModalService.documentDefinitionName$,
+    this.documentId$,
     this.informatieobjecttypeFormControl.valueChanges.pipe(
       startWith(this.informatieobjecttypeFormControl.value)
     ),
   ]).pipe(
-    switchMap(([documentDefinitionName, informatieobjecttypeValue]) =>
+    filter(([documentId]) => !!documentId),
+    switchMap(([documentId, informatieobjecttypeValue]) =>
       combineLatest([
-        this.documentService.getDocumentTypes(documentDefinitionName),
+        this.documentService.getDocumentTypesForDocument(documentId),
         of(informatieobjecttypeValue),
       ])
     ),
@@ -423,9 +434,9 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    this.valtimoModalService.documentDefinitionName$.pipe(
-      switchMap(documentDefinitionName =>
-        this.documentenApiVersionService.getSupportedApiFeatures(documentDefinitionName)
+    this.valtimoModalService.caseDefinitionKey$.pipe(
+      switchMap(caseDefinitionKey =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey)
       )
     );
 
@@ -442,7 +453,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly modalService: ModalService,
     private readonly translateService: TranslateService,
     private readonly valtimoModalService: ValtimoModalService,
-    private readonly documentenApiVersionService: DocumentenApiVersionService
+    private readonly documentenApiVersionService: DocumentenApiVersionService,
+    private readonly router: Router
   ) {}
 
   public ngOnInit(): void {
@@ -469,6 +481,10 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   public tagsSelected(event: Array<ListItem>) {
     this.tagFormControl.patchValue(event.filter(tag => tag.selected).map(tag => tag.id));
+  }
+
+  public setAdditionalDate(value: AdditionalDocumentDate): void {
+    this.additionalDocumentDate$.next(value);
   }
 
   public confidentialityLevelSelected(event: {id: string}) {
@@ -662,18 +678,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
         .pipe(
           map(
             ([params, firstChildParams]) =>
-              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
+              (params?.caseDefinitionKey || firstChildParams?.caseDefinitionKey) as string
           ),
-          filter(documentDefinitionName => !!documentDefinitionName)
+          filter(caseDefinitionKey => !!caseDefinitionKey)
         )
-        .subscribe(documentDefinitionName =>
-          this.valtimoModalService.setDocumentDefinitionName(documentDefinitionName)
+        .subscribe(caseDefinitionKey =>
+          this.valtimoModalService.setCaseDefinitionKey(caseDefinitionKey)
         )
     );
-  }
-
-  private setAdditionalDate(value: AdditionalDocumentDate): void {
-    this.additionalDocumentDate$.next(value);
   }
 
   private areAllFieldsHidden(): boolean {

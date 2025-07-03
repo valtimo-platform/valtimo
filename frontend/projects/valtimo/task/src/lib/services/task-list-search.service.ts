@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import {
   SearchFieldValues,
   SearchFilter,
   SearchFilterRange,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {BehaviorSubject, map, Observable, of, switchMap, tap} from 'rxjs';
 import {TaskListService} from './task-list.service';
 import {TaskListOtherFilters, TaskListSearchField} from '../models';
@@ -41,7 +41,7 @@ export class TaskListSearchService {
   }
 
   public readonly searchFields$: Observable<SearchField[]> =
-    this.taskListService.caseDefinitionName$.pipe(
+    this.taskListService.caseDefinitionKey$.pipe(
       tap(() => this._loadingSearchFields$.next(true)),
       switchMap(caseDefinitionName =>
         caseDefinitionName

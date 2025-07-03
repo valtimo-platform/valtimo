@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {MigrationComponent} from './migration.component';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 
 const routes: Routes = [
   {

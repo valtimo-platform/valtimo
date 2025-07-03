@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import {validate as isValidUUID} from 'uuid';
   selector: 'valtimo-default-plugin-configuration',
   templateUrl: './default-plugin-configuration.component.html',
   styleUrls: ['./default-plugin-configuration.component.scss'],
+  standalone: false,
 })
 export class DefaultPluginConfigurationComponent implements OnInit, OnDestroy {
   @Input() save$: Observable<void>;

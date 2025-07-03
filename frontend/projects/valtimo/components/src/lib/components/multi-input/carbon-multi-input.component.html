@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -107,9 +107,9 @@
             [value]="value"
             [fullWidth]="fullWidth"
             [disabled]="disabled"
-            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
+            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
             [prefixes]="valuePathSelectorPrefixes"
-            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
+            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
             [notation]="valuePathSelectorNotation"
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
@@ -124,9 +124,9 @@
             [value]="value"
             [fullWidth]="fullWidth"
             [disabled]="disabled"
-            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
+            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
             [prefixes]="valuePathSelectorPrefixes"
-            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
+            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
             [notation]="valuePathSelectorNotation"
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
@@ -142,11 +142,11 @@
             [value]="value"
             [fullWidth]="fullWidth"
             [disabled]="disabled"
-            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
+            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
             [prefixes]="valuePathSelectorPrefixes"
             [dropdownItems$]="getDropdownItemsForRow(i)"
             [dropdownWidth]="dropdownWidth"
-            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
+            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
             [notation]="valuePathSelectorNotation"
             [keyColumnFlex]="keyColumnFlex"
             [dropdownColumnFlex]="dropdownColumnFlex"
@@ -165,7 +165,7 @@
         (click)="deleteRow(value.uuid)"
         [title]="vars.deleteRowText"
       >
-        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+        <svg cdsIcon="trash-can" size="16"></svg>
       </button>
     </div>
 

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -67,35 +67,44 @@
       </div>
       <div class="v-multi-input__buttons">
         <div class="v-multi-input__toggle-button">
-          <v-button
-            [mdiIcon]="value.expanded === true ? 'chevron-up' : 'chevron-down'"
-            type="icon-grey"
-            (clickEvent)="toggleRow(value.uuid, value.expanded)"
+          <cds-icon-button
+            (click)="toggleRow(value.uuid, value.expanded)"
+            size="sm"
             [title]="
               value.expanded ? ('interface.collapse' | translate) : ('interface.expand' | translate)
             "
-          ></v-button>
+          >
+            <svg
+              [cdsIcon]="value.expanded === true ? 'chevron--up' : 'chevron--down'"
+              size="16"
+            ></svg>
+          </cds-icon-button>
         </div>
+
         <div class="v-multi-input__delete-button">
-          <v-button
+          <cds-icon-button
             [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
-            mdiIcon="close"
-            type="icon-danger"
-            (clickEvent)="deleteRow(value.uuid)"
+            (click)="deleteRow(value.uuid)"
+            size="sm"
+            kind="danger"
             [title]="vars.deleteRowText"
-          ></v-button>
+          >
+            <svg cdsIcon="close" size="16"></svg>
+          </cds-icon-button>
         </div>
       </div>
     </div>
     <div class="v-multi-input__add-button">
-      <v-button
-        mdiIcon="plus"
-        type="success"
-        (clickEvent)="addRow()"
+      <button
+        cdsButton
+        (click)="addRow()"
         [title]="vars.addRowText"
         [disabled]="(addRowEnabled$ | async) === false || disabled"
-        >{{ vars.addRowText }}</v-button
       >
+        <svg cdsIcon="add" size="16"></svg>
+
+        {{ vars.addRowText }}
+      </button>
     </div>
   </div>
 </div>

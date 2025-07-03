@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {OpenNotificatiesConfig} from '../../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-open-notificaties-configuration',
   templateUrl: './open-notificaties-configuration.component.html',
   styleUrls: ['./open-notificaties-configuration.component.scss'],

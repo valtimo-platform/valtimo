@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -60,13 +60,12 @@
           *ngIf="obs?.supportedDocumentenApiFeatures?.supportsFilterableColumns"
           [cdsOverflowMenu]="overflowFilter"
           [customPane]="true"
-          [iconOnly]="true"
           [flip]="true"
           [offset]="{x: 0, y: 47}"
           cdsButton="ghost"
           placement="bottom"
         >
-          <svg class="cds--btn__icon" cdsIcon="filter" size="16"></svg>
+          <svg cdsIcon="filter" size="16"></svg>
         </button>
 
         <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
@@ -106,9 +105,9 @@
 
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="dashboardManagement.deleteModal.confirm"
-  contentTranslationKey="dossier.documenten.deleteConfirmationModal.content"
+  contentTranslationKey="case.documenten.deleteConfirmationModal.content"
   confirmButtonType="danger"
-  titleTranslationKey="dossier.documenten.deleteConfirmationModal.title"
+  titleTranslationKey="case.documenten.deleteConfirmationModal.title"
   [showModalSubject$]="showDeleteConfirmationModal$"
   (confirmEvent)="deleteDocument()"
 >
@@ -124,23 +123,23 @@
   } @else if (showZaakLinkWarning && isAdmin) {
     <valtimo-no-results
       [action]="navigateToCaseAdminButton"
-      [description]="'dossier.documenten.noZaakFound' | translate"
-      [title]="'dossier.documenten.noZaakFoundTitle' | translate"
+      [description]="'case.documenten.noZaakFound' | translate"
+      [title]="'case.documenten.noZaakFoundTitle' | translate"
     ></valtimo-no-results>
   } @else {
     <valtimo-no-results
       [action]="uploadButton"
-      [description]="'dossier.documenten.noFiles' | translate"
-      [title]="'dossier.documenten.noFilesTitle' | translate"
+      [description]="'case.documenten.noFiles' | translate"
+      [title]="'case.documenten.noFilesTitle' | translate"
     ></valtimo-no-results>
   }
 </ng-template>
 
 <ng-template #overflowFilter>
-  <valtimo-dossier-detail-tab-documenten-api-filter
+  <valtimo-case-detail-tab-documenten-api-filter
     [prefillFilter]="filter$ | async"
     (filterEvent)="onFilterEvent($event)"
-  ></valtimo-dossier-detail-tab-documenten-api-filter>
+  ></valtimo-case-detail-tab-documenten-api-filter>
 </ng-template>
 
 <ng-template #resetFilterButton>
@@ -178,7 +177,7 @@
 
 <ng-template #navigateToCaseAdminButton>
   <button (click)="onNavigateToCaseAdminClick()" cdsButton="primary">
-    {{ 'dossier.documenten.navigateToCaseAdmin' | translate }}
+    {{ 'case.documenten.navigateToCaseAdmin' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="settings" size="16"></svg>
   </button>

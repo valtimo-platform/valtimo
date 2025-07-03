@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {RouterTestingModule} from '@angular/router/testing';
 import {PageTitleComponent} from './page-title.component';
 import {TranslateService} from '@ngx-translate/core';
-import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/config';
+import {MockTranslateService, VALTIMO_CONFIG} from '@valtimo/shared';
 import {LoggerTestingModule} from 'ngx-logger/testing';
 import {environment} from '@src/environments/environment';
 import {ActivatedRoute} from '@angular/router';
@@ -28,7 +28,7 @@ describe('PageTitleComponent', () => {
   let component: PageTitleComponent;
   let fixture: ComponentFixture<PageTitleComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [RouterTestingModule, LoggerTestingModule],
       declarations: [PageTitleComponent],

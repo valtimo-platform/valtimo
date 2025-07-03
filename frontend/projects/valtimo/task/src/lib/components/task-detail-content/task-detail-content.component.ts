@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,12 @@ import {
   ValtimoFormioOptions,
   ValtimoModalService,
 } from '@valtimo/components';
-import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
+import {
+  ConfigService,
+  FORM_VIEW_MODEL_TOKEN,
+  FormViewModel,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
@@ -60,8 +65,17 @@ import {
 } from '@valtimo/process-link';
 import {IconService} from 'carbon-components-angular';
 import {NGXLogger} from 'ngx-logger';
-import {ToastrService} from 'ngx-toastr';
-import {BehaviorSubject, combineLatest, distinctUntilChanged, filter, map, Observable, Subscription, switchMap, take,} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
 import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
 import {CAN_ASSIGN_TASK_PERMISSION, TASK_DETAIL_PERMISSION_RESOURCE} from '../../task-permissions';
@@ -146,6 +160,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   constructor(
     private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
+    private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
     private readonly logger: NGXLogger,
     private readonly modalService: ValtimoModalService,
@@ -155,10 +170,11 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
     private readonly stateService: FormIoStateService,
     private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
     private readonly taskService: TaskService,
-    private readonly toastr: ToastrService,
     private readonly translateService: TranslateService,
     @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
-    @Optional() @Inject(FORM_CUSTOM_COMPONENT_TOKEN) private readonly formCustomComponentConfig: FormCustomComponentConfig,
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig,
     private readonly urlResolverService: UrlResolverService
   ) {
     this.intermediateSaveEnabled = !!this.configService.featureToggles?.enableIntermediateSave;
@@ -215,9 +231,10 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
   public completeTask(task: Task | null): void {
     if (!task) return;
 
-    this.toastr.success(
-      `${task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`
-    );
+    this.globalNotificationService.showToast({
+      title: `${task.name} ${this.translateService.instant('taskDetail.taskCompleted')}`,
+      type: 'success',
+    });
     this.task$.next(null);
     this.formSubmit.emit();
     this.closeModalEvent.emit();
@@ -432,7 +449,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
           if (!this.formCustomComponentConfig) {
             return;
           }
-          let renderedComponent:ComponentRef<FormCustomComponent>;
+          let renderedComponent: ComponentRef<FormCustomComponent>;
           this._subscriptions.add(
             this._formCustomComponentConfig$.subscribe(formCustomComponentConfig => {
               const customComponent = formCustomComponentConfig[formCustomComponentKey];
@@ -468,11 +485,11 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
 
   private setDocumentDefinitionNameInService(task: Task): void {
     this.documentService
-      .getProcessDocumentDefinitionFromProcessInstanceId(task.processInstanceId)
-      .subscribe(processDocumentDefinition => {
-        const documentDefinitionName = processDocumentDefinition.id.documentDefinitionId.name;
-        this.modalService.setDocumentDefinitionName(documentDefinitionName);
-        this.stateService.setDocumentDefinitionName(documentDefinitionName);
+      .getProcessDefinitionCaseDefinitionFromProcessInstanceId(task.processInstanceId)
+      .subscribe(ProcessDefinitionCaseDefinition => {
+        const caseDefinitionKey = ProcessDefinitionCaseDefinition.id.caseDefinitionId.key;
+        this.modalService.setCaseDefinitionKey(caseDefinitionKey);
+        this.stateService.setDocumentDefinitionName(caseDefinitionKey);
       });
   }
 }

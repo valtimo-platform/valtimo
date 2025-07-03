@@ -15,7 +15,9 @@ const rebuildLockFilePath = path.resolve(__dirname, '../.rebuilding.lock');
 
 const skipInitialBuild = process.env.SKIP_BUILD === 'true';
 
-function checkPortInUse(port = 4200) {
+const PORT_TO_CHECK = 4200;
+
+function checkPortInUse(port = PORT_TO_CHECK) {
   return new Promise(resolve => {
     const server = net.createServer();
     server.once('error', () => resolve(true));
@@ -53,11 +55,11 @@ function getChokidarCommand(libName) {
 async function runNext() {
   if (current >= watchScripts.length) {
     if (!hasStartedApp) {
-      console.log('\n✅ All libs are watching. Checking if app should start...\n');
-      const inUse = await checkPortInUse(4200);
+      console.log('\nAll libs are watching. Checking if app should start...\n');
+      const inUse = await checkPortInUse(PORT_TO_CHECK);
 
       if (!inUse) {
-        console.log('🚀 Launching app with: npm run start\n');
+        console.log('Launching app with: npm run start\n');
         const startProc = spawn('npm run start', {
           stdio: 'inherit',
           shell: true,
@@ -65,7 +67,7 @@ async function runNext() {
         activeProcesses.push(startProc);
         hasStartedApp = true;
       } else {
-        console.log('⚠️ Port 4200 in use. Skipping npm start.\n');
+        console.log(`Port ${PORT_TO_CHECK} in use. Skipping npm start.`);
         hasStartedApp = true;
       }
     }
@@ -78,8 +80,8 @@ async function runNext() {
   const initialBuildCmd = `ng build @valtimo/${libName}`;
 
   if (!skipInitialBuild) {
-    console.log(`\n🔧 Building initially: @valtimo/${libName}`);
-    createRebuildLock(); // Create the rebuild lock file
+    console.log(`\nBuilding library initially: @valtimo/${libName}`);
+    createRebuildLock();
 
     const buildProc = spawn(initialBuildCmd, {shell: true});
 
@@ -88,9 +90,9 @@ async function runNext() {
       process.stdout.write(str);
 
       if (str.includes('Built Angular Package')) {
-        console.log(`✅ Initial build done for: @valtimo/${libName}\n`);
+        console.log(`Initial library build done for: @valtimo/${libName}\n`);
         buildProc.stdout.removeAllListeners();
-        removeRebuildLock(); // Remove the rebuild lock file
+        removeRebuildLock();
         buildProc.kill();
 
         const watcherProc = spawn(chokidarCmd, {
@@ -108,7 +110,7 @@ async function runNext() {
       process.stderr.write(data.toString());
     });
   } else {
-    console.log(`\n✅ Skipping initial build for: @valtimo/${libName}, starting watcher...\n`);
+    console.log(`\nSkipping initial library build for: @valtimo/${libName}, starting watcher...\n`);
     const watcherProc = spawn(chokidarCmd, {
       stdio: 'inherit',
       shell: true,
@@ -121,7 +123,7 @@ async function runNext() {
 }
 
 function cleanup() {
-  console.log('\n🛑 Cleaning up child processes and temp files...\n');
+  console.log('\nCleaning up child processes and temp files...\n');
   activeProcesses.forEach(p => {
     try {
       p.kill();

@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/case",
+  "lib": {
+    "entryFile": "src/public_api.ts"
+  },
+  "allowedNonPeerDependencies": [
+    "ngx-csv",
+    "moment",
+    "@ngx-translate/core",
+    "@ngx-translate/http-loader",
+    "uuid",
+    "muuri",
+    "angular-split"
+  ]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,68 +15,82 @@
  */
 
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
-  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
 
-import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
+import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 import {NGXLogger} from 'ngx-logger';
+import {from, take} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-migration-process-diagram',
   templateUrl: './migration-process-diagram.component.html',
   styleUrls: ['./migration-process-diagram.component.scss'],
 })
-export class MigrationProcessDiagramComponent implements OnInit, OnDestroy {
-  private bpmnJS: BpmnJS;
+export class MigrationProcessDiagramComponent implements AfterViewInit, OnDestroy {
+  private bpmnViewer: NavigatedViewer;
   public flowNodeMap: any = null;
 
-  @ViewChild('ref') public el: ElementRef;
-  @Input() name: string;
-  @Output() loaded = new EventEmitter();
+  @ViewChild('ref') public readonly el: ElementRef;
+  @Input() public readonly name: string;
+  @Output() public readonly loaded = new EventEmitter();
 
-  constructor(private logger: NGXLogger) {}
+  constructor(private readonly logger: NGXLogger) {}
 
-  ngOnInit() {
-    this.bpmnJS = new BpmnJS();
-    this.bpmnJS.on('import.done', ({error}: any) => {
+  public ngAfterViewInit(): void {
+    this.bpmnViewer = new NavigatedViewer();
+    this.bpmnViewer.attachTo(this.el.nativeElement);
+    this.bpmnViewer.on('import.done', ({error}: any) => {
       if (!error) {
-        const canvas = this.bpmnJS.get('canvas');
+        const canvas = this.bpmnViewer.get('canvas') as any;
         canvas.zoom('fit-viewport', 'auto');
       }
     });
   }
 
-  ngOnDestroy() {
-    if (this.bpmnJS) {
-      this.bpmnJS.destroy();
+  public ngOnDestroy(): void {
+    if (this.bpmnViewer) {
+      this.bpmnViewer.destroy();
     }
   }
 
-  clear() {
-    this.bpmnJS.clear();
+  public clear(): void {
+    this.bpmnViewer.clear();
   }
 
   public loadXml(xml: string): void {
-    this.bpmnJS.attachTo(this.el.nativeElement);
-    this.bpmnJS.importXML(xml, err => {
-      this.logger.debug(err);
-      const processElements = this.bpmnJS.getDefinitions().rootElements.filter(function (element) {
-        return element.isExecutable;
+    this.bpmnViewer.attachTo(this.el.nativeElement);
+
+    from(this.bpmnViewer.importXML(xml))
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          const processElements = this.bpmnViewer
+            .getDefinitions()
+            .rootElements.filter(function (element) {
+              return element.isExecutable;
+            });
+
+          this.flowNodeMap = processElements[0].flowElements.filter(function (element) {
+            if (element.name === null || element.name === '') {
+              element.name = element.id;
+            }
+            return element.$type !== 'bpmn:SequenceFlow';
+          });
+
+          this.loaded.emit(this.name);
+        },
+        error: error => {
+          this.logger.debug(error);
+        },
       });
-      this.flowNodeMap = processElements[0].flowElements.filter(function (element) {
-        if (element.name === null || element.name === '') {
-          element.name = element.id;
-        }
-        return element.$type !== 'bpmn:SequenceFlow';
-      });
-      this.loaded.emit(this.name);
-    });
   }
 }

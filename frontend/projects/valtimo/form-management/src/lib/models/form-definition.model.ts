@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,4 +42,15 @@ export interface ModifyFormDefinitionRequest {
   id: string;
   name: string;
   formDefinition: string;
+}
+
+export interface QueryFormsResponse {
+  content: {readonly: boolean; id: string; formDefinition: FormioForm}[];
+  first: boolean;
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  numberOfElements: number;
+  size: number;
+  number: number;
 }

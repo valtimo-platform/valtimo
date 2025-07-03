@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, Observable, Subscription, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {SmartDocumentsConfig} from '../../models';
 
 @Component({
   selector: 'valtimo-smart-documents-configuration',
   templateUrl: './smart-documents-configuration.component.html',
   styleUrls: ['./smart-documents-configuration.component.scss'],
+  standalone: false,
 })
 export class SmartDocumentsConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy

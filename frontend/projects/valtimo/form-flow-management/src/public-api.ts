@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,4 +20,6 @@
 
 export * from './lib/models';
 export * from './lib/services';
+export * from './lib/components/overview/form-flow-overview.component';
+export * from './lib/components/editor/form-flow-editor.component';
 export * from './lib/form-flow-management.module';

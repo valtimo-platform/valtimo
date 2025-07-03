@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ declare var $;
 @Component({
   selector: 'valtimo-camunda-date-formfield',
   templateUrl: './camunda-date-formfield.component.html',
+  standalone: false,
 })
 export class CamundaDateFormfieldComponent implements OnInit, AfterViewInit {
   public formGroup: UntypedFormGroup;

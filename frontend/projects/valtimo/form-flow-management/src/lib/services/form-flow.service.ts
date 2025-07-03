@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,98 +16,79 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService, Page} from '@valtimo/config';
+import {ConfigService, Page, BaseApiService} from '@valtimo/shared';
 import {BehaviorSubject, catchError, Observable, of, switchMap, take, tap} from 'rxjs';
-import {
-  DeleteFormFlowsRequest,
-  FormFlowDefinition,
-  FormFlowDefinitionId,
-  ListFormFlowDefinition,
-} from '../models';
+import {FormFlowDefinition, FormFlowDefinitionId, ListFormFlowDefinition} from '../models';
 
-@Injectable({providedIn: 'root'})
-export class FormFlowService {
-  public readonly formFlows$ = new BehaviorSubject<ListFormFlowDefinition[]>([]);
-  public readonly loading$ = new BehaviorSubject<boolean>(false);
+@Injectable({
+  providedIn: 'root',
+})
+export class FormFlowService extends BaseApiService {
+  constructor(
+    protected readonly httpClient: HttpClient,
+    protected readonly configService: ConfigService
+  ) {
+    super(httpClient, configService);
+  }
 
-  private valtimoEndpointUri: string;
-
-  private get formFlowDefinitions$(): Observable<Page<ListFormFlowDefinition>> {
-    return this.http.get<Page<ListFormFlowDefinition>>(
-      `${this.valtimoEndpointUri}v1/form-flow/definition`
+  public getFormFlowDefinitions(
+    caseDefinitionKey: string,
+    caseVersionTag: string
+  ): Observable<Page<ListFormFlowDefinition>> {
+    return this.httpClient.get<Page<ListFormFlowDefinition>>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseVersionTag}/form-flow-definition`
+      )
     );
   }
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly http: HttpClient
-  ) {
-    this.valtimoEndpointUri = `${this.configService.config.valtimoApi.endpointUri}management/`;
+  public getFormFlowDefinitionByKey(
+    caseDefinitionKey: string,
+    caseVersionTag: string,
+    formFlowDefinitionKey: string
+  ): Observable<FormFlowDefinition> {
+    return this.httpClient.get<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseVersionTag}/form-flow-definition/${formFlowDefinitionKey}`
+      )
+    );
   }
 
-  public addFormFlow(definition: FormFlowDefinition): Observable<FormFlowDefinition> {
-    return this.http.post<FormFlowDefinition>(
-      `${this.valtimoEndpointUri}v1/form-flow/definition`,
+  public createFormFlowDefinition(
+    caseDefinitionKey: string,
+    caseVersionTag: string,
+    definition: FormFlowDefinition
+  ): Observable<FormFlowDefinition> {
+    return this.httpClient.post<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseVersionTag}/form-flow-definition`
+      ),
       definition
     );
   }
 
-  public deleteFormFlowDefinition(key: string): Observable<null> {
-    return this.http.delete<null>(`${this.valtimoEndpointUri}v1/form-flow/definition/${key}`);
-  }
-
-  public dispatchAction(actionResult: Observable<FormFlowDefinition | null>): void {
-    actionResult
-      .pipe(
-        tap(() => {
-          this.loading$.next(true);
-        }),
-        switchMap(() => this.formFlowDefinitions$),
-        take(1),
-        catchError(error => of(error))
+  public deleteFormFlowDefinition(
+    caseDefinitionKey: string,
+    caseVersionTag: string,
+    definitionKey: string
+  ): Observable<null> {
+    return this.httpClient.delete<null>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseVersionTag}/form-flow-definition/${definitionKey}`
       )
-      .subscribe({
-        next: (formFlows: Page<ListFormFlowDefinition>) => {
-          this.formFlows$.next(formFlows.content);
-          this.loading$.next(false);
-        },
-        error: error => {
-          console.error(error);
-        },
-      });
-  }
-
-  public loadFormFlows(): void {
-    this.formFlowDefinitions$
-      .pipe(
-        tap(() => {
-          this.loading$.next(true);
-        }),
-        take(1)
-      )
-      .subscribe({
-        next: (items: Page<ListFormFlowDefinition>) => {
-          this.formFlows$.next(items.content);
-          this.loading$.next(false);
-        },
-        error: error => {
-          console.error(error);
-        },
-      });
-  }
-
-  public getFormFlowDefinition(id: FormFlowDefinitionId): Observable<FormFlowDefinition> {
-    return this.http.get<FormFlowDefinition>(
-      `${this.valtimoEndpointUri}v1/form-flow/definition/${id.key}/${id.version}`
     );
   }
 
   public updateFormFlowDefinition(
-    key: string,
+    caseDefinitionKey: string,
+    caseVersionTag: string,
+    definitionKey: string,
     updatedDefinition: FormFlowDefinition
   ): Observable<FormFlowDefinition> {
-    return this.http.put<FormFlowDefinition>(
-      `${this.valtimoEndpointUri}v1/form-flow/definition/${key}`,
+    return this.httpClient.put<FormFlowDefinition>(
+      this.getApiUrl(
+        `management/v1/case-definition/${caseDefinitionKey}/version/${caseVersionTag}/form-flow-definition/${definitionKey}`
+      ),
       updatedDefinition
     );
   }

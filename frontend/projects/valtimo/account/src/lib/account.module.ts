@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,11 @@ import {NgModule} from '@angular/core';
 import {AccountRoutingModule} from './account-routing.module';
 import {CommonModule} from '@angular/common';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {
-  AlertModule,
-  FieldAutoFocusModule,
-  ListModule,
-  UploaderModule,
-  WidgetModule,
-} from '@valtimo/components';
+import {AlertModule, FieldAutoFocusModule, UploaderModule, WidgetModule} from '@valtimo/components';
 import {ProfileComponent} from './profile/profile.component';
 import {PasswordComponent} from './password/password.component';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
-import {HttpLoaderFactory} from '@valtimo/config';
+import {HttpLoaderFactory} from '@valtimo/shared';
 import {HttpClient} from '@angular/common/http';
 
 @NgModule({
@@ -37,7 +31,6 @@ import {HttpClient} from '@angular/common/http';
     CommonModule,
     AccountRoutingModule,
     WidgetModule,
-    ListModule,
     FieldAutoFocusModule,
     FormsModule,
     TranslateModule.forRoot({

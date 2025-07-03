@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,12 @@ import {
   ProcessDefinition,
   ProcessDefinitionStartForm,
   ProcessDefinitionStartProcessLink,
+  ProcessDefinitionXml,
   ProcessInstance,
   ProcessInstanceTask,
   ProcessStart,
 } from './models';
-import {ConfigService, Page} from '@valtimo/config';
+import {ConfigService, Page} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -96,8 +97,8 @@ export class ProcessService {
     );
   }
 
-  getProcessDefinitionXml(processDefinitionId: string): Observable<any> {
-    return this.http.get(
+  getProcessDefinitionXml(processDefinitionId: string): Observable<ProcessDefinitionXml> {
+    return this.http.get<ProcessDefinitionXml>(
       `${this.valtimoEndpointUri}v1/process/definition/${processDefinitionId}/xml`
     );
   }

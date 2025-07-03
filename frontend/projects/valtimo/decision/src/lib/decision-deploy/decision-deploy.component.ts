@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,39 +14,98 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Output, ViewChild} from '@angular/core';
-import {DecisionService} from '../decision.service';
-import {ModalComponent} from '@valtimo/components';
-import {DecisionStateService} from '../services';
+import {CommonModule} from '@angular/common';
+import {Component, EventEmitter, Output} from '@angular/core';
+import {FormBuilder, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
+import {TranslateModule} from '@ngx-translate/core';
+import {
+  ButtonModule,
+  FileUploaderModule,
+  LayerModule,
+  ModalModule,
+} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
+import {getCaseManagementRouteParams, getContextObservable} from '@valtimo/shared';
+import {DecisionService, DecisionStateService} from '../services';
 
 @Component({
   selector: 'valtimo-decision-deploy',
+  standalone: true,
   templateUrl: './decision-deploy.component.html',
   styleUrls: ['./decision-deploy.component.scss'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TranslateModule,
+    ModalModule,
+    ButtonModule,
+    LayerModule,
+    FileUploaderModule,
+    ReactiveFormsModule,
+  ],
 })
 export class DecisionDeployComponent {
-  public dmn: File | null = null;
   @Output() deploySuccessful = new EventEmitter();
-  @ViewChild('decisionDeployModal') modal: ModalComponent;
+
+  public dmn: File | null = null;
+
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+
+  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
+  public readonly context$ = getContextObservable(this.route);
+
+  public readonly ACCEPTED_FILES: string[] = ['dmn'];
+
+  public readonly form = this.formBuilder.group({
+    file: this.formBuilder.control(new Set<any>(), [Validators.required]),
+  });
 
   constructor(
     private readonly decisionService: DecisionService,
-    private readonly stateService: DecisionStateService
+    private readonly stateService: DecisionStateService,
+    private readonly route: ActivatedRoute,
+    private readonly formBuilder: FormBuilder
   ) {}
 
-  onChange(files: FileList): void {
+  public get selectedDmnFile(): File | null {
+    const fileSet = this.form.value?.file;
+    return fileSet?.size ? fileSet.values().next().value?.file || null : null;
+  }
+
+  public onChange(files: FileList): void {
     this.dmn = files.item(0);
   }
 
-  deployDmn(): void {
-    this.decisionService.deployDmn(this.dmn).subscribe(() => {
-      this.modal.hide();
-      this.deploySuccessful.emit();
-      this.stateService.refreshDecisions();
-    });
+  public deployDmn(): void {
+    const dmnFile = this.selectedDmnFile;
+    if (!dmnFile) return;
+
+    combineLatest([this.caseManagementRouteParams$, this.context$])
+      .pipe(
+        take(1),
+        switchMap(([params, context]) =>
+          context === 'case'
+            ? this.decisionService.deployCaseDecisionDefinition(
+                params.caseDefinitionKey,
+                params.caseDefinitionVersionTag,
+                dmnFile
+              )
+            : this.decisionService.deployDmn(dmnFile)
+        )
+      )
+      .subscribe(() => {
+        this.closeModal();
+        this.deploySuccessful.emit();
+        this.stateService.refreshDecisions();
+      });
   }
 
-  openModal() {
-    this.modal.show();
+  public openModal() {
+    this.modalOpen$.next(true);
+  }
+
+  public closeModal(): void {
+    this.modalOpen$.next(false);
   }
 }

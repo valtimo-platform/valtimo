@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,16 @@ import {
   TaskPageParams,
 } from '../../models';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
-import {BehaviorSubject, combineLatest, Observable, of, Subject, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  of,
+  Subject,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {
   ConfigService,
   Page,
@@ -43,8 +52,9 @@ import {
   SearchFieldValues,
   SortState,
   TaskListTab,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {DocumentService} from '@valtimo/document';
+import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
 import {
@@ -65,10 +75,12 @@ import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
 import {CarbonListNoResultsMessage, PageTitleService} from '@valtimo/components';
 import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE} from '../../constants';
+import {TaskUpdateSseEvent} from '../../models';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
+  standalone: false,
   selector: 'valtimo-task-list',
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss'],
@@ -132,14 +144,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
 
-  public readonly caseDefinitionName$ = this.taskListService.caseDefinitionName$;
+  public readonly caseDefinitionKey$ = this.taskListService.caseDefinitionKey$;
 
   public readonly tasks$: Observable<Task[] | MappedSpecifiedTask[]> = combineLatest([
     this.taskListService.loadingStateForCaseDefinition$,
     this.selectedTaskType$,
     this.taskListPaginationService.paginationForCurrentTaskType$,
     this.taskListSortService.sortStringForCurrentTaskType$,
-    this.caseDefinitionName$,
+    this.caseDefinitionKey$,
     this._enableLoadingAnimation$,
     this._reload$,
     this.taskListSearchService.otherFilters$,
@@ -152,7 +164,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
         selectedTaskType,
         paginationForSelectedTaskType,
         sortStringForSelectedTaskType,
-        caseDefinitionName,
+        caseDefinitionKey,
         enableLoadingAnimation,
         reload,
         otherFilters,
@@ -162,7 +174,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
           paginationForSelectedTaskType,
           overrideSortStateString || sortStringForSelectedTaskType,
           selectedTaskType,
-          caseDefinitionName,
+          caseDefinitionKey,
           enableLoadingAnimation,
           reload,
           otherFilters
@@ -178,10 +190,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
         this.taskService.queryTasksPageV3(
           params.selectedTaskType,
           params.params,
-          params.caseDefinitionName,
+          params.caseDefinitionKey,
           params.otherFilters
         ),
-        of(!!params.caseDefinitionName),
+        of(!!params.caseDefinitionKey),
       ])
     ),
     switchMap(([tasksResult, isSpecified]) =>
@@ -247,6 +259,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   public readonly setSearchFieldValuesSubject$ = new BehaviorSubject<SearchFieldValues>({});
   public readonly clearSearchFieldValuesSubject$ = new Subject<null>();
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly configService: ConfigService,
@@ -261,7 +274,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly taskListSortService: TaskListSortService,
     private readonly taskListSearchService: TaskListSearchService,
     private readonly taskListQueryParamService: TaskListQueryParamService,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly sseService: SseService
   ) {}
 
   public ngOnInit(): void {
@@ -269,10 +283,28 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this.setVisibleTabs();
     this.pageTitleService.disableReset();
     this.setParamsFromQueryParams();
+    this.openTaskUpdateSseEventSubscription();
+  }
+
+  private openTaskUpdateSseEventSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
+        this.caseDefinitionKey$,
+      ])
+        .pipe(
+          filter(
+            ([event, caseDefinitionKey]) =>
+              caseDefinitionKey === null || event.caseDefinitionKey === caseDefinitionKey
+          )
+        )
+        .subscribe(() => this.reload())
+    );
   }
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
+    this._subscriptions.unsubscribe();
   }
 
   public paginationClicked(page: number, type: TaskListTab | string): void {
@@ -319,7 +351,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
           .pipe(take(1))
           .subscribe(document => {
             this.router.navigate([
-              `/dossiers/${document.definitionId?.name}/document/${currentTask.businessKey}`,
+              `/cases/${document.definitionId?.name}/document/${currentTask.businessKey}`,
             ]);
           });
       }
@@ -339,7 +371,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     if (definition.item.id) {
       this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
-      this.taskListService.setCaseDefinitionName(definition.item.id);
+      this.taskListService.setCaseDefinitionKey(definition.item.id);
     }
   }
 
@@ -393,7 +425,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     paginationForSelectedTaskType: TaskPageParams,
     sortStringForSelectedTaskType: string,
     selectedTaskType: TaskListTab,
-    caseDefinitionName: string,
+    caseDefinitionKey: string,
     enableLoadingAnimation: boolean,
     reload: boolean,
     otherFilters?: TaskListOtherFilters
@@ -410,7 +442,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
         reload,
         selectedTaskType,
         params,
-        ...(caseDefinitionName && caseDefinitionName !== this.ALL_CASES_ID && {caseDefinitionName}),
+        ...(caseDefinitionKey &&
+          caseDefinitionKey !== this.ALL_CASES_ID && {caseDefinitionKey: caseDefinitionKey}),
         ...(otherFilters && {otherFilters}),
       },
       enableLoadingAnimation,
@@ -499,9 +532,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
   private setParamsFromQueryParams(): void {
     const decodedParams = this.taskListQueryParamService.getTaskListQueryParams();
 
-    if (decodedParams.caseDefinitionName) {
-      this.taskListService.setCaseDefinitionName(decodedParams.caseDefinitionName);
-      this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionName);
+    if (decodedParams.caseDefinitionKey) {
+      this.taskListService.setCaseDefinitionKey(decodedParams.caseDefinitionKey);
+      this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionKey);
     }
 
     if (decodedParams.otherFilters?.length > 0) {

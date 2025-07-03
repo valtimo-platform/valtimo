@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-export * from './task-management';
-export * from './task-management-detail';
-export * from './task-management-columns';
-export * from './task-management-column-modal';
+export * from './task-management-column-modal/task-management-column-modal.component';
+export * from './task-management-columns/task-management-columns.component';
+export * from './task-management-detail/task-management-detail.component';
 export * from './task-management-search-fields/task-management-search-fields.component';

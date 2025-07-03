@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,113 +13,111 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
-import {FormFlowService} from '../../services/form-flow.service';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  finalize,
-  map,
-  Observable,
-  of,
-  startWith,
-  Subscription,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
+import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import {ArrowLeft16} from '@carbon/icons';
+import {TranslateService} from '@ngx-translate/core';
 import {
-  CARBON_CONSTANTS,
+  BreadcrumbService,
   EditorModel,
   PageHeaderService,
   PageTitleService,
 } from '@valtimo/components';
-import {FormFlowDefinition, FormFlowDefinitionId, LoadedValue} from '../../models';
-import {NotificationService} from 'carbon-components-angular';
-import {TranslateService} from '@ngx-translate/core';
+import {
+  CaseManagementParams,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
+import {IconService} from 'carbon-components-angular';
+import {
+  BehaviorSubject,
+  combineLatest,
+  finalize,
+  map,
+  Observable,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {FormFlowDefinition, FormFlowDefinitionId, FormFlowEditorParams} from '../../models';
+import {FormFlowService} from '../../services';
 import {FormFlowDownloadService} from '../../services/form-flow-download.service';
-import {ListItem} from 'carbon-components-angular/dropdown';
 import formFlowSchemaJson from './formflow.schema.json';
 
 @Component({
+  standalone: false,
   templateUrl: './form-flow-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./form-flow-editor.component.scss'],
-  providers: [NotificationService],
 })
-export class FormFlowEditorComponent implements OnInit, OnDestroy {
-  public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
+export class FormFlowEditorComponent implements OnDestroy {
   public readonly readOnly$ = new BehaviorSubject<boolean>(false);
   public readonly valid$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
-  public readonly formFlowDefinitionVersions$ = new BehaviorSubject<Array<number>>([1]);
   public readonly formFlowDefinitionId$ = new BehaviorSubject<FormFlowDefinitionId | null>(null);
-  private _idSubscription!: Subscription;
-  private _definitionSubscription!: Subscription;
   public readonly CARBON_THEME = 'g10';
 
+  private readonly _params$: Observable<FormFlowEditorParams> = combineLatest([
+    getCaseManagementRouteParams(this.route),
+    this.route.params as Observable<{formFlowDefinitionKey: string}>,
+  ]).pipe(
+    map(([caseManagementParams, params]) => ({
+      ...(caseManagementParams ?? {caseDefinitionKey: '', caseDefinitionVersionTag: ''}),
+      ...params,
+    }))
+  );
   public readonly formFlowSchemaJson = formFlowSchemaJson;
 
-  private readonly _updatedModelValue$ = new BehaviorSubject<string>('');
+  private readonly _formFlowDefinition2$ = this._params$.pipe(
+    tap(() => this.loading$.next(true)),
+    switchMap((params: FormFlowEditorParams) => {
+      this.initBreadcrumbs(params);
 
-  public readonly formFlowDefinitionVersionItems$: Observable<LoadedValue<Array<ListItem>>> =
-    combineLatest([this.formFlowDefinitionVersions$, this.formFlowDefinitionId$]).pipe(
-      filter(([versions, formFlowDefinitionId]) => !!versions && !!formFlowDefinitionId),
-      map(([versions, formFlowDefinitionId]) =>
-        versions.map(
-          version =>
-            ({
-              formFlowDefinitionId: {
-                key: formFlowDefinitionId.key,
-                version,
-              } as FormFlowDefinitionId,
-              content: `${this.translateService.instant('formFlow.version')}: ${version}`,
-              selected: version === formFlowDefinitionId.version,
-            }) as ListItem
-        )
-      ),
-      map(formFlowDefinitionVersionItems => ({
-        value: formFlowDefinitionVersionItems,
-        isLoading: false,
-      })),
-      startWith({isLoading: true})
-    );
-  public readonly formFlowDefinition$: Observable<FormFlowDefinition> =
-    this.formFlowDefinitionId$.pipe(
-      filter(id => !!id),
-      switchMap(id => this.formFlowService.getFormFlowDefinition(id))
-    );
+      return this.formFlowService.getFormFlowDefinitionByKey(
+        params.caseDefinitionKey,
+        params.caseDefinitionVersionTag,
+        params.formFlowDefinitionKey
+      );
+    }),
+    tap((formFlowDefinition: FormFlowDefinition) => {
+      this.pageTitleService.setCustomPageTitle(formFlowDefinition.key);
+      this.readOnly$.next(formFlowDefinition.readOnly === true);
+      this.loading$.next(false);
+    })
+  );
+  public readonly model$: Observable<EditorModel> = this._formFlowDefinition2$.pipe(
+    map((formFlowDefinition: FormFlowDefinition) => this.getEditorModel(formFlowDefinition))
+  );
+
+  private readonly _updatedModelValue$ = new BehaviorSubject<string>('');
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
   constructor(
-    private readonly formFlowService: FormFlowService,
-    private readonly route: ActivatedRoute,
-    private readonly pageTitleService: PageTitleService,
-    private readonly router: Router,
-    private readonly notificationService: NotificationService,
-    private readonly translateService: TranslateService,
+    private readonly breadcrumbService: BreadcrumbService,
     private readonly formFlowDownloadService: FormFlowDownloadService,
-    private readonly pageHeaderService: PageHeaderService
-  ) {}
-
-  public ngOnInit(): void {
-    this.formFlowService.loadFormFlows();
-    this.openFormFlowDefinitionSubscription();
+    private readonly formFlowService: FormFlowService,
+    private readonly iconService: IconService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly pageTitleService: PageTitleService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly translateService: TranslateService
+  ) {
+    this.iconService.registerAll([ArrowLeft16]);
+    this.pageTitleService.disableReset();
   }
 
   public ngOnDestroy(): void {
     this.pageTitleService.enableReset();
-    this._idSubscription?.unsubscribe();
-    this._definitionSubscription?.unsubscribe();
+    this.breadcrumbService.clearThirdBreadcrumb();
+    this.breadcrumbService.clearFourthBreadcrumb();
   }
 
   public onValid(valid: boolean): void {
-    this.valid$.next(valid !== false);
+    this.valid$.next(valid);
   }
 
   public onValueChange(value: string): void {
@@ -129,45 +127,43 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
   public updateFormFlowDefinition(): void {
     this.loading$.next(true);
 
-    combineLatest([this._updatedModelValue$, this.formFlowDefinitionId$])
+    combineLatest([this._params$, this._updatedModelValue$])
       .pipe(
         take(1),
-        map(([updatedModelValue, formFlowDefinitionId]) => ({
-          ...(JSON.parse(updatedModelValue) as FormFlowDefinition),
-          key: formFlowDefinitionId.key,
-          version: this.formFlowDefinitionVersions$.value[0] + 1,
-        })),
-        switchMap(updatedFormFlowDefinition =>
+        switchMap(([params, updatedModelValue]) =>
           this.formFlowService.updateFormFlowDefinition(
-            updatedFormFlowDefinition.key,
-            updatedFormFlowDefinition
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag,
+            params.formFlowDefinitionKey,
+            {
+              ...(JSON.parse(updatedModelValue) as FormFlowDefinition),
+              key: params.formFlowDefinitionKey,
+            }
           )
-        )
+        ),
+        finalize(() => this.loading$.next(false))
       )
-      .subscribe({
-        next: result => {
-          const id = {key: result.key, version: result.version};
-          this.showSuccessMessage(result.key);
-          this.formFlowDefinitionId$.next(id);
-          this.formFlowDefinitionVersions$.next(
-            [id.version].concat(this.formFlowDefinitionVersions$.value)
-          );
-        },
-        error: () => {
-          this.loading$.next(false);
-        },
+      .subscribe(result => {
+        this.showSuccessMessage(result.key);
       });
   }
 
-  public onDelete(formFlowDefinitionKey: string): void {
+  public onDelete(): void {
     this.loading$.next(true);
-    this.formFlowService.dispatchAction(
-      this.formFlowService.deleteFormFlowDefinition(formFlowDefinitionKey).pipe(
-        finalize(() => {
-          this.router.navigate(['/form-flow-management']);
-        })
+    this._params$
+      .pipe(
+        take(1),
+        switchMap((params: CaseManagementParams & {formFlowDefinitionKey: string}) =>
+          this.formFlowService.deleteFormFlowDefinition(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag,
+            params.formFlowDefinitionKey
+          )
+        )
       )
-    );
+      .subscribe(() => {
+        this.router.navigate(['../'], {relativeTo: this.route});
+      });
   }
 
   public showDeleteModal(): void {
@@ -175,72 +171,51 @@ export class FormFlowEditorComponent implements OnInit, OnDestroy {
   }
 
   public downloadFormFlowDefinition(model: EditorModel): void {
-    this.formFlowDefinitionId$.subscribe(formFlowDefinitionId =>
-      this.formFlowDownloadService.downloadJson(JSON.parse(model.value), formFlowDefinitionId)
-    );
+    this._params$
+      .pipe(take(1))
+      .subscribe((params: CaseManagementParams & {formFlowDefinitionKey: string}) =>
+        this.formFlowDownloadService.downloadJson(JSON.parse(model.value), params)
+      );
   }
 
-  public loadFormFlowDefinitionId(formFlowDefinitionId?: FormFlowDefinitionId) {
-    if (!!formFlowDefinitionId) {
-      this.formFlowDefinitionId$.next(formFlowDefinitionId);
-    }
+  public navigateBack(): void {
+    this.router.navigate(['../'], {relativeTo: this.route});
   }
 
-  private openFormFlowDefinitionSubscription(): void {
-    this.loading$.next(true);
-
-    this._idSubscription = this.route.params
-      .pipe(
-        filter(params => params?.key),
-        map(params => params.key),
-        switchMap(key =>
-          combineLatest([
-            of(key),
-            this.formFlowService.formFlows$.pipe(
-              map(
-                formFlowDefinitions =>
-                  formFlowDefinitions.find(definition => definition.key === key)?.versions
-              ),
-              filter(versions => !!versions),
-              take(1),
-              tap(versions => this.formFlowDefinitionVersions$.next(versions))
-            ),
-          ])
-        ),
-        map(([key, versions]) => ({key, version: versions[0]}) as FormFlowDefinitionId)
-      )
-      .subscribe(formFlowDefinitionId => {
-        this.pageTitleService.setCustomPageTitle(formFlowDefinitionId.key);
-        this.formFlowDefinitionId$.next(formFlowDefinitionId);
-      });
-
-    this._definitionSubscription = this.formFlowDefinition$.pipe().subscribe(formFlowDefinition => {
-      this.readOnly$.next(formFlowDefinition.readOnly === true);
-      this.setModel(formFlowDefinition);
-    });
-  }
-
-  private setModel(formFlowDefinition: FormFlowDefinition): void {
+  private getEditorModel(formFlowDefinition: FormFlowDefinition): EditorModel {
     const clone = {...formFlowDefinition};
-    delete clone.version;
     delete clone.readOnly;
-    this.model$.next({
+    return {
       value: JSON.stringify(clone),
       language: 'json',
-      uri: formFlowDefinition.key + '-' + formFlowDefinition.version + '.formflow.json',
-    });
-    this.loading$.next(false);
+    };
   }
 
-  private showSuccessMessage(key: string): void {
+  private showSuccessMessage(formFlowDefinitionKey: string): void {
     this.notificationService.showToast({
       caption: this.translateService.instant('formFlow.savedSuccessTitleMessage', {
-        key,
+        key: formFlowDefinitionKey,
       }),
       type: 'success',
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
       title: this.translateService.instant('formFlow.savedSuccessTitle'),
+    });
+  }
+
+  private initBreadcrumbs(params: FormFlowEditorParams): void {
+    const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
+
+    this.breadcrumbService.setThirdBreadcrumb({
+      route: [route],
+      content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
+      href: route,
+    });
+
+    const routeWithFormFlows = `${route}/form-flows`;
+
+    this.breadcrumbService.setFourthBreadcrumb({
+      route: [routeWithFormFlows],
+      content: this.translateService.instant('caseManagement.tabs.formFlows'),
+      href: routeWithFormFlows,
     });
   }
 }

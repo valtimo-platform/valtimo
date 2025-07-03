@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@
 import {APP_INITIALIZER, Injector, NgModule} from '@angular/core';
 import {NGXLogger} from 'ngx-logger';
 import {initialize, initializerFactory} from './init';
-import {ConfigService, INITIALIZERS} from '@valtimo/config';
+import {ConfigService, INITIALIZERS} from '@valtimo/shared';
 import {TranslateService} from '@ngx-translate/core';
 import {initializeCsp} from '@valtimo/security';
 import {DOCUMENT} from '@angular/common';
 import {DomSanitizer} from '@angular/platform-browser';
 
+/**
+ * @deprecated To be removed in Valtimo 14
+ */
 @NgModule({
   declarations: [],
   imports: [],

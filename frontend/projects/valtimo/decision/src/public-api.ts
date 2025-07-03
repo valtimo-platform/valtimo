@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,5 +20,7 @@
 
 export * from './lib/models';
 export * from './lib/decision.module';
-export * from './lib/decision.component';
 export * from './lib/decision-modeler/decision-modeler.component';
+export * from './lib/decision-display/decision-display.component';
+export * from './lib/decision-list/decision-list.component';
+export * from './lib/decision-deploy/decision-deploy.component';

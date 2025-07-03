@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
   -->
 
 <valtimo-carbon-list
+  [actionItems]="ACTION_ITEMS"
   [header]="false"
   [items]="formFlowDefinitions$ | async"
-  [fields]="fields"
+  [fields]="FIELDS"
   [loading]="loading$ | async"
-  (rowClicked)="onRowClick($event)"
+  (rowClicked)="editFormFlowDetails($event)"
 >
   <ng-container header> {{ 'formFlow.title' | translate }} </ng-container>
 
@@ -40,9 +41,19 @@
 ></valtimo-new-form-flow-modal>
 
 <ng-template #addFormFlowButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="openAddModal()">
     {{ 'formFlow.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
 </ng-template>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="formFlow.deleteModalContent"
+  [outputOnConfirm]="deleteDefinitionKey$ | async"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDelete($event)"
+></valtimo-confirmation-modal>

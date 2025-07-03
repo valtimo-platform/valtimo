@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import {StepperService} from '../../../services/stepper.service';
   selector: 'v-stepper-content',
   templateUrl: './stepper-content.component.html',
   styleUrls: ['./stepper-content.component.scss'],
+  standalone: false,
 })
 export class StepperContentComponent implements AfterContentInit {
   @ContentChildren(StepperStepComponent) stepComponents!: QueryList<StepperStepComponent>;

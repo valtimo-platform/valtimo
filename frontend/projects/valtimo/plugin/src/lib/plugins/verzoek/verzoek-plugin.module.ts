@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import {PluginTranslatePipeModule} from '../../pipes';
 import {CommonModule} from '@angular/common';
 import {
   ButtonModule as CarbonButtonModule,
+  IconModule,
   InputModule as CarbonInputModule,
   ModalModule,
 } from 'carbon-components-angular';
 import {
-  ButtonModule,
   CarbonMultiInputModule,
   FormModule,
   InputLabelModule,
@@ -34,7 +34,7 @@ import {
   RadioModule,
   SelectModule,
   TooltipIconModule,
-  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsModalDirective,
   VModalModule,
 } from '@valtimo/components';
 
@@ -50,14 +50,14 @@ import {
     MultiInputFormModule,
     RadioModule,
     InputLabelModule,
-    ButtonModule,
     ModalModule,
     CarbonInputModule,
     TooltipIconModule,
     CarbonMultiInputModule,
     CarbonButtonModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
     VModalModule,
+    IconModule,
   ],
   exports: [VerzoekConfigurationComponent],
 })

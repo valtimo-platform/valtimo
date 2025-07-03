@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import {ChoiceFieldService} from '../../../../../../services';
 @Component({
   selector: 'valtimo-camunda-choicefield-formfield',
   templateUrl: './camunda-choicefield-formfield.component.html',
+  standalone: false,
 })
 export class CamundaChoicefieldFormfieldComponent implements OnInit {
   public formGroup: UntypedFormGroup;

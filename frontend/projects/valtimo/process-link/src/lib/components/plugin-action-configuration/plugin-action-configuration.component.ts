@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,15 @@ import {
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
-import {PluginProcessLinkCreateDto, PluginProcessLinkUpdateDto, ProcessLink} from '../../models';
+import {
+  PluginProcessLinkCreateDto,
+  PluginProcessLinkUpdateDto,
+  ProcessLinkEditMode,
+  ProcessLink,
+} from '../../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-plugin-action-configuration',
   templateUrl: './plugin-action-configuration.component.html',
   styleUrls: ['./plugin-action-configuration.component.scss'],
@@ -79,11 +85,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   }
 
   onValid(valid: boolean): void {
-    if (valid) {
-      this.buttonService.enableSaveButton();
-    } else {
-      this.buttonService.disableSaveButton();
-    }
+    if (valid) this.buttonService.enableSaveButton();
+    else this.buttonService.disableSaveButton();
   }
 
   onConfiguration(configuration: PluginConfigurationData): void {
@@ -106,10 +109,16 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
       const updateProcessLinkRequest: PluginProcessLinkUpdateDto = {
         id: selectedProcessLink.id,
-        pluginConfigurationId: selectedProcessLink.pluginConfigurationId,
-        pluginActionDefinitionKey: selectedProcessLink.pluginActionDefinitionKey,
+        pluginConfigurationId: selectedProcessLink.pluginConfigurationId ?? '',
+        pluginActionDefinitionKey: selectedProcessLink.pluginActionDefinitionKey ?? '',
         actionProperties: configuration,
+        activityId: selectedProcessLink.activityId,
       };
+
+      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
+        return;
+      }
 
       this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
         () => {
@@ -135,15 +144,20 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           const processLinkRequest: PluginProcessLinkCreateDto = {
             actionProperties: configuration,
             activityId: modalData?.element?.id,
-            activityType: modalData?.element?.activityListenerType,
+            activityType: modalData?.element?.activityListenerType ?? '',
             pluginConfigurationId: selectedConfiguration.id,
             processDefinitionId: modalData?.processDefinitionId,
             pluginActionDefinitionKey: selectedFunction.key,
             processLinkType: selectedProcessLinkTypeId,
           };
 
+          if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+            this.stateService.sendProcessLinkCreateEvent(processLinkRequest);
+            return;
+          }
+
           this.processLinkService.saveProcessLink(processLinkRequest).subscribe(
-            response => {
+            () => {
               this.stateService.closeModal();
             },
             () => {

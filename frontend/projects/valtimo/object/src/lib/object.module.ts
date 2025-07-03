@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,14 @@ import {ObjectListComponent} from './components/object-list/object-list.componen
 import {TranslateModule} from '@ngx-translate/core';
 import {AsyncPipe, CommonModule} from '@angular/common';
 import {
+  CarbonListModule,
   ConfirmationModalModule,
   FormIoModule,
-  ListModule,
   SearchFieldsModule,
   SpinnerModule,
-  ValtimoCdsModalDirectiveModule,
-  WidgetModule,
   TooltipIconModule,
-  CarbonListModule,
+  ValtimoCdsModalDirective,
+  WidgetModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
 import {ObjectDetailComponent} from './components/object-detail-container/tabs/object-detail/object-detail.component';
@@ -49,7 +48,6 @@ import {ReactiveFormsModule} from '@angular/forms';
     TranslateModule,
     AsyncPipe,
     WidgetModule,
-    ListModule,
     ButtonModule,
     IconModule,
     SpinnerModule,
@@ -61,7 +59,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     TooltipIconModule,
     ConfirmationModalModule,
     SearchFieldsModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
     CarbonListModule,
   ],
   exports: [],

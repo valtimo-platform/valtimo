@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import {PluginTranslationService} from '../../services/plugin-translation.servic
 
 @Pipe({
   name: 'pluginTranslate',
+  standalone: false,
 })
 export class PluginTranslatePipe implements PipeTransform {
   constructor(private readonly pluginTranslationService: PluginTranslationService) {}

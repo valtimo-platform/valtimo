@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,22 @@
 
 import {FormManagementService} from '../services';
 import {AbstractControl, AsyncValidatorFn, ValidationErrors} from '@angular/forms';
+import {ManagementContext} from '@valtimo/shared';
 import {map, Observable} from 'rxjs';
+import {FormManagementParams} from '../models';
 
 export function noDuplicateFormValidator(
+  context: ManagementContext | '',
+  params: FormManagementParams,
   formManagementService: FormManagementService
 ): AsyncValidatorFn {
   return (control: AbstractControl): Observable<ValidationErrors> =>
-    formManagementService
-      .existsFormDefinition(control.value.toString())
-      .pipe(map((result: boolean) => (result ? {duplicate: true} : null)));
+    (context === 'case'
+      ? formManagementService.existsFormDefinitionCase(
+          params.caseDefinitionKey,
+          params.caseDefinitionVersionTag,
+          control.value.toString()
+        )
+      : formManagementService.existsFormDefinition(control.value.toString())
+    ).pipe(map((result: boolean) => (result ? {duplicate: true} : null)));
 }

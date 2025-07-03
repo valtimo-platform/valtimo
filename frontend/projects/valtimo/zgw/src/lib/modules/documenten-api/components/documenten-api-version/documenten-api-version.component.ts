@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,35 +17,31 @@
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {LoadingModule, NotificationModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
+import {LoadingModule, NotificationModule, TilesModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, Observable, switchMap, tap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
-import {filter} from 'rxjs/operators';
-
 import {DocumentenApiManagementVersion} from '../../models';
 import {DocumentenApiVersionService} from '../../services';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-documenten-api-version',
   templateUrl: './documenten-api-version.component.html',
   styleUrls: ['./documenten-api-version.component.scss'],
   standalone: true,
-  imports: [CommonModule, TranslateModule, LoadingModule, NotificationModule],
+  imports: [CommonModule, TranslateModule, LoadingModule, NotificationModule, TilesModule],
 })
 export class DocumentenApiVersionComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || ''),
-    filter(documentDefinitionName => !!documentDefinitionName)
-  );
+  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
 
   public readonly documentenApiVersion$: Observable<DocumentenApiManagementVersion> = combineLatest(
-    [this.documentDefinitionName$, this.documentenApiVersionService.refresh$]
+    [this.caseManagementRouteParams$, this.documentenApiVersionService.refresh$]
   ).pipe(
     tap(() => this.loading$.next(true)),
-    switchMap(([documentDefinitionName]) =>
-      this.documentenApiVersionService.getManagementApiVersion(documentDefinitionName)
+    switchMap(([params]) =>
+      this.documentenApiVersionService.getManagementApiVersion(params?.caseDefinitionKey ?? '')
     ),
     tap(() => this.loading$.next(false))
   );

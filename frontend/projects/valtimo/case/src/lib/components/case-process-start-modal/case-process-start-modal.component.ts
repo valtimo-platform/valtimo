@@ -1,0 +1,332 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+  Component,
+  ComponentRef,
+  EventEmitter,
+  Inject,
+  OnDestroy,
+  OnInit,
+  Optional,
+  Output,
+  ViewChild,
+  ViewContainerRef,
+  ViewEncapsulation,
+} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {PermissionService} from '@valtimo/access-control';
+import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  FormCustomComponent,
+  FormCustomComponentConfig,
+  FormFlowService,
+  FormSubmissionResult,
+  ProcessLinkService,
+  UrlResolverService,
+} from '@valtimo/process-link';
+import {ProcessService} from '@valtimo/process';
+import {
+  FormioComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
+import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
+import {UserProviderService} from '@valtimo/security';
+import {take} from 'rxjs/operators';
+import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
+import {CaseListService, StartModalService} from '../../services';
+import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
+import {BehaviorSubject, Subscription} from 'rxjs';
+
+@Component({
+  standalone: false,
+  selector: 'valtimo-case-process-start-modal',
+  templateUrl: './case-process-start-modal.component.html',
+  styleUrls: ['./case-process-start-modal.component.scss'],
+  encapsulation: ViewEncapsulation.None,
+})
+export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
+  public processDefinitionKey: string;
+  public processDefinitionId: string;
+  public caseDefinitionKey: string;
+  public processName: string;
+  private _startEventName: string;
+  private readonly _useStartEventNameAsStartFormTitle!: boolean;
+  public formDefinition: FormioForm;
+  public formName: string;
+  public formFlowInstanceId: string;
+  public formioSubmission: FormioSubmission;
+  private processLinkId: string;
+  public options: ValtimoFormioOptions;
+  public isAdmin: boolean;
+  public isFormViewModel = false;
+  public isUIComponent = false;
+  @ViewChild('form', {static: false}) form: FormioComponent;
+  @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
+  public formViewModelDynamicContainer: ViewContainerRef;
+  @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
+  public formCustomComponentDynamicContainer: ViewContainerRef;
+  @Output() formFlowComplete = new EventEmitter();
+  @Output() noProcessLinked = new EventEmitter<string>();
+
+  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+
+  private _subscriptions = new Subscription();
+  private readonly _formCustomComponentConfig$ = new BehaviorSubject<
+    FormCustomComponentConfig | {}
+  >({});
+  public readonly closeModalEvent = new EventEmitter();
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private processService: ProcessService,
+    private documentService: DocumentService,
+    private processLinkService: ProcessLinkService,
+    private formFlowService: FormFlowService,
+    private userProviderService: UserProviderService,
+    private permissionService: PermissionService,
+    private listService: CaseListService,
+    private startModalService: StartModalService,
+    private configService: ConfigService,
+    @Optional() @Inject(FORM_VIEW_MODEL_TOKEN) private readonly formViewModel: FormViewModel,
+    @Optional()
+    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
+    private readonly formCustomComponentConfig: FormCustomComponentConfig,
+    private urlResolverService: UrlResolverService
+  ) {
+    this._useStartEventNameAsStartFormTitle =
+      this.configService.config.featureToggles?.useStartEventNameAsStartFormTitle;
+
+    this._formCustomComponentConfig$.next(formCustomComponentConfig);
+  }
+
+  ngOnInit() {
+    this.isUserAdmin();
+  }
+
+  ngOnDestroy() {
+    this._subscriptions.unsubscribe();
+  }
+
+  private loadProcessLink() {
+    this.processLinkId = null;
+    this.formDefinition = null;
+    this.formFlowInstanceId = null;
+    if (this._useStartEventNameAsStartFormTitle) {
+      this.processService.getProcessDefinitionXml(this.processDefinitionId).subscribe(result => {
+        this._startEventName = this.startModalService.getStandardStartEventTitle(result.bpmn20Xml);
+      });
+    }
+    this.processService
+      .getProcessDefinitionStartProcessLink(this.processDefinitionId, null, this.caseDefinitionKey)
+      .pipe(take(1))
+      .subscribe(startProcessResult => {
+        if (startProcessResult) {
+          this.isUIComponent = false;
+          switch (startProcessResult.type) {
+            case 'form':
+              this.formDefinition = startProcessResult.properties.prefilledForm;
+              this.processLinkId = startProcessResult.processLinkId;
+              this.isFormViewModel = false;
+              this.openCdsModal();
+              break;
+            case 'form-flow':
+              this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
+              this.isFormViewModel = false;
+              this.openCdsModal();
+              break;
+            case 'form-view-model':
+              this.formDefinition = startProcessResult.properties.formDefinition;
+              this.formName = startProcessResult.properties.formName;
+              this.processLinkId = startProcessResult.processLinkId;
+              this.isFormViewModel = true;
+              this.setFormViewModelComponent();
+              this.openCdsModal();
+              break;
+            case 'url':
+              this.processLinkId = startProcessResult.processLinkId;
+              this.processLinkService
+                .getVariables()
+                .pipe(take(1))
+                .subscribe(variables => {
+                  let url = this.urlResolverService.resolveUrlVariables(
+                    startProcessResult.properties.url,
+                    variables.variables
+                  );
+                  window.open(url, '_blank').focus();
+                  this.processLinkService
+                    .submitURLProcessLink(this.processLinkId)
+                    .subscribe(result => {
+                      this.submitCompleted(result);
+                    });
+                });
+              break;
+            case 'ui-component':
+              this.setFormCustomComponent(startProcessResult.properties.componentKey);
+              this.isUIComponent = true;
+              this.openCdsModal();
+              break;
+          }
+        } else {
+          this.noProcessLinked.emit(this.processDefinitionKey);
+        }
+      });
+  }
+
+  public gotoProcessLinkScreen(): void {
+    this.closeCdsModal();
+    this.router.navigate(['case-management']);
+  }
+
+  public get modalTitle() {
+    const fallbackTitle = `Start - ${this.processName}`;
+    return this._useStartEventNameAsStartFormTitle
+      ? this._startEventName || fallbackTitle
+      : fallbackTitle;
+  }
+
+  openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
+    this.processDefinitionKey = processDefinitionCaseDefinition.processDefinitionKey;
+    this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
+    this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;
+    this.processName = processDefinitionCaseDefinition.processDefinitionName;
+    this.options = new FormioOptionsImpl();
+    this.options.disableAlerts = true;
+    const formioBeforeSubmit: FormioBeforeSubmit = function (submission, callback) {
+      callback(null, submission);
+    };
+    this.options.setHooks(formioBeforeSubmit);
+    this.loadProcessLink();
+  }
+
+  public onSubmit(submission: FormioSubmission) {
+    this.formioSubmission = submission;
+
+    this.processLinkService.submitForm(this.processLinkId, submission.data).subscribe({
+      next: (formSubmissionResult: FormSubmissionResult) => {
+        this.submitCompleted(formSubmissionResult);
+      },
+      error: errors => {
+        this.form.showErrors(errors);
+      },
+    });
+  }
+
+  public formFlowSubmitted(): void {
+    this.formFlowComplete.emit(null);
+    this.closeCdsModal();
+  }
+
+  public isUserAdmin(): void {
+    this.userProviderService.getUserSubject().subscribe(
+      userIdentity => {
+        this.isAdmin = userIdentity.roles.includes('ROLE_ADMIN');
+      },
+      error => {
+        this.isAdmin = false;
+      }
+    );
+  }
+
+  public onCloseSelect(): void {
+    this.closeCdsModal();
+  }
+
+  private submitCompleted(formSubmissionResult: FormSubmissionResult): void {
+    this.closeCdsModal();
+    this.permissionService
+      .requestPermission(CAN_VIEW_CASE_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+        identifier: formSubmissionResult.documentId,
+      })
+      .subscribe(canViewCase => {
+        if (canViewCase) {
+          this.router.navigate([
+            'cases',
+            this.caseDefinitionKey,
+            'document',
+            formSubmissionResult.documentId,
+          ]);
+        } else {
+          this.listService.forceRefresh();
+        }
+      });
+  }
+
+  private setFormViewModelComponent() {
+    if (!this.formViewModel.component) return;
+    this.formViewModelDynamicContainer.clear();
+    const formViewModelComponent = this.formViewModelDynamicContainer.createComponent(
+      this.formViewModel.component
+    );
+    formViewModelComponent.instance.form = this.formDefinition;
+    formViewModelComponent.instance.formName = this.formName;
+    formViewModelComponent.instance.isStartForm = true;
+    formViewModelComponent.instance.processDefinitionKey = this.processDefinitionKey;
+    formViewModelComponent.instance.documentDefinitionName = this.caseDefinitionKey;
+    this._subscriptions.add(
+      formViewModelComponent.instance.formSubmit.subscribe(() => {
+        this.listService.forceRefresh();
+        this.closeCdsModal();
+      })
+    );
+
+    this._subscriptions.add(
+      this.closeModalEvent.subscribe(() => {
+        formViewModelComponent.destroy();
+      })
+    );
+  }
+
+  private setFormCustomComponent(formCustomComponentKey: string): void {
+    this.formCustomComponentDynamicContainer.clear();
+    if (!this.formCustomComponentConfig) return;
+    this._formCustomComponentConfig$.pipe(take(1)).subscribe(formCustomComponentConfig => {
+      const customComponent = formCustomComponentConfig[formCustomComponentKey];
+      const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
+        customComponent
+      ) as ComponentRef<FormCustomComponent>;
+
+      renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
+      renderedComponent.instance.documentDefinitionName = this.caseDefinitionKey;
+
+      renderedComponent.instance.submittedEvent.subscribe(() => {
+        this.closeCdsModal();
+      });
+
+      this._subscriptions.add(
+        this.closeModalEvent.subscribe(() => {
+          renderedComponent.destroy();
+        })
+      );
+    });
+  }
+
+  private openCdsModal(): void {
+    this.modalOpen$.next(false);
+    setTimeout(() => this.modalOpen$.next(true));
+  }
+
+  private closeCdsModal(): void {
+    this.modalOpen$.next(true);
+    setTimeout(() => this.modalOpen$.next(false));
+    this.closeModalEvent.emit();
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,25 +20,21 @@ import {FormioModule} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {DropzoneModule, FileSizeModule} from '@valtimo/components';
 import {
+  CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   CASE_MANAGEMENT_TAB_TOKEN,
-  ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
   ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {DocumentModule} from '@valtimo/document';
 import {ResourceModule} from '@valtimo/resource';
-import {DossierManagementZgwComponent} from './components';
 import {
-  CustomerModule,
+  CaseDetailTabDocumentenApiDocumentsComponent,
+  CaseDetailTabObjectTypeComponent,
+  CaseManagementLinkProcessComponent,
   DocumentenApiMetadataModalComponent,
   DocumentenApiUploaderComponent,
-  DocumentenApiVersionComponent,
-  DossierDetailTabDocumentenApiDocumentsComponent,
-  DossierDetailTabObjectTypeComponent,
-  DossierManagementLinkProcessComponent,
-  DocumentObjectenApiSyncComponent,
-  ZakenApiZaaktypeLinkComponent,
 } from './modules';
+import {CaseManagementZgwComponent} from './components';
 
 @NgModule({
   imports: [
@@ -51,7 +47,6 @@ import {
     ResourceModule,
     RouterModule,
     DocumentenApiMetadataModalComponent,
-    CustomerModule,
   ],
   declarations: [DocumentenApiUploaderComponent],
   exports: [DocumentenApiUploaderComponent],
@@ -59,27 +54,23 @@ import {
     {
       provide: CASE_MANAGEMENT_TAB_TOKEN,
       useValue: {
-        translationKey: 'dossierManagement.tabs.zgw',
-        component: DossierManagementZgwComponent,
+        translationKey: 'caseManagement.tabs.zgw',
+        component: CaseManagementZgwComponent,
+        tabRoute: 'zgw',
       },
       multi: true,
     },
     {
       provide: ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
-      useValue: DossierDetailTabObjectTypeComponent,
+      useValue: CaseDetailTabObjectTypeComponent,
     },
     {
       provide: ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
-      useValue: DossierDetailTabDocumentenApiDocumentsComponent,
+      useValue: CaseDetailTabDocumentenApiDocumentsComponent,
     },
     {
-      provide: ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
-      useValue: [
-        DossierManagementLinkProcessComponent,
-        DocumentenApiVersionComponent,
-        DocumentObjectenApiSyncComponent,
-        ZakenApiZaaktypeLinkComponent,
-      ],
+      provide: CASE_CONFIGURATION_EXTENSIONS_TOKEN,
+      useValue: [CaseManagementLinkProcessComponent],
     },
   ],
 })

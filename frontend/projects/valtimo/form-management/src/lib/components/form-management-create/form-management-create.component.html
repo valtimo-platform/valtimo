@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  valtimoCdsModal
+  class="form-management-create"
+  size="sm"
+  [cdsLayer]="0"
+  [open]="true"
+  (close)="onCloseEvent()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseEvent()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'formManagement.add' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form *ngIf="form" [formGroup]="form" (ngSubmit)="createFormDefinition()">
+    <section cdsModalContent [cdsLayer]="1">
+      <cds-label
+        [invalid]="formControls?.name?.touched && formControls?.name?.errors"
+        [invalidText]="
+          (formControls?.name?.errors?.required && ('formManagement.nameIsRequired' | translate)) ||
+          (formControls?.name?.errors?.duplicate && ('formManagement.nameIsInUse' | translate)) ||
+          'test'
+        "
+      >
+        {{ 'formManagement.name' | translate }}
+
+        <input
+          cdsText
+          type="text"
+          id="name"
+          formControlName="name"
+          [invalid]="formControls?.name?.touched && formControls?.name?.errors"
+          required
+        />
+      </cds-label>
+    </section>
+
+    <cds-modal-footer [cdsLayer]="1">
+      <cds-modal-footer>
+        <button cdsButton="ghost" (click)="$event.preventDefault(); onBackButtonClick()">
+          {{ 'formManagement.back' | translate }}
+        </button>
+
+        <button cdsButton="ghost" (click)="$event.preventDefault(); reset()">
+          {{ 'formManagement.reset' | translate | translate }}
+        </button>
+
+        <button [disabled]="form?.invalid" type="submit" cdsButton="primary">
+          {{ 'formManagement.submit' | translate }}
+        </button>
+      </cds-modal-footer>
+    </cds-modal-footer>
+  </form>
+</cds-modal>

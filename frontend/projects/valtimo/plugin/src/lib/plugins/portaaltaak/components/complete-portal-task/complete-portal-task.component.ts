@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {Observable, Subscription} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-complete-portal-task',
   templateUrl: './complete-portal-task.component.html',
   styleUrls: ['./complete-portal-task.component.scss'],

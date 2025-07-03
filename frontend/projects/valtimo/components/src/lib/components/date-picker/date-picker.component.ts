@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import CustomLocale = flatpickr.CustomLocale;
   selector: 'v-date-picker',
   templateUrl: './date-picker.component.html',
   styleUrls: ['./date-picker.component.scss'],
+  standalone: false,
 })
 export class DatePickerComponent implements AfterViewInit, OnDestroy {
   @HostBinding('class.full-width') fullWidthClass = false;
@@ -71,6 +72,7 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   public readonly dateValue$ = new BehaviorSubject<string>('');
 
   private _flatpickrInstance!: flatpickr.Instance;
+
   private readonly _subscriptions = new Subscription();
 
   constructor(private readonly translateService: TranslateService) {}

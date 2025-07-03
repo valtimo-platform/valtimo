@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import {FormIoDomService} from '../services/form-io-dom.service';
   selector: 'valtimo-form-io-uploader',
   templateUrl: './form-io-uploader.component.html',
   styleUrls: ['./form-io-uploader.component.scss'],
+  standalone: false,
 })
 export class FormIoUploaderComponent implements FormioCustomComponent<Array<ResourceFile>> {
   @Input() disabled: boolean;

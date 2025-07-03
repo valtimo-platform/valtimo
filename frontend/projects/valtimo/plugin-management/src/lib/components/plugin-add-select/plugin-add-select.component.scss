@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,4 +64,23 @@
   box-sizing: border-box;
   flex: 1 1 100%;
   padding: 0px 22px 22px 0px;
+}
+
+:host ::ng-deep fieldset {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  width: calc(100% - 24px);
+}
+
+:host ::ng-deep .cds--tile--selectable {
+  height: 100%;
+  padding: 16px;
+}
+
+:host ::ng-deep .cds--tile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--cds-text-primary);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,18 @@ import {cloneDeep} from 'lodash';
 import {v4 as uuidv4} from 'uuid';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-plugin-management',
   templateUrl: './plugin-management.component.html',
   styleUrls: ['./plugin-management.component.scss'],
 })
 export class PluginManagementComponent {
   public readonly fields: ColumnConfig[] = [
+    {
+      key: 'title',
+      label: 'pluginManagement.labels.configurationName',
+      viewType: ViewType.TEXT,
+    },
     {
       key: 'pluginName',
       label: 'pluginManagement.labels.pluginName',
@@ -43,11 +49,6 @@ export class PluginManagementComponent {
     {
       key: 'definitionKey',
       label: 'pluginManagement.labels.identifier',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'title',
-      label: 'pluginManagement.labels.configurationName',
       viewType: ViewType.TEXT,
     },
   ];

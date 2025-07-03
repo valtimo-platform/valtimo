@@ -17,7 +17,12 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {HttpBackend, HttpClient, HttpClientModule} from '@angular/common/http';
+import {
+  HttpBackend,
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
@@ -25,11 +30,8 @@ import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
-  BpmnJsDiagramModule,
-  CardModule,
   enableCustomFormioComponents,
   FormIoModule,
-  MenuModule,
   registerFormioCurrencyComponent,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
@@ -37,19 +39,21 @@ import {
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   UploaderModule,
+  BpmnJsDiagramModule,
+  MenuModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
   CASE_TAB_TOKEN,
+  CaseDetailTabAuditComponent,
+  CaseDetailTabDocumentsComponent,
+  CaseDetailTabNotesComponent,
+  CaseDetailTabProgressComponent,
+  CaseDetailTabSummaryComponent,
+  CaseModule,
   CUSTOM_CASE_WIDGET_TOKEN,
   DefaultTabs,
-  DossierDetailTabAuditComponent,
-  DossierDetailTabDocumentsComponent,
-  DossierDetailTabNotesComponent,
-  DossierDetailTabProgressComponent,
-  DossierDetailTabSummaryComponent,
-  DossierModule,
-} from '@valtimo/dossier';
+} from '@valtimo/case';
 import {ProcessModule} from '@valtimo/process';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CustomFormExampleComponent} from './custom-form-example/custom-form-example.component';
@@ -63,7 +67,7 @@ import {ResourceModule} from '@valtimo/resource';
 import {FormioComponent} from './form-io/form-io.component';
 import {FormModule} from '@valtimo/form';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
-import {CustomDossierTabComponent} from './custom-dossier-tab/custom-dossier-tab.component';
+import {CustomCaseTabComponent} from './custom-case-tab/custom-case-tab.component';
 import {CustomMapsTabComponent} from './custom-maps-tab/custom-maps-tab.component';
 import {SwaggerModule} from '@valtimo/swagger';
 import {AnalyseModule} from '@valtimo/analyse';
@@ -83,9 +87,8 @@ import {
   ConfigService,
   CustomMultiTranslateHttpLoaderFactory,
   LocalizationService,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {FormManagementModule} from '@valtimo/form-management';
-import {DossierManagementModule} from '@valtimo/dossier-management';
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {PluginManagementModule} from '@valtimo/plugin-management';
 import {
@@ -122,26 +125,26 @@ import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custom-form-flow.component';
-import {TaskManagementModule} from '@valtimo/task-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
 import {
-  DossierDetailTabContactMomentsComponent,
-  DossierDetailTabZaakobjectenComponent,
+  CaseDetailTabZaakobjectenComponent,
   registerDocumentenApiFormioUploadComponent,
   ZgwModule,
 } from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
+import {CaseManagementModule} from '@valtimo/case-management';
+import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
 
 export function tabsFactory() {
   return new Map<string, object>([
-    [DefaultTabs.summary, DossierDetailTabSummaryComponent],
-    [DefaultTabs.progress, DossierDetailTabProgressComponent],
-    [DefaultTabs.audit, DossierDetailTabAuditComponent],
-    [DefaultTabs.documents, DossierDetailTabDocumentsComponent],
-    [DefaultTabs.notes, DossierDetailTabNotesComponent],
+    [DefaultTabs.summary, CaseDetailTabSummaryComponent],
+    [DefaultTabs.progress, CaseDetailTabProgressComponent],
+    [DefaultTabs.audit, CaseDetailTabAuditComponent],
+    [DefaultTabs.documents, CaseDetailTabDocumentsComponent],
+    [DefaultTabs.notes, CaseDetailTabNotesComponent],
     ['custom-maps', CustomMapsTabComponent],
-    ['custom-dossier', CustomDossierTabComponent],
+    ['custom-dossier', CustomCaseTabComponent],
   ]);
 }
 
@@ -152,28 +155,24 @@ export function tabsFactory() {
     StartProcessCustomFormComponent,
     FormioComponent,
     UploadShowcaseComponent,
-    CustomDossierTabComponent,
+    CustomCaseTabComponent,
     CustomMapsTabComponent,
   ],
+  bootstrap: [AppComponent],
   imports: [
-    HttpClientModule,
     CommonModule,
     BrowserModule,
     AppRoutingModule,
     LayoutModule,
-    CardModule,
-    WidgetModule,
     BootstrapModule,
     ConfigModule.forRoot(environment),
     LoggerModule.forRoot(environment.logger),
     environment.authentication.module,
     SecurityModule,
-    MenuModule,
     TaskModule,
     CaseMigrationModule,
-    DossierModule.forRoot(tabsFactory),
+    CaseModule.forRoot(tabsFactory),
     ProcessModule,
-    BpmnJsDiagramModule,
     FormsModule,
     ReactiveFormsModule,
     DashboardModule,
@@ -192,8 +191,8 @@ export function tabsFactory() {
     MilestoneModule,
     ProcessLinkModule,
     MigrationModule,
-    FormManagementModule,
-    DossierManagementModule,
+    FormFlowManagementModule,
+    CaseManagementModule,
     PluginManagementModule,
     NotificatiesApiPluginModule,
     ObjectTokenAuthenticationPluginModule,
@@ -208,7 +207,6 @@ export function tabsFactory() {
     BesluitenApiPluginModule,
     CatalogiApiPluginModule,
     VerzoekPluginModule,
-    HttpClientModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -219,15 +217,18 @@ export function tabsFactory() {
     ObjectModule,
     ObjectManagementModule,
     AccessControlManagementModule,
-    FormFlowManagementModule,
     TranslationManagementModule,
     CustomFormFlowComponent,
-    TaskManagementModule,
     ZgwModule,
     FormViewModelModule,
     LoggingModule,
+    FormManagementModule,
+    BpmnJsDiagramModule,
+    MenuModule,
+    WidgetModule,
   ],
   providers: [
+    provideHttpClient(withInterceptorsFromDi()),
     FormioComponent,
     {
       provide: PLUGINS_TOKEN,
@@ -250,9 +251,8 @@ export function tabsFactory() {
     {
       provide: CASE_TAB_TOKEN,
       useValue: {
-        'custom-dossier-tab': CustomDossierTabComponent,
-        zaakobjecten: DossierDetailTabZaakobjectenComponent,
-        contactmomenten: DossierDetailTabContactMomentsComponent,
+        'custom-dossier-tab': CustomCaseTabComponent,
+        zaakobjecten: CaseDetailTabZaakobjectenComponent,
       },
     },
     {
@@ -267,11 +267,16 @@ export function tabsFactory() {
     {
       provide: CUSTOM_CASE_WIDGET_TOKEN,
       useValue: {
-        caseWidgetComponent: CustomDossierTabComponent,
+        caseWidgetComponent: CustomCaseTabComponent,
+      },
+    },
+    {
+      provide: FORM_CUSTOM_COMPONENT_TOKEN,
+      useValue: {
+        dummy: CustomFormComponent,
       },
     },
   ],
-  bootstrap: [AppComponent],
 })
 export class AppModule {
   constructor(injector: Injector) {

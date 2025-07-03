@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,9 @@
  * Public API Surface of process-link
  */
 
-export * from './lib/services/form-flow.service';
-export * from './lib/services/process-link.service';
-export * from './lib/services/url-resolver.service';
-export * from './lib/services/url-validator.service';
+export * from './lib/services';
 export * from './lib/components/select-plugin-configuration/select-plugin-configuration.component';
 export * from './lib/components/select-plugin-action/select-plugin-action.component';
-export * from './lib/components/select-url/select-url.component';
 export * from './lib/components/plugin-action-configuration/plugin-action-configuration.component';
 export * from './lib/process-link.module';
 export * from './lib/models';

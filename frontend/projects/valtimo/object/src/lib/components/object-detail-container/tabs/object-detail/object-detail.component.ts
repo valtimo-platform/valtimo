@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@ import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {BreadcrumbService} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/shared';
 import {ObjectManagementService} from '@valtimo/object-management';
-import {ToastrService} from 'ngx-toastr';
 import {BehaviorSubject, combineLatest, map, Observable, of, Subject, throwError} from 'rxjs';
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
 import {FormType} from '../../../../models/object.model';
 import {ObjectService} from '../../../../services/object.service';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-detail',
   templateUrl: './object-detail.component.html',
   styleUrls: ['./object-detail.component.scss'],
@@ -95,13 +96,13 @@ export class ObjectDetailComponent implements OnDestroy {
   private _settingBreadcrumb = false;
 
   constructor(
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly objectManagementService: ObjectManagementService,
     private readonly objectService: ObjectService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly translate: TranslateService,
-    private readonly toastr: ToastrService,
-    private readonly breadcrumbService: BreadcrumbService,
-    private readonly objectManagementService: ObjectManagementService
+    private readonly translate: TranslateService
   ) {}
 
   public ngOnDestroy(): void {
@@ -134,7 +135,10 @@ export class ObjectDetailComponent implements OnDestroy {
           )
           .subscribe(() => {
             this.closeModal();
-            this.toastr.success(this.translate.instant('object.messages.objectDeleted'));
+            this.globalNotificationService.showToast({
+              title: this.translate.instant('object.messages.objectDeleted'),
+              type: 'success',
+            });
             this.router.navigate([`/objects/${objectManagementId}`]);
           });
       });
@@ -175,7 +179,10 @@ export class ObjectDetailComponent implements OnDestroy {
             .subscribe(() => {
               this.closeModal();
               this.refreshObject();
-              this.toastr.success(this.translate.instant('object.messages.objectUpdated'));
+              this.globalNotificationService.showToast({
+                title: this.translate.instant('object.messages.objectUpdated'),
+                type: 'success',
+              });
             });
         }
       });
@@ -194,20 +201,29 @@ export class ObjectDetailComponent implements OnDestroy {
   }
 
   private handleRetrievingFormError() {
-    this.toastr.error(this.translate.instant('object.messages.objectRetrievingFormError'));
+    this.globalNotificationService.showToast({
+      title: this.translate.instant('object.messages.objectRetrievingFormError'),
+      type: 'error',
+    });
     this.loading$.next(false);
     return of(null);
   }
 
   private handleUpdateObjectError(error: any) {
     this.closeModal();
-    this.toastr.error(this.translate.instant('object.messages.objectUpdateError'));
+    this.globalNotificationService.showToast({
+      title: this.translate.instant('object.messages.objectUpdateError'),
+      type: 'error',
+    });
     return throwError(error);
   }
 
   private handleDeleteObjectError(error: any) {
     this.closeModal();
-    this.toastr.error(this.translate.instant('object.messages.objectDeleteError'));
+    this.globalNotificationService.showToast({
+      title: this.translate.instant('object.messages.objectDeleteError'),
+      type: 'error',
+    });
     return throwError(error);
   }
 

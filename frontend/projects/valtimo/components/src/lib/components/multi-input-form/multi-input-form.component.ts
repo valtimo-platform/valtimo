@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,11 +28,14 @@ import {FormOutput, MultiInputFormsValues, MultiInputFormValue, MultiInputType} 
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
+import {IconService} from 'carbon-components-angular';
+import {Add16, ChevronDown16, ChevronUp16, Close16} from '@carbon/icons';
 
 @Component({
   selector: 'v-multi-input-form',
   templateUrl: './multi-input-form.component.html',
   styleUrls: ['./multi-input-form.component.scss'],
+  standalone: false,
 })
 export class MultiInputFormComponent implements OnInit, OnChanges, OnDestroy {
   @Input() name = '';
@@ -69,11 +72,14 @@ export class MultiInputFormComponent implements OnInit, OnChanges, OnDestroy {
 
   private valuesSubscription!: Subscription;
 
+  constructor(private readonly iconService: IconService) {}
+
   ngOnInit(): void {
     const initialValues = this.getInitialRows();
     this.initialDefaultValues$.next(initialValues);
     this.values$.next(initialValues);
     this.openValuesSubscription();
+    this.iconService.registerAll([ChevronUp16, ChevronDown16, Close16, Add16]);
   }
 
   ngOnChanges(): void {

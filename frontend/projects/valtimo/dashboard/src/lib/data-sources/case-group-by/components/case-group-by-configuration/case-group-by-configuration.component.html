@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@
 
       <valtimo-value-path-selector
         formControlName="path"
-        [documentDefinitionName]="obs.selectedDocumentDefinition"
+        [caseDefinitionKey]="obs.selectedDocumentDefinition"
         [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
       ></valtimo-value-path-selector>
     </cds-label>
@@ -73,8 +73,8 @@
       [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
       valuePathSelectorNotation="dots"
       [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-      [valuePathSelectorShowDocumentDefinitionSelector]="false"
-      [valuePathSelectorDocumentDefinitionName]="obs.selectedDocumentDefinition"
+      [valuePathSelectorShowCaseDefinitionSelector]="false"
+      [valuePathSelectorCaseDefinitionKey]="obs.selectedDocumentDefinition"
       [keyColumnFlex]="2"
       [dropdownColumnFlex]="1"
       [valueColumnFlex]="1"

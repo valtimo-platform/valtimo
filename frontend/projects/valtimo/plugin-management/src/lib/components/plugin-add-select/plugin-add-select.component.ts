@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,12 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {ConnectorProperties, ConnectorType} from '@valtimo/config';
-import {take, map} from 'rxjs/operators';
-import {AlertService} from '@valtimo/components';
-import {TranslateService} from '@ngx-translate/core';
+import {combineLatest, Subscription} from 'rxjs';
 import {PluginManagementStateService} from '../../services';
-import {PluginManagementService, PluginDefinition} from '@valtimo/plugin';
+import {PluginDefinition, PluginManagementService} from '@valtimo/plugin';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-plugin-add-select',
   templateUrl: './plugin-add-select.component.html',
   styleUrls: ['./plugin-add-select.component.scss'],
@@ -37,8 +34,7 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
-    private readonly stateService: PluginManagementStateService,
-    private readonly translateService: TranslateService
+    private readonly stateService: PluginManagementStateService
   ) {}
 
   ngOnInit(): void {
@@ -50,8 +46,8 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
     this.refreshSubscription?.unsubscribe();
   }
 
-  selectPluginDefinition(pluginDefinition: PluginDefinition): void {
-    this.stateService.selectPluginDefinition(pluginDefinition);
+  selectPluginDefinition(event: {value: PluginDefinition}): void {
+    this.stateService.selectPluginDefinition(event.value);
   }
 
   deselectPluginDefinition(): void {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,16 +35,17 @@ import {
   SearchFieldColumnView,
   SearchFieldDataType,
   SearchFieldFieldType,
-} from '@valtimo/config';
+} from '@valtimo/shared';
 import {ListField} from '@valtimo/components';
 import {catchError, take} from 'rxjs/operators';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {ListItem} from 'carbon-components-angular';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {ObjectManagementService} from '../../../../services/object-management.service';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-list-search-fields',
   templateUrl: './object-management-list-search-fields.component.html',
   styleUrls: ['./object-management-list-search-fields.component.scss'],

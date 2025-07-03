@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -114,17 +114,34 @@
         placeholder=""
       >
       </v-input>
-      <ng-container *ngIf="{documentSelectItems: documentSelectItems$ | async} as vars">
+      <ng-container *ngIf="{caseSelectItems: caseSelectItems$ | async} as vars">
         <v-select
-          [items]="vars.documentSelectItems"
+          [items]="vars.caseSelectItems"
           [smallMargin]="true"
-          name="caseDefinitionName"
-          [title]="'caseDefinitionName' | pluginTranslate: pluginId | async"
+          name="caseDefinitionKey"
+          [title]="'caseDefinitionKey' | pluginTranslate: pluginId | async"
           [disabled]="obs.disabled"
-          [defaultSelectionId]="prefill?.caseDefinitionName"
+          [defaultSelectionId]="prefill?.caseDefinitionKey"
           [required]="true"
-          [loading]="!vars.documentSelectItems"
-          [tooltip]="'caseDefinitionNameTooltip' | pluginTranslate: pluginId | async"
+          [loading]="!vars.caseSelectItems"
+          [tooltip]="'caseDefinitionKeyTooltip' | pluginTranslate: pluginId | async"
+        ></v-select>
+      </ng-container>
+      <ng-container>
+        <v-select
+          [items]="
+            caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey &&
+            (caseVersionTagSelectItemsObservables[uuid].items | async)
+          "
+          [smallMargin]="true"
+          name="caseDefinitionVersionTag"
+          [title]="'caseDefinitionVersionTag' | pluginTranslate: pluginId | async"
+          [disabled]="
+            obs.disabled || !caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey
+          "
+          [defaultSelectionId]="prefill?.caseDefinitionVersionTag"
+          [required]="true"
+          [tooltip]="'caseDefinitionVersionTagTooltip' | pluginTranslate: pluginId | async"
         ></v-select>
       </ng-container>
       <ng-container
@@ -144,13 +161,13 @@
       </ng-container>
       <v-select
         [items]="
-          rolTypeSelectItemsObservables[uuid]?.caseDefinitionName &&
+          rolTypeSelectItemsObservables[uuid]?.caseDefinitionId &&
           (rolTypeSelectItemsObservables[uuid].items | async)
         "
         [smallMargin]="true"
         name="initiatorRoltypeUrl"
         [title]="'initiatorRoltypeUrl' | pluginTranslate: pluginId | async"
-        [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionName"
+        [disabled]="obs.disabled || !rolTypeSelectItemsObservables[uuid]?.caseDefinitionId"
         [defaultSelectionId]="prefill?.initiatorRoltypeUrl"
         [required]="true"
         [tooltip]="'initiatorRoltypeUrlTooltip' | pluginTranslate: pluginId | async"
@@ -196,9 +213,11 @@
           [tooltip]="'mappingTooltip' | pluginTranslate: pluginId | async"
         >
         </v-input-label>
-        <v-button (clickEvent)="openMappingModal(uuid)" mdiIcon="table"
-          >{{ 'setMapping' | pluginTranslate: pluginId | async }}
-        </v-button>
+
+        <button cdsButton (click)="openMappingModal(uuid)" mdiIcon="table">
+          <svg cdsIcon="data-table" size="16"></svg>
+          {{ 'setMapping' | pluginTranslate: pluginId | async }}
+        </button>
       </ng-container>
       <v-input class="hidden-input" name="uuid" [defaultValue]="uuid"> </v-input>
     </v-form>
@@ -227,8 +246,8 @@
             [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
             [fullWidth]="true"
             valuePathSelectorNotation="slashes"
-            [valuePathSelectorDocumentDefinitionName]="
-              getSelectedCaseDefinitionNameForIndex(index) | async
+            [valuePathSelectorCaseDefinitionKey]="
+              getSelectedCaseDefinitionKeyForIndex(index) | async
             "
             [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC]"
             [keyColumnFlex]="1"

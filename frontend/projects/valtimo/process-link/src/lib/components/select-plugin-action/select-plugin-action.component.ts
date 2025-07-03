@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,36 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {PluginDefinition, PluginFunction, PluginManagementService} from '@valtimo/plugin';
-import {Observable, of, Subscription} from 'rxjs';
+import {combineLatest, Observable, of, Subscription} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
 
-import {ProcessLinkButtonService, ProcessLinkStepService, PluginStateService} from '../../services';
+import {
+  PluginStateService,
+  ProcessLinkButtonService,
+  ProcessLinkStateService,
+  ProcessLinkStepService,
+} from '../../services';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-select-plugin-action',
   templateUrl: './select-plugin-action.component.html',
   styleUrls: ['./select-plugin-action.component.scss'],
 })
 export class SelectPluginActionComponent implements OnInit, OnDestroy {
-  public readonly pluginFunctions$: Observable<Array<PluginFunction> | undefined> =
-    this.stateService.selectedPluginDefinition$.pipe(
-      switchMap(selectedDefinition =>
-        selectedDefinition
-          ? this.pluginManagementService.getPluginFunctions(selectedDefinition.key)
-          : of(undefined)
-      )
-    );
+  public readonly pluginFunctions$: Observable<Array<PluginFunction> | undefined> = combineLatest([
+    this.stateService.selectedPluginDefinition$,
+    this.processLinkStateService.modalParams$,
+  ]).pipe(
+    switchMap(([selectedDefinition, modalParams]) =>
+      selectedDefinition
+        ? this.pluginManagementService.getPluginFunctions(
+            selectedDefinition.key,
+            modalParams.element.activityListenerType
+          )
+        : of(undefined)
+    )
+  );
   public readonly selectedPluginDefinition$: Observable<PluginDefinition> =
     this.stateService.selectedPluginDefinition$;
   public readonly selectedPluginFunction$: Observable<PluginFunction> =
@@ -45,7 +56,8 @@ export class SelectPluginActionComponent implements OnInit, OnDestroy {
     private readonly buttonService: ProcessLinkButtonService,
     private readonly pluginManagementService: PluginManagementService,
     private readonly stateService: PluginStateService,
-    private readonly stepService: ProcessLinkStepService
+    private readonly stepService: ProcessLinkStepService,
+    private readonly processLinkStateService: ProcessLinkStateService
   ) {}
 
   public ngOnInit(): void {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {CamundaGeneratedFormComponent} from './camunda-generated-form.component';
 import {FormField} from './formfield/formfield.model';
-import {UntypedFormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule, UntypedFormGroup} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {Directive, Input} from '@angular/core';
 import {CamundaFormfieldService} from './formfield/camunda-formfield.service';
@@ -53,13 +53,14 @@ describe('CamundaGeneratedFormComponent', () => {
 
   @Directive({
     selector: '[valtimoCamundaFormfieldGenerator]',
+    standalone: false,
   })
   class CamundaFormfieldGeneratorDirective {
     @Input() formField: FormField;
     @Input() formGroup: UntypedFormGroup;
   }
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, FormsModule, CommonModule],
       declarations: [CamundaGeneratedFormComponent, CamundaFormfieldGeneratorDirective],

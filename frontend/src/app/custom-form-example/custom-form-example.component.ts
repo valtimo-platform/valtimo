@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, OnInit} from '@angular/core';
-import {UntypedFormBuilder, UntypedFormGroup, UntypedFormControl} from '@angular/forms';
-import {TaskService} from '@valtimo/task';
-import {ActivatedRoute} from '@angular/router';
-import {ToastrService} from 'ngx-toastr';
 import {Location} from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
+import {GlobalNotificationService} from '@valtimo/shared';
+import {TaskService} from '@valtimo/task';
 
 @Component({
   selector: 'app-custom-form-example',
   templateUrl: './custom-form-example.component.html',
   styleUrls: ['./custom-form-example.component.scss'],
+  standalone: false,
 })
 export class CustomFormExampleComponent implements OnInit {
   public customForm: UntypedFormGroup;
@@ -32,11 +32,11 @@ export class CustomFormExampleComponent implements OnInit {
   public id: string;
 
   constructor(
-    private route: ActivatedRoute,
-    private taskService: TaskService,
-    private formBuilder: UntypedFormBuilder,
-    private toastr: ToastrService,
-    private _location: Location
+    private readonly formBuilder: UntypedFormBuilder,
+    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly location: Location,
+    private readonly route: ActivatedRoute,
+    private readonly taskService: TaskService
   ) {
     this.id = this.route.snapshot.paramMap.get('taskId');
   }
@@ -70,8 +70,11 @@ export class CustomFormExampleComponent implements OnInit {
 
   public onSubmit() {
     this.taskService.completeTask(this.id, this.customForm.value).subscribe(() => {
-      this.toastr.success(this.task.task.name + ' has successfully been completed');
-      this._location.back();
+      this.globalNotificationService.showToast({
+        title: this.task.task.name + ' has successfully been completed',
+        type: 'success',
+      });
+      this.location.back();
     });
   }
 }

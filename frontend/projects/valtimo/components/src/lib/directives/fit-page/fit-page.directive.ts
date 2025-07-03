@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,33 @@
  * limitations under the License.
  */
 
-import {AfterViewInit, Directive, ElementRef, Input, OnDestroy, Renderer2} from '@angular/core';
+import {
+  AfterViewInit,
+  Directive,
+  ElementRef,
+  Inject,
+  Input,
+  OnDestroy,
+  Renderer2,
+  RendererStyleFlags2,
+} from '@angular/core';
 import {PageHeaderService} from '../../services';
 import {combineLatest, Subscription} from 'rxjs';
+import {DOCUMENT} from '@angular/common';
 
-@Directive({selector: '[fitPage]'})
+@Directive({selector: '[fitPage]', standalone: true})
 export class FitPageDirective implements AfterViewInit, OnDestroy {
   @Input() extraSpace: number = 0;
   @Input() disabled = false;
+  @Input() disableOverflow = false;
 
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly elementRef: ElementRef,
     private readonly pageHeaderService: PageHeaderService,
-    private readonly renderer: Renderer2
+    private readonly renderer: Renderer2,
+    @Inject(DOCUMENT) private readonly document: Document
   ) {}
 
   public ngAfterViewInit(): void {
@@ -40,11 +52,14 @@ export class FitPageDirective implements AfterViewInit, OnDestroy {
         const nativeElement = this.elementRef?.nativeElement;
 
         if (nativeElement && !this.disabled) {
+          this.addDocumentOverflowStyle();
           this.renderer.setStyle(
             nativeElement,
             'height',
             `calc(100vh - ${compactMode ? 104 : 120}px - ${pageHeadHeight + this.extraSpace}px)`
           );
+        } else {
+          this.removeDocumentOverflowStyle();
         }
       })
     );
@@ -52,5 +67,23 @@ export class FitPageDirective implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+    this.removeDocumentOverflowStyle();
+  }
+
+  private addDocumentOverflowStyle(): void {
+    if (!this.disableOverflow) return;
+
+    this.renderer.setStyle(
+      this.document.documentElement,
+      'overflow',
+      'hidden',
+      RendererStyleFlags2.Important
+    );
+  }
+
+  private removeDocumentOverflowStyle(): void {
+    if (!this.disableOverflow) return;
+
+    this.renderer.removeStyle(this.document.documentElement, 'overflow');
   }
 }

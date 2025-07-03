@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ButtonModule, FormModule, InputModule} from '@valtimo/components';
+import {FormModule, InputModule} from '@valtimo/components';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {ExactPluginRoutingModule} from './exact-plugin-routing.module';
 import {ExactGetRequestConfigurationComponent} from './components/exact-action-get-request-configuration/exact-get-request-configuration.component';
@@ -24,6 +24,7 @@ import {ExactPostRequestConfigurationComponent} from './components/exact-action-
 import {ExactPutRequestConfigurationComponent} from './components/exact-action-put-request-configuration/exact-put-request-configuration.component';
 import {ExactPluginConfigurationComponent} from './components/exact-plugin-configuration/exact-plugin-configuration.component';
 import {ExactRedirectComponent} from './components/exact-redirect/exact-redirect.component';
+import {ButtonModule, IconModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import {ExactRedirectComponent} from './components/exact-redirect/exact-redirect
     InputModule,
     ButtonModule,
     ExactPluginRoutingModule,
+    IconModule,
   ],
   exports: [],
 })

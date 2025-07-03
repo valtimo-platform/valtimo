@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import {ObjectManagementStateService} from '../../../../services/object-manageme
 import {BehaviorSubject, Observable} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-detail',
   templateUrl: './object-management-detail.component.html',
   styleUrls: ['./object-management-detail.component.scss'],

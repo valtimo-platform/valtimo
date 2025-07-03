@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,23 +18,24 @@ import {
   AfterContentInit,
   Component,
   ElementRef,
+  EventEmitter,
   Input,
   OnDestroy,
+  OnInit,
   Output,
   ViewChild,
-  EventEmitter,
-  OnInit,
 } from '@angular/core';
-import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
+import BpmnViewer from 'bpmn-js';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 
 @Component({
   selector: 'valtimo-bpmn-js-diagram',
   templateUrl: './bpmn-js-diagram.component.html',
   styleUrls: ['./bpmn-js-diagram.component.css'],
+  standalone: false,
 })
 export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestroy {
-  private bpmnJS: BpmnJS;
+  private bpmnViewer: BpmnViewer;
   private heatMapInstance: any;
 
   @ViewChild('ref', {static: true}) public el: ElementRef;
@@ -52,11 +53,11 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   constructor() {}
 
   ngOnInit(): void {
-    this.bpmnJS = new BpmnJS();
-    this.bpmnJS.on('import.done', ({error}) => {
-      if (!error) {
-        const canvas = this.bpmnJS.get('canvas');
-        const eventBus = this.bpmnJS.get('eventBus');
+    this.bpmnViewer = new BpmnViewer();
+    this.bpmnViewer.on('import.done', (event: any) => {
+      if (!event?.error) {
+        const canvas = this.bpmnViewer.get('canvas') as any;
+        const eventBus = this.bpmnViewer.get('eventBus') as any;
 
         if (this.historicActivityInstances) {
           this.historicActivityInstances.forEach(instance => {
@@ -90,8 +91,8 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   }
 
   ngAfterContentInit(): void {
-    this.bpmnJS.importXML(this.bpmn20Xml);
-    this.bpmnJS.attachTo(this.el.nativeElement);
+    this.bpmnViewer.importXML(this.bpmn20Xml);
+    this.bpmnViewer.attachTo(this.el.nativeElement);
   }
 
   getHeatmapData() {
@@ -146,7 +147,7 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   }
 
   addCounterActiveOverlays(key: any, inputData: any) {
-    const overlays = this.bpmnJS.get('overlays');
+    const overlays = this.bpmnViewer.get('overlays') as any;
     overlays.add(key, {
       position: {
         bottom: -10,
@@ -189,6 +190,6 @@ export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestr
   }
 
   ngOnDestroy(): void {
-    this.bpmnJS.destroy();
+    this.bpmnViewer.destroy();
   }
 }

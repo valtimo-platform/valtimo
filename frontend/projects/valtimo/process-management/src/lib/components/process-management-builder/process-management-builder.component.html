@@ -1,0 +1,172 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  fitPage
+  [extraSpace]="extraSpace()"
+  [disableOverflow]="true"
+  *ngIf="{
+    processDefinitionVersions: processDefinitionVersions$ | async,
+    selectedProcessDefinitionXml: selectedProcessDefinitionXml$ | async,
+    loading: loading$ | async,
+    isReadOnlyProcess: isReadOnlyProcess$ | async,
+    hasEditPermissions: hasEditPermissions$ | async,
+  } as obs"
+  data-carbon-theme="g10"
+  class="bpmn__container"
+>
+  <div
+    class="bpmn__modeler"
+    [style.display]="obs.isReadOnlyProcess || !obs.hasEditPermissions ? 'none' : 'flex'"
+  >
+    <div class="bpmn__modeler-canvas" #modeler></div>
+
+    <div class="bpmn__modeler-panel" #modelerPanel></div>
+  </div>
+
+  <div
+    class="bpmn__modeler"
+    [style.display]="obs.isReadOnlyProcess || !obs.hasEditPermissions ? 'flex' : 'none'"
+  >
+    <div class="bpmn__modeler-canvas" #viewer></div>
+
+    <div class="bpmn__modeler-panel" #viewerPanel></div>
+  </div>
+</div>
+
+<valtimo-process-link-modal></valtimo-process-link-modal>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <div
+      class="page-header-actions"
+      *ngIf="{
+        processDefinitionVersionsListItems: processDefinitionVersionsListItems$ | async,
+        loading: loading$ | async,
+        changesPending: changesPending$ | async,
+        isReadOnlyProcess: isReadOnlyProcess$ | async,
+        isSystemProcess: isSystemProcess$ | async,
+        compactMode: compactMode$ | async,
+        creatingNewProcess: creatingNewProcess$ | async,
+        context: context$ | async,
+        hasEditPermissions: hasEditPermissions$ | async,
+        canInitializeDocument: canInitializeDocument$ | async,
+        startableByUser: startableByUser$ | async,
+        updatingProcessDefinitionCaseDefinition: updatingProcessDefinitionCaseDefinition$ | async,
+      } as actionsObs"
+    >
+      <div class="page-header-actions__left-container">
+        <cds-dropdown
+          *ngIf="!actionsObs.creatingNewProcess && actionsObs?.context === 'independent'"
+          class="page-header-actions__version-dropdown"
+          (selected)="selectedVersionChange($event)"
+          [disabled]="
+            actionsObs.loading ||
+            (actionsObs.processDefinitionVersionsListItems || []).length === 0 ||
+            (actionsObs.processDefinitionVersionsListItems || []).length === 1
+          "
+          [size]="actionsObs.compactMode ? 'sm' : 'md'"
+        >
+          <cds-dropdown-list
+            [items]="actionsObs.processDefinitionVersionsListItems || []"
+          ></cds-dropdown-list>
+        </cds-dropdown>
+
+        <div class="page-header-actions__tags">
+          <cds-tag
+            *ngIf="actionsObs.isReadOnlyProcess || !actionsObs.hasEditPermissions"
+            type="blue"
+            >{{ 'processManagement.readOnly' | translate }}</cds-tag
+          >
+
+          <cds-tag *ngIf="actionsObs.isSystemProcess" type="red">{{
+            'processManagement.systemProcess' | translate
+          }}</cds-tag>
+        </div>
+      </div>
+
+      <div class="page-header-actions__buttons">
+        @if (actionsObs.context === 'case') {
+          <cds-tooltip
+            [description]="'processCaseConnection.processCreatesCaseTooltip' | translate"
+          >
+            <cds-toggle
+              [onText]="'processManagement.canInitializeDocument' | translate"
+              [offText]="'processManagement.canInitializeDocument' | translate"
+              [checked]="actionsObs.canInitializeDocument"
+              [disabled]="
+                actionsObs.loading ||
+                actionsObs.updatingProcessDefinitionCaseDefinition ||
+                !actionsObs.hasEditPermissions
+              "
+              (checkedChange)="onProcessToggleChange('canInitializeDocument', $event)"
+            ></cds-toggle>
+          </cds-tooltip>
+
+          <cds-tooltip
+            [description]="'processCaseConnection.startableWithinCaseTooltip' | translate"
+          >
+            <cds-toggle
+              [onText]="'processManagement.startableByUser' | translate"
+              [offText]="'processManagement.startableByUser' | translate"
+              [checked]="actionsObs.startableByUser"
+              [disabled]="
+                actionsObs.loading ||
+                actionsObs.updatingProcessDefinitionCaseDefinition ||
+                !actionsObs.hasEditPermissions
+              "
+              (checkedChange)="onProcessToggleChange('startableByUser', $event)"
+            ></cds-toggle
+          ></cds-tooltip>
+        }
+
+        <button
+          *ngIf="actionsObs.context === 'case'"
+          cdsButton="secondary"
+          [size]="actionsObs.compactMode ? 'sm' : 'md'"
+          (click)="navigateBack(null)"
+        >
+          <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+
+          <span>{{ 'interface.back' | translate }}</span>
+        </button>
+
+        <button
+          [disabled]="!actionsObs.changesPending"
+          cdsButton="primary"
+          (click)="
+            !actionsObs.creatingNewProcess
+              ? deployChanges(actionsObs.isReadOnlyProcess)
+              : deployNewProcessDefinition()
+          "
+          [size]="actionsObs.compactMode ? 'sm' : 'md'"
+        >
+          {{ 'processManagement.deploy' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
+        </button>
+
+        <cds-overflow-menu class="overflow-button">
+          <cds-overflow-menu-option
+            [disabled]="actionsObs.loading"
+            (selected)="export(actionsObs.isReadOnlyProcess)"
+            >{{ 'interface.export' | translate }}
+          </cds-overflow-menu-option>
+        </cds-overflow-menu>
+      </div>
+    </div>
+  </ng-template>
+</ng-container>

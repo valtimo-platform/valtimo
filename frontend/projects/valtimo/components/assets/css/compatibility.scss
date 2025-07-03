@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ body {
   display: none;
 }
 
-valtimo-dossier-detail-tab-progress .cds--dropdown {
+valtimo-case-detail-tab-progress .cds--dropdown {
   background-color: var(--cds-field-02) !important;
 }
 
@@ -430,7 +430,7 @@ valtimo-list {
   border: none !important;
 }
 
-valtimo-dossier-assign-user {
+valtimo-case-assign-user {
   h5.selected-text {
     font-size: 14px;
     line-height: 18px;
@@ -629,6 +629,9 @@ valtimo-dossier-assign-user {
   top: 32px;
   right: 32px;
   z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .cds--overflow-menu-options--open {
@@ -749,4 +752,49 @@ valtimo-analyse-process-diagram {
 
 .cds--modal-header {
   position: relative !important;
+}
+
+.valtimo-read-only {
+  &.cds--toggle--disabled .cds--toggle {
+    &__label-text {
+      color: var(--cds-text-secondary);
+    }
+
+    &__text {
+      color: var(--cds-text-primary);
+    }
+
+    &__switch {
+      background-color: white !important;
+      border: 1px solid var(--cds-border-disabled);
+
+      &::before {
+        transform: translate(1.5rem, -1px);
+        background-color: var(--cds-text-primary);
+      }
+    }
+  }
+
+  &.cds--text-input:read-only {
+    -webkit-text-fill-color: var(--cds-text-primary);
+    border-color: var(--cds-border-subtle-01);
+    background-color: var(--cds-field-01);
+    outline: none;
+  }
+
+  &.cds--list-box__wrapper {
+    .cds--label {
+      color: var(--cds-text-secondary);
+    }
+
+    .cds--text-input {
+      background-color: var(--cds-field-01);
+      -webkit-text-fill-color: var(--cds-text-primary);
+    }
+
+    .cds--list-box__menu-icon,
+    .cds--list-box__selection {
+      display: none;
+    }
+  }
 }

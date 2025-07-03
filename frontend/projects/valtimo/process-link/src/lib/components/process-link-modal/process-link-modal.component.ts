@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,10 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {take} from 'rxjs/operators';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-process-link-modal',
   templateUrl: './process-link-modal.component.html',
   styleUrls: ['./process-link-modal.component.scss'],

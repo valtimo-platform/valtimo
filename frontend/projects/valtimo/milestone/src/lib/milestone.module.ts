@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import {RouterModule} from '@angular/router';
 import {MilestoneRoutingModule} from './milestone-routing.module';
 import {MilestoneListComponent} from './milestone-list/milestone-list.component';
 import {CommonModule} from '@angular/common';
-import {ListModule, WidgetModule} from '@valtimo/components';
+import {CarbonListModule, WidgetModule} from '@valtimo/components';
 import {MilestoneCreateComponent} from './milestone-create/milestone-create.component';
 import {MilestoneEditComponent} from './milestone-edit/milestone-edit.component';
 import {MilestoneSetEditComponent} from './milestone-set-edit/milestone-set-edit.component';
@@ -39,14 +39,14 @@ import {TranslateModule} from '@ngx-translate/core';
     MilestoneSetEditComponent,
   ],
   imports: [
-    RouterModule,
     MilestoneRoutingModule,
     CommonModule,
-    ListModule,
     WidgetModule,
     ReactiveFormsModule,
     ColorPickerModule,
     TranslateModule,
+    RouterModule,
+    CarbonListModule,
   ],
   exports: [MilestoneComponent],
 })

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import {PageTitleModule} from '../page-title/page-title.module';
 import {MenuModule} from '../menu/menu.module';
 import {IconModule, UIShellModule} from 'carbon-components-angular';
 import {CaseCountPipe, ComponentsPipesModule} from '../../pipes';
-import {CommandClickDirectiveModule} from '../../directives/command-click/command-click-directive.module';
+import {CtrlClickDirective} from '../../directives/ctrl-click/ctrl-click.directive';
 
 @NgModule({
   declarations: [LeftSidebarComponent, CaseCountPipe],
@@ -32,7 +32,7 @@ import {CommandClickDirectiveModule} from '../../directives/command-click/comman
     IconModule,
     UIShellModule,
     ComponentsPipesModule,
-    CommandClickDirectiveModule,
+    CtrlClickDirective,
   ],
   exports: [LeftSidebarComponent],
 })

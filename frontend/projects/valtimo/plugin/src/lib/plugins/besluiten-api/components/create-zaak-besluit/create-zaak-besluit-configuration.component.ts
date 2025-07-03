@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import {
   filter,
   map,
   Observable,
-  of,
   Subject,
   Subscription,
   switchMap,
@@ -37,8 +36,10 @@ import {DocumentService} from '@valtimo/document';
 import {BesluitenApiService} from '../../services';
 import {InputOption} from '../../../zaken-api/models';
 import {PluginTranslatePipe} from '../../../../pipes';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-create-zaak-besluit-configuration',
   templateUrl: './create-zaak-besluit-configuration.component.html',
   styleUrls: ['./create-zaak-besluit-configuration.component.scss'],
@@ -53,14 +54,18 @@ export class CreateZaakBesluitConfigurationComponent
     this.pluginId$.next(value);
   }
   @Input() prefillConfiguration$: Observable<CreateZaakBesluitConfig>;
+  @Input() context$: Observable<[ManagementContext, CaseManagementParams]>;
+
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakBesluitConfig> =
     new EventEmitter<CreateZaakBesluitConfig>();
+
   readonly VERVALREDENEN: Array<Vervalredenen> = [
     'tijdelijk',
     'ingetrokken_overheid',
     'ingetrokken_belanghebbende',
   ];
+
   readonly vervalredenenSelectItems$: Observable<Array<{id: Vervalredenen; text: string}>> =
     this.translateService.stream('key').pipe(
       switchMap(() => this.pluginId$),
@@ -72,16 +77,14 @@ export class CreateZaakBesluitConfigurationComponent
       )
     );
 
-  readonly caseDefinitionSelectItems$ = new BehaviorSubject<Array<SelectItem>>(null);
-  readonly selectedCaseDefinitionId$ = new BehaviorSubject<string>('');
-
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly selectedStartDateInputOption$ = new BehaviorSubject<InputOption>('selection');
   readonly selectedExpirationDateInputOption$ = new BehaviorSubject<InputOption>('selection');
-
   readonly loading$ = new BehaviorSubject<boolean>(true);
-
   readonly pluginId$ = new BehaviorSubject<string>('');
+  readonly clearBesluitSelection$ = new Subject<void>();
+  readonly besluitTypeSelectItems$ = new BehaviorSubject<SelectItem[]>([]);
+
   readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>
@@ -96,108 +99,12 @@ export class CreateZaakBesluitConfigurationComponent
     ])
   );
 
-  readonly startDateInputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
-    filter(pluginId => !!pluginId),
-    switchMap(pluginId =>
-      combineLatest([
-        this.pluginTranslatePipe.transform('selection', pluginId),
-        this.pluginTranslatePipe.transform('text', pluginId),
-      ])
-    ),
-    map(([selectionTranslation, textTranslation]) => [
-      {value: 'selection', title: selectionTranslation},
-      {value: 'text', title: textTranslation},
-    ])
-  );
+  readonly startDateInputTypeOptions$ = this.inputTypeOptions$;
+  readonly expirationDateInputTypeOptions$ = this.inputTypeOptions$;
 
-  readonly expirationDateInputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
-    filter(pluginId => !!pluginId),
-    switchMap(pluginId =>
-      combineLatest([
-        this.pluginTranslatePipe.transform('selection', pluginId),
-        this.pluginTranslatePipe.transform('text', pluginId),
-      ])
-    ),
-    map(([selectionTranslation, textTranslation]) => [
-      {value: 'selection', title: selectionTranslation},
-      {value: 'text', title: textTranslation},
-    ])
-  );
-
-  readonly besluitTypeSelectItems$: Observable<{[caseDefinitionId: string]: Array<SelectItem>}> =
-    this.modalService.modalData$.pipe(
-      switchMap(params =>
-        this.documentService.findProcessDocumentDefinitionsByProcessDefinitionKey(
-          params?.processDefinitionKey
-        )
-      ),
-      tap(processDocumentDefinitions => {
-        const caseDefSelectItems = processDocumentDefinitions.map(processDocDef => ({
-          text: processDocDef.id.documentDefinitionId.name,
-          id: processDocDef.id.documentDefinitionId.name,
-        }));
-
-        this.caseDefinitionSelectItems$.next(caseDefSelectItems);
-
-        if (this.oneSelectItem(caseDefSelectItems)) {
-          this.selectedCaseDefinitionId$.next(caseDefSelectItems[0].id);
-        }
-      }),
-      switchMap(processDocumentDefinitions =>
-        combineLatest([
-          of(processDocumentDefinitions.map(processDoc => processDoc.id.documentDefinitionId.name)),
-          ...processDocumentDefinitions.map(processDocDef =>
-            this.besluitenApiService.getBesluitTypesByCaseDefinition(
-              processDocDef.id.documentDefinitionId.name
-            )
-          ),
-        ])
-      ),
-      map(res => {
-        const caseDefinitionIds = res[0];
-        const resultaatTypes = res.filter((curr, index) => index !== 0);
-        const selectObject = {};
-
-        caseDefinitionIds.forEach((caseDefinitionId, index) => {
-          selectObject[caseDefinitionId] = resultaatTypes[index].map(statusType => ({
-            id: statusType.url,
-            text: statusType.name,
-          }));
-        });
-
-        return selectObject;
-      }),
-      tap(selectObject => {
-        this.prefillConfiguration$.pipe(take(1)).subscribe(prefillConfig => {
-          const besluittypeUrl = prefillConfig?.besluittypeUrl;
-
-          if (besluittypeUrl) {
-            let selectedCaseDefinitionId!: string;
-
-            Object.keys(selectObject).forEach(caseDefinitionId => {
-              if (selectObject[caseDefinitionId].find(item => item.id === besluittypeUrl)) {
-                selectedCaseDefinitionId = caseDefinitionId;
-              }
-
-              if (selectedCaseDefinitionId) {
-                this.selectedCaseDefinitionId$.next(selectedCaseDefinitionId);
-              } else {
-                this.selectedInputOption$.next('text');
-              }
-            });
-          }
-        });
-      }),
-      tap(() => {
-        this.loading$.next(false);
-      })
-    );
-
-  readonly clearBesluitSelection$ = new Subject<void>();
-
-  private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<CreateZaakBesluitConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly translateService: TranslateService,
@@ -208,15 +115,16 @@ export class CreateZaakBesluitConfigurationComponent
     private readonly pluginTranslatePipe: PluginTranslatePipe
   ) {}
 
-  ngOnInit(): void {
-    this.openSaveSubscription();
+  public ngOnInit(): void {
+    this.initBesluitHandling();
+    this.initSaveHandling();
   }
 
-  ngOnDestroy(): void {
-    this.saveSubscription?.unsubscribe();
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
-  formValueChange(formValue: CreateZaakBesluitConfig): void {
+  public formValueChange(formValue: CreateZaakBesluitConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
 
@@ -233,28 +141,45 @@ export class CreateZaakBesluitConfigurationComponent
     }
   }
 
-  oneSelectItem(selectItems: Array<SelectItem>): boolean {
-    if (Array.isArray(selectItems)) {
-      return selectItems.length === 1;
-    }
-
-    return false;
+  public oneSelectItem(selectItems: Array<SelectItem>): boolean {
+    return Array.isArray(selectItems) && selectItems.length === 1;
   }
 
-  selectCaseDefinition(caseDefinitionId: string): void {
-    this.selectedCaseDefinitionId$.next(caseDefinitionId);
-    this.clearBesluitSelection$.next();
+  private initBesluitHandling(): void {
+    if (!this.context$) return;
+
+    const sub = this.context$
+      .pipe(
+        filter(([context]) => {
+          if (context === 'independent') {
+            this.selectedInputOption$.next('text');
+            this.loading$.next(false);
+          }
+          return context === 'case';
+        }),
+        switchMap(([_, params]) =>
+          this.besluitenApiService.getBesluitTypesByCaseAndVersion(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag
+          )
+        ),
+        tap(besluitTypes => {
+          this.besluitTypeSelectItems$.next(
+            besluitTypes.map(item => ({id: item.url, text: item.name}))
+          );
+          this.selectedInputOption$.next('selection');
+          this.loading$.next(false);
+        })
+      )
+      .subscribe();
+
+    this._subscriptions.add(sub);
   }
 
-  private handleValid(formValue: CreateZaakBesluitConfig): void {
-    const valid = !!formValue.besluittypeUrl && !!formValue.ingangsdatum;
+  private initSaveHandling(): void {
+    if (!this.save$) return;
 
-    this.valid$.next(valid);
-    this.valid.emit(valid);
-  }
-
-  private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
+    const sub = this.save$.subscribe(() => {
       combineLatest([this.formValue$, this.valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
@@ -263,5 +188,13 @@ export class CreateZaakBesluitConfigurationComponent
           }
         });
     });
+
+    this._subscriptions.add(sub);
+  }
+
+  private handleValid(formValue: CreateZaakBesluitConfig): void {
+    const valid = !!formValue.besluittypeUrl && !!formValue.ingangsdatum;
+    this.valid$.next(valid);
+    this.valid.emit(valid);
   }
 }

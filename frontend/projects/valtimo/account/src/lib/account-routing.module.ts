@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ProfileComponent} from './profile/profile.component';
 import {PasswordComponent} from './password/password.component';
-import {ROLE_USER} from '@valtimo/config';
+import {ROLE_USER} from '@valtimo/shared';
 
 const routes: Routes = [
   {

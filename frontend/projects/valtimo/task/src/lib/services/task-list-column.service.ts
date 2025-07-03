@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,7 +93,7 @@ export class TaskListColumnService {
   }
 
   public get taskListColumnsForCase$(): Observable<TaskListColumn[]> {
-    return this.taskListService.caseDefinitionName$.pipe(
+    return this.taskListService.caseDefinitionKey$.pipe(
       tap(caseDefinitionName => {
         if (caseDefinitionName === this.taskListService.ALL_CASES_ID) {
           this.resetTaskListFields();

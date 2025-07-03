@@ -1,0 +1,19 @@
+{
+  "name": "@valtimo/case",
+  "license": "EUPL-1.2",
+  "version": "13.0.0",
+  "peerDependencies": {
+    "@angular/common": "^19.2.8",
+    "@angular/core": "^19.2.8"
+  },
+  "dependencies": {
+    "ngx-csv": "0.3.2",
+    "moment": "2.30.1",
+    "@ngx-translate/core": "16.0.4",
+    "@ngx-translate/http-loader": "16.0.1",
+    "tslib": "2.8.1",
+    "uuid": "11.1.0",
+    "muuri": "0.9.5",
+    "angular-split": "19.0.0"
+  }
+}

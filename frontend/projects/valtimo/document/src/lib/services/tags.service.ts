@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/config';
+import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {CaseTag} from '../models';
@@ -31,49 +31,72 @@ export class CaseTagService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getCaseTagsManagement(caseDefinitionName: string): Observable<CaseTag[]> {
+  public getCaseTagsManagement(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<CaseTag[]> {
     return this.httpClient.get<CaseTag[]>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`)
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/case-tag`
+      )
     );
   }
 
-  public getCaseTags(caseDefinitionName: string): Observable<CaseTag[]> {
+  public getCaseTags(caseDefinitionKey: string): Observable<CaseTag[]> {
     return this.httpClient.get<CaseTag[]>(
-      this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/case-tag`)
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/case-tag`)
     );
   }
 
-  public saveCaseTag(caseDefinitionName: string, tag: CaseTag): Observable<CaseTag> {
+  public saveCaseTag(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
+    tag: CaseTag
+  ): Observable<CaseTag> {
     return this.httpClient.post<CaseTag>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/case-tag`
+      ),
       tag
     );
   }
 
   public updateCaseTag(
-    caseDefinitionName: string,
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
     currentTag: string,
     updatedTag: CaseTag
   ): Observable<CaseTag> {
     return this.httpClient.put<CaseTag>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${currentTag}`),
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/case-tag/${currentTag}`
+      ),
       updatedTag
     );
   }
 
-  public deleteCaseTag(caseDefinitionName: string, tag: string): Observable<void> {
+  public deleteCaseTag(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
+    tag: string
+  ): Observable<void> {
     return this.httpClient.delete<void>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag/${tag}`)
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/case-tag/${tag}`
+      )
     );
   }
 
   public updateCaseTags(
-    caseDefinitionName: string,
-    reorderedStatus: CaseTag[]
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string,
+    reorderedTags: CaseTag[]
   ): Observable<CaseTag[]> {
     return this.httpClient.put<CaseTag[]>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/case-tag`),
-      reorderedStatus
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/case-tag`
+      ),
+      reorderedTags
     );
   }
 }

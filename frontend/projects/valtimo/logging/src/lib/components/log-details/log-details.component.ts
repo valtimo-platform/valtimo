@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,13 @@ import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@
 import {TranslateModule} from '@ngx-translate/core';
 import {ModalModule} from 'carbon-components-angular';
 import {LoggingEvent} from '../../models';
-import {ValtimoCdsModalDirectiveModule} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-log-details',
   templateUrl: './log-details.component.html',
   styleUrl: './log-details.component.scss',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ModalModule, ValtimoCdsModalDirectiveModule],
+  imports: [CommonModule, TranslateModule, ModalModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogDetailsComponent {

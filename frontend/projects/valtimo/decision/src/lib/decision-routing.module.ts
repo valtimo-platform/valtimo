@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,35 +18,53 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {DecisionComponent} from './decision.component';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
+import {DecisionManagementRouteData} from './models/decision-management.model';
+import {DecisionListComponent} from './decision-list/decision-list.component';
 
 const routes: Routes = [
   {
     path: 'decision-tables',
-    component: DecisionComponent,
+    component: DecisionListComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Decision tables', roles: [ROLE_ADMIN]},
+    data: {
+      title: 'Decision tables',
+      roles: [ROLE_ADMIN],
+      context: 'independent',
+    } as DecisionManagementRouteData,
   },
   {
     path: 'decision-tables/:id',
     component: DecisionDisplayComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Decision tables', roles: [ROLE_ADMIN]},
+    data: {
+      title: 'Decision tables',
+      roles: [ROLE_ADMIN],
+      context: 'independent',
+    } as DecisionManagementRouteData,
   },
   {
     path: 'decision-tables/edit/:id',
     component: DecisionModelerComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Edit decision table', roles: [ROLE_ADMIN], customPageTitle: true},
+    data: {
+      title: 'Edit decision table',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'independent',
+    } as DecisionManagementRouteData,
   },
   {
     path: 'decision-tables/edit/create',
     component: DecisionModelerComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'Create decision table', roles: [ROLE_ADMIN]},
+    data: {
+      title: 'Create decision table',
+      roles: [ROLE_ADMIN],
+      context: 'independent',
+    } as DecisionManagementRouteData,
   },
 ];
 

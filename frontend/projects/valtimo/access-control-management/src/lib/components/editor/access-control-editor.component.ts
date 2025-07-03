@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,22 +18,17 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/co
 import {AccessControlService} from '../../services/access-control.service';
 import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {
-  CARBON_CONSTANTS,
-  EditorModel,
-  PageHeaderService,
-  PageTitleService,
-} from '@valtimo/components';
+import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {Role} from '../../models';
-import {NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
+  standalone: false,
   templateUrl: './access-control-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./access-control-editor.component.scss'],
-  providers: [NotificationService],
 })
 export class AccessControlEditorComponent implements OnInit, OnDestroy {
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
@@ -54,7 +49,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
-    private readonly notificationService: NotificationService,
+    private readonly globalNotificationService: GlobalNotificationService,
     private readonly translateService: TranslateService,
     private readonly accessControlExportService: AccessControlExportService,
     private readonly pageHeaderService: PageHeaderService
@@ -224,14 +219,12 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(roleKey: string): void {
-    this.notificationService.showToast({
+    this.globalNotificationService.showToast({
+      title: this.translateService.instant('accessControl.roles.savedSuccessTitle'),
       caption: this.translateService.instant('accessControl.roles.savedSuccessTitleMessage', {
         roleKey,
       }),
       type: 'success',
-      duration: CARBON_CONSTANTS.notificationDuration,
-      showClose: true,
-      title: this.translateService.instant('accessControl.roles.savedSuccessTitle'),
     });
   }
 }

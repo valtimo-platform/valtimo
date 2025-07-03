@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {CamundaFormfieldValidationComponent} from './camunda-formfield-validation.component';
 import {
+  FormsModule,
+  ReactiveFormsModule,
   UntypedFormBuilder,
   UntypedFormControl,
   UntypedFormGroup,
-  FormsModule,
-  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import {FormField} from '../formfield.model';
@@ -48,7 +48,7 @@ describe('CamundaFormfieldValidationComponent', () => {
   let component: CamundaFormfieldValidationComponent;
   let fixture: ComponentFixture<CamundaFormfieldValidationComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, FormsModule],
       declarations: [CamundaFormfieldValidationComponent],

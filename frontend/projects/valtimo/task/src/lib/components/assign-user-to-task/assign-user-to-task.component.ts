@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import {
 } from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, take, tap} from 'rxjs';
 import {TaskService} from '../../services';
-import {NamedUser} from '@valtimo/config';
+import {NamedUser} from '@valtimo/shared';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {

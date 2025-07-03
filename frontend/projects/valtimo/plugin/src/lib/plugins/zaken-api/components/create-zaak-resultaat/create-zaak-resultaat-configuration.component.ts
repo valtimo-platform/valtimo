@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import {
   combineLatest,
   filter,
   Observable,
-  of,
   Subject,
   Subscription,
   switchMap,
@@ -29,13 +28,14 @@ import {
   tap,
 } from 'rxjs';
 import {CreateZaakResultaatConfig, InputOption} from '../../models';
-import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
-import {DocumentService} from '@valtimo/document';
+import {RadioValue, SelectItem} from '@valtimo/components';
 import {map} from 'rxjs/operators';
 import {ZakenApiService} from '../../services';
 import {PluginTranslatePipe} from '../../../../pipes';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-create-zaak-resultaat-configuration',
   templateUrl: './create-zaak-resultaat-configuration.component.html',
   styleUrls: ['./create-zaak-resultaat-configuration.component.scss'],
@@ -44,96 +44,29 @@ import {PluginTranslatePipe} from '../../../../pipes';
 export class CreateZaakResultaatConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() save$: Observable<void>;
-  @Input() disabled$: Observable<boolean>;
-  @Input() set pluginId(value: string) {
+  @Input() public save$: Observable<void>;
+  @Input() public disabled$: Observable<boolean>;
+  @Input() public set pluginId(value: string) {
     this.pluginId$.next(value);
   }
-  @Input() prefillConfiguration$: Observable<CreateZaakResultaatConfig>;
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<CreateZaakResultaatConfig> =
+  @Input() public prefillConfiguration$: Observable<CreateZaakResultaatConfig>;
+  @Input() public context$: Observable<[ManagementContext, CaseManagementParams]>;
+
+  @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() public configuration: EventEmitter<CreateZaakResultaatConfig> =
     new EventEmitter<CreateZaakResultaatConfig>();
 
-  readonly caseDefinitionSelectItems$ = new BehaviorSubject<Array<SelectItem>>(null);
-  readonly selectedCaseDefinitionId$ = new BehaviorSubject<string>('');
-  readonly clearStatusSelection$ = new Subject<void>();
+  public readonly clearStatusSelection$ = new Subject<void>();
 
-  readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  readonly resultaatTypeSelectItems$: Observable<{[caseDefinitionId: string]: Array<SelectItem>}> =
-    this.modalService.modalData$.pipe(
-      switchMap(params =>
-        this.documentService.findProcessDocumentDefinitionsByProcessDefinitionKey(
-          params?.processDefinitionKey
-        )
-      ),
-      tap(processDocumentDefinitions => {
-        const caseDefSelectItems = processDocumentDefinitions.map(processDocDef => ({
-          text: processDocDef.id.documentDefinitionId.name,
-          id: processDocDef.id.documentDefinitionId.name,
-        }));
+  public readonly resultaatTypeSelectItems$ = new BehaviorSubject<SelectItem[]>([]);
 
-        this.caseDefinitionSelectItems$.next(caseDefSelectItems);
+  public readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
 
-        if (this.oneSelectItem(caseDefSelectItems)) {
-          this.selectedCaseDefinitionId$.next(caseDefSelectItems[0].id);
-        }
-      }),
-      switchMap(processDocumentDefinitions =>
-        combineLatest([
-          of(processDocumentDefinitions.map(processDoc => processDoc.id.documentDefinitionId.name)),
-          ...processDocumentDefinitions.map(processDocDef =>
-            this.zakenApiService.getResultaatTypesByCaseDefinition(
-              processDocDef.id.documentDefinitionId.name
-            )
-          ),
-        ])
-      ),
-      map(res => {
-        const caseDefinitionIds = res[0];
-        const resultaatTypes = res.filter((curr, index) => index !== 0);
-        const selectObject = {};
+  public readonly pluginId$ = new BehaviorSubject<string>('');
 
-        caseDefinitionIds.forEach((caseDefinitionId, index) => {
-          selectObject[caseDefinitionId] = resultaatTypes[index].map(statusType => ({
-            id: statusType.url,
-            text: statusType.name,
-          }));
-        });
-
-        return selectObject;
-      }),
-      tap(selectObject => {
-        this.prefillConfiguration$.pipe(take(1)).subscribe(prefillConfig => {
-          const resultaatTypeUrl = prefillConfig?.resultaattypeUrl;
-
-          if (resultaatTypeUrl) {
-            let selectedCaseDefinitionId!: string;
-
-            Object.keys(selectObject).forEach(caseDefinitionId => {
-              if (selectObject[caseDefinitionId].find(item => item.id === resultaatTypeUrl)) {
-                selectedCaseDefinitionId = caseDefinitionId;
-              }
-
-              if (selectedCaseDefinitionId) {
-                this.selectedCaseDefinitionId$.next(selectedCaseDefinitionId);
-              } else {
-                this.selectedInputOption$.next('text');
-              }
-            });
-          }
-        });
-      }),
-      tap(() => {
-        this.loading$.next(false);
-      })
-    );
-
-  readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
-
-  readonly pluginId$ = new BehaviorSubject<string>('');
-
-  readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+  public readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>
       combineLatest([
@@ -147,27 +80,26 @@ export class CreateZaakResultaatConfigurationComponent
     ])
   );
 
-  private saveSubscription!: Subscription;
-
   private readonly formValue$ = new BehaviorSubject<CreateZaakResultaatConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
+  private readonly _subscriptions = new Subscription();
+
   constructor(
-    private readonly modalService: ModalService,
-    private readonly documentService: DocumentService,
     private readonly zakenApiService: ZakenApiService,
     private readonly pluginTranslatePipe: PluginTranslatePipe
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
+    this.initContextHandling();
     this.openSaveSubscription();
   }
 
-  ngOnDestroy() {
-    this.saveSubscription?.unsubscribe();
+  public ngOnDestroy() {
+    this._subscriptions.unsubscribe();
   }
 
-  formValueChange(formValue: CreateZaakResultaatConfig): void {
+  public formValueChange(formValue: CreateZaakResultaatConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
 
@@ -176,12 +108,7 @@ export class CreateZaakResultaatConfigurationComponent
     }
   }
 
-  selectCaseDefinition(caseDefinitionId: string): void {
-    this.selectedCaseDefinitionId$.next(caseDefinitionId);
-    this.clearStatusSelection$.next();
-  }
-
-  oneSelectItem(selectItems: Array<SelectItem>): boolean {
+  public oneSelectItem(selectItems: Array<SelectItem>): boolean {
     if (Array.isArray(selectItems)) {
       return selectItems.length === 1;
     }
@@ -196,18 +123,56 @@ export class CreateZaakResultaatConfigurationComponent
     this.valid.emit(valid);
   }
 
-  private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this.formValue$, this.valid$])
-        .pipe(take(1))
-        .subscribe(([formValue, valid]) => {
-          if (valid) {
-            this.configuration.emit({
-              toelichting: formValue.toelichting,
-              resultaattypeUrl: formValue.resultaattypeUrl,
-            });
+  private initContextHandling(): void {
+    if (!this.context$) return;
+
+    const contextSub = this.context$
+      .pipe(
+        filter(([context]) => {
+          if (context === 'independent') {
+            this.selectedInputOption$.next('text');
+            this.loading$.next(false);
           }
-        });
-    });
+          return context === 'case';
+        }),
+        switchMap(([_, params]) =>
+          combineLatest([
+            this.zakenApiService.getResultaatTypesByCaseAndVersion(
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag
+            ),
+            this.prefillConfiguration$.pipe(take(1)),
+          ])
+        ),
+        tap(([resultaatTypes, prefill]) => {
+          const selectItems = resultaatTypes.map(rt => ({id: rt.url, text: rt.name}));
+          this.resultaatTypeSelectItems$.next(selectItems);
+
+          const matched = selectItems.find(item => item.id === prefill?.resultaattypeUrl);
+          this.selectedInputOption$.next(matched ? 'selection' : 'text');
+
+          this.loading$.next(false);
+        })
+      )
+      .subscribe();
+
+    this._subscriptions.add(contextSub);
+  }
+
+  private openSaveSubscription(): void {
+    this._subscriptions.add(
+      this.save$?.subscribe(save => {
+        combineLatest([this.formValue$, this.valid$])
+          .pipe(take(1))
+          .subscribe(([formValue, valid]) => {
+            if (valid) {
+              this.configuration.emit({
+                toelichting: formValue.toelichting,
+                resultaattypeUrl: formValue.resultaattypeUrl,
+              });
+            }
+          });
+      })
+    );
   }
 }

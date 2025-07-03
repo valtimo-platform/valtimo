@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import {NotificationService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, Subscription} from 'rxjs';
 import {DashboardItem} from '../../models';
 import {FormBuilder, Validators} from '@angular/forms';
@@ -36,8 +35,8 @@ import {ConfigurationOutput} from '@valtimo/dashboard';
   templateUrl: './edit-dashboard-modal.html',
   styleUrls: ['./edit-dashboard-modal.scss'],
   encapsulation: ViewEncapsulation.None,
-  providers: [NotificationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class EditDashboardModalComponent implements OnInit {
   @Input() public showModal$: Observable<boolean>;

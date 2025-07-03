@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ROLE_ADMIN} from '@valtimo/config';
+import {ROLE_ADMIN} from '@valtimo/shared';
 import {AuthGuardService} from '@valtimo/security';
 import {TranslationManagementComponent} from './components/translation-management/translation-management.component';
 

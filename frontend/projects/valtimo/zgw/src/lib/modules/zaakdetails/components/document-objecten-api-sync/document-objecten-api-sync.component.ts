@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {Component, OnInit} from '@angular/core';
 import {
   AbstractControl,
@@ -24,22 +24,38 @@ import {
   Validators,
 } from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
+import {Edit16, TrashCan16} from '@carbon/icons';
+import {TranslateModule} from '@ngx-translate/core';
+import {CaseManagementDraftWarningComponent} from '@valtimo/case-management';
 import {
   CdsThemeService,
   FormModule,
   InputModule,
+  RenderInBodyComponent,
   SelectItem,
   SelectModule,
   SpinnerModule,
-  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsModalDirective,
 } from '@valtimo/components';
-import {TranslateModule} from '@ngx-translate/core';
-import {BehaviorSubject, map, Observable, switchMap, tap} from 'rxjs';
-import {CommonModule} from '@angular/common';
-import {ButtonModule, CheckboxModule, ModalModule} from 'carbon-components-angular';
-import {DocumentObjectenApiSyncService} from '../../services';
+import {DocumentDefinition, DocumentService} from '@valtimo/document';
+import {
+  CaseManagementParams,
+  DraftVersionService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
+import {
+  ButtonModule,
+  CheckboxModule,
+  IconModule,
+  IconService,
+  LayerModule,
+  ModalModule,
+  TilesModule,
+} from 'carbon-components-angular';
+import {BehaviorSubject, map, Observable, switchMap, tap, of} from 'rxjs';
+
 import {DocumentObjectenApiSync} from '../../models';
-import {DocumentDefinition} from '@valtimo/document';
+import {DocumentObjectenApiSyncService} from '../../services';
 
 @Component({
   selector: 'valtimo-document-objecten-api-sync',
@@ -47,32 +63,50 @@ import {DocumentDefinition} from '@valtimo/document';
   styleUrls: ['./document-objecten-api-sync.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-    TranslateModule,
-    SpinnerModule,
-    FormModule,
-    InputModule,
-    SelectModule,
-    ValtimoCdsModalDirectiveModule,
-    CheckboxModule,
-    ReactiveFormsModule,
     ButtonModule,
+    CheckboxModule,
+    CommonModule,
+    FormModule,
+    FormsModule,
+    IconModule,
+    InputModule,
+    LayerModule,
     ModalModule,
+    ReactiveFormsModule,
+    SelectModule,
+    SpinnerModule,
+    TilesModule,
+    TranslateModule,
+    ValtimoCdsModalDirective,
+    RenderInBodyComponent,
+    CaseManagementDraftWarningComponent,
   ],
 })
 export class DocumentObjectenApiSyncComponent implements OnInit {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
-  private readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
-    map(params => params.name || '')
-  );
-  private readonly documentDefinition$: Observable<DocumentDefinition> =
-    this.documentDefinitionName$.pipe(
-      switchMap(documentDefinitionName =>
-        this.documentObjectenApiSyncService.getDocumentDefinition(documentDefinitionName)
+  private readonly _params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
+  private readonly _documentDefinition$: Observable<DocumentDefinition> = this._params$.pipe(
+    switchMap(params =>
+      this.documentService.getDocumentDefinitionByVersion(
+        params?.caseDefinitionKey ?? '',
+        params?.caseDefinitionVersionTag ?? ''
       )
-    );
-  public readonly documentObjectenApiSync$ = new BehaviorSubject<DocumentObjectenApiSync>(null);
+    )
+  );
+  public readonly isDraftVersion$ = this._params$.pipe(
+    switchMap((params: CaseManagementParams | undefined) =>
+      !params
+        ? of(false)
+        : this.draftVersionService.isDraftVersion(
+            params.caseDefinitionKey,
+            params.caseDefinitionVersionTag
+          )
+    )
+  );
+  public readonly documentObjectenApiSync$ = new BehaviorSubject<DocumentObjectenApiSync | null>(
+    null
+  );
   public readonly objectManagementConfigurationItems$: Observable<Array<SelectItem>> =
     this.documentObjectenApiSyncService.getObjectManagementConfigurations().pipe(
       map(results =>
@@ -82,19 +116,19 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
         }))
       )
     );
-  private readonly modalShowing$ = new BehaviorSubject<boolean>(false);
+  public readonly modalShowing$ = new BehaviorSubject<boolean>(false);
   public readonly currentTheme$ = this.cdsThemeService.currentTheme$;
   public readonly formGroup = new FormGroup({
     objectManagementConfigurationId: new FormControl('', Validators.required),
     enabled: new FormControl(true),
   });
 
-  public get objectManagementConfigurationId(): AbstractControl<string> {
-    return this.formGroup.get('objectManagementConfigurationId');
+  public get objectManagementConfigurationId(): AbstractControl<string | null> | null {
+    return this.formGroup.get('objectManagementConfigurationId') ?? null;
   }
 
-  public get enabled(): AbstractControl<boolean> {
-    return this.formGroup.get('enabled');
+  public get enabled(): AbstractControl<boolean | null> | null {
+    return this.formGroup.get('enabled') ?? null;
   }
 
   public readonly valid$ = new BehaviorSubject<boolean>(false);
@@ -102,38 +136,43 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly documentObjectenApiSyncService: DocumentObjectenApiSyncService,
-    private readonly cdsThemeService: CdsThemeService
-  ) {}
+    private readonly documentService: DocumentService,
+    private readonly cdsThemeService: CdsThemeService,
+    private readonly iconService: IconService,
+    private readonly draftVersionService: DraftVersionService
+  ) {
+    this.iconService.registerAll([TrashCan16, Edit16]);
+  }
 
   public ngOnInit(): void {
     this.loadDocumentenObjectenApiSync();
   }
 
   public loadDocumentenObjectenApiSync(): void {
-    this.documentDefinition$
+    this._documentDefinition$
       .pipe(
-        switchMap(documentDefinition =>
+        switchMap((documentDefinition: DocumentDefinition) =>
           this.documentObjectenApiSyncService.getDocumentObjectenApiSync(
-            documentDefinition.id.name,
-            documentDefinition.id.version
+            documentDefinition.id.caseDefinitionId.key,
+            documentDefinition.id.caseDefinitionId.versionTag
           )
         )
       )
       .subscribe(documentObjectenApiSync => {
         this.loading$.next(false);
         this.configSelected(documentObjectenApiSync?.objectManagementConfigurationId);
-        this.enabled.patchValue(documentObjectenApiSync?.enabled);
+        this.enabled?.patchValue(documentObjectenApiSync?.enabled);
         this.documentObjectenApiSync$.next(documentObjectenApiSync);
       });
   }
 
   public remove(): void {
-    this.documentDefinition$
+    this._documentDefinition$
       .pipe(
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.deleteDocumentObjectenApiSync(
-            documentDefinition.id.name,
-            documentDefinition.id.version
+            documentDefinition.id.caseDefinitionId.key,
+            documentDefinition.id.caseDefinitionId.versionTag
           )
         ),
         tap(() => {
@@ -145,15 +184,15 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
 
   public submit(): void {
     const formValues = this.formGroup.getRawValue();
-    this.documentDefinition$
+    this._documentDefinition$
       .pipe(
         switchMap(documentDefinition =>
           this.documentObjectenApiSyncService.updateDocumentObjectenApiSync(
-            documentDefinition.id.name,
-            documentDefinition.id.version,
+            documentDefinition.id.caseDefinitionId.key,
+            documentDefinition.id.caseDefinitionId.versionTag,
             {
-              objectManagementConfigurationId: formValues.objectManagementConfigurationId,
-              enabled: formValues.enabled,
+              objectManagementConfigurationId: formValues.objectManagementConfigurationId ?? '',
+              enabled: !!formValues.enabled,
             }
           )
         )
@@ -173,6 +212,8 @@ export class DocumentObjectenApiSyncComponent implements OnInit {
   }
 
   public configSelected(selectedId: string): void {
+    if (!this.objectManagementConfigurationId) return;
+
     if (!selectedId) {
       this.objectManagementConfigurationId.patchValue('');
     } else {

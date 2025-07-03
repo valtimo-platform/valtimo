@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import {Objecttype, ObjecttypeKeys} from '../../models/object-management.model';
 import {VModalComponent, ModalService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-upload-modal',
   templateUrl: './object-management-upload-modal.component.html',
   styleUrls: ['./object-management-upload-modal.component.scss'],

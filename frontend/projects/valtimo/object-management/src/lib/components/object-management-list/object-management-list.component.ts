@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import {ObjectManagementStateService} from '../../services/object-management-sta
 import {Router} from '@angular/router';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-list',
   templateUrl: './object-management-list.component.html',
   styleUrls: ['./object-management-list.component.scss'],

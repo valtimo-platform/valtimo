@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import {debounceTime, take} from 'rxjs/operators';
   selector: 'valtimo-searchable-dropdown',
   templateUrl: './searchable-dropdown.component.html',
   styleUrls: ['./searchable-dropdown.component.scss'],
+  standalone: false,
 })
 export class SearchableDropdownComponent implements OnInit, OnDestroy, OnChanges {
   @Input() style: DropdownButtonStyle;

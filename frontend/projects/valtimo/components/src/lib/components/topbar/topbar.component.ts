@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import {
 } from '@angular/core';
 import {KeycloakService} from 'keycloak-angular';
 import {map, Observable, of, switchMap} from 'rxjs';
-import {ConfigService, ValtimoConfig} from '@valtimo/config';
+import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {IconService} from 'carbon-components-angular';
 import User20 from '@carbon/icons/es/user/20';
 import {ShellService} from '../../services/shell.service';
@@ -36,6 +36,7 @@ import {CurrentCarbonTheme, TopbarLogo} from '../../models';
   selector: 'valtimo-topbar',
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss'],
+  standalone: false,
 })
 export class TopbarComponent implements OnInit, AfterViewInit {
   @HostBinding('class.cds--header') headerClass = true;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,15 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ToastrService} from 'ngx-toastr';
+import {GlobalNotificationService, InterceptorSkip} from '@valtimo/shared';
 import {Observable, throwError} from 'rxjs';
 import {catchError} from 'rxjs/operators';
-import {InterceptorSkip} from './error';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(private readonly toastr: ToastrService) {}
+  constructor(private readonly globalNotificationService: GlobalNotificationService) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let skipStatusCodes: string[] = [];
@@ -70,9 +69,10 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             errorMessage = `Error Code: ${error?.status} </br>Message: ${error?.message}`;
           }
         }
-        this.toastr.warning(`${errorMessage}`, `An unexpected error occurred`, {
-          enableHtml: true,
-          tapToDismiss: false,
+        this.globalNotificationService.showToast({
+          title: 'An unexpected error occurred',
+          caption: errorMessage,
+          type: 'error',
         });
         return throwError(() => error);
       })

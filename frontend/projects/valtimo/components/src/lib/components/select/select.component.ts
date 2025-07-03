@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import {map, take} from 'rxjs/operators';
   selector: 'v-select',
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
+  standalone: false,
 })
 export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public set items(value: Array<SelectItem>) {
@@ -131,7 +132,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
 
     if (Array.isArray(selectedValue)) {
       this.setSelectedValue(selectedValue.map(value => value.id));
-    } else if (id && typeof id === 'string') {
+    } else if (selectedValue && typeof id === 'string') {
       this.setSelectedValue(id);
     }
   }

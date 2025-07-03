@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import {
   Component,
   EventEmitter,
   HostListener,
+  Injector,
   Input,
   OnChanges,
   OnDestroy,
@@ -29,7 +30,6 @@ import {ValtimoFormioOptions} from '../../models';
 import {ValtimoModalService} from '../../services/valtimo-modal.service';
 import {UserProviderService} from '@valtimo/security';
 import {
-  Formio,
   FormioComponent as FormIoSourceComponent,
   FormioForm,
   FormioOptions,
@@ -45,14 +45,17 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {FormIoLocalStorageService} from './services/form-io-local-storage.service';
 import {deepmerge} from 'deepmerge-ts';
-import {ConfigService, ValtimoConfig} from '@valtimo/config';
+import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
+import {Formio} from 'formiojs';
+import {FormIoTagsService} from './services/form-io.tags.service';
 
 @Component({
   selector: 'valtimo-form-io',
   templateUrl: './form-io.component.html',
   styleUrls: ['./form-io.component.css'],
   providers: [FormIoLocalStorageService],
+  standalone: false,
 })
 export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() set options(optionsValue: ValtimoFormioOptions) {
@@ -143,9 +146,12 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly localStorageService: FormIoLocalStorageService,
     private readonly modalService: ValtimoModalService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly tagsService: FormIoTagsService,
+    private readonly injector: Injector
   ) {
     this.setOverrideOptions(configService.config);
+    this.tagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit(): void {

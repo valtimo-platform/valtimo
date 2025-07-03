@@ -1,5 +1,5 @@
-/*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,17 @@
     font-size: 100%;
   }
 
-  &-summary p {
+  &-header {
+    padding: 38px 0 38px 38px;
+  }
+
+  &-content {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &-summary {
     font-size: 0.8rem;
     white-space: pre-line;
   }
-}
-
-.actions-dropdown {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  cursor: pointer;
 }

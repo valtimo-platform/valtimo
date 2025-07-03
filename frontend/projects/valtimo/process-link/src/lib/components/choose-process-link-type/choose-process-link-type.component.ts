@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
 import {map, Subscription} from 'rxjs';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-choose-process-link-type',
   templateUrl: './choose-process-link-type.component.html',
   styleUrls: ['./choose-process-link-type.component.scss'],

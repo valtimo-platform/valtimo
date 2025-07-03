@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ import {isEqual} from 'lodash';
 import {Add16, TrashCan16} from '@carbon/icons';
 
 @Component({
+  standalone: false,
   templateUrl: './case-counts-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./case-counts-configuration.component.scss'],

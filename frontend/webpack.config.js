@@ -12,10 +12,10 @@ class WaitForRebuildLockPlugin {
   apply(compiler) {
     compiler.hooks.watchRun.tapAsync('PauseBeforeCompile', (params, callback) => {
       if (isRebuildInProgress()) {
-        console.log('\n⏳ Rebuild in progress. Pausing Webpack compilation...\n');
+        console.log('\nRebuild in progress. Pausing Webpack compilation...\n');
 
         waitForLockFileToBeRemoved(() => {
-          console.log('\n✅ Rebuild finished. Resuming Webpack compilation...\n');
+          console.log('\nRebuild finished. Resuming Webpack compilation...\n');
           callback();
         });
       } else {

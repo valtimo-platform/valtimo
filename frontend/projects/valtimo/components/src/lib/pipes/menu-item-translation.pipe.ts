@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 
 import {Pipe, PipeTransform} from '@angular/core';
-import {MenuItem} from '@valtimo/config';
+import {MenuItem} from '@valtimo/shared';
 import {combineLatest, map, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 
-@Pipe({name: 'menuItemTranslate'})
+@Pipe({name: 'menuItemTranslate', standalone: false})
 export class MenuItemTranslationPipe implements PipeTransform {
   constructor(private readonly translateService: TranslateService) {}
 

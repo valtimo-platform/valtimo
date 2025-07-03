@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,9 @@ import {take} from 'rxjs/operators';
 import {PluginStateService} from './plugin-state.service';
 import {PluginTranslationService} from '@valtimo/plugin';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ProcessLinkStepService {
   private readonly _steps$ = new BehaviorSubject<Array<Step>>(undefined);
   private readonly _currentStepIndex$ = new BehaviorSubject<number>(0);

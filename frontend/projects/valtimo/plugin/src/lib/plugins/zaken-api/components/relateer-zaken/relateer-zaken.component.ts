@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,18 +28,15 @@ import {
 } from 'rxjs';
 import {RelateerZakenConfig} from '../../models';
 import {PluginTranslatePipe} from '../../../../pipes';
-import {
-  SelectItem
-} from '@valtimo/components';
+import {SelectItem} from '@valtimo/components';
 
 @Component({
   selector: 'valtimo-relateer-zaken',
   templateUrl: './relateer-zaken.component.html',
   providers: [PluginTranslatePipe],
+  standalone: false,
 })
-export class RelateerZakenComponent
-  implements FunctionConfigurationComponent, OnInit, OnDestroy
-{
+export class RelateerZakenComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() set pluginId(value: string) {
@@ -60,10 +57,10 @@ export class RelateerZakenComponent
         this.pluginTranslatePipe.transform('option-bijdrage', pluginId),
       ])
     ),
-    map(([vervolgText, onderwerpText, bijdrageText]) =>     [
-      { id: 'vervolg', text: vervolgText },
-      { id: 'onderwerp', text: onderwerpText },
-      { id: 'bijdrage', text: bijdrageText }
+    map(([vervolgText, onderwerpText, bijdrageText]) => [
+      {id: 'vervolg', text: vervolgText},
+      {id: 'onderwerp', text: onderwerpText},
+      {id: 'bijdrage', text: bijdrageText},
     ])
   );
 
@@ -72,10 +69,7 @@ export class RelateerZakenComponent
   private readonly formValue$ = new BehaviorSubject<RelateerZakenConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private readonly pluginTranslatePipe: PluginTranslatePipe
-  ) {
-  }
+  constructor(private readonly pluginTranslatePipe: PluginTranslatePipe) {}
 
   ngOnInit(): void {
     this.openSaveSubscription();

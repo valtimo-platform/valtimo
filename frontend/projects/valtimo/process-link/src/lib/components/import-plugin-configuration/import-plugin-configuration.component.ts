@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import {Upload16} from '@carbon/icons';
 import {CdsThemeService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-import-plugin-configuration',
   templateUrl: './import-plugin-configuration.component.html',
   styleUrls: ['./import-plugin-configuration.component.scss'],

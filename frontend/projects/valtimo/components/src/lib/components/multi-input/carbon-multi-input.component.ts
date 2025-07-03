@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import {v4 as uuidv4} from 'uuid';
   templateUrl: './carbon-multi-input.component.html',
   styleUrls: ['./carbon-multi-input.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public addRowText = '';
@@ -84,9 +85,9 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public type: MultiInputType = 'value';
   @Input() public valueColumnTitle = '';
 
-  @Input() public readonly valuePathSelectorDocumentDefinitionName = '';
+  @Input() public readonly valuePathSelectorCaseDefinitionKey = '';
   @Input() public readonly valuePathSelectorPrefixes: ValuePathSelectorPrefix[] = [];
-  @Input() public readonly valuePathSelectorShowDocumentDefinitionSelector = false;
+  @Input() public readonly valuePathSelectorShowCaseDefinitionSelector = false;
   @Input() public readonly valuePathSelectorNotation: ValuePathSelectorNotation = 'dots';
 
   @Input() public readonly keyColumnFlex = 1;

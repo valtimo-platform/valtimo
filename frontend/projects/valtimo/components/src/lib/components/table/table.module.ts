@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import {CommonModule} from '@angular/common';
 import {TableComponent} from './table.component';
 import {LayoutModule} from '@angular/cdk/layout';
 import {TranslateModule} from '@ngx-translate/core';
-import {ButtonModule} from '../button/button.module';
+import {ButtonModule} from 'carbon-components-angular';
 import {NgxSkeletonLoaderModule} from 'ngx-skeleton-loader';
 import {SelectModule} from '../select/select.module';
 

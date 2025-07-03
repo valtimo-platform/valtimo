@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,76 +14,72 @@
   ~ limitations under the License.
   -->
 
-<div class="input-group mt-4 mb-2 align-items-center">
-  <div>
-    <h2>{{ 'zaakdetails.title' | translate }}</h2>
-  </div>
-</div>
+<cds-tile>
+  <valtimo-case-management-draft-warning
+    *ngIf="isDraftVersion$ | async"
+    [name]="'zaakdetails.title' | translate | lowercase"
+  ></valtimo-case-management-draft-warning>
 
-<ng-container
-  *ngIf="{
-    loading: loading$ | async,
-    documentObjectenApiSync: documentObjectenApiSync$ | async,
-  } as obs"
->
-  <ng-container *ngIf="obs.loading === false; else loading">
-    <ng-container *ngIf="obs.documentObjectenApiSync; else addSync">
-      <div class="card card-border card-contrast">
-        <div class="card-header card-header-contrast card-header-featured">
-          <div>
-            {{ obs.documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
-          </div>
-          <div class="controls">
-            <button class="btn btn-danger ml-3" (click)="showModal()">
-              <i class="icon mdi mdi-pencil"></i>
-            </button>
-            <button class="btn btn-danger ml-3" (click)="remove()">
-              <i class="icon mdi mdi-delete"></i>
-            </button>
-          </div>
+  <h2 class="valtimo-objecten-sync__title">{{ 'zaakdetails.title' | translate }}</h2>
+
+  @if (loading$ | async) {
+    <valtimo-spinner></valtimo-spinner>
+  } @else {
+    @if (documentObjectenApiSync$ | async; as documentObjectenApiSync) {
+      <section class="valtimo-objecten-sync__card-header">
+        <span class="valtimo-objecten-sync__card-title">
+          {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
+        </span>
+
+        <div class="valtimo-objecten-sync__card-controls">
+          <button cdsButton="tertiary" (click)="showModal()">
+            {{ 'interface.edit' | translate }}
+
+            <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+          </button>
+
+          <button cdsButton="danger" (click)="remove()">
+            {{ 'interface.delete' | translate }}
+
+            <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+          </button>
         </div>
-        <div class="card-body">
-          <div class="row pt-3 mt-1">
-            <div class="col-3">
-              <strong>{{ 'zaakdetails.enabled' | translate }}</strong>
-            </div>
-            <div class="col-3">
-              {{
-                obs.documentObjectenApiSync?.enabled
-                  ? ('zaakdetails.yes' | translate)
-                  : ('zaakdetails.no' | translate)
-              }}
-            </div>
-          </div>
-          <div class="row pt-3 mt-1">
-            <div class="col-3">
-              <strong>{{ 'zaakdetails.objectManagementConfigurationTitle' | translate }}</strong>
-            </div>
-            <div class="col-3">
-              {{ obs.documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
-            </div>
-          </div>
+      </section>
+
+      <section class="valtimo-objecten-sync__card-body">
+        <div>
+          <strong>{{ 'zaakdetails.enabled' | translate }}</strong>
+
+          {{
+            documentObjectenApiSync.enabled
+              ? ('zaakdetails.yes' | translate)
+              : ('zaakdetails.no' | translate)
+          }}
         </div>
-      </div>
-    </ng-container>
-  </ng-container>
-  <ng-container *ngTemplateOutlet="modal; context: {obs: obs}"></ng-container>
-</ng-container>
 
-<ng-template #addSync>
-  <div class="text-right mt-5">
-    <button class="btn btn-primary" (click)="showModal()">
-      <i class="icon mdi mdi-plus mr-1"></i>{{ 'zaakdetails.submitButton' | translate }}
-    </button>
-  </div>
-</ng-template>
+        <div>
+          <strong>{{ 'zaakdetails.objectManagementConfigurationTitle' | translate }}</strong>
 
-<ng-template #modal let-obs="obs">
+          {{ documentObjectenApiSync.objectManagementConfigurationTitle || '-' }}
+        </div>
+      </section>
+    } @else {
+      <button cdsButton="primary" (click)="showModal()">
+        {{ 'zaakdetails.submitButton' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    }
+  }
+</cds-tile>
+
+<valtimo-render-in-body>
   <cds-modal
     valtimoCdsModal
     [title]="'zaakdetails.editModal.title' | translate"
     [open]="modalShowing$ | async"
-    [showFooter]="true"
+    showFooter="true"
+    (close)="onModalClose()"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="onModalClose()">
       <h3 cdsModalHeaderHeading>
@@ -91,7 +87,7 @@
       </h3>
     </cds-modal-header>
 
-    <section cdsModalContent>
+    <section cdsModalContent [cdsLayer]="1">
       <form [formGroup]="formGroup">
         <v-select
           *ngIf="objectManagementConfigurationItems$ | async as objectManagementConfigurations"
@@ -118,29 +114,13 @@
     </section>
 
     <cds-modal-footer>
-      <ng-container *ngTemplateOutlet="buttonsFooterModal; context: {obs: obs}"></ng-container>
+      <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
+        {{ 'interface.cancel' | translate }}
+      </button>
+
+      <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()">
+        {{ 'searchFieldsOverview.submit' | translate }}
+      </button>
     </cds-modal-footer>
   </cds-modal>
-</ng-template>
-
-<ng-template #buttonsFooterModal let-obs="obs">
-  <button cdsButton="secondary" (click)="onModalClose()" [disabled]="false">
-    {{ 'interface.cancel' | translate }}
-  </button>
-
-  <button cdsButton="primary" [disabled]="!formGroup.valid" (click)="submit()">
-    {{ 'searchFieldsOverview.submit' | translate }}
-  </button>
-</ng-template>
-
-<ng-template #loading>
-  <div class="mb-8">
-    <valtimo-spinner></valtimo-spinner>
-  </div>
-</ng-template>
-
-<ng-template #noConfigAvailable>
-  <div class="mb-8">
-    <h4>{{ 'zaakdetails.error.configNotFound' | translate }}</h4>
-  </div>
-</ng-template>
+</valtimo-render-in-body>

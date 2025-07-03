@@ -1,0 +1,234 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  signal,
+  TemplateRef,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {ArrowDown16, ArrowUp16} from '@carbon/icons';
+import {TranslateService} from '@ngx-translate/core';
+import {ApiTabItem, ApiTabType} from '@valtimo/case';
+import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
+import {
+  CaseManagementParams,
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+} from '@valtimo/shared';
+import {IconService} from 'carbon-components-angular';
+import {BehaviorSubject, filter, map, Observable, switchMap, take, tap} from 'rxjs';
+import {TabManagementService, TabService} from '../../../../services';
+
+@Component({
+  standalone: false,
+  selector: 'valtimo-case-management-tabs',
+  templateUrl: './case-management-tabs.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+})
+export class CaseManagementTabsComponent implements AfterViewInit {
+  @ViewChild('tabContentColumn') tabContentColumnTemplate: TemplateRef<any>;
+  @ViewChild('tabTypeColumn') tabTypeColumnTemplate: TemplateRef<any>;
+  @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;
+
+  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route).pipe(
+    tap(params => {
+      this.tabManagementService.setParams(params);
+      this.tabManagementService.loadTabs();
+    })
+  );
+
+  public actionItems: ActionItem[] = [
+    {
+      label: 'interface.edit',
+      callback: this.openEditModal.bind(this),
+      type: 'normal',
+    },
+    {
+      label: 'interface.delete',
+      callback: this.openDeleteConfirmationModal.bind(this),
+      type: 'danger',
+    },
+  ];
+  public readonly deleteRowKey$ = new BehaviorSubject<string | null>(null);
+  public readonly showDeleteModal$: Observable<boolean> = this.deleteRowKey$.pipe(
+    map((key: string | null) => !!key)
+  );
+  public readonly openEditModal$ = new BehaviorSubject<boolean>(false);
+  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
+  public readonly loading$: Observable<boolean> = this.tabManagementService.loading$;
+  public readonly openAddModal$ = new BehaviorSubject<boolean>(false);
+  public readonly lastItemIndex$ = new BehaviorSubject<number>(-1);
+
+  public readonly tabs$: Observable<ApiTabItem[]> = this.tabManagementService.tabs$.pipe(
+    tap(tabs => {
+      this.tabService.configuredContentKeys = tabs.map((tab: ApiTabItem) => tab.contentKey);
+      this.tabService.configuredTabKeys = tabs.map((tab: ApiTabItem) => tab.key);
+      this.lastItemIndex$.next(tabs.length - 1);
+      this.dragAndDropDisabled.set(false);
+    })
+  );
+
+  public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
+  public readonly dragAndDropDisabled = signal(false);
+
+  private readonly params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
+
+  public readonly hasEditPermissions$: Observable<boolean> = this.params$.pipe(
+    switchMap(params =>
+      this.editPermissionsService.hasEditPermissions(
+        params?.caseDefinitionKey,
+        params?.caseDefinitionVersionTag
+      )
+    )
+  );
+
+  constructor(
+    private readonly cd: ChangeDetectorRef,
+    private readonly iconService: IconService,
+    private readonly tabManagementService: TabManagementService,
+    private readonly tabService: TabService,
+    private readonly translateService: TranslateService,
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly editPermissionsService: EditPermissionsService
+  ) {}
+
+  public ngAfterViewInit(): void {
+    this.iconService.registerAll([ArrowDown16, ArrowUp16]);
+    this.cd.detectChanges();
+    this.setFields();
+  }
+
+  public isTranslated(key: string): boolean {
+    return this.translateService.instant(key) !== key;
+  }
+
+  public openAddTabModal(): void {
+    this.openAddModal$.next(true);
+  }
+
+  public openEditModal(tab: ApiTabItem): void {
+    this.tab$.next(tab);
+    this.openEditModal$.next(true);
+  }
+
+  public onRowClicked(tab: ApiTabItem): void {
+    this.hasEditPermissions$
+      .pipe(
+        filter(hasPermission => hasPermission),
+        take(1)
+      )
+      .subscribe(() => {
+        this.tab$.next(tab);
+
+        if (tab.type === ApiTabType.WIDGETS) {
+          this.router.navigate(['widget-tab', tab.key], {relativeTo: this.route});
+        } else {
+          this.openEditModal$.next(true);
+        }
+      });
+  }
+
+  public onCloseAddModalEvent(tab: ApiTabItem | null): void {
+    this.openAddModal$.next(false);
+
+    if (!tab) {
+      return;
+    }
+
+    this.addTab(tab);
+  }
+
+  public onCloseEditModalEvent(tab: ApiTabItem | null): void {
+    this.openEditModal$.next(false);
+    this.tab$.next(null);
+
+    if (!tab) {
+      return;
+    }
+
+    this.editTab(tab);
+  }
+
+  public openDeleteConfirmationModal(tab: ApiTabItem): void {
+    this.deleteRowKey$.next(tab.key);
+  }
+
+  public onConfirmEvent(tabKey: string): void {
+    this.deleteTab(tabKey);
+  }
+
+  public onItemsReorderedEvent(reorderedItems: ApiTabItem[]): void {
+    if (!reorderedItems) return;
+
+    this.dragAndDropDisabled.set(true);
+
+    this.tabManagementService.dispatchAction(
+      this.tabManagementService.editTabsOrder(reorderedItems)
+    );
+  }
+
+  private addTab(tab: Partial<ApiTabItem>): void {
+    this.tabManagementService.dispatchAction(this.tabManagementService.addTab(tab));
+  }
+
+  private deleteTab(tabKey: string): void {
+    this.tabManagementService.dispatchAction(this.tabManagementService.deleteTab(tabKey));
+  }
+
+  private editTab(tab: ApiTabItem): void {
+    this.tabManagementService.dispatchAction(this.tabManagementService.editTab(tab, tab.key));
+  }
+
+  private setFields(): void {
+    this.fields$.next([
+      {
+        key: 'name',
+        label: 'caseManagement.tabManagement.columns.name',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'key',
+        label: 'caseManagement.tabManagement.columns.key',
+        viewType: ViewType.TEXT,
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.tabTypeColumnTemplate,
+        key: '',
+        label: 'caseManagement.tabManagement.columns.type',
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.tabContentColumnTemplate,
+        key: '',
+        label: 'caseManagement.tabManagement.columns.content',
+      },
+      {
+        viewType: ViewType.BOOLEAN,
+        key: 'showTasks',
+        label: 'caseManagement.tabManagement.columns.showTasks',
+      },
+    ]);
+  }
+}

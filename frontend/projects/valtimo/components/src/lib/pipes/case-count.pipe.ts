@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import {Pipe, PipeTransform} from '@angular/core';
 
-@Pipe({name: 'caseCount'})
+@Pipe({name: 'caseCount', standalone: false})
 export class CaseCountPipe implements PipeTransform {
   transform(caseCount: any): string {
     if (typeof caseCount === 'number') {

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
     loading: loading$ | async,
     documentUploadFields: documentUploadFields$ | async,
     uploadFieldModalType: uploadFieldModalType$ | async,
-    documentDefinitionName: documentDefinitionName$ | async,
+    caseDefinitionKey: caseDefinitionKey$ | async,
     prefill: prefill$ | async,
   } as obs"
 >
@@ -29,6 +29,7 @@
     [header]="false"
     [loading]="obs.loading"
     [actionItems]="ACTION_ITEMS"
+    (rowClicked)="openEditModal($event)"
   >
     <valtimo-no-results
       title="{{ 'zgw.uploadFields.list.noResultsTitle' | translate }}"
@@ -38,7 +39,7 @@
 
   <valtimo-documenten-api-upload-field-modal
     [prefill]="obs.prefill"
-    [documentDefinitionName]="obs.documentDefinitionName"
+    [caseDefinitionKey]="obs.caseDefinitionKey"
     [type]="obs.uploadFieldModalType"
     (closeModalEvent)="closeModal($event)"
   ></valtimo-documenten-api-upload-field-modal>

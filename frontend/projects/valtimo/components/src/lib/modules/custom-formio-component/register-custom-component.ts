@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,10 @@ import {Components} from 'formiojs';
 import {FormioCustomComponentInfo} from './elements.common';
 import {createCustomFormioComponent} from './create-custom-component';
 import {CustomTagsService} from '@formio/angular';
+import {FormIoTagsService} from '../../components/form-io/services/form-io.tags.service';
 
 export function registerCustomTag(tag: string, injector: Injector): void {
   injector.get(CustomTagsService).addCustomTag(tag);
-}
-
-export function registerCustomTags(tags: string[], injector: Injector): void {
-  tags.forEach(tag => registerCustomTag(tag, injector));
 }
 
 export function registerCustomFormioComponent(
@@ -34,7 +31,11 @@ export function registerCustomFormioComponent(
   angularComponent: Type<any>,
   injector: Injector
 ): void {
+  const tagsService = injector.get(FormIoTagsService);
+
   registerCustomTag(options.selector, injector);
+
+  tagsService.markTagForRegistration(options.selector);
 
   if (!customElements.get(options.selector)) {
     const complexCustomComponent = createCustomElement(angularComponent, {injector});
@@ -51,6 +52,7 @@ export function registerCustomFormioComponentWithClass(
   injector: Injector
 ): void {
   registerCustomTag(options.selector, injector);
+  registerCustomTag(options.type, injector);
 
   if (!customElements.get(options.selector)) {
     const complexCustomComponent = createCustomElement(angularComponent, {injector});

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {NavigationEnd, NavigationStart, ResolveEnd, Router} from '@angular/router';
-import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/config';
-import {DocumentDefinitions, DocumentService} from '@valtimo/document';
+import {ConfigService, MenuConfig, MenuIncludeService, MenuItem} from '@valtimo/shared';
+import {CaseDefinition, DocumentService} from '@valtimo/document';
 import {UserProviderService} from '@valtimo/security';
+import {SseService} from '@valtimo/sse';
 import {KeycloakService} from 'keycloak-angular';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable, Subject, timer} from 'rxjs';
-import {filter, map, take} from 'rxjs/operators';
+import {BehaviorSubject, combineLatest, Observable, Subject} from 'rxjs';
+import {filter, map} from 'rxjs/operators';
 import {PendingChangesService} from '../pending-changes/pending-changes.service';
 
 @Injectable({
@@ -31,6 +32,8 @@ import {PendingChangesService} from '../pending-changes/pending-changes.service'
 export class MenuService {
   private readonly _activeParentSequenceNumber$ = new BehaviorSubject<string>('');
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
+
+  private readonly caseDefinitions$ = this.documentService.getCaseDefinitions({active: true});
 
   private _menuItems$ = new BehaviorSubject<MenuItem[]>([]);
   private menuConfig: MenuConfig;
@@ -51,7 +54,8 @@ export class MenuService {
     private readonly menuIncludeService: MenuIncludeService,
     private readonly pendingChangesService: PendingChangesService,
     private readonly router: Router,
-    private readonly userProviderService: UserProviderService
+    private readonly userProviderService: UserProviderService,
+    private readonly sseService: SseService
   ) {
     const config = configService?.config;
     this.menuConfig = config?.menu;
@@ -191,7 +195,7 @@ export class MenuService {
       }
     });
     menuItems = this.sortMenuItems(menuItems);
-    this.appendDossierSubMenuItems(menuItems).subscribe(
+    this.appendCaseSubMenuItems(menuItems).subscribe(
       value => (menuItems = this.applyMenuRoleSecurity(value))
     );
 
@@ -207,49 +211,43 @@ export class MenuService {
     return menuItems.sort((a, b) => a.sequence - b.sequence);
   }
 
-  private appendDossierSubMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {
+  private appendCaseSubMenuItems(menuItems: MenuItem[]): Observable<MenuItem[]> {
     return new Observable(subscriber => {
-      this.logger.debug('appendDossierSubMenuItems');
-      this.documentService.getAllDefinitions().subscribe(definitions => {
-        combineLatest([
-          ...definitions.content.map(definition =>
-            this.documentService.getCaseSettings(definition?.id?.name)
-          ),
-        ])
-          .pipe(take(1))
-          .subscribe(allCaseSettings => {
-            const openDocumentCountMap =
-              !this.disableCaseCount && this.getOpenDocumentCountMap(definitions);
+      this.logger.debug('appendCasesSubMenuItems');
+      this.caseDefinitions$.subscribe(definitions => {
+        const openDocumentCountMap =
+          !this.disableCaseCount && this.getOpenCaseCountMap(definitions);
 
-            const dossierMenuItems: MenuItem[] = definitions.content.map((definition, index) => {
-              const caseSettings = allCaseSettings?.find(
-                setting => setting.name === definition.id.name
-              );
+        const dossierMenuItems: MenuItem[] = definitions.map((definition, index) => {
+          const caseSettings = definitions?.find(
+            setting => setting.name === definition.caseDefinitionKey
+          );
 
-              return {
-                link: ['/dossiers/' + definition.id.name],
-                title: definition.schema.title,
-                iconClass: 'icon mdi mdi-dot-circle',
-                sequence: index,
-                show: true,
-                ...(!this.disableCaseCount &&
-                  caseSettings?.canHaveAssignee && {
-                    count$: openDocumentCountMap.get(definition.id.name),
-                  }),
-              } as MenuItem;
-            });
-            this.logger.debug('found dossierMenuItems', dossierMenuItems);
-            const menuItemIndex = menuItems.findIndex(({title}) => title === 'Dossiers');
-            if (menuItemIndex > 0) {
-              const dossierMenu = menuItems[menuItemIndex];
-              this.logger.debug('updating dossierMenu', dossierMenu);
-              dossierMenu.children = dossierMenuItems;
-              menuItems[menuItemIndex] = dossierMenu;
-            }
-            subscriber.next(menuItems);
-            this.dossierItemsAppended$.next(true);
-            this.logger.debug('appendDossierSubMenuItems finished');
-          });
+          return {
+            link: ['/cases/' + definition.caseDefinitionKey],
+            title: definition.name,
+            iconClass: 'icon mdi mdi-dot-circle',
+            sequence: index,
+            show: true,
+            ...(!this.disableCaseCount &&
+              caseSettings?.caseDefinitionKey && {
+                count$: openDocumentCountMap.get(definition.caseDefinitionKey),
+              }),
+          } as MenuItem;
+        });
+        this.logger.debug('found dossierMenuItems', dossierMenuItems);
+        const menuItemIndex = menuItems.findIndex(
+          ({title}) => title === 'Cases' || title === 'Dossiers' || title === 'Zaakdossiers'
+        );
+        if (menuItemIndex > 0) {
+          const dossierMenu = menuItems[menuItemIndex];
+          this.logger.debug('updating dossierMenu', dossierMenu);
+          dossierMenu.children = dossierMenuItems;
+          menuItems[menuItemIndex] = dossierMenu;
+        }
+        subscriber.next(menuItems);
+        this.dossierItemsAppended$.next(true);
+        this.logger.debug('appendDossierSubMenuItems finished');
       });
     });
   }
@@ -286,22 +284,27 @@ export class MenuService {
     });
   }
 
-  private getOpenDocumentCountMap(definitions: DocumentDefinitions): Map<string, Subject<number>> {
+  private getOpenCaseCountMap(definitions: CaseDefinition[]): Map<string, Subject<number>> {
     const countMap = new Map<string, Subject<number>>();
-    definitions.content.forEach(definition =>
-      countMap.set(definition.id.name, new Subject<number>())
+    definitions.forEach(definition =>
+      countMap.set(definition.caseDefinitionKey, new Subject<number>())
     );
 
-    timer(0, 5000).subscribe(() => {
-      this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
-        openDocumentCountList.forEach(openDocumentCount => {
-          const mapEntry = countMap.get(openDocumentCount.documentDefinitionName);
+    this.updateDocumentCount(countMap);
 
-          if (mapEntry) mapEntry.next(openDocumentCount.openDocumentCount);
-        });
+    this.sseService
+      .getSseMessagesObservableByEventType(['CASE_UNASSIGNED', 'CASE_ASSIGNED', 'CASE_CREATED'])
+      .subscribe(() => this.updateDocumentCount(countMap));
+    return countMap;
+  }
+
+  private updateDocumentCount(countMap: Map<string, Subject<number>>): void {
+    this.documentService.getOpenDocumentCount().subscribe(openDocumentCountList => {
+      openDocumentCountList.forEach(openDocumentCount => {
+        const mapEntry = countMap.get(openDocumentCount.documentDefinitionName);
+        if (mapEntry) mapEntry.next(openDocumentCount.openDocumentCount);
       });
     });
-    return countMap;
   }
 
   private applyMenuRoleSecurity(menuItems: MenuItem[]): MenuItem[] {

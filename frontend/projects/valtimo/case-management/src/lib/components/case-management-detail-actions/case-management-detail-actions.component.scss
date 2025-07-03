@@ -1,0 +1,97 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.case-actions {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  &.--compact {
+    align-items: center;
+  }
+
+  ::ng-deep .version-selection {
+    width: 160px;
+
+    .cds--list-box__selection {
+      display: none;
+    }
+  }
+}
+
+.exporting-message {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.case-metadata {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+}
+
+.case-buttons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+::ng-deep .version-selector {
+  margin-bottom: 0;
+  width: 300px;
+}
+
+::ng-deep .version-selector-dropdown-template {
+  display: flex;
+
+  .cds--tag {
+    margin: 0 8px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    line-height: 24px;
+    max-width: 100%;
+  }
+}
+
+::ng-deep .cds--list-box__field {
+  display: flex;
+  justify-content: space-between;
+}
+
+::ng-deep .cds--list-box__menu-item__option {
+  display: flex;
+  justify-content: space-between;
+  padding-inline-end: 0;
+}
+
+::ng-deep .cds--list-box__menu-item__option > div {
+  margin-top: -4px;
+}
+
+.full-width-notification {
+  max-inline-size: 100%;
+  min-inline-size: 100%;
+}
+
+.case-management-overflow-icon {
+  fill: var(--vcds-color-60) !important;
+}

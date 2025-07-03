@@ -1,0 +1,31 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    paramsAreSet: paramsAreSet$ | async,
+  } as obs"
+>
+  @if (obs.paramsAreSet) {
+    <valtimo-process-management-list
+      (processSelected)="onProcessSelected($event)"
+    ></valtimo-process-management-list>
+
+    <valtimo-process-management-upload></valtimo-process-management-upload>
+  } @else {
+    <cds-loading></cds-loading>
+  }
+</ng-container>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,3 @@ export * from './lib/models';
 export * from './lib/services';
 export * from './lib/modules';
 export * from './lib/zgw.module';
-
-// haalcentraal-brp
-export * from './lib/modules/haalcentraal-brp/components/cases-list/cases-list.component';
-export * from './lib/modules/haalcentraal-brp/components/customer-list/customer-list.component';

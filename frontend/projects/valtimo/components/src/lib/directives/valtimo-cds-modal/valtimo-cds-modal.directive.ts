@@ -1,8 +1,8 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
- * You may not use this file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -28,6 +28,7 @@ import {
 
 @Directive({
   selector: '[valtimoCdsModal]',
+  standalone: true,
 })
 export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   @Input() public readonly enableOverflow = false;
@@ -98,12 +99,12 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   }
 
   private applyOverflowToModalElements(): void {
-    if (!this.enableOverflow) return;
-
-    const modalContainerElements = this.document.querySelectorAll('.cds--modal-container');
-    modalContainerElements.forEach((el: Element) => {
-      this.renderer.setStyle(el, 'max-height', 'calc(100vh - 64px)', RendererStyleFlags2.Important);
-    });
+    if (this.enableOverflow) {
+      const modalElements = this.document.querySelectorAll('.cds--modal, .cds--modal-content');
+      modalElements.forEach((el: Element) => {
+        this.renderer.setStyle(el, 'overflow', 'auto');
+      });
+    }
   }
 
   private preventModalCloseButtonTooltip(): void {

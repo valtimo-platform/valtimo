@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ import {CommonModule} from '@angular/common';
 import {MultiInputFormComponent} from './multi-input-form.component';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {InputModule} from '../input/input.module';
-import {ButtonModule} from '../button/button.module';
 import {TranslateModule} from '@ngx-translate/core';
 import {ParagraphModule} from '../paragraph/paragraph.module';
 import {DefaultValuePipe} from './default-value.pipe';
+import {ButtonModule, IconModule} from 'carbon-components-angular';
 
 @NgModule({
   declarations: [MultiInputFormComponent],
@@ -34,6 +34,8 @@ import {DefaultValuePipe} from './default-value.pipe';
     TranslateModule,
     ParagraphModule,
     DefaultValuePipe,
+    ButtonModule,
+    IconModule,
   ],
   exports: [MultiInputFormComponent],
 })

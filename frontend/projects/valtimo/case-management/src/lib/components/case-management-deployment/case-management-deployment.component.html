@@ -1,0 +1,216 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<ng-container
+  *ngIf="{
+    releaseVersionEntries: releaseVersionEntries$ | async,
+    releaseInformationDataEntries: releaseInformationDataEntries$ | async,
+    isDraftVersion: isDraftVersion$ | async,
+    hasConflictingVersions: hasConflictingVersions$ | async,
+    notificationContent: notificationContent$ | async,
+    canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
+    isGloballyActive: isGloballyActive$ | async,
+  } as obs"
+>
+  <div class="header-buttons">
+    <button cdsButton="secondary" (click)="goBack()">
+      {{ 'caseManagement.deployment.buttons.back' | translate }}
+      <svg cdsIcon="return" size="16" class="cds--btn__icon"></svg>
+    </button>
+    @if (obs.canUpdateGlobalConfiguration) {
+      @if (obs.isDraftVersion) {
+        <div class="draft-buttons">
+          <button
+            *ngIf="caseDefinitionVersions.length === 1 || !obs.isGloballyActive"
+            cdsButton="danger"
+            (click)="openDeleteDraftModal()"
+          >
+            {{ 'caseManagement.deployment.buttons.delete' | translate }}
+            <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
+          </button>
+
+          <button cdsButton="primary" (click)="openFinalizeDraftConfirmationModal()">
+            {{ 'caseManagement.deployment.buttons.finalize' | translate }}
+            <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+          </button>
+        </div>
+      } @else {
+        <button cdsButton="primary" (click)="openCreateDraftVersionConfirmationModal()">
+          {{ 'caseManagement.deployment.buttons.createDraft' | translate }}
+          <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+        </button>
+      }
+    }
+  </div>
+
+  <div class="deployment-panels">
+    <ng-container
+      *ngTemplateOutlet="
+        releaseVersionPanel;
+        context: {
+          data: obs.releaseVersionEntries,
+          showNotification: obs.hasConflictingVersions,
+          notificationContent: {
+            basedOnVersionTag: obs.notificationContent?.basedOnVersionTag,
+            conflictingVersions: obs.notificationContent?.conflictingVersions,
+          },
+        }
+      "
+    ></ng-container>
+
+    <ng-container
+      *ngTemplateOutlet="
+        releaseInformationPanel;
+        context: {data: obs.releaseInformationDataEntries}
+      "
+    ></ng-container>
+  </div>
+</ng-container>
+
+<ng-template
+  #releaseVersionPanel
+  let-data="data"
+  let-showNotification="showNotification"
+  let-notificationContent="notificationContent"
+>
+  <div class="release-version">
+    <p class="deployment-panel-title">
+      {{ 'caseManagement.deployment.releaseVersion.title' | translate }}
+    </p>
+
+    <div class="release-version-columns">
+      <div *ngFor="let entry of data" class="release-version-data">
+        <label class="release-version-data__label">
+          {{ 'caseManagement.deployment.releaseVersion.fields.' + entry.key | translate }}
+        </label>
+        <div class="release-version-data__value">
+          {{ entry.value }}
+        </div>
+      </div>
+    </div>
+
+    <cds-notification
+      *ngIf="showNotification"
+      class="full-width-notification"
+      [notificationObj]="{
+        type: 'warning',
+        title: ('caseManagement.deployment.releaseVersion.warning.title' | translate),
+        message:
+          ('caseManagement.deployment.releaseVersion.warning.description'
+          | translate: notificationContent),
+        showClose: false,
+        lowContrast: true,
+      }"
+    >
+    </cds-notification>
+  </div>
+</ng-template>
+
+<ng-template #releaseInformationPanel let-data="data">
+  <div class="release-information">
+    <p class="deployment-panel-title">
+      {{ 'caseManagement.deployment.releaseInformation.title' | translate }}
+    </p>
+
+    <div class="release-version-columns">
+      <ng-container *ngFor="let entry of data">
+        <div class="release-version-data" *ngIf="entry?.key && entry?.value !== undefined">
+          <label class="release-version-data__label">
+            {{ 'caseManagement.deployment.releaseInformation.fields.' + entry.key | translate }}
+          </label>
+          <div class="release-version-data__value">
+            {{ entry.value }}
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</ng-template>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showDeleteDraftConfirmationModal$"
+  (confirmEvent)="deleteDraftCaseVersion()"
+  (cancelEvent)="closeDeleteDraftModal()"
+  cancelButtonType="ghost"
+  confirmButtonType="danger"
+  confirmButtonTextTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.confirm"
+  cancelButtonTextTranslationKey="interface.cancel"
+  titleTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.title"
+  contentTranslationKey="caseManagement.deployment.deleteDraftConfirmationModal.description"
+>
+</valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showFinalizeDraftConfirmationModal$"
+  [content]="finalizeDraftDescription$ | async"
+  (confirmEvent)="finalizeDraftCaseVersion()"
+  (cancelEvent)="closeFinalizeDraftModal()"
+  cancelButtonType="ghost"
+  confirmButtonType="primary"
+  confirmButtonTextTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.confirm"
+  cancelButtonTextTranslationKey="interface.cancel"
+  titleTranslationKey="caseManagement.deployment.finalizeDraftConfirmationModal.title"
+></valtimo-confirmation-modal>
+
+<valtimo-case-management-create-draft-version
+  [open]="showCreateDraftVersionConfirmationModal$ | async"
+  [caseDefinitionPayload]="caseDefinitionPayload$ | async"
+  (closeModal)="onCloseCreateDraftVersionModal($event)"
+></valtimo-case-management-create-draft-version>
+
+<ng-template #loadingMessage let-translationKey="translationKey">
+  <div>
+    <span class="cds--inline-notification__title">
+      {{ translationKey | translate }}
+    </span>
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>
+
+<ng-template #createDraftMessage>
+  <ng-container
+    *ngTemplateOutlet="
+      loadingMessage;
+      context: {
+        translationKey: 'caseManagement.deployment.createDraftConfirmationModal.loadingText',
+      }
+    "
+  >
+  </ng-container>
+</ng-template>
+
+<ng-template #finalizeDraftMessage>
+  <ng-container
+    *ngTemplateOutlet="
+      loadingMessage;
+      context: {
+        translationKey: 'caseManagement.deployment.finalizeDraftConfirmationModal.loadingText',
+      }
+    "
+  >
+  </ng-container>
+</ng-template>
+
+<ng-template #deleteDraftMessage>
+  <ng-container
+    *ngTemplateOutlet="
+      loadingMessage;
+      context: {
+        translationKey: 'caseManagement.deployment.finalizeDraftConfirmationModal.loadingText',
+      }
+    "
+  >
+  </ng-container>
+</ng-template>

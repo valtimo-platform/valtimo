@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import {Component, Input, OnInit} from '@angular/core';
   selector: 'valtimo-widget',
   templateUrl: './widget.component.html',
   styleUrls: ['./widget.component.css'],
+  standalone: false,
 })
 export class WidgetComponent implements OnInit {
   @Input() type?: string;

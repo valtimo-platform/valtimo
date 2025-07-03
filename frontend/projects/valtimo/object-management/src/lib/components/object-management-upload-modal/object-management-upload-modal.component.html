@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 >
   <div role="header">
     <div class="add-title">
-      <v-title [margin]="false">{{ 'objectManagement.uploadObjecttype' | translate }}</v-title>
+      <h4>{{ 'objectManagement.uploadObjecttype' | translate }}</h4>
     </div>
   </div>
   <div role="content">
@@ -32,17 +32,17 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
+      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled">
         {{ 'objectManagement.cancel' | translate }}
-      </v-button>
-      <v-button
-        (clickEvent)="uploadDefinition()"
+      </button>
+
+      <button
+        cdsButton="primary"
+        (click)="uploadDefinition()"
         [disabled]="obs.jsonString === '' || obs.disabled"
-        mdiIcon="plus"
-        type="success"
       >
         {{ 'Upload' | translate }}
-      </v-button>
+      </button>
     </div>
   </div>
 </v-modal>

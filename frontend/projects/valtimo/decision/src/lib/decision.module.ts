@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 
 import {NgModule} from '@angular/core';
-import {DecisionComponent} from './decision.component';
 import {DecisionRoutingModule} from './decision-routing.module';
 import {DecisionDeployComponent} from './decision-deploy/decision-deploy.component';
 import {CommonModule} from '@angular/common';
@@ -23,29 +22,20 @@ import {FormsModule} from '@angular/forms';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
 import {DecisionListComponent} from './decision-list/decision-list.component';
 import {
-  ListModule,
+  CarbonListModule,
   ModalModule,
+  SelectModule,
   SpinnerModule,
   WidgetModule,
-  SelectModule,
-  CarbonListModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 
 @NgModule({
-  declarations: [
-    DecisionComponent,
-    DecisionDeployComponent,
-    DecisionDisplayComponent,
-    DecisionListComponent,
-    DecisionModelerComponent,
-  ],
   imports: [
     DecisionRoutingModule,
     WidgetModule,
-    ListModule,
     TranslateModule,
     ModalModule,
     CommonModule,
@@ -55,7 +45,11 @@ import {ButtonModule, IconModule} from 'carbon-components-angular';
     CarbonListModule,
     ButtonModule,
     IconModule,
+    DecisionDeployComponent,
+    DecisionModelerComponent,
+    DecisionListComponent,
+    DecisionDisplayComponent,
   ],
-  exports: [DecisionComponent, DecisionModelerComponent],
+  exports: [DecisionModelerComponent],
 })
 export class DecisionModule {}

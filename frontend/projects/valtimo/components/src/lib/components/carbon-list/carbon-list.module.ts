@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,8 @@ import {
   TableModule,
   TagModule,
 } from 'carbon-components-angular';
-import {ValtimoCdsModalDirectiveModule} from '../../directives/valtimo-cds-modal/valtimo-cds-modal-directive.module';
+import {ValtimoCdsModalDirective} from '../../directives/valtimo-cds-modal/valtimo-cds-modal.directive';
 import {EllipsisPipe} from '../../pipes';
-import {CardModule} from '../card/card.module';
 import {ViewContentModule} from '../view-content/view-content.module';
 import {CarbonListComponent} from './carbon-list.component';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
@@ -45,7 +44,6 @@ import {CarbonTagsModalComponent} from './tags-modal/tags-modal.component';
     CarbonTagsModalComponent,
   ],
   imports: [
-    CardModule,
     CommonModule,
     FormsModule,
     NgbPaginationModule,
@@ -60,7 +58,7 @@ import {CarbonTagsModalComponent} from './tags-modal/tags-modal.component';
     NgbTooltipModule,
     TagModule,
     ModalModule,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
     ViewContentModule,
   ],
   exports: [CarbonListComponent, CarbonListFilterPipe, CarbonNoResultsComponent],

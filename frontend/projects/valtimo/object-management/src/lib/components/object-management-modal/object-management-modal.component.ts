@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import {FormService} from '@valtimo/form';
 import {VModalComponent, ModalService} from '@valtimo/components';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-object-management-modal',
   templateUrl: './object-management-modal.component.html',
   styleUrls: ['./object-management-modal.component.scss'],
@@ -45,7 +46,7 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
   readonly selectedObjecttype$ = new BehaviorSubject<string | null>(null);
 
   readonly formDefinitions$: Observable<Array<{id: string; text: string}>> = this.formService
-    .getAllFormDefinitions()
+    .getAllUnlinkedFormDefinitions()
     .pipe(
       map(results =>
         results?.map(configuration => ({

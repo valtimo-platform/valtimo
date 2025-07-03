@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   EditorModule,
-  RenderInPageHeaderDirectiveModule,
+  RenderInPageHeaderDirective,
 } from '@valtimo/components';
-import {FormFlowManagementRoutingModule} from './form-flow-management-routing.module';
 import {FormFlowOverviewComponent} from './components/overview/form-flow-overview.component';
 import {NewFormFlowModalComponent} from './components/new-form-flow-modal/new-form-flow-modal.component';
 import {
@@ -49,7 +48,6 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
   ],
   imports: [
     CommonModule,
-    FormFlowManagementRoutingModule,
     ButtonModule,
     FormsModule,
     ModalModule,
@@ -59,13 +57,14 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
     IconModule,
     ConfirmationModalModule,
     EditorModule,
-    RenderInPageHeaderDirectiveModule,
+    RenderInPageHeaderDirective,
     LoadingModule,
     IconModule,
     DialogModule,
     NotificationModule,
     CarbonListModule,
     DropdownModule,
+    ConfirmationModalModule,
   ],
 })
 export class FormFlowManagementModule {}

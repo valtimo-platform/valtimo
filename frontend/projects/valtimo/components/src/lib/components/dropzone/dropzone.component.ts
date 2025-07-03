@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import {map} from 'rxjs/operators';
   selector: 'valtimo-dropzone',
   templateUrl: './dropzone.component.html',
   styleUrls: ['./dropzone.component.scss'],
+  standalone: false,
 })
 export class DropzoneComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('dropzone') dropzoneRef: ElementRef<any>;

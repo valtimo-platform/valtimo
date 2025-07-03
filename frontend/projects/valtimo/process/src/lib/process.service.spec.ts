@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 
 import {TestBed} from '@angular/core/testing';
-import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
 import {ProcessService} from './process.service';
-import {VALTIMO_CONFIG} from '@valtimo/config';
+import {VALTIMO_CONFIG} from '@valtimo/shared';
 import {environment} from '@src/environments/environment';
+import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 
 describe('ProcessService', () => {
   let mockConfig;
@@ -29,8 +30,13 @@ describe('ProcessService', () => {
     mockConfig = {endpointUri: '/api/v1/'};
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [ProcessService, {provide: VALTIMO_CONFIG, useValue: environment}],
+      imports: [],
+      providers: [
+        ProcessService,
+        {provide: VALTIMO_CONFIG, useValue: environment},
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);

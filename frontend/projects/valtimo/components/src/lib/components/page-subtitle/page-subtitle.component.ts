@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,20 +20,15 @@ import {SkeletonModule} from 'carbon-components-angular';
 import {map, Observable, startWith, switchMap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {PageHeaderService, PageTitleService} from '../../services';
-import {RenderPageSubtitleDirectiveModule} from '../../directives/render-page-subtitle/render-page-subtitle-directive.module';
-import {RenderPageHeaderDirectiveModule} from '../../directives/render-page-header/render-page-header-directive.module';
+import {RenderPageSubtitleDirective} from '../../directives/render-page-subtitle/render-page-subtitle.directive';
+import {RenderPageHeaderDirective} from '../../directives/render-page-header/render-page-header.directive';
 
 @Component({
   selector: 'valtimo-page-subtitle',
   templateUrl: './page-subtitle.component.html',
   styleUrls: ['./page-subtitle.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    SkeletonModule,
-    RenderPageSubtitleDirectiveModule,
-    RenderPageHeaderDirectiveModule,
-  ],
+  imports: [CommonModule, SkeletonModule, RenderPageSubtitleDirective, RenderPageHeaderDirective],
   encapsulation: ViewEncapsulation.None,
 })
 export class PageSubtitleComponent {

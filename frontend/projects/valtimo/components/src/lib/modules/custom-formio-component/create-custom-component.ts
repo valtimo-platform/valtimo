@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import {BuilderInfo, Components, ExtendedComponentSchema, Utils as FormioUtils} from 'formiojs';
+import {Components, Utils as FormioUtils} from 'formiojs';
 import {FormioCustomComponentInfo, FormioCustomElement, FormioEvent} from './elements.common';
 import {clone, isArray, isNil} from 'lodash';
+import {BuilderInfo, ExtendedComponentSchema} from '../../models';
 
 const BaseInputComponent = Components.components.input;
 const TextfieldComponent = Components.components.textfield;

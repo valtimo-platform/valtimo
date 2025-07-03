@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import {
 import {Title} from '@angular/platform-browser';
 import {ActivatedRoute, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {ConfigService} from '@valtimo/config';
+import {ConfigService} from '@valtimo/shared';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -45,6 +45,7 @@ import {PageHeaderService, PageSubtitleService, PageTitleService} from '../../se
   templateUrl: './page-title.component.html',
   styleUrls: ['./page-title.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class PageTitleComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostBinding('class.valtimo-page-title--compact') isCompact!: boolean;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angula
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {GetTemplateNamesConfig} from '../../models';
 import {FunctionConfigurationComponent} from '../../../../models';
+
 @Component({
   selector: 'valtimo-get-template-names',
   templateUrl: './get-template-names.component.html',
+  standalone: false,
 })
 export class GetTemplateNamesComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

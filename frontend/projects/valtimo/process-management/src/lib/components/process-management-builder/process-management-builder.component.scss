@@ -1,0 +1,166 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.bpmn {
+  &__container {
+    position: relative;
+    background-color: var(--cds-layer);
+    width: 100%;
+  }
+
+  &__modeler {
+    width: 100%;
+    height: 100%;
+    flex-direction: row;
+    padding: 1px;
+    box-sizing: border-box;
+    outline: 1px solid var(--cds-border-subtle);
+    outline-offset: -1px;
+
+    // hide blue focus border bpmn
+    ::ng-deep .djs-container > svg {
+      outline: none !important;
+    }
+  }
+
+  &__modeler-canvas {
+    width: 100%;
+  }
+
+  &__modeler-panel {
+    width: 481px;
+    padding-left: 1px;
+    box-shadow: inset 1px 0 0 0 var(--cds-border-subtle);
+    box-sizing: border-box;
+  }
+
+  &__loading {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--cds-background-selected);
+  }
+}
+
+.page-header-actions {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+
+  &__left-container {
+    display: flex;
+    gap: 24px;
+    align-items: flex-end;
+  }
+
+  &__tags {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  &__version-dropdown {
+    width: 150px;
+  }
+
+  &__buttons {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+
+    cds-toggle {
+      height: 24px;
+    }
+
+    ::ng-deep .cds--toggle__label-text {
+      display: none;
+    }
+  }
+}
+
+.valtimo-process-builder {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__actions > *:not(:last-child) {
+    margin-right: 8px;
+  }
+}
+
+::ng-deep .process-link-properties-panel {
+  padding: 8px 12px 16px 12px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__buttons,
+  &__header {
+    width: 100%;
+    display: flex;
+    gap: 16px;
+  }
+
+  &__header {
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--cds-border-subtle-00);
+    padding-bottom: 8px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  &__title {
+    color: var(--cds-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+    margin: auto 0;
+  }
+
+  &__title-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    :last-child {
+      color: var(--cds-text-helper);
+      font-style: italic;
+    }
+  }
+
+  .cds--tag {
+    margin: 0;
+  }
+
+  .cds--btn {
+    flex-shrink: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,3 +21,5 @@ export * from './process-link-state.service';
 export * from './process-link-step.service';
 export * from './process-link-button.service';
 export * from './form-flow-component.service';
+export * from './url-resolver.service';
+export * from './url-validator.service';

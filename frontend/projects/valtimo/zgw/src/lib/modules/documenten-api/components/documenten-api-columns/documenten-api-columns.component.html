@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,12 +13,11 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <ng-container
   *ngIf="{
     columnModalType: columnModalType$ | async,
     columnToUpdate: columnToUpdate$ | async,
-    documentDefinitionName: documentDefinitionName$ | async,
+    caseDefinitionKey: caseDefinitionKey$ | async,
     configuredColumns: configuredColumns$ | async,
     configurableColumns: configurableColumns$ | async,
     loading: loading$ | async,
@@ -31,8 +30,10 @@
     [header]="false"
     [items]="obs.configuredColumns"
     [loading]="obs.loading || !fields"
-    [movingRowsEnabled]="true"
-    (itemsReordered)="onItemsReordered(obs.documentDefinitionName, $event)"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="!(hasEditPermissions$ | async)"
+    (itemsReordered)="onItemsReordered(obs.caseDefinitionKey, $event)"
+    (rowClicked)="openEditModal($event)"
   >
     <ng-container carbonToolbarContent>
       <ng-container *ngTemplateOutlet="addButton"></ng-container>
@@ -48,7 +49,7 @@
   <valtimo-documenten-api-column-modal
     [availableColumns]="obs.configurableColumns"
     [configuredColumns]="obs.configuredColumns"
-    [definitionName]="obs.documentDefinitionName"
+    [definitionName]="obs.caseDefinitionKey"
     [prefillColumn]="obs.prefillColumn"
     [type]="obs.columnModalType"
     (closeModal)="onCloseModal($event)"
@@ -61,12 +62,17 @@
     [outputOnConfirm]="columnToUpdate$ | async"
     [showModalSubject$]="showDeleteModal$"
     titleTranslationKey="interface.delete"
-    (confirmEvent)="confirmDeleteStatus($event, obs.documentDefinitionName)"
+    (confirmEvent)="confirmDeleteStatus($event, obs.caseDefinitionKey)"
   ></valtimo-confirmation-modal>
 </ng-container>
 
 <ng-template #addButton>
-  <button cdsButton="primary" [disabled]="loading$ | async" (click)="openAddModal()">
+  <button
+    *ngIf="hasEditPermissions$ | async"
+    cdsButton="primary"
+    [disabled]="loading$ | async"
+    (click)="openAddModal()"
+  >
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
 
     {{ 'zgw.columns.add' | translate }}

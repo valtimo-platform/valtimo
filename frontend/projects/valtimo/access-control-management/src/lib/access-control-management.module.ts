@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   EditorModule,
-  RenderInPageHeaderDirectiveModule,
+  RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {AccessControlManagementRoutingModule} from './access-control-management-routing.module';
 import {AccessControlOverviewComponent} from './components/overview/access-control-overview.component';
@@ -59,7 +59,7 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     IconModule,
     ConfirmationModalModule,
     EditorModule,
-    RenderInPageHeaderDirectiveModule,
+    RenderInPageHeaderDirective,
     LoadingModule,
     IconModule,
     DialogModule,

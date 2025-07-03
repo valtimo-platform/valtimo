@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@
   </h4>
   <ng-container *ngIf="obs.loading === false; else loading">
     <valtimo-widget>
-      <valtimo-list
+      <valtimo-carbon-list
         [items]="openTasks"
         [fields]="openTaskFields"
         (rowClicked)="rowOpenTaskClick($event)"
-      ></valtimo-list>
+      ></valtimo-carbon-list>
     </valtimo-widget>
   </ng-container>
   <valtimo-task-detail-modal

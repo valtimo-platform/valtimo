@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,14 +69,13 @@ import {
   MoveRowDirection,
   MoveRowEvent,
   Pagination,
-  TAG_ELLIPSIS_LIMIT,
   ViewType,
 } from '../../models';
-import {EllipsisPipe} from '../../pipes';
 import {KeyStateService} from '../../services/key-state.service';
 import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {CarbonListDragAndDropService} from './services';
+import {EllipsisPipe} from '../../pipes';
 
 @Component({
   selector: 'valtimo-carbon-list',
@@ -84,6 +83,7 @@ import {CarbonListDragAndDropService} from './services';
   styleUrls: ['./carbon-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CarbonListFilterPipe, CarbonListDragAndDropService],
+  standalone: false,
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;
@@ -162,6 +162,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   @Input() actions: any[] = [];
   @Input() actionItems: ActionItem[];
+  @Input() showActionItems: boolean = true;
   @Input() header: boolean;
   @Input() hideColumnHeader: boolean;
   private _isSortInit = false;
@@ -340,9 +341,8 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (firstItem) firstItem.ctrlClick = this.keyStateService.getCtrlOrCmdState();
 
-    if (!firstItem || firstItem?.locked) {
-      return;
-    }
+    if (!firstItem || firstItem?.locked) return;
+
     this.rowClicked.emit(firstItem);
   }
 
@@ -454,6 +454,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
             case ViewType.TEMPLATE:
               return new TableItem({
                 data: {item, index, length: items.length, ...field.templateData},
+                item,
                 template: field.template,
               });
             case ViewType.BOOLEAN:

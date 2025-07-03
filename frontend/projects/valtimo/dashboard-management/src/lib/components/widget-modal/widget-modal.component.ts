@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {DOCUMENT} from '@angular/common';
 import {
   Component,
   EventEmitter,
@@ -24,6 +24,18 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
+import {FormBuilder, Validators} from '@angular/forms';
+import {TranslateService} from '@ngx-translate/core';
+import {CARBON_CONSTANTS} from '@valtimo/components';
+import {GlobalNotificationService} from '@valtimo/shared';
+import {
+  ConfigurationOutput,
+  DashboardWidgetConfiguration,
+  DisplayTypeSpecification,
+  WidgetService,
+  WidgetTranslationService,
+} from '@valtimo/dashboard';
+import {ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -36,26 +48,14 @@ import {
   tap,
 } from 'rxjs';
 import {DashboardItem, WidgetDataSource, WidgetModalType} from '../../models';
-import {FormBuilder, Validators} from '@angular/forms';
-import {ListItem, NotificationService} from 'carbon-components-angular';
-import {TranslateService} from '@ngx-translate/core';
-import {DOCUMENT} from '@angular/common';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
-import {CARBON_CONSTANTS} from '@valtimo/components';
-import {
-  ConfigurationOutput,
-  DashboardWidgetConfiguration,
-  DisplayTypeSpecification,
-  WidgetService,
-  WidgetTranslationService,
-} from '@valtimo/dashboard';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-widget-modal',
   templateUrl: './widget-modal.component.html',
   styleUrls: ['./widget-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  providers: [NotificationService],
 })
 export class WidgetModalComponent implements OnInit, OnDestroy {
   @Input() public showModal$: Observable<boolean>;
@@ -188,7 +188,7 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private readonly document: Document,
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly dashboardManagementService: DashboardManagementService,
     private readonly widgetService: WidgetService,
     private readonly widgetTranslationService: WidgetTranslationService

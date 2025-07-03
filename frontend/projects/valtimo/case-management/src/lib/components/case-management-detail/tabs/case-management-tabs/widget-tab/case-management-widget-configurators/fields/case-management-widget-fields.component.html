@@ -1,0 +1,93 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<p>{{ 'widgetTabManagement.content.description' | translate }}</p>
+
+<form [formGroup]="form">
+  <cds-text-label
+    [attr.data-carbon-theme]="theme$ | async"
+    class="valtimo-case-management-widget-field__input"
+  >
+    <v-input-label
+      [title]="'widgetTabManagement.content.widgetTitle' | translate"
+      [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
+    >
+    </v-input-label>
+
+    <input
+      formControlName="widgetTitle"
+      cdsText
+      [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+      type="text"
+    />
+  </cds-text-label>
+</form>
+
+<valtimo-case-management-widget-process-selector
+  [params]="params$ | async"
+></valtimo-case-management-widget-process-selector>
+
+<cds-tabs type="contained">
+  @for (column of columns(); track $index) {
+    <cds-tab
+      [active]="activeTab() === $index"
+      [heading]="columnHeading"
+      [context]="{index: $index, count: $count}"
+      (selected)="onTabSelected($index)"
+    >
+      <valtimo-case-management-widget-fields-column
+        *ngIf="activeTab() === $index"
+        [isFieldWidget]="true"
+        [columnData]="selectedWidgetContent()?.[$index]"
+        [params]="params$ | async"
+        [showHideWhenEmptyCheckbox]="true"
+        (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
+      ></valtimo-case-management-widget-fields-column>
+    </cds-tab>
+  }
+  <cds-tab
+    *ngIf="columns().length < widgetWidth"
+    [heading]="addColumn"
+    [id]="'addColumn'"
+    class="valtimo-case-management-widget-field__add"
+  ></cds-tab>
+</cds-tabs>
+
+<ng-template #addColumn>
+  <button
+    cdsButton="ghost"
+    [iconOnly]="true"
+    (click)="$event.stopImmediatePropagation(); onAddColumnClick()"
+  >
+    <svg cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #columnHeading let-data>
+  <div class="valtimo-case-management-widget-field__heading">
+    {{ 'widgetTabManagement.content.column' | translate: {number: data.index + 1} }}
+
+    <button
+      cdsButton="ghost"
+      [disabled]="data.count === 1"
+      [iconOnly]="true"
+      size="sm"
+      (click)="onDeleteColumnClick(data.index)"
+    >
+      <svg cdsIcon="close" size="16"></svg>
+    </button>
+  </div>
+</ng-template>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import {ObjectTokenAuthenticationConfig} from '../../models';
   selector: 'valtimo-object-token-authentication-configuration',
   templateUrl: './object-token-authencation-configuration.component.html',
   styleUrls: ['./object-token-authencation-configuration.component.scss'],
+  standalone: false,
 })
 export class ObjectTokenAuthencationConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy

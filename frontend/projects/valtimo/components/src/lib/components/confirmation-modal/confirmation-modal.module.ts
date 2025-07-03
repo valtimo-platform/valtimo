@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,11 @@ import {CommonModule} from '@angular/common';
 import {ConfirmationModalComponent} from './confirmation-modal.component';
 import {ButtonModule, ModalModule} from 'carbon-components-angular';
 import {TranslateModule} from '@ngx-translate/core';
-import {ValtimoCdsModalDirectiveModule} from '../../directives/valtimo-cds-modal/valtimo-cds-modal-directive.module';
+import {ValtimoCdsModalDirective} from '../../directives/valtimo-cds-modal/valtimo-cds-modal.directive';
 
 @NgModule({
   declarations: [ConfirmationModalComponent],
-  imports: [
-    CommonModule,
-    ModalModule,
-    TranslateModule,
-    ButtonModule,
-    ValtimoCdsModalDirectiveModule,
-  ],
+  imports: [CommonModule, ModalModule, TranslateModule, ButtonModule, ValtimoCdsModalDirective],
   exports: [ConfirmationModalComponent],
 })
 export class ConfirmationModalModule {}

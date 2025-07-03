@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {async, ComponentFixture, TestBed} from '@angular/core/testing';
+import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
 import {TopbarComponent} from './topbar.component';
 import {RouterTestingModule} from '@angular/router/testing';
 import {KeycloakService} from 'keycloak-angular';
-import {MockIconService, MockKeycloakService, VALTIMO_CONFIG} from '@valtimo/config';
+import {MockIconService, MockKeycloakService, VALTIMO_CONFIG} from '@valtimo/shared';
 import {environment} from '@src/environments/environment';
 import {IconService} from 'carbon-components-angular';
 
@@ -26,7 +26,7 @@ describe('TopbarComponent', () => {
   let component: TopbarComponent;
   let fixture: ComponentFixture<TopbarComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [TopbarComponent],
       imports: [RouterTestingModule],

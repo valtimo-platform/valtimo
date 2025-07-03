@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import {AfterContentInit, ContentChild, Directive, OnDestroy, TemplateRef} from 
 import {combineLatest, Subscription} from 'rxjs';
 import {PageHeaderService, PageSubtitleService} from '../../services';
 
-@Directive({selector: '[renderPageSubtitle]'})
+@Directive({selector: '[renderPageSubtitle]', standalone: true})
 export class RenderPageSubtitleDirective implements AfterContentInit, OnDestroy {
   @ContentChild(TemplateRef) templateRef;
 

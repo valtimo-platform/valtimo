@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import {AlertService} from '@valtimo/components';
 import {MilestoneSet} from '../models';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-milestone-set-edit',
   templateUrl: './milestone-set-edit.component.html',
   styleUrls: ['./milestone-set-edit.component.scss'],

@@ -1,0 +1,1826 @@
+{
+  "events": {
+    "TaskCompletedEvent": "Task completed > {{taskName}}",
+    "TaskAssignedEvent": "Task assigned > {{taskName}}",
+    "JsonSchemaDocumentCreatedEvent": "Case created",
+    "JsonSchemaDocumentModifiedEvent": "Case modified",
+    "ProcessStartedEvent": "Process started: {{processDefinitionKey}}",
+    "ProcessEndedEvent": "Process finished: {{processDefinitionKey}}",
+    "CaseDocumentGeneratedEvent": "Case document generated",
+    "DocumentRelatedFileAddedEvent": "Related file added",
+    "DocumentRelatedFileRemovedEvent": "Related file removed",
+    "BesluitAddedEvent": "Decision added > {{identificatie}}",
+    "DocumentAssigneeChangedEvent": "The assignee has been changed to {{assigneeName}}",
+    "DocumentUnassignedEvent": "The assignee has been unassigned",
+    "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
+  },
+  "case": {
+    "summaryFormNotFound": "Summary form not found for '{{caseDefinitionKey}}'. A form named '{{caseDefinitionKey}}.summary' must exist using the case definition key.",
+    "bulkAssign": {
+      "assign": "Assign to",
+      "modal": {
+        "confirm": "Assign",
+        "selectLabel": "Assign to user",
+        "selectPlaceholder": "Choose an option",
+        "title": "Assign selected cases to"
+      }
+    },
+    "changePageModal": {
+      "title": "Change page",
+      "content": "Are you sure you want to change pages? All selection will be lost.",
+      "confirm": "Change page"
+    },
+    "changeTabModal": {
+      "title": "Change tab",
+      "content": "Are you sure you want to change tabs? All selection will be lost.",
+      "confirm": "Change tab"
+    },
+    "noResults": {
+      "ALL": {"description": "There is nothing to do here.", "title": "There are no cases"},
+      "MINE": {"description": "Time for a short break.", "title": "No cases assigned to you"},
+      "OPEN": {"description": "Come back later.", "title": "All cases have been assigned"},
+      "search": {
+        "description": "There are no cases that match your search criteria.",
+        "title": "No cases found"
+      }
+    },
+    "noAccess": {"description": "You do not have access to this case", "title": "Access denied"},
+    "pagination": {
+      "itemsPerPage": "Cases per page",
+      "totalItem": "{{start}}-{{end}} of {{total}} case",
+      "totalItems": "{{start}}-{{end}} of {{total}} cases"
+    },
+    "select": {"single": "1 case selected", "multiple": "{{count}} cases selected"},
+    "title": {"single": "Case", "plural": "Cases"},
+    "tabs": {
+      "noResults": "No tabs configured",
+      "noResultsDescription": "No tabs are configured for this case type.",
+      "summary": "Summary",
+      "progress": "Progress",
+      "audit": "Audit",
+      "maps": "Maps",
+      "documents": "Documents",
+      "contact-moments": "Contact moments",
+      "custom-dossier": "Custom dossier",
+      "custom-maps": "Custom maps",
+      "zaakobjecten": "Zaak objects",
+      "notes": "Notes",
+      "MINE": "My cases",
+      "OPEN": "Unassigned cases",
+      "ALL": "All cases",
+      "componentNotFound": "Tab component not found",
+      "componentNotFoundMessage": "No component has been found for this tab. Please contact your system administrator."
+    },
+    "forms": {
+      "globalSearchPlaceHolder": "Everything",
+      "referenceNumberPlaceHolder": "Reference number"
+    },
+    "sendEmailExtension": {
+      "buttonText": "Send e-mail",
+      "title": "Send an e-mail",
+      "subject": "Subject",
+      "body": "Body",
+      "sendButtonText": "Send",
+      "sendSuccess": "Your message has been sent successfully."
+    },
+    "contactMoments": {
+      "makeNoteButton": "Make note",
+      "popupTitle": "Make a note",
+      "noteText": "Note",
+      "saveButtonText": "Save note",
+      "saveSuccess": "Your note has been saved successfully."
+    },
+    "zaakobjecten": {
+      "objecttype": "Select the type of object you would like to see",
+      "objecttypePlaceholder": "Select an object type",
+      "objecten": "Objects",
+      "objectenPlaceholder": "Select an object type to load a list of objects of this type.",
+      "index": "Index",
+      "registrationAt": "Registration at",
+      "title": "Title",
+      "noFormDefinitionComponent": "No form definition for this object could be found.",
+      "noObjectType": "No objects found for this object type.",
+      "objectType": {"viewObject": "View object"}
+    },
+    "notes": {
+      "addNote": "Add note",
+      "modifyNote": "Edit note",
+      "tableItemsText": "Notes",
+      "input": {"content": "Note"},
+      "deleteConfirmation": {
+        "title": "Delete note",
+        "description": "Are you sure you want to delete this note?",
+        "deletedMessage": "The note was deleted successfully."
+      },
+      "editedMessage": "The note was edited successfully.",
+      "noResults": {"title": "No notes", "description": "There are no notes in this case."}
+    },
+    "documenten": {
+      "deleteConfirmationModal": {
+        "title": "Delete document",
+        "content": "Are you sure you want to delete this document? This action cannot be undone."
+      },
+      "noProcessLinked": {
+        "regularUser": "The document upload is not available for this case. Please contact an administrator",
+        "adminRole": "The process for uploading documents has not been configured. Please configure this process on the case management page"
+      },
+      "navigateToCaseAdmin": "Configure Zaak",
+      "noZaakFoundTitle": "No Zaak found",
+      "noZaakFound": "No files could be retrieved because no Zaak was for found for this case.",
+      "noFilesTitle": "No files",
+      "noFiles": "No files found for this case.",
+      "uploadSuccessful": "Successfully uploaded document",
+      "uploadFailed": "Failed to upload document to case",
+      "removeSuccessful": "Successfully removed document from case",
+      "removeFailed": "Failed to remove document from case"
+    },
+    "caseUpdated": "Case updated",
+    "startSubProcess": "Start",
+    "noLinkedStartProcessNotification": "There is no start form linked",
+    "noLinkedProcessNotification": "There is no form linked",
+    "configure": "Configure",
+    "claimAssigneeCase": "Claim",
+    "deleteConfirmation": {
+      "title": "Delete file",
+      "description": "Are you sure you want to delete this file?",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    },
+    "delete": {
+      "delete": "Delete case",
+      "description": "Are you sure you want to delete this case and all related information? This action cannot be undone.",
+      "confirm": "Delete"
+    },
+    "formio": {
+      "noFormSpecified": "No form definition has been specified for this tab.",
+      "formNotFound": "The form definition '{{formDefinitionName}}' could not be found."
+    },
+    "rowLocked": "You don't have access to this case",
+    "widgets": {
+      "noData": "No data found",
+      "emptyFields": "Nothing here",
+      "noWidgets": "No widgets",
+      "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
+      "noWidget": "Widget not found",
+      "noCustomComponentDescription": "The custom component configured for this widget is not available."
+    }
+  },
+  "document": {
+    "title": {"single": "Document", "plural": "Documents"},
+    "id": "Reference ID",
+    "createdBy": "Created by",
+    "createdOn": "Created on",
+    "sequence": "Sequence",
+    "fillInMetadata": "Add file metadata",
+    "editMetadata": "Edit file metadata",
+    "cancel": "Cancel",
+    "upload": "Upload",
+    "save": "Save",
+    "size": "Size",
+    "tags": "Tags (optional)",
+    "tagsTooltip": "Tags are used for easy filtering and searching of documents. You can add multiple tags to a document",
+    "tagsPlaceholder": "Choose tags",
+    "format": "File format",
+    "trefwoorden": "Keywords",
+    "filename": "Filename (optional)",
+    "filenameTooltip": "The name of the physical file in which the content of the document is captured, including extension",
+    "filenamePlaceholder": "Add filename",
+    "confidentialityLevel": "Confidentiality level (optional)",
+    "confidentialityLevelTooltip": "Indication of the extent to which the document is intended for public access",
+    "confidentialityPlaceholder": "Choose confidentiality",
+    "inputTitle": "Title",
+    "inputTitleTooltip": "The name by which the document is formally known",
+    "inputTitlePlaceholder": "Add title",
+    "inputDescription": "Description (optional)",
+    "inputDescriptionTooltip": "A generic description of the content of the document",
+    "inputDescriptionPlaceholder": "Add description",
+    "openbaar": "Public",
+    "beperkt_openbaar": "Restricted public",
+    "intern": "Internal",
+    "zaakvertrouwelijk": "Case confidential",
+    "vertrouwelijk": "Private",
+    "confidentieel": "Confidential",
+    "geheim": "Secret",
+    "zeer_geheim": "Very secret",
+    "author": "Author",
+    "authorTooltip": "The original author of the document",
+    "authorPlaceholder": "Add author",
+    "status": "Status (optional)",
+    "statusTooltip": "The current status of the document. 'In editing': the document is being worked on; 'To be confirmed': the document is finished but has yet to be confirmed; 'Definitive': the document has been received or confirmed by an authorized person; 'Archived': the document has been stored lastingly.",
+    "statusPlaceholder": "Choose status",
+    "in_bewerking": "In editing",
+    "ter_vaststelling": "To be confirmed",
+    "definitief": "Definitive",
+    "gearchiveerd": "Archived",
+    "creationDate": "Creation date",
+    "creationDateTooltip": "The date the document was created",
+    "receiptDate": "Receipt date",
+    "receiptDateTooltip": "The date the document was received",
+    "sendDate": "Send date",
+    "sendDateTooltip": "The date the document was sent",
+    "language": "Language",
+    "languageTooltip": "The language in which the document is written",
+    "languagePlaceholder": "Choose language",
+    "nld": "Dutch",
+    "eng": "English",
+    "deu": "German",
+    "informatieobjecttype": "Document type",
+    "informatieobjecttypeTooltip": "A document type which is related to the zaak type of the current case",
+    "informatieobjecttypePlaceholder": "Choose information object type",
+    "additionalDate": "Additional date",
+    "additionalDateTooltip": "An additional date that can be added to the document as metadata. This additional date is optional. If 'Receipt date' is selected, the document status can only be set to 'definitive' or 'archived'.",
+    "noAdditionalDate": "No additional date",
+    "delete": "Delete",
+    "download": "Download",
+    "edit": "Edit",
+    "application/octet-stream": "Unknown",
+    "application/json": "JSON",
+    "application/msword": "DOC",
+    "application/pdf": "PDF",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "audio/mpeg": "MP3",
+    "image/bmp": "BMP",
+    "image/gif": "GIF",
+    "image/jpeg": "JPEG",
+    "image/png": "PNG",
+    "image/svg+xml": "SVG",
+    "text/csv": "CSV",
+    "text/plain": "TXT",
+    "video/mp4": "MP4"
+  },
+  "summary": {
+    "userTasksDoneState": "All tasks have been completed",
+    "taskLocked": "You don't have access to this task",
+    "tasks": "Tasks",
+    "myTasks": "My tasks",
+    "otherTasks": "Other tasks",
+    "taskOpen": "Open",
+    "taskCreated": "Created",
+    "noResultsMyTasks": "No tasks available for to this user.",
+    "noResultsOtherTasks": "No tasks available to other users.",
+    "taskIsAssigned": "Task is assigned"
+  },
+  "progress": {
+    "noProcessDocumentInstances": "There is no process started yet",
+    "process": "Process",
+    "version": "Version",
+    "startedBy": "Started by",
+    "startedOn": "Started on",
+    "system": "System",
+    "of": "of"
+  },
+  "dashboard": {
+    "openTasks": {"title": "All tasks"},
+    "openTask": {"title": "Open task"},
+    "activeProcess": {"title": "Active process"},
+    "activeProcesses": {"title": "Active processes"},
+    "tasksCompleted": {"title": "Tasks completed"},
+    "taskCompleted": {"title": "Task completed"},
+    "statistics": {"title": "Statistics"},
+    "processes": {"title": "Processes"},
+    "process": {"title": "Process", "details": "Process details"},
+    "startProcess": {"title": "Start"},
+    "version": {"title": "Version"},
+    "processingLeadTime": {
+      "title": "Processing lead time",
+      "description": "average over the last 30 days"
+    },
+    "tasks": {"title": "Tasks"},
+    "task": {"title": "Task"},
+    "noDashboards": "No dashboards",
+    "noDashboardsDescription": "It's possible that the system administrator hasn't configured any dashboards yet, or you don't have the rights to view dashboards.",
+    "noWidgets": "No widgets",
+    "noWidgetsDescription": "There are no widgets configured for this dashboard, or you don't have the rights to view them.",
+    "of": "of"
+  },
+  "dashboardManagement": {
+    "addDashboard": "Add new dashboard",
+    "addModal": {
+      "descriptionPlaceholder": "Enter description here",
+      "descriptionHelperText": "*Description is only visible in the dashboard configuration page",
+      "name": "Dashboard name",
+      "namePlaceholder": "Enter name here"
+    },
+    "assignedTo": "Assigned to",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "create": "Create",
+    "delete": "Delete",
+    "deleteModalContent": "Are you sure you want to delete this dashboard? This action cannot be undone.",
+    "description": "Description",
+    "key": "Key",
+    "name": "Name",
+    "noResults": {
+      "description": "Click <strong>Add new dashboard</strong> to start designing your dashboard",
+      "title": "No dashboards added"
+    },
+    "title": "All dashboards",
+    "widgets": {
+      "complete": "Complete",
+      "editDashboard": "Edit dashboard",
+      "editButton": "Edit",
+      "title": "Widgets",
+      "description": "Fill the dashboard by adding new widgets. Arrange these widgets by dragging them to their desired position in the list. ",
+      "add": "Add new widget",
+      "edit": "Edit widget",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleteDescription": "Are you sure you want to delete this widget? This action cannot be undone.",
+      "metadata": "<b>Created by</b> {{createdBy}} | <b>Created on</b> {{createdOn}} | <b>Dashboard key</b> {{key}}",
+      "form": {
+        "title": "Widget title (required)",
+        "titleHelperText": "The name of the widget configuration",
+        "key": "Widget key (required)",
+        "keyHelperText": "Assign a unique key to this widget",
+        "keyTitle": "Copy key",
+        "keyCopied": "Key copied to clipboard",
+        "keyCopiedTitle": "Success",
+        "dataSource": "Data source (required)",
+        "dataSourceHelperText": "Select the source of the data you want to display within the widget",
+        "chartType": "Chart type (required)",
+        "dataSourceField": "Data source field (required)",
+        "dashboardTitle": "Dashboard name (required)",
+        "dashboardDescription": "Description (required)",
+        "dashboardDescriptionHelperText": "*Description is only visible in the dashboard configuration page",
+        "roles": "Set visibility",
+        "displayType": "Display type",
+        "displayTypeHelperText": "Select the way the data of your widget should be displayed",
+        "url": "URL path",
+        "urlHelperText": "The path to navigate to when clicking on the widget"
+      },
+      "noResults": {
+        "description": "Click <strong>Add new widget</strong> to start designing your dashboard. <br/> Drag your widgets to the desired position.",
+        "title": "No widgets added"
+      }
+    }
+  },
+  "account": {
+    "title": "Account",
+    "informationTitle": "Information",
+    "quickLinks": "Quick links",
+    "links": {
+      "profile": "Profile",
+      "password": "Password",
+      "help": "Help",
+      "feedback": "Feedback",
+      "resetPassword": "Reset password",
+      "signOut": "Sign out",
+      "plantATree": "Plant a tree"
+    },
+    "plantATreeMailBody": "subject=Plant a tree for Valtimo&body=Hello Valtimo user,%0D%0DBy sending this e-mail we will immediately start planting a tree. This%0D therefore partly compensates for the CO2 emissions of your Valtimo use.%0D%0DWith Green Greeting,%0D%0DThe Valtimo team%0D%0D*This tree planting action can be used 1 time by each registered Valtimo user.%0D %0D** Ritense also annually plants trees for all Valtimo installations in use."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language",
+      "options": {"nl": "Nederlands", "en": "English", "de": "Deutsch"}
+    },
+    "notification": {
+      "title": "Notifications",
+      "frequency": {"title": "Notification frequency"},
+      "taskNotifications": "Task notifications",
+      "taskNotificationsIntro": "Receive an email when a task is assigned to you",
+      "emailNotifications": "Daily task overview",
+      "emailNotificationsIntro": "Personal overview of your open tasks",
+      "emailNotificationOnMonday": "Monday",
+      "emailNotificationOnTuesday": "Tuesday",
+      "emailNotificationOnWednesday": "Wednesday",
+      "emailNotificationOnThursday": "Thursday",
+      "emailNotificationOnFriday": "Friday",
+      "emailNotificationOnSaturday": "Saturday",
+      "emailNotificationOnSunday": "Sunday"
+    },
+    "version": {"title": "Version information"},
+    "interface": {
+      "title": "Interface",
+      "themePreference": "Theme",
+      "themes": {"light": "Light", "dark": "Dark (Beta)", "system": "System (Beta)"},
+      "collapsibleMenu": "Navigation bar always collapsible",
+      "compactMode": "Compact mode",
+      "showUserName": "Show name of user"
+    }
+  },
+  "decisions": {
+    "upload": {
+      "title": "Upload decision table",
+      "description": "Select a .dmn file to upload",
+      "fileUploaderTitle": "Upload DMN file",
+      "fileUploaderDescription": "Only files with the .dmn extension are allowed.",
+      "fileUploaderButton": "Choose DMN file"
+    },
+    "version": "Version",
+    "deploy": "Save",
+    "loadFailure": "Something went wrong with loading your decision table.",
+    "deploySuccess": "Decision table has been deployed successfully.",
+    "deployFailure": "Something went wrong with deploying your decision table."
+  },
+  "message": {"empty": "No result found"},
+  "cta": {"close": "Close", "moreDetails": "More details"},
+  "formManagement": {
+    "noFormDefinitionFoundAdmin": "There is no form connected to the start event/user task. To link a form go to Admin menu > Process links.",
+    "noFormDefinitionFoundUser": "There is no form connected to the start event/user task. Ask an admin user for assistance.",
+    "gotoProcessLinksButton": "Configure now",
+    "loading": "Loading form...",
+    "name": "Name",
+    "nameIsRequired": "Name is required",
+    "nameIsInUse": "Name is already in use",
+    "back": "Back",
+    "reset": "Reset",
+    "submit": "Submit",
+    "delete": "Delete",
+    "deploy": "Save",
+    "duplicate": "Duplicate",
+    "readOnly": "Read-only",
+    "add": "Add form",
+    "tabs": {"formBuilder": "Form builder", "jsonEditor": "JSON editor", "output": "Output"},
+    "intermediateSave": {
+      "save": "Save progress",
+      "clear": "Undo latest changes",
+      "clearConfirm": "Are you sure you want to clear your input fields? This action cannot be undone.",
+      "success": "Progress saved successfully",
+      "error": "Failed to save progress",
+      "lastSavedBy": "Last saved by",
+      "on": "on"
+    },
+    "notifications": {
+      "created": "Created new Form",
+      "deleted": "Deleted form",
+      "deletionError": "Error deleting form",
+      "deployed": "Form deployed",
+      "deploymentError": "Error deploying form",
+      "duplicated": "Form duplicated"
+    },
+    "upload": {
+      "modalTitle": "Upload form definition",
+      "title": "Upload file",
+      "description": "Only form definition files are supported.",
+      "buttonText": "Select file",
+      "success": "Upload successful",
+      "failure": "Upload failed"
+    },
+    "noResults": {
+      "title": "No form definitions found",
+      "caseDescription": "Click here to create a form definition associated with this case",
+      "independentDescription": "Click here to create a standalone form definition"
+    }
+  },
+  "caseManagement": {
+    "version": "Version: ",
+    "preparingDownload": "Preparing download",
+    "more": "More",
+    "export": "Export {{value}}",
+    "exportErrorTitle": "Error",
+    "exportErrorMessage": "Something went wrong",
+    "exportSuccessTitle": "Download will start shortly",
+    "readonly": "Read-only",
+    "connectedProcesses": "Connected processes",
+    "connectProcess": "Connect process",
+    "processLink": "Link process",
+    "seeAllVersions": "See all versions",
+    "selectProcessDef": "Select process definition",
+    "setGlobalActiveVersion": "Set as active version",
+    "setGlobalActiveVersionErrorTitle": "Error",
+    "setGlobalActiveVersionErrorMessage": "Something went wrong",
+    "setGlobalActiveVersionSuccessTitle": "Global active version updated",
+    "globallyActive": "Globally active",
+    "unlinkProcess": "Unlink",
+    "listColumns": {"name": "Name", "key": "Key", "version": "Version"},
+    "globalActiveVersionModal": {
+      "title": "Set as global active version",
+      "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
+      "warningTitle": "Warning: Older version",
+      "warningMessage": "You're trying to make a case version the global active version, but it's older than the version that's currently active.",
+      "continue": "Continue",
+      "cancel": "Cancel"
+    },
+    "confirmationGlobalVersionModal": {
+      "title": "Are you sure?",
+      "description": "Set the currently selected version as the global active version. Please be sure to keep in mind that things might break or not work as intended.",
+      "confirm": "Set as active version",
+      "cancel": "Cancel"
+    },
+    "allVersionsModal": {
+      "title": "All {{value}} versions",
+      "closeButton": "Close",
+      "columns": {"version": "Version", "release": "Released on", "description": "Description"},
+      "noResults": {
+        "title": "There are no case versions",
+        "description": "No version has been configured for this case"
+      }
+    },
+    "deployment": {
+      "title": "Version management",
+      "buttons": {
+        "back": "Back",
+        "delete": "Delete draft",
+        "finalize": "Finalize draft",
+        "createDraft": "Create draft version"
+      },
+      "deleteDraftConfirmationModal": {
+        "loadingText": "Deleting draft version...",
+        "title": "Delete draft",
+        "description": "Are you sure you want to delete the draft?",
+        "confirm": "Delete",
+        "successTitle": "Draft deleted",
+        "errorTitle": "Error",
+        "errorMessage": "Something went wrong"
+      },
+      "finalizeDraftConfirmationModal": {
+        "loadingText": "Finalizing draft version...",
+        "title": "Finalize draft",
+        "description": "You are about to finalize {{caseDefinitionKey}} {{caseDefinitionVersionTag}} After finalization you can't make any more changes. Are you sure?",
+        "confirm": "Finalize",
+        "successMessage": "Draft finalized",
+        "errorTitle": "Error",
+        "errorMessage": "Something went wrong"
+      },
+      "createDraftConfirmationModal": {
+        "loadingText": "Creating draft version...",
+        "title": "Create draft version",
+        "description": "You are about to create a draft version from version {{caseDefinitionKey}} {{caseDefinitionVersionTag}}. Are you sure?",
+        "input": "Version",
+        "confirm": "Create",
+        "cancel": "Close",
+        "successMessage": "Draft version created",
+        "errorTitle": "Error",
+        "errorMessage": "Something went wrong"
+      },
+      "releaseVersion": {
+        "title": "Release version",
+        "fields": {"caseDefinitionVersionTag": "Version", "basedOnVersionTag": "Based on"},
+        "warning": {
+          "title": "Warning",
+          "description": "There is another draft based on {{ basedOnVersionTag }} with version {{ conflictingVersions }}"
+        }
+      },
+      "releaseInformation": {
+        "title": "Release information",
+        "fields": {
+          "createdBy": "Created by",
+          "createdDate": "Created on",
+          "description": "Description"
+        }
+      }
+    },
+    "processLinkNotification": {
+      "linkSuccess": "Successfully linked process",
+      "linkFailure": "Failed to link process",
+      "unlinkSuccess": "Successfully unlinked process",
+      "unlinkFailure": "Failed to unlink process"
+    },
+    "noResults": {
+      "title": "There are no case-definitions",
+      "description": "Add a case-definition to start"
+    },
+    "linkProcess": {
+      "title": "Link upload process to case",
+      "description": "Choose which process should handle file uploads."
+    },
+    "toggleAssignee": {
+      "title": "Case handler",
+      "checkboxDescription": "This case type can have a handler"
+    },
+    "toggleAutoAssignTasks": {
+      "title": "Task assignment",
+      "checkboxDescription": "Automatically assign user tasks to the case handler"
+    },
+    "externalStartForm": {
+      "title": "External start form",
+      "enabledToggle": "External start form enabled",
+      "enabledToggleOn": "Yes",
+      "enabledToggleOff": "No",
+      "externalUrl": "URL of external start form",
+      "externalUrlPlaceholder": "Input a valid URL",
+      "apply": "Save",
+      "description": "Description",
+      "descriptionPlaceholder": "A short description of the external start form",
+      "notification": {
+        "success": "External start form configuration updated successfully",
+        "error": "External start form configuration failed to update"
+      }
+    },
+    "tabs": {
+      "general": "General",
+      "cases": "Configuration",
+      "processes": "Processes",
+      "document": "Document",
+      "zgw": "ZGW",
+      "forms": "Forms",
+      "decision": "Decision tables",
+      "formFlows": "Form Flows",
+      "tasks": "Tasks",
+      "generalTab": {
+        "readOnlyNotification": {
+          "title": "Read only",
+          "message": "This case cannot be updated because it is final."
+        },
+        "linkUploadProcess": {
+          "title": "Link upload process to case",
+          "label": "Choose which process should handle file uploads",
+          "placeholder": "Documenten API upload document"
+        },
+        "caseHandler": {
+          "title": "Case handler",
+          "canHaveHandler": "Case type can have a handler",
+          "assignUser": "Automatically assign user tasks to case handler",
+          "disabledAutoAssignTooltip": "Automatically assigning a user task to the case handler can only be enabled when the case itself can have a handler.",
+          "toggle": {"onText": "Yes", "offText": "No"}
+        }
+      },
+      "caseListTab": {"title": "Case list", "searchFields": "Search Fields", "columns": "Columns"},
+      "caseDetailsTab": {
+        "title": "Case details",
+        "tabs": "Tabs",
+        "statuses": "Statuses",
+        "tags": "Tags"
+      }
+    },
+    "tabManagement": {
+      "columns": {
+        "content": "Content",
+        "key": "Tab key",
+        "name": "Tab name",
+        "type": "Type",
+        "showTasks": "Task list visible"
+      },
+      "addModal": {
+        "addTab": "Add tab",
+        "customComponent": "Custom component",
+        "customComponentDisabled": "There are no custom components available, or they have all been added already.",
+        "description": "Select one of the options to add a new tab to your case definition",
+        "formIOComponent": "FormIO component",
+        "formIOComponentDisabled": "No Form.io form definitions available",
+        "standardTab": "Standard tab",
+        "standardTabDisabled": "All standard tabs have already been added to your configuration",
+        "tabContentLabel": "Choose content",
+        "tabKeyLabel": "Key",
+        "tabNameLabel": "Tab name (optional)",
+        "title": "Add new tab in {{documentDefinitionName}}",
+        "uniqueKeyError": "The key for this tab must be unique.",
+        "invalidKeyError": "The key for this tab can only contains letters, numbers and dashes.",
+        "widgetsComponent": "Widgets component",
+        "visibleTitle": "Task list visible on tab",
+        "visible": "Visible",
+        "invisible": "Not visible"
+      },
+      "titles": {
+        "custom": "Add new tab with custom component",
+        "formio": "Add new tab with FormIO component",
+        "standard": "Add new tab with standard content",
+        "widgets": "Add a new tab with widgets"
+      },
+      "contentLabels": {
+        "custom": "Choose custom component",
+        "formio": "Choose FormIO component",
+        "standard": "Choose standard content"
+      },
+      "editModal": {"title": "Edit tab {{name}}", "updateTab": "Update tab"},
+      "deleteModal": {
+        "title": "Delete tab?",
+        "description": "Are you sure you want to delete this tab? This action cannot be undone."
+      }
+    },
+    "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
+    "importDefinition": {
+      "title": "Import case definition",
+      "overwriteWarning": "If your case definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
+      "startUpload": "Start upload",
+      "checkbox": {
+        "message": "I understand that configurations may be overwritten",
+        "error": "This field is mandatory"
+      },
+      "info": {
+        "title": "Attention",
+        "message": "Before importing, please make sure the plugin configurations that are referenced in process links are present."
+      },
+      "upload": {
+        "title": "Upload file",
+        "description": "Max file size is 500kb. Supported file types are ZIP and JSON.",
+        "buttonText": "Select file"
+      },
+      "progressBar": {
+        "active": "This may take a while",
+        "error": "Unable to import case definition. Nothing was imported due to an error at our end. Please try again later.If the issue keeps happening, contact support.",
+        "finished": "Case definition successfully imported",
+        "label": "Importing case definition"
+      },
+      "invalidJsonError": {
+        "text": "Please make sure it contains a valid JSON value.",
+        "title": "The file contains an error."
+      },
+      "steps": {
+        "accessControl": {
+          "message": "Don't forget to set the rights in Access Control. Without the proper rights your new case definition won't be accessible.",
+          "title": "Access control"
+        },
+        "dashboard": {
+          "message": "If you want widgets to appear on your dashboard, you'll have to manually configure these. Do this via 'dashboard configuration'",
+          "title": "Dashboard"
+        },
+        "plugins": {
+          "message": "This process may use plugins. Make sure you configure them correctly.",
+          "title": "Plugin Configuration"
+        }
+      }
+    },
+    "createDefinition": {
+      "idError": "This definition name is already in use. Please change to a unique name",
+      "versionError": "This version is not a valid Semver version",
+      "versionExistsError": "This version already exists for this definition",
+      "modalTitle": "Create case definition",
+      "key": "Case definition key",
+      "keyPlaceholder": "Case definition key will be auto-generated here",
+      "keyTooltip": "The key is used for the system names, $id etc. No spaces or special characters are allowed other than “-”.",
+      "name": "Case definition name",
+      "namePlaceholder": "Enter name here",
+      "nameTooltip": "The name is used for the visible name of the case definition in the UI",
+      "version": "Case definition version",
+      "versionPlaceholder": "Enter version here",
+      "versionTooltip": "The version is used for the visible version of the case definition in the UI",
+      "description": "Case definition description",
+      "descriptionPlaceholder": "Enter description here",
+      "descriptionTooltip": "The description is used for the visible description of the case definition in the UI"
+    },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "Leaving the editor",
+        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the case definition."
+      },
+      "saveModalContent": "Are you sure you want to save the Document definition? Removing or changing an attribute can break the case definition."
+    },
+    "statuses": {
+      "withoutStatus": "Show cases without a status",
+      "searchFieldTitle": "Status",
+      "add": "Add status",
+      "edit": "Edit status",
+      "visibleTitle": "Default visibility in case list",
+      "visible": "Visible",
+      "invisible": "Not visible",
+      "deleteText": "Are you sure you want to delete this status? This action cannot be undone.",
+      "keyAutoGenerated": "Key will be auto-generated",
+      "colorPlaceholder": "Choose a color",
+      "columns": {
+        "title": "Status name",
+        "key": "Status key",
+        "visible": "Visible by default",
+        "color": "Color"
+      },
+      "noResults": {
+        "title": "No statuses configured",
+        "description": "Click here to configure a status for this case type"
+      }
+    },
+    "caseTags": {
+      "searchFieldTitle": "Tags",
+      "add": "Add tag",
+      "edit": "Edit tag",
+      "visible": "Visible",
+      "invisible": "Not visible",
+      "deleteText": "Are you sure you want to delete this tag? This action cannot be undone.",
+      "keyAutoGenerated": "Key will be auto-generated",
+      "colorPlaceholder": "Choose a color",
+      "columns": {"title": "Name", "key": "Key", "visible": "Visible by default", "color": "Color"},
+      "noResults": {
+        "title": "No tags configured",
+        "description": "Click here to configure a tag for this case type"
+      }
+    },
+    "draftWarning": {
+      "title": "Not linked to a version of the case",
+      "description": "When updating {{name}}, the {{name}} will change for all versions of this case. Not just the selected version!"
+    }
+  },
+  "widgetTabManagement": {
+    "tab": {
+      "metadata": "<b>Created by</b> {{createdBy}} | <b>Created on</b> {{createdOn}} | <b>Key</b> {{key}}",
+      "editButton": "Edit",
+      "editWidgetTab": "Edit widget tab",
+      "cancel": "Cancel",
+      "save": "Save",
+      "form": {"tabName": "Tab name"}
+    },
+    "columns": {"highContrast": "High contrast", "type": "Type", "width": "Width"},
+    "list": {
+      "add": "Add widget",
+      "noResults": {
+        "title": "No widgets have been configured",
+        "description": "Click here to configure widgets"
+      }
+    },
+    "wizard": {
+      "create": "Create widget",
+      "edit": "Edit widget",
+      "steps": {
+        "content": "Choose widget content",
+        "style": "Choose widget style",
+        "type": "Choose widget type",
+        "width": "Choose widget width"
+      }
+    },
+    "notification": {
+      "success": "Widget configuration updated successfully",
+      "error": "Widget configuration failed to update"
+    },
+    "types": {
+      "description": "Choose the widget type you want to configure.",
+      "fields": {"title": "Fields", "description": "Text data with content and a label"},
+      "custom": {"title": "Custom component", "description": "For complex content"},
+      "formio": {"title": "Form.io", "description": "Prefilled Form.io form"},
+      "table": {"title": "Table", "description": "Create a table"},
+      "collection": {"title": "Collection", "description": "Create a collection"}
+    },
+    "width": {
+      "description": "Select the desired width for the widget.",
+      "fullWidth": "Full-width",
+      "half": "Half",
+      "small": {"title": "Small", "subtitle": "Contains 1 column of content"},
+      "medium": {"title": "Medium", "subtitle": "Contains up to 2 columns of content"},
+      "large": {"title": "Large", "subtitle": "Contains up to 3 columns of content"},
+      "xtraLarge": {"title": "Xtra large", "subtitle": "Contains up to 4 columns of content"}
+    },
+    "style": {
+      "description": "Select the desired style for the widget",
+      "default": {"title": "Default", "description": "For regular content"},
+      "highContrast": {"title": "High contrast", "description": "For higher priority content"}
+    },
+    "content": {
+      "description": "Enter the content for each column. Keep in mind that not all fields are the same height. For the best result make sure items are properly distributed.",
+      "widgetTitle": "Widget title",
+      "widgetTitlePlaceholder": "Choose a short name",
+      "widgetTitleTooltip": "Title that displays at the top of the widget",
+      "hideWhenEmpty": "Hide when empty",
+      "column": "Column {{number}}",
+      "fields": {
+        "add": "Add field",
+        "addEnum": "Add enum value",
+        "currencyCode": "Currency code (optional)",
+        "currencyCodePlaceholder": "Currency code",
+        "currencyCodeTooltip": "The currency code such as 'EUR', 'USD' etc. The default value is 'EUR'",
+        "digitsInfo": "Number format (optional)",
+        "digitsInfoPlaceholder": "Number format",
+        "digitsInfoTooltip": "Represents how many decimals should be displayed via this format: {minIntegerDigits}.{minFractionDigits}-{maxFractionDigits}. minIntegerDigits: Minimum number of digits before the decimal point; Default is 1. minFractionDigits: Minimum number of digits after the decimal point; Default is {{minFractionDigits}}. maxFractionDigits: Maximum number of digits after the decimal point; Default is {{maxFractionDigits}}.",
+        "display": "Display (optional)",
+        "displayPlaceholder": "Display",
+        "displayTooltip": "The format for the currency indicator. One of the following: 'code' for showing the code (i.e. EUR); 'symbol' for showing the symbol (i.e. €); 'string' for just displaying the code as a string. The default option is 'symbol'",
+        "format": "Format (optional)",
+        "formatPlaceholder": "Format",
+        "dateFormatTooltip": "A date format supported by Moment.js (https://momentjs.com/docs/). Default is 'DD-MM-YYYY'",
+        "dateTimeFormatTooltip": "A date format supported by Moment.js (https://momentjs.com/docs/). Default is 'DD-MM-YYYY, h:m:s'",
+        "enumValue": "Value",
+        "enumValueTooltip": "The value of the property you're looking to change.",
+        "enumDisplay": "Display",
+        "enumDisplayTooltip": "How the value should be displayed",
+        "title": "Title",
+        "titlePlaceholder": "Choose a title",
+        "titleTooltip": "Title for the property",
+        "valueTooltip": "A path which leads to the property you want to show. For the document's JSON schema, follow this example: 'doc:customer.firstName'. For document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
+        "type": "Display type",
+        "typePlaceholder": "Choose type",
+        "value": "Value",
+        "valuePlaceholder": "Path to value",
+        "ellipsisCharacterLimit": "Ellipsis character limit",
+        "ellipsisCharacterLimitTooltip": "Enter the number of characters that will display before an ellipsis is shown",
+        "ellipsisCharacterLimitPlaceholder": "Choose a number of characters (optional)"
+      },
+      "displayType": {
+        "text": "Text",
+        "boolean": "Yes/No",
+        "currency": "Currency",
+        "date": "Date",
+        "datetime": "Date and time",
+        "enum": "Enumeration",
+        "number": "Number",
+        "percent": "Percentage"
+      },
+      "custom": {"selectComponent": "Angular component", "placeholder": "Select a component"},
+      "formio": {"selectForm": "Form definition", "placeholder": "Select a form definition"},
+      "table": {
+        "addColumn": "Add column",
+        "defaultPageSize": "Rows per page",
+        "defaultPageSizePlaceholder": "Choose amount of rows per page",
+        "defaultPageSizeTooltip": "Number of entries displayed on each page",
+        "collection": "Path to table data",
+        "collectionPlaceholder": "Specify the path to table data",
+        "collectionTooltip": "A path which leads to the collection of values which you want to display. For showing properties in the document's JSON schema, follow this example: 'doc:children'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: doc:\"loans-accepted\".",
+        "columns": "Columns",
+        "options": "Options",
+        "firstColumnAsTitle": "First column is the title of the row",
+        "titleTooltip": "Title for the column",
+        "valueTooltip": "Name of the property you wish to access within the previously filled table data path"
+      },
+      "collection": {
+        "defaultPageSize": "Cards per page",
+        "defaultPageSizePlaceholder": "Choose amount of cards per page",
+        "defaultPageSizeTooltip": "Number of entries displayed on each page",
+        "collection": "Path to collection data",
+        "collectionPlaceholder": "Specify the path to collection data",
+        "collectionTooltip": "A path which leads to the collection of values which you want to display. For showing properties in the document's JSON schema, follow this example: 'doc:children'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: doc:\"loans-accepted\".",
+        "cardTitle": "Card title",
+        "cardFields": "Card fields",
+        "fieldWidth": "Field width",
+        "fieldWidthPlaceholder": "Choose field width",
+        "titleTooltip": "Title for the property",
+        "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
+      }
+    },
+    "cancelModal": {
+      "title": "Leaving the editor",
+      "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost."
+    },
+    "processes": {
+      "buttonTextLabel": "New process button text (Optional)",
+      "buttonTextPlaceholder": "Button text",
+      "selectorLabel": "New process button (Optional)",
+      "selectorPlaceholder": "Choose a process"
+    },
+    "saveModalContent": "Are you sure you want to save the widget configuration?"
+  },
+  "zgw": {
+    "columns": {
+      "column": "Column",
+      "add": "Add column",
+      "edit": "Edit column",
+      "deleteText": "Are you sure you want to delete this column?",
+      "notSortable": "This column is not sortable",
+      "defaultWarning": "When selecting a default sort, the previous sort will be overwritten"
+    },
+    "documentColumns": {
+      "auteur": "Author",
+      "beschrijving": "Description",
+      "bestandsnaam": "File name",
+      "bestandsomvang": "File size",
+      "bronorganisatie": "Source organisation",
+      "creatiedatum": "Creation date",
+      "formaat": "Format",
+      "identificatie": "Id",
+      "informatieobjecttype": "Information object type",
+      "informatieobjecttypeOmschrijving": "Information object type",
+      "locked": "Locked",
+      "status": "Status",
+      "taal": "Language",
+      "titel": "Title",
+      "trefwoorden": "Tags",
+      "versie": "Version",
+      "vertrouwelijkheidaanduiding": "Confidentiality level"
+    },
+    "documents": {
+      "noResults": {
+        "filterTitle": "No documents found",
+        "filterDescription": "There are no documents that match your search criteria"
+      },
+      "noColumns": {
+        "description": "Click here to configure a column for this document",
+        "title": "No configured columns"
+      }
+    },
+    "tags": {
+      "tag": "Tag",
+      "add": "Add tag",
+      "deleteText": "Are you sure you want to delete this tag?",
+      "deleteMultipleText": "Are you sure you want to delete these tags?",
+      "addModal": {"header": "Add tag"},
+      "list": {"noResultsTitle": "No tags", "noResultsDescription": "Add a tag to start"},
+      "search": {
+        "noResultsTitle": "No results",
+        "noResultsDescription": "Try adjusting your search or filter options to find what you're looking for."
+      },
+      "fields": {
+        "value": "Tag",
+        "valueRequired": "Tag is required.",
+        "valueMaxLength": "Tag is too long. Maximum length is {{ maxlength }} characters."
+      }
+    },
+    "uploadFields": {
+      "uploadField": "Upload field",
+      "add": "Add upload field",
+      "deleteText": "Are you sure you want to delete this upload field?",
+      "deleteMultipleText": "Are you sure you want to delete these upload fields?",
+      "addModal": {"header": "Add upload field"},
+      "editModal": {"header": "Edit upload field"},
+      "list": {
+        "noResultsTitle": "No upload fields",
+        "noResultsDescription": "Add a upload field to start"
+      },
+      "search": {
+        "noResultsTitle": "No results",
+        "noResultsDescription": "Try adjusting your search or filter options to find what you're looking for."
+      },
+      "fields": {
+        "field": "Field",
+        "defaultValue": "Default value",
+        "visible": "Visible",
+        "readonly": "Readonly"
+      },
+      "keys": {
+        "bestandsnaam": "File Name",
+        "titel": "Title",
+        "auteur": "Author",
+        "beschrijving": "Description",
+        "taal": "Language",
+        "vertrouwelijkheidaanduiding": "Confidentiality Indication",
+        "creatiedatum": "Creation Date",
+        "informatieobjecttype": "Information Object Type",
+        "status": "Status",
+        "verzenddatum": "Send Date",
+        "ontvangstdatum": "Receive Date",
+        "aanvullendeDatum": "Additional Date",
+        "trefwoorden": "Tags"
+      }
+    },
+    "tabs": {
+      "documentColumns": "Document columns",
+      "documentTags": "Document tags",
+      "documentUploadFields": "Document upload fields"
+    }
+  },
+  "task-list": {
+    "fieldLabels": {
+      "created": "Created on",
+      "name": "Name",
+      "valtimoAssignee.fullName": "Assignee",
+      "due": "Due date",
+      "context": "Context",
+      "case": "Case"
+    },
+    "mine": {
+      "title": "My tasks",
+      "description": "Overview of all tasks assigned to you",
+      "noResultsDescription": "Time for a short break.",
+      "noResultsTitle": "No tasks assigned to you"
+    },
+    "open": {
+      "title": "Unassigned tasks",
+      "description": "Overview of all unassigned tasks",
+      "noResultsDescription": "Come back later.",
+      "noResultsTitle": "All tasks have been assigned"
+    },
+    "all": {
+      "title": "All tasks",
+      "description": "Overview of all tasks",
+      "noResultsDescription": "There is nothing to do here.",
+      "noResultsTitle": "No open tasks"
+    },
+    "goToCase": "Go to case",
+    "caseLocked": "You don't have access to this case",
+    "rowLocked": "You don't have access to this task",
+    "allCases": "All cases",
+    "noSearchResultsTitle": "No tasks found",
+    "noSearchResultsDescription": "There are no tasks that match your search criteria."
+  },
+  "Task": "Task",
+  "Tasks": "Tasks",
+  "Analysis": "Analysis",
+  "Choice fields": "Choice fields",
+  "Overview of all Choice fields": "Overview of all Choice fields",
+  "Create new Choice field": "Create new Choice field",
+  "Choice field details": "Choice field details",
+  "Choice field values": "Choice field values",
+  "Overview of all Choice field values": "Overview of all Choice field values",
+  "Create new Choice field value": "Create new Choice field value",
+  "Choice field value details": "Choice field value details",
+  "Process": "Process",
+  "Processes": "Processes",
+  "Overview of all Processes": "Overview of all Processes",
+  "Create new Process": "Create new Process",
+  "Process details": "Process details",
+  "Decision tables": "Decision tables",
+  "Edit decision table": "Edit decision table",
+  "Create decision table": "Create decision table",
+  "Overview of all Decision tables": "Overview of all decision tables",
+  "Create new Milestone": "Create new Milestone",
+  "Create new Milestone Set": "Create new Milestone Set",
+  "Forms": "Forms",
+  "Overview of all Forms": "Overview of all Forms",
+  "Create Form": "Create Form",
+  "Form Builder": "Form Builder",
+  "Process links": "Process links",
+  "Translations": "Translations",
+  "uploadFormDefinition": "Upload form definition",
+  "Process migration": "Process migration",
+  "Process migration warning": "<b>Warning:</b> When migrating a process, the candidate groups of running instances will not be updated. This can be done in the database if necessary. (For example if a specific user task is open for ROLE_USER and the candidate group for the user task is updated in the process to ROLE_ADMIN, this user task is still accessible for ROLE_USER. Only newly started processes will use the updated candidate group)",
+  "Case": "Case",
+  "Cases": "Cases",
+  "Deployment": "Deployment",
+  "document definition": "Document definition",
+  "Upload document definition": "Upload document definition",
+  "Remove document definition": "Remove document definition",
+  "remove-document-definition-confirmation": "Warning: <br/><br/> This document definition and all related cases will be removed. Linked processes will be unlinked.<br/> Please note that removing a document definition and its cases cannot be reversed",
+  "remove-document-definition-confirmation-button": "Remove",
+  "remove-document-definition-success": "Removed document definition",
+  "Download document definition": "Download document definition",
+  "Select a document definition": "Select a file to upload",
+  "Overview of all Cases": "Overview of all Cases",
+  "Start Case": "Create New Case",
+  "Case details": "Case details",
+  "Related documents": "Related documents",
+  "Overview of all documents in this case": "Overview of all documents in this case",
+  "Basics": "Basics",
+  "Other": "Other",
+  "Download": "Download",
+  "Upload": "Upload",
+  "Import": "Import",
+  "Select process definition for document definition": "Select process definition for document definition",
+  "Select options for the selected process": "Select options for the selected process",
+  "Save": "Save",
+  "Customers": "Customers",
+  "Objects": "Objects",
+  "processManagement": {
+    "download": "Download",
+    "clear": "Clear",
+    "deploy": "Save",
+    "name": "Name",
+    "key": "Key",
+    "readOnly": "Read-only",
+    "createProcess": "Create process",
+    "systemProcess": "System process",
+    "systemProcessWarningMessage": "This is a system process. Pay close attention when making adjustments to this process",
+    "readOnlySystemProcessWarningMessage": "This is a system process, so it is marked as read-only. This process can be used but not modified.",
+    "version": "Version: ",
+    "noResults": {
+      "title": "No processes found",
+      "caseDescription": "Click here to create a process associated with this case",
+      "independentDescription": "Click here to create an standalone process"
+    },
+    "deleteModal": {
+      "title": "Delete process",
+      "content": "Are you sure you want to delete this process?"
+    },
+    "successNotification": "Process deployed successfully",
+    "errorNotification": "Process failed to deploy",
+    "deleteNotification": "Process deleted successfully",
+    "upload": {
+      "modalTitle": "Upload process definition",
+      "title": "Upload file",
+      "description": "Only BPMN files are supported.",
+      "buttonText": "Select file",
+      "success": "Deployment successful",
+      "failure": "Deployment failed"
+    },
+    "canInitializeDocument": "Starts case",
+    "startableByUser": "Startable by user"
+  },
+  "processCaseConnection": {
+    "noProcessesTitle": "No processes",
+    "noProcessesDescription": "There are no processes connected to this Case definition yet",
+    "processCreatesCase": "Process creates new case",
+    "processCreatesCaseTooltip": "When this option is selected, a new case is created when this process is started. For this to be possible, a start form must be linked to the first step in the process.",
+    "startableWithinCase": "Can be started within existing case",
+    "startableWithinCaseTooltip": "When this option is selected, this process definition will be available to start from within an existing case. This is done through the sub process menu on the detail page of the case."
+  },
+  "openZaak": {
+    "links": "Connected zaak type",
+    "documentenApi": {
+      "title": "Documenten API",
+      "documentenApiVersion": "The Documenten API plugin is using version",
+      "noVersionWarningTitle": "No Documents API plugin version detected",
+      "noVersionWarningMessage": "Please configure the Documents API plugin version and configure the upload process",
+      "multipleVersionsWarningTitle": "Multiple Documenten API plugins detected",
+      "multipleVersionsWarningMessage": "The upload process links to multiple Documenten APIs with different versions"
+    },
+    "success": {
+      "serviceTaskLinked": "Service task linked",
+      "serviceTaskLinkUpdated": "Service task link updated",
+      "serviceTaskUnlinked": "Service task unlinked"
+    },
+    "error": {
+      "configNotFound": "OpenZaak configuration not found, go to Admin > Open Zaak",
+      "serviceTaskLinkFailed": "Failed to link Service task",
+      "serviceTaskLinkUpdateFailed": "Failed to update Service task link",
+      "serviceTaskUnlinkFailed": "Failed to unlink Service task"
+    },
+    "linkZaakType": "Link zaak type",
+    "linkSuccessful": "Successfully linked zaaktype to case",
+    "linkFailed": "Failed to link zaaktype to case",
+    "delinkSuccessful": "Successfully de-linked zaaktype",
+    "delinkFailed": "Failed to de-link zaaktype",
+    "autoCreateForCase": "Automatically create for each case",
+    "selectZaakTypeForCase": "Select zaak type for case",
+    "selectZaakType": "Select zaak type",
+    "selectZakenApiPluginForCase": "Select Zaken Api plugin for case",
+    "selectZakenApiPlugin": "Select Zaken Api plugin",
+    "zakenApiPlugin": "Zaken Api plugin",
+    "rsin": "RSIN used when creating the Zaak in the Zaken Api",
+    "selectInfoObjectType": "Select information object type"
+  },
+  "zaakdetails": {
+    "title": "Zaak detail synchronisation",
+    "enabled": "Enabled",
+    "yes": "Yes",
+    "no": "No",
+    "objectManagementConfigurationTitle": "Object management configuration",
+    "submitButton": "Configure case detail synchronisation",
+    "editModal": {
+      "title": "Add case detail synchronisation",
+      "objectManagementConfiguration": "Object management configuration",
+      "objectManagementConfigurationPlaceholder": "Select an object management configuration",
+      "enabled": "Enabled"
+    }
+  },
+  "interface": {
+    "mainMenu": "Main menu",
+    "toggleMenu": "Menu",
+    "typeToSearch": "Type here to search",
+    "noSearchResults": "No results",
+    "noResults": "No results",
+    "loading": "Loading...",
+    "edit": "Edit",
+    "noItemsFound": "No items found",
+    "clearAll": "Clear all",
+    "clear": "Clear",
+    "show": "Show",
+    "display": "Display",
+    "items": "items",
+    "of": "of",
+    "visible": "visible",
+    "nextArrow": "Next >",
+    "previous": "< Previous",
+    "addRow": "Add row",
+    "deleteRow": "Delete row",
+    "on": "On",
+    "off": "Off",
+    "builds": {
+      "valtimo-backend-libraries": "Valtimo back-end",
+      "valtimo-frontend-libraries": "Valtimo front-end"
+    },
+    "email": "E-mail",
+    "username": "Username",
+    "name": "Name",
+    "delete": "Delete",
+    "deleteConfirmation": "Are you sure you want to delete?",
+    "cancel": "Cancel",
+    "close": "Close",
+    "discard": "Discard",
+    "next": "Next",
+    "skip": "Skip",
+    "confirm": "Confirm",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "download": "Download",
+    "duplicate": "Duplicate",
+    "openInNewTab": "Open in new tab",
+    "create": "Create",
+    "save": "Save",
+    "more": "More",
+    "export": "Export",
+    "defaultSort": "Default sort",
+    "list": {
+      "itemsPerPage": "Items per page",
+      "multipleSelect": "{{count}} items selected",
+      "ofLastPage": "of {{last}} page",
+      "ofLastPages": "of {{last}} pages",
+      "singleSelect": "1 item selected",
+      "totalItems": "{{start}}-{{end}} of {{total}} items",
+      "totalItem": "{{start}}-{{end}} of {{total}} item"
+    },
+    "pendingChanges": {
+      "title": "Leaving page",
+      "content": "You are leaving the page. Any unsaved changes will be lost. Are you sure you want to continue?",
+      "keepEditing": "Keep editing"
+    },
+    "required": "required",
+    "filter": "Filter...",
+    "back": "Back",
+    "warning": "Warning",
+    "success": "Success",
+    "error": "Error",
+    "finish": "Finish",
+    "add": "Add",
+    "tags": "Tags",
+    "tagType": {
+      "red": "Red",
+      "magenta": "Magenta",
+      "purple": "Purple",
+      "blue": "Blue",
+      "cyan": "Cyan",
+      "teal": "Teal",
+      "green": "Green",
+      "gray": "Gray",
+      "cool-gray": "Cool gray",
+      "warm-gray": "Warm gray",
+      "high-contrast": "High contrast",
+      "outline": "Outline",
+      "orange": "Orange"
+    },
+    "labels": {"dateCreationFrom": "Date creation from", "dateCreationTo": "Date creation to"},
+    "sorting": {
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "noDefault": "No default sort"
+    },
+    "editor": {"visualEditor": "Visual editor", "jsonEditor": "JSON editor"},
+    "key": "Key",
+    "value": "Value",
+    "title": "Title",
+    "yes": "Yes",
+    "no": "No",
+    "upload": "Upload"
+  },
+  "taskDetail": {"taskCreated": "Created", "taskCompleted": "has successfully been completed"},
+  "assignTask": {
+    "assignedTo": "Assigned to",
+    "header": "Assign a user to this task",
+    "placeholder": "Select user",
+    "remove": "Unassign",
+    "save": "Save",
+    "fetchingUsers": "Fetching users...",
+    "buttonText": "Assign user",
+    "submitButtonText": "Assign user to task",
+    "comboboxLabel": "Select user to assign"
+  },
+  "assignDocument": {
+    "assignedTo": "Assigned to ",
+    "header": "Assign a user to this case",
+    "remove": "Unassign",
+    "fetchingUsers": "Fetching users..."
+  },
+  "dropzone": {
+    "drop": "Choose a file or drag it here",
+    "maxFileSize": "Maximum file size: ",
+    "jsonDocDef": "The case definition must be in the JSON format",
+    "formJsonDocDef": "The form definition must be in the JSON format",
+    "objecttypeDef": "The objecttype definition must be in JSON format",
+    "error": {
+      "tooBig": "The file you tried to submit is too large",
+      "wrongType": "The filetype of the file you tried to submit is not supported",
+      "generic": "Something went wrong. Please try again.",
+      "invalidDocDef": "The case definition could not be uploaded. Please try again.",
+      "invalidFormDef": "The form definition is not valid. Please try again.",
+      "invalidJson": "The file contains an error. Please make sure it contains a valid JSON value.",
+      "invalidObjecttypeDef": "The objecttype definition is not valid. Please try again.",
+      "objecttypeAlreadyExists": "The JSON file contains an object type that already exists."
+    }
+  },
+  "fieldLabels": {
+    "referenceNumber": "Reference number",
+    "createdBy": "Created by",
+    "createdOn": "Created on",
+    "lastModified": "Last modified",
+    "files": "Files",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "assigneeFullName": "Assignee",
+    "accepted": "Accepted",
+    "title": "Title",
+    "readOnly": "Read-only",
+    "height": "Amount"
+  },
+  "list": {
+    "currentPage": "Page {{current}} of {{total}}",
+    "show": "Show",
+    "entries": "entries",
+    "noMatchingItems": "No matching items found for ",
+    "noFieldDefinitions": "No fields definitions defined",
+    "noResults": "No result found",
+    "showingResults": "Showing {{number}} of {{total}} results",
+    "showingResult": "Showing {{number}} result",
+    "automaticallyGenerated": "Automatically generated",
+    "search": "Search..."
+  },
+  "webcam": {"takePicture": "Take picture", "save": "Save", "redo": "Redo"},
+  "customers": {
+    "name": "Name",
+    "citizenServiceNumber": "Citizen service number",
+    "citizenServiceNumberPlaceholder": "e.g. 070003816",
+    "dateOfBirth": "Date of birth",
+    "dateOfBirthPlaceholder": "e.g. 1970-03-17",
+    "familyName": "Family name",
+    "familyNamePlaceholder": "e.g. Jansen",
+    "title": "Customers",
+    "subtitle": "Overview of all customers",
+    "searchBasedOn": "Search with",
+    "lastNameAndDateOfBirth": "Family name and date of birth"
+  },
+  "stepper": {
+    "cancelButtonText": "Cancel",
+    "nextButtonText": "Next step",
+    "completeButtonText": "Complete"
+  },
+  "pages": {
+    "plugins": {"title": "Plugins", "noResults": "There are no plugins configured yet"},
+    "customercases": {
+      "title": "Cases",
+      "description": "On this page you can view the cases of a specific customer."
+    }
+  },
+  "pluginSteps": {
+    "step0": "Select your plugin",
+    "step1": "Select your configuration",
+    "step2": "Select your action",
+    "step3": "Configure action",
+    "complete": "Connect plugin action"
+  },
+  "plugin": {
+    "noConfigurationComponent": "No configuration component is available.",
+    "configurationId": "Configuration ID",
+    "configurationIdTooltip": "The plugin will be saved under this ID. The ID must be in the format of a UUID"
+  },
+  "pluginManagement": {
+    "tableItemsText": "plugin configurations",
+    "add": "Configure plugin",
+    "noDefinitions": "No plugin definitions found.",
+    "save": "Save configuration",
+    "remove": "Delete configuration",
+    "labels": {
+      "pluginName": "Plugin name",
+      "identifier": "Identifier",
+      "configurationName": "Configuration name"
+    },
+    "addSteps": {
+      "step0": "Choose your plugin",
+      "step1": "Enter data",
+      "complete": "Save configuration"
+    }
+  },
+  "customerCases": {
+    "tableItemsText": "cases",
+    "labels": {"zaakNummer": "Case number", "zaakStatus": "Status", "zaakType": "Type"}
+  },
+  "processLink": {
+    "create": "Create process link",
+    "edit": "Edit process link",
+    "saveChanges": "Save changes",
+    "unlink": "Unlink",
+    "noPluginFunctions": "This plugin does not support any plugin actions."
+  },
+  "keycloak": {
+    "expiryPromptTitle": "The session is about to expire",
+    "expiryPromptDescription": "You will be logged out in {{expiryTime}}.",
+    "expiryPromptCancel": "Logout",
+    "expiryPromptConfirm": "Continue session"
+  },
+  "searchFields": {
+    "noneConfigured": "No search fields have been configured for this document type.",
+    "expandButtonText": "Show search fields",
+    "collapseButtonText": "Hide",
+    "searchButtonText": "Search",
+    "clearButtonText": "Clear",
+    "downloadButtonText": "Download configuration",
+    "to": "to",
+    "text": "Text",
+    "number": "Number",
+    "date": "Date",
+    "datetime": "Date and time",
+    "time": "Time",
+    "boolean": "Yes / no",
+    "numberRange": "Number range",
+    "dateRange": "Date range",
+    "datetimeRange": "Date and time range",
+    "booleanPositive": "Yes",
+    "booleanNegative": "No"
+  },
+  "searchFieldsTooltips": {
+    "text": "A text field",
+    "number": "A number field",
+    "date": "A date field",
+    "datetime": "A date and time field",
+    "boolean": "A boolean field",
+    "numberRange": "A number range field",
+    "dateRange": "A date range field",
+    "datetimeRange": "A date and time range field"
+  },
+  "searchFieldsOverview": {
+    "title": "Title",
+    "key": "Key",
+    "add": "Add search field",
+    "edit": "Edit search field",
+    "path": "Path",
+    "dataType": "Data type",
+    "fieldType": "Field type",
+    "matchType": "Match",
+    "exact": "Exact",
+    "like": "Contains",
+    "single": "Single",
+    "multiple": "Multiple",
+    "single-select-dropdown": "Single select dropdown",
+    "multi-select-dropdown": "Multi select dropdown",
+    "range": "Range",
+    "submit": "Submit",
+    "close": "Close",
+    "save": "save",
+    "delete": "Delete",
+    "download": "Download",
+    "addRow": "Add search field",
+    "searchFieldPlaceholder": "Select a type...",
+    "noSearchFieldsConfiguredWarningTitle": "No search fields configured",
+    "deleteSearchField": "Delete search field",
+    "deleteSearchFieldConfirmation": "Are you sure you want to delete this search field?",
+    "dropdownDataProvider": "Dropdown data source",
+    "dropdownDatabaseDataProvider": "Fixed value",
+    "dropdownJsonFileDataProvider": "Config file",
+    "configFile": "Config file",
+    "dropdownListValues": "Dropdown list values",
+    "id": "ID",
+    "text": "Text",
+    "textContains": "Text contains",
+    "noSearchfieldsTitle": "No search fields",
+    "noSearchfieldsDescription": "There are no search fields configured for this case type."
+  },
+  "searchFieldsOverviewTooltips": {
+    "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",
+    "key": "A unique key by which the search field is identified. If the key is not unique, you will not be able to save the search field.",
+    "path": "A path which leads to the property you want to search on. For searching in the document's JSON schema, follow this example: 'doc:customer.firstName'. For searching in the document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
+    "objectsApiPath": "A path which leads to the property you want to search on. For searching in the objects API JSON, follow this example: 'object:/customer/firstName'.",
+    "dataType": "The data type decides what input is shown to the user. For example, for the data type 'Date', a date picker is shown.",
+    "fieldType": "The field type decides the values the user can input. For the option 'Single', the user can only input a single value. For the option 'Range', the user may input two values, and these values, and all the values in between, are searched for.",
+    "matchType": "The match type decides how values in the database are matched to the search values. For the match type 'Exact', the value '1' would only be matched to the value '1'. For the match type 'Contains', the value '1' would be matched to the value '1', '123', and all other values containing '1'.",
+    "dropdownDataProvider": "The dropdown data source determines where the data for the dropdown comes from.",
+    "configFile": "Use a config file with dropdown values. The config value must be present on the server",
+    "dropdownListValues": "Set custom values for the dropdown list. The value shown in the dropdown list should be entered in the right text-field. The left text-field should contain the id of that value."
+  },
+  "searchFieldDataType": {"select": "Select a data type"},
+  "searchFieldFieldType": {"select": "Select a field type"},
+  "listColumn": {
+    "title": "Title",
+    "titleTitle": "Title (optional)",
+    "titleTooltip": "If this field is filled in, this title will display as the column header, overriding any available translations.",
+    "key": "Key",
+    "keyTooltip": "A unique key by which the column is identified. If the key is not unique, you will not be able to save the column.",
+    "path": "Path",
+    "pathTooltip": "A path which leads to the property you want to show. For the document's JSON schema, follow this example: 'doc:customer.firstName'. For document properties, follow these examples: 'case:createdBy', or 'case:sequence', or 'case:assigneeFullName'. Note: When there are special characters in a property, the property must be enclosed in quotes. For example: case:\"loan-accepted\".",
+    "objectsApiPathTooltip": "A path which leads to the property you want to search on. For searching in the objects API JSON, follow this example: 'object:/customer/firstName'.",
+    "displayType": "Display Type",
+    "displayTypeTooltip": "This option decides how the data is eventually displayed in the table.",
+    "displayTypeParameters": "Parameters",
+    "sortable": "Sortable",
+    "defaultSort": "Default Sort",
+    "defaultSortTitle": "Default Sort (optional)",
+    "defaultSortTooltip": "If this field has a value, the table will be sorted by default on this property, in the direction specified. Only one column at a time can have this property. On creating a new column, if another column already has a default sort specified, this input field will be disabled.",
+    "selectDefaultSort": "Select a default sort",
+    "sortableYes": "Yes",
+    "sortableNo": "No",
+    "sortableAsc": "Ascending",
+    "sortableDesc": "Descending",
+    "hasEnvConfigWarningTitle": "Case type already has a column configuration",
+    "hasEnvConfigWarning": "This case type already has a column configuration in the environment configuration. Delete this in order to add columns here.",
+    "noConfigWarningTitle": "No columns",
+    "noConfigWarning": "There are no columns configured for this case type.",
+    "addButtonText": "Add column",
+    "editColumnTitle": "Edit column",
+    "close": "Close",
+    "save": "Save column",
+    "dateFormat": "Date format (optional)",
+    "dateFormatTooltip": "A date format supported by Moment.js (https://momentjs.com/docs/).",
+    "uniqueKeyWarning": "The key for this column must be unique.",
+    "enumTitle": "Enumeration values",
+    "enumTitleOptional": "Values (optional)",
+    "enumTooltip": "The keys and values used to transform display data in the table.",
+    "enumTooltipOptional": "The values used to transform display data in the table.",
+    "downloadButtonText": "Download configuration",
+    "deleteColumn": "Delete column",
+    "deleteColumnConfirmation": "Are you sure you want to delete this column?",
+    "tagAmount": "How many tags should be displayed",
+    "tagAmountTooltip": "The amount of tags must be a positive number bigger than zero."
+  },
+  "listColumnDisplayType": {
+    "select": "Select a display type",
+    "text": "Text",
+    "date": "Date",
+    "boolean": "Yes/no",
+    "enum": "Enumeration",
+    "arrayCount": "Count",
+    "underscoresToSpaces": "Underscores to spaces",
+    "tags": "Tags"
+  },
+  "object": {
+    "title": "Objects",
+    "createObject": "New object",
+    "editObject": "Edit object",
+    "deleteObject": "Delete object",
+    "labels": {"recordIndex": "Record index", "objectUrl": "Object URL"},
+    "header": "Object details",
+    "tabs": {"general": "General"},
+    "close": "Close",
+    "save": "Save object",
+    "delete": "Delete object",
+    "deleteObjectConfirmation": "Are you sure you want to delete this object",
+    "messages": {
+      "objectCreated": "Object created successfully",
+      "objectCreationError": "An error occurred while creating the object",
+      "objectUpdated": "Object updated successfully",
+      "objectUpdateError": "An error occurred while updating the object",
+      "objectDeleted": "Object deleted successfully",
+      "objectDeleteError": "An error occurred while deleting the object",
+      "objectRetrievingFormError": "An error occurred while retrieving the form definition"
+    }
+  },
+  "objectManagement": {
+    "title": "Objecttypes",
+    "createObjecttype": "Create objecttype",
+    "editObjecttype": "Edit objecttype",
+    "uploadObjecttype": "Upload objecttype",
+    "labels": {
+      "title": "Title",
+      "objects": "Objects API plugin configuration",
+      "objecttypes": "Objecttypen API plugin configuration",
+      "objecttypeId": "Objecttype ID",
+      "objecttypeVersion": "Objecttype version",
+      "formDefinitionView": "View form definition",
+      "formDefinitionEdit": "Edit form definition",
+      "showInDataMenu": "Show in menu"
+    },
+    "tooltips": {
+      "title": "The name of this configuration. Under this name, this configuration can be found in the rest of the application.",
+      "objecttypeId": "The ID of the object type",
+      "objecttypeVersion": "The version of the object type",
+      "formDefinitionView": "The name of the form IO definition that will be used to display the object.",
+      "formDefinitionEdit": "The name of the form IO definition that will be used to edit the object.",
+      "showInDataMenu": "Indicates whether the object type is visible in the menu"
+    },
+    "cancel": "Cancel",
+    "add": "Add object",
+    "edit": "Change object",
+    "download": "Download",
+    "visibleInMenu": "Visible in menu",
+    "tabs": {"general": "General", "list": "List", "searchFields": "Search Fields"}
+  },
+  "formioTranslations": {
+    "Submit": "Submit",
+    "Save": "Save",
+    "Cancel": "Cancel",
+    "Remove": "Remove",
+    "Next": "Next",
+    "Previous": "Previous",
+    "formioIbanComponent": {"errorMessage": "Not a valid IBAN. Please enter a valid IBAN."},
+    "formioCurrencyComponent": {
+      "errorMessage": "Not a valid decimal number. Please enter a valid decimal number."
+    },
+    "formioFormViewModelComponent": {"submitError": "Invalid submissions"}
+  },
+  "viewTypeConverter": {
+    "Yes": "Yes",
+    "No": "No",
+    "errors": {"boolean": "Value is not a valid boolean", "number": "Value is not a valid number"}
+  },
+  "processLinkConfiguration": {
+    "configureStep": "Configure process step",
+    "modalTitle": "Process step: {{processStepName}}",
+    "chooseProcessLinkTypeDescription": "A process step can perform a variety of actions. Choose below to what type of action you would like to link this step.",
+    "chooseFormDescription": "Choose the form that you want to link to the process step.",
+    "chooseFormFlowDescription": "Choose the FormFlow that you want to link to the process step.",
+    "choosePluginConfigurationDescription": "Choose the plugin configuration you want to link to the process step.",
+    "choosePluginActionDescription": "Choose the action you want to perform with the plugin.",
+    "chooseForm": "Choose form",
+    "cancel": "Cancel",
+    "complete": "Complete",
+    "back": "Go back",
+    "next": "Next",
+    "pluginDescription": "Plugin description",
+    "unlink": "Unlink",
+    "toggleViewModel": {
+      "title": "View Model enabled?",
+      "checkboxDescription": "Enables Form View Model form processing"
+    },
+    "importConfiguration": "Import configuration",
+    "selectProcess": "Select process",
+    "process": "Process",
+    "version": "Version",
+    "selectVersion": "Select version",
+    "activity": "Process activity",
+    "selectActivity": "Select process activity",
+    "noProcess": "No upload process"
+  },
+  "processLinkType": {
+    "plugin": "Plugin",
+    "form": "Form",
+    "form-flow": "FormFlow",
+    "url": "URL",
+    "ui-component": "UI Component"
+  },
+  "processLinkSteps": {
+    "chooseProcessLinkType": "Choose link type",
+    "empty": "........",
+    "selectForm": "Select your form",
+    "selectFormPlaceholder": "Select a form",
+    "displayType": {
+      "label": "Select form display type",
+      "placeholder": "Select how to display the form",
+      "options": {"modal": "Modal", "panel": "Panel"}
+    },
+    "formSize": {
+      "label": "Select modal size",
+      "placeholder": "Select a modal size",
+      "options": {
+        "extraSmall": "Extra small",
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large"
+      }
+    },
+    "selectFormFlow": "Select your FormFlow",
+    "choosePluginConfiguration": "Select plugin configuration",
+    "choosePluginAction": "Choose your action",
+    "configurePluginAction": "Configure your action",
+    "selectURL": "Configure your URL",
+    "subtitles": "Subtitles",
+    "addSubtitle": "Add subtitle",
+    "uiComponent": "Select UI component"
+  },
+  "processLinkTypeDisabledTooltip": {
+    "plugin": "No plugin configurations are available. Create a plugin configuration to be able to link it to a process step.",
+    "form": "There are no forms available. Create a form to be able to link it to a process step.",
+    "form-flow": "There are no FormFlows available. Create a FormFlow to be able to link it to a process step.",
+    "ui-component": "There are no custom components registered please create one if you wish to use this option."
+  },
+  "processLinkUrlInvalid": "Invalid URL {{ URL }}",
+  "accessControl": {
+    "roles": {
+      "title": "All roles",
+      "key": "Role key",
+      "add": "Add new role",
+      "name": "Role name",
+      "deleteModalContent": "Are you sure you want to delete these roles and all underlying permissions? This action cannot be undone.",
+      "editMetadata": "Edit metadata",
+      "editRole": "Edit Role",
+      "savedSuccessTitle": "Saved successfully",
+      "savedSuccessTitleMessage": "{{roleKey}} was saved successfully",
+      "singleExport": "One JSON file",
+      "multipleExport": "Separate files per role",
+      "noResults": {
+        "description": "Click <strong>Add new role</strong> to start designing your role",
+        "title": "No roles added"
+      }
+    }
+  },
+  "translationManagement": {
+    "add": "Add translation",
+    "modalTitle": "Save translations",
+    "modalContent": "Displaying new translations in the application might require a page reload.",
+    "saveWithoutReload": "Save",
+    "saveWithReload": "Save and reload"
+  },
+  "caseMigration": {
+    "warningBeta": "Case migration is still in beta. Migrating cases might give unexpected results. Please use with care.",
+    "caseDefinition": "Case definition",
+    "sourceCaseDefinitionKey": "Source case definition name",
+    "sourceCaseDefinitionVersionTag": "Source case definition version",
+    "targetCaseDefinitionKey": "Target case definition name",
+    "targetCaseDefinitionVersionTag": "Target case definition version",
+    "patches": "Patches ",
+    "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
+    "patchSource": "Source case field",
+    "patchTarget": "Target case field",
+    "errors": "Errors",
+    "noErrors": "Success. No errors found.",
+    "checkPatches": "Verify patches",
+    "migrate": "Migrate cases",
+    "modalTitle": "Migrate cases",
+    "modalContent": "Are you sure you migrate the cases? Some changes can not be undone."
+  },
+  "formFlow": {
+    "title": "All form flows",
+    "key": "Key",
+    "version": "Version",
+    "readOnly": "Read only",
+    "add": "Add new form flow",
+    "deleteModalContent": "Are you sure you want to delete this form flow?",
+    "deletedSuccessfully": "{{key}} was deleted successfully",
+    "savedSuccessTitle": "Saved successfully",
+    "savedSuccessTitleMessage": "{{key}} was saved successfully",
+    "noResults": {
+      "description": "Click <strong>Add new form flow</strong> to start designing your form flow",
+      "title": "No form flows added"
+    }
+  },
+  "taskManagement": {
+    "columns": "Columns",
+    "searchFields": "Search fields",
+    "caseName": "Case name"
+  },
+  "valuePathSelector": {
+    "placeholder": "Select a path",
+    "dropdown": "Dropdown",
+    "manual": "Manual",
+    "selectCaseDefPlaceholder": "Select a case"
+  },
+  "logging": {
+    "columns": {"timestamp": "Timestamp", "formattedMessage": "Message", "level": "Log level"},
+    "search": {
+      "addProperty": "Add property",
+      "afterTimestamp": "From timestamp",
+      "beforeTimestamp": "To timestamp",
+      "properties": "Properties"
+    },
+    "noResults": {
+      "description": "No lines have been logged yet",
+      "searchDescription": "No logs match your search criteria",
+      "title": "There are no logs"
+    },
+    "detailsTitle": "Log details",
+    "timestamp": "Timestamp",
+    "formattedMessage": "Message",
+    "properties": "Properties",
+    "stacktrace": "Stacktrace"
+  },
+  "setTaskDueDate": {
+    "buttonText": "Set due date",
+    "submitButtonText": "Set due date",
+    "dueDateText": "Due date:",
+    "removeButtonText": "Remove due date"
+  },
+  "processStartSuccessful": "{{processName}} has successfully been started"
+}

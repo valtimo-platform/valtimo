@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/config';
+import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {TaskListSearchField} from '@valtimo/task';
 import {Observable} from 'rxjs';
 
@@ -24,7 +24,7 @@ import {Observable} from 'rxjs';
   providedIn: 'root',
 })
 export class TaskManagementSearchFieldsService extends BaseApiService {
-  private _documentDefinitionName: string;
+  private _caseDefinitionKey: string;
 
   constructor(
     protected readonly httpClient: HttpClient,
@@ -33,13 +33,13 @@ export class TaskManagementSearchFieldsService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public setDocumentDefinitionName(documentDefinitionName: string): void {
-    this._documentDefinitionName = documentDefinitionName;
+  public setCaseDefinitionKey(caseDefinitionKey: string): void {
+    this._caseDefinitionKey = caseDefinitionKey;
   }
 
   public getTaskListSearchFields(): Observable<TaskListSearchField[]> {
     return this.httpClient.get<TaskListSearchField[]>(
-      this.getApiUrl(`/v1/search/field/TaskListSearchColumns/${this._documentDefinitionName}`)
+      this.getApiUrl(`/v1/search/field/TaskListSearchColumns/${this._caseDefinitionKey}`)
     );
   }
 
@@ -47,11 +47,11 @@ export class TaskManagementSearchFieldsService extends BaseApiService {
     searchField: TaskListSearchField
   ): Observable<TaskListSearchField> {
     return this.httpClient.post<TaskListSearchField>(
-      this.getApiUrl(`/v1/search/field/${this._documentDefinitionName}`),
+      this.getApiUrl(`/v1/search/field/${this._caseDefinitionKey}`),
       {
         ...searchField,
         ownerType: 'TaskListSearchColumns',
-        ownerId: this._documentDefinitionName,
+        ownerId: this._caseDefinitionKey,
       }
     );
   }
@@ -60,11 +60,11 @@ export class TaskManagementSearchFieldsService extends BaseApiService {
     searchField: TaskListSearchField
   ): Observable<TaskListSearchField> {
     return this.httpClient.put<TaskListSearchField>(
-      this.getApiUrl(`/v1/search/field/${this._documentDefinitionName}/${searchField.key}`),
+      this.getApiUrl(`/v1/search/field/${this._caseDefinitionKey}/${searchField.key}`),
       {
         ...searchField,
         ownerType: 'TaskListSearchColumns',
-        ownerId: this._documentDefinitionName,
+        ownerId: this._caseDefinitionKey,
       }
     );
   }
@@ -72,14 +72,14 @@ export class TaskManagementSearchFieldsService extends BaseApiService {
   public deleteTaskListSearchField(searchFieldKey: string): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(
-        `/v1/search/field/TaskListSearchColumns/${this._documentDefinitionName}/${searchFieldKey}`
+        `/v1/search/field/TaskListSearchColumns/${this._caseDefinitionKey}/${searchFieldKey}`
       )
     );
   }
 
   public orderTaskListSearchFields(searchFields: TaskListSearchField[]): Observable<any[]> {
     return this.httpClient.put<any[]>(
-      this.getApiUrl(`/v1/search/field/${this._documentDefinitionName}/fields`),
+      this.getApiUrl(`/v1/search/field/${this._caseDefinitionKey}/fields`),
       searchFields
     );
   }

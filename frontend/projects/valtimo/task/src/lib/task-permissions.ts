@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ enum PERMISSION_ACTION {
 
 enum TASK_DETAIL_PERMISSION_RESOURCE {
   jsonSchemaDocument = 'com.ritense.document.domain.impl.JsonSchemaDocument',
-  task = 'com.ritense.valtimo.camunda.domain.CamundaTask',
+  task = 'com.ritense.valtimo.operaton.domain.OperatonTask',
 }
 
 const CAN_ASSIGN_TASK_PERMISSION: PermissionRequest = {

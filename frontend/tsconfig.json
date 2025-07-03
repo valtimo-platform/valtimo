@@ -4,18 +4,18 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "baseUrl": "./",
+    "esModuleInterop": true,
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
     "module": "es2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "experimentalDecorators": true,
     "importHelpers": true,
     // left at es2020 instead of es2022. es2022 gives build errors when buildings libs sequentially for unknown reasons
     "target": "es2020",
     "typeRoots": ["node_modules/@types"],
     "lib": ["es2020", "dom", "dom.iterable"],
-    "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false,
     "paths": {
       "@src": ["src"],
@@ -35,8 +35,8 @@
       "@valtimo/access-control-management/*": ["dist/valtimo/access-control-management/*"],
       "@valtimo/security": ["dist/valtimo/security"],
       "@valtimo/security/*": ["dist/valtimo/security/*"],
-      "@valtimo/dossier": ["dist/valtimo/dossier"],
-      "@valtimo/dossier/*": ["dist/valtimo/dossier/*"],
+      "@valtimo/case": ["dist/valtimo/case"],
+      "@valtimo/case/*": ["dist/valtimo/case/*"],
       "@valtimo/process": ["dist/valtimo/process"],
       "@valtimo/process/*": ["dist/valtimo/process/*"],
       "@valtimo/dashboard": ["dist/valtimo/dashboard"],
@@ -57,8 +57,6 @@
       "@valtimo/analyse/*": ["dist/valtimo/analyse/*"],
       "@valtimo/case-migration": ["dist/valtimo/case-migration"],
       "@valtimo/case-migration/*": ["dist/valtimo/case-migration/*"],
-      "@valtimo/connector-management": ["dist/valtimo/connector-management"],
-      "@valtimo/connector-management/*": ["dist/valtimo/connector-management/*"],
       "@valtimo/process-management": ["dist/valtimo/process-management"],
       "@valtimo/process-management/*": ["dist/valtimo/process-management/*"],
       "@valtimo/decision": ["dist/valtimo/decision"],
@@ -79,12 +77,12 @@
       "@valtimo/process-link/*": ["dist/valtimo/process-link/*"],
       "@valtimo/migration": ["dist/valtimo/migration"],
       "@valtimo/migration/*": ["dist/valtimo/migration/*"],
-      "@valtimo/dossier-management": ["dist/valtimo/dossier-management"],
-      "@valtimo/dossier-management/*": ["dist/valtimo/dossier-management/*"],
+      "@valtimo/case-management": ["dist/valtimo/case-management"],
+      "@valtimo/case-management/*": ["dist/valtimo/case-management/*"],
       "@valtimo/keycloak": ["dist/valtimo/keycloak"],
       "@valtimo/keycloak/*": ["dist/valtimo/keycloak/*"],
       "@valtimo/bootstrap": ["dist/valtimo/bootstrap/valtimo-bootstrap", "dist/valtimo/bootstrap"],
-      "@valtimo/config": ["dist/valtimo/config/valtimo-config", "dist/valtimo/config"],
+      "@valtimo/shared": ["dist/valtimo/shared/valtimo-shared", "dist/valtimo/shared"],
       "@valtimo/resource": ["dist/valtimo/resource"],
       "@valtimo/resource/*": ["dist/valtimo/resource/*"],
       "@valtimo/sse": ["dist/valtimo/sse"],
@@ -153,10 +151,10 @@
       "path": "./projects/valtimo/security/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/dossier/tsconfig.lib.json"
+      "path": "./projects/valtimo/case/tsconfig.lib.json"
     },
     {
-      "path": "./projects/valtimo/dossier/tsconfig.spec.json"
+      "path": "./projects/valtimo/case/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/case-migration/tsconfig.lib.json"
@@ -225,12 +223,6 @@
       "path": "./projects/valtimo/swagger/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/connector-management/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/valtimo/connector-management/tsconfig.spec.json"
-    },
-    {
       "path": "./projects/valtimo/process-management/tsconfig.lib.json"
     },
     {
@@ -279,10 +271,10 @@
       "path": "./projects/valtimo/migration/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/dossier-management/tsconfig.lib.json"
+      "path": "./projects/valtimo/case-management/tsconfig.lib.json"
     },
     {
-      "path": "./projects/valtimo/dossier-management/tsconfig.spec.json"
+      "path": "./projects/valtimo/case-management/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/keycloak/tsconfig.lib.json"
@@ -297,16 +289,22 @@
       "path": "./projects/valtimo/bootstrap/tsconfig.spec.json"
     },
     {
-      "path": "./projects/valtimo/config/tsconfig.lib.json"
+      "path": "./projects/valtimo/shared/tsconfig.lib.json"
     },
     {
-      "path": "./projects/valtimo/config/tsconfig.spec.json"
+      "path": "./projects/valtimo/shared/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/resource/tsconfig.lib.json"
     },
     {
       "path": "./projects/valtimo/resource/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/sse/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/sse/tsconfig.spec.json"
     },
     {
       "path": "./projects/valtimo/user-interface/tsconfig.lib.json"

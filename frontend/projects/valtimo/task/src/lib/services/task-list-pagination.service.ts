@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {TaskPageParams} from '../models';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {TaskListTab} from '@valtimo/config';
+import {TaskListTab} from '@valtimo/shared';
 import {map, take} from 'rxjs/operators';
 import {TaskListService} from './task-list.service';
 

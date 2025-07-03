@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="model$ | async as model; else loading">
+@if (model$ | async; as model) {
   <valtimo-editor
     [disabled]="(loading$ | async) === false && readOnly$ | async"
     [model]="model"
@@ -23,72 +23,61 @@
     (valueChangeEvent)="onValueChange($event)"
     [fitPage]="true"
   ></valtimo-editor>
-</ng-container>
+} @else {
+  <cds-loading></cds-loading>
+}
 
 <ng-container renderInPageHeader>
   <ng-template>
     <div
-      class="buttons-container"
       *ngIf="{
-        model: model$ | async,
+        compactMode: compactMode$ | async,
         valid: valid$ | async,
         readOnly: readOnly$ | async,
-        versions: formFlowDefinitionVersionItems$ | async,
-        compactMode: compactMode$ | async,
+        model: model$ | async,
       } as obs"
+      class="buttons-container"
     >
-      <cds-dropdown
-        [disabled]="obs.versions.isLoading || obs.versions.value.length === 1"
-        [dropUp]="false"
-        [skeleton]="obs.versions.isLoading"
-        (selected)="loadFormFlowDefinitionId($event.item.formFlowDefinitionId)"
+      <cds-overflow-menu>
+        <cds-overflow-menu-option
+          [disabled]="!obs.valid && !obs.readOnly"
+          (selected)="downloadFormFlowDefinition(obs.model)"
+          >{{ 'interface.export' | translate }}
+        </cds-overflow-menu-option>
+
+        <cds-overflow-menu-option
+          [disabled]="obs.readOnly"
+          type="danger"
+          (selected)="showDeleteModal()"
+          >{{ 'interface.delete' | translate }}
+        </cds-overflow-menu-option>
+      </cds-overflow-menu>
+
+      <button cdsButton="secondary" [size]="obs.compactMode ? 'sm' : 'md'" (click)="navigateBack()">
+        {{ 'interface.back' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+      </button>
+
+      <button
+        [disabled]="!obs.valid || obs.readOnly"
+        cdsButton="primary"
         [size]="obs.compactMode ? 'sm' : 'md'"
+        (click)="updateFormFlowDefinition()"
       >
-        <cds-dropdown-list [items]="obs.versions.value || []"></cds-dropdown-list>
-      </cds-dropdown>
+        {{ 'interface.save' | translate }}
 
-      <div class="buttons-container-right">
-        <cds-overflow-menu class="overflow-button">
-          <cds-overflow-menu-option
-            [disabled]="!obs.valid && !obs.readOnly"
-            (selected)="downloadFormFlowDefinition(obs.model)"
-            >{{ 'interface.export' | translate }}
-          </cds-overflow-menu-option>
-
-          <cds-overflow-menu-option
-            [disabled]="obs.readOnly"
-            type="danger"
-            (selected)="showDeleteModal()"
-            >{{ 'interface.delete' | translate }}
-          </cds-overflow-menu-option>
-        </cds-overflow-menu>
-
-        <button
-          [disabled]="!obs.valid || obs.readOnly"
-          cdsButton="primary"
-          [size]="obs.compactMode ? 'sm' : 'md'"
-          (click)="updateFormFlowDefinition()"
-        >
-          {{ 'interface.save' | translate }}
-
-          <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
-        </button>
-      </div>
+        <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
+      </button>
     </div>
   </ng-template>
 </ng-container>
 
-<ng-container *ngIf="{formFlowDefinitionId: formFlowDefinitionId$ | async} as obs">
-  <valtimo-delete-form-flow-modal
-    [deleteFormFlowDefinitionKey]="obs.formFlowDefinitionId?.key"
-    [showDeleteModal$]="showDeleteModal$"
-    (deleteEvent)="onDelete($event)"
-  >
-  </valtimo-delete-form-flow-modal>
-</ng-container>
-
-<ng-template #loading>
-  <div class="loading-container">
-    <cds-loading></cds-loading>
-  </div>
-</ng-template>
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="formFlow.deleteModalContent"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDelete()"
+></valtimo-confirmation-modal>

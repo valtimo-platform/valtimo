@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/config';
+import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {PluginConfiguration} from '../models';

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@
     cancelButtonTranslation: cancelButtonTextTranslationKey | translate,
     optionalButtonTranslation: optionalButtonTextTranslationKey | translate,
   } as obs"
+  (close)="closeModal()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>
@@ -37,13 +38,19 @@
       }}
     </h3>
   </cds-modal-header>
+
   <section cdsModalContent>
     {{
       (contentTranslationKey !== obs.contentTranslation ? obs.contentTranslation : '') ||
         content ||
         obs.deleteConfirmationTranslation
     }}
+
+    <div class="modal-body-content">
+      <ng-content></ng-content>
+    </div>
   </section>
+
   <cds-modal-footer>
     <ng-container>
       <button

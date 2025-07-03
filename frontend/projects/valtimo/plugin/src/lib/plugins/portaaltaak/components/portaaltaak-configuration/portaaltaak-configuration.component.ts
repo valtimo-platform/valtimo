@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import {ProcessService} from '@valtimo/process';
 import {ObjectService} from '../../services';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-portaaltaak-configuration',
   templateUrl: './portaaltaak-configuration.component.html',
   styleUrls: ['./portaaltaak-configuration.component.scss'],

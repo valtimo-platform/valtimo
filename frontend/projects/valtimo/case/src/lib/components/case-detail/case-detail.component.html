@@ -1,0 +1,315 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<div
+  class="main-content"
+  [ngClass]="{'main-content--no-horizontal-overflow': tabHorizontalOverflowDisabled()}"
+>
+  <div class="container-fluid">
+    <ng-container *ngIf="caseTags$ | async as caseTags">
+      @if (caseTags && caseTags.length > 0) {
+        <div class="spacing-case-tags">
+          @for (tag of caseTags; track tag) {
+            <cds-tag size="sm" [type]="tag.tagType">
+              {{ tag.title }}
+            </cds-tag>
+          }
+        </div>
+      }
+    </ng-container>
+
+    <ng-container *ngTemplateOutlet="tabs"></ng-container>
+
+    <ng-template #tabs>
+      <ng-container *ngIf="{activeTab: activeTab$ | async} as obs">
+        <cds-tabs *ngIf="tabLoader" type="inline" class="case-detail-tabs">
+          <cds-tab
+            *ngFor="let tab of tabLoader.tabs"
+            [active]="tab.name === (activeTabName$ | async)"
+            heading="{{ tab | tabTranslate | async }}"
+            (selected)="onTabSelected(tab, obs.activeTab)"
+          ></cds-tab>
+        </cds-tabs>
+      </ng-container>
+    </ng-template>
+
+    <div
+      #tabContentContainer
+      class="tab-content-container"
+      [ngClass]="{
+        'tab-content-container--dark': isDarkMode$ | async,
+        'tab-content-container--compact': compactMode$ | async,
+      }"
+      *ngIf="{
+        noTabsConfigured: noTabsConfigured$ | async,
+        showTaskList: showTaskList$ | async,
+        showNoAccess: showNoAccess$ | async,
+        caseDetailLayout: caseDetailLayout$ | async,
+        openTaskAndProcessLinkInModal: openTaskAndProcessLinkInModal$ | async,
+        taskAndProcessLinkOpenedInPanel: taskAndProcessLinkOpenedInPanel$ | async,
+      } as tabContentObs"
+    >
+      <as-split
+        direction="horizontal"
+        [disabled]="!tabContentObs.caseDetailLayout.widthAdjustable"
+        [gutterSize]="CASE_DETAIL_GUTTER_SIZE"
+        [unit]="tabContentObs.caseDetailLayout.unit"
+      >
+        <as-split-area
+          [size]="tabContentObs.caseDetailLayout.leftPanelWidth"
+          [minSize]="tabContentObs.caseDetailLayout.leftPanelMinWidth"
+          [maxSize]="tabContentObs.caseDetailLayout.leftPanelMaxWidth"
+        >
+          <div
+            class="card-body bg-white p-5 position-relative tab-container"
+            [class.tab-container--compact]="compactMode$ | async"
+          >
+            <div *ngIf="loadingTabs$ | async" class="loading-container">
+              <cds-loading></cds-loading>
+            </div>
+
+            <valtimo-no-results
+              *ngIf="tabContentObs.showNoAccess"
+              description="{{ 'case.noAccess.description' | translate }}"
+              title="{{ 'case.noAccess.title' | translate }}"
+              illustration="valtimo-layout/img/emptystate-not-authorised.svg"
+            >
+            </valtimo-no-results>
+
+            <valtimo-no-results
+              *ngIf="tabContentObs.noTabsConfigured"
+              [description]="'case.tabs.noResultsDescription' | translate"
+              [title]="'case.tabs.noResults' | translate"
+            ></valtimo-no-results>
+
+            <ng-template #tabContainer></ng-template>
+
+            <div class="clearfix"></div>
+          </div>
+        </as-split-area>
+
+        <as-split-area
+          *ngIf="tabContentObs.caseDetailLayout.showRightPanel"
+          [size]="tabContentObs.caseDetailLayout.rightPanelWidth"
+          [minSize]="tabContentObs.caseDetailLayout.rightPanelMinWidth"
+          [maxSize]="tabContentObs.caseDetailLayout.rightPanelMaxWidth"
+        >
+          @if (tabContentObs.showTaskList) {
+            <div class="task-panel">
+              @if (!tabContentObs.taskAndProcessLinkOpenedInPanel) {
+                <valtimo-case-detail-task-list
+                  [openTaskAndProcessLinkInModal]="tabContentObs.openTaskAndProcessLinkInModal"
+                  (taskClickEvent)="onTaskClickEvent($event)"
+                  (formSubmitEvent)="onFormSubmitEvent()"
+                ></valtimo-case-detail-task-list>
+              }
+
+              @if (tabContentObs.taskAndProcessLinkOpenedInPanel) {
+                <valtimo-case-detail-task-detail
+                  [taskAndProcessLink]="tabContentObs.taskAndProcessLinkOpenedInPanel"
+                  (activeChange)="onActiveChangeEvent($event)"
+                  (closeEvent)="onTaskDetailsClose()"
+                  (formSubmit)="onFormSubmitEvent()"
+                >
+                </valtimo-case-detail-task-detail>
+              }
+            </div>
+          }
+        </as-split-area>
+      </as-split>
+    </div>
+  </div>
+
+  <valtimo-case-supporting-process-start-modal
+    [isAdmin]="isAdmin$ | async"
+    (formSubmit)="onFormSubmitEvent()"
+    #supportingProcessStartModal
+  ></valtimo-case-supporting-process-start-modal>
+</div>
+
+<ng-template
+  #caseDetailHeader
+  let-canHaveAssignee="canHaveAssignee"
+  let-document="document"
+  let-canAssign="canAssign"
+>
+  <ng-container
+    *ngTemplateOutlet="
+      caseDetailAssignee;
+      context: {canHaveAssignee: canHaveAssignee, document: document, canAssign: canAssign}
+    "
+  ></ng-container>
+</ng-template>
+
+<ng-template
+  #caseDetailAssignee
+  let-canHaveAssignee="canHaveAssignee"
+  let-document="document"
+  let-canAssign="canAssign"
+>
+  <div *ngIf="canHaveAssignee && document">
+    <valtimo-case-assign-user
+      *ngIf="canAssignLoaded$ | async"
+      [assigneeFullName]="document?.assigneeFullName"
+      [assigneeId]="document.assigneeId"
+      [documentId]="document.id"
+      [hasPermission]="canAssign"
+      (assignmentOfDocumentChanged)="assignmentOfDocumentChanged()"
+    ></valtimo-case-assign-user>
+  </div>
+</ng-template>
+
+<ng-template #claimButton let-canClaim="canClaim" let-canHaveAssignee="canHaveAssignee">
+  <cds-overflow-menu-option
+    *ngIf="canClaim && canHaveAssignee"
+    [disabled]="(isAssigning$ | async) || (isAssignedToCurrentUser$ | async)"
+    (click)="claimAssignee()"
+  >
+    {{ 'case.claimAssigneeCase' | translate }}
+  </cds-overflow-menu-option>
+</ng-template>
+
+<ng-template #unassignButton let-canHaveAssignee="canHaveAssignee" let-assigneeId="assigneeId">
+  <cds-overflow-menu-option
+    *ngIf="canHaveAssignee"
+    [disabled]="!assigneeId"
+    (selected)="unassignAssignee()"
+  >
+    {{ 'assignDocument.remove' | translate }}
+  </cds-overflow-menu-option>
+</ng-template>
+
+<ng-template #deleteButton let-canDelete="canDelete">
+  <cds-overflow-menu-option
+    *ngIf="canDelete"
+    [disabled]="isDeleting$ | async"
+    (click)="deleteDocument()"
+    type="danger"
+  >
+    {{ 'case.delete.delete' | translate }}
+  </cds-overflow-menu-option>
+</ng-template>
+
+<ng-template #customStartTrigger>
+  <button
+    [size]="(compactMode$ | async) ? 'sm' : 'lg'"
+    cdsButton="primary"
+    [disabled]="processDefinitionCaseDefinitions.length === 0"
+    [ngbTooltip]="processDefinitionCaseDefinitions.length === 0 ? 'No action' : null"
+  >
+    {{ 'case.startSubProcess' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="chevron--down" size="16"></svg>
+  </button>
+</ng-template>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="case.delete.confirm"
+  confirmButtonType="danger"
+  contentTranslationKey="case.delete.description"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="case.delete.delete"
+  (confirmEvent)="onConfirmDelete()"
+></valtimo-confirmation-modal>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <div
+      class="case-actions"
+      [ngClass]="{
+        'case-actions--compact': compactMode$ | async,
+        'case-actions--small-title': smallTitle$ | async,
+      }"
+      *ngIf="{
+        assigneeId: assigneeId$ | async,
+        canAssign: canAssign$ | async,
+        canClaim: canClaim$ | async,
+        canHaveAssignee: canHaveAssignee$ | async,
+        canDelete: canDelete$ | async,
+        document: document$ | async,
+        caseStatus: caseStatus$ | async,
+      } as obs"
+    >
+      <div class="case-status-assign-custom-title" [ngClass]="{'--compact': compactMode$ | async}">
+        @if (obs.caseStatus) {
+          <cds-tag size="sm" [type]="obs.caseStatus.tagType" [title]="obs.caseStatus.title">{{
+            obs.caseStatus.title
+          }}</cds-tag>
+        }
+
+        <div [ngClass]="{'--compact': compactMode$ | async}">
+          <ng-container
+            *ngTemplateOutlet="
+              caseDetailAssignee;
+              context: {
+                canHaveAssignee: obs.canHaveAssignee,
+                document: obs.document,
+                canAssign: obs.canAssign,
+              }
+            "
+          ></ng-container>
+        </div>
+
+        <ng-container *ngTemplateOutlet="caseDetailHeader"></ng-container>
+      </div>
+
+      <div class="buttons-container">
+        <cds-overflow-menu
+          [ngClass]="{'--compact': compactMode$ | async}"
+          *ngIf="obs.canHaveAssignee || obs.canDelete"
+          flip="true"
+          [offset]="(compactMode$ | async) ? {y: 48, x: -4} : {y: 48, x: 4}"
+          class="overflow-button assign-overflow"
+        >
+          <ng-container
+            *ngTemplateOutlet="
+              claimButton;
+              context: {canClaim: obs.canClaim, canHaveAssignee: obs.canHaveAssignee}
+            "
+          >
+          </ng-container>
+
+          <ng-container
+            *ngTemplateOutlet="
+              unassignButton;
+              context: {canHaveAssignee: obs.canHaveAssignee, assigneeId: obs.assigneeId}
+            "
+          >
+          </ng-container>
+
+          <ng-container *ngTemplateOutlet="deleteButton; context: {canDelete: obs.canDelete}">
+          </ng-container>
+        </cds-overflow-menu>
+
+        <cds-overflow-menu
+          valtimoCdsOverflowButton
+          [ngClass]="{'--compact': compactMode$ | async}"
+          [width]="dropdownWidth$ | async"
+          [customTrigger]="customStartTrigger"
+          [offset]="{y: 48, x: 35}"
+          class="overflow-button case-detail-overflow"
+        >
+          <cds-overflow-menu-option
+            *ngFor="let processDefinitionCaseDefinition of processDefinitionCaseDefinitions"
+            [attr.title]="processDefinitionCaseDefinition.displayName"
+            (click)="startProcess(processDefinitionCaseDefinition)"
+          >
+            {{ processDefinitionCaseDefinition.displayName }}
+          </cds-overflow-menu-option>
+        </cds-overflow-menu>
+      </div>
+    </div>
+  </ng-template>
+</ng-container>

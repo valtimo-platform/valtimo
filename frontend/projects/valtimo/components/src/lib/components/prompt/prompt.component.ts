@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import {PromptService} from '../../services/prompt.service';
   selector: 'v-prompt',
   templateUrl: './prompt.component.html',
   styleUrls: ['./prompt.component.scss'],
+  standalone: false,
 })
 export class PromptComponent implements OnInit {
   @Input() appearingDelayMs = 140;
@@ -42,10 +43,6 @@ export class PromptComponent implements OnInit {
   readonly bodyText$ = this.promptService.bodyText$;
   readonly cancelText$ = this.promptService.cancelText$;
   readonly confirmText$ = this.promptService.confirmText$;
-  readonly cancelMdiIcon$ = this.promptService.cancelMdiIcon$;
-  readonly confirmMdiIcon$ = this.promptService.confirmMdiIcon$;
-  readonly cancelButtonType$ = this.promptService.cancelButtonType$;
-  readonly confirmButtonType$ = this.promptService.confirmButtonType$;
   readonly closeButtonVisible$ = this.promptService.closeButtonVisible$;
 
   constructor(private readonly promptService: PromptService) {}

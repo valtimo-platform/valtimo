@@ -22,7 +22,7 @@ import {
   ValtimoKeycloakOptions,
 } from '@valtimo/keycloak';
 import {KeycloakConfig, KeycloakOnLoad} from 'keycloak-js';
-import {Auth, AuthProviders} from '@valtimo/config';
+import {Auth, AuthProviders} from '@valtimo/shared';
 
 const keycloakAuthenticationProviders: AuthProviders = {
   guardServiceProvider: KeycloakAuthGuardService,

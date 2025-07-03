@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +26,14 @@ import {
   ConfirmationModalModule,
   FormIoModule,
   PageHeaderModule,
-  RenderInPageHeaderDirectiveModule,
+  RenderInPageHeaderDirective,
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SpinnerModule,
-  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsModalDirective,
   WidgetModule,
 } from '@valtimo/components';
-import {HttpLoaderFactory} from '@valtimo/config';
+import {HttpLoaderFactory} from '@valtimo/shared';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {
   ButtonModule,
@@ -45,14 +45,13 @@ import {
   TabsModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {ToastrModule} from 'ngx-toastr';
 import {AssignUserToTaskComponent} from './components/assign-user-to-task/assign-user-to-task.component';
+import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-due-date.component';
+import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
+import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
 import {TaskDetailModalComponent} from './components/task-detail-modal/task-detail-modal.component';
 import {TaskListComponent} from './components/task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
-import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
-import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-due-date.component';
 
 @NgModule({
   declarations: [TaskListComponent, TaskDetailModalComponent],
@@ -67,10 +66,6 @@ import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-d
     CamundaFormModule,
     BrowserAnimationsModule,
     FormsModule,
-    ToastrModule.forRoot({
-      positionClass: 'toast-bottom-full-width',
-      preventDuplicates: true,
-    }),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -85,7 +80,7 @@ import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-d
     ProcessLinkModule,
     TabsModule,
     ContentSwitcherModule,
-    RenderInPageHeaderDirectiveModule,
+    RenderInPageHeaderDirective,
     DropdownModule,
     ButtonModule,
     IconModule,
@@ -96,7 +91,7 @@ import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-d
     TaskDetailContentComponent,
     TaskDetailIntermediateSaveComponent,
     SetTaskDueDateComponent,
-    ValtimoCdsModalDirectiveModule,
+    ValtimoCdsModalDirective,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })
