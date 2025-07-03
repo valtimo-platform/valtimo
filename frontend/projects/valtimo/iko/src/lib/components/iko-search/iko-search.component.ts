@@ -62,9 +62,8 @@ export class IkoSearchComponent implements OnDestroy {
     map(([key, menuItems, dataRequests]) => {
       const currentMenuItem = menuItems.find(item => item.key === key);
 
-      if (currentMenuItem && currentMenuItem?.title) {
+      if (currentMenuItem && currentMenuItem?.title)
         this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
-      }
 
       return dataRequests;
     })
@@ -72,6 +71,7 @@ export class IkoSearchComponent implements OnDestroy {
 
   constructor(
     private readonly route: ActivatedRoute,
+    private readonly router: Router,
     private readonly pageTitleService: PageTitleService,
     private readonly iconService: IconService,
     private readonly ikoApiService: IkoApiService
