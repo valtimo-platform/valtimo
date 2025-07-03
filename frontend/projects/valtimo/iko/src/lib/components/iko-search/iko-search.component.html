@@ -13,57 +13,32 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<ng-container *ngIf="{dataRequests: dataRequests$ | async} as obs">
-  @if (obs.ikoMenuItem?.queryParams?.length) {
+@if (dataRequests$ | async; as dataRequests) {
+  @for (param of dataRequests; track param.key ?? param.fields?.[0]?.key) {
     <div class="query-group">
-      @for (param of obs.dataRequests; track param.key ?? param.fields?.[0]?.key) {
-        @if (!isQueryGroup(param)) {
-          <div class="query-group__row">
-            <div class="query-group__field">
-              <label [for]="param.key" class="query-group__label">{{ param.title }}</label>
-              <input
-                ibmText
-                [id]="param.key"
-                [placeholder]="param.placeholder"
-                [(ngModel)]="formValues[param.key]"
-              />
-            </div>
-            <button
-              cdsButton="primary"
-              class="query-group__search-button"
-              [disabled]="!formValues[param.key]"
-              (click)="searchGroup([param])"
-            >
-              {{ 'searchFields.searchButtonText' | translate }}
-              <svg cdsIcon="search" size="16"></svg>
-            </button>
-          </div>
-        } @else {
-          <div class="query-group__row">
-            @for (field of param.searchFields; track field.key) {
-              <div class="query-group__field">
-                <label [for]="field.key" class="query-group__label">{{ field.title }}</label>
-                <input
-                  ibmText
-                  [id]="field.key"
-                  [placeholder]="field.placeholder"
-                  [(ngModel)]="formValues[field.key]"
-                />
-              </div>
-            }
-            <button
-              cdsButton="primary"
-              class="query-group__search-button"
-              [disabled]="!hasAnyInput(param.fields)"
-              (click)="searchGroup(param.fields)"
-            >
-              {{ 'searchFields.searchButtonText' | translate }}
-              <svg cdsIcon="search" size="16"></svg>
-            </button>
+      <span class="query-group__label">{{ param.title }}</span>
+
+      <div class="query-group__row">
+        @for (field of param.searchFields; track field.key) {
+          <div class="query-group__field">
+            <input
+              cdsText
+              [id]="field.key"
+              [placeholder]="field.title"
+              [(ngModel)]="formValues[field.key]"
+            />
           </div>
         }
-      }
+        <button
+          cdsButton="primary"
+          class="query-group__search-button"
+          [disabled]="!hasAnyInput(param.searchFields)"
+          (click)="searchGroup(param.key, param.searchFields)"
+        >
+          {{ 'searchFields.searchButtonText' | translate }}
+          <svg cdsIcon="search" size="16"></svg>
+        </button>
+      </div>
     </div>
   }
-</ng-container>
+}

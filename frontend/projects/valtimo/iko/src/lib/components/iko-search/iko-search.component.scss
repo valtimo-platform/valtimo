@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-.query-group {
+:host {
   display: flex;
   flex-direction: column;
   gap: 32px;
+}
+.query-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 
   &__row {
     display: flex;
@@ -40,7 +45,6 @@
   &__label {
     font-size: 14px;
     font-weight: 600;
-    margin-bottom: 8px;
     color: var(--cds-text-primary);
   }
 

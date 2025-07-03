@@ -1268,6 +1268,7 @@
       "valtimo-backend-libraries": "Valtimo back-end",
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
+    "results": "Ergebnisse",
     "email": "Email",
     "username": "Nutzername",
     "name": "Name",

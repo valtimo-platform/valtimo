@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
+import {IkoListComponent} from './components/iko-list/iko-list.component';
 import {IkoSearchComponent} from './components/iko-search/iko-search.component';
 
 const routes: Routes = [
@@ -28,6 +28,14 @@ const routes: Routes = [
     data: {
       title: 'Iko',
       customPageTitle: true,
+    },
+  },
+  {
+    path: 'iko/:key/:searchKey',
+    component: IkoListComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'interface.results',
     },
   },
 ];
