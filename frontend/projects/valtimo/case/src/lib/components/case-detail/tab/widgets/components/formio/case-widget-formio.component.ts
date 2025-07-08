@@ -91,4 +91,10 @@ export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
   public onProcessStartClick(process: WidgetAction): void {
     this.widgetsService.startProcess(process.processDefinitionKey);
   }
+
+  public dataFetchedCallBackFunction = () => {
+    this.widgetConfiguration$.pipe(take(1)).subscribe(config => {
+      this.layoutService.setWidgetWithExternalDataReady(config.uuid);
+    });
+  };
 }

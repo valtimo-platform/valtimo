@@ -164,7 +164,8 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
         ),
       }))
     ),
-    tap(card => this.checkEmptyFields(card))
+    tap(card => this.checkEmptyFields(card)),
+    tap(cards => console.log('cards', cards))
   );
 
   private _observer!: ResizeObserver;
@@ -254,6 +255,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
       collection.fields.forEach(field => {
         if (!field.hideWhenEmpty || (field.hideWhenEmpty && field.value && field.value !== '-'))
           this.noVisibleFields$.next(false);
+        console.log('set to false');
       });
     });
   }
