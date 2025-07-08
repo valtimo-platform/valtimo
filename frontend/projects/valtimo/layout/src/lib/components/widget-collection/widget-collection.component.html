@@ -24,15 +24,7 @@
   <section class="valtimo-widget-collection__header">
     <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
 
-    @if (obs.widgetConfiguration?.actions?.length === 1) {
-      <button
-        *ngIf="canCreateCamundaExecution$ | async"
-        cdsButton="ghost"
-        (click)="onProcessStartClick(obs.widgetConfiguration?.actions[0])"
-      >
-        {{ obs.widgetConfiguration?.actions[0].name }}
-      </button>
-    }
+    <ng-content></ng-content>
   </section>
 
   <div
@@ -79,18 +71,12 @@
     }
   </div>
 
-  @if (obs.noVisibleFields) {
+  @if (obs.noVisibleFields || !obs?.collectionWidgetCards?.length) {
     <valtimo-no-results
       [collapseVertically]="true"
-      [description]="'case.widgets.emptyFields' | translate"
-      [smallPadding]="true"
-    ></valtimo-no-results>
-  }
-
-  @if (!obs?.collectionWidgetCards?.length) {
-    <valtimo-no-results
-      [collapseVertically]="true"
-      [description]="'case.widgets.noData' | translate"
+      [description]="
+        (obs.noVisibleFields ? 'case.widgets.emptyFields' : 'case.widgets.noData') | translate
+      "
       [smallPadding]="true"
     ></valtimo-no-results>
   }

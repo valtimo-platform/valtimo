@@ -17,41 +17,35 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {CaseWidgetAction, FormioCaseWidgetWidgetWithUuid} from '../../../../../../models';
 import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
 import {FormService} from '@valtimo/form';
-import {CaseWidgetsLayoutService} from '../../../../../../services';
 import {FormioForm} from '@formio/angular';
 import {FormIoModule} from '@valtimo/components';
-import {WidgetProcess} from '../widget-process/widget-process';
-import {PermissionService} from '@valtimo/access-control';
-import {DocumentService} from '@valtimo/document';
 import {ButtonModule} from 'carbon-components-angular';
-import {WidgetsService} from '../../widgets.service';
+import {FormioWidgetWidgetWithUuid} from '../../models';
 
 @Component({
   selector: 'valtimo-widget-formio',
   templateUrl: './widget-formio.component.html',
-  styleUrls: ['./widget-formio.component.scss'],
   standalone: true,
   imports: [CommonModule, TranslateModule, FormIoModule, ButtonModule],
+  styleUrls: ['./widget-formio.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WidgetFormioComponent extends WidgetProcess {
+export class WidgetFormioComponent {
   @Input() public set documentId(value: string) {
     if (value) this._documentIdSubject$.next(value);
-    this.baseDocumentId = value;
   }
-  @Input() public set widgetConfiguration(value: FormioCaseWidgetWidgetWithUuid) {
+  @Input() public readonly dataFetchedCallBackFunction!: () => void;
+
+  @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
-    this.layoutService.setWidgetWithExternalData(value.uuid);
-    this.baseWidgetConfiguration = value;
     this._widgetConfigurationSubject$.next(value);
   }
 
   private readonly _widgetConfigurationSubject$ =
-    new BehaviorSubject<FormioCaseWidgetWidgetWithUuid | null>(null);
-  public get widgetConfiguration$(): Observable<FormioCaseWidgetWidgetWithUuid> {
+    new BehaviorSubject<FormioWidgetWidgetWithUuid | null>(null);
+  public get widgetConfiguration$(): Observable<FormioWidgetWidgetWithUuid> {
     return this._widgetConfigurationSubject$.pipe(filter(config => !!config));
   }
 
@@ -73,21 +67,11 @@ export class WidgetFormioComponent extends WidgetProcess {
         of(config),
       ])
     ),
-    tap(([_, config]) => this.layoutService.setWidgetWithExternalDataReady(config.uuid)),
+    tap(() => {
+      if (this.dataFetchedCallBackFunction) this.dataFetchedCallBackFunction();
+    }),
     map(([formDef]) => formDef)
   );
 
-  constructor(
-    protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
-    private readonly formService: FormService,
-    private readonly layoutService: CaseWidgetsLayoutService,
-    private readonly widgetsService: WidgetsService
-  ) {
-    super(documentService, permissionService);
-  }
-
-  public onProcessStartClick(process: CaseWidgetAction): void {
-    this.widgetsService.startProcess(process.processDefinitionKey);
-  }
+  constructor(private readonly formService: FormService) {}
 }

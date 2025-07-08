@@ -24,15 +24,7 @@
   <section class="formio-widget__header">
     <h4 class="formio-widget__title">{{ obs.widgetConfiguration$?.title || '-' }}</h4>
 
-    @if (obs.widgetConfiguration?.actions?.length === 1) {
-      <button
-        *ngIf="canCreateCamundaExecution$ | async"
-        cdsButton="ghost"
-        (click)="onProcessStartClick(obs.widgetConfiguration?.actions[0])"
-      >
-        {{ obs.widgetConfiguration?.actions[0].name }}
-      </button>
-    }
+    <ng-content></ng-content>
   </section>
 
   <valtimo-form-io [form]="obs.prefilledFormDefinition"></valtimo-form-io>

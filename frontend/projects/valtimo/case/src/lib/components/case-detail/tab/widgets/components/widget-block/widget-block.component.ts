@@ -53,11 +53,11 @@ import {
   CaseWidgetsApiService,
   CaseWidgetsLayoutService,
 } from '../../../../../../services';
-import {WidgetCustomComponent} from '../custom/widget-custom.component';
-import {WidgetFieldComponent} from '../field/widget-field.component';
-import {WidgetFormioComponent} from '../formio/widget-formio.component';
-import {WidgetTableComponent} from '../table/widget-table.component';
-import {WidgetCollectionComponent} from '../collection/widget-collection.component';
+import {CaseWidgetCustomComponent} from '../custom/case-widget-custom.component';
+import {CaseWidgetFieldComponent} from '../field/case-widget-field.component';
+import {CaseWidgetFormioComponent} from '../formio/case-widget-formio.component';
+import {CaseWidgetTableComponent} from '../table/case-widget-table.component';
+import {CaseWidgetCollectionComponent} from '../collection/case-widget-collection.component';
 import {WIDGET_HEIGHT_1X} from '../../../../../../constants';
 
 @Component({
@@ -68,14 +68,14 @@ import {WIDGET_HEIGHT_1X} from '../../../../../../constants';
   imports: [
     CommonModule,
     LoadingModule,
-    WidgetTableComponent,
-    WidgetCustomComponent,
+    CaseWidgetTableComponent,
+    CaseWidgetCustomComponent,
     CarbonListModule,
     TranslateModule,
     TilesModule,
-    WidgetFieldComponent,
-    WidgetFormioComponent,
-    WidgetCollectionComponent,
+    CaseWidgetFieldComponent,
+    CaseWidgetFormioComponent,
+    CaseWidgetCollectionComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
