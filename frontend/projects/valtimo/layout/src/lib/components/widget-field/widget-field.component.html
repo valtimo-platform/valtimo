@@ -26,21 +26,13 @@
   <section class="widget-field__header">
     <h4 class="widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
 
-    @if (obs.widgetConfiguration.actions?.length === 1) {
-      <button
-        *ngIf="canCreateCamundaExecution$ | async"
-        cdsButton="ghost"
-        (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
-      >
-        {{ obs.widgetConfiguration.actions[0].name }}
-      </button>
-    }
+    <ng-content></ng-content>
   </section>
 
   @if (obs?.isEmptyWidgetData) {
     <valtimo-no-results
       [collapseVertically]="true"
-      [description]="'case.widgets.noData' | translate"
+      [description]="'widgets.noData' | translate"
       [smallPadding]="true"
     ></valtimo-no-results>
   } @else {
@@ -56,7 +48,7 @@
       @if (obs.noVisibleFields) {
         <valtimo-no-results
           [collapseVertically]="true"
-          [description]="'case.widgets.emptyFields' | translate"
+          [description]="'widgets.emptyFields' | translate"
           [smallPadding]="true"
         ></valtimo-no-results>
       } @else {

@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of layout
- */
+.loading-container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+}
 
-export * from './lib/services';
-export * from './lib/components/layout/layout.component';
-export * from './lib/layout.module';
-export * from './lib/translation-management.module';
-export * from './lib/components';
-export * from './lib/models';
-export * from './lib/constants';
+.error-message {
+  text-align: center;
+}

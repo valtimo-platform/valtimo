@@ -1824,5 +1824,13 @@
     "dueDateText": "Due date:",
     "removeButtonText": "Remove due date"
   },
-  "processStartSuccessful": "{{processName}} has successfully been started"
+  "processStartSuccessful": "{{processName}} has successfully been started",
+  "widgets": {
+    "noData": "No data found",
+    "emptyFields": "Nothing here",
+    "noWidgets": "No widgets",
+    "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
+    "noWidget": "Widget not found",
+    "noCustomComponentDescription": "The custom component configured for this widget is not available."
+  }
 }

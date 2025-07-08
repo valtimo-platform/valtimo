@@ -30,44 +30,44 @@
       @if (obs.widgetData) {
         @switch (obs.widgetConfiguration.type) {
           @case (CaseWidgetType.TABLE) {
-            <valtimo-widget-table
+            <valtimo-case-widget-table
               [documentId]="obs.documentId"
               [tabKey]="obs.tabKey"
               [widgetConfiguration]="obs.widgetConfiguration"
               [widgetData]="obs.widgetData"
-            ></valtimo-widget-table>
+            ></valtimo-case-widget-table>
           }
 
           @case (CaseWidgetType.COLLECTION) {
-            <valtimo-widget-collection
+            <valtimo-case-widget-collection
               [documentId]="obs.documentId"
               [tabKey]="obs.tabKey"
               [widgetConfiguration]="obs.widgetConfiguration"
               [widgetData]="obs.widgetData"
-            ></valtimo-widget-collection>
+            ></valtimo-case-widget-collection>
           }
 
           @case (CaseWidgetType.CUSTOM) {
-            <valtimo-widget-custom
+            <valtimo-case-widget-custom
               [documentId]="obs.documentId"
               [widgetConfig]="obs.widgetConfiguration"
-            ></valtimo-widget-custom>
+            ></valtimo-case-widget-custom>
           }
 
           @case (CaseWidgetType.FIELDS) {
-            <valtimo-widget-field
+            <valtimo-case-widget-field
               [collapseVertically]="true"
               [documentId]="obs.documentId"
               [widgetConfiguration]="obs.widgetConfiguration"
               [widgetData]="obs.widgetData"
-            ></valtimo-widget-field>
+            ></valtimo-case-widget-field>
           }
 
           @case (CaseWidgetType.FORMIO) {
-            <valtimo-widget-formio
+            <valtimo-case-widget-formio
               [widgetConfiguration]="obs.widgetConfiguration"
               [documentId]="obs.documentId"
-            ></valtimo-widget-formio>
+            ></valtimo-case-widget-formio>
           }
 
           @default {

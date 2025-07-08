@@ -158,15 +158,7 @@
       "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
       "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
     },
-    "rowLocked": "Kein Zugriff zu dieser Fall!",
-    "widgets": {
-      "noData": "Keine Data gefunden",
-      "emptyFields": "Niets hier",
-      "noWidgets": "Keine Widgets",
-      "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
-      "noCustomComponent": "Widget nicht verfügbar",
-      "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
-    }
+    "rowLocked": "Kein Zugriff zu dieser Fall!"
   },
   "document": {
     "title": {"single": "Dokument", "plural": "Dokumente"},
@@ -1847,5 +1839,13 @@
     "dueDateText": "Fälligkeitsdatum:",
     "removeButtonText": "Fälligkeitsdatum entfernen"
   },
-  "processStartSuccessful": "{{processName}} wurde erfolgreich gestartet."
+  "processStartSuccessful": "{{processName}} wurde erfolgreich gestartet.",
+  "widgets": {
+    "noData": "Keine Data gefunden",
+    "emptyFields": "Niets hier",
+    "noWidgets": "Keine Widgets",
+    "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
+    "noCustomComponent": "Widget nicht verfügbar",
+    "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
+  }
 }

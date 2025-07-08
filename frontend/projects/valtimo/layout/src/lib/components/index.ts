@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-/*
- * Public API Surface of layout
- */
-
-export * from './lib/services';
-export * from './lib/components/layout/layout.component';
-export * from './lib/layout.module';
-export * from './lib/translation-management.module';
-export * from './lib/components';
-export * from './lib/models';
-export * from './lib/constants';
+export * from './layout';
+export * from './layout-internal';
+export * from './layout-public';
+export * from './widget-field';
+export * from './translation-management';
+export * from './widget-formio';
+export * from './widget-collection';
+export * from './widget-table';
+export * from './widget-custom';

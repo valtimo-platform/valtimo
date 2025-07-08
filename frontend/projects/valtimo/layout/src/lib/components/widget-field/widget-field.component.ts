@@ -30,16 +30,8 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, EllipsisPipe, ViewContentService, ViewType} from '@valtimo/components';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
-import {
-  CaseWidgetAction,
-  CaseWidgetTextDisplayType,
-  FieldsCaseWidget,
-} from '../../../../../../models';
-import {WidgetsService} from '../../widgets.service';
-import {PermissionService} from '@valtimo/access-control';
-import {ActivatedRoute} from '@angular/router';
-import {WidgetProcess} from '../widget-process/widget-process';
-import {DocumentService} from '@valtimo/document';
+import {FieldsWidget} from '../../models';
+import {WidgetTextDisplayType} from '../../models/widget-display.model';
 
 @Component({
   selector: 'valtimo-widget-field',
@@ -57,19 +49,16 @@ import {DocumentService} from '@valtimo/document';
     ButtonModule,
   ],
 })
-export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit, OnDestroy {
+export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   @HostBinding('class') public readonly class = 'widget-field';
 
   @ViewChild('widgetField') private _widgetFieldRef: ElementRef<HTMLDivElement>;
 
-  @Input({required: true}) public set documentId(value: string) {
-    this.baseDocumentId = value;
-  }
   @Input() collapseVertically = false;
-  @Input() public set widgetConfiguration(value: FieldsCaseWidget) {
+
+  @Input() public set widgetConfiguration(value: FieldsWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
-    this.baseWidgetConfiguration = value;
   }
   public readonly isEmptyWidgetData$ = new BehaviorSubject<boolean>(false);
   public readonly noVisibleFields$ = new BehaviorSubject<boolean>(true);
@@ -81,7 +70,7 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
   }
 
   public readonly renderVertically = signal(0);
-  public readonly widgetConfiguration$ = new BehaviorSubject<FieldsCaseWidget | null>(null);
+  public readonly widgetConfiguration$ = new BehaviorSubject<FieldsWidget | null>(null);
   public readonly widgetData$ = new BehaviorSubject<object | null>(null);
 
   public readonly widgetPropertyValue$: Observable<
@@ -102,11 +91,10 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
                   {
                     title: property.title,
                     ellipsisCharacterLimit:
-                      (property.displayProperties as CaseWidgetTextDisplayType)
+                      (property.displayProperties as WidgetTextDisplayType)
                         ?.ellipsisCharacterLimit ?? null,
                     hideWhenEmpty:
-                      (property.displayProperties as CaseWidgetTextDisplayType)?.hideWhenEmpty ??
-                      false,
+                      (property.displayProperties as WidgetTextDisplayType)?.hideWhenEmpty ?? false,
                     value: this.viewContentService.get(widgetData[property.key], {
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
@@ -124,26 +112,13 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
 
   private _observer!: ResizeObserver;
 
-  constructor(
-    protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
-    private readonly route: ActivatedRoute,
-    private readonly viewContentService: ViewContentService,
-    private readonly widgetsService: WidgetsService
-  ) {
-    super(documentService, permissionService);
-  }
+  constructor(private readonly viewContentService: ViewContentService) {}
 
   public ngAfterViewInit(): void {
     if (this.collapseVertically && this._widgetFieldRef) this.openWidthObserver();
   }
-
   public ngOnDestroy(): void {
     this._observer?.disconnect();
-  }
-
-  public onProcessStartClick(process: CaseWidgetAction): void {
-    this.widgetsService.startProcess(process.processDefinitionKey);
   }
 
   private openWidthObserver(): void {

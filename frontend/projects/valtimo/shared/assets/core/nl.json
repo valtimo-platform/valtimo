@@ -158,15 +158,7 @@
       "noFormSpecified": "Voor dit tabblad is geen formulierdefinitie opgegeven.",
       "formNotFound": "De formulierdefinitie '{{formDefinitionName}}' kan niet worden gevonden."
     },
-    "rowLocked": "Je hebt geen toegang tot dit dossier",
-    "widgets": {
-      "noData": "Geen data gevonden",
-      "emptyFields": "Nichts hier",
-      "noWidgets": "Geen widgets",
-      "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
-      "noWidget": "Widget niet beschikbaar",
-      "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden."
-    }
+    "rowLocked": "Je hebt geen toegang tot dit dossier"
   },
   "document": {
     "title": {"single": "Document", "plural": "Document's"},
@@ -1845,5 +1837,13 @@
     "dueDateText": "Einddatum:",
     "removeButtonText": "Einddatum verwijderen"
   },
-  "processStartSuccessful": "{{processName}} is succesvol gestart"
+  "processStartSuccessful": "{{processName}} is succesvol gestart",
+  "widgets": {
+    "noData": "Geen data gevonden",
+    "emptyFields": "Nichts hier",
+    "noWidgets": "Geen widgets",
+    "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
+    "noWidget": "Widget niet beschikbaar",
+    "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden."
+  }
 }

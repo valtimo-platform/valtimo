@@ -27,7 +27,7 @@ import {
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {CUSTOM_CASE_WIDGET_TOKEN, CustomCaseWidgetConfig, WidgetCustomContent} from '@valtimo/case';
+import {CustomCaseWidgetConfig, WidgetCustomContent} from '@valtimo/case';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
@@ -35,6 +35,7 @@ import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} f
 import {WidgetContentComponent} from '../../../../../../../models';
 import {WidgetWizardService} from '../../../../../../../services';
 import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
+import {CUSTOM_WIDGET_TOKEN} from '@valtimo/layout';
 
 @Component({
   templateUrl: './case-management-widget-custom.component.html',
@@ -92,7 +93,7 @@ export class CaseManagementWidgetCustomComponent
 
   constructor(
     @Optional()
-    @Inject(CUSTOM_CASE_WIDGET_TOKEN)
+    @Inject(CUSTOM_WIDGET_TOKEN)
     private readonly customCaseWidgetConfig: CustomCaseWidgetConfig,
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
