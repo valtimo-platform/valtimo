@@ -15,6 +15,7 @@
  */
 @use '@carbon/colors';
 
+<<<<<<<< HEAD:frontend/projects/valtimo/components/src/lib/components/quick-search/modal/quick-search-modal.component.scss
 .valtimo-qiuck-search-modal {
   &__content {
     display: flex;
@@ -29,4 +30,15 @@
     align-items: center;
     gap: 8px;
   }
+========
+.loading-container {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.error-message {
+  text-align: center;
+>>>>>>>> 3989c548a (story: generalize widgets for iko (#1558)):frontend/projects/valtimo/layout/src/lib/components/widget-formio/widget-formio.component.scss
 }
