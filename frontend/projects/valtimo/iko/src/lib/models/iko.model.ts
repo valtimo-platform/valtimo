@@ -62,6 +62,14 @@ interface IkoListResponse {
   rows: Page<{items: IkoListItem[]}>;
 }
 
+type IkoComponentType = 'widgets';
+
+interface IkoTab {
+  key: string;
+  title: string;
+  type: IkoComponentType;
+}
+
 export {
   IkoDataAggregate,
   IkoDataRequestUser,
@@ -69,4 +77,6 @@ export {
   IkoListHeader,
   IkoListItem,
   IkoListResponse,
+  IkoComponentType,
+  IkoTab
 };

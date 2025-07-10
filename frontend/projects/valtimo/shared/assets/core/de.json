@@ -1260,6 +1260,7 @@
       "valtimo-backend-libraries": "Valtimo back-end",
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
+    "details": "Details",
     "results": "Ergebnisse",
     "email": "Email",
     "username": "Nutzername",
@@ -1847,5 +1848,8 @@
     "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
     "noCustomComponent": "Widget nicht verfügbar",
     "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
+  },
+  "iko": {
+    "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
   }
 }

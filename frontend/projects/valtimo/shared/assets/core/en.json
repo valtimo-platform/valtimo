@@ -1249,6 +1249,7 @@
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
     "results": "Results",
+    "details": "Details",
     "email": "E-mail",
     "username": "Username",
     "name": "Name",
@@ -1832,5 +1833,8 @@
     "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
     "noWidget": "Widget not found",
     "noCustomComponentDescription": "The custom component configured for this widget is not available."
+  },
+  "iko": {
+    "searchFieldsNoResults": "No search fields found for this entity"
   }
 }

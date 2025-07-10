@@ -13,32 +13,37 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+  
 @if (dataRequests$ | async; as dataRequests) {
-  @for (param of dataRequests; track param.key ?? param.fields?.[0]?.key) {
-    <div class="query-group">
-      <span class="query-group__label">{{ param.title }}</span>
+  @if (dataRequests.length === 0) {
+    <valtimo-no-results [title]="'iko.searchFieldsNoResults' | translate"></valtimo-no-results>
+  } @else {
+    @for (param of dataRequests; track param.key ?? param.fields?.[0]?.key) {
+      <div class="query-group">
+        <span class="query-group__label">{{ param.title }}</span>
 
-      <div class="query-group__row">
-        @for (field of param.searchFields; track field.key) {
-          <div class="query-group__field">
-            <input
-              cdsText
-              [id]="field.key"
-              [placeholder]="field.title"
-              [(ngModel)]="formValues[field.key]"
-            />
-          </div>
-        }
-        <button
-          cdsButton="primary"
-          class="query-group__search-button"
-          [disabled]="!hasAnyInput(param.searchFields)"
-          (click)="searchGroup(param.key, param.searchFields)"
-        >
-          {{ 'searchFields.searchButtonText' | translate }}
-          <svg cdsIcon="search" size="16"></svg>
-        </button>
+        <div class="query-group__row">
+          @for (field of param.searchFields; track field.key) {
+            <div class="query-group__field">
+              <input
+                cdsText
+                [id]="field.key"
+                [placeholder]="field.title"
+                [(ngModel)]="formValues[field.key]"
+              />
+            </div>
+          }
+          <button
+            cdsButton="primary"
+            class="query-group__search-button"
+            [disabled]="!hasAnyInput(param.searchFields)"
+            (click)="searchGroup(param.key, param.searchFields)"
+          >
+            {{ 'searchFields.searchButtonText' | translate }}
+            <svg cdsIcon="search" size="16"></svg>
+          </button>
+        </div>
       </div>
-    </div>
+    }
   }
 }

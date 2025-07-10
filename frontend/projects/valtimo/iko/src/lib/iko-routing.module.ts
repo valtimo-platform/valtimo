@@ -19,6 +19,7 @@ import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
 import {IkoListComponent} from './components/iko-list/iko-list.component';
 import {IkoSearchComponent} from './components/iko-search/iko-search.component';
+import {IkoDetailsComponent} from './components/iko-details/iko-details.component';
 
 const routes: Routes = [
   {
@@ -36,6 +37,14 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {
       title: 'interface.results',
+    },
+  },
+  {
+    path: 'iko/:key/:searchKey/details',
+    component: IkoDetailsComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'interface.details',
     },
   },
 ];

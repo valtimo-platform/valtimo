@@ -1257,6 +1257,7 @@
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
     "results": "Resultaten",
+    "details": "Details",
     "email": "E-mail",
     "username": "Gebruikersnaam",
     "name": "Naam",
@@ -1845,5 +1846,8 @@
     "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
     "noWidget": "Widget niet beschikbaar",
     "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden."
+  },
+  "iko": {
+    "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
   }
 }
