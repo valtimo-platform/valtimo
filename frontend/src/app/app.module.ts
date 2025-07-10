@@ -30,10 +30,8 @@ import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
-  BpmnJsDiagramModule,
   enableCustomFormioComponents,
   FormIoModule,
-  MenuModule,
   registerFormioCurrencyComponent,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
@@ -41,6 +39,8 @@ import {
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   UploaderModule,
+  BpmnJsDiagramModule,
+  MenuModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
@@ -164,18 +164,15 @@ export function tabsFactory() {
     BrowserModule,
     AppRoutingModule,
     LayoutModule,
-    WidgetModule,
     BootstrapModule,
     ConfigModule.forRoot(environment),
     LoggerModule.forRoot(environment.logger),
     environment.authentication.module,
     SecurityModule,
-    MenuModule,
     TaskModule,
     CaseMigrationModule,
     CaseModule.forRoot(tabsFactory),
     ProcessModule,
-    BpmnJsDiagramModule,
     FormsModule,
     ReactiveFormsModule,
     DashboardModule,
@@ -227,6 +224,9 @@ export function tabsFactory() {
     LoggingModule,
     FormManagementModule,
     IkoModule,
+    BpmnJsDiagramModule,
+    MenuModule,
+    WidgetModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

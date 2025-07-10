@@ -40,15 +40,15 @@ function updateRouterErrorHandler() {
     console.log('ℹAppRoutingModule does not use legacy errorHandler. No changes made.');
   }
 
-  console.log('Migration step 09 completed.');
+  console.log('Migration step completed.');
 }
 
 try {
-  console.log('Starting migration step 09: Update Router errorHandler usage');
+  console.log('Starting migration step: Update Router errorHandler usage');
   updateRouterErrorHandler();
   process.exit(0);
 } catch (err) {
-  console.error('Migration step 09 failed');
+  console.error('Migration step failed');
   console.error(err);
   process.exit(1);
 }

@@ -115,6 +115,8 @@ export class CaseManagementListComponent {
           'version',
           response.caseDefinitionVersionTag,
         ]);
+        this._refresh$.next(null);
+        this.menuService.reload();
       });
   }
 

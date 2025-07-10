@@ -52,7 +52,7 @@ function runMigration() {
     cleanEnvironmentFile(fullPath);
   });
 
-  console.log('Migration step 07 completed.');
+  console.log('Migration step completed.');
 }
 
 function npmInstall() {
@@ -61,12 +61,12 @@ function npmInstall() {
 }
 
 try {
-  console.log('Starting migration step 07: Remove deprecated env properties and routes');
+  console.log('Starting migration step: Remove deprecated env properties and routes');
   runMigration();
   npmInstall();
   process.exit(0);
 } catch (err) {
-  console.error('Migration step 07 failed');
+  console.error('Migration step failed');
   console.error(err);
   process.exit(1);
 }
