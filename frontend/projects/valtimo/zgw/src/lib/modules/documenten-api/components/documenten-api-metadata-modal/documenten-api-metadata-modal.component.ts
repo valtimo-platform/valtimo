@@ -530,14 +530,15 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       else if (ontvangstdatum) this.additionalDocumentDate$.next('received');
       else this.additionalDocumentDate$.next('neither');
 
-      const prefillStatus = status || this.defaultValues.status;
-      const validPrefillStatus = this.STATUSES.includes(prefillStatus) ? prefillStatus : '';
+      const defaultStatus = this.defaultValues.status;
+      const validDefaultStatus = this.STATUSES.includes(defaultStatus as DocumentStatus) && defaultStatus;
+      const validPrefillStatus = this.STATUSES.includes(status) && status;
 
       this.documentenApiMetadataForm.patchValue({
         beschrijving: beschrijving || this.defaultValues.beschrijving,
         taal: taal || this.defaultValues.taal,
         informatieobjecttype: informatieobjecttype || this.defaultValues.informatieobjecttype,
-        status: validPrefillStatus,
+        status: validPrefillStatus || validDefaultStatus || null,
         vertrouwelijkheidaanduiding:
           vertrouwelijkheidaanduiding || this.defaultValues.vertrouwelijkheidaanduiding,
         ontvangstdatum: ontvangstdatum ? new Date(ontvangstdatum) : null,
