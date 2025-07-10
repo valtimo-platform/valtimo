@@ -26,6 +26,7 @@ import {IkoManagementWidgetsComponent} from './components/iko-management-details
 import {IkoManagementDetailsComponent} from './components/iko-management-details/iko-management-details.component';
 import {IkoManagementComponent} from './components/iko-management/iko-management.component';
 import {IkoSearchComponent} from './components/iko-search/iko-search.component';
+import {IkoDetailsComponent} from './components/iko-details/iko-details.component';
 
 const routes: Routes = [
   {
