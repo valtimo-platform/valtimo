@@ -18,7 +18,7 @@ import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
-import {PageTitleService} from '@valtimo/components';
+import {CarbonListModule, PageTitleService} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {Search16} from '@carbon/icons';
@@ -41,6 +41,7 @@ import {IkoListComponent} from '../iko-list/iko-list.component';
     ReactiveFormsModule,
     TranslateModule,
     IkoListComponent,
+    CarbonListModule,
   ],
 })
 export class IkoSearchComponent implements OnDestroy {

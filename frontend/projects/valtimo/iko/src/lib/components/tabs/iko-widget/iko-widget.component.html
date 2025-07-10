@@ -14,11 +14,4 @@
   ~ limitations under the License.
   -->
 
-<valtimo-carbon-list
-  *ngIf="listConfig$ | async as listConfig"
-  [fields]="listConfig.fields"
-  [items]="listConfig.items"
-  [loading]="loading$ | async"
-  [hideToolbar]="true"
-  (rowClicked)="onRowClicked()"
-></valtimo-carbon-list>
+IkoWidgetComponent Works for {{ key$ | async }}

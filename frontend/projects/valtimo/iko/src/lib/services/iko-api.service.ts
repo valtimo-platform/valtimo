@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {IkoDataAggregate, IkoDataRequestUser, IkoListResponse} from '../models';
+import {IkoDataAggregate, IkoDataRequestUser, IkoListResponse, IkoTab} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -58,6 +58,12 @@ export class IkoApiService extends BaseApiService {
     return this.httpClient.get<{
       content: IkoDataAggregate[];
     }>(this.getApiUrl(`/v1/iko-data-aggregate?${params.toString()}`));
+  }
+
+  public getIkoDetailTabs(ikoDataAggregateKey: string): Observable<IkoTab[]> {
+    return this.httpClient.get<IkoTab[]>(
+      this.getApiUrl(`/v1/tab/IkoDataAggregate/${ikoDataAggregateKey}`)
+    );
   }
 
   public getIkoDataRequests(ikoDataAggregateKey: string): Observable<IkoDataRequestUser[]> {

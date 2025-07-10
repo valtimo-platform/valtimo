@@ -15,8 +15,8 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {Component} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {Component, OnDestroy} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
 import {BreadcrumbService, CarbonListModule, ColumnConfig} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
 import {IkoListHeader} from '../../models';
@@ -28,7 +28,7 @@ import {IkoApiService} from '../../services';
   templateUrl: './iko-list.component.html',
   imports: [CommonModule, CarbonListModule],
 })
-export class IkoListComponent {
+export class IkoListComponent implements OnDestroy {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly listConfig$: Observable<{fields: ColumnConfig[]; items: any[]}> = combineLatest([
     this.route.params,
@@ -39,7 +39,7 @@ export class IkoListComponent {
     switchMap(([params, queryParams, menuItems]) => {
       const currentMenuItem = menuItems.find(item => item.key === params.key);
 
-      this.breadcrumService.setSecondBreadcrumb({
+      this.breadcrumbService.setSecondBreadcrumb({
         route: [`/iko/${params.key}`],
         content: currentMenuItem?.title ?? '',
         href: `/iko/${params.key}`,
@@ -65,8 +65,17 @@ export class IkoListComponent {
   );
 
   constructor(
-    private readonly breadcrumService: BreadcrumbService,
+    private readonly breadcrumbService: BreadcrumbService,
     private readonly ikoApiService: IkoApiService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly router: Router
   ) {}
+
+  public ngOnDestroy(): void {
+    this.breadcrumbService.clearSecondBreadcrumb();
+  }
+
+  public onRowClicked(): void {
+    this.router.navigate(['details'], {relativeTo: this.route, queryParamsHandling: 'preserve'});
+  }
 }
