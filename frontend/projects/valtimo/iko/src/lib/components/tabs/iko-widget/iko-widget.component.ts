@@ -40,6 +40,7 @@ export class IkoWidgetComponent {
   private readonly _key$ = new BehaviorSubject<string>('');
 
   @Input() public set key(value: string) {
+    console.log('value', value);
     this._key$.next(value);
   }
   public get key$(): Observable<string> {
