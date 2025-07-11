@@ -19,34 +19,24 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {BehaviorSubject, filter, Observable} from 'rxjs';
 import {FormIoModule} from '@valtimo/components';
-import {WidgetProcess} from '../widget-process/widget-process';
-import {PermissionService} from '@valtimo/access-control';
-import {DocumentService} from '@valtimo/document';
 import {ButtonModule} from 'carbon-components-angular';
-import {WidgetsService} from '../../widgets.service';
 import {
   FormioWidgetWidgetWithUuid,
-  WidgetAction,
   WidgetFormioComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
 
 @Component({
-  selector: 'valtimo-case-widget-formio',
-  templateUrl: './case-widget-formio.component.html',
+  selector: 'valtimo-iko-widget-formio',
+  templateUrl: './iko-widget-formio.component.html',
   standalone: true,
   imports: [CommonModule, TranslateModule, FormIoModule, ButtonModule, WidgetFormioComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseWidgetFormioComponent extends WidgetProcess {
-  @Input() public set documentId(value: string) {
-    if (value) this._documentIdSubject$.next(value);
-    this.baseDocumentId = value;
-  }
+export class IkoWidgetFormioComponent {
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
     this.layoutService.setWidgetWithExternalData(value.uuid);
-    this.baseWidgetConfiguration = value;
     this._widgetConfigurationSubject$.next(value);
   }
   @Input() public readonly widgetUuid: string;
@@ -57,22 +47,5 @@ export class CaseWidgetFormioComponent extends WidgetProcess {
     return this._widgetConfigurationSubject$.pipe(filter(config => !!config));
   }
 
-  private readonly _documentIdSubject$ = new BehaviorSubject<string>('');
-
-  public get documentId$(): Observable<string> {
-    return this._documentIdSubject$.pipe(filter(id => !!id));
-  }
-
-  constructor(
-    protected readonly documentService: DocumentService,
-    protected readonly permissionService: PermissionService,
-    private readonly layoutService: WidgetLayoutService,
-    private readonly widgetsService: WidgetsService
-  ) {
-    super(documentService, permissionService);
-  }
-
-  public onProcessStartClick(process: WidgetAction): void {
-    this.widgetsService.startProcess(process.processDefinitionKey);
-  }
+  constructor(private readonly layoutService: WidgetLayoutService) {}
 }

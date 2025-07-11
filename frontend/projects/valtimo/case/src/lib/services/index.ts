@@ -27,7 +27,6 @@ export * from './case-tab-api.service';
 export * from './case-list-status.service';
 export * from './start-modal.service';
 export * from './case-widgets-api.service';
-export * from './case-widgets-layout.service';
 export * from './case-detail-layout.service';
 export * from './case-list-case-tag.service';
 export * from './case-menu.service';

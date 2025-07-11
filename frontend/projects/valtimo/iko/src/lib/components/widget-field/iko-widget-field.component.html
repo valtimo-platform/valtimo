@@ -14,5 +14,13 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-container [widgets]="widgets$ | async" [widgetComponentMap]="widgetComponentMap">
-</valtimo-widget-container>
+<valtimo-widget-field
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
+  } as obs"
+  [widgetConfiguration]="obs.widgetConfiguration"
+  [widgetData]="obs.widgetData"
+>
+  custom header
+</valtimo-widget-field>

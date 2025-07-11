@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,11 +14,4 @@
  * limitations under the License.
  */
 
-.widgets-container {
-  position: relative;
-  width: calc(100% + 16px);
-  margin-left: -8px;
-  margin-top: -8px;
-  padding-bottom: 32px;
-  box-sizing: content-box;
-}
+export * from './iko-widget-formio.component';

@@ -14,5 +14,14 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-container [widgets]="widgets$ | async" [widgetComponentMap]="widgetComponentMap">
-</valtimo-widget-container>
+<valtimo-widget-collection
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    widgetData: widgetData$ | async,
+  } as obs"
+  [widgetConfiguration]="obs.widgetConfiguration"
+  [widgetData]="obs.widgetData"
+  (paginationEvent)="onPaginationEvent($event)"
+>
+  Custom header
+</valtimo-widget-collection>
