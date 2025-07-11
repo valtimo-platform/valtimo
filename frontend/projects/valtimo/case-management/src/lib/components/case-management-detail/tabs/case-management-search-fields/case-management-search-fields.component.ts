@@ -13,14 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  computed,
+  signal,
+} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {ArrowDown16, ArrowUp16} from '@carbon/icons';
+import {Code16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   CARBON_CONSTANTS,
   ColumnConfig,
+  EditorModel,
   MultiInputOutput,
   MultiInputValues,
   SelectItem,
@@ -73,6 +83,9 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   public readonly showFields$ = new BehaviorSubject<boolean>(false);
   public readonly modalShowing$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly jsonEditorActive = signal<boolean>(false);
+  public readonly buttonTheme = computed(() => (this.jsonEditorActive() ? 'primary' : 'ghost'));
 
   private _subscriptions = new Subscription();
 
@@ -215,7 +228,6 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   private cachedSearchFields!: Array<SearchField>;
 
   public searchFieldActionTypeIsAdd: boolean;
-  public loadingSearchFields = true;
 
   private readonly refreshSearchFields$ = new BehaviorSubject<null>(null);
 
@@ -235,11 +247,17 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
     }),
     tap(searchFields => {
       this.cachedSearchFields = searchFields;
-      this.loadingSearchFields = false;
     })
   );
 
   private _cachedSearchFieldsWithUuid: SearchField[] = [];
+
+  public readonly jsonEditorModel$: Observable<EditorModel> = this.searchFields$.pipe(
+    map((searchFields: SearchField[]) => ({
+      value: JSON.stringify(searchFields),
+      language: 'json',
+    }))
+  );
 
   public readonly translatedSearchFields$: Observable<Array<SearchField>> = combineLatest([
     this.searchFields$,
@@ -359,7 +377,7 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
     private readonly iconService: IconService,
     private readonly editPermissionsService: EditPermissionsService
   ) {
-    this.iconService.registerAll([ArrowDown16, ArrowUp16]);
+    this.iconService.registerAll([Code16]);
   }
 
   public ngOnInit(): void {
@@ -550,6 +568,12 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
         anchor.click();
         document.body.removeChild(anchor);
       });
+  }
+
+  public switchView(): void {
+    this.jsonEditorActive.set(!this.jsonEditorActive());
+
+    if (!this.jsonEditorActive()) this.refreshSearchFields$.next(null);
   }
 
   private nextIfChanged(behaviourSubject$: BehaviorSubject<any>, value: any) {

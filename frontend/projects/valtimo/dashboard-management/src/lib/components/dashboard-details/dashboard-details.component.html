@@ -22,31 +22,45 @@
       loading: loading$ | async,
       widgetData: widgetData$ | async,
       dragAndDropDisabled: dragAndDropDisabled$ | async,
+      jsonEditorModel: jsonEditorModel$ | async,
     } as obs
   "
 >
   <div class="dashboard-detail-table">
-    <valtimo-carbon-list
-      [actionItems]="actionItems"
-      [fields]="fields"
-      [header]="false"
-      [items]="obs.widgetData"
-      [loading]="obs.loading"
-      [dragAndDrop]="true"
-      [dragAndDropDisabled]="obs.dragAndDropDisabled"
-      (itemsReordered)="onItemsReordered($event)"
-      (rowClicked)="editWidget($event)"
-    >
-      <div carbonToolbarContent>
-        <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>
-      </div>
+    @if (!jsonEditorActive()) {
+      <valtimo-carbon-list
+        [actionItems]="actionItems"
+        [fields]="fields"
+        [header]="false"
+        [items]="obs.widgetData"
+        [loading]="obs.loading"
+        [dragAndDrop]="true"
+        [dragAndDropDisabled]="obs.dragAndDropDisabled"
+        (itemsReordered)="updateWidgetData($event)"
+        (rowClicked)="editWidget($event)"
+      >
+        <div carbonToolbarContent>
+          <ng-container [ngTemplateOutlet]="viewToggle"></ng-container>
 
-      <valtimo-no-results
-        [action]="addWidgetButton"
-        description="{{ 'dashboardManagement.widgets.noResults.description' | translate }}"
-        title="{{ 'dashboardManagement.widgets.noResults.title' | translate }}"
-      ></valtimo-no-results>
-    </valtimo-carbon-list>
+          <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>
+        </div>
+
+        <valtimo-no-results
+          [action]="addWidgetButton"
+          description="{{ 'dashboardManagement.widgets.noResults.description' | translate }}"
+          title="{{ 'dashboardManagement.widgets.noResults.title' | translate }}"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
+    } @else {
+      <valtimo-json-editor
+        [model]="obs.jsonEditorModel"
+        [fitPage]="true"
+        [fitPageExtraSpace]="56"
+        (saveEvent)="updateWidgetData($event)"
+      >
+        <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
+      </valtimo-json-editor>
+    }
   </div>
 
   <valtimo-widget-modal
@@ -86,4 +100,17 @@
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
+</ng-template>
+
+<ng-template #viewToggle>
+  <cds-tooltip [description]="'JSON editor'">
+    <button
+      [cdsButton]="buttonTheme()"
+      data-testid="dashboard-details-switch-view"
+      iconOnly="true"
+      (click)="switchView()"
+    >
+      <svg cdsIcon="code" size="16"></svg>
+    </button>
+  </cds-tooltip>
 </ng-template>

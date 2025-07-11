@@ -753,13 +753,6 @@
       "descriptionPlaceholder": "Beschreibung hier eingeben",
       "descriptionTooltip": "Die Beschreibung wird in der Benutzeroberfläche als zusätzliche Information zur Falldefinition angezeigt."
     },
-    "documentDefinition": {
-      "cancelModal": {
-        "title": "Verlassen des Editors",
-        "content": "Sind Sie sicher, dass Sie den Editor verlassen möchten? Möglicherweise gehen nicht gespeicherte Änderungen verloren. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs die Falldefinition zerstören kann."
-      },
-      "saveModalContent": "Sind Sie sicher, dass Sie die Dokumentdefinition speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Falldefinition zerstören."
-    },
     "statuses": {
       "withoutStatus": "Dateien ohne Status anzeigen",
       "searchFieldTitle": "Status",
@@ -1336,6 +1329,13 @@
       "noDefault": "Keine Standardsortierung"
     },
     "editor": {"visualEditor": "Visuell editor", "jsonEditor": "JSON editor"},
+    "jsonEditor": {
+      "cancelModal": {
+        "title": "Editor verlassen",
+        "content": "Möchten Sie den Editor wirklich verlassen? Nicht gespeicherte Änderungen könnten verloren gehen. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs zu Funktionsstörungen führen kann."
+      },
+      "saveModalContent": "Möchten Sie wirklich speichern? Das Entfernen oder Ändern eines Attributs kann Funktionsstörungen verursachen."
+    },
     "key": "Schlüssel",
     "value": "Wert",
     "title": "Titel",

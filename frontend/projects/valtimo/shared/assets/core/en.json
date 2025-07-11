@@ -746,13 +746,6 @@
       "descriptionPlaceholder": "Enter description here",
       "descriptionTooltip": "The description is used for the visible description of the case definition in the UI"
     },
-    "documentDefinition": {
-      "cancelModal": {
-        "title": "Leaving the editor",
-        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the case definition."
-      },
-      "saveModalContent": "Are you sure you want to save the Document definition? Removing or changing an attribute can break the case definition."
-    },
     "statuses": {
       "withoutStatus": "Show cases without a status",
       "searchFieldTitle": "Status",
@@ -1313,6 +1306,13 @@
       "noDefault": "No default sort"
     },
     "editor": {"visualEditor": "Visual editor", "jsonEditor": "JSON editor"},
+    "jsonEditor": {
+      "cancelModal": {
+        "title": "Leaving the editor",
+        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can be breaking."
+      },
+      "saveModalContent": "Are you sure you want to save? Removing or changing an attribute can be breaking."
+    },
     "key": "Key",
     "value": "Value",
     "title": "Title",

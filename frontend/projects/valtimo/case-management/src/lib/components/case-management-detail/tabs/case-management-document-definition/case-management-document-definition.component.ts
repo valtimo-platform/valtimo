@@ -24,19 +24,15 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {Edit16, Save16} from '@carbon/icons';
 import {ConfirmationModalComponent, EditorModel, PageHeaderService} from '@valtimo/components';
+import {DocumentDefinitionCreateRequest, DocumentService} from '@valtimo/document';
 import {
   CaseManagementParams,
   EditPermissionsService,
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
-import {
-  DocumentDefinition,
-  DocumentDefinitionCreateRequest,
-  DocumentService,
-} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
-import {map, switchMap, take, tap} from 'rxjs/operators';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {switchMap, take} from 'rxjs/operators';
 import {CaseDetailService} from '../../../../services';
 
 @Component({
@@ -59,49 +55,19 @@ export class CaseManagementDocumentDefinitionComponent {
   );
 
   private readonly _pendingChanges$ = new BehaviorSubject<boolean>(false);
-  public readonly pendingChanges$: Observable<boolean> = this._pendingChanges$.pipe(
-    tap((pendingChanges: boolean) => {
-      this.pendingChangesUpdate.emit(pendingChanges);
-    })
-  );
-  public readonly editActive$ = new BehaviorSubject<boolean>(false);
-  public readonly showSaveConfirmation$ = new BehaviorSubject<boolean>(false);
-  public readonly showCancelConfirmation$ = new BehaviorSubject<boolean>(false);
-  public readonly selectedDocumentDefinition$ = this.caseDetailService.documentDefinition$.pipe(
-    tap(
-      (documentDefinition: DocumentDefinition) => (this._initialId = documentDefinition.schema.$id)
-    )
-  );
-  private readonly _changeIsValid$ = new BehaviorSubject<boolean>(false);
-  private readonly _idChanged$ = new BehaviorSubject<boolean>(false);
+  public readonly selectedDocumentDefinition$ = this.caseDetailService.documentDefinition$;
 
-  public readonly saveButtonDisabled$ = combineLatest([
-    this.pendingChanges$,
-    this._changeIsValid$,
-    this._idChanged$,
-  ]).pipe(
-    map(
-      ([pendingChanges, changeIsValid, idChanged]) => !pendingChanges || !changeIsValid || idChanged
-    )
-  );
-
-  public readonly compactMode$ = this.pageHeaderService.compactMode$;
-
-  public readonly params$: Observable<CaseManagementParams> = getCaseManagementRouteParams(
-    this.route
-  );
+  public readonly params$: Observable<CaseManagementParams | undefined> =
+    getCaseManagementRouteParams(this.route);
 
   public readonly hasEditPermissions$: Observable<boolean> = this.params$.pipe(
     switchMap(params =>
       this.editPermissionsService.hasEditPermissions(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag
+        params?.caseDefinitionKey ?? '',
+        params?.caseDefinitionVersionTag ?? ''
       )
     )
   );
-
-  private _changesToSave: any;
-  private _initialId: string;
 
   constructor(
     private readonly documentService: DocumentService,
@@ -112,6 +78,9 @@ export class CaseManagementDocumentDefinitionComponent {
     private readonly editPermissionsService: EditPermissionsService
   ) {
     this.iconService.registerAll([Edit16, Save16]);
+    this._pendingChanges$.subscribe((pendingChanges: boolean) =>
+      this.pendingChangesUpdate.emit(pendingChanges)
+    );
   }
 
   public downloadDefinition(): void {
@@ -131,40 +100,24 @@ export class CaseManagementDocumentDefinitionComponent {
     });
   }
 
-  public discardChanges(): void {
-    this.showCancelConfirmation$.next(false);
+  public onDiscardEvent(): void {
+    this._pendingChanges$.next(false);
     this.confirmRedirect.emit();
-    this.resetEditorState();
   }
 
-  public keepEditingDefinition(): void {
+  public onKeepEditingEvent(): void {
     this.cancelRedirect.emit();
-    this.showSaveConfirmation$.next(false);
-    this.showCancelConfirmation$.next(false);
   }
 
-  public onCancelClick(pendingChanges: boolean): void {
-    if (pendingChanges) {
-      this.showCancelConfirmation$.next(true);
-      return;
-    }
-
-    this.resetEditorState();
-  }
-
-  public saveDefinition(): void {
-    this.showSaveConfirmation$.next(false);
-    this.editActive$.next(false);
-    const newDocumentDefinition = new DocumentDefinitionCreateRequest(
-      JSON.stringify(this._changesToSave)
-    );
+  public onSaveEvent(definition): void {
+    const newDocumentDefinition = new DocumentDefinitionCreateRequest(JSON.stringify(definition));
 
     this.params$
       .pipe(
         switchMap(params =>
           this.documentService.updateDocumentDefinitionForManagement(
-            params.caseDefinitionKey,
-            params.caseDefinitionVersionTag,
+            params?.caseDefinitionKey ?? '',
+            params?.caseDefinitionVersionTag ?? '',
             newDocumentDefinition
           )
         )
@@ -183,32 +136,7 @@ export class CaseManagementDocumentDefinitionComponent {
       });
   }
 
-  public onEditClick(): void {
-    this.editActive$.next(true);
-  }
-
-  public onSaveClick(): void {
-    this.showSaveConfirmation$.next(true);
-  }
-
-  public onValueChangeEvent(value: string): void {
+  public onChangeEvent(): void {
     this._pendingChanges$.next(true);
-    this._changesToSave = JSON.parse(value);
-    const id: string = this._changesToSave.$id;
-    this._idChanged$.next(this._initialId !== id);
-  }
-
-  public onValidEvent(valid: boolean): void {
-    this._changeIsValid$.next(valid);
-  }
-
-  public onCanDeactivate(): void {
-    this.showCancelConfirmation$.next(true);
-  }
-
-  private resetEditorState(): void {
-    this._refreshEditor$.next(null);
-    this.editActive$.next(false);
-    this._pendingChanges$.next(false);
   }
 }
