@@ -35,5 +35,3 @@ const DEFAULT_WIDGET_COMPONENT_MAP: WidgetComponentMap = {
   [WidgetType.INTERACTIVE_TABLE]: WidgetInteractiveTableComponent,
   [WidgetType.FIELDS]: WidgetFieldComponent,
 };
-
-export {WIDGET_WIDTH_1X, WIDGET_HEIGHT_1X, DEFAULT_WIDGET_COMPONENT_MAP};

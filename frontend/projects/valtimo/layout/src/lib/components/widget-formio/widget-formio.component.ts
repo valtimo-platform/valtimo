@@ -52,6 +52,11 @@ export class WidgetFormioComponent {
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
     this._widgetConfigurationSubject$.next(value);
+    console.log('hi', value);
+  }
+
+  @Input() public set widgetUuid(value: string) {
+    this.widgetLayoutService.setWidgetDataLoaded(value);
   }
 
   @Input() public set widgetUuid(value: string) {
