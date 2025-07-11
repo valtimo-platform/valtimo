@@ -32,24 +32,29 @@ import {Widget, WidgetComponentMap, WidgetWithUuid} from '../../models';
 import {WidgetBlockComponent} from '../widget-block';
 import {filter} from 'rxjs/operators';
 import {DEFAULT_WIDGET_COMPONENT_MAP} from '../../constants';
+import {LoadingModule} from 'carbon-components-angular';
+import {CarbonListModule} from '@valtimo/components';
+import {TranslatePipe} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-widget-container',
   templateUrl: './widget-container.component.html',
   styleUrls: ['./widget-container.component.scss'],
   standalone: true,
-  imports: [CommonModule, WidgetBlockComponent],
+  imports: [CommonModule, WidgetBlockComponent, LoadingModule, CarbonListModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('widgetsContainer') private _widgetsContainerRef: ElementRef<HTMLDivElement>;
 
-  public readonly widgetsWithUuids$ = new BehaviorSubject<WidgetWithUuid[]>([]);
+  public readonly widgetsWithUuids$ = new BehaviorSubject<WidgetWithUuid[]>(null);
 
   @Input() public set widgets(value: Widget[]) {
+    if (!value) return;
     const widgetsWithUuids = value.map(widget => ({...widget, uuid: uuid()}));
     this.widgetLayoutService.setWidgets(widgetsWithUuids);
     this.widgetsWithUuids$.next(widgetsWithUuids);
+    this.loadingWidgetConfiguration$.next(false);
   }
 
   private readonly _widgetComponentMap$ = new BehaviorSubject<WidgetComponentMap>(
@@ -63,6 +68,10 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   @Input() public set widgetComponentMap(value: WidgetComponentMap) {
     this._widgetComponentMap$.next({...DEFAULT_WIDGET_COMPONENT_MAP, ...value});
   }
+
+  public readonly loadingWidgetConfiguration$ = new BehaviorSubject<boolean>(true);
+
+  public readonly loaded$ = this.widgetLayoutService.loaded$.pipe(delay(400));
 
   private _observer!: ResizeObserver;
 
@@ -79,6 +88,7 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._observer?.disconnect();
+    this.widgetLayoutService.reset();
   }
 
   private observerMutation(event: Array<ResizeObserverEntry>): void {
