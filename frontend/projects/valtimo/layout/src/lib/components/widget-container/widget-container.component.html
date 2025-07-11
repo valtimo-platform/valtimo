@@ -14,11 +14,41 @@
   ~ limitations under the License.
   -->
 
-<div #widgetsContainer class="widgets-container">
-  @for (widget of widgetsWithUuids$ | async; track widget.uuid) {
-    <valtimo-widget-block
-      [widget]="widget"
-      [widgetComponentMap]="widgetComponentMap$ | async"
-    ></valtimo-widget-block>
-  }
-</div>
+<ng-container
+  *ngIf="{
+    loadingWidgetConfiguration: loadingWidgetConfiguration$ | async,
+    widgets: widgetsWithUuids$ | async,
+    loaded: loaded$ | async,
+  } as obs"
+>
+  <ng-container
+    *ngIf="{
+      noWidgetsConfigured: obs.widgets && obs.widgets.length === 0,
+    } as vars"
+  >
+    @if (!obs.loaded && !vars.noWidgetsConfigured) {
+      <div class="loading-container">
+        <cds-loading></cds-loading>
+      </div>
+    }
+
+    @if (vars.noWidgetsConfigured) {
+      <valtimo-no-results
+        [title]="'case.widgets.noWidgets' | translate"
+        [description]="'case.widgets.noWidgetsDescription' | translate"
+        illustration="valtimo-layout/img/no-widgets.svg"
+      ></valtimo-no-results>
+    }
+
+    <div [style.visibility]="!obs.loaded ? 'hidden' : 'visible'">
+      <div #widgetsContainer class="widgets-container">
+        @for (widget of (widgetsWithUuids$ | async) || []; track widget.uuid) {
+          <valtimo-widget-block
+            [widget]="widget"
+            [widgetComponentMap]="widgetComponentMap$ | async"
+          ></valtimo-widget-block>
+        }
+      </div>
+    </div>
+  </ng-container>
+</ng-container>
