@@ -17,62 +17,66 @@
 <ng-container
   *ngIf="{
     caseListColumn: translatedCaseListColumns$ | async,
-    params: params$ | async,
-    downloadUrl: downloadUrl$ | async,
-    downloadName: downloadName$ | async,
-    loadingCaseListColumns: loadingCaseListColumns$ | async,
     disableInput: disableInput$ | async,
+    downloadName: downloadName$ | async,
+    downloadUrl: downloadUrl$ | async,
     hasEditPermissions: hasEditPermissions$ | async,
+    jsonEditorModel: jsonEditorModel$ | async,
+    loadingCaseListColumns: loadingCaseListColumns$ | async,
+    params: params$ | async,
   } as obs"
 >
-  <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+  <ng-container *ngTemplateOutlet="content; context: {obs: obs}"></ng-container>
 
   <ng-container *ngTemplateOutlet="createEditModal"></ng-container>
 
   <ng-container *ngTemplateOutlet="deleteModal"></ng-container>
 </ng-container>
 
-<ng-template #list let-obs="obs">
-  <valtimo-carbon-list
-    [actionItems]="actionItems"
-    [loading]="obs.loadingCaseListColumns"
-    [items]="obs?.caseListColumn || []"
-    [fields]="fields"
-    [viewMode]="false"
-    [header]="false"
-    (rowClicked)="columnRowClicked($event)"
-    [dragAndDrop]="true"
-    [dragAndDropDisabled]="obs.disableInput"
-    (itemsReordered)="onItemsReordered(obs.params.caseDefinitionKey, $event)"
-  >
-    <ng-container
-      carbonToolbarContent
-      *ngTemplateOutlet="buttons; context: {obs: obs}"
-    ></ng-container>
+<ng-template #content let-obs="obs">
+  @if (!jsonEditorActive()) {
+    <valtimo-carbon-list
+      [actionItems]="actionItems"
+      [loading]="obs.loadingCaseListColumns"
+      [items]="obs?.caseListColumn || []"
+      [fields]="fields"
+      [viewMode]="false"
+      [header]="false"
+      (rowClicked)="columnRowClicked($event)"
+      [dragAndDrop]="true"
+      [dragAndDropDisabled]="obs.disableInput"
+      (itemsReordered)="onItemsReordered(obs.params.caseDefinitionKey, $event)"
+    >
+      <ng-container
+        carbonToolbarContent
+        *ngTemplateOutlet="buttons; context: {obs: obs}"
+      ></ng-container>
 
-    <valtimo-no-results
-      [title]="'listColumn.noConfigWarningTitle' | translate"
-      [description]="'listColumn.noConfigWarning' | translate"
-      illustration="valtimo-layout/img/emptystate-empty.svg"
-    ></valtimo-no-results>
-  </valtimo-carbon-list>
+      <valtimo-no-results
+        [title]="'listColumn.noConfigWarningTitle' | translate"
+        [description]="'listColumn.noConfigWarning' | translate"
+        illustration="valtimo-layout/img/emptystate-empty.svg"
+      ></valtimo-no-results>
+    </valtimo-carbon-list>
+  } @else {
+    <valtimo-json-editor
+      [model]="obs.jsonEditorModel"
+      [fitPage]="true"
+      [fitPageExtraSpace]="248"
+      [showEditButton]="obs.hasEditPermissions"
+      (saveEvent)="updateCaseListColumns(obs.params.caseDefinitionKey, $event)"
+    >
+      <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
+
+      <ng-container *ngTemplateOutlet="downloadButton; context: {obs: obs}"></ng-container>
+    </valtimo-json-editor>
+  }
 </ng-template>
 
 <ng-template #buttons let-obs="obs">
-  <button
-    cdsButton="ghost"
-    iconOnly="true"
-    (click)="onDownloadClick()"
-    [disabled]="
-      !obs.downloadUrl ||
-      !obs.downloadName ||
-      obs.caseListColumn?.length < 1 ||
-      obs.disableInput ||
-      obs.loadingCaseListColumns
-    "
-  >
-    <svg cdsIcon="download" size="16"></svg>
-  </button>
+  <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
+
+  <ng-container *ngTemplateOutlet="downloadButton; context: {obs: obs}"></ng-container>
 
   <button
     *ngIf="obs.hasEditPermissions"
@@ -323,4 +327,34 @@
     titleTranslationKey="listColumn.deleteColumn"
     contentTranslationKey="listColumn.deleteColumnConfirmation"
   ></valtimo-confirmation-modal>
+</ng-template>
+
+<ng-template #viewToggle>
+  <cds-tooltip [description]="'JSON editor'">
+    <button
+      [cdsButton]="buttonTheme()"
+      data-testid="case-management-list-columns-switch-view"
+      iconOnly="true"
+      (click)="switchView()"
+    >
+      <svg cdsIcon="code" size="16"></svg>
+    </button>
+  </cds-tooltip>
+</ng-template>
+
+<ng-template #downloadButton let-obs="obs">
+  <button
+    cdsButton="ghost"
+    iconOnly="true"
+    (click)="onDownloadClick()"
+    [disabled]="
+      !obs.downloadUrl ||
+      !obs.downloadName ||
+      obs.caseListColumn?.length < 1 ||
+      obs.disableInput ||
+      obs.loadingCaseListColumns
+    "
+  >
+    <svg cdsIcon="download" size="16"></svg>
+  </button>
 </ng-template>

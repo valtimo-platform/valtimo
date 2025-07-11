@@ -754,13 +754,6 @@
       "descriptionPlaceholder": "Voer hier een beschrijving in",
       "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie."
     },
-    "documentDefinition": {
-      "cancelModal": {
-        "title": "De editor verlaten",
-        "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan."
-      },
-      "saveModalContent": "Weet je zeker dat je de dossierdefinitie wilt opslaan?"
-    },
     "statuses": {
       "withoutStatus": "Toon dossiers zonder status",
       "searchFieldTitle": "Status",
@@ -1336,6 +1329,13 @@
       "noDefault": "Geen standaardsortering"
     },
     "editor": {"visualEditor": "Visuele editor", "jsonEditor": "JSON editor"},
+    "jsonEditor": {
+      "cancelModal": {
+        "title": "De editor verlaten",
+        "content": "Weet u zeker dat u de editor wilt verlaten? Niet-opgeslagen wijzigingen gaan mogelijk verloren. Houd er bij het opslaan rekening mee dat het verwijderen of wijzigen van een attribuut problemen kan veroorzaken."
+      },
+      "saveModalContent": "Weet u zeker dat u wilt opslaan? Het verwijderen of wijzigen van een attribuut kan problemen veroorzaken."
+    },
     "key": "Key",
     "value": "Waarde",
     "title": "Titel",

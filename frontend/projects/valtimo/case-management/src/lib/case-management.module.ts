@@ -41,6 +41,7 @@ import {
   ValuePathSelectorComponent,
   WidgetModule,
   ReadOnlyDirective,
+  JsonEditorComponent,
 } from '@valtimo/components';
 import {FormManagementComponent} from '@valtimo/form-management';
 import {ConfigModule} from '@valtimo/shared';
@@ -182,6 +183,7 @@ import {CaseManagementDraftWarningComponent} from './components/case-management-
     NumberModule,
     ReadOnlyDirective,
     CaseManagementDraftWarningComponent,
+    JsonEditorComponent,
   ],
   providers: [TabManagementService],
 })

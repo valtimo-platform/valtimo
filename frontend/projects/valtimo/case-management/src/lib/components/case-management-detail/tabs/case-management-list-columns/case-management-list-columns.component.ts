@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, Component} from '@angular/core';
+import {AfterViewInit, Component, computed, signal} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
@@ -21,6 +21,7 @@ import {TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   ColumnConfig,
+  EditorModel,
   MultiInputValues,
   ValuePathSelectorPrefix,
   ViewType,
@@ -46,7 +47,6 @@ import {
   tap,
 } from 'rxjs';
 import {take} from 'rxjs/operators';
-import {v4 as uuidv4} from 'uuid';
 import {ListColumnModal} from '../../../../models';
 
 @Component({
@@ -131,7 +131,6 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     switchMap(([params]) =>
       this.documentService.getCaseListForManagement(params.caseDefinitionKey)
     ),
-    map(caseListColumns => caseListColumns.map(column => ({...column, uuid: uuidv4()}))),
     tap(caseListColumns => {
       this.params$.pipe(take(1)).subscribe(params => {
         if (caseListColumns && Array.isArray(caseListColumns) && caseListColumns.length > 0) {
@@ -145,6 +144,13 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
       this.loadingCaseListColumns$.next(false);
       this.enableInput();
     })
+  );
+
+  public readonly jsonEditorModel$: Observable<EditorModel> = this.caseListColumns$.pipe(
+    map((caseListColumns: CaseListColumn[]) => ({
+      value: JSON.stringify(caseListColumns),
+      language: 'json',
+    }))
   );
 
   public readonly translatedCaseListColumns$: Observable<Array<CaseListColumnView>> = combineLatest(
@@ -347,6 +353,9 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
+  public readonly jsonEditorActive = signal<boolean>(false);
+  public readonly buttonTheme = computed(() => (this.jsonEditorActive() ? 'primary' : 'ghost'));
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
@@ -409,9 +418,8 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
       }
 
       const unformattedColumns = items.map(column =>
-        this.cachedCaseListColumns.find(cachedColumn => cachedColumn.uuid === column.uuid)
+        this.cachedCaseListColumns.find(cachedColumn => cachedColumn.key === column.key)
       );
-
       this.updateCaseListColumns(caseDefinitionKey, unformattedColumns);
     });
   }
@@ -506,6 +514,12 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
         anchor.click();
         document.body.removeChild(anchor);
       });
+  }
+
+  public switchView(): void {
+    this.jsonEditorActive.set(!this.jsonEditorActive());
+
+    if (!this.jsonEditorActive()) this.refreshCaseListcolumns$.next(null);
   }
 
   private updateCaseListColumns(

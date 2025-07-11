@@ -16,17 +16,18 @@
 
 <ng-container
   *ngIf="{
-    searchFields: translatedSearchFields$ | async,
-    downloadUrl: downloadUrl$ | async,
-    downloadName: downloadName$ | async,
     caseDefinitionKey: caseDefinitionKey$ | async,
-    valid: valid$ | async,
     disableInput: disableInput$ | async,
+    downloadName: downloadName$ | async,
+    downloadUrl: downloadUrl$ | async,
     hasEditPermissions: hasEditPermissions$ | async,
+    jsonEditorModel: jsonEditorModel$ | async,
+    searchFields: translatedSearchFields$ | async,
     showActionItems: showActionItems$ | async,
+    valid: valid$ | async,
   } as obs"
 >
-  <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+  <ng-container *ngTemplateOutlet="content; context: {obs: obs}"></ng-container>
 
   <ng-container *ngTemplateOutlet="modal; context: {obs: obs}"></ng-container>
 </ng-container>
@@ -42,17 +43,9 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #buttons let-obs="obs">
-  <button
-    cdsButton="ghost"
-    iconOnly="true"
-    data-testid="case-management-search-download"
-    [disabled]="
-      !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
-    "
-    (click)="onDownloadClick()"
-  >
-    <svg cdsIcon="download" size="16"></svg>
-  </button>
+  <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
+
+  <ng-container *ngTemplateOutlet="downloadButton; context: {obs: obs}"></ng-container>
 
   <button
     cdsButton="primary"
@@ -67,29 +60,43 @@
   </button>
 </ng-template>
 
-<ng-template #list let-obs="obs">
-  <valtimo-carbon-list
-    [actionItems]="actionItems"
-    [showActionItems]="obs.hasEditPermissions"
-    [fields]="fields"
-    [header]="false"
-    [items]="obs.searchFields"
-    [loading]="!obs.searchFields"
-    (rowClicked)="searchFieldClicked($event, false)"
-    [dragAndDrop]="true"
-    [dragAndDropDisabled]="obs.disableInput"
-    (itemsReordered)="onItemsReordered(obs.caseDefinitionKey, $event)"
-  >
-    <ng-container
-      carbonToolbarContent
-      *ngTemplateOutlet="buttons; context: {obs: obs}"
-    ></ng-container>
+<ng-template #content let-obs="obs">
+  @if (!jsonEditorActive()) {
+    <valtimo-carbon-list
+      [actionItems]="actionItems"
+      [showActionItems]="obs.hasEditPermissions"
+      [fields]="fields"
+      [header]="false"
+      [items]="obs.searchFields"
+      [loading]="!obs.searchFields"
+      (rowClicked)="searchFieldClicked($event, false)"
+      [dragAndDrop]="true"
+      [dragAndDropDisabled]="obs.disableInput"
+      (itemsReordered)="onItemsReordered(obs.caseDefinitionKey, $event)"
+    >
+      <ng-container
+        carbonToolbarContent
+        *ngTemplateOutlet="buttons; context: {obs: obs}"
+      ></ng-container>
 
-    <valtimo-no-results
-      [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
-      [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
-    ></valtimo-no-results>
-  </valtimo-carbon-list>
+      <valtimo-no-results
+        [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
+        [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
+      ></valtimo-no-results>
+    </valtimo-carbon-list>
+  } @else {
+    <valtimo-json-editor
+      [model]="obs.jsonEditorModel"
+      [fitPage]="true"
+      [fitPageExtraSpace]="248"
+      [showEditButton]="obs.hasEditPermissions"
+      (saveEvent)="updateSearchFields(obs.caseDefinitionKey, $event)"
+    >
+      <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
+
+      <ng-container *ngTemplateOutlet="downloadButton; context: {obs: obs}"></ng-container>
+    </valtimo-json-editor>
+  }
 </ng-template>
 
 <ng-template #modal let-obs="obs">
@@ -289,5 +296,32 @@
     (click)="saveSearchField(obs.caseDefinitionKey)"
   >
     {{ 'searchFieldsOverview.submit' | translate }}
+  </button>
+</ng-template>
+
+<ng-template #viewToggle>
+  <cds-tooltip [description]="'JSON editor'">
+    <button
+      [cdsButton]="buttonTheme()"
+      data-testid="case-management-search-fields-switch-view"
+      iconOnly="true"
+      (click)="switchView()"
+    >
+      <svg cdsIcon="code" size="16"></svg>
+    </button>
+  </cds-tooltip>
+</ng-template>
+
+<ng-template #downloadButton let-obs="obs">
+  <button
+    cdsButton="ghost"
+    iconOnly="true"
+    data-testid="case-management-search-download"
+    [disabled]="
+      !obs.downloadUrl || !obs.downloadName || obs.searchFields?.length <= 0 || obs.disableInput
+    "
+    (click)="onDownloadClick()"
+  >
+    <svg cdsIcon="download" size="16"></svg>
   </button>
 </ng-template>

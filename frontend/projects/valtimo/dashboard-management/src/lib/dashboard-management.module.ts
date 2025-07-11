@@ -20,6 +20,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListModule,
   ConfirmationModalModule,
+  JsonEditorComponent,
   RenderInPageHeaderDirective,
   SpinnerModule,
   ValtimoCdsModalDirective,
@@ -67,6 +68,7 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     CarbonListModule,
     LayerModule,
     ValtimoCdsModalDirective,
+    JsonEditorComponent,
   ],
   exports: [],
 })
