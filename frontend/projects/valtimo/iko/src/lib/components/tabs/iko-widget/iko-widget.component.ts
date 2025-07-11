@@ -40,7 +40,6 @@ export class IkoWidgetComponent {
   private readonly _key$ = new BehaviorSubject<string>('');
 
   @Input() public set key(value: string) {
-    console.log('value', value);
     this._key$.next(value);
   }
   public get key$(): Observable<string> {
@@ -74,6 +73,14 @@ export class IkoWidgetComponent {
     [WidgetType.FORMIO]: IkoWidgetFormioComponent,
     [WidgetType.TABLE]: IkoWidgetTableComponent,
     [WidgetType.INTERACTIVE_TABLE]: IkoWidgetInteractiveTableComponent,
+    [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
+  };
+
+  public readonly widgetComponentMap: WidgetComponentMap = {
+    [WidgetType.FIELDS]: IkoWidgetFieldComponent,
+    [WidgetType.CUSTOM]: IkoWidgetCustomComponent,
+    [WidgetType.FORMIO]: IkoWidgetFormioComponent,
+    [WidgetType.TABLE]: IkoWidgetTableComponent,
     [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
   };
 
