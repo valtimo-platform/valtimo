@@ -531,7 +531,8 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       else this.additionalDocumentDate$.next('neither');
 
       const defaultStatus = this.defaultValues.status;
-      const validDefaultStatus = this.STATUSES.includes(defaultStatus as DocumentStatus) && defaultStatus;
+      const validDefaultStatus =
+        this.STATUSES.includes(defaultStatus as DocumentStatus) && defaultStatus;
       const validPrefillStatus = this.STATUSES.includes(status) && status;
 
       this.documentenApiMetadataForm.patchValue({

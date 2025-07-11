@@ -78,5 +78,5 @@ export {
   IkoListItem,
   IkoListResponse,
   IkoComponentType,
-  IkoTab
+  IkoTab,
 };

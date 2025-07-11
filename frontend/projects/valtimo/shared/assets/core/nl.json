@@ -441,7 +441,11 @@
     "duplicate": "Dupliceren",
     "readOnly": "Alleen-lezen",
     "add": "Formulier toevoegen",
-    "tabs": {"formBuilder": "Formulier-bewerker", "jsonEditor": "JSON-bewerker", "output": "Resultaat"},
+    "tabs": {
+      "formBuilder": "Formulier-bewerker",
+      "jsonEditor": "JSON-bewerker",
+      "output": "Resultaat"
+    },
     "intermediateSave": {
       "save": "Voortgang opslaan",
       "clear": "Laatste wijzigingen ongedaan maken",
