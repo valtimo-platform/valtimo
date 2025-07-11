@@ -24,13 +24,30 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, Observable, of, switchMap} from 'rxjs';
-import {CaseWidgetsApiService} from '../../../../../../services';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  filter,
+  Observable,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
+import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {WidgetProcess} from '../widget-process/widget-process';
 import {DocumentService} from '@valtimo/document';
 import {PermissionService} from '@valtimo/access-control';
 import {WidgetsService} from '../../widgets.service';
-import {TableWidget, WidgetAction, WidgetTableComponent} from '@valtimo/layout';
+import {
+  TableWidget,
+  WidgetAction,
+  WidgetLayoutService,
+  WidgetTableComponent,
+  WidgetTableContent,
+  WidgetWithUuid,
+} from '@valtimo/layout';
+import {HttpErrorResponse} from '@angular/common/http';
 
 @Component({
   selector: 'valtimo-case-widget-table',
@@ -49,39 +66,64 @@ import {TableWidget, WidgetAction, WidgetTableComponent} from '@valtimo/layout';
   ],
 })
 export class CaseWidgetTableComponent extends WidgetProcess {
+  private readonly _documentId$ = new BehaviorSubject<string>('');
+
   @Input({required: true}) public set documentId(value: string) {
     this.baseDocumentId = value;
+    this._documentId$.next(value);
   }
-  @Input({required: true}) public tabKey: string;
 
   private _widgetConfiguration: TableWidget;
+  public readonly widgetConfiguration$ = new BehaviorSubject<TableWidget | null>(null);
   @Input({required: true}) public set widgetConfiguration(value: TableWidget) {
     this._widgetConfiguration = value;
     this.baseWidgetConfiguration = value;
+    this.widgetConfiguration$.next(value);
   }
   public get widgetConfiguration(): TableWidget {
     return this._widgetConfiguration;
   }
 
-  private _widgetData$ = new BehaviorSubject<Page<CarbonListItem> | null>(null);
-  @Input({required: true}) set widgetData(value: Page<CarbonListItem> | null) {
-    if (!value) return;
-
-    this._widgetData$.next(value);
-  }
+  @Input() public readonly widgetUuid: string;
 
   private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
 
-  public readonly widgetData$: Observable<Page<CarbonListItem>> = combineLatest([
-    this._widgetData$,
-    this._queryParams$,
+  public readonly tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
+
+  private readonly _initialWidgetData$: Observable<any[] | {} | null> = combineLatest([
+    this.widgetConfiguration$,
+    this.tabKey$,
+    this._documentId$,
   ]).pipe(
-    switchMap(([data, queryParams]) =>
+    switchMap(([widget, tabkey, documentId]) =>
+      this.caseWidgetsApiService.getWidgetData(
+        documentId,
+        tabkey,
+        widget.key,
+        this.getPageSizeParam(widget as WidgetWithUuid)
+      )
+    ),
+    tap(() => {
+      this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+    }),
+    catchError((error: HttpErrorResponse) => {
+      if (error.status === 404) this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+
+      return of(null);
+    })
+  );
+
+  public readonly widgetData$: Observable<Page<CarbonListItem>> = combineLatest([
+    this._initialWidgetData$,
+    this._queryParams$,
+    this.tabKey$,
+  ]).pipe(
+    switchMap(([initialData, queryParams, tabKey]) =>
       !queryParams
-        ? of(data as Page<CarbonListItem>)
+        ? of(initialData as Page<CarbonListItem>)
         : this.caseWidgetsApiService.getWidgetData(
             this.baseDocumentId,
-            this.tabKey,
+            tabKey,
             this.widgetConfiguration.key,
             queryParams
           )
@@ -93,7 +135,9 @@ export class CaseWidgetTableComponent extends WidgetProcess {
     protected readonly documentService: DocumentService,
     protected readonly permissionService: PermissionService,
     private readonly caseWidgetsApiService: CaseWidgetsApiService,
-    private readonly widgetsService: WidgetsService
+    private readonly widgetsService: WidgetsService,
+    private readonly caseTabService: CaseTabService,
+    private readonly widgetLayoutService: WidgetLayoutService
   ) {
     super(documentService, permissionService);
   }
@@ -104,5 +148,9 @@ export class CaseWidgetTableComponent extends WidgetProcess {
 
   public onProcessStartClick(process: WidgetAction): void {
     this.widgetsService.startProcess(process.processDefinitionKey);
+  }
+
+  private getPageSizeParam(widgetConfiguration: WidgetWithUuid): string {
+    return `size=${(widgetConfiguration.properties as WidgetTableContent).defaultPageSize}`;
   }
 }

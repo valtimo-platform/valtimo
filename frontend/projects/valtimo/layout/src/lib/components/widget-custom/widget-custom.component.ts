@@ -36,6 +36,7 @@ import {PermissionService} from '@valtimo/access-control';
 import {ButtonModule} from 'carbon-components-angular';
 import {CustomWidget, CustomWidgetConfig} from '../../models';
 import {CUSTOM_WIDGET_TOKEN} from '../../constants';
+import {WidgetLayoutService} from '../../services';
 
 @Component({
   selector: 'valtimo-widget-custom',
@@ -49,9 +50,13 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
   @ViewChild('customWidgetContainer', {read: ViewContainerRef})
   private readonly _customWidgetContainerRef: ViewContainerRef;
 
-  @Input() public set widgetConfig(value: CustomWidget) {
+  @Input() public set widgetConfiguration(value: CustomWidget) {
     if (!value) return;
     this._widgetConfigSubject$.next(value);
+  }
+
+  @Input() public set widgetUuid(value: string) {
+    this.widgetLayoutService.setWidgetDataLoaded(value);
   }
 
   private readonly _customWidgetConfig$ = new BehaviorSubject<CustomWidgetConfig | {}>({});
@@ -71,6 +76,7 @@ export class WidgetCustomComponent implements AfterViewInit, OnDestroy {
     @Inject(CUSTOM_WIDGET_TOKEN)
     private readonly customWidgetConfig: CustomWidgetConfig,
     private readonly cdr: ChangeDetectorRef,
+    private readonly widgetLayoutService: WidgetLayoutService,
     protected readonly documentService: DocumentService,
     protected readonly permissionService: PermissionService
   ) {

@@ -14,4 +14,6 @@
   ~ limitations under the License.
   -->
 
-IkoWidgetComponent Works for {{ key$ | async }}
+<ng-container *ngIf="widgets$ | async as widgets">
+  <valtimo-widget-container [widgets]="widgets"> </valtimo-widget-container>
+</ng-container>

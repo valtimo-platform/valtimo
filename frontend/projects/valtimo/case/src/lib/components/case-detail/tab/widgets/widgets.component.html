@@ -42,9 +42,10 @@
     }
 
     <div [style.visibility]="!obs.loaded ? 'hidden' : 'visible'">
-      <valtimo-case-widgets-container
+      <valtimo-widget-container
         [widgets]="obs.widgetConfiguration?.widgets || []"
-      ></valtimo-case-widgets-container>
+        [widgetComponentMap]="widgetComponentMap"
+      ></valtimo-widget-container>
     </div>
   </ng-container>
 </ng-container>

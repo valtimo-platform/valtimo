@@ -15,14 +15,14 @@
   -->
 
 <ng-container
-  *ngIf="{tabs: tabs$ | async, activeTab: activeTab$ | async} as obs"
+  *ngIf="{tabs: tabs$ | async, activeTabKey: activeTabKey$ | async} as obs"
   renderInPageHeader
 >
   <ng-template>
     <cds-tabs>
       @for (tab of obs.tabs; track tab.key) {
         <cds-tab
-          [active]="obs.activeTab === tab.key"
+          [active]="obs.activeTabKey === tab.key"
           [heading]="tab.title"
           (selected)="onTabSelected(tab)"
         >

@@ -17,8 +17,10 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, delay, Observable, of} from 'rxjs';
 import {IkoDataAggregate, IkoDataRequestUser, IkoListResponse, IkoTab} from '../models';
+import {Widget} from '@valtimo/layout';
+import {mockWidgetResponse} from '../mock';
 
 @Injectable({
   providedIn: 'root',
@@ -81,5 +83,10 @@ export class IkoApiService extends BaseApiService {
       this.getApiUrl(`/v1/iko-data-aggregate/${ikoKey}/data-request/${paramKey}/search`),
       filters
     );
+  }
+
+  public getWidgetsForTab(ikoDataAggregateKey: string, tabKey: string): Observable<Widget[]> {
+    console.log('called');
+    return of(mockWidgetResponse).pipe(delay(500));
   }
 }

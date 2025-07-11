@@ -54,8 +54,6 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('widgetField') private _widgetFieldRef: ElementRef<HTMLDivElement>;
 
-  @Input() collapseVertically = false;
-
   @Input() public set widgetConfiguration(value: FieldsWidget) {
     if (!value) return;
     this.widgetConfiguration$.next(value);
@@ -115,7 +113,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   constructor(private readonly viewContentService: ViewContentService) {}
 
   public ngAfterViewInit(): void {
-    if (this.collapseVertically && this._widgetFieldRef) this.openWidthObserver();
+    if (this._widgetFieldRef) this.openWidthObserver();
   }
   public ngOnDestroy(): void {
     this._observer?.disconnect();

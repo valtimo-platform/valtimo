@@ -14,21 +14,11 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-field
-  *ngIf="{
-    widgetConfiguration: widgetConfiguration$ | async,
-    widgetData: widgetData$ | async,
-  } as obs"
-  [widgetConfiguration]="obs.widgetConfiguration"
-  [widgetData]="obs.widgetData"
->
-  @if (obs.widgetConfiguration.actions?.length === 1) {
-    <button
-      *ngIf="canCreateCamundaExecution$ | async"
-      cdsButton="ghost"
-      (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
-    >
-      {{ obs.widgetConfiguration.actions[0].name }}
-    </button>
+<div #widgetsContainer class="widgets-container">
+  @for (widget of widgetsWithUuids$ | async; track widget.uuid) {
+    <valtimo-widget-block
+      [widget]="widget"
+      [widgetComponentMap]="widgetComponentMap$ | async"
+    ></valtimo-widget-block>
   }
-</valtimo-widget-field>
+</div>

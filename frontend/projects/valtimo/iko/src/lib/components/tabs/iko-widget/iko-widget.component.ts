@@ -16,20 +16,46 @@
 
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {BehaviorSubject, Observable, filter} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, Observable, switchMap, tap} from 'rxjs';
+import {IkoApiService, IkoTabService} from '../../../services';
+import {NGXLogger} from 'ngx-logger';
+import {WidgetContainerComponent} from '@valtimo/layout';
 
 @Component({
   templateUrl: './iko-widget.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, WidgetContainerComponent],
 })
 export class IkoWidgetComponent {
+  public readonly dataAggregateKey$ = this.ikoTabService.dataAggregateKey$;
+
   private readonly _key$ = new BehaviorSubject<string>('');
+
   @Input() public set key(value: string) {
+    console.log('value', value);
     this._key$.next(value);
   }
   public get key$(): Observable<string> {
     return this._key$.pipe(filter((key: string) => !!key));
   }
+
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  public readonly widgets$ = combineLatest([this.dataAggregateKey$, this.key$]).pipe(
+    switchMap(([dataAggregateKey, key]) =>
+      this.ikoApiService.getWidgetsForTab(dataAggregateKey, key)
+    ),
+    tap(widgets => {
+      console.log('widgets', widgets);
+      this.logger.debug(`IKO widgets retrieved ${JSON.stringify(widgets)}`);
+    }),
+    tap(() => this.loading$.next(false))
+  );
+
+  constructor(
+    private readonly ikoTabService: IkoTabService,
+    private readonly ikoApiService: IkoApiService,
+    private readonly logger: NGXLogger
+  ) {}
 }

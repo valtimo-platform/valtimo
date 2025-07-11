@@ -14,21 +14,18 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-field
+<div class="widget-block" [attr.data-carbon-theme]="theme$ | async">
+  <div #widgetBlockContent class="widget-block__content">
+    <ng-template #widgetComponent></ng-template>
+  </div>
+</div>
+
+<ng-container
   *ngIf="{
-    widgetConfiguration: widgetConfiguration$ | async,
-    widgetData: widgetData$ | async,
+    documentId: documentId$ | async,
+    widgetConfiguration: widget$ | async,
+    theme: theme$ | async,
+    blockHeightPx: blockHeightPx$ | async,
+    blockWidthPercentage: blockWidthPercentage$ | async,
   } as obs"
-  [widgetConfiguration]="obs.widgetConfiguration"
-  [widgetData]="obs.widgetData"
->
-  @if (obs.widgetConfiguration.actions?.length === 1) {
-    <button
-      *ngIf="canCreateCamundaExecution$ | async"
-      cdsButton="ghost"
-      (click)="onProcessStartClick(obs.widgetConfiguration.actions[0])"
-    >
-      {{ obs.widgetConfiguration.actions[0].name }}
-    </button>
-  }
-</valtimo-widget-field>
+></ng-container>

@@ -25,10 +25,11 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {BreadcrumbService, RenderInPageHeaderDirective} from '@valtimo/components';
 import {TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, Observable, combineLatest, switchMap, tap} from 'rxjs';
+import {combineLatest, Observable, switchMap, tap} from 'rxjs';
 import {IkoApiService} from '../../services/iko-api.service';
 import {IkoTab} from '../../models';
 import {IkoTabComponents, TabComponentTypes} from '../tabs/tabs.constants';
+import {IkoTabService} from '../../services';
 
 @Component({
   templateUrl: './iko-details.component.html',
@@ -41,27 +42,30 @@ export class IkoDetailsComponent implements OnDestroy {
   @ViewChild('content', {read: ViewContainerRef, static: true})
   private readonly _container: ViewContainerRef;
 
-  public readonly activeTab$ = new BehaviorSubject<string | null>(null);
+  public readonly activeTabKey$ = this.ikoTabService.activeTabKey$;
+
   public readonly tabs$: Observable<IkoTab[]> = combineLatest([
     this.route.params,
     this.route.queryParams,
   ]).pipe(
-    tap(([params, queryParams]) =>
+    tap(([params, queryParams]) => {
       this.breadcrumbService.setThirdBreadcrumb({
         content: 'interface.results',
         route: [`/iko/${params.key}/${params.searchKey}`],
         href: `/iko/${params.key}/${params.searchKey}`,
         routeExtras: {queryParams},
-      })
-    ),
+      });
+      this.ikoTabService.setDataAggregateKey(params.key);
+    }),
     switchMap(([params]) => this.ikoApiService.getIkoDetailTabs(params.key)),
-    tap((tabs: IkoTab[]) => this.activeTab$.next(tabs[0].key))
+    tap((tabs: IkoTab[]) => this.ikoTabService.setActiveTab(tabs[0]))
   );
 
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
     private readonly ikoApiService: IkoApiService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly ikoTabService: IkoTabService
   ) {}
 
   public ngOnDestroy(): void {
@@ -69,7 +73,7 @@ export class IkoDetailsComponent implements OnDestroy {
   }
 
   public onTabSelected(tab: IkoTab): void {
-    this.activeTab$.next(tab.key);
+    this.ikoTabService.setActiveTab(tab);
     this._container.clear();
     const componentRef = this._container.createComponent<any>(TabComponentTypes[tab.type] as any);
     componentRef.instance.key = tab.key;

@@ -85,9 +85,9 @@ interface FormioWidget extends BasicWidget {
   };
 }
 
-type CaseWidget = FieldsWidget | CollectionWidget | CustomWidget | TableWidget | FormioWidget;
+type Widget = FieldsWidget | CollectionWidget | CustomWidget | TableWidget | FormioWidget;
 
-type WidgetWithUuid = CaseWidget & {
+type WidgetWithUuid = Widget & {
   uuid: string;
 };
 
@@ -148,9 +148,11 @@ interface CustomWidgetConfig {
   [componentKey: string]: Type<any>;
 }
 
+type WidgetComponentMap = Record<WidgetType, Type<any>>;
+
 export {
   BasicWidget,
-  CaseWidget,
+  Widget,
   WidgetAction,
   WidgetConfigurationBin,
   WidgetContentHeightsPx,
@@ -172,4 +174,5 @@ export {
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
   MaxRectsResult,
+  WidgetComponentMap,
 };

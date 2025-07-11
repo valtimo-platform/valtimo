@@ -14,14 +14,4 @@
  * limitations under the License.
  */
 
-export * from './layout';
-export * from './layout-internal';
-export * from './layout-public';
-export * from './widget-field';
-export * from './translation-management';
-export * from './widget-formio';
-export * from './widget-collection';
-export * from './widget-table';
-export * from './widget-custom';
-export * from './widget-block';
-export * from './widget-container';
+export * from './iko.mock';

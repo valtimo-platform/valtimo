@@ -14,7 +14,11 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-custom *ngIf="widgetConfig$ | async as widgetConfig" [widgetConfig]="widgetConfig">
+<valtimo-widget-custom
+  *ngIf="widgetConfig$ | async as widgetConfig"
+  [widgetConfiguration]="widgetConfig"
+  [widgetUuid]="widgetUuid"
+>
   @if (widgetConfig?.actions?.length === 1) {
     <button
       *ngIf="canCreateCamundaExecution$ | async"

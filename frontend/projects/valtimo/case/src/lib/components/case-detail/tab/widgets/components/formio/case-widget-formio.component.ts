@@ -17,7 +17,7 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {BehaviorSubject, filter, Observable, take} from 'rxjs';
+import {BehaviorSubject, filter, Observable} from 'rxjs';
 import {CaseWidgetsLayoutService} from '../../../../../../services';
 import {FormIoModule} from '@valtimo/components';
 import {WidgetProcess} from '../widget-process/widget-process';
@@ -45,6 +45,7 @@ export class CaseWidgetFormioComponent extends WidgetProcess {
     this.baseWidgetConfiguration = value;
     this._widgetConfigurationSubject$.next(value);
   }
+  @Input() public readonly widgetUuid: string;
 
   private readonly _widgetConfigurationSubject$ =
     new BehaviorSubject<FormioWidgetWidgetWithUuid | null>(null);
@@ -70,10 +71,4 @@ export class CaseWidgetFormioComponent extends WidgetProcess {
   public onProcessStartClick(process: WidgetAction): void {
     this.widgetsService.startProcess(process.processDefinitionKey);
   }
-
-  public dataFetchedCallBackFunction = () => {
-    this.widgetConfiguration$.pipe(take(1)).subscribe(config => {
-      this.layoutService.setWidgetWithExternalDataReady(config.uuid);
-    });
-  };
 }
