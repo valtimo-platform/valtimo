@@ -164,8 +164,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
         ),
       }))
     ),
-    tap(card => this.checkEmptyFields(card)),
-    tap(cards => console.log('cards', cards))
+    tap(card => this.checkEmptyFields(card))
   );
 
   private _observer!: ResizeObserver;
