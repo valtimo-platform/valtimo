@@ -32,18 +32,14 @@
           @case (CaseWidgetType.TABLE) {
             <valtimo-case-widget-table
               [documentId]="obs.documentId"
-              [tabKey]="obs.tabKey"
               [widgetConfiguration]="obs.widgetConfiguration"
-              [widgetData]="obs.widgetData"
             ></valtimo-case-widget-table>
           }
 
           @case (CaseWidgetType.COLLECTION) {
             <valtimo-case-widget-collection
               [documentId]="obs.documentId"
-              [tabKey]="obs.tabKey"
               [widgetConfiguration]="obs.widgetConfiguration"
-              [widgetData]="obs.widgetData"
             ></valtimo-case-widget-collection>
           }
 
@@ -59,7 +55,6 @@
               [collapseVertically]="true"
               [documentId]="obs.documentId"
               [widgetConfiguration]="obs.widgetConfiguration"
-              [widgetData]="obs.widgetData"
             ></valtimo-case-widget-field>
           }
 

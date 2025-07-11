@@ -15,3 +15,4 @@
  */
 
 export * from './custom-widget-token';
+export * from './widget.constants';

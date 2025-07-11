@@ -20,12 +20,18 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, delay, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
 import {
-  CaseTabService,
-  CaseWidgetsApiService,
-  CaseWidgetsLayoutService,
-} from '../../../../services';
-import {WidgetsContainerComponent} from './components/widgets-container/widgets-container.component';
+  WidgetComponentMap,
+  WidgetContainerComponent,
+  WidgetLayoutService,
+  WidgetType,
+} from '@valtimo/layout';
+import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
+import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.component';
+import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
+import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
+import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -34,7 +40,7 @@ import {WidgetsContainerComponent} from './components/widgets-container/widgets-
   imports: [
     CommonModule,
     LoadingModule,
-    WidgetsContainerComponent,
+    WidgetContainerComponent,
     CarbonListModule,
     TranslateModule,
   ],
@@ -61,13 +67,21 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     tap(() => this.loadingWidgetConfiguration$.next(false))
   );
 
-  public readonly loaded$ = this.caseWidgetsLayoutService.loaded$.pipe(delay(400));
+  public readonly loaded$ = this.widgetLayoutService.loaded$.pipe(delay(400));
+
+  public readonly widgetComponentMap: WidgetComponentMap = {
+    [WidgetType.FIELDS]: CaseWidgetFieldComponent,
+    [WidgetType.CUSTOM]: CaseWidgetCustomComponent,
+    [WidgetType.FORMIO]: CaseWidgetFormioComponent,
+    [WidgetType.TABLE]: CaseWidgetTableComponent,
+    [WidgetType.COLLECTION]: CaseWidgetCollectionComponent,
+  };
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly caseTabService: CaseTabService,
     private readonly widgetsApiService: CaseWidgetsApiService,
-    private readonly caseWidgetsLayoutService: CaseWidgetsLayoutService
+    private readonly widgetLayoutService: WidgetLayoutService
   ) {}
 
   public ngOnInit(): void {
@@ -75,7 +89,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.caseWidgetsLayoutService.reset();
+    this.widgetLayoutService.reset();
     this.caseTabService.enableTabHorizontalOverflow();
   }
 }

@@ -37,11 +37,12 @@ export class CaseWidgetCustomComponent extends WidgetProcess {
   @Input({required: true}) public set documentId(value: string) {
     this.baseDocumentId = value;
   }
-  @Input() public set widgetConfig(value: CustomWidget) {
+  @Input() public set widgetConfiguration(value: CustomWidget) {
     if (!value) return;
     this.baseWidgetConfiguration = value;
     this._widgetConfigSubject$.next(value);
   }
+  @Input() public readonly widgetUuid: string;
 
   private readonly _widgetConfigSubject$ = new BehaviorSubject<CustomWidget | null>(null);
 

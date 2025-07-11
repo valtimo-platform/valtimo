@@ -16,3 +16,4 @@
 
 export * from './iko-api.service';
 export * from './iko-api.service';
+export * from './iko-tab.service';

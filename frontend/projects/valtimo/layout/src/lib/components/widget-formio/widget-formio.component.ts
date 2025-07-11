@@ -23,6 +23,7 @@ import {FormioForm} from '@formio/angular';
 import {FormIoModule} from '@valtimo/components';
 import {ButtonModule} from 'carbon-components-angular';
 import {FormioWidgetWidgetWithUuid} from '../../models';
+import {WidgetLayoutService} from '../../services';
 
 @Component({
   selector: 'valtimo-widget-formio',
@@ -36,11 +37,15 @@ export class WidgetFormioComponent {
   @Input() public set documentId(value: string) {
     if (value) this._documentIdSubject$.next(value);
   }
-  @Input() public readonly dataFetchedCallBackFunction!: () => void;
 
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
     this._widgetConfigurationSubject$.next(value);
+    console.log('hi', value);
+  }
+
+  @Input() public set widgetUuid(value: string) {
+    this.widgetLayoutService.setWidgetDataLoaded(value);
   }
 
   private readonly _widgetConfigurationSubject$ =
@@ -68,10 +73,13 @@ export class WidgetFormioComponent {
       ])
     ),
     tap(() => {
-      if (this.dataFetchedCallBackFunction) this.dataFetchedCallBackFunction();
+      this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
     }),
     map(([formDef]) => formDef)
   );
 
-  constructor(private readonly formService: FormService) {}
+  constructor(
+    private readonly formService: FormService,
+    private readonly widgetLayoutService: WidgetLayoutService
+  ) {}
 }

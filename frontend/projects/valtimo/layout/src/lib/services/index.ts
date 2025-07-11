@@ -15,3 +15,4 @@
  */
 
 export * from './layout.service';
+export * from './widget-layout.service';
