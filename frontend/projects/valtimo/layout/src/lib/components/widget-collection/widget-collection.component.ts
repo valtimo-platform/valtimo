@@ -95,6 +95,8 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
 
     let widgetData: Page<CollectionWidgetCardData> = value;
 
+    if (typeof value?.content?.length !== 'number') return;
+
     if (value.content.length < this._initialNumberOfElements) {
       const rows = new Array<number>(this._initialNumberOfElements).fill(null);
       widgetData = {
@@ -162,8 +164,7 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
         ),
       }))
     ),
-    tap(card => this.checkEmptyFields(card)),
-    tap(cards => console.log('cards', cards))
+    tap(card => this.checkEmptyFields(card))
   );
 
   private _observer!: ResizeObserver;

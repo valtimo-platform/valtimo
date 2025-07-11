@@ -19,7 +19,12 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {BehaviorSubject, combineLatest, filter, Observable, switchMap, tap} from 'rxjs';
 import {IkoApiService, IkoTabService} from '../../../services';
 import {NGXLogger} from 'ngx-logger';
-import {WidgetContainerComponent} from '@valtimo/layout';
+import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
+import {IkoWidgetFieldComponent} from '../../widget-field';
+import {IkoWidgetCustomComponent} from '../../widget-custom';
+import {IkoWidgetFormioComponent} from '../../widget-formio';
+import {IkoWidgetTableComponent} from '../../widget-table';
+import {IkoWidgetCollectionComponent} from '../../widget-collection';
 
 @Component({
   templateUrl: './iko-widget.component.html',
@@ -33,7 +38,6 @@ export class IkoWidgetComponent {
   private readonly _key$ = new BehaviorSubject<string>('');
 
   @Input() public set key(value: string) {
-    console.log('value', value);
     this._key$.next(value);
   }
   public get key$(): Observable<string> {
@@ -47,11 +51,18 @@ export class IkoWidgetComponent {
       this.ikoApiService.getWidgetsForTab(dataAggregateKey, key)
     ),
     tap(widgets => {
-      console.log('widgets', widgets);
       this.logger.debug(`IKO widgets retrieved ${JSON.stringify(widgets)}`);
     }),
     tap(() => this.loading$.next(false))
   );
+
+  public readonly widgetComponentMap: WidgetComponentMap = {
+    [WidgetType.FIELDS]: IkoWidgetFieldComponent,
+    [WidgetType.CUSTOM]: IkoWidgetCustomComponent,
+    [WidgetType.FORMIO]: IkoWidgetFormioComponent,
+    [WidgetType.TABLE]: IkoWidgetTableComponent,
+    [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
+  };
 
   constructor(
     private readonly ikoTabService: IkoTabService,

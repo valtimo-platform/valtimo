@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,21 +14,4 @@
  * limitations under the License.
  */
 
-:host {
-  display: block;
-  position: absolute;
-}
-
-.widget-block {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  padding: 8px;
-  overflow-wrap: break-word;
-  background-color: var(--cds-layer-01);
-  background-clip: content-box;
-
-  &__not-available {
-    padding: 16px;
-  }
-}
+export * from './iko-widget-collection.component';

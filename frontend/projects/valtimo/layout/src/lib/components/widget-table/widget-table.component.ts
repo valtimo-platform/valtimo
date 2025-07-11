@@ -106,6 +106,8 @@ export class WidgetTableComponent {
 
     let widgetData: CarbonListItem[] = value.content;
 
+    if (typeof value?.content?.length !== 'number') return;
+
     if (value.content.length < this._initialNumberOfElements) {
       const rows = new Array<number>(this._initialNumberOfElements).fill(null);
 

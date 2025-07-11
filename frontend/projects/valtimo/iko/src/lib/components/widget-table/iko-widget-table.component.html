@@ -14,5 +14,10 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-container [widgets]="widgets$ | async" [widgetComponentMap]="widgetComponentMap">
-</valtimo-widget-container>
+<valtimo-widget-table
+  [widgetData]="widgetData$ | async"
+  [widgetConfiguration]="widgetConfiguration"
+  (paginationEvent)="onPaginationEvent($event)"
+>
+  custom header
+</valtimo-widget-table>

@@ -14,8 +14,10 @@
   ~ limitations under the License.
   -->
 
-<div #widgetsContainer class="widgets-container">
-  @for (widget of widgetsWithUuids$ | async; track widget.uuid) {
-    <valtimo-case-widget-block [widget]="widget"></valtimo-case-widget-block>
-  }
-</div>
+<valtimo-widget-custom
+  *ngIf="widgetConfig$ | async as widgetConfig"
+  [widgetConfiguration]="widgetConfig"
+  [widgetUuid]="widgetUuid"
+>
+  Custom header
+</valtimo-widget-custom>

@@ -14,5 +14,9 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-container [widgets]="widgets$ | async" [widgetComponentMap]="widgetComponentMap">
-</valtimo-widget-container>
+<valtimo-widget-formio
+  [widgetConfiguration]="widgetConfiguration$ | async"
+  [widgetUuid]="widgetUuid"
+>
+  custom header
+</valtimo-widget-formio>
