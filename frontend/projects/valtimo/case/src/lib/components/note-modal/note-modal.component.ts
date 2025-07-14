@@ -51,6 +51,7 @@ export class NoteModalComponent {
 
   public onCancel(): void {
     this.modalClosed.emit(null);
+    this.formGroup.reset();
   }
 
   public onConfirm(): void {
@@ -59,5 +60,6 @@ export class NoteModalComponent {
       content,
       ...(!!this._customData && {id: this._customData?.customData?.['id'] ?? ''}),
     });
+    this.formGroup.reset();
   }
 }
