@@ -23,7 +23,7 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, of, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
 import {
   TableWidget,
   WidgetLayoutService,
@@ -31,6 +31,8 @@ import {
   WidgetTableContent,
   WidgetWithUuid,
 } from '@valtimo/layout';
+import {IkoWidgetParams} from '../../models';
+import {IkoApiService} from '../../services';
 
 @Component({
   selector: 'valtimo-iko-widget-table',
@@ -61,13 +63,34 @@ export class IkoWidgetTableComponent {
 
   @Input() public readonly widgetUuid: string;
 
+  private readonly _widgetParams$ = new BehaviorSubject<IkoWidgetParams | null>(null);
+  @Input() public set widgetParams(value: IkoWidgetParams) {
+    this._widgetParams$.next(value);
+  }
+
   private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
 
-  public readonly widgetData$ = of({}).pipe(
+  public readonly widgetData$ = combineLatest([
+    this.widgetConfiguration$,
+    this._widgetParams$,
+  ]).pipe(
+    switchMap(([widgetConfiguration, widgetParams]) =>
+      !widgetParams || !widgetConfiguration
+        ? of(null)
+        : this.ikoApiService.getIkoWidgetData(
+            widgetParams.dataAggregateKey,
+            widgetParams.tabKey,
+            widgetConfiguration.key,
+            widgetParams.entryId
+          )
+    ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );
 
-  constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
+  constructor(
+    private readonly ikoApiService: IkoApiService,
+    private readonly widgetLayoutService: WidgetLayoutService
+  ) {}
 
   public onPaginationEvent(event: PaginationModel): void {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);

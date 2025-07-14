@@ -16,3 +16,4 @@
 
 export * from './iko.model';
 export * from './iko-menu.model';
+export * from './iko-widget.model';

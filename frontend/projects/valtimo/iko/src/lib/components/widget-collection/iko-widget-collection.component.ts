@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
+import {TranslateModule} from '@ngx-translate/core';
+import {CarbonListModule} from '@valtimo/components';
+import {CollectionWidget, WidgetCollectionComponent, WidgetLayoutService} from '@valtimo/layout';
 import {
   ButtonModule,
   InputModule,
@@ -23,16 +25,9 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, of, tap} from 'rxjs';
-import {CarbonListModule} from '@valtimo/components';
-import {TranslateModule} from '@ngx-translate/core';
-import {
-  CollectionWidget,
-  WidgetCollectionComponent,
-  WidgetCollectionContent,
-  WidgetLayoutService,
-  WidgetWithUuid,
-} from '@valtimo/layout';
+import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {IkoWidgetParams} from '../../models';
+import {IkoApiService} from '../../services';
 
 @Component({
   selector: 'valtimo-iko-widget-collection',
@@ -57,23 +52,40 @@ export class IkoWidgetCollectionComponent {
     this.widgetConfiguration$.next(value);
   }
 
+  private readonly _widgetParams$ = new BehaviorSubject<IkoWidgetParams | null>(null);
+  @Input() public set widgetParams(value: IkoWidgetParams) {
+    this._widgetParams$.next(value);
+  }
+
   @Input() public readonly widgetUuid: string;
 
   public readonly widgetConfiguration$ = new BehaviorSubject<CollectionWidget | null>(null);
 
   private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
 
-  public readonly widgetData$ = of({}).pipe(
+  public readonly widgetData$ = combineLatest([
+    this.widgetConfiguration$,
+    this._widgetParams$,
+  ]).pipe(
+    switchMap(([widgetConfiguration, widgetParams]) =>
+      !widgetParams || !widgetConfiguration
+        ? of(null)
+        : this.ikoApiService.getIkoWidgetData(
+            widgetParams.dataAggregateKey,
+            widgetParams.tabKey,
+            widgetConfiguration.key,
+            widgetParams.entryId
+          )
+    ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );
 
-  constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
+  constructor(
+    private readonly ikoApiService: IkoApiService,
+    private readonly widgetLayoutService: WidgetLayoutService
+  ) {}
 
   public onPaginationEvent(event: PaginationModel): void {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
-  }
-
-  private getPageSizeParam(widgetConfiguration: WidgetWithUuid): string {
-    return `size=${(widgetConfiguration.properties as any as WidgetCollectionContent).defaultPageSize}`;
   }
 }
