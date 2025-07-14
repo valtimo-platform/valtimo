@@ -15,7 +15,12 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="{loading: loading$ | async, caseTags: caseTags$ | async, fields: fields$ | async} as obs"
+  *ngIf="{
+    loading: loading$ | async,
+    caseTags: caseTags$ | async,
+    fields: fields$ | async,
+    isDraftVersion: isDraftVersion$ | async,
+  } as obs"
   [items]="obs.caseTags"
   [fields]="obs.fields"
   [header]="false"
@@ -30,7 +35,11 @@
 
   <valtimo-no-results
     [action]="addTagButton"
-    [description]="'caseManagement.caseTags.noResults.description' | translate"
+    [description]="
+      obs.isDraftVersion
+        ? ('caseManagement.caseTags.noResults.description' | translate)
+        : ('caseManagement.caseTags.noResultsFinalVersion.description' | translate)
+    "
     [title]="'caseManagement.caseTags.noResults.title' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-list>

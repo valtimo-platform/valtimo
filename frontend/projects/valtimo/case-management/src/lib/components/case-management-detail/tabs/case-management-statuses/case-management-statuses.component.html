@@ -15,7 +15,11 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="{loading: loading$ | async, caseStatuses: caseStatuses$ | async} as obs"
+  *ngIf="{
+    loading: loading$ | async,
+    caseStatuses: caseStatuses$ | async,
+    isDraftVersion: isDraftVersion$ | async,
+  } as obs"
   [items]="obs.caseStatuses"
   [fields]="fields$ | async"
   [header]="false"
@@ -30,7 +34,11 @@
 
   <valtimo-no-results
     [action]="addStatusButton"
-    [description]="'caseManagement.statuses.noResults.description' | translate"
+    [description]="
+      obs.isDraftVersion
+        ? ('caseManagement.statuses.noResults.description' | translate)
+        : ('caseManagement.statuses.noResultsFinalVersion.description' | translate)
+    "
     [title]="'caseManagement.statuses.noResults.title' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-list>

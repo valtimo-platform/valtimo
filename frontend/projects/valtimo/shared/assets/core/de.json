@@ -639,7 +639,11 @@
           "toggle": {"onText": "Ja", "offText": "Nein"}
         }
       },
-      "caseListTab": {"title": "Caseliste", "searchFields": "Suchfelder", "columns": "Spalten"},
+      "caseListTab": {
+        "title": "Caseliste",
+        "searchFields": "Suchfelder",
+        "columns": "Spalten auflisten"
+      },
       "caseDetailsTab": {
         "title": "Casedetails",
         "tabs": "Tabs",
@@ -773,6 +777,9 @@
       "noResults": {
         "title": "Keine Status konfiguriert",
         "description": "Klicken Sie hier, um einen Status für diesen Casetyp zu konfigurieren"
+      },
+      "noResultsFinalVersion": {
+        "description": "Für diesen Vorgangstyp wurden keine Status erstellt."
       }
     },
     "caseTags": {
@@ -793,6 +800,9 @@
       "noResults": {
         "title": "Keine Tags konfiguriert",
         "description": "Klicken Sie hier, um einen Tag für diesen Casetyp zu konfigurieren"
+      },
+      "noResultsFinalVersion": {
+        "description": "Für diesen Vorgangstyp wurden keine Tags erstellt."
       }
     },
     "draftWarning": {

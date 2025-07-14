@@ -639,7 +639,11 @@
           "toggle": {"onText": "Ja", "offText": "Nee"}
         }
       },
-      "caseListTab": {"title": "Dossierlijst", "searchFields": "Zoekvelden", "columns": "Kolommen"},
+      "caseListTab": {
+        "title": "Dossierlijst",
+        "searchFields": "Zoekvelden",
+        "columns": "Kolommen weergeven"
+      },
       "caseDetailsTab": {
         "title": "Dossierdetails",
         "tabs": "Tabbladen",
@@ -753,6 +757,13 @@
       "descriptionPlaceholder": "Voer hier een beschrijving in",
       "descriptionTooltip": "De beschrijving wordt weergegeven als extra context voor de dossierdefinitie."
     },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "De editor verlaten",
+        "content": "Weet je zeker dat je de editor wilt verlaten? Er kunnen niet-opgeslagen wijzigingen zijn die verloren gaan."
+      },
+      "saveModalContent": "Weet je zeker dat je de dossierdefinitie wilt opslaan?"
+    },
     "statuses": {
       "withoutStatus": "Toon dossiers zonder status",
       "searchFieldTitle": "Status",
@@ -773,6 +784,9 @@
       "noResults": {
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
+      },
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen status aangemaakt voor dit zaaktype."
       }
     },
     "caseTags": {
@@ -793,6 +807,9 @@
       "noResults": {
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
+      },
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen tags aangemaakt voor dit zaaktype."
       }
     },
     "draftWarning": {
