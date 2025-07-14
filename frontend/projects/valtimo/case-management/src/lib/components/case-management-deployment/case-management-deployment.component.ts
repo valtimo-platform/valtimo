@@ -15,7 +15,6 @@
  */
 import {DatePipe, Location as AngularLocation} from '@angular/common';
 import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
-import {FormBuilder} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Return16, Save16, TrashCan16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
@@ -48,6 +47,7 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   public readonly showDeleteDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly showFinalizeDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly showCreateDraftVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
+  private readonly refreshDraftVersion$ = new BehaviorSubject<null>(null);
 
   public readonly params$: Observable<{
     caseDefinitionKey: string;
@@ -124,6 +124,7 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   public readonly isDraftVersion$: Observable<boolean> = combineLatest([
     this.caseDefinitionKey$,
     this.caseDefinitionVersionTag$,
+    this.refreshDraftVersion$,
   ]).pipe(
     switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
       this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
@@ -226,7 +227,14 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
 
   public goBack(): void {
     this.breadcrumbService.clearThirdBreadcrumb();
-    this.location.back();
+
+    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
+      .pipe(take(1))
+      .subscribe(([caseDefinitionKey, caseDefinitionVersionTag]) => {
+        this.router.navigate([
+          `/case-management/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/general`,
+        ]);
+      });
   }
 
   public openDeleteDraftModal(): void {
@@ -333,6 +341,8 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
             ),
             duration: 5000,
           });
+
+          this.refreshDraftVersion$.next(null);
         },
         error: () => {
           this.closeCurrentNotification();

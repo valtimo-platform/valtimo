@@ -632,7 +632,11 @@
           "toggle": {"onText": "Yes", "offText": "No"}
         }
       },
-      "caseListTab": {"title": "Case list", "searchFields": "Search Fields", "columns": "Columns"},
+      "caseListTab": {
+        "title": "Case list",
+        "searchFields": "Search Fields",
+        "columns": "List columns"
+      },
       "caseDetailsTab": {
         "title": "Case details",
         "tabs": "Tabs",
@@ -766,6 +770,9 @@
       "noResults": {
         "title": "No statuses configured",
         "description": "Click here to configure a status for this case type"
+      },
+      "noResultsFinalVersion": {
+        "description": "No statuses have been created for this case type."
       }
     },
     "caseTags": {
@@ -781,6 +788,9 @@
       "noResults": {
         "title": "No tags configured",
         "description": "Click here to configure a tag for this case type"
+      },
+      "noResultsFinalVersion": {
+        "description": "No tags have been created for this case type."
       }
     },
     "draftWarning": {

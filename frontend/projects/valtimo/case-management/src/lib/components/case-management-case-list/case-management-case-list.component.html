@@ -21,16 +21,6 @@
 
   <cds-tabs class="case-management-tabs" type="contained">
     <cds-tab
-      [active]="currentTab === TabEnum.SEARCH"
-      [heading]="'caseManagement.tabs.caseListTab.searchFields' | translate"
-      (selected)="switchTab(TabEnum.SEARCH)"
-    >
-      <valtimo-case-management-search-fields
-        *ngIf="currentTab === TabEnum.SEARCH"
-      ></valtimo-case-management-search-fields>
-    </cds-tab>
-
-    <cds-tab
       [active]="currentTab === TabEnum.LIST"
       [heading]="'caseManagement.tabs.caseListTab.columns' | translate"
       (selected)="switchTab(TabEnum.LIST)"
@@ -38,6 +28,16 @@
       <valtimo-case-management-list-columns
         *ngIf="currentTab === TabEnum.LIST"
       ></valtimo-case-management-list-columns>
+    </cds-tab>
+
+    <cds-tab
+      [active]="currentTab === TabEnum.SEARCH"
+      [heading]="'caseManagement.tabs.caseListTab.searchFields' | translate"
+      (selected)="switchTab(TabEnum.SEARCH)"
+    >
+      <valtimo-case-management-search-fields
+        *ngIf="currentTab === TabEnum.SEARCH"
+      ></valtimo-case-management-search-fields>
     </cds-tab>
   </cds-tabs>
 }
