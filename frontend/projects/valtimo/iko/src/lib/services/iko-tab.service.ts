@@ -24,6 +24,7 @@ import {NGXLogger} from 'ngx-logger';
 export class IkoTabService {
   private readonly _activeTab$ = new BehaviorSubject<IkoTab | null>(null);
   private readonly _dataAggregateKey$ = new BehaviorSubject<string | null>(null);
+  private readonly _entryId$ = new BehaviorSubject<string | null>(null);
 
   public get activeTab$(): Observable<IkoTab> {
     return this._activeTab$.pipe(filter(tab => !!tab));
@@ -37,6 +38,10 @@ export class IkoTabService {
     return this._dataAggregateKey$.pipe(filter(key => !!key));
   }
 
+  public get entryId$(): Observable<string> {
+    return this._entryId$.pipe(filter(key => !!key));
+  }
+
   constructor(private readonly logger: NGXLogger) {}
 
   public setActiveTab(tab: IkoTab): void {
@@ -47,5 +52,10 @@ export class IkoTabService {
   public setDataAggregateKey(key: string): void {
     this._dataAggregateKey$.next(key);
     this.logger.debug(`Active IKO data aggregate key set to ${key}`);
+  }
+
+  public setEntryId(id: string): void {
+    this._entryId$.next(id);
+    this.logger.debug(`Active IKO entry id set to ${id}`);
   }
 }

@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {BehaviorSubject, combineLatest, filter, Observable, switchMap, tap} from 'rxjs';
-import {IkoApiService, IkoTabService} from '../../../services';
-import {NGXLogger} from 'ngx-logger';
 import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
-import {IkoWidgetFieldComponent} from '../../widget-field';
+import {NGXLogger} from 'ngx-logger';
+import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {IkoWidgetParams} from '../../../models';
+import {IkoApiService, IkoTabService} from '../../../services';
+import {IkoWidgetCollectionComponent} from '../../widget-collection';
 import {IkoWidgetCustomComponent} from '../../widget-custom';
+import {IkoWidgetFieldComponent} from '../../widget-field';
 import {IkoWidgetFormioComponent} from '../../widget-formio';
 import {IkoWidgetTableComponent} from '../../widget-table';
-import {IkoWidgetCollectionComponent} from '../../widget-collection';
 
 @Component({
   templateUrl: './iko-widget.component.html',
@@ -34,6 +34,7 @@ import {IkoWidgetCollectionComponent} from '../../widget-collection';
 })
 export class IkoWidgetComponent {
   public readonly dataAggregateKey$ = this.ikoTabService.dataAggregateKey$;
+  public readonly entryId$ = this.ikoTabService.entryId$;
 
   private readonly _key$ = new BehaviorSubject<string>('');
 
@@ -46,14 +47,23 @@ export class IkoWidgetComponent {
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly widgets$ = combineLatest([this.dataAggregateKey$, this.key$]).pipe(
-    switchMap(([dataAggregateKey, key]) =>
-      this.ikoApiService.getWidgetsForTab(dataAggregateKey, key)
-    ),
+  public widgets$ = combineLatest([this.dataAggregateKey$, this.key$]).pipe(
+    switchMap(([dataAggregateKey, key]) => this.ikoApiService.getIkoWidget(dataAggregateKey, key))
+  );
+  public widgetParams$: Observable<IkoWidgetParams> = combineLatest([
+    this.dataAggregateKey$,
+    this.key$,
+    this.entryId$,
+  ]).pipe(
+    map(([dataAggregateKey, tabKey, entryId]) => ({
+      dataAggregateKey,
+      entryId,
+      tabKey,
+    })),
     tap(widgets => {
       this.logger.debug(`IKO widgets retrieved ${JSON.stringify(widgets)}`);
-    }),
-    tap(() => this.loading$.next(false))
+      this.loading$.next(false);
+    })
   );
 
   public readonly widgetComponentMap: WidgetComponentMap = {

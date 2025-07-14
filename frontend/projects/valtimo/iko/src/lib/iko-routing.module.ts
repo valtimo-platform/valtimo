@@ -40,7 +40,7 @@ const routes: Routes = [
     },
   },
   {
-    path: 'iko/:key/:searchKey/details',
+    path: 'iko/:key/:searchKey/details/:id',
     component: IkoDetailsComponent,
     canActivate: [AuthGuardService],
     data: {

@@ -69,6 +69,8 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
     this._widgetComponentMap$.next({...DEFAULT_WIDGET_COMPONENT_MAP, ...value});
   }
 
+  @Input({required: false}) public widgetParams: object = {};
+
   public readonly loadingWidgetConfiguration$ = new BehaviorSubject<boolean>(true);
 
   public readonly loaded$ = this.widgetLayoutService.loaded$.pipe(delay(400));

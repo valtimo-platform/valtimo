@@ -13,6 +13,9 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
-<valtimo-widget-container [widgets]="widgets$ | async" [widgetComponentMap]="widgetComponentMap">
+<valtimo-widget-container
+  [widgets]="widgets$ | async"
+  [widgetComponentMap]="widgetComponentMap"
+  [widgetParams]="widgetParams$ | async"
+>
 </valtimo-widget-container>

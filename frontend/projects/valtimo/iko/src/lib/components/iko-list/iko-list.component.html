@@ -20,5 +20,5 @@
   [items]="listConfig.items"
   [loading]="loading$ | async"
   [hideToolbar]="true"
-  (rowClicked)="onRowClicked()"
+  (rowClicked)="onRowClicked($event)"
 ></valtimo-carbon-list>

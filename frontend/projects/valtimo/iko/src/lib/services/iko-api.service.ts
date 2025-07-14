@@ -64,13 +64,32 @@ export class IkoApiService extends BaseApiService {
 
   public getIkoDetailTabs(ikoDataAggregateKey: string): Observable<IkoTab[]> {
     return this.httpClient.get<IkoTab[]>(
-      this.getApiUrl(`/v1/tab/IkoDataAggregate/${ikoDataAggregateKey}`)
+      this.getApiUrl(`/v1/iko-data-aggregate/${ikoDataAggregateKey}/tab`)
     );
   }
 
   public getIkoDataRequests(ikoDataAggregateKey: string): Observable<IkoDataRequestUser[]> {
     return this.httpClient.get<IkoDataRequestUser[]>(
       this.getApiUrl(`/v1/iko-data-aggregate/${ikoDataAggregateKey}/data-request`)
+    );
+  }
+
+  public getIkoWidget(ikoDataAggregateKey: string, tabKey: string): any {
+    return this.httpClient.get(
+      this.getApiUrl(`/v1/iko-data-aggregate/${ikoDataAggregateKey}/tab/${tabKey}/widget`)
+    );
+  }
+
+  public getIkoWidgetData(
+    ikoDataAggregateKey: string,
+    tabKey: string,
+    widgetId: string,
+    id: string
+  ): any {
+    return this.httpClient.get(
+      this.getApiUrl(
+        `/v1/iko-data-aggregate/${ikoDataAggregateKey}/tab/${tabKey}/widget/${widgetId}/data?id=${id}`
+      )
     );
   }
 
@@ -83,10 +102,5 @@ export class IkoApiService extends BaseApiService {
       this.getApiUrl(`/v1/iko-data-aggregate/${ikoKey}/data-request/${paramKey}/search`),
       filters
     );
-  }
-
-  public getWidgetsForTab(ikoDataAggregateKey: string, tabKey: string): Observable<Widget[]> {
-    console.log('called');
-    return of(mockWidgetResponse).pipe(delay(500));
   }
 }

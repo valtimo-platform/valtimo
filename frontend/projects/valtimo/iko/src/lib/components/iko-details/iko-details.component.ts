@@ -56,6 +56,7 @@ export class IkoDetailsComponent implements OnDestroy {
         routeExtras: {queryParams},
       });
       this.ikoTabService.setDataAggregateKey(params.key);
+      this.ikoTabService.setEntryId(params.id);
     }),
     switchMap(([params]) => this.ikoApiService.getIkoDetailTabs(params.key)),
     tap((tabs: IkoTab[]) => this.ikoTabService.setActiveTab(tabs[0]))

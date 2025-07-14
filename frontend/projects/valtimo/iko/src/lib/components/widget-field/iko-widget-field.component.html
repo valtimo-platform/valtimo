@@ -15,12 +15,7 @@
   -->
 
 <valtimo-widget-field
-  *ngIf="{
-    widgetConfiguration: widgetConfiguration$ | async,
-    widgetData: widgetData$ | async,
-  } as obs"
-  [widgetConfiguration]="obs.widgetConfiguration"
-  [widgetData]="obs.widgetData"
+  [widgetConfiguration]="widgetConfiguration$ | async"
+  [widgetData]="widgetData$ | async"
 >
-  custom header
 </valtimo-widget-field>

@@ -75,7 +75,10 @@ export class IkoListComponent implements OnDestroy {
     this.breadcrumbService.clearSecondBreadcrumb();
   }
 
-  public onRowClicked(): void {
-    this.router.navigate(['details'], {relativeTo: this.route, queryParamsHandling: 'preserve'});
+  public onRowClicked(item: any): void {
+    this.router.navigate([`details/${item.id}`], {
+      relativeTo: this.route,
+      queryParamsHandling: 'preserve',
+    });
   }
 }

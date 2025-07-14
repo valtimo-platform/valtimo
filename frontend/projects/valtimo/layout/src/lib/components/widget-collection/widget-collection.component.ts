@@ -254,7 +254,6 @@ export class WidgetCollectionComponent implements AfterViewInit, OnDestroy {
       collection.fields.forEach(field => {
         if (!field.hideWhenEmpty || (field.hideWhenEmpty && field.value && field.value !== '-'))
           this.noVisibleFields$.next(false);
-        console.log('set to false');
       });
     });
   }

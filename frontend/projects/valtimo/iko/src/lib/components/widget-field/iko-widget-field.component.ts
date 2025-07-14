@@ -17,9 +17,11 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
-import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, of, tap} from 'rxjs';
 import {FieldsWidget, WidgetFieldComponent, WidgetLayoutService} from '@valtimo/layout';
+import {ButtonModule, InputModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {IkoWidgetParams} from '../../models';
+import {IkoApiService} from '../../services';
 
 @Component({
   selector: 'valtimo-iko-widget-field',
@@ -42,13 +44,34 @@ export class IkoWidgetFieldComponent {
     this.widgetConfiguration$.next(value);
   }
 
+  private readonly _widgetParams$ = new BehaviorSubject<IkoWidgetParams | null>(null);
+  @Input() public set widgetParams(value: IkoWidgetParams) {
+    this._widgetParams$.next(value);
+  }
+
   @Input() public readonly widgetUuid: string;
 
   public readonly widgetConfiguration$ = new BehaviorSubject<FieldsWidget | null>(null);
 
-  public readonly widgetData$ = of({}).pipe(
+  public readonly widgetData$ = combineLatest([
+    this.widgetConfiguration$,
+    this._widgetParams$,
+  ]).pipe(
+    switchMap(([widgetConfiguration, widgetParams]) =>
+      !widgetParams || !widgetConfiguration
+        ? of(null)
+        : this.ikoApiService.getIkoWidgetData(
+            widgetParams.dataAggregateKey,
+            widgetParams.tabKey,
+            widgetConfiguration.key,
+            widgetParams.entryId
+          )
+    ),
     tap(() => this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid))
   );
 
-  constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
+  constructor(
+    private readonly ikoApiService: IkoApiService,
+    private readonly widgetLayoutService: WidgetLayoutService
+  ) {}
 }

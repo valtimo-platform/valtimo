@@ -67,6 +67,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
   }
 
   @Input() public readonly widgetComponentMap: WidgetComponentMap;
+  @Input({required: false}) public widgetParams: object;
 
   private readonly _widget$ = new BehaviorSubject<WidgetWithUuid | null>(null);
 
@@ -177,6 +178,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
           if (documentId) componentRef.instance.documentId = documentId;
           componentRef.instance.widgetConfiguration = widget;
           componentRef.instance.widgetUuid = widget.uuid;
+          componentRef.instance.widgetParams = this.widgetParams;
         }
       )
     );
