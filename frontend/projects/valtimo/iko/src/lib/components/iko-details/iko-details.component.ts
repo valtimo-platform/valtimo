@@ -33,7 +33,6 @@ import {combineLatest, Observable, switchMap, tap} from 'rxjs';
 import {IkoTab} from '../../models';
 import {IkoApiService, IkoTabService} from '../../services';
 import {IkoTabComponents, TabComponentTypes} from '../tabs/tabs.constants';
-import {IkoTabService} from '../../services';
 
 @Component({
   templateUrl: './iko-details.component.html',
