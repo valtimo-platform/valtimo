@@ -45,6 +45,7 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {
       title: 'interface.details',
+      customPageTitle: true,
     },
   },
 ];

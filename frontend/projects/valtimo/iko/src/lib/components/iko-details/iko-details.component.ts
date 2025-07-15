@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -23,13 +22,18 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {BreadcrumbService, RenderInPageHeaderDirective} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
+import {
+  BreadcrumbService,
+  PageTitleService,
+  RenderInPageHeaderDirective,
+} from '@valtimo/components';
 import {TabsModule} from 'carbon-components-angular';
 import {combineLatest, Observable, switchMap, tap} from 'rxjs';
-import {IkoApiService} from '../../services/iko-api.service';
 import {IkoTab} from '../../models';
-import {IkoTabComponents, TabComponentTypes} from '../tabs/tabs.constants';
 import {IkoTabService} from '../../services';
+import {IkoApiService} from '../../services/iko-api.service';
+import {IkoTabComponents, TabComponentTypes} from '../tabs/tabs.constants';
 
 @Component({
   templateUrl: './iko-details.component.html',
@@ -47,10 +51,23 @@ export class IkoDetailsComponent implements OnDestroy {
   public readonly tabs$: Observable<IkoTab[]> = combineLatest([
     this.route.params,
     this.route.queryParams,
+    this.translateService.stream('interface.results'),
+    this.ikoApiService.cachedMenuItems$,
   ]).pipe(
-    tap(([params, queryParams]) => {
+    tap(([params, queryParams, breadcrumbTitle, menuItems]) => {
+      const currentMenuItem = menuItems.find(item => item.key === params.key);
+
+      if (currentMenuItem && currentMenuItem?.title)
+        this.pageTitleService.setCustomPageTitle(currentMenuItem.title, true);
+
+      this.breadcrumbService.setSecondBreadcrumb({
+        route: [`/iko/${params.key}`],
+        content: currentMenuItem?.title ?? '',
+        href: `/iko/${params.key}`,
+      });
+
       this.breadcrumbService.setThirdBreadcrumb({
-        content: 'interface.results',
+        content: breadcrumbTitle,
         route: [`/iko/${params.key}/${params.searchKey}`],
         href: `/iko/${params.key}/${params.searchKey}`,
         routeExtras: {queryParams},
@@ -65,12 +82,16 @@ export class IkoDetailsComponent implements OnDestroy {
   constructor(
     private readonly breadcrumbService: BreadcrumbService,
     private readonly ikoApiService: IkoApiService,
+    private readonly ikoTabService: IkoTabService,
+    private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
-    private readonly ikoTabService: IkoTabService
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnDestroy(): void {
+    this.breadcrumbService.clearSecondBreadcrumb();
     this.breadcrumbService.clearThirdBreadcrumb();
+    this.pageTitleService.enableReset();
   }
 
   public onTabSelected(tab: IkoTab): void {

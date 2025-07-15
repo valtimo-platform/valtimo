@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Injectable} from '@angular/core';
+import {MenuItem} from '@valtimo/shared';
 import {Observable, of} from 'rxjs';
 import {map} from 'rxjs/operators';
-import {MenuItem} from '@valtimo/shared';
 import {IkoApiService} from './iko-api.service';
 
 @Injectable({providedIn: 'root'})

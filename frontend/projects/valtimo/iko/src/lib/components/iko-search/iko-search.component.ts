@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Component, OnDestroy} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {ActivatedRoute, Router} from '@angular/router';
-import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
-import {CarbonListModule, PageTitleService} from '@valtimo/components';
-import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
+import {Component, OnDestroy} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {IkoApiService} from '../../services';
+import {CarbonListModule, PageTitleService} from '@valtimo/components';
+import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
+import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
+import {IkoApiService} from '../../services';
 import {IkoListComponent} from '../iko-list/iko-list.component';
 
 @Component({
@@ -84,8 +83,8 @@ export class IkoSearchComponent implements OnDestroy {
     this.pageTitleService.enableReset();
   }
 
-  public hasAnyInput(params: {key: string}[]): boolean {
-    return params.some(param => !!this.formValues[param.key]);
+  public searchDisabled(params: {key: string; required: boolean}[]): boolean {
+    return params.some(param => !this.formValues[param.key] && param.required);
   }
 
   public isQueryGroup(param: any): param is {group: true; fields: any[]} {

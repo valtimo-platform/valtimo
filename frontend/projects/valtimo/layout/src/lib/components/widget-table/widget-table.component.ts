@@ -89,7 +89,7 @@ export class WidgetTableComponent {
     this.cdr.detectChanges();
   }
 
-  public readonly showPagination$ = new BehaviorSubject<boolean>(false);
+  public readonly showPagination = signal<boolean>(false);
 
   public readonly widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
 
@@ -100,7 +100,7 @@ export class WidgetTableComponent {
   @Input({required: true}) set widgetData(value: Page<CarbonListItem> | null) {
     if (!value) return;
 
-    this.showPagination$.next(value.totalElements > value.size);
+    this.showPagination.set(value.totalElements > value.size);
 
     if (!this._initialNumberOfElements) this._initialNumberOfElements = value.numberOfElements;
 
@@ -109,7 +109,7 @@ export class WidgetTableComponent {
     if (typeof value?.content?.length !== 'number') return;
 
     if (value.content.length < this._initialNumberOfElements) {
-      const rows = new Array<number>(this._initialNumberOfElements).fill(null);
+      const rows = new Array<null>(this._initialNumberOfElements).fill(null);
 
       widgetData = rows.map((_, index) => value.content[index] || {...value[0], hidden: true});
     }
@@ -117,7 +117,7 @@ export class WidgetTableComponent {
     this.widgetData$.next(widgetData);
 
     if (!this._paginationInitialized) {
-      this.showPagination$.next(value.totalElements > value.size);
+      this.showPagination.set(value.totalElements > value.size);
 
       this.paginationModel.set(
         value.totalPages < 0
@@ -131,10 +131,14 @@ export class WidgetTableComponent {
 
       this._paginationInitialized = true;
     } else {
-      this.paginationModel.update((model: PaginationModel) => ({
-        ...model,
-        currentPage: value.number + 1,
-      }));
+      this.paginationModel.update((model: PaginationModel | null) =>
+        !model
+          ? null
+          : {
+              ...model,
+              currentPage: value.number + 1,
+            }
+      );
     }
 
     this.cdr.detectChanges();
@@ -144,11 +148,13 @@ export class WidgetTableComponent {
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
-  public readonly paginationModel = signal<PaginationModel>(new PaginationModel());
+  public readonly paginationModel = signal<PaginationModel | null>(new PaginationModel());
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
   public onSelectPage(page: number): void {
-    this.paginationEvent.emit({...this.paginationModel(), currentPage: page});
+    const paginationModel = this.paginationModel();
+    if (!paginationModel) return;
+    this.paginationEvent.emit({...paginationModel, currentPage: page});
   }
 }
