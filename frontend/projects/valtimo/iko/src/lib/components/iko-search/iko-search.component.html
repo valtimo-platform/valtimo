@@ -36,7 +36,7 @@
           <button
             cdsButton="primary"
             class="query-group__search-button"
-            [disabled]="!hasAnyInput(param.searchFields)"
+            [disabled]="searchDisabled(param.searchFields)"
             (click)="searchGroup(param.key, param.searchFields)"
           >
             {{ 'searchFields.searchButtonText' | translate }}

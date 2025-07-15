@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
-import {Component, OnDestroy} from '@angular/core';
+import {Component} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {BreadcrumbService, CarbonListModule, ColumnConfig} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
-import {IkoListHeader} from '../../models';
 import {IkoApiService} from '../../services';
 
 @Component({
@@ -28,7 +26,7 @@ import {IkoApiService} from '../../services';
   templateUrl: './iko-list.component.html',
   imports: [CommonModule, CarbonListModule],
 })
-export class IkoListComponent implements OnDestroy {
+export class IkoListComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly listConfig$: Observable<{fields: ColumnConfig[]; items: any[]}> = combineLatest([
     this.route.params,
@@ -44,19 +42,30 @@ export class IkoListComponent implements OnDestroy {
         content: currentMenuItem?.title ?? '',
         href: `/iko/${params.key}`,
       });
+
       return this.ikoApiService.searchIkoDataRequest(params.key, params.searchKey, {
         filters: queryParams,
       });
     }),
     map(res => ({
-      fields: res.headers.map((header: IkoListHeader) => ({
-        key: header.key,
-        label: header.title,
-        viewType: header.displayType.type,
-        sortable: header.sortable,
-        ...(!!header.defaultSort && {default: header.defaultSort}),
-        ...header.displayType.displayTypeParameters,
-      })),
+      fields: res.headers.reduce(
+        (acc, curr) => [
+          ...acc,
+          ...(curr.displayType.type === 'hidden'
+            ? []
+            : [
+                {
+                  key: curr.key,
+                  label: curr.title,
+                  viewType: curr.displayType.type,
+                  sortable: curr.sortable,
+                  ...(!!curr.defaultSort && {default: curr.defaultSort}),
+                  ...curr.displayType.displayTypeParameters,
+                },
+              ]),
+        ],
+        [] as ColumnConfig[]
+      ),
       items: res.rows.content.map(stuff =>
         stuff.items.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {})
       ),
