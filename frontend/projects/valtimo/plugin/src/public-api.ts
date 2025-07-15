@@ -48,6 +48,11 @@ export * from './lib/plugins/documenten-api/components/documenten-api-configurat
 export * from './lib/plugins/documenten-api/components/store-uploaded-document/store-uploaded-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/download-document/download-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
+/* iko plugin */
+export * from './lib/plugins/iko/iko-plugin.module';
+export * from './lib/plugins/iko/iko-plugin.specification';
+export * from './lib/plugins/iko/models/config';
+export * from './lib/plugins/iko/components/iko-configuration/iko-configuration.component';
 /* objecttypen api plugin */
 export * from './lib/plugins/objecttypen-api/objecttypen-api-plugin-module';
 export * from './lib/plugins/objecttypen-api/objecttypen-api-plugin.specification';
