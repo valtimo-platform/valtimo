@@ -16,7 +16,7 @@
 
 import {Injector} from '@angular/core';
 import {FormIoCurrencyComponent} from './currency.component';
-import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../modules';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../../modules';
 import {currencyEditForm} from './currency-edit-form';
 
 const COMPONENT_OPTIONS: FormioCustomComponentInfo = {

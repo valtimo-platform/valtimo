@@ -17,9 +17,9 @@
 import {Injector} from '@angular/core';
 import {Components, Formio} from 'formiojs';
 import {DocumentService} from '@valtimo/document';
-import {FormIoStateService} from '../services/form-io-state.service';
+import {FormIoStateService} from '../../services/form-io-state.service';
 import {take} from 'rxjs/operators';
-import {ResourceOption} from '../../../models';
+import {ResourceOption} from '../../../../models';
 
 const SelectComponent = Components.components.select;
 

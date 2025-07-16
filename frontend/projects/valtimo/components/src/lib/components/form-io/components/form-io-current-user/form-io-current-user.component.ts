@@ -15,16 +15,25 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {FormioCustomComponent} from '../../../modules';
+import {FormioCustomComponent} from '../../../../modules';
+import {KeycloakService} from 'keycloak-angular';
+import {KeycloakProfile} from 'keycloak-js';
 
 @Component({
-  selector: 'valtimo-dummy',
-  template: '',
+  selector: 'valtimo-formio-current-user',
+  template: '{{ this.value?.firstName }} {{ this.value?.lastName }}<br />{{ this.value?.email }}',
+  styles: [],
   standalone: false,
 })
-export class FormioDummyComponent implements FormioCustomComponent<any> {
-  @Input() public value: string;
-  @Input() public disabled = false;
-  @Input() public required = false;
-  @Output() public valueChange = new EventEmitter<any>();
+export class FormIoCurrentUserComponent implements FormioCustomComponent<any> {
+  @Input() value: any;
+  @Input() disabled: boolean;
+  @Output() valueChange = new EventEmitter<any>();
+
+  constructor(private readonly keycloakService: KeycloakService) {
+    this.keycloakService.loadUserProfile().then((profile: KeycloakProfile) => {
+      this.value = profile;
+      this.valueChange.emit();
+    });
+  }
 }

@@ -15,10 +15,10 @@
  */
 
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {FormioCustomComponent} from '../../../modules';
+import {FormioCustomComponent} from '../../../../modules';
 import {CommonModule} from '@angular/common';
-import {ValuePathSelectorComponent} from '../../value-path-selector/value-path-selector.component';
-import {ValuePathSelectorPrefix} from '../../../models';
+import {ValuePathSelectorComponent} from '../../../value-path-selector/value-path-selector.component';
+import {ValuePathSelectorPrefix} from '../../../../models';
 import {BehaviorSubject} from 'rxjs';
 
 @Component({

@@ -28,7 +28,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import {FormControl, FormGroup} from '@angular/forms';
-import {FormioCustomComponent} from '../../../modules';
+import {FormioCustomComponent} from '../../../../modules';
 import Currency from '@tadashi/currency';
 import {Subscription} from 'rxjs';
 

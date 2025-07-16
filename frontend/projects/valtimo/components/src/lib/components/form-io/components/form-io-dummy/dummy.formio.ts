@@ -15,26 +15,24 @@
  */
 
 import {Injector} from '@angular/core';
-import {FormIoIbanComponent} from './iban.component';
-import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../modules';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../../modules';
+import {FormioDummyComponent} from './dummy.component';
 
 const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
-  type: 'iban',
-  selector: 'valtimo-iban',
-  title: 'Iban',
-  group: 'basic',
+  type: 'dummy',
+  selector: 'valtimo-dummy',
+  title: 'Dummy',
+  group: 'none',
   icon: 'bank',
   schema: {
-    label: 'Iban component',
-    key: 'iban',
+    hidden: true,
+    label: 'Dummy component',
+    key: 'dummy',
     hideLabel: false,
     tableView: true,
-    validate: {
-      required: false,
-    },
   },
 };
 
-export function registerFormioIbanComponent(injector: Injector) {
-  registerCustomFormioComponent(COMPONENT_OPTIONS, FormIoIbanComponent, injector);
+export function enableCustomFormioComponents(injector: Injector) {
+  registerCustomFormioComponent(COMPONENT_OPTIONS, FormioDummyComponent, injector);
 }
