@@ -15,7 +15,7 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {getCaseManagementRouteParams, CaseManagementParams} from '@valtimo/shared';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
@@ -225,6 +225,7 @@ export class SelectFormComponent implements OnInit, OnDestroy {
             subtitles: this.subtitlesValue,
           }),
         };
+
         if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
           this.stateService.sendProcessLinkCreateEvent(createRequest);
           return;

@@ -26,8 +26,8 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import {ValtimoFormioOptions} from '../../models';
-import {ValtimoModalService} from '../../services/valtimo-modal.service';
+import {ValtimoFormioOptions} from '../../../../models';
+import {ValtimoModalService} from '../../../../services/valtimo-modal.service';
 import {UserProviderService} from '@valtimo/security';
 import {
   FormioComponent as FormIoSourceComponent,
@@ -40,15 +40,15 @@ import {jwtDecode} from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
 import {distinctUntilChanged, filter, map, switchMap, take, tap} from 'rxjs/operators';
-import {FormIoStateService} from './services/form-io-state.service';
+import {FormIoStateService} from '../../services/form-io-state.service';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
-import {FormIoLocalStorageService} from './services/form-io-local-storage.service';
+import {FormIoLocalStorageService} from '../../services/form-io-local-storage.service';
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
 import {Formio} from 'formiojs';
-import {FormIoTagsService} from './services/form-io.tags.service';
+import {FormIoTagsService} from '../../services/form-io.tags.service';
 
 @Component({
   selector: 'valtimo-form-io',

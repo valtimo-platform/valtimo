@@ -19,17 +19,17 @@ import {Components} from 'formiojs';
 import {distinctUntilChanged, map, tap} from 'rxjs/operators';
 import {TranslateService} from '@ngx-translate/core';
 import {FormioOptions} from '@formio/angular/';
-import {FormIoStateService} from './services/form-io-state.service';
+import {FormIoStateService} from '../../services/form-io-state.service';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
 import {
   addValueResolverSelectorToEditform,
   modiyEditFormApiKeyInput,
 } from './form-io-builder.utils';
-import {ValtimoFormioOptions} from '../../models';
+import {ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
-import {FormIoTagsService} from './services/form-io.tags.service';
+import {FormIoTagsService} from '../../services/form-io.tags.service';
 
 @Component({
   selector: 'valtimo-form-io-builder',

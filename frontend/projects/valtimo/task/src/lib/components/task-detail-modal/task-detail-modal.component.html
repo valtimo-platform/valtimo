@@ -20,7 +20,7 @@
   [open]="modalOpen$ | async"
   (close)="closeModal()"
   valtimoCdsModal
-  [enableOverflow]="true"
+  [minContentHeight]="480"
 >
   <cds-modal-header (closeSelect)="closeModal()">
     <div class="title-container">

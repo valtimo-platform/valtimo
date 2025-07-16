@@ -459,7 +459,7 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
       language: 'json',
     });
 
-    this.loadFormDefinition(false).subscribe();
+    this.loadFormDefinition(false).subscribe(() => this.reloading$.next(false));
   }
 
   protected onConfirmRedirect(): void {

@@ -31,7 +31,7 @@ import {
   standalone: true,
 })
 export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
-  @Input() public readonly enableOverflow = false;
+  @Input() public readonly minContentHeight = 0;
 
   private _mutationObserver: MutationObserver;
 
@@ -50,15 +50,17 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       attributes: true,
       childList: true,
       subtree: true,
+      characterData: true,
     });
 
     const open = this.elementRef.nativeElement.getAttribute('ng-reflect-open');
-
     if (open === 'true') {
       this.applyDocumentOverflowHidden();
     }
 
-    this.applyOverflowToModalElements();
+    this.applyStyleToModalElements();
+
+    setTimeout(() => this.applyStyleToModalElements(), 0);
   }
 
   public ngOnDestroy(): void {
@@ -79,7 +81,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       }
     }
 
-    this.applyOverflowToModalElements();
+    this.applyStyleToModalElements();
   }
 
   private applyDocumentOverflowHidden(): void {
@@ -98,12 +100,18 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
     this.renderer.removeStyle(this.document.documentElement, 'overflow');
   }
 
-  private applyOverflowToModalElements(): void {
-    if (this.enableOverflow) {
-      const modalElements = this.document.querySelectorAll('.cds--modal, .cds--modal-content');
-      modalElements.forEach((el: Element) => {
-        this.renderer.setStyle(el, 'overflow', 'auto');
-      });
+  private applyStyleToModalElements(): void {
+    if (this.minContentHeight <= 0) return;
+
+    const contentElements = Array.from(this.document.querySelectorAll('.cds--modal-content'));
+
+    for (const element of contentElements) {
+      this.renderer.setStyle(
+        element,
+        'min-height',
+        `${this.minContentHeight}px`,
+        RendererStyleFlags2.Important
+      );
     }
   }
 

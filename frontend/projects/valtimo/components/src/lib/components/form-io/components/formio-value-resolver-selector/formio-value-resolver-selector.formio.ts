@@ -15,7 +15,7 @@
  */
 
 import {Injector} from '@angular/core';
-import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../modules';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../../modules';
 import {formioValueResolverSelectorEditForm} from './formio-value-resolver-selector-edit-form';
 import {FormioValueResolverSelectorComponent} from './formio-value-resolver-selector.component';
 import {ValtimoWindow} from '@valtimo/shared';

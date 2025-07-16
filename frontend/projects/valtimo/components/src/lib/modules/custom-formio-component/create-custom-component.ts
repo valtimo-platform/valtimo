@@ -24,12 +24,14 @@ const TextfieldComponent = Components.components.textfield;
 
 export function createCustomFormioComponent(customComponentOptions: FormioCustomComponentInfo) {
   return class CustomComponent extends BaseInputComponent {
-    static editForm = customComponentOptions.editForm || TextfieldComponent.editForm;
-    id = FormioUtils.getRandomComponentId();
-    type = customComponentOptions.type;
-    _customAngularElement: FormioCustomElement;
+    public static readonly editForm =
+      customComponentOptions.editForm || TextfieldComponent.editForm;
+    public readonly id = FormioUtils.getRandomComponentId();
+    public readonly type = customComponentOptions.type;
 
-    static schema() {
+    _customAngularElement!: FormioCustomElement;
+
+    public static schema() {
       return BaseInputComponent.schema({
         ...customComponentOptions.schema,
         type: customComponentOptions.type,
@@ -37,16 +39,16 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
     }
 
     // @ts-ignore
-    get defaultSchema() {
+    public get defaultSchema() {
       return CustomComponent.schema();
     }
 
     // @ts-ignore
-    get emptyValue() {
+    public get emptyValue() {
       return customComponentOptions.emptyValue || null;
     }
 
-    static get builderInfo(): BuilderInfo {
+    public static get builderInfo(): BuilderInfo {
       return {
         title: customComponentOptions.title,
         group: customComponentOptions.group,
@@ -55,6 +57,42 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
         documentation: customComponentOptions.documentation,
         schema: CustomComponent.schema(),
       };
+    }
+
+    public elementInfo() {
+      const info = super.elementInfo();
+      info.type = customComponentOptions.selector;
+      info.changeEvent = customComponentOptions.changeEvent || 'valueChange';
+      info.attr = {
+        ...info.attr,
+        class: info.attr.class.replace('form-control', 'form-control-custom-field'), // remove the form-control class as the custom angular component may look different
+      };
+      return info;
+    }
+
+    // @ts-ignore
+    public get inputInfo() {
+      const info = {
+        id: this.key,
+        ...this.elementInfo(),
+      };
+      return info;
+    }
+
+    // @ts-ignore
+    public get defaultValue() {
+      let defaultValue = this.emptyValue;
+
+      // handle falsy default value
+      if (!isNil(this.component.defaultValue)) {
+        defaultValue = this.component.defaultValue;
+      }
+
+      if (this.component.customDefaultValue && !this.options.preview) {
+        defaultValue = this.evaluate(this.component.customDefaultValue, {value: ''}, 'value');
+      }
+
+      return clone(defaultValue);
     }
 
     constructor(
@@ -78,27 +116,7 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
       }
     }
 
-    elementInfo() {
-      const info = super.elementInfo();
-      info.type = customComponentOptions.selector;
-      info.changeEvent = customComponentOptions.changeEvent || 'valueChange';
-      info.attr = {
-        ...info.attr,
-        class: info.attr.class.replace('form-control', 'form-control-custom-field'), // remove the form-control class as the custom angular component may look different
-      };
-      return info;
-    }
-
-    // @ts-ignore
-    get inputInfo() {
-      const info = {
-        id: this.key,
-        ...this.elementInfo(),
-      };
-      return info;
-    }
-
-    renderElement(value: any, index: number) {
+    public renderElement(value: any, index: number) {
       const info = this.inputInfo;
       return this.renderTemplate(customComponentOptions.template || 'input', {
         input: info,
@@ -107,7 +125,7 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
       });
     }
 
-    attach(element: HTMLElement) {
+    public attach(element: HTMLElement) {
       let superAttach = super.attach(element);
 
       this._customAngularElement = element.querySelector(customComponentOptions.selector);
@@ -178,7 +196,7 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
     }
 
     // Add extra option to support multiple value (e.g. datagrid) with single angular component (disableMultiValueWrapper)
-    useWrapper() {
+    public useWrapper() {
       return (
         this.component.hasOwnProperty('multiple') &&
         this.component.multiple &&
@@ -186,20 +204,15 @@ export function createCustomFormioComponent(customComponentOptions: FormioCustom
       );
     }
 
-    // @ts-ignore
-    get defaultValue() {
-      let defaultValue = this.emptyValue;
-
-      // handle falsy default value
-      if (!isNil(this.component.defaultValue)) {
-        defaultValue = this.component.defaultValue;
+    // override setValue method to allow for array values
+    public setValue(value): boolean {
+      if (!this._customAngularElement || !('value' in this._customAngularElement)) {
+        return false;
       }
 
-      if (this.component.customDefaultValue && !this.options.preview) {
-        defaultValue = this.evaluate(this.component.customDefaultValue, {value: ''}, 'value');
-      }
+      this._customAngularElement.value = value;
 
-      return clone(defaultValue);
+      return true;
     }
   };
 }

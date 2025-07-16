@@ -15,11 +15,7 @@
  */
 
 import {Injector} from '@angular/core';
-import {
-  createCustomFormioComponent,
-  FormioCustomComponentInfo,
-  registerCustomFormioComponentWithClass,
-} from '@valtimo/components';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '@valtimo/components';
 import {DocumentenApiUploaderComponent} from './documenten-api-uploader.component';
 import {documentenApiUploaderEditForm} from './documenten-api-uploader-edit-form';
 
@@ -37,26 +33,7 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
 };
 
 export function registerDocumentenApiFormioUploadComponent(injector: Injector) {
-  const originalUploadComponent = createCustomFormioComponent(COMPONENT_OPTIONS);
-
-  // override setValue function to allow for setting an array value
-  class UploaderComponent extends originalUploadComponent {
-    setValue(value): boolean {
-      if (!this._customAngularElement) {
-        return false;
-      }
-
-      this._customAngularElement.value = value;
-      return true;
-    }
-  }
-
   if (!customElements.get(COMPONENT_OPTIONS.selector)) {
-    registerCustomFormioComponentWithClass(
-      COMPONENT_OPTIONS,
-      DocumentenApiUploaderComponent,
-      UploaderComponent,
-      injector
-    );
+    registerCustomFormioComponent(COMPONENT_OPTIONS, DocumentenApiUploaderComponent, injector);
   }
 }

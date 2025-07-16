@@ -18,7 +18,7 @@ import {AfterViewInit, Component, EventEmitter, Input, OnDestroy, Output} from '
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ibanValidator} from './iban.validators';
 import {Subscription} from 'rxjs';
-import {FormioCustomComponent} from '../../../modules';
+import {FormioCustomComponent} from '../../../../modules';
 
 /**
  * Custom formio component for iban bank accounts.

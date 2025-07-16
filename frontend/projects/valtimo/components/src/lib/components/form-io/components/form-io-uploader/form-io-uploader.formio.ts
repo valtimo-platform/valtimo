@@ -15,11 +15,7 @@
  */
 
 import {Injector} from '@angular/core';
-import {
-  createCustomFormioComponent,
-  FormioCustomComponentInfo,
-  registerCustomFormioComponentWithClass,
-} from '../../../modules';
+import {FormioCustomComponentInfo, registerCustomFormioComponent} from '../../../../modules';
 import {FormIoUploaderComponent} from './form-io-uploader.component';
 import {formIoUploaderEditForm} from './form-io-uploader-edit-form';
 
@@ -37,31 +33,7 @@ const COMPONENT_OPTIONS: FormioCustomComponentInfo = {
 };
 
 export function registerFormioUploadComponent(injector: Injector) {
-  const originalUploadComponent = createCustomFormioComponent(COMPONENT_OPTIONS);
-
-  // override setValue function to allow for setting an array value
-  class UploaderComponent extends originalUploadComponent {
-    setValue(value): boolean {
-      if (!this._customAngularElement) {
-        return false;
-      }
-
-      let componentValue = this._customAngularElement?.value;
-
-      if (componentValue) {
-        componentValue = value;
-      }
-
-      return true;
-    }
-  }
-
   if (!customElements.get(COMPONENT_OPTIONS.selector)) {
-    registerCustomFormioComponentWithClass(
-      COMPONENT_OPTIONS,
-      FormIoUploaderComponent,
-      UploaderComponent,
-      injector
-    );
+    registerCustomFormioComponent(COMPONENT_OPTIONS, FormIoUploaderComponent, injector);
   }
 }
