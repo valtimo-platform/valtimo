@@ -45,25 +45,25 @@ export class DecisionService extends BaseApiService {
 
   public getDecisions(): Observable<Decision[]> {
     return this.httpClient.get<Decision[]>(
-      this.getApiUrl('/camunda-rest/engine/default/decision-definition')
+      this.getApiUrl('/operaton-rest/engine/default/decision-definition')
     );
   }
 
   public getDecisionById(decisionId: string): Observable<Decision> {
     return this.httpClient.get<Decision>(
-      this.getApiUrl(`/camunda-rest/engine/default/decision-definition/${decisionId}`)
+      this.getApiUrl(`/operaton-rest/engine/default/decision-definition/${decisionId}`)
     );
   }
 
   public getLatestDecisionByKey(decisionKey: string): Observable<Decision> {
     return this.httpClient.get<Decision>(
-      this.getApiUrl(`/camunda-rest/engine/default/decision-definition/key/${decisionKey}`)
+      this.getApiUrl(`/operaton-rest/engine/default/decision-definition/key/${decisionKey}`)
     );
   }
 
   public getDecisionXml(decisionId: string): Observable<DecisionXml> {
     return this.httpClient.get<DecisionXml>(
-      this.getApiUrl(`/camunda-rest/engine/default/decision-definition/${decisionId}/xml`)
+      this.getApiUrl(`/operaton-rest/engine/default/decision-definition/${decisionId}/xml`)
     );
   }
 
