@@ -67,7 +67,13 @@ import {filter, map} from 'rxjs/operators';
   ],
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() public readonly taskId: string;
+  private _taskId;
+  @Input() public set taskId(value: string) {
+    if (this._taskId === value) return;
+    this._taskId = value;
+    this.fetchCandidateUsers(value);
+  }
+
   @Input() public readonly assigneeId: string;
   @Output() public readonly assignmentOfTaskChanged = new EventEmitter();
 
@@ -116,7 +122,6 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this.fetchCandidateUsers();
     this.openHideElementSubscription();
   }
 
@@ -140,7 +145,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
 
     combineLatest([
       this._candidateUsersForTask$,
-      this.taskService.assignTask(this.taskId, {assignee: userId}),
+      this.taskService.assignTask(this._taskId, {assignee: userId}),
     ])
       .pipe(take(1))
       .subscribe({
@@ -161,7 +166,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   public unassignTask(): void {
     this.disable();
     this.taskService
-      .unassignTask(this.taskId)
+      .unassignTask(this._taskId)
       .pipe(
         tap(() => {
           this.emitChange();
@@ -230,14 +235,16 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     setTimeout(() => this.open$.next(false));
   }
 
-  private fetchCandidateUsers(): void {
+  private fetchCandidateUsers(taskId: string): void {
+    this.disable();
+
     this.canAssignUserToTask$
       .pipe(
         filter(allowed => !!allowed),
         take(1)
       )
       .subscribe(() => {
-        this.taskService.getCandidateUsers(this.taskId).subscribe(candidateUsers => {
+        this.taskService.getCandidateUsers(taskId).subscribe(candidateUsers => {
           this._candidateUsersForTask$.next(candidateUsers);
           if (this.assigneeId) {
             this.assignedIdOnServer$.next(this.assigneeId);
