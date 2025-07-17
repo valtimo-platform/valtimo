@@ -27,6 +27,8 @@ import {IkoManagementDetailsComponent} from './components/iko-management-details
 import {IkoManagementComponent} from './components/iko-management/iko-management.component';
 import {IkoSearchComponent} from './components/iko-search/iko-search.component';
 import {IkoDetailsComponent} from './components/iko-details/iko-details.component';
+import {IkoManagementComponent} from './components/iko-management/iko-management.component';
+import {ROLE_ADMIN} from '@valtimo/shared';
 
 const routes: Routes = [
   {
