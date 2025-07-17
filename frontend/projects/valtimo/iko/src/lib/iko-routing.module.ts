@@ -20,6 +20,8 @@ import {AuthGuardService} from '@valtimo/security';
 import {IkoListComponent} from './components/iko-list/iko-list.component';
 import {IkoSearchComponent} from './components/iko-search/iko-search.component';
 import {IkoDetailsComponent} from './components/iko-details/iko-details.component';
+import {IkoManagementComponent} from './components/iko-management/iko-management.component';
+import {ROLE_ADMIN} from '@valtimo/shared';
 
 const routes: Routes = [
   {
@@ -46,6 +48,15 @@ const routes: Routes = [
     data: {
       title: 'interface.details',
       customPageTitle: true,
+    },
+  },
+  {
+    path: 'iko-management',
+    component: IkoManagementComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Iko',
+      roles: [ROLE_ADMIN],
     },
   },
 ];
