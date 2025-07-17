@@ -46,6 +46,20 @@ export class IkoMenuService {
           children: ikoSubMenu,
         };
 
+        const adminMenuItem = menuItems.find(item => item.title.toUpperCase().includes('ADMIN'));
+
+        if (adminMenuItem) {
+          adminMenuItem.children = [
+            ...adminMenuItem.children,
+            {
+              title: ikoMenu.title,
+              show: true,
+              sequence: adminMenuItem.children[adminMenuItem.children.length - 1].sequence + 1,
+              link: ['/iko-management'],
+            },
+          ];
+        }
+
         return [...menuItems, ikoMenu].sort((a, b) => a.sequence - b.sequence);
       })
     );
