@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {Type} from '@angular/core';
+
 interface IkoDataAggregateCreateRequest {
   ikoRepositoryConfigKey: string;
   title: string;
@@ -126,6 +128,18 @@ interface WidgetDto {
   type: string;
 }
 
+enum IkoManagementTabType {
+  LIST,
+  SEARCH_FIELDS,
+  TABS,
+}
+
+interface IkoManagementTab {
+  key: IkoManagementTabType;
+  title: string;
+  component: Type<any>;
+}
+
 export {
   IkoDataAggregateCreateRequest,
   IkoDataAggregateUpdateRequest,
@@ -145,4 +159,6 @@ export {
   PropertyField,
   WidgetDto,
   WidgetAction,
+  IkoManagementTab,
+  IkoManagementTabType,
 };

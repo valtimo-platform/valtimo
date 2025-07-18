@@ -1850,5 +1850,8 @@
   },
   "iko": {
     "searchFieldsNoResults": "No search fields found for this entity"
+  },
+  "ikoManagement": {
+    "title": "Configuration"
   }
 }

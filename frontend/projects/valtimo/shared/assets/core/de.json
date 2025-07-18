@@ -1868,5 +1868,8 @@
   },
   "iko": {
     "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
+  },
+  "ikoManagement": {
+    "title": "Konfiguration"
   }
 }
