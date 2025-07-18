@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'cicd/*']
   push:
-    branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*']
+    branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'test/*']
   workflow_dispatch:
 
 jobs:
