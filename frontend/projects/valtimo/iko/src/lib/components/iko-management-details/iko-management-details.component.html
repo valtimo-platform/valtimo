@@ -17,16 +17,18 @@
 <ng-container
   *ngIf="{
     currentMenuItem: currentMenuItem$ | async,
-    activeIkoManagementTabType: activeIkoManagementTabType$ | async,
+    tabKey: tabKey$ | async,
   } as obs"
 >
   <cds-tabs type="contained">
     <cds-tab
       *ngFor="let tab of TABS"
-      [active]="obs.activeIkoManagementTabType === tab.key"
+      [active]="obs.tabKey === tab.key"
       [heading]="tab.title | translate"
       (selected)="onTabSelected(tab)"
     >
     </cds-tab>
   </cds-tabs>
+
+  <ng-template #tabComponent></ng-template>
 </ng-container>

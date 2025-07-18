@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
 import {CarbonListModule, ColumnConfig, PageTitleService} from '@valtimo/components';
 import {IkoApiService} from '../../services';
-import {BehaviorSubject, combineLatest, filter} from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
+import {BehaviorSubject, combineLatest, filter, Observable, Subscription} from 'rxjs';
+import {ActivatedRoute, Router} from '@angular/router';
 import {map} from 'rxjs/operators';
 import {TabsModule} from 'carbon-components-angular';
 import {IkoManagementTab, IkoManagementTabType} from '../../models';
-import {IkoManagementSearchFieldsComponent} from './components/search-fields/iko-management-search-fields.component';
-import {IkoManagementListComponent} from './components/list/iko-management-list.component';
-import {IkoManagementTabsComponent} from './components/tabs/iko-management-tabs.component';
 import {TranslateModule} from '@ngx-translate/core';
+import {IKO_MANAGEMENT_TABS} from '../../constants';
 
 @Component({
   selector: 'valtimo-iko-management-details',
@@ -34,8 +32,22 @@ import {TranslateModule} from '@ngx-translate/core';
   imports: [CommonModule, CarbonListModule, TabsModule, TranslateModule],
   styleUrl: './iko-management-details.component.scss',
 })
-export class IkoManagementDetailsComponent {
+export class IkoManagementDetailsComponent implements OnInit, OnDestroy {
+  private readonly _dynamicContainerSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);
+  @ViewChild('tabComponent', {static: false, read: ViewContainerRef})
+  public set dynamicContainer(view: ViewContainerRef) {
+    if (view) this._dynamicContainerSubject$.next(view);
+  }
+  private get _dynamicContainer$(): Observable<ViewContainerRef> {
+    return this._dynamicContainerSubject$.pipe(filter(container => !!container));
+  }
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  public readonly tabKey$: Observable<IkoManagementTabType> = this.route.params.pipe(
+    map(params => params?.tabKey),
+    filter(key => !!key)
+  );
 
   private readonly _key$ = this.route.params.pipe(
     map(params => params?.key),
@@ -49,7 +61,7 @@ export class IkoManagementDetailsComponent {
     map(([key, items]) => {
       const currentItem = items.find(item => item.key === key);
       if (!currentItem) return;
-      this.pageTitleService.setCustomPageTitle(currentItem.title);
+      this.pageTitleService.setCustomPageTitle(currentItem.title || '-');
     })
   );
 
@@ -60,35 +72,38 @@ export class IkoManagementDetailsComponent {
     },
   ];
 
-  public readonly TABS: IkoManagementTab[] = [
-    {
-      key: IkoManagementTabType.SEARCH_FIELDS,
-      title: 'ikoManagement.searchFields',
-      component: IkoManagementSearchFieldsComponent,
-    },
-    {
-      key: IkoManagementTabType.LIST,
-      title: 'ikoManagement.list',
-      component: IkoManagementListComponent,
-    },
-    {
-      key: IkoManagementTabType.TABS,
-      title: 'ikoManagement.tabs',
-      component: IkoManagementTabsComponent,
-    },
-  ];
+  public readonly TABS = IKO_MANAGEMENT_TABS;
 
-  public readonly activeIkoManagementTabType$ = new BehaviorSubject<IkoManagementTabType>(
-    IkoManagementTabType.SEARCH_FIELDS
-  );
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly ikoApiService: IkoApiService,
     private readonly route: ActivatedRoute,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly router: Router
   ) {}
 
+  public ngOnInit(): void {
+    this.openActivateTabSubscription();
+    this.pageTitleService.disableReset();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+    this.pageTitleService.enableReset();
+  }
+
   public onTabSelected(tab: IkoManagementTab): void {
-    this.activeIkoManagementTabType$.next(tab.key);
+    this.router.navigate([`../${tab.key}`], {relativeTo: this.route});
+  }
+
+  private openActivateTabSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this.tabKey$, this._dynamicContainer$]).subscribe(([tabKey, container]) => {
+        const tab = this.TABS.find(tab => tab.key === tabKey);
+        container.clear();
+        container.createComponent(tab.component);
+      })
+    );
   }
 }
