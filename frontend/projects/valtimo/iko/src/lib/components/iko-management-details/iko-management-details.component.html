@@ -14,10 +14,19 @@
   ~ limitations under the License.
   -->
 
-<valtimo-carbon-list
-  [fields]="FIELDS"
-  [items]="cachedMenuItems$ | async"
-  [loading]="loading$ | async"
-  [hideToolbar]="true"
-  (rowClicked)="onRowClicked($event)"
-></valtimo-carbon-list>
+<ng-container
+  *ngIf="{
+    currentMenuItem: currentMenuItem$ | async,
+    activeIkoManagementTabType: activeIkoManagementTabType$ | async,
+  } as obs"
+>
+  <cds-tabs type="contained">
+    <cds-tab
+      *ngFor="let tab of TABS"
+      [active]="obs.activeIkoManagementTabType === tab.key"
+      [heading]="tab.title | translate"
+      (selected)="onTabSelected(tab)"
+    >
+    </cds-tab>
+  </cds-tabs>
+</ng-container>

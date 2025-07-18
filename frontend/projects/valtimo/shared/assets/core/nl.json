@@ -1879,5 +1879,8 @@
   },
   "iko": {
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
+  },
+  "ikoManagement": {
+    "title": "Configuratie"
   }
 }

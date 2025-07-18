@@ -15,7 +15,11 @@
  */
 import {CommonModule} from '@angular/common';
 import {Component} from '@angular/core';
-import {CarbonListModule} from '@valtimo/components';
+import {CarbonListModule, ColumnConfig} from '@valtimo/components';
+import {IkoApiService} from '../../services';
+import {BehaviorSubject, tap} from 'rxjs';
+import {IkoDataAggregate} from '../../models';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'valtimo-iko-management',
@@ -23,4 +27,26 @@ import {CarbonListModule} from '@valtimo/components';
   templateUrl: './iko-management.component.html',
   imports: [CommonModule, CarbonListModule],
 })
-export class IkoManagementComponent {}
+export class IkoManagementComponent {
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  public readonly cachedMenuItems$ = this.ikoApiService.cachedMenuItems$.pipe(
+    tap(() => this.loading$.next(false))
+  );
+
+  public readonly FIELDS: ColumnConfig[] = [
+    {
+      key: 'title',
+      label: 'ikoManagement.title',
+    },
+  ];
+
+  constructor(
+    private readonly ikoApiService: IkoApiService,
+    private readonly router: Router
+  ) {}
+
+  public onRowClicked(event: IkoDataAggregate): void {
+    this.router.navigate(['iko-management', event.key]);
+  }
+}
