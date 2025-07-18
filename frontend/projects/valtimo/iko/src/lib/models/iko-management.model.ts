@@ -129,9 +129,9 @@ interface WidgetDto {
 }
 
 enum IkoManagementTabType {
-  LIST,
-  SEARCH_FIELDS,
-  TABS,
+  LIST = 'list',
+  SEARCH_FIELDS = 'search',
+  TABS = 'tabs',
 }
 
 interface IkoManagementTab {

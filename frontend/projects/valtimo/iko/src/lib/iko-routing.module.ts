@@ -61,11 +61,12 @@ const routes: Routes = [
     },
   },
   {
-    path: 'iko-management/:key',
+    path: 'iko-management/:key/:tabKey',
     component: IkoManagementDetailsComponent,
     canActivate: [AuthGuardService],
     data: {
       customPageTitle: true,
+      title: 'IKO Details',
       roles: [ROLE_ADMIN],
     },
   },

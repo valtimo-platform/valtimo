@@ -20,6 +20,7 @@ import {IkoApiService} from '../../services';
 import {BehaviorSubject, tap} from 'rxjs';
 import {IkoDataAggregate} from '../../models';
 import {Router} from '@angular/router';
+import {IKO_MANAGEMENT_TABS} from '../../constants';
 
 @Component({
   selector: 'valtimo-iko-management',
@@ -47,6 +48,6 @@ export class IkoManagementComponent {
   ) {}
 
   public onRowClicked(event: IkoDataAggregate): void {
-    this.router.navigate(['iko-management', event.key]);
+    this.router.navigate(['iko-management', event.key, IKO_MANAGEMENT_TABS[0].key]);
   }
 }
