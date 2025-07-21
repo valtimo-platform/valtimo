@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Inject, NgModule} from '@angular/core';
+import {Inject, NgModule, Optional} from '@angular/core';
 import {Route, Router, RouterModule, Routes} from '@angular/router';
 import {pendingChangesGuard} from '@valtimo/components';
 import {
@@ -175,6 +175,7 @@ const routes: Routes = [
 @NgModule({imports: [RouterModule.forChild(routes)], exports: [RouterModule], declarations: []})
 export class CaseManagementRoutingModule {
   constructor(
+    @Optional()
     @Inject(CASE_MANAGEMENT_TAB_TOKEN)
     private readonly caseManagementTabConfig: CaseManagementTabConfig[],
     private readonly router: Router
