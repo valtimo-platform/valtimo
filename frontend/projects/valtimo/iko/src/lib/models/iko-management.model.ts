@@ -54,6 +54,16 @@ interface IkoDataRequestUpdateRequest {
 interface IkoDataRequestListResponse {
   key: string;
   title: string;
+  searchFields: {
+    key: string;
+    title: string;
+    path: string;
+    dataType: string;
+    fieldType: string;
+    matchType: string;
+    dropdownDataProvider: any | null;
+    required: boolean;
+  }[];
 }
 
 interface IkoDataRequestResponse {
@@ -140,6 +150,36 @@ interface IkoManagementTab {
   component: Type<any>;
 }
 
+interface IkoSearchFieldResponse {
+  key: string;
+  title: string;
+  fieldType: string;
+  order: number;
+  ikoDataAggregateKey: string;
+  ikoDataRequestKey: string;
+  dropdownList?: [string, string][];
+  required?: boolean;
+  visible?: boolean;
+  [key: string]: any;
+}
+
+interface IkoSearchFieldCreateRequest {
+  title: string;
+  fieldType: string;
+  dropdownList?: [string, string][];
+  required?: boolean;
+  visible?: boolean;
+}
+
+interface IkoSearchFieldUpdateRequest {
+  key: string;
+  title: string;
+  fieldType: string;
+  dropdownList?: [string, string][];
+  required?: boolean;
+  visible?: boolean;
+}
+
 export {
   IkoDataAggregateCreateRequest,
   IkoDataAggregateUpdateRequest,
@@ -161,4 +201,7 @@ export {
   WidgetAction,
   IkoManagementTab,
   IkoManagementTabType,
+  IkoSearchFieldUpdateRequest,
+  IkoSearchFieldCreateRequest,
+  IkoSearchFieldResponse,
 };

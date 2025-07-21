@@ -1885,6 +1885,9 @@
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
   },
   "ikoManagement": {
-    "title": "Configuratie"
+    "title": "Configuratie",
+    "searchFields": "Zoekvelden",
+    "list": "Lijst",
+    "tabs": "Tabbladen"
   }
 }
