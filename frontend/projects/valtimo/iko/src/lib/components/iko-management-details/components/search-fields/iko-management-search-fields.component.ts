@@ -17,10 +17,38 @@ import {CommonModule} from '@angular/common';
 import {Component} from '@angular/core';
 import {CarbonListModule} from '@valtimo/components';
 import {TabsModule} from 'carbon-components-angular';
+import {ActivatedRoute} from '@angular/router';
+import {BehaviorSubject, combineLatest, filter, switchMap, tap} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {IkoManagementApiService} from '../../../../services';
 
 @Component({
   standalone: true,
   templateUrl: './iko-management-search-fields.component.html',
   imports: [CommonModule, CarbonListModule, TabsModule],
 })
-export class IkoManagementSearchFieldsComponent {}
+export class IkoManagementSearchFieldsComponent {
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  private readonly _dataAggregateKey = this.route.params.pipe(
+    map(params => params?.key),
+    filter(key => !!key)
+  );
+
+  private readonly _dataRequests$ = this._dataAggregateKey.pipe(
+    switchMap(key => this.ikoManagementApiService.getIkoDataRequests(key))
+  );
+
+  public readonly searchFieldsResponse$ = combineLatest([
+    this._dataAggregateKey,
+    this._dataRequests$,
+  ]).pipe(
+    map(([_, response]) => response),
+    tap(() => this.loading$.next(false))
+  );
+
+  constructor(
+    public readonly route: ActivatedRoute,
+    public readonly ikoManagementApiService: IkoManagementApiService
+  ) {}
+}

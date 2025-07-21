@@ -1863,6 +1863,9 @@
     "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
   },
   "ikoManagement": {
-    "title": "Konfiguration"
+    "title": "Konfiguration",
+    "searchFields": "Suchfelder",
+    "list": "Liste",
+    "tabs": "Registerkarten"
   }
 }
