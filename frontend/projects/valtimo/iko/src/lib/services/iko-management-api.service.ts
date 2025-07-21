@@ -452,4 +452,66 @@ export class IkoManagementApiService extends BaseApiService {
       this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`)
     );
   }
+
+  public getIkoSearchFields(
+    aggregateKey: string,
+    requestKey: string
+  ): Observable<IkoSearchFieldResponse[]> {
+    return this.httpClient.get<IkoSearchFieldResponse[]>(
+      this.getApiUrl(
+        `/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field`
+      )
+    );
+  }
+
+  public getIkoSearchField(
+    aggregateKey: string,
+    requestKey: string,
+    key: string
+  ): Observable<IkoSearchFieldResponse> {
+    return this.httpClient.get<IkoSearchFieldResponse>(
+      this.getApiUrl(
+        `/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field/${key}`
+      )
+    );
+  }
+
+  public createIkoSearchField(
+    aggregateKey: string,
+    requestKey: string,
+    key: string,
+    body: IkoSearchFieldCreateRequest
+  ): Observable<IkoSearchFieldResponse> {
+    return this.httpClient.post<IkoSearchFieldResponse>(
+      this.getApiUrl(
+        `/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field/${key}`
+      ),
+      body
+    );
+  }
+
+  public updateIkoSearchFields(
+    aggregateKey: string,
+    requestKey: string,
+    body: IkoSearchFieldUpdateRequest[]
+  ): Observable<IkoSearchFieldResponse[]> {
+    return this.httpClient.put<IkoSearchFieldResponse[]>(
+      this.getApiUrl(
+        `/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field`
+      ),
+      body
+    );
+  }
+
+  public deleteIkoSearchField(
+    aggregateKey: string,
+    requestKey: string,
+    key: string
+  ): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(
+        `/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field/${key}`
+      )
+    );
+  }
 }
