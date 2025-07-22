@@ -14,4 +14,6 @@
   ~ limitations under the License.
   -->
 
-tabs works
+<ng-container *ngIf="ikoTabsResponse$ | async as tabs">
+  {{ tabs }}
+</ng-container>
