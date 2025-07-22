@@ -31,8 +31,7 @@ import {
 import {TabsModule} from 'carbon-components-angular';
 import {combineLatest, Observable, switchMap, tap} from 'rxjs';
 import {IkoTab} from '../../models';
-import {IkoTabService} from '../../services';
-import {IkoApiService} from '../../services/iko-api.service';
+import {IkoApiService, IkoTabService} from '../../services';
 import {IkoTabComponents, TabComponentTypes} from '../tabs/tabs.constants';
 
 @Component({
