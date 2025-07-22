@@ -17,10 +17,30 @@ import {CommonModule} from '@angular/common';
 import {Component} from '@angular/core';
 import {CarbonListModule} from '@valtimo/components';
 import {TabsModule} from 'carbon-components-angular';
+import {BehaviorSubject, filter, switchMap, tap} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {ActivatedRoute} from '@angular/router';
+import {IkoManagementApiService} from '../../../../services';
 
 @Component({
   standalone: true,
   templateUrl: './iko-management-tabs.component.html',
   imports: [CommonModule, CarbonListModule, TabsModule],
 })
-export class IkoManagementTabsComponent {}
+export class IkoManagementTabsComponent {
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  private readonly _dataAggregateKey = this.route.params.pipe(
+    map(params => params?.key),
+    filter(key => !!key)
+  );
+
+  public readonly ikoTabsResponse$ = this._dataAggregateKey.pipe(
+    switchMap(key => this.ikoManagementApiService.getIkoTabs(key)),
+    tap(() => this.loading$.next(false))
+  );
+  constructor(
+    public readonly route: ActivatedRoute,
+    public readonly ikoManagementApiService: IkoManagementApiService
+  ) {}
+}
