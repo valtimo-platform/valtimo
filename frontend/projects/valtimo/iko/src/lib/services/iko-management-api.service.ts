@@ -149,24 +149,16 @@ export class IkoManagementApiService extends BaseApiService {
     );
   }
 
-  public getIkoRepositoryConfigs(
-    title?: string,
-    type?: string,
-    page: number = 0,
-    size: number = 100,
-    sort: string = 'title,asc'
-  ): Observable<{content: IkoRepositoryConfigListResponse[]}> {
-    let params = new HttpParams().set('page', page).set('size', size).set('sort', sort);
-    if (title) params = params.set('title', title);
-    if (type) params = params.set('type', type);
+  public getIkoRepositoryConfigs(): Observable<{content: IkoRepositoryConfigListResponse[]}> {
     return this.httpClient.get<{content: IkoRepositoryConfigListResponse[]}>(
-      this.getApiUrl(`/v1/iko`),
-      {params}
+      this.getApiUrl(`/management/v1/iko`)
     );
   }
 
   public getIkoRepositoryConfig(key: string): Observable<IkoRepositoryConfigResponse> {
-    return this.httpClient.get<IkoRepositoryConfigResponse>(this.getApiUrl(`/v1/iko/${key}`));
+    return this.httpClient.get<IkoRepositoryConfigResponse>(
+      this.getApiUrl(`/management/v1/iko/${key}`)
+    );
   }
 
   public createIkoRepositoryConfig(
