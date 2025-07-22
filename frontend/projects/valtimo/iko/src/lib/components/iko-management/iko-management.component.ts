@@ -69,6 +69,11 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly $keyToDelete = signal<string | null>(null);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
+  private readonly _apiKey$ = this.route.params.pipe(
+    map(params => params?.apiKey),
+    filter(key => !!key)
+  );
+
   public readonly FIELDS: ColumnConfig[] = [
     {
       key: 'title',
