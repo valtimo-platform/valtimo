@@ -15,9 +15,22 @@
  */
 import {CommonModule} from '@angular/common';
 import {Component, OnDestroy, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
-import {CarbonListModule, ColumnConfig, PageTitleService} from '@valtimo/components';
-import {IkoApiService} from '../../services';
-import {BehaviorSubject, combineLatest, filter, Observable, Subscription} from 'rxjs';
+import {
+  BreadcrumbService,
+  CarbonListModule,
+  ColumnConfig,
+  PageTitleService,
+} from '@valtimo/components';
+import {IkoApiService, IkoManagementApiService} from '../../services';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {map} from 'rxjs/operators';
 import {TabsModule} from 'carbon-components-angular';
@@ -54,6 +67,11 @@ export class IkoManagementDetailsComponent implements OnInit, OnDestroy {
     filter(key => !!key)
   );
 
+  private readonly _apiKey$ = this.route.params.pipe(
+    map(params => params?.apiKey),
+    filter(key => !!key)
+  );
+
   public readonly currentMenuItem$ = combineLatest([
     this._key$,
     this.ikoApiService.cachedMenuItems$,
@@ -80,17 +98,21 @@ export class IkoManagementDetailsComponent implements OnInit, OnDestroy {
     private readonly ikoApiService: IkoApiService,
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly ikoManagementApiService: IkoManagementApiService
   ) {}
 
   public ngOnInit(): void {
     this.openActivateTabSubscription();
+    this.setThirdBreadcrumb();
     this.pageTitleService.disableReset();
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
     this.pageTitleService.enableReset();
+    this.breadcrumbService.clearThirdBreadcrumb();
   }
 
   public onTabSelected(tab: IkoManagementTab): void {
@@ -105,5 +127,20 @@ export class IkoManagementDetailsComponent implements OnInit, OnDestroy {
         container.createComponent(tab.component);
       })
     );
+  }
+
+  private setThirdBreadcrumb(): void {
+    this._apiKey$
+      .pipe(
+        take(1),
+        switchMap(apiKey => this.ikoManagementApiService.getIkoRepositoryConfig(apiKey))
+      )
+      .subscribe(repositoryConfig => {
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [`/iko-management/${repositoryConfig.key}`],
+          content: repositoryConfig?.title ?? '',
+          href: `/iko-management/${repositoryConfig.key}`,
+        });
+      });
   }
 }

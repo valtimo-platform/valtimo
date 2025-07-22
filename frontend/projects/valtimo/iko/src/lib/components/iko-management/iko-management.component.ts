@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component} from '@angular/core';
-import {CarbonListModule, ColumnConfig} from '@valtimo/components';
-import {IkoApiService} from '../../services';
-import {BehaviorSubject, tap} from 'rxjs';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {CarbonListModule, ColumnConfig, PageTitleService} from '@valtimo/components';
+import {IkoApiService, IkoManagementApiService} from '../../services';
+import {BehaviorSubject, filter, switchMap, take, tap} from 'rxjs';
 import {IkoDataAggregate} from '../../models';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {IKO_MANAGEMENT_TABS} from '../../constants';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-iko-management',
@@ -28,11 +29,16 @@ import {IKO_MANAGEMENT_TABS} from '../../constants';
   templateUrl: './iko-management.component.html',
   imports: [CommonModule, CarbonListModule],
 })
-export class IkoManagementComponent {
+export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   public readonly cachedMenuItems$ = this.ikoApiService.cachedMenuItems$.pipe(
     tap(() => this.loading$.next(false))
+  );
+
+  private readonly _apiKey$ = this.route.params.pipe(
+    map(params => params?.apiKey),
+    filter(key => !!key)
   );
 
   public readonly FIELDS: ColumnConfig[] = [
@@ -44,10 +50,35 @@ export class IkoManagementComponent {
 
   constructor(
     private readonly ikoApiService: IkoApiService,
-    private readonly router: Router
+    private readonly ikoManagementApiService: IkoManagementApiService,
+    private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly pageTitleService: PageTitleService
   ) {}
 
+  public ngOnInit(): void {
+    this.pageTitleService.disableReset();
+    this.setPageTitle();
+  }
+
+  public ngOnDestroy(): void {
+    this.pageTitleService.enableReset();
+  }
+
   public onRowClicked(event: IkoDataAggregate): void {
-    this.router.navigate(['iko-management', event.key, IKO_MANAGEMENT_TABS[0].key]);
+    this._apiKey$.pipe(take(1)).subscribe(apiKey => {
+      this.router.navigate(['iko-management', apiKey, event.key, IKO_MANAGEMENT_TABS[0].key]);
+    });
+  }
+
+  private setPageTitle(): void {
+    this._apiKey$
+      .pipe(
+        take(1),
+        switchMap(apiKey => this.ikoManagementApiService.getIkoRepositoryConfig(apiKey))
+      )
+      .subscribe(repositoryConfig => {
+        this.pageTitleService.setCustomPageTitle(repositoryConfig.title);
+      });
   }
 }
