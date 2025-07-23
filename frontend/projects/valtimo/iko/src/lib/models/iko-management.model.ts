@@ -75,6 +75,7 @@ interface IkoDataRequestResponse {
 
 interface IkoRepositoryConfigCreateRequest {
   title: string;
+  key: string;
   type: string;
   properties: Record<string, any | null>;
 }
@@ -116,10 +117,14 @@ interface TabDto {
 }
 
 interface PropertyField {
-  title: string;
   key: string;
-  type: string;
-  dropdownList?: [string, string][];
+  type: 'dropdown';
+  tooltip: string | null;
+  title: string;
+  dropdownList: {
+    first: string;
+    second: string;
+  }[];
 }
 
 interface WidgetAction {
