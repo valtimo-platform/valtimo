@@ -53,10 +53,19 @@ export * from './lib/plugins/iko/iko-plugin.module';
 export * from './lib/plugins/iko/iko-plugin.specification';
 export * from './lib/plugins/iko/models/config';
 export * from './lib/plugins/iko/components/iko-configuration/iko-configuration.component';
+/* klantinteracties api plugin */
+export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin-module';
+export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin.specification';
+export * from './lib/plugins/klantinteracties-api/components/klantinteracties-api-configuration/klantinteracties-api-configuration.component';
+export * from './lib/plugins/klantinteracties-api/components/create-persoon/create-persoon.component';
 /* objecttypen api plugin */
 export * from './lib/plugins/objecttypen-api/objecttypen-api-plugin-module';
 export * from './lib/plugins/objecttypen-api/objecttypen-api-plugin.specification';
 export * from './lib/plugins/objecttypen-api/components/objecttypen-api-configuration/objecttypen-api-configuration.component';
+/* open-klant plugin */
+export * from './lib/plugins/open-klant-token-authentication/open-klant-token-authentication-plugin.module';
+export * from './lib/plugins/open-klant-token-authentication/open-klant-token-authentication-plugin.specification';
+export * from './lib/plugins/open-klant-token-authentication/components/open-klant-token-authentication-configuration/open-klant-token-authentication-configuration.component';
 /* zaken api plugin */
 export * from './lib/plugins/zaken-api/zaken-api-plugin.module';
 export * from './lib/plugins/zaken-api/zaken-api-plugin.specification';
