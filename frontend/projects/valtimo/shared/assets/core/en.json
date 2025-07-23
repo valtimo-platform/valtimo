@@ -1850,6 +1850,13 @@
     "title": "Configuration",
     "searchFields": "Search fields",
     "list": "List",
-    "tabs": "Tabs"
+    "tabs": "Tabs",
+    "addApiConfig": "Configure API",
+    "titleTitle": "Title",
+    "titlePlaceholder": "Enter a title for the API configuration",
+    "keyTitle": "Key",
+    "keyPlaceholder": "Enter a key for the API configuration",
+    "pluginIdTitle": "Plugin configuration",
+    "typeTitle": "type"
   }
 }

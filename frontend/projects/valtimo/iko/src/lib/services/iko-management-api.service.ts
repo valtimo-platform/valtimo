@@ -166,7 +166,7 @@ export class IkoManagementApiService extends BaseApiService {
     body: IkoRepositoryConfigCreateRequest
   ): Observable<IkoRepositoryConfigResponse> {
     return this.httpClient.post<IkoRepositoryConfigResponse>(
-      this.getApiUrl(`/v1/iko/${key}`),
+      this.getApiUrl(`management/v1/iko/${key}`),
       body
     );
   }
@@ -184,12 +184,12 @@ export class IkoManagementApiService extends BaseApiService {
 
   public getIkoRepositoryConfigPropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
-      this.getApiUrl(`/v1/iko-property-fields/${type}/repository-config`)
+      this.getApiUrl(`/management/v1/iko-property-fields/${type}/repository-config`)
     );
   }
 
-  public getIkoRepositoryTypes(): Observable<string[]> {
-    return this.httpClient.get<string[]>(this.getApiUrl(`/v1/iko-types`));
+  public getIkoRepositoryTypes(): Observable<{[key: string]: string}> {
+    return this.httpClient.get<{[key: string]: string}>(this.getApiUrl(`/management/v1/iko-types`));
   }
 
   public getIkoTabs(aggregateKey: string): Observable<TabDto[]> {

@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-:host ::ng-deep.cds--tab-content {
-  display: none;
+.iko-api-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 }

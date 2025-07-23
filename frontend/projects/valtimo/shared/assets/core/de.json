@@ -1866,6 +1866,13 @@
     "title": "Konfiguration",
     "searchFields": "Suchfelder",
     "list": "Liste",
-    "tabs": "Registerkarten"
+    "tabs": "Tabs",
+    "addApiConfig": "API konfigurieren",
+    "titleTitle": "Titel",
+    "titlePlaceholder": "Geben Sie einen Titel für die API-Konfiguration ein",
+    "keyTitle": "Schlüssel",
+    "keyPlaceholder": "Geben Sie einen Schlüssel für die API-Konfiguration ein",
+    "pluginIdTitle": "Plugin-Konfiguration",
+    "typeTitle": "Typ"
   }
 }

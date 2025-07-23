@@ -18,6 +18,79 @@
   [fields]="FIELDS"
   [items]="apiConfigs$ | async"
   [loading]="loading$ | async"
-  [hideToolbar]="true"
   (rowClicked)="onRowClicked($event)"
-></valtimo-carbon-list>
+>
+  <div carbonToolbarContent>
+    <button cdsButton="primary" (click)="openModal()">
+      {{ 'ikoManagement.addApiConfig' | translate }}
+
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </div>
+</valtimo-carbon-list>
+
+<cds-modal
+  valtimoCdsModal
+  [open]="openModal$ | async"
+  showFooter="true"
+  title="{{ 'ikoManagement.addApiConfig' | translate }}"
+  (close)="closeModal()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'ikoManagement.addApiConfig' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="form" class="iko-api-form">
+    <cds-label [invalid]="getControlInvalid('title')">
+      {{ 'ikoManagement.titleTitle' | translate }}
+
+      <input
+        [invalid]="getControlInvalid('title')"
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'ikoManagement.titlePlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <cds-label [invalid]="getControlInvalid('key')">
+      {{ 'ikoManagement.keyTitle' | translate }}
+
+      <input
+        [invalid]="getControlInvalid('key')"
+        formControlName="key"
+        cdsText
+        placeholder="{{ 'ikoManagement.keyPlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <v-select
+      [items]="(ikoRepositoryTypeSelectItems$ | async) || []"
+      [title]="'ikoManagement.typeTitle' | translate"
+      [disabled]="disabled$ | async"
+      [dropUp]="false"
+      [clearSelectionSubject$]="clearTypeSelection$"
+      (selectedChange)="onTypeSelect($event)"
+    ></v-select>
+
+    <v-select
+      [items]="(pluginSelectItems$ | async) || []"
+      [title]="'ikoManagement.pluginIdTitle' | translate"
+      [disabled]="disabled$ | async"
+      [dropUp]="false"
+      [clearSelectionSubject$]="clearPluginIdSelection$"
+      (selectedChange)="onPluginIdSelect($event)"
+    ></v-select>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button [disabled]="this.form.invalid" cdsButton="primary" (click)="createApiConfig()">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

@@ -1884,6 +1884,13 @@
     "title": "Configuratie",
     "searchFields": "Zoekvelden",
     "list": "Lijst",
-    "tabs": "Tabbladen"
+    "tabs": "Tabbladen",
+    "addApiConfig": "API configureren",
+    "titleTitle": "Titel",
+    "titlePlaceholder": "Voer een titel in voor de API-configuratie",
+    "keyTitle": "Sleutel",
+    "keyPlaceholder": "Voer een sleutel in voor de API-configuratie",
+    "pluginIdTitle": "Pluginconfiguratie",
+    "typeTitle": "Type"
   }
 }
