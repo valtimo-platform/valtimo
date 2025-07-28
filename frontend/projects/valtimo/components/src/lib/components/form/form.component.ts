@@ -34,6 +34,7 @@ import {DatePickerComponent} from '../date-picker/date-picker.component';
 import {MultiInputFormComponent} from '../multi-input-form/multi-input-form.component';
 import {RadioComponent} from '../radio/radio.component';
 import {ValuePathSelectorComponent} from '../value-path-selector/value-path-selector.component';
+import {ValtimoToggleComponent} from '../toggle/toggle.component';
 
 @Component({
   selector: 'v-form',
@@ -53,8 +54,10 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   radioComponents!: QueryList<RadioComponent>;
   @ContentChildren(ValuePathSelectorComponent)
   valuePathSelectorComponents!: QueryList<ValuePathSelectorComponent>;
-
-  @Input() className = '';
+  @ContentChildren(ValtimoToggleComponent)
+  toggleComponents!: QueryList<ValtimoToggleComponent>;
+  @Input()
+  className = '';
 
   @Output() valueChange: EventEmitter<FormOutput> = new EventEmitter();
 
@@ -84,6 +87,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
       ...this.multiInputFormComponents?.toArray(),
       ...this.radioComponents?.toArray(),
       ...this.valuePathSelectorComponents?.toArray(),
+      ...this.toggleComponents?.toArray(),
     ];
 
     this.componentValuesSubscription = combineLatest(
@@ -95,6 +99,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
         const multiInputFormComponent = component as MultiInputFormComponent;
         const radioComponent = component as RadioComponent;
         const valuePathSelectorComponent = component as ValuePathSelectorComponent;
+        const toggleComponent = component as ValtimoToggleComponent;
 
         if (selectComponent?.selected$) {
           return selectComponent.selected$.asObservable();
@@ -110,9 +115,7 @@ export class FormComponent implements AfterContentInit, OnDestroy {
           return inputComponent.inputValue$.asObservable();
         } else if (valuePathSelectorComponent?._selectedPath$) {
           return valuePathSelectorComponent._selectedPath$;
-        }
-
-        return of(null);
+        } else if (toggleComponent) return toggleComponent.toggleValue$;
       })
     )
       .pipe(

@@ -1528,7 +1528,8 @@
     "text": "Text",
     "textContains": "Text contains",
     "noSearchfieldsTitle": "No search fields",
-    "noSearchfieldsDescription": "There are no search fields configured for this case type."
+    "noSearchfieldsDescription": "There are no search fields configured for this case type.",
+    "exportField": "Export field"
   },
   "searchFieldsOverviewTooltips": {
     "title": "The title is an optional field that appears as a label for the current search field. When the title is not set, the default value will be the search field key translation (if there is no translation available, the original key value will be displayed).",

@@ -42,6 +42,7 @@ import {
   WidgetModule,
   ReadOnlyDirective,
   JsonEditorComponent,
+  ValtimoToggleModule,
 } from '@valtimo/components';
 import {FormManagementComponent} from '@valtimo/form-management';
 import {ConfigModule} from '@valtimo/shared';
@@ -184,6 +185,7 @@ import {CaseManagementDraftWarningComponent} from './components/case-management-
     ReadOnlyDirective,
     CaseManagementDraftWarningComponent,
     JsonEditorComponent,
+    ValtimoToggleModule,
   ],
   providers: [TabManagementService],
 })

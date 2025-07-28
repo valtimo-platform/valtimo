@@ -208,6 +208,9 @@ export * from './lib/components/multi-input-form/multi-input-form.module';
 // Radio
 export * from './lib/components/radio/radio.component';
 export * from './lib/components/radio/radio.module';
+// Toggle
+export * from './lib/components/toggle/toggle.component';
+export * from './lib/components/toggle/toggle.module';
 
 // Pending Changes
 export * from './lib/components/pending-changes/pending-changes.component';

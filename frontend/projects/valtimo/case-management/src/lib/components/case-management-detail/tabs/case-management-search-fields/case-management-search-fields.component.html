@@ -18,6 +18,7 @@
   *ngIf="{
     caseDefinitionKey: caseDefinitionKey$ | async,
     disableInput: disableInput$ | async,
+    disableExport: disableExport$ | async,
     downloadName: downloadName$ | async,
     downloadUrl: downloadUrl$ | async,
     hasEditPermissions: hasEditPermissions$ | async,
@@ -256,6 +257,17 @@
           [carbonTheme]="CARBON_THEME"
         >
         </valtimo-carbon-multi-input>
+
+        <v-toggle
+          name="export"
+          data-testid="export-selector-toggle"
+          [label]="'searchFieldsOverview.exportField' | translate"
+          [disabled]="obs.disableExport"
+          [onText]="'listColumn.sortableYes' | translate"
+          [offText]="'listColumn.sortableNo' | translate"
+          [required]="false"
+          [size]="'sm'"
+        ></v-toggle>
 
         <v-table
           *ngIf="
