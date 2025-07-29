@@ -528,4 +528,54 @@ export class IkoManagementApiService extends BaseApiService {
       )
     );
   }
+
+  public getIkoListColumns(aggregateKey: string): Observable<ListColumnDto[]> {
+    return this.httpClient.get<ListColumnDto[]>(
+      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column`)
+    );
+  }
+
+  public getIkoListColumn(aggregateKey: string, columnKey: string): Observable<ListColumnDto> {
+    return this.httpClient.get<ListColumnDto>(
+      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`)
+    );
+  }
+
+  public createIkoListColumn(
+    aggregateKey: string,
+    columnKey: string,
+    body: IkoListColumnRequest
+  ): Observable<ListColumnDto> {
+    return this.httpClient.post<ListColumnDto>(
+      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`),
+      body
+    );
+  }
+
+  public updateListColumn(
+    aggregateKey: string,
+    columnKey: string,
+    body: IkoListColumnRequest
+  ): Observable<ListColumnDto> {
+    return this.httpClient.put<ListColumnDto>(
+      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`),
+      body
+    );
+  }
+
+  public updateIkoListColumnOrder(
+    aggregateKey: string,
+    body: IkoListColumnRequest[]
+  ): Observable<ListColumnDto[]> {
+    return this.httpClient.put<ListColumnDto[]>(
+      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column`),
+      body
+    );
+  }
+
+  public deleteIkoListColumn(aggregateKey: string, columnKey: string): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`)
+    );
+  }
 }
