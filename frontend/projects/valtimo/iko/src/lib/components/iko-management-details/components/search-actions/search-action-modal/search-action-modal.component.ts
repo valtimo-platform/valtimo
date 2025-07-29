@@ -29,7 +29,7 @@ import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-compon
 import {IkoDataRequestResponse} from '../../../../../models';
 
 @Component({
-  selector: 'vatlimo-iko-management-search-action-modal',
+  selector: 'valtimo-iko-management-search-action-modal',
   templateUrl: './search-action-modal.component.html',
   styleUrl: './search-action-modal.component.scss',
   standalone: true,

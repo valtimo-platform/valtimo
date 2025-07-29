@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {Component} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {BreadcrumbService, CarbonListModule, ColumnConfig} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
@@ -26,7 +26,7 @@ import {IkoApiService} from '../../services';
   templateUrl: './iko-list.component.html',
   imports: [CommonModule, CarbonListModule],
 })
-export class IkoListComponent {
+export class IkoListComponent implements OnDestroy {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly listConfig$: Observable<{fields: ColumnConfig[]; items: any[]}> = combineLatest([
     this.route.params,
