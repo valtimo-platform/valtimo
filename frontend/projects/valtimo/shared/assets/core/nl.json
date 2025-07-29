@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
   },
   "case": {
+    "export": "Export",
     "summaryFormNotFound": "Formulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary'.",
     "bulkAssign": {
       "assign": "Toewijzen",

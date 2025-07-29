@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
   },
   "case": {
+    "export": "Export",
     "summaryFormNotFound": "Summary form not found for '{{caseDefinitionKey}}'. A form named '{{caseDefinitionKey}}.summary' must exist using the case definition key.",
     "bulkAssign": {
       "assign": "Assign to",

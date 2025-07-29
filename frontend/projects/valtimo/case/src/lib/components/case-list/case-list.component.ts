@@ -82,6 +82,7 @@ import {
 import {
   CaseBulkAssignService,
   CaseColumnService,
+  CaseExportService,
   CaseListAssigneeService,
   CaseListCaseTagService,
   CaseListPaginationService,
@@ -105,6 +106,7 @@ import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.c
     CaseListSearchService,
     CaseListStatusService,
     CaseListCaseTagService,
+    CaseExportService,
   ],
 })
 export class CaseListComponent implements OnInit, OnDestroy {
@@ -160,6 +162,16 @@ export class CaseListComponent implements OnInit, OnDestroy {
     })
   );
   public readonly canCreateCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
+    switchMap(caseDefinitionKey =>
+      this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+        identifier: caseDefinitionKey,
+      })
+    )
+  );
+
+  // TODO export permission nodig?
+  public readonly canExportCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
       this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
         resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
@@ -526,7 +538,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly permissionService: PermissionService,
     private readonly statusService: CaseListStatusService,
-    private readonly caseListCaseTagService: CaseListCaseTagService
+    private readonly caseListCaseTagService: CaseListCaseTagService,
+    private readonly caseExportService: CaseExportService
   ) {}
 
   public ngOnInit(): void {
@@ -656,6 +669,11 @@ export class CaseListComponent implements OnInit, OnDestroy {
 
   public startCase(): void {
     this.listActionsComponent.startCase();
+  }
+
+  public export(): void {
+    // TODO http call to download the export
+    this.caseExportService.downloadExport();
   }
 
   public forceRefresh(): void {
