@@ -51,19 +51,11 @@ interface IkoDataRequestUpdateRequest {
   properties: Record<string, any | null>;
 }
 
-interface IkoDataRequestListResponse {
-  key: string;
-  title: string;
-  searchFields: {
-    key: string;
-    title: string;
-    path: string;
-    dataType: string;
-    fieldType: string;
-    matchType: string;
-    dropdownDataProvider: any | null;
-    required: boolean;
-  }[];
+interface IkoManagementParams {
+  apiKey: string;
+  aggregateKey: string;
+  actionKey: string;
+  tabKey: string;
 }
 
 interface IkoDataRequestResponse {
@@ -155,7 +147,7 @@ interface IkoManagementTab {
   component: Type<any>;
 }
 
-interface IkoSearchFieldResponse {
+interface IkoSearchField {
   key: string;
   title: string;
   fieldType: string;
@@ -176,37 +168,27 @@ interface IkoSearchFieldCreateRequest {
   visible?: boolean;
 }
 
-interface IkoSearchFieldUpdateRequest {
-  key: string;
-  title: string;
-  fieldType: string;
-  dropdownList?: [string, string][];
-  required?: boolean;
-  visible?: boolean;
-}
-
 export {
   IkoDataAggregateCreateRequest,
-  IkoDataAggregateUpdateRequest,
   IkoDataAggregateListResponse,
   IkoDataAggregateResponse,
+  IkoDataAggregateUpdateRequest,
   IkoDataRequestCreateRequest,
-  IkoDataRequestUpdateRequest,
-  IkoDataRequestListResponse,
   IkoDataRequestResponse,
-  IkoRepositoryConfigCreateRequest,
-  IkoRepositoryConfigUpdateRequest,
-  IkoRepositoryConfigListResponse,
-  IkoRepositoryConfigResponse,
-  IkoTabCreateRequest,
-  IkoTabUpdateRequest,
-  TabDto,
-  PropertyField,
-  WidgetDto,
-  WidgetAction,
+  IkoDataRequestUpdateRequest,
+  IkoManagementParams,
   IkoManagementTab,
   IkoManagementTabType,
-  IkoSearchFieldUpdateRequest,
+  IkoRepositoryConfigCreateRequest,
+  IkoRepositoryConfigListResponse,
+  IkoRepositoryConfigResponse,
+  IkoRepositoryConfigUpdateRequest,
+  IkoSearchField,
   IkoSearchFieldCreateRequest,
-  IkoSearchFieldResponse,
+  IkoTabCreateRequest,
+  IkoTabUpdateRequest,
+  PropertyField,
+  TabDto,
+  WidgetAction,
+  WidgetDto,
 };

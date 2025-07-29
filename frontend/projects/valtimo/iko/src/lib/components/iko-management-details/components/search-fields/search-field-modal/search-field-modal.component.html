@@ -13,6 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <cds-modal [open]="open" showFooter="true" (close)="onCancel()">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
     <h3 cdsModalHeaderHeading>
@@ -20,113 +21,88 @@
     </h3>
   </cds-modal-header>
 
-  <form
-    cdsModalContent
-    [formGroup]="form"
-    class="valtimo-task-management-search-fields-modal__content"
-  >
-    <div class="valtimo-task-management-search-fields-modal__input">
+  <form cdsModalContent [formGroup]="formGroup" class="valtimo-search-fields-modal__content">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.title' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.title' | translate"
       >
       </v-input-label>
 
-      <input
-        data-testid="task-management-search-title"
-        cdsText
-        type="text"
-        formControlName="title"
-        cdsLayer
-      />
+      <input data-testid="-search-title" cdsText type="text" formControlName="title" cdsLayer />
     </div>
 
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.key' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
       >
       </v-input-label>
 
-      <input
-        cdsLayer
-        data-testid="task-management-search-key"
-        cdsText
-        type="text"
-        formControlName="key"
-      />
+      <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="key" />
     </div>
 
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.path' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.path' | translate"
       >
       </v-input-label>
 
-      <valtimo-value-path-selector
+      <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="path" />
+
+      <!-- TODO: When BE value resolver is in place -->
+      <!-- <valtimo-value-path-selector
         formControlName="path"
         [caseDefinitionKey]="caseDefinitionKey$ | async"
         [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-      ></valtimo-value-path-selector>
+      ></valtimo-value-path-selector> -->
     </div>
 
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.dataType' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.dataType' | translate"
       >
       </v-input-label>
 
-      <cds-dropdown
-        cdsLayer
-        data-testid="task-management-search-dataType"
-        formControlName="dataType"
-      >
+      <cds-dropdown cdsLayer data-testid="-search-dataType" formControlName="dataType">
         <cds-dropdown-list [items]="dataTypeItems$ | async"></cds-dropdown-list>
       </cds-dropdown>
     </div>
 
-    @if (dataTypeValue === TaskListSearchFieldDataType.TEXT) {
-      <div class="valtimo-task-management-search-fields-modal__input">
+    @if (dataTypeValue === SearchFieldDataType.TEXT) {
+      <div class="valtimo-search-fields-modal__input">
         <v-input-label
           [title]="'searchFieldsOverview.matchType' | translate"
           [tooltip]="'searchFieldsOverviewTooltips.matchType' | translate"
         >
         </v-input-label>
 
-        <cds-dropdown
-          cdsLayer
-          data-testid="task-management-search-matchType"
-          formControlName="matchType"
-        >
+        <cds-dropdown cdsLayer data-testid="-search-matchType" formControlName="matchType">
           <cds-dropdown-list [items]="matchTypeItems$ | async"></cds-dropdown-list>
         </cds-dropdown>
       </div>
     }
 
-    <div class="valtimo-task-management-search-fields-modal__input">
+    <div class="valtimo-search-fields-modal__input">
       <v-input-label
         [title]="'searchFieldsOverview.fieldType' | translate"
         [tooltip]="'searchFieldsOverviewTooltips.fieldType' | translate"
       >
       </v-input-label>
 
-      <cds-dropdown
-        cdsLayer
-        data-testid="task-management-search-fieldType"
-        formControlName="fieldType"
-      >
+      <cds-dropdown cdsLayer data-testid="-search-fieldType" formControlName="fieldType">
         <cds-dropdown-list [items]="fieldTypeItems$ | async"></cds-dropdown-list>
       </cds-dropdown>
     </div>
 
     @if (
-      dataTypeValue === TaskListSearchFieldDataType.TEXT &&
-      (fieldTypeValue === TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
-        fieldTypeValue === TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN)
+      dataTypeValue === SearchFieldDataType.TEXT &&
+      (fieldTypeValue === SearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
+        fieldTypeValue === SearchFieldFieldType.MULTI_SELECT_DROPDOWN)
     ) {
-      <div class="valtimo-task-management-search-fields-modal__input">
+      <div class="valtimo-search-fields-modal__input">
         <v-input-label
           [title]="'searchFieldsOverview.dropdownDataProvider' | translate"
           [tooltip]="'searchFieldsOverviewTooltips.dropdownDataProvider' | translate"
@@ -134,7 +110,7 @@
         </v-input-label>
 
         <cds-dropdown
-          data-testid="task-management-search-dropdownDataProvider"
+          data-testid="-search-dropdownDataProvider"
           formControlName="dropdownDataProvider"
           cdsLayer
         >
@@ -142,11 +118,8 @@
         </cds-dropdown>
       </div>
 
-      @if (dropdownDataProviderValue === TaskListSearchDropdownDataProvider.DATABASE) {
-        <div
-          class="valtimo-task-management-search-fields-modal__list"
-          formArrayName="dropdownValues"
-        >
+      @if (dropdownDataProviderValue === SearchDropdownDataProvider.DATABASE) {
+        <div class="valtimo-search-fields-modal__list" formArrayName="dropdownValues">
           <v-input-label
             [title]="'searchFieldsOverview.dropdownListValues' | translate"
             [tooltip]="'searchFieldsOverviewTooltips.dropdownListValues' | translate"
@@ -155,15 +128,12 @@
           </v-input-label>
 
           @for (dropdownValue of dropdownValuesArray?.controls; track $index) {
-            <form
-              [formGroup]="dropdownValue"
-              class="valtimo-task-management-search-fields-modal__dropdown-values"
-            >
+            <form [formGroup]="dropdownValue" class="valtimo-search-fields-modal__dropdown-values">
               <cds-text-label>
                 {{ 'interface.value' | translate }}
 
                 <input
-                  data-testid="task-management-search-dropdownKey"
+                  data-testid="iko-search-dropdownKey"
                   cdsText
                   type="text"
                   formControlName="key"
@@ -175,7 +145,7 @@
                 {{ 'interface.display' | translate }}
 
                 <input
-                  data-testid="task-management-search-dropdownValue"
+                  data-testid="-search-dropdownValue"
                   cdsText
                   type="text"
                   formControlName="value"
@@ -185,7 +155,7 @@
 
               <button
                 cdsButton="danger"
-                data-testid="task-management-search-deleteEnum"
+                data-testid="iko-search-deleteEnum"
                 [disabled]="$count === 1"
                 [iconOnly]="true"
                 (click)="removeDropdownValue($index)"
@@ -196,7 +166,7 @@
           }
 
           <button
-            data-testid="task-management-search-addDropdownValue"
+            data-testid="-search-addDropdownValue"
             cdsButton="primary"
             (click)="addDropdownValue()"
           >
@@ -205,26 +175,19 @@
             <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
           </button>
         </div>
-      } @else if (dropdownDataProviderValue === TaskListSearchDropdownDataProvider.JSON) {
-        <valtimo-carbon-list
-          [header]="false"
-          [hideToolbar]="true"
-          [fields]="DROPDOWN_FIELDS"
-          [items]="dropdownReadonlyItems$ | async"
-        ></valtimo-carbon-list>
       }
     }
   </form>
 
   <cds-modal-footer>
-    <button data-testid="task-management-search-cancel" cdsButton="ghost" (click)="onCancel()">
+    <button data-testid="-search-cancel" cdsButton="ghost" (click)="onCancel()">
       {{ 'interface.cancel' | translate }}
     </button>
 
     <button
-      data-testid="task-management-search-save"
+      data-testid="-search-save"
       cdsButton="primary"
-      [disabled]="form.invalid"
+      [disabled]="formGroup.invalid"
       (click)="onSave()"
     >
       {{ 'interface.save' | translate }}

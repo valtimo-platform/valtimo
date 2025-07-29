@@ -1,0 +1,62 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if (aggregateKey$ | async; as aggregateKey) {
+  <valtimo-carbon-list
+    [actionItems]="ACTION_ITEMS"
+    [dragAndDrop]="true"
+    [fields]="FIELDS"
+    [items]="searchActions$ | async"
+    [loading]="loading$ | async"
+    (itemsReordered)="onItemsReordered($event, aggregateKey)"
+    (rowClicked)="onSearchActionClick($event)"
+  >
+    <div carbonToolbarContent>
+      <ng-container [ngTemplateOutlet]="addActionButton"></ng-container>
+    </div>
+
+    <valtimo-no-results
+      [action]="addActionButton"
+      [description]="'ikoManagement.searchActions.noResultsDescription' | translate"
+      [title]="'ikoManagement.searchActions.noResultsTitle' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <vatlimo-iko-management-search-action-modal
+    [aggregateKey]="aggregateKey"
+    [open]="actionModalOpen$ | async"
+    [prefillData]="prefillData$ | async"
+    (modalClose)="onModalClose($event)"
+  ></vatlimo-iko-management-search-action-modal>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="ikoManagement.searchActions.deleteModalText"
+    [outputOnConfirm]="deleteSearchActionKey$ | async"
+    [showModalSubject$]="deleteModalOpen$"
+    titleTranslationKey="interface.delete"
+    (confirmEvent)="onDeleteSearchAction($event)"
+  ></valtimo-confirmation-modal>
+
+  <ng-template #addActionButton>
+    <button cdsButton="primary" (click)="openAddModal()">
+      {{ 'ikoManagement.searchActions.addActionTitle' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
+  </ng-template>
+}

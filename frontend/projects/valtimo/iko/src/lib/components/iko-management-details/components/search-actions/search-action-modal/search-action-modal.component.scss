@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export * from './iko.model';
-export * from './iko-menu.model';
-export * from './iko-widget.model';
-export * from './iko-management.model';
-export * from './iko-search-field.model';
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

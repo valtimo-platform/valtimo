@@ -1864,9 +1864,25 @@
   },
   "ikoManagement": {
     "title": "Konfiguration",
-    "searchFields": "Suchfelder",
     "list": "Liste",
     "tabs": "Tabs",
+    "searchActions": {
+      "addActionTitle": "Suchaktion hinzufügen",
+      "editActionTitle": "Suchaktion bearbeiten",
+      "deleteModalTitle": "Suchaktion löschen",
+      "deleteModalText": "Bist du sicher, dass du diese Suchaktion löschen möchtest?",
+      "title": "Suchaktionen",
+      "numberOfFields": "Anzahl der Suchfelder",
+      "noResultsTitle": "Es gibt keine Suchaktionen.",
+      "noResultsDescription": "Klicke hier, um eine Suchaktion zu konfigurieren."
+    },
+    "searchFields": {
+      "pageTitle": "Suchaktion: {{searchActionTitle}}",
+      "title": "Suchfelder",
+      "deleteModalText": "Bist du sicher, dass du dieses Suchfeld löschen möchtest?",
+      "noResultsTitle": "Es gibt keine Suchfelder.",
+      "noResultsDescription": "Klicke hier, um ein Suchfeld zu konfigurieren."
+    },
     "addApiConfig": "API konfigurieren",
     "titleTitle": "Titel",
     "titlePlaceholder": "Geben Sie einen Titel für die API-Konfiguration ein",

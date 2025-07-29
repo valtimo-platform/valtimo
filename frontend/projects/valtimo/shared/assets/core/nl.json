@@ -1882,9 +1882,25 @@
   },
   "ikoManagement": {
     "title": "Configuratie",
-    "searchFields": "Zoekvelden",
     "list": "Lijst",
     "tabs": "Tabbladen",
+    "searchActions": {
+      "addActionTitle": "Zoekactie toevoegen",
+      "editActionTitle": "Zoekactie bewerken",
+      "deleteModalTitle": "Zoekactie verwijderen",
+      "deleteModalText": "Weet je zeker dat je deze zoekactie wilt verwijderen?",
+      "title": "Zoekacties",
+      "numberOfFields": "Aantal zoekvelden",
+      "noResultsTitle": "Er zijn geen zoekacties.",
+      "noResultsDescription": "Klik hier om een zoekactie te configureren."
+    },
+    "searchFields": {
+      "pageTitle": "Zoekactie: {{searchActionTitle}}",
+      "title": "Zoekvelden",
+      "deleteModalText": "Weet je zeker dat je dit zoekveld wilt verwijderen?",
+      "noResultsTitle": "Er zijn geen zoekvelden.",
+      "noResultsDescription": "Klik hier om een zoekveld te configureren."
+    },
     "addApiConfig": "API configureren",
     "titleTitle": "Titel",
     "titlePlaceholder": "Voer een titel in voor de API-configuratie",

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -21,6 +22,7 @@ import {
   Input,
   OnInit,
   Output,
+  signal,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -34,26 +36,15 @@ import {InformationFilled16, TrashCan16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CARBON_CONSTANTS,
-  CarbonListModule,
   ColumnConfig,
   InputLabelModule,
-  ValuePathSelectorComponent,
+  ValtimoCdsModalDirective,
   ValuePathSelectorPrefix,
   ViewType,
 } from '@valtimo/components';
-import {DocumentService} from '@valtimo/document';
-import {
-  TaskListSearchDropdownDataProvider,
-  TaskListSearchDropdownValue,
-  TaskListSearchField,
-  TaskListSearchFieldDataType,
-  TaskListSearchFieldFieldType,
-  TaskListSearchFieldMatchType,
-} from '@valtimo/task';
 import {
   ButtonModule,
   DropdownModule,
-  IconModule,
   IconService,
   InputModule,
   LayerModule,
@@ -64,54 +55,56 @@ import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
-  filter,
   map,
   Observable,
   of,
   startWith,
   switchMap,
+  tap,
 } from 'rxjs';
+import {
+  IkoSearchField,
+  SearchDropdownDataProvider,
+  SearchDropdownValue,
+  SearchField,
+  SearchFieldDataType,
+  SearchFieldFieldType,
+  SearchFieldMatchType,
+} from '../../../../../models';
 
 @Component({
-  selector: 'valtimo-task-management-search-fields-modal',
-  templateUrl: './task-management-search-fields-modal.component.html',
-  styleUrl: './task-management-search-fields-modal.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'valtimo-iko-management-search-field-modal',
+  templateUrl: './search-field-modal.component.html',
+  styleUrl: './search-field-modal.component.scss',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
-    TranslateModule,
     ButtonModule,
+    CommonModule,
     DropdownModule,
+    InputLabelModule,
     InputModule,
+    LayerModule,
     ModalModule,
     ReactiveFormsModule,
-    IconModule,
-    CarbonListModule,
-    InputLabelModule,
-    ValuePathSelectorComponent,
-    LayerModule,
+    TranslateModule,
+    ValtimoCdsModalDirective,
   ],
 })
-export class TaskManagementSearchFieldsModalComponent implements OnInit {
+export class IkoManagementSearchFieldModalComponent implements OnInit {
   @Input({required: true}) open: boolean;
 
-  public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
-  @Input({required: true}) public set caseDefinitionKey(value: string) {
-    this.caseDefinitionKey$.next(value);
-  }
-
-  private _prefillData: TaskListSearchField | null;
-  @Input() public set prefillData(value: TaskListSearchField | null) {
+  private _prefillData: IkoSearchField | null;
+  @Input() public set prefillData(value: IkoSearchField | null) {
     this._prefillData = value;
     this.setPrefilledForm(value);
   }
-  public get prefillData(): TaskListSearchField | null {
+  public get prefillData(): IkoSearchField | null {
     return this._prefillData;
   }
-  @Output() closeEvent = new EventEmitter<Partial<TaskListSearchField> | null>();
+  @Output() closeEvent = new EventEmitter<Partial<IkoSearchField> | null>();
 
-  public readonly form = this.fb.group({
+  public readonly formGroup = this.fb.group({
     key: this.fb.control<string>('', Validators.required),
     title: this.fb.control<string>('', Validators.required),
     path: this.fb.control<string>('', Validators.required),
@@ -123,21 +116,21 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
   });
 
   public get dataType(): AbstractControl<ListItem | null> | null {
-    return this.form.get('dataType');
+    return this.formGroup.get('dataType');
   }
   public get dataTypeValue$(): Observable<ListItem | null> {
     return this.dataType?.valueChanges.pipe(startWith(this.dataType.value)) ?? of(null);
   }
 
   public get matchType(): AbstractControl<ListItem | null> | null {
-    return this.form.get('matchType');
+    return this.formGroup.get('matchType');
   }
   public get matchTypeValue$(): Observable<ListItem | null> {
     return this.matchType?.valueChanges.pipe(startWith(this.matchType.value)) ?? of(null);
   }
 
   public get dropdownDataProvider(): AbstractControl<ListItem | null> | null {
-    return this.form.get('dropdownDataProvider');
+    return this.formGroup.get('dropdownDataProvider');
   }
 
   public get dropdownDataProviderValue$(): Observable<ListItem | null> {
@@ -148,46 +141,44 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
   }
 
   public get fieldType(): AbstractControl<ListItem | null> | null {
-    return this.form.get('fieldType');
+    return this.formGroup.get('fieldType');
   }
   public get fieldTypeValue$(): Observable<ListItem | null> {
     return this.fieldType?.valueChanges.pipe(startWith(this.fieldType.value)) ?? of(null);
   }
 
-  public readonly TaskListSearchFieldDataType = TaskListSearchFieldDataType;
-  public readonly TaskListSearchFieldFieldType = TaskListSearchFieldFieldType;
-  public readonly TaskListSearchDropdownDataProvider = TaskListSearchDropdownDataProvider;
+  public readonly SearchFieldDataType = SearchFieldDataType;
+  public readonly SearchFieldFieldType = SearchFieldFieldType;
+  public readonly SearchDropdownDataProvider = SearchDropdownDataProvider;
 
   public get keyValue(): string | null {
-    const controlValue = this.form.get('key')?.value;
+    const controlValue = this.formGroup.get('key')?.value;
 
     return !controlValue ? null : controlValue;
   }
 
   public get dataTypeValue(): string | null {
-    const controlValue = this.form.get('dataType')?.value;
+    const controlValue = this.formGroup.get('dataType')?.value;
     this._dataTypeValue$.next(controlValue?.id);
 
     return !controlValue ? null : controlValue.id;
   }
 
   public get fieldTypeValue(): string | null {
-    const controlValue = this.form.get('fieldType')?.value;
+    const controlValue = this.formGroup.get('fieldType')?.value;
 
     return !controlValue ? null : controlValue.id;
   }
 
-  
   public get dropdownDataProviderValue(): string | null {
-    const controlValue = this.form.get('dropdownDataProvider')?.value;
+    const controlValue = this.formGroup.get('dropdownDataProvider')?.value;
     this._dropdownProviderValue$.next(controlValue?.id);
 
     return !controlValue ? null : controlValue.id;
   }
 
-  
   public get dropdownValuesArray(): FormArray | null {
-    const formArray = this.form.get('dropdownValues');
+    const formArray = this.formGroup.get('dropdownValues');
 
     return !formArray ? null : (formArray as FormArray);
   }
@@ -205,28 +196,13 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     },
   ];
 
-  private readonly _dataTypeValue$ = new BehaviorSubject<
-    TaskListSearchFieldDataType | null | undefined
-  >(null);
-
-  
-  private readonly _dropdownProviderValue$ = new BehaviorSubject<
-    TaskListSearchDropdownDataProvider | null | undefined
-  >(null);
-  public readonly dropdownReadonlyItems$ = this._dropdownProviderValue$.pipe(
-    distinctUntilChanged(),
-    filter(val => !!val && val === TaskListSearchDropdownDataProvider.JSON),
-    switchMap((provider: TaskListSearchDropdownDataProvider | null | undefined) =>
-      this.documentService.getDropdownData(
-        provider ?? '',
-        this.caseDefinitionKey$.getValue() ?? '',
-        this.keyValue ?? ''
-      )
-    ),
-    map(dropdownData =>
-      dropdownData ? Object.entries(dropdownData).map(([key, value]) => ({key, value})) : []
-    )
+  private readonly _dataTypeValue$ = new BehaviorSubject<SearchFieldDataType | null | undefined>(
+    null
   );
+
+  private readonly _dropdownProviderValue$ = new BehaviorSubject<
+    SearchDropdownDataProvider | null | undefined
+  >(null);
 
   public readonly dataTypeItems$: Observable<ListItem[]> = combineLatest([
     this.dataTypeValue$,
@@ -236,27 +212,27 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
       [
         {
           content: this.translateService.instant('searchFields.text'),
-          id: TaskListSearchFieldDataType.TEXT,
+          id: SearchFieldDataType.TEXT,
         },
         {
           content: this.translateService.instant('searchFields.boolean'),
-          id: TaskListSearchFieldDataType.BOOLEAN,
+          id: SearchFieldDataType.BOOLEAN,
         },
         {
           content: this.translateService.instant('searchFields.date'),
-          id: TaskListSearchFieldDataType.DATE,
+          id: SearchFieldDataType.DATE,
         },
         {
           content: this.translateService.instant('searchFields.datetime'),
-          id: TaskListSearchFieldDataType.DATETIME,
+          id: SearchFieldDataType.DATETIME,
         },
         {
           content: this.translateService.instant('searchFields.number'),
-          id: TaskListSearchFieldDataType.NUMBER,
+          id: SearchFieldDataType.NUMBER,
         },
         {
           content: this.translateService.instant('searchFields.time'),
-          id: TaskListSearchFieldDataType.TIME,
+          id: SearchFieldDataType.TIME,
         },
       ].map(item => ({...item, selected: item.id === dataTypeValue?.id}))
     )
@@ -271,25 +247,25 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
       [
         {
           content: this.translateService.instant('searchFieldsOverview.single'),
-          id: TaskListSearchFieldFieldType.SINGLE,
+          id: SearchFieldFieldType.SINGLE,
         },
         {
           content: this.translateService.instant('searchFieldsOverview.range'),
-          id: TaskListSearchFieldFieldType.RANGE,
+          id: SearchFieldFieldType.RANGE,
         },
-        ...(dataTypeValue === TaskListSearchFieldDataType.TEXT
+        ...(dataTypeValue === SearchFieldDataType.TEXT
           ? [
               {
                 content: this.translateService.instant(
                   'searchFieldsOverview.single-select-dropdown'
                 ),
-                id: TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
+                id: SearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
               },
               {
                 content: this.translateService.instant(
                   'searchFieldsOverview.multi-select-dropdown'
                 ),
-                id: TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN,
+                id: SearchFieldFieldType.MULTI_SELECT_DROPDOWN,
               },
             ]
           : []),
@@ -307,13 +283,13 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
             content: this.translateService.instant(
               'searchFieldsOverview.dropdownDatabaseDataProvider'
             ),
-            id: TaskListSearchDropdownDataProvider.DATABASE,
+            id: SearchDropdownDataProvider.DATABASE,
           },
           {
             content: this.translateService.instant(
               'searchFieldsOverview.dropdownJsonFileDataProvider'
             ),
-            id: TaskListSearchDropdownDataProvider.JSON,
+            id: SearchDropdownDataProvider.JSON,
           },
         ].map(item => ({...item, selected: item.id === dataProviderValue?.id}))
       )
@@ -327,11 +303,11 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
         [
           {
             content: this.translateService.instant('searchFieldsOverview.like'),
-            id: TaskListSearchFieldMatchType.LIKE,
+            id: SearchFieldMatchType.LIKE,
           },
           {
             content: this.translateService.instant('searchFieldsOverview.exact'),
-            id: TaskListSearchFieldMatchType.EXACT,
+            id: SearchFieldMatchType.EXACT,
           },
         ].map(item => ({...item, selected: item.id === matchTypeValue?.id}))
       )
@@ -340,7 +316,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   constructor(
-    private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService
@@ -349,10 +324,12 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.form.setValidators([this.dropdownDataProviderValidator, this.dropdownValuesValidator]);
+    this.formGroup.setValidators([
+      this.dropdownDataProviderValidator,
+      this.dropdownValuesValidator,
+    ]);
   }
 
-  
   public addDropdownValue(prefillValue?: {key: string; value: string}): void {
     if (!this.dropdownValuesArray) return;
 
@@ -376,7 +353,7 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
   }
 
   public onSave(): void {
-    const groupValue = this.form.getRawValue();
+    const groupValue = this.formGroup.getRawValue();
     this.closeEvent.emit({
       ...(groupValue.title && {title: groupValue.title}),
       ...(groupValue.key && {key: groupValue.key}),
@@ -398,11 +375,10 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     this.resetForm();
   }
 
-  
-  private setPrefilledForm(prefillData: TaskListSearchField | null): void {
+  private setPrefilledForm(prefillData: IkoSearchField | null): void {
     if (!prefillData) return;
 
-    this.form.patchValue({
+    this.formGroup.patchValue({
       ...prefillData,
       dataType: !prefillData.dataType
         ? null
@@ -437,11 +413,10 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
 
     if (prefillData.dropdownDataProvider && prefillData.dropdownValues)
       this.setPrefilledDropdownValues(prefillData.dropdownValues);
-    this.form.get('key')?.disable();
+    this.formGroup.get('key')?.disable();
   }
 
-  
-  private setPrefilledDropdownValues(dropdownValue: TaskListSearchDropdownValue): void {
+  private setPrefilledDropdownValues(dropdownValue: SearchDropdownValue): void {
     if (!this.dropdownValuesArray || !this.dropdownDataProviderValue) return;
 
     Object.entries(dropdownValue).forEach(([key, value]) => {
@@ -449,14 +424,13 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     });
   }
 
-  
   private matchTypeValidator(control: AbstractControl): null | {[key: string]: string} {
     const controlValue: ListItem | undefined = control.value;
     const dataTypeControlValue: ListItem | null | undefined =
       control.parent?.get('dataType')?.value;
 
     if (
-      dataTypeControlValue?.id === TaskListSearchFieldDataType.TEXT &&
+      dataTypeControlValue?.id === SearchFieldDataType.TEXT &&
       (!controlValue || !controlValue.selected)
     )
       return {error: 'Match type not selected'};
@@ -464,15 +438,14 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return null;
   }
 
-  
-  private dropdownDataProviderValidator(group: typeof this.form): ValidationErrors | null {
+  private dropdownDataProviderValidator(group: typeof this.formGroup): ValidationErrors | null {
     const controlValue: ListItem | undefined | null = group.get('dropdownDataProvider')?.value;
     const fieldTypeControlValue: ListItem | null | undefined = group.get('fieldType')?.value;
 
     if (
       [
-        TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
-        TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN,
+        SearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
+        SearchFieldFieldType.MULTI_SELECT_DROPDOWN,
       ].includes(fieldTypeControlValue?.id) &&
       !controlValue
     )
@@ -481,8 +454,7 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return null;
   }
 
-  
-  private dropdownValuesValidator(group: typeof this.form): ValidationErrors | null {
+  private dropdownValuesValidator(group: typeof this.formGroup): ValidationErrors | null {
     const controlValue: ({key: string; value: string} | null)[] | undefined =
       group.get('dropdownValues')?.value;
     const fieldTypeControlValue = group.get('fieldType')?.value?.id;
@@ -490,11 +462,11 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
 
     if (
       [
-        TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
-        TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN,
+        SearchFieldFieldType.SINGLE_SELECT_DROPDOWN,
+        SearchFieldFieldType.MULTI_SELECT_DROPDOWN,
       ].includes(fieldTypeControlValue) &&
       (!controlValue || controlValue?.length === 0) &&
-      dropdownProviderValue === TaskListSearchDropdownDataProvider.DATABASE
+      dropdownProviderValue === SearchDropdownDataProvider.DATABASE
     )
       return {error: 'Dropdown source provider is not specified or is empty'};
 
@@ -506,8 +478,8 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
       while (!!this.dropdownValuesArray?.length) {
         this.dropdownValuesArray.removeAt(0);
       }
-      this.form.reset();
-      this.form.enable();
+      this.formGroup.reset();
+      this.formGroup.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }

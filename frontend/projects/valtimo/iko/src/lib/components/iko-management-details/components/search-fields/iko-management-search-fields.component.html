@@ -14,6 +14,48 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="searchFieldsResponse$ | async as searchFields">
-  {{ searchFields }}
-</ng-container>
+@if (params$ | async; as params) {
+  <valtimo-carbon-list
+    [actionItems]="ACTION_ITEMS"
+    [dragAndDrop]="true"
+    [fields]="FIELDS"
+    [items]="searchFields$ | async"
+    [loading]="loading$ | async"
+    (itemsReordered)="onItemsReordered($event, params)"
+    (rowClicked)="editSearchField($event)"
+  >
+    <div carbonToolbarContent>
+      <ng-container [ngTemplateOutlet]="addFieldButton"></ng-container>
+    </div>
+
+    <valtimo-no-results
+      [action]="addFieldButton"
+      [description]="'ikoManagement.searchFields.noResultsDescription' | translate"
+      [title]="'ikoManagement.searchFields.noResultsTitle' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+}
+
+<valtimo-iko-management-search-field-modal
+  [open]="fieldModalOpen$ | async"
+  [prefillData]="prefillData$ | async"
+  (closeEvent)="onModalClose($event)"
+></valtimo-iko-management-search-field-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="ikoManagement.searchFields.deleteModalText"
+  [outputOnConfirm]="deleteFieldKey$ | async"
+  [showModalSubject$]="deleteModalOpen$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDeleteSearchField($event)"
+></valtimo-confirmation-modal>
+
+<ng-template #addFieldButton>
+  <button cdsButton="primary" (click)="openAddModal()">
+    {{ 'searchFieldsOverview.add' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>

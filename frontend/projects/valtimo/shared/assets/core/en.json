@@ -1848,9 +1848,25 @@
   },
   "ikoManagement": {
     "title": "Configuration",
-    "searchFields": "Search fields",
     "list": "List",
     "tabs": "Tabs",
+    "searchActions": {
+      "addActionTitle": "Add search action",
+      "editActionTitle": "Edit search action",
+      "deleteModalTitle": "Delete search action",
+      "deleteModalText": "Are you sure you want to delete this search action?",
+      "title": "Search actions",
+      "numberOfFields": "Number of search fields",
+      "noResultsTitle": "There are no search actions.",
+      "noResultsDescription": "Click here to configure a search action."
+    },
+    "searchFields": {
+      "pageTitle": "Search action: {{searchActionTitle}}",
+      "title": "Search fields",
+      "deleteModalText": "Are you sure you want to delete this search field?",
+      "noResultsTitle": "There are no search fields.",
+      "noResultsDescription": "Click here to configure a search field."
+    },
     "addApiConfig": "Configure API",
     "titleTitle": "Title",
     "titlePlaceholder": "Enter a title for the API configuration",
