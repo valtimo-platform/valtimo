@@ -1,0 +1,150 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  valtimoCdsModal
+  *ngIf="{
+    title:
+      (modalMode === IkoListColumnModalMode.ADD
+        ? 'ikoManagement.addColumn'
+        : 'ikoManagement.editColumn'
+      ) | translate,
+  } as state"
+  [open]="$openModal()"
+  [title]="state.title"
+  (close)="closeModal()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ state.title }}
+    </h3>
+  </cds-modal-header>
+
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="form" class="iko-column-form">
+    <cds-label>
+      {{ 'ikoManagement.titleTitle' | translate }}
+
+      <input
+        [invalid]="title.dirty && title.invalid"
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'ikoManagement.columnTitlePlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <cds-label>
+      {{ 'ikoManagement.keyTitle' | translate }}
+
+      <input
+        [invalid]="key.dirty && key.invalid"
+        formControlName="key"
+        cdsText
+        placeholder="{{ 'ikoManagement.columnKeyPlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <cds-label>
+      {{ 'ikoManagement.pathTitle' | translate }}
+
+      <input
+        [invalid]="path.dirty && path.invalid"
+        formControlName="path"
+        cdsText
+        placeholder="{{ 'ikoManagement.columnPathPlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <cds-toggle
+      formControlName="sortable"
+      [label]="'ikoManagement.sortableTitle' | translate"
+      [onText]="'ikoManagement.sortingEnabled' | translate"
+      [offText]="'ikoManagement.sortingDisabled' | translate"
+    ></cds-toggle>
+
+    <v-select
+      [invalid]="defaultSort.dirty && defaultSort.invalid"
+      formControlName="defaultSort"
+      [items]="sortSelectItems"
+      titleTranslationKey="ikoManagement.defaultSortTitle"
+      [appendInline]="false"
+    ></v-select>
+
+    <v-select
+      [invalid]="displayType.dirty && displayType.invalid"
+      formControlName="displayType"
+      [items]="displayTypeSelectItems"
+      titleTranslationKey="ikoManagement.displayType"
+      [appendInline]="false"
+    ></v-select>
+
+    <v-input-label
+      *ngIf="isDateDisplayType$ | async"
+      titleTranslationKey="listColumn.dateFormat"
+      tooltipTranslationKey="listColumn.dateFormatTooltip"
+    >
+      <input cdsText formControlName="dateFormat" />
+    </v-input-label>
+
+    <v-input-label
+      *ngIf="isBooleanDisplayType$ | async"
+      titleTranslationKey="listColumn.enumTitleOptional"
+      tooltipTranslationKey="listColumn.enumTooltipOptional"
+    >
+      <valtimo-carbon-multi-input
+        type="keyValue"
+        formControlName="booleanDisplayTypeParameters"
+        [hideAddButton]="true"
+        [hideDeleteButton]="true"
+        [maxRows]="1"
+        [keyColumnTitle]="'viewTypeConverter.Yes' | translate"
+        [valueColumnTitle]="'viewTypeConverter.No' | translate"
+      ></valtimo-carbon-multi-input>
+    </v-input-label>
+
+    <v-input-label
+      *ngIf="isEnumDisplayType$ | async"
+      titleTranslationKey="listColumn.enumTitle"
+      tooltipTranslationKey="listColumn.enumTooltip"
+    >
+      <valtimo-carbon-multi-input
+        type="keyValue"
+        formControlName="enumDisplayTypeParameters"
+      ></valtimo-carbon-multi-input>
+    </v-input-label>
+
+    <v-input-label
+      *ngIf="isTagsDisplayType$ | async"
+      titleTranslationKey="listColumn.tagAmount"
+      tooltipTranslationKey="listColumn.tagAmountTooltip"
+    >
+      <cds-number formControlName="tagAmount" [min]="1" [step]="1"></cds-number>
+    </v-input-label>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      [disabled]="form.invalid || form.disabled || !form.dirty"
+      cdsButton="primary"
+      (click)="addColumn()"
+    >
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

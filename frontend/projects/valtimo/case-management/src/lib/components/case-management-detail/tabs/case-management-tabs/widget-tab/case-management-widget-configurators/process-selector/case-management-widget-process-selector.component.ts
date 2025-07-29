@@ -48,12 +48,12 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
 
   public readonly formGroup = this.fb.group({
     name: this.fb.control<string>({
-      value: this.widgetWizardService.widgetActions()?.[0]?.name ?? '',
-      disabled: !this.widgetWizardService.widgetActions()?.length,
+      value: this.widgetWizardService.$widgetActions()?.[0]?.name ?? '',
+      disabled: !this.widgetWizardService.$widgetActions()?.length,
     }),
     processDefinitionKey: this.fb.control<ListItem>({
       content: '',
-      key: this.widgetWizardService.widgetActions()?.[0]?.processDefinitionKey,
+      key: this.widgetWizardService.$widgetActions()?.[0]?.processDefinitionKey,
       selected: false,
     }),
   });
@@ -66,8 +66,8 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
       )
     ),
     map((processDocumentDefinitions: ProcessDefinitionCaseDefinition[]) => {
-      const selectedProcessKey: string | undefined = this.widgetWizardService.editMode()
-        ? this.widgetWizardService.widgetActions()?.[0]?.processDefinitionKey
+      const selectedProcessKey: string | undefined = this.widgetWizardService.$editMode()
+        ? this.widgetWizardService.$widgetActions()?.[0]?.processDefinitionKey
         : undefined;
 
       return processDocumentDefinitions.map((definition: ProcessDefinitionCaseDefinition) => {
@@ -108,7 +108,7 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
         .subscribe(
           (changes: Partial<{name: string | null; processDefinitionKey: ListItem | null}>) => {
             const {name, processDefinitionKey} = changes;
-            this.widgetWizardService.widgetActions.update(() =>
+            this.widgetWizardService.$widgetActions.update(() =>
               // This can be extended in the future if we need to support multiple actions on a widget
               !Array.isArray(processDefinitionKey)
                 ? [

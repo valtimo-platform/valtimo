@@ -56,7 +56,7 @@ export class CaseManagementWidgetFormioComponent
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public readonly form = this.fb.group({
-    widgetTitle: this.fb.control(this.widgetWizardService.widgetTitle(), Validators.required),
+    widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
   });
 
   public get widgetTitle(): AbstractControl<string | null> | null {
@@ -109,7 +109,7 @@ export class CaseManagementWidgetFormioComponent
     if (!formDefinitionId) return;
 
     this._selectedFormDefinitionId$.next(formDefinitionId);
-    this.widgetWizardService.widgetContent.set({formDefinitionName: formDefinitionId});
+    this.widgetWizardService.$widgetContent.set({formDefinitionName: formDefinitionId});
     this.changeValidEvent.emit(true);
   }
 
@@ -126,7 +126,7 @@ export class CaseManagementWidgetFormioComponent
   private openTitleSubscription(): void {
     this._subscriptions.add(
       this.widgetTitle?.valueChanges.subscribe(title => {
-        this.widgetWizardService.widgetTitle.set(title);
+        this.widgetWizardService.$widgetTitle.set(title);
       })
     );
   }
@@ -147,7 +147,7 @@ export class CaseManagementWidgetFormioComponent
   }
 
   private prefill(): void {
-    const formDefinitionId = (this.widgetWizardService.widgetContent() as WidgetFormioContent)
+    const formDefinitionId = (this.widgetWizardService.$widgetContent() as WidgetFormioContent)
       ?.formDefinitionName;
 
     if (!formDefinitionId) return;

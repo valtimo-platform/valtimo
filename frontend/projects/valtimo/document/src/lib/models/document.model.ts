@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {DisplayType} from '@valtimo/shared';
 import {CaseTag} from './case-tags.model';
 
 interface SortResult {
@@ -347,19 +348,6 @@ interface CaseListColumnView {
   exportable?: boolean;
 }
 
-interface DisplayType {
-  type: string;
-  displayTypeParameters: DisplayTypeParameters;
-}
-
-interface DisplayTypeParameters {
-  enum?: {
-    [key: string]: string;
-  };
-  dateFormat?: string;
-  tagAmount?: number;
-}
-
 interface DocumentDefinitionVersionsResult {
   name: string;
   versions: Array<number>;
@@ -404,8 +392,6 @@ export {
   CaseSettings,
   CreateDocumentDefinitionResponse,
   DocumentDefinitionId,
-  DisplayType,
-  DisplayTypeParameters,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,

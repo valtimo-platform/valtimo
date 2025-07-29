@@ -21,9 +21,6 @@ import {TooltipIconComponent} from './tooltip-icon.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {TooltipModule} from '../../directives/tooltip/tooltip.module';
 
-/**
- * @deprecated Migrate old design to Carbon
- */
 @NgModule({
   declarations: [TooltipIconComponent],
   imports: [CommonModule, TranslateModule, FormsModule, TooltipModule],

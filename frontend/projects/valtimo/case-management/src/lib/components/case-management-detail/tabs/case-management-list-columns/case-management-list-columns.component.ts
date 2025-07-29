@@ -26,13 +26,13 @@ import {
   ValuePathSelectorPrefix,
   ViewType,
 } from '@valtimo/components';
-import {EditPermissionsService, getCaseManagementRouteParams} from '@valtimo/shared';
 import {
-  CaseListColumn,
-  CaseListColumnView,
-  DisplayTypeParameters,
-  DocumentService,
-} from '@valtimo/document';
+  ConfigService,
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+  getDisplayTypeParametersView,
+} from '@valtimo/shared';
+import {CaseListColumn, CaseListColumnView, DocumentService} from '@valtimo/document';
 import {IconService, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -141,7 +141,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
         displayType: this.translateService.instant(
           `listColumnDisplayType.${column?.displayType?.type}`
         ),
-        displayTypeParameters: this.getDisplayTypeParametersView(
+        displayTypeParameters: getDisplayTypeParametersView(
           column.displayType.displayTypeParameters
         ),
       }))
@@ -515,25 +515,6 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
           },
         });
     });
-  }
-
-  private getDisplayTypeParametersView(displayTypeParameters: DisplayTypeParameters): string {
-    if (displayTypeParameters?.dateFormat) {
-      return displayTypeParameters.dateFormat;
-    } else if (displayTypeParameters?.tagAmount) {
-      return displayTypeParameters.tagAmount.toString();
-    } else if (displayTypeParameters?.enum) {
-      return Object.keys(displayTypeParameters.enum).reduce((acc, curr) => {
-        const keyValuePairString = `${curr}: ${displayTypeParameters.enum?.[curr]}`;
-        if (!acc) {
-          return `${keyValuePairString}`;
-        }
-
-        return `${acc}, ${keyValuePairString}`;
-      }, '');
-    }
-
-    return '-';
   }
 
   private updateColumn(): void {

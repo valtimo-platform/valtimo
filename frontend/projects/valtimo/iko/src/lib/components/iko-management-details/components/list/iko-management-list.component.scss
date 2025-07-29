@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,8 +14,31 @@
  * limitations under the License.
  */
 
-export interface IkoWidgetParams {
-  dataAggregateKey: string;
-  entryId: string;
-  tabKey: string;
+::ng-deep .tab-container {
+  min-height: unset !important;
+}
+
+::ng-deep .cds--inline-notification {
+  max-width: 100%;
+}
+
+::ng-deep .cds--label {
+  width: 100%;
+}
+
+.center-link {
+  display: flex;
+  align-items: center;
+}
+
+.iko-list-columns__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.list-columns__buttons {
+  display: flex;
+  gap: 16px;
+  flex-direction: row;
+  justify-content: flex-end;
 }

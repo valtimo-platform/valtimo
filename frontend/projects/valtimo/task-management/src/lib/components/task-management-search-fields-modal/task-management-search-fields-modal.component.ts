@@ -177,7 +177,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return !controlValue ? null : controlValue.id;
   }
 
-  
   public get dropdownDataProviderValue(): string | null {
     const controlValue = this.form.get('dropdownDataProvider')?.value;
     this._dropdownProviderValue$.next(controlValue?.id);
@@ -185,7 +184,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return !controlValue ? null : controlValue.id;
   }
 
-  
   public get dropdownValuesArray(): FormArray | null {
     const formArray = this.form.get('dropdownValues');
 
@@ -209,7 +207,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     TaskListSearchFieldDataType | null | undefined
   >(null);
 
-  
   private readonly _dropdownProviderValue$ = new BehaviorSubject<
     TaskListSearchDropdownDataProvider | null | undefined
   >(null);
@@ -352,7 +349,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     this.form.setValidators([this.dropdownDataProviderValidator, this.dropdownValuesValidator]);
   }
 
-  
   public addDropdownValue(prefillValue?: {key: string; value: string}): void {
     if (!this.dropdownValuesArray) return;
 
@@ -398,7 +394,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     this.resetForm();
   }
 
-  
   private setPrefilledForm(prefillData: TaskListSearchField | null): void {
     if (!prefillData) return;
 
@@ -440,7 +435,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     this.form.get('key')?.disable();
   }
 
-  
   private setPrefilledDropdownValues(dropdownValue: TaskListSearchDropdownValue): void {
     if (!this.dropdownValuesArray || !this.dropdownDataProviderValue) return;
 
@@ -449,7 +443,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     });
   }
 
-  
   private matchTypeValidator(control: AbstractControl): null | {[key: string]: string} {
     const controlValue: ListItem | undefined = control.value;
     const dataTypeControlValue: ListItem | null | undefined =
@@ -464,7 +457,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return null;
   }
 
-  
   private dropdownDataProviderValidator(group: typeof this.form): ValidationErrors | null {
     const controlValue: ListItem | undefined | null = group.get('dropdownDataProvider')?.value;
     const fieldTypeControlValue: ListItem | null | undefined = group.get('fieldType')?.value;
@@ -481,7 +473,6 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
     return null;
   }
 
-  
   private dropdownValuesValidator(group: typeof this.form): ValidationErrors | null {
     const controlValue: ({key: string; value: string} | null)[] | undefined =
       group.get('dropdownValues')?.value;

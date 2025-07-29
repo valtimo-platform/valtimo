@@ -14,8 +14,4 @@
  * limitations under the License.
  */
 
-export interface IkoWidgetParams {
-  dataAggregateKey: string;
-  entryId: string;
-  tabKey: string;
-}
+export * from './carbon.utils';

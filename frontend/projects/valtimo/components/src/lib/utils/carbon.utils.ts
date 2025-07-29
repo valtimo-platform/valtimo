@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-export interface IkoWidgetParams {
-  dataAggregateKey: string;
-  entryId: string;
-  tabKey: string;
-}
+import {CARBON_CONSTANTS} from '../constants';
+
+const runAfterCarbonModalClosed = (functionToRun: () => void): void => {
+  setTimeout(() => {
+    functionToRun();
+  }, CARBON_CONSTANTS.modalAnimationMs);
+};
+
+export {runAfterCarbonModalClosed};

@@ -52,10 +52,10 @@ export class WidgetWizardContentStepComponent implements OnInit {
 
   private renderComponent(): void {
     this._vcr.clear();
-    const widget = this.widgetWizardService.selectedWidget();
-    if (!widget) return;
+    const $widget = this.widgetWizardService.$selectedWidget();
+    if (!$widget) return;
 
-    const componentInstance = this._vcr.createComponent(widget.component).instance;
+    const componentInstance = this._vcr.createComponent($widget.component).instance;
     if (!componentInstance) return;
 
     componentInstance.changeValidEvent.subscribe((valid: boolean) =>

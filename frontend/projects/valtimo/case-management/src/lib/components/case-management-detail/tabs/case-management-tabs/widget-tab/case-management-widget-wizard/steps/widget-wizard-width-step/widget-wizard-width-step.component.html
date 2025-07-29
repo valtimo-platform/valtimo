@@ -22,8 +22,8 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="1"
-    [selected]="widgetWidth() === 1"
-    [disabled]="fieldsColumnsLength() > 1"
+    [selected]="$widgetWidth() === 1"
+    [disabled]="$fieldsColumnsLength() > 1"
   >
     <h3>{{ 'widgetTabManagement.width.small.title' | translate }}</h3>
 
@@ -38,8 +38,8 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="2"
-    [selected]="widgetWidth() === 2"
-    [disabled]="fieldsColumnsLength() > 2"
+    [selected]="$widgetWidth() === 2"
+    [disabled]="$fieldsColumnsLength() > 2"
   >
     <h3>{{ 'widgetTabManagement.width.medium.title' | translate }}</h3>
 
@@ -54,8 +54,8 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="3"
-    [selected]="widgetWidth() === 3"
-    [disabled]="fieldsColumnsLength() > 3"
+    [selected]="$widgetWidth() === 3"
+    [disabled]="$fieldsColumnsLength() > 3"
   >
     <h3>{{ 'widgetTabManagement.width.large.title' | translate }}</h3>
 
@@ -70,7 +70,7 @@
   <cds-selection-tile
     class="valtimo-widget-wizard-step__tile"
     [value]="4"
-    [selected]="widgetWidth() === 4"
+    [selected]="$widgetWidth() === 4"
   >
     <h3>{{ 'widgetTabManagement.width.xtraLarge.title' | translate }}</h3>
 

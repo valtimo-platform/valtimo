@@ -27,7 +27,7 @@
   "
 >
   <div class="dashboard-detail-table">
-    @if (!jsonEditorActive()) {
+    @if (!$jsonEditorActive()) {
       <valtimo-carbon-list
         [actionItems]="actionItems"
         [fields]="fields"
@@ -105,7 +105,7 @@
 <ng-template #viewToggle>
   <cds-tooltip [description]="'JSON editor'">
     <button
-      [cdsButton]="buttonTheme()"
+      [cdsButton]="$buttonTheme()"
       data-testid="dashboard-details-switch-view"
       iconOnly="true"
       (click)="switchView()"

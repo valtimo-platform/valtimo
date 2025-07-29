@@ -33,7 +33,6 @@ import {
   combineLatest,
   map,
   Observable,
-  of,
   Subscription,
   switchMap,
   take,
@@ -251,7 +250,6 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
       this.params$,
       this.translateService.stream('key'),
     ]).subscribe(([repositoryConfig, params]) => {
-      console.log({params});
       this.breadcrumbService.setThirdBreadcrumb({
         route: [`/iko-management/${repositoryConfig.key}`],
         content: repositoryConfig.title,

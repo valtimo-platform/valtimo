@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-export interface IkoWidgetParams {
-  dataAggregateKey: string;
-  entryId: string;
-  tabKey: string;
+interface DisplayType {
+  type: string;
+  displayTypeParameters: DisplayTypeParameters;
 }
+
+interface DisplayTypeParameters {
+  enum?: {
+    [key: string]: string;
+  };
+  dateFormat?: string;
+  tagAmount?: number;
+}
+
+export {DisplayTypeParameters, DisplayType};

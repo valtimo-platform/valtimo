@@ -54,10 +54,10 @@ export class CaseTabService implements OnDestroy {
   private readonly _tabs$ = new BehaviorSubject<Array<TabImpl> | null>(null);
   private readonly _subscriptions = new Subscription();
   private readonly _tabLoader$ = new BehaviorSubject<TabLoaderImpl | null>(null);
-  private readonly _tabHorizontalOverflowDisabled = signal(false);
+  private readonly _$tabHorizontalOverflowDisabled = signal(false);
 
-  public get tabHorizontalOverflowDisabled(): Signal<boolean> {
-    return this._tabHorizontalOverflowDisabled.asReadonly();
+  public get $tabHorizontalOverflowDisabled(): Signal<boolean> {
+    return this._$tabHorizontalOverflowDisabled.asReadonly();
   }
 
   public get tabs$(): Observable<Array<TabImpl>> {
@@ -107,11 +107,11 @@ export class CaseTabService implements OnDestroy {
   }
 
   public disableTabHorizontalOverflow(): void {
-    this._tabHorizontalOverflowDisabled.set(true);
+    this._$tabHorizontalOverflowDisabled.set(true);
   }
 
   public enableTabHorizontalOverflow(): void {
-    this._tabHorizontalOverflowDisabled.set(false);
+    this._$tabHorizontalOverflowDisabled.set(false);
   }
 
   private getConfigurableTabs(caseDefinitionKey: string): Map<string, object> {

@@ -31,7 +31,7 @@
 
   <section cdsModalContent class="valtimo-case-management-widget-wizard__content">
     <cds-progress-indicator
-      [current]="currentStep()"
+      [current]="$currentStep()"
       [skeleton]="!obs.steps"
       [spacing]="'equal'"
       [steps]="obs.steps"
@@ -100,11 +100,11 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    @if (currentStep() !== WidgetWizardSteps.TYPE) {
+    @if ($currentStep() !== WidgetWizardSteps.TYPE) {
       <button
         class="valtimo-case-management-widget-wizard__back"
         cdsButton="secondary"
-        [disabled]="backButtonDisabled()"
+        [disabled]="$backButtonDisabled()"
         (click)="onBackButtonClick()"
       >
         {{ 'interface.back' | translate }}
@@ -114,11 +114,11 @@
     <button
       class="valtimo-case-management-widget-wizard__next"
       cdsButton="primary"
-      [disabled]="nextButtonDisabled()"
+      [disabled]="$nextButtonDisabled()"
       (click)="onNextButtonClick()"
     >
       {{
-        'interface.' + (currentStep() === WidgetWizardSteps.CONTENT ? 'save' : 'next') | translate
+        'interface.' + ($currentStep() === WidgetWizardSteps.CONTENT ? 'save' : 'next') | translate
       }}
     </button>
   </cds-modal-footer>
