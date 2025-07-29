@@ -15,15 +15,15 @@
  */
 
 import {IkoManagementTab, IkoManagementTabType} from '../models';
-import {IkoManagementSearchFieldsComponent} from '../components/iko-management-details/components/search-fields/iko-management-search-fields.component';
+import {IkoManagementSearchActionsComponent} from '../components/iko-management-details/components/search-actions/iko-management-search-actions.component';
 import {IkoManagementListComponent} from '../components/iko-management-details/components/list/iko-management-list.component';
 import {IkoManagementTabsComponent} from '../components/iko-management-details/components/tabs/iko-management-tabs.component';
 
 const IKO_MANAGEMENT_TABS: IkoManagementTab[] = [
   {
     key: IkoManagementTabType.SEARCH_FIELDS,
-    title: 'ikoManagement.searchFields',
-    component: IkoManagementSearchFieldsComponent,
+    title: 'ikoManagement.searchActions.title',
+    component: IkoManagementSearchActionsComponent,
   },
   {
     key: IkoManagementTabType.LIST,
