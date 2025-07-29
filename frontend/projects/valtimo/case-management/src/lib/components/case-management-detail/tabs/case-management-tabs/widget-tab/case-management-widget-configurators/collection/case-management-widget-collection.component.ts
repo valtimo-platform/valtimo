@@ -98,31 +98,31 @@ export class CaseManagementWidgetCollectionComponent
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public readonly widgetForm = this.fb.group({
-    title: this.fb.control(this.widgetWizardService.widgetTitle() ?? '', Validators.required),
+    title: this.fb.control(this.widgetWizardService.$widgetTitle() ?? '', Validators.required),
     defaultPageSize: this.fb.control(
-      (this.widgetWizardService.widgetContent() as WidgetCollectionContent)?.defaultPageSize ?? 5,
+      (this.widgetWizardService.$widgetContent() as WidgetCollectionContent)?.defaultPageSize ?? 5,
       Validators.required
     ),
     collection: this.fb.control(
-      (this.widgetWizardService.widgetContent() as WidgetCollectionContent)?.collection ?? '',
+      (this.widgetWizardService.$widgetContent() as WidgetCollectionContent)?.collection ?? '',
       Validators.required
     ),
   });
 
   public readonly cardForm = this.fb.group<any>({
     value: this.fb.control(
-      (this.widgetWizardService.widgetContent() as WidgetCollectionContent)?.title?.value ?? '',
+      (this.widgetWizardService.$widgetContent() as WidgetCollectionContent)?.title?.value ?? '',
       Validators.required
     ),
     type: this.fb.control<ListItem>(
       {
         content: this.translateService.instant(
           this.translateService.instant(
-            `widgetTabManagement.content.displayType.${(this.widgetWizardService.widgetContent() as WidgetCollectionContent)?.title?.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT}`
+            `widgetTabManagement.content.displayType.${(this.widgetWizardService.$widgetContent() as WidgetCollectionContent)?.title?.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT}`
           )
         ),
         id:
-          (this.widgetWizardService.widgetContent() as WidgetCollectionContent)?.title
+          (this.widgetWizardService.$widgetContent() as WidgetCollectionContent)?.title
             ?.displayProperties?.type ?? CaseWidgetDisplayTypeKey.TEXT,
         selected: true,
       },
@@ -139,8 +139,8 @@ export class CaseManagementWidgetCollectionComponent
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
   public readonly ValuePathType = ValuePathType;
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
-  public readonly content = this.widgetWizardService
-    .widgetContent as WritableSignal<WidgetCollectionContent>;
+  public readonly $content = this.widgetWizardService
+    .$widgetContent as WritableSignal<WidgetCollectionContent>;
   public readonly displayTypeItems: ListItem[] = this.widgetFieldsService.displayTypeItems;
 
   public readonly params$ = getCaseManagementRouteParams(this.route);
@@ -160,7 +160,7 @@ export class CaseManagementWidgetCollectionComponent
   ];
 
   private readonly _subscriptions = new Subscription();
-  private readonly _contentValid = signal<boolean>(false);
+  private readonly _$contentValid = signal<boolean>(false);
 
   constructor(
     private readonly cdsThemeService: CdsThemeService,
@@ -196,7 +196,7 @@ export class CaseManagementWidgetCollectionComponent
 
   public getSelectedWidthItem(fieldIndex: number): ListItem[] {
     const widgetContent: WidgetCollectionContent | null =
-      this.widgetWizardService.widgetContent() as WidgetCollectionContent;
+      this.widgetWizardService.$widgetContent() as WidgetCollectionContent;
 
     return !widgetContent
       ? this.WIDTH_ITEMS
@@ -208,7 +208,7 @@ export class CaseManagementWidgetCollectionComponent
 
   public onColumnUpdateEvent(event: {data: FieldsCaseWidgetValue[]; valid: boolean}): void {
     const {data, valid} = event;
-    this.widgetWizardService.widgetContent.update((content: WidgetContentProperties | null) => {
+    this.widgetWizardService.$widgetContent.update((content: WidgetContentProperties | null) => {
       const existingFields = (content as WidgetCollectionContent)?.fields;
 
       return {
@@ -219,7 +219,7 @@ export class CaseManagementWidgetCollectionComponent
         })),
       } as WidgetCollectionContent;
     });
-    this._contentValid.set(valid);
+    this._$contentValid.set(valid);
     this.changeValidEvent.emit(valid && this.widgetForm.valid);
   }
 
@@ -234,7 +234,7 @@ export class CaseManagementWidgetCollectionComponent
   }
 
   public onWidthSelected(event: {item: ListItem}, fieldIndex: number): void {
-    this.widgetWizardService.widgetContent.update(
+    this.widgetWizardService.$widgetContent.update(
       (content: WidgetContentProperties | null) =>
         ({
           ...content,
@@ -251,9 +251,9 @@ export class CaseManagementWidgetCollectionComponent
   }
 
   private initForm(): void {
-    if (!this.widgetWizardService.widgetContent()) return;
+    if (!this.widgetWizardService.$widgetContent()) return;
 
-    const title = (this.widgetWizardService.widgetContent() as WidgetCollectionContent).title;
+    const title = (this.widgetWizardService.$widgetContent() as WidgetCollectionContent).title;
     if (!title) return;
     this.onTypeSelected(this.cardForm, {
       item: {id: title.displayProperties?.type ?? '', content: '', selected: true},
@@ -291,9 +291,9 @@ export class CaseManagementWidgetCollectionComponent
   private openWidgetFormSubscription(): void {
     this._subscriptions.add(
       this.widgetForm.valueChanges.pipe(debounceTime(500)).subscribe(value => {
-        this.widgetWizardService.widgetTitle.set(value?.title ?? '');
+        this.widgetWizardService.$widgetTitle.set(value?.title ?? '');
 
-        this.widgetWizardService.widgetContent.update(
+        this.widgetWizardService.$widgetContent.update(
           (content: WidgetContentProperties | null) =>
             ({
               ...content,
@@ -303,7 +303,7 @@ export class CaseManagementWidgetCollectionComponent
         );
 
         this.changeValidEvent.emit(
-          this.widgetForm.valid && this.cardForm.valid && this._contentValid()
+          this.widgetForm.valid && this.cardForm.valid && this._$contentValid()
         );
       })
     );
@@ -326,7 +326,7 @@ export class CaseManagementWidgetCollectionComponent
           }),
         };
 
-        this.widgetWizardService.widgetContent.update(
+        this.widgetWizardService.$widgetContent.update(
           (content: WidgetContentProperties | null) =>
             ({
               ...content,
@@ -340,7 +340,7 @@ export class CaseManagementWidgetCollectionComponent
         );
 
         this.changeValidEvent.emit(
-          this.widgetForm.valid && this.cardForm.valid && this._contentValid()
+          this.widgetForm.valid && this.cardForm.valid && this._$contentValid()
         );
       })
     );

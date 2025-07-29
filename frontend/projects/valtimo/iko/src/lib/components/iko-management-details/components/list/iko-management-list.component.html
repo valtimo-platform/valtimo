@@ -14,4 +14,47 @@
   ~ limitations under the License.
   -->
 
-list works
+<ng-container
+  *ngIf="{
+    columns: (ikoListColumns$ | async) || [],
+    ikoListColumnDtos: $ikoListColumnDtos(),
+    selectedListColumn: $selectedListColumn(),
+    loading: $loading(),
+    openModal: $openModal(),
+    disableInput: $disableInput(),
+    modalMode: $modalMode(),
+  } as state"
+>
+  <valtimo-carbon-list
+    [items]="state.columns"
+    [loading]="state.loading"
+    [fields]="FIELDS"
+    [header]="false"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="state.disableInput"
+    (itemsReordered)="onItemsReordered($event)"
+    (rowClicked)="onRowClicked($event)"
+  >
+    <div carbonToolbarContent>
+      <button cdsButton="primary" (click)="onCreateButtonClicked()">
+        {{ 'ikoManagement.addColumn' | translate }}
+
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </div>
+
+    <valtimo-no-results
+      [title]="'listColumn.noConfigWarningTitle' | translate"
+      [description]="'listColumn.noConfigWarning' | translate"
+      illustration="valtimo-layout/img/emptystate-empty.svg"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <valtimo-iko-management-list-modal
+    [openModal]="state.openModal"
+    [listColumns]="state.ikoListColumnDtos"
+    [selectedListColumn]="state.selectedListColumn"
+    [modalMode]="state.modalMode"
+    (closeModalEvent)="onCloseModalEvent($event)"
+  ></valtimo-iko-management-list-modal>
+</ng-container>

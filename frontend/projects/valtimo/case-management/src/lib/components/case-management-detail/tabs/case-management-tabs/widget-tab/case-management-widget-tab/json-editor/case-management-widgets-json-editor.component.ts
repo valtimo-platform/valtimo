@@ -63,7 +63,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
   @Input() public set currentWidgetTab(value: CaseWidgetsRes) {
     if (!value) return;
     this._currentWidgetTab = value;
-    this.jsonModel.set({
+    this.$jsonModel.set({
       value: JSON.stringify(value),
       language: 'json',
     });
@@ -74,22 +74,22 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
   @Output() public readonly pendingChangesUpdate = new EventEmitter<boolean>();
   @Output() public readonly changeSaved = new EventEmitter();
 
-  public readonly jsonModel = signal<EditorModel | null>(null);
-  public readonly editActive = signal<boolean>(false);
+  public readonly $jsonModel = signal<EditorModel | null>(null);
+  public readonly $editActive = signal<boolean>(false);
 
   public readonly showPendingModal$: Observable<boolean> = toObservable(
     this.widgetJsonEditorService.showPendingModal
   );
   public readonly showSaveConfirmation$ = new BehaviorSubject<boolean>(false);
 
-  private readonly _widgetConfig = signal<CaseWidgetsRes | null>(null);
+  private readonly _$widgetConfig = signal<CaseWidgetsRes | null>(null);
 
   private _editorInit = false;
   private _pendingChanges = false;
-  private readonly _jsonValid = signal<boolean>(false);
-  private readonly _jsonSchemaInvalid = signal<boolean>(false);
-  public readonly saveButtonDisabled: Signal<boolean> = computed(
-    () => !this._jsonValid() || this._jsonSchemaInvalid() || !this._widgetConfig()
+  private readonly _$jsonValid = signal<boolean>(false);
+  private readonly _$jsonSchemaInvalid = signal<boolean>(false);
+  public readonly $saveButtonDisabled: Signal<boolean> = computed(
+    () => !this._$jsonValid() || this._$jsonSchemaInvalid() || !this._$widgetConfig()
   );
 
   constructor(
@@ -130,8 +130,8 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
   }
 
   public discardChanges(): void {
-    this.editActive.set(false);
-    this.jsonModel.update((model: EditorModel | null) => ({
+    this.$editActive.set(false);
+    this.$jsonModel.update((model: EditorModel | null) => ({
       ...model,
       value: JSON.stringify(this._currentWidgetTab),
     }));
@@ -141,7 +141,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
   }
 
   public save(): void {
-    const config: CaseWidgetsRes | null = this._widgetConfig();
+    const config: CaseWidgetsRes | null = this._$widgetConfig();
 
     if (!config) return;
 
@@ -156,7 +156,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
             message: this.translateService.instant('widgetTabManagement.notification.success'),
           });
           this.widgetJsonEditorService.showPendingModal.set(false);
-          this.editActive.set(false);
+          this.$editActive.set(false);
           this.setPendingChanges(false);
           this.changeSaved.emit();
           this.canDeactivate.emit(true);
@@ -172,8 +172,8 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
   }
 
   public onCancelClick(): void {
-    if (!this._widgetConfig() || !this._pendingChanges) {
-      this.editActive.set(false);
+    if (!this._$widgetConfig() || !this._pendingChanges) {
+      this.$editActive.set(false);
       return;
     }
 
@@ -181,7 +181,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
   }
 
   public onEditClick(): void {
-    this.editActive.set(true);
+    this.$editActive.set(true);
   }
 
   public onSaveClick(): void {
@@ -189,7 +189,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
   }
 
   public onValidEvent(valid: boolean) {
-    this._jsonValid.set(valid);
+    this._$jsonValid.set(valid);
   }
 
   public onValueChangeEvent(value: string) {
@@ -205,15 +205,15 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
       (widget: BasicCaseWidget) => widget.key
     );
 
-    this._jsonSchemaInvalid.set(
+    this._$jsonSchemaInvalid.set(
       widgetConfig.key !== this._currentWidgetTab.key ||
         widgetConfig.caseDefinitionKey !== this._currentWidgetTab.caseDefinitionKey ||
         new Set(editedWidgetKeys).size !== editedWidgetKeys.length
     );
 
-    if (!this._jsonValid() || !this.editActive()) return;
+    if (!this._$jsonValid() || !this.$editActive()) return;
 
-    this._widgetConfig.set(JSON.parse(value));
+    this._$widgetConfig.set(JSON.parse(value));
   }
 
   private setPendingChanges(changes: boolean): void {
@@ -222,7 +222,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
 
     if (changes) return;
 
-    this._widgetConfig.set(null);
+    this._$widgetConfig.set(null);
     this._editorInit = false;
   }
 }

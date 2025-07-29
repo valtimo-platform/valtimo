@@ -15,7 +15,7 @@
   -->
 
 <div class="cds--toolbar-content">
-  @if (!editActive()) {
+  @if (!$editActive()) {
     <button cdsButton="ghost" (click)="downloadConfig()">
       {{ 'interface.download' | translate }}
 
@@ -34,7 +34,7 @@
       <svg cdsIcon="close" size="16" class="cds--btn__icon"></svg>
     </button>
 
-    <button cdsButton="primary" [disabled]="saveButtonDisabled()" (click)="onSaveClick()">
+    <button cdsButton="primary" [disabled]="$saveButtonDisabled()" (click)="onSaveClick()">
       {{ 'interface.save' | translate }}
 
       <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
@@ -43,9 +43,9 @@
 </div>
 
 <valtimo-editor
-  *ngIf="jsonModel()"
-  [model]="jsonModel()"
-  [disabled]="!editActive()"
+  *ngIf="$jsonModel()"
+  [model]="$jsonModel()"
+  [disabled]="!$editActive()"
   [fitPage]="true"
   [fitPageExtraSpace]="96"
   (validEvent)="onValidEvent($event)"

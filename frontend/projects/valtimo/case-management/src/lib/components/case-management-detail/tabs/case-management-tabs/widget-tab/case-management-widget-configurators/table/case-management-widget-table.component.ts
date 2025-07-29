@@ -76,15 +76,15 @@ export class CaseManagementWidgetTableComponent
 
   public readonly form: FormGroup = this.fb.group({
     title: this.fb.control<string>(
-      this.widgetWizardService.widgetTitle() ?? '',
+      this.widgetWizardService.$widgetTitle() ?? '',
       Validators.required
     ),
     collection: this.fb.control<string>(
-      (this.widgetWizardService.widgetContent() as WidgetTableContent)?.collection ?? '',
+      (this.widgetWizardService.$widgetContent() as WidgetTableContent)?.collection ?? '',
       Validators.required
     ),
     defaultPageSize: this.fb.control<number>(
-      (this.widgetWizardService.widgetContent() as WidgetTableContent)?.defaultPageSize ?? 5,
+      (this.widgetWizardService.$widgetContent() as WidgetTableContent)?.defaultPageSize ?? 5,
       Validators.required
     ),
   });
@@ -96,11 +96,11 @@ export class CaseManagementWidgetTableComponent
   );
   public readonly params$ = getCaseManagementRouteParams(this.route);
 
-  public readonly content = this.widgetWizardService
-    .widgetContent as WritableSignal<WidgetTableContent>;
-  public readonly checked = computed(
+  public readonly $content = this.widgetWizardService
+    .$widgetContent as WritableSignal<WidgetTableContent>;
+  public readonly $checked = computed(
     () =>
-      (this.widgetWizardService.widgetContent() as WidgetTableContent)?.firstColumnAsTitle || false
+      (this.widgetWizardService.$widgetContent() as WidgetTableContent)?.firstColumnAsTitle || false
   );
 
   public readonly selectedCollection$ = new BehaviorSubject<ValuePathItem | null>(null);
@@ -108,7 +108,7 @@ export class CaseManagementWidgetTableComponent
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
   public readonly ValuePathType = ValuePathType;
 
-  private readonly _contentValid = signal<boolean>(this.widgetWizardService.editMode());
+  private readonly _contentValid = signal<boolean>(this.widgetWizardService.$editMode());
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -121,9 +121,9 @@ export class CaseManagementWidgetTableComponent
   public ngOnInit(): void {
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(500)).subscribe(value => {
-        this.widgetWizardService.widgetTitle.set(value?.title ?? '');
+        this.widgetWizardService.$widgetTitle.set(value?.title ?? '');
 
-        this.widgetWizardService.widgetContent.update(
+        this.widgetWizardService.$widgetContent.update(
           (content: WidgetContentProperties | null) =>
             ({
               ...content,
@@ -146,7 +146,7 @@ export class CaseManagementWidgetTableComponent
 
   public onColumnUpdateEvent(event: {data: FieldsCaseWidgetValue[]; valid: boolean}): void {
     const {data, valid} = event;
-    this.widgetWizardService.widgetContent.update(
+    this.widgetWizardService.$widgetContent.update(
       (content: WidgetContentProperties | null) =>
         ({...content, columns: data}) as WidgetTableContent
     );
@@ -155,7 +155,7 @@ export class CaseManagementWidgetTableComponent
   }
 
   public onCheckedChange(firstColumnAsTitle: boolean): void {
-    this.widgetWizardService.widgetContent.update(
+    this.widgetWizardService.$widgetContent.update(
       (content: WidgetContentProperties | null) =>
         ({...content, firstColumnAsTitle}) as WidgetTableContent
     );

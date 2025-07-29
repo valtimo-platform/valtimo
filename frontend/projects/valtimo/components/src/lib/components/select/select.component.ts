@@ -17,11 +17,13 @@
 import {
   Component,
   EventEmitter,
+  forwardRef,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
   Output,
+  signal,
   SimpleChanges,
 } from '@angular/core';
 import {SelectedValue, SelectItem} from '../../models';
@@ -29,12 +31,20 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {map, take} from 'rxjs/operators';
+import {NG_VALUE_ACCESSOR} from '@angular/forms';
 
 @Component({
   selector: 'v-select',
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
   standalone: false,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => SelectComponent),
+      multi: true,
+    },
+  ],
 })
 export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public set items(value: Array<SelectItem>) {
@@ -54,8 +64,12 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public defaultSelection!: SelectItem;
   @Input() public defaultSelectionId!: string;
   @Input() public defaultSelectionIds!: Array<string>;
-  @Input() public disabled = false;
+  public readonly $disabled = signal<boolean>(false);
+  @Input() public set disabled(value: boolean) {
+    this.$disabled.set(value);
+  }
   @Input() public dropUp?: boolean;
+  @Input() public invalid = false;
   @Input() public multiple = false;
   @Input() public margin = false;
   @Input() public widthInPx!: number;
@@ -103,6 +117,25 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   private _selectedSubscription!: Subscription;
   private _clearSubjectSubscription!: Subscription;
 
+  private _onChange: (value: SelectedValue) => void = () => {};
+  private _onTouched: () => void = () => {};
+
+  public writeValue(value: SelectedValue): void {
+    this.setSelectedValue(value);
+  }
+
+  public registerOnChange(fn: (value: SelectedValue) => void): void {
+    this._onChange = fn;
+  }
+
+  public registerOnTouched(fn: () => void): void {
+    this._onTouched = fn;
+  }
+
+  public setDisabledState(isDisabled: boolean): void {
+    this.$disabled.set(isDisabled);
+  }
+
   constructor(private readonly translateService: TranslateService) {}
 
   public ngOnInit(): void {
@@ -141,6 +174,8 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
     this.selected$.pipe(take(1)).subscribe(currentSelected => {
       if (JSON.stringify(currentSelected) !== JSON.stringify(selectedValue)) {
         this.selected$.next(selectedValue);
+        this._onChange(selectedValue);
+        this._onTouched();
       }
     });
   }

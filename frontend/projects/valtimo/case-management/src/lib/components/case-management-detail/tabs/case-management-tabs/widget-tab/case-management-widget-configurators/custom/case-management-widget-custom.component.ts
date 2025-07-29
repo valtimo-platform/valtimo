@@ -58,7 +58,7 @@ export class CaseManagementWidgetCustomComponent
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public readonly form = this.fb.group({
-    widgetTitle: this.fb.control(this.widgetWizardService.widgetTitle(), Validators.required),
+    widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
   });
 
   public get widgetTitle(): AbstractControl<string | null, string | null> | null {
@@ -112,7 +112,7 @@ export class CaseManagementWidgetCustomComponent
     if (!componentKey) return;
 
     this._selectedCustomComponentKey$.next(componentKey);
-    this.widgetWizardService.widgetContent.set({componentKey});
+    this.widgetWizardService.$widgetContent.set({componentKey});
     this.changeValidEvent.emit(true);
   }
 
@@ -128,13 +128,13 @@ export class CaseManagementWidgetCustomComponent
   private openTitleSubscription(): void {
     this._subscriptions.add(
       this.widgetTitle?.valueChanges.subscribe(title => {
-        this.widgetWizardService.widgetTitle.set(title);
+        this.widgetWizardService.$widgetTitle.set(title);
       })
     );
   }
 
   private prefill(): void {
-    const componentKey = (this.widgetWizardService.widgetContent() as WidgetCustomContent)
+    const componentKey = (this.widgetWizardService.$widgetContent() as WidgetCustomContent)
       ?.componentKey;
 
     if (!componentKey || Object.keys(this.customCaseWidgetConfig || {}).length === 0) return;

@@ -66,21 +66,19 @@
     </cds-label>
 
     <v-select
-      [items]="(ikoRepositoryTypeSelectItems$ | async) || []"
+      [invalid]="getControlInvalid('type')"
+      formControlName="type"
+      [items]="ikoRepositoryTypeSelectItems$ | async"
       [title]="'ikoManagement.typeTitle' | translate"
-      [disabled]="disabled$ | async"
-      [dropUp]="false"
-      [clearSelectionSubject$]="clearTypeSelection$"
-      (selectedChange)="onTypeSelect($event)"
+      [appendInline]="false"
     ></v-select>
 
     <v-select
-      [items]="(pluginSelectItems$ | async) || []"
+      [invalid]="getControlInvalid('pluginId')"
+      formControlName="pluginId"
+      [items]="pluginSelectItems$ | async"
       [title]="'ikoManagement.pluginIdTitle' | translate"
-      [disabled]="disabled$ | async"
-      [dropUp]="false"
-      [clearSelectionSubject$]="clearPluginIdSelection$"
-      (selectedChange)="onPluginIdSelect($event)"
+      [appendInline]="false"
     ></v-select>
   </form>
 

@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DatePipe } from '@angular/common';
-import { AfterViewInit, Component, computed, signal, ViewEncapsulation } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { Code16, Edit16 } from '@carbon/icons';
-import { TranslateService } from '@ngx-translate/core';
-import { ActionItem, ColumnConfig, EditorModel, PageHeaderService, PageTitleService, ViewType } from '@valtimo/components';
-import { DashboardWidgetConfiguration } from '@valtimo/dashboard';
-import { IconService } from 'carbon-components-angular';
-import { BehaviorSubject, combineLatest, map, Observable, switchMap, tap } from 'rxjs';
-import { DashboardItem, DashboardWidget, WidgetModalType } from '../../models';
-import { DashboardManagementService } from '../../services/dashboard-management.service';
+import {DatePipe} from '@angular/common';
+import {AfterViewInit, Component, computed, signal, ViewEncapsulation} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {Code16, Edit16} from '@carbon/icons';
+import {TranslateService} from '@ngx-translate/core';
+import {
+  ActionItem,
+  ColumnConfig,
+  EditorModel,
+  PageHeaderService,
+  PageTitleService,
+  ViewType,
+} from '@valtimo/components';
+import {DashboardWidgetConfiguration} from '@valtimo/dashboard';
+import {IconService} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, switchMap, tap} from 'rxjs';
+import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
+import {DashboardManagementService} from '../../services/dashboard-management.service';
 
 @Component({
   standalone: false,
@@ -121,8 +128,8 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly jsonEditorActive = signal<boolean>(false);
-  public readonly buttonTheme = computed(() => (this.jsonEditorActive() ? 'primary' : 'ghost'));
+  public readonly $jsonEditorActive = signal<boolean>(false);
+  public readonly $buttonTheme = computed(() => (this.$jsonEditorActive() ? 'primary' : 'ghost'));
 
   constructor(
     private readonly dashboardManagementService: DashboardManagementService,
@@ -170,9 +177,9 @@ export class DashboardDetailsComponent implements AfterViewInit {
   }
 
   public switchView(): void {
-    this.jsonEditorActive.set(!this.jsonEditorActive());
+    this.$jsonEditorActive.set(!this.$jsonEditorActive());
 
-    if (!this.jsonEditorActive()) this.refreshWidgets();
+    if (!this.$jsonEditorActive()) this.refreshWidgets();
   }
 
   private duplicateWidget(event: DashboardWidgetConfiguration): void {

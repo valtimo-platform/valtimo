@@ -1609,7 +1609,8 @@
     "enum": "Aufzählung",
     "arrayCount": "Quantität",
     "underscoresToSpaces": "Unterstriche zu Leerzeichen",
-    "tags": "Tags"
+    "tags": "Tags",
+    "hidden": "Versteckt"
   },
   "object": {
     "title": "Objekte",
@@ -1889,6 +1890,16 @@
     "keyTitle": "Schlüssel",
     "keyPlaceholder": "Geben Sie einen Schlüssel für die API-Konfiguration ein",
     "pluginIdTitle": "Plugin-Konfiguration",
-    "typeTitle": "Typ"
+    "typeTitle": "Typ",
+    "addColumn": "Spalte hinzufügen",
+    "editColumn": "Spalte bearbeiten",
+    "columnTitlePlaceholder": "Spaltentitel eingeben",
+    "columnKeyPlaceholder": "Spaltenschlüssel eingeben",
+    "pathTitle": "Pfad",
+    "columnPathPlaceholder": "Spaltenpfad eingeben",
+    "sortableTitle": "Sortierbar",
+    "sortingDisabled": "Sortierung deaktiviert",
+    "defaultSortTitle": "Standardsortierung",
+    "displayType": "Anzeigetyp"
   }
 }

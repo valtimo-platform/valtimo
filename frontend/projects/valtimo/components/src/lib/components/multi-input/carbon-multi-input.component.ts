@@ -17,10 +17,12 @@
 import {
   Component,
   EventEmitter,
+  forwardRef,
   Input,
   OnDestroy,
   OnInit,
   Output,
+  signal,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -37,6 +39,7 @@ import {
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
+import {NG_VALUE_ACCESSOR} from '@angular/forms';
 
 @Component({
   selector: 'valtimo-carbon-multi-input',
@@ -44,6 +47,13 @@ import {v4 as uuidv4} from 'uuid';
   styleUrls: ['./carbon-multi-input.component.scss'],
   encapsulation: ViewEncapsulation.None,
   standalone: false,
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => CarbonMultiInputComponent),
+      multi: true,
+    },
+  ],
 })
 export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public addRowText = '';
@@ -63,7 +73,10 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
 
   @Input() public deleteRowText = '';
   @Input() public deleteRowTranslationKey = '';
-  @Input() public disabled = false;
+  public readonly $disabled = signal<boolean>(false);
+  @Input() public set disabled(value: boolean) {
+    this.$disabled.set(value);
+  }
   @Input() public dropdownColumnTitle = '';
   @Input() public set dropdownItems(value: Array<ListItemWithId>) {
     this.dropdownItems$.next(value);
@@ -111,6 +124,28 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   public readonly dropdownItems$ = new BehaviorSubject<Array<ListItemWithId>>([]);
 
   private readonly _subscriptions = new Subscription();
+
+  private _onChange: (value: MultiInputOutput) => void = () => {};
+  private _onTouched: () => void = () => {};
+
+  public writeValue(value: MultiInputValues): void {
+    if (Array.isArray(value)) {
+      const withUuids = value.map(item => ({...item, uuid: uuidv4()}));
+      this.values$.next(withUuids);
+    }
+  }
+
+  public registerOnChange(fn: (value: MultiInputValues) => void): void {
+    this._onChange = fn;
+  }
+
+  public registerOnTouched(fn: () => void): void {
+    this._onTouched = fn;
+  }
+
+  public setDisabledState(isDisabled: boolean): void {
+    this.disabled = isDisabled;
+  }
 
   public ngOnInit(): void {
     this.values$.next(this.getInitialRows());
@@ -164,22 +199,22 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
     arbitraryIndex?: number
   ): void {
     this.values$.pipe(take(1)).subscribe(values => {
-      this.values$.next(
-        values.map(stateValue => {
-          if (stateValue.uuid === templateValue.uuid) {
-            if (change === 'value') {
-              return {...stateValue, value: inputValue};
-            } else if (change === 'key') {
-              return {...stateValue, key: inputValue};
-            } else if (change === 'dropdown') {
-              return {...stateValue, dropdown: inputValue};
-            } else if (change === 'arbitrary') {
-              return {...stateValue, [arbitraryIndex]: inputValue};
-            }
+      const updatedValues = values.map(stateValue => {
+        if (stateValue.uuid === templateValue.uuid) {
+          if (change === 'value') {
+            return {...stateValue, value: inputValue};
+          } else if (change === 'key') {
+            return {...stateValue, key: inputValue};
+          } else if (change === 'dropdown') {
+            return {...stateValue, dropdown: inputValue};
+          } else if (change === 'arbitrary') {
+            return {...stateValue, [arbitraryIndex]: inputValue};
           }
-          return stateValue;
-        })
-      );
+        }
+        return stateValue;
+      });
+
+      this.values$.next(updatedValues);
     });
   }
 
@@ -235,6 +270,8 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
       combineLatest([this.values$, this.mappedValues$]).subscribe(([values, mappedValues]) => {
         this.valueChange.emit(mappedValues);
         this.allValuesValidEvent.emit(values.length === mappedValues.length);
+        this._onChange(mappedValues);
+        this._onTouched();
       })
     );
   }

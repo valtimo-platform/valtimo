@@ -28,16 +28,16 @@ import {WidgetWizardService} from '../../../../../../../../services';
   imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardWidthStepComponent {
-  public readonly fieldsColumnsLength: Signal<number> = computed(() =>
-    this.widgetWizardService.selectedWidget()?.type === CaseWidgetType.FIELDS
-      ? (this.widgetWizardService.widgetContent()?.['columns']?.length ?? 0)
+  public readonly $fieldsColumnsLength: Signal<number> = computed(() =>
+    this.widgetWizardService.$selectedWidget()?.type === CaseWidgetType.FIELDS
+      ? (this.widgetWizardService.$widgetContent()?.['columns']?.length ?? 0)
       : 0
   );
-  public readonly widgetWidth = this.widgetWizardService.widgetWidth;
+  public readonly $widgetWidth = this.widgetWizardService.$widgetWidth;
 
   constructor(private readonly widgetWizardService: WidgetWizardService) {}
 
   public onSelectedEvent(event: {value: CaseWidgetWidth}): void {
-    this.widgetWizardService.widgetWidth.set(event.value);
+    this.widgetWizardService.$widgetWidth.set(event.value);
   }
 }

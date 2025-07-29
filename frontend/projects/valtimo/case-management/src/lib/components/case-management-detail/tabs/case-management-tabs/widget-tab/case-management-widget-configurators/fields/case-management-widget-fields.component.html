@@ -41,7 +41,7 @@
 ></valtimo-case-management-widget-process-selector>
 
 <cds-tabs type="contained">
-  @for (column of columns(); track $index) {
+  @for (column of $columns(); track $index) {
     <cds-tab
       [active]="activeTab() === $index"
       [heading]="columnHeading"
@@ -51,7 +51,7 @@
       <valtimo-case-management-widget-fields-column
         *ngIf="activeTab() === $index"
         [isFieldWidget]="true"
-        [columnData]="selectedWidgetContent()?.[$index]"
+        [columnData]="$selectedWidgetContent()?.[$index]"
         [params]="params$ | async"
         [showHideWhenEmptyCheckbox]="true"
         (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
@@ -59,7 +59,7 @@
     </cds-tab>
   }
   <cds-tab
-    *ngIf="columns().length < widgetWidth"
+    *ngIf="$columns().length < $widgetWidth"
     [heading]="addColumn"
     [id]="'addColumn'"
     class="valtimo-case-management-widget-field__add"

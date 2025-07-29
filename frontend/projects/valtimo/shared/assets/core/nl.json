@@ -1624,7 +1624,8 @@
     "enum": "Opsomming",
     "arrayCount": "Hoeveelheid",
     "underscoresToSpaces": "Lage strepen naar spaties",
-    "tags": "Tags"
+    "tags": "Tags",
+    "hidden": "Verborgen"
   },
   "object": {
     "title": "Objects",
@@ -1907,6 +1908,16 @@
     "keyTitle": "Sleutel",
     "keyPlaceholder": "Voer een sleutel in voor de API-configuratie",
     "pluginIdTitle": "Pluginconfiguratie",
-    "typeTitle": "Type"
+    "typeTitle": "Type",
+    "addColumn": "Kolom toevoegen",
+    "editColumn": "Kolom bewerken",
+    "columnTitlePlaceholder": "Voer kolomtitel in",
+    "columnKeyPlaceholder": "Voer kolomsleutel in",
+    "pathTitle": "Pad",
+    "columnPathPlaceholder": "Voer kolompad in",
+    "sortableTitle": "Sorteerbaar",
+    "sortingDisabled": "Sorteren uitgeschakeld",
+    "defaultSortTitle": "Standaard sortering",
+    "displayType": "Weergavetype"
   }
 }

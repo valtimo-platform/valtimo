@@ -27,6 +27,7 @@ import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 export class InputLabelComponent {
   @Input() public name = '';
   @Input() public tooltip = '';
+  @Input() public tooltipTranslationKey = '';
   @Input() public largeMargin = false;
   @Input() public small = false;
   @Input() public noMargin = false;

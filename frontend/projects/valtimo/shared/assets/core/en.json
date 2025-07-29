@@ -1596,7 +1596,8 @@
     "enum": "Enumeration",
     "arrayCount": "Count",
     "underscoresToSpaces": "Underscores to spaces",
-    "tags": "Tags"
+    "tags": "Tags",
+    "hidden": "hidden"
   },
   "object": {
     "title": "Objects",
@@ -1873,6 +1874,16 @@
     "keyTitle": "Key",
     "keyPlaceholder": "Enter a key for the API configuration",
     "pluginIdTitle": "Plugin configuration",
-    "typeTitle": "type"
+    "typeTitle": "type",
+    "addColumn": "Add Column",
+    "editColumn": "Edit column",
+    "columnTitlePlaceholder": "Enter column title",
+    "columnKeyPlaceholder": "Enter column key",
+    "pathTitle": "Path",
+    "columnPathPlaceholder": "Enter column path",
+    "sortableTitle": "Sortable",
+    "sortingDisabled": "Sorting disabled",
+    "defaultSortTitle": "Default Sort",
+    "displayType": "Display Type"
   }
 }

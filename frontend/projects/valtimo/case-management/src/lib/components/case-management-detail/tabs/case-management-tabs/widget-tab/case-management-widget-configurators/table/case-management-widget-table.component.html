@@ -80,7 +80,7 @@
 
 <valtimo-case-management-widget-fields-column
   [addTranslateKey]="'widgetTabManagement.content.table.addColumn'"
-  [columnData]="content()?.columns"
+  [columnData]="$content()?.columns"
   [params]="params$ | async"
   [selectedCollection]="selectedCollection$ | async"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
@@ -92,7 +92,7 @@
   </span>
 
   <cds-toggle
-    [checked]="checked()"
+    [checked]="$checked()"
     [label]="'widgetTabManagement.content.table.firstColumnAsTitle' | translate"
     [onText]="'interface.yes' | translate"
     [offText]="'interface.no' | translate"

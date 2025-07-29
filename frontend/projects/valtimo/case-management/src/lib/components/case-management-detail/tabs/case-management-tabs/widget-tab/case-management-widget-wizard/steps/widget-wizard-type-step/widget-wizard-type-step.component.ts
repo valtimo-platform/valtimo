@@ -31,16 +31,16 @@ import {WidgetWizardService} from '../../../../../../../../services';
 })
 export class WidgetWizardTypeStepComponent {
   public readonly availableWidgets = AVAILABLE_WIDGETS;
-  public readonly selectedWidget = this.widgetWizardService.selectedWidget;
+  public readonly $selectedWidget = this.widgetWizardService.$selectedWidget;
 
   constructor(private readonly widgetWizardService: WidgetWizardService) {}
 
   public onSelectedEvent(event: {value: WidgetTypeSelection}): void {
-    if (event.value.type !== this.widgetWizardService.selectedWidget()?.type) {
-      this.widgetWizardService.widgetContent.set(null);
-      this.widgetWizardService.widgetTitle.set(null);
+    if (event.value.type !== this.widgetWizardService.$selectedWidget()?.type) {
+      this.widgetWizardService.$widgetContent.set(null);
+      this.widgetWizardService.$widgetTitle.set(null);
     }
 
-    this.widgetWizardService.selectedWidget.set(event.value);
+    this.widgetWizardService.$selectedWidget.set(event.value);
   }
 }

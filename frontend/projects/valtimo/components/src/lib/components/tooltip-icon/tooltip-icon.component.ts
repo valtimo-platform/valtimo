@@ -16,9 +16,6 @@
 
 import {Component, Input} from '@angular/core';
 
-/**
- * @deprecated Migrate old design to Carbon
- */
 @Component({
   selector: 'v-tooltip-icon',
   templateUrl: './tooltip-icon.component.html',

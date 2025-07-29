@@ -59,7 +59,7 @@ export class ProcessManagementListComponent {
     ProcessDefinitionResult | 'create'
   >();
 
-  public readonly context = this.processManagementService.context;
+  public readonly $context = this.processManagementService.$context;
   public readonly processToDelete$ = new BehaviorSubject<ProcessDefinition | null>(null);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
@@ -97,7 +97,7 @@ export class ProcessManagementListComponent {
       label: 'processManagement.readOnly',
       viewType: ViewType.BOOLEAN,
     },
-    ...(this.processManagementService.context() === 'case'
+    ...(this.processManagementService.$context() === 'case'
       ? [
           {
             key: 'processCaseLink.canInitializeDocument',
@@ -106,7 +106,7 @@ export class ProcessManagementListComponent {
           },
         ]
       : []),
-    ...(this.processManagementService.context() === 'case'
+    ...(this.processManagementService.$context() === 'case'
       ? [
           {
             key: 'processCaseLink.startableByUser',
@@ -143,7 +143,7 @@ export class ProcessManagementListComponent {
   }
 
   public onDeleteConfirm(processDefinition: ProcessDefinition): void {
-    (this.context() === 'case'
+    (this.$context() === 'case'
       ? this.processManagementService.deleteProcess(processDefinition.key)
       : this.processManagementService.deleteUnlinkedProcess(processDefinition.key)
     ).subscribe(() => {

@@ -57,7 +57,7 @@ export class CasManagementWidgetWizardComponent {
     this._editMode = value;
     if (!value) return;
 
-    this.currentStep.set(WidgetWizardStep.CONTENT);
+    this.$currentStep.set(WidgetWizardStep.CONTENT);
   }
   public get editMode(): boolean {
     return this._editMode;
@@ -66,9 +66,9 @@ export class CasManagementWidgetWizardComponent {
 
   public readonly WidgetWizardSteps = WidgetWizardStep;
   private readonly _secondaryLabels = computed(() => {
-    const selectedWidgetType = this.widgetWizardService.selectedWidget()?.type ?? '';
-    const selectedWidth = this.widgetWizardService.widgetWidth() ?? '';
-    const selectedStyle = this.widgetWizardService.widgetStyle() ?? '';
+    const selectedWidgetType = this.widgetWizardService.$selectedWidget()?.type ?? '';
+    const selectedWidth = this.widgetWizardService.$widgetWidth() ?? '';
+    const selectedStyle = this.widgetWizardService.$widgetStyle() ?? '';
 
     return {
       [WidgetWizardStep.TYPE]: selectedWidgetType
@@ -81,7 +81,7 @@ export class CasManagementWidgetWizardComponent {
 
   public readonly steps$: Observable<Step[]> = combineLatest([
     toObservable(this._secondaryLabels),
-    toObservable(this.widgetWizardService.editMode),
+    toObservable(this.widgetWizardService.$editMode),
     this.translateService.stream('key'),
   ]).pipe(
     map(([secondaryLabels, editMode]) => {
@@ -92,7 +92,7 @@ export class CasManagementWidgetWizardComponent {
             secondaryLabel: this.translateService.instant(secondaryLabels[WidgetWizardStep.TYPE]),
           }),
           disabled: editMode,
-          complete: !!this.widgetWizardService.selectedWidget()?.type,
+          complete: !!this.widgetWizardService.$selectedWidget()?.type,
         },
         {
           label: this.translateService.instant('widgetTabManagement.wizard.steps.width'),
@@ -100,7 +100,7 @@ export class CasManagementWidgetWizardComponent {
             secondaryLabel: this.translateService.instant(secondaryLabels[WidgetWizardStep.WIDTH]),
           }),
           disabled: !secondaryLabels[WidgetWizardStep.TYPE],
-          complete: !!this.widgetWizardService.widgetWidth(),
+          complete: !!this.widgetWizardService.$widgetWidth(),
         },
         {
           label: this.translateService.instant('widgetTabManagement.wizard.steps.style'),
@@ -108,7 +108,7 @@ export class CasManagementWidgetWizardComponent {
             secondaryLabel: this.translateService.instant(secondaryLabels[WidgetWizardStep.STYLE]),
           }),
           disabled: !secondaryLabels[WidgetWizardStep.WIDTH],
-          complete: !!this.widgetWizardService.widgetStyle(),
+          complete: !!this.widgetWizardService.$widgetStyle(),
         },
         {
           label: this.translateService.instant('widgetTabManagement.wizard.steps.content'),
@@ -116,27 +116,27 @@ export class CasManagementWidgetWizardComponent {
             !secondaryLabels[WidgetWizardStep.TYPE] ||
             !secondaryLabels[WidgetWizardStep.WIDTH] ||
             !secondaryLabels[WidgetWizardStep.STYLE],
-          complete: !!this.widgetWizardService.widgetContent(),
+          complete: !!this.widgetWizardService.$widgetContent(),
         },
       ];
     })
   );
 
-  private readonly _contentStepValid = signal<boolean>(false);
-  public readonly currentStep = signal<WidgetWizardStep>(WidgetWizardStep.TYPE);
-  public readonly backButtonDisabled: Signal<boolean> = computed(
-    () => this.widgetWizardService.editMode() && this.currentStep() === WidgetWizardStep.WIDTH
+  private readonly _$contentStepValid = signal<boolean>(false);
+  public readonly $currentStep = signal<WidgetWizardStep>(WidgetWizardStep.TYPE);
+  public readonly $backButtonDisabled: Signal<boolean> = computed(
+    () => this.widgetWizardService.$editMode() && this.$currentStep() === WidgetWizardStep.WIDTH
   );
-  public nextButtonDisabled = computed(() => {
-    switch (this.currentStep()) {
+  public $nextButtonDisabled = computed(() => {
+    switch (this.$currentStep()) {
       case WidgetWizardStep.TYPE:
-        return !this.widgetWizardService.selectedWidget();
+        return !this.widgetWizardService.$selectedWidget();
       case WidgetWizardStep.WIDTH:
-        return !this.widgetWizardService.widgetWidth();
+        return !this.widgetWizardService.$widgetWidth();
       case WidgetWizardStep.STYLE:
-        return this.widgetWizardService.widgetStyle() === null;
+        return this.widgetWizardService.$widgetStyle() === null;
       case WidgetWizardStep.CONTENT:
-        return this.widgetWizardService.widgetContent() === null || !this._contentStepValid();
+        return this.widgetWizardService.$widgetContent() === null || !this._$contentStepValid();
       default:
         return true;
     }
@@ -148,21 +148,21 @@ export class CasManagementWidgetWizardComponent {
   ) {}
 
   public onStepSelected(event: {step: Step; index: WidgetWizardStep}): void {
-    this.currentStep.set(event.index);
+    this.$currentStep.set(event.index);
   }
 
   public onNextButtonClick(): void {
-    if (this.currentStep() === WidgetWizardStep.CONTENT) {
-      this.closeEvent.emit(this.widgetWizardService.widgetsConfig());
+    if (this.$currentStep() === WidgetWizardStep.CONTENT) {
+      this.closeEvent.emit(this.widgetWizardService.$widgetsConfig());
       this.resetWizard();
       return;
     }
 
-    this.currentStep.update((step: WidgetWizardStep) => step + 1);
+    this.$currentStep.update((step: WidgetWizardStep) => step + 1);
   }
 
   public onBackButtonClick(): void {
-    this.currentStep.update((step: WidgetWizardStep) => step - 1);
+    this.$currentStep.update((step: WidgetWizardStep) => step - 1);
   }
 
   public onClose(): void {
@@ -171,13 +171,13 @@ export class CasManagementWidgetWizardComponent {
   }
 
   public onContentValidEvent(valid: boolean): void {
-    this._contentStepValid.set(valid);
+    this._$contentStepValid.set(valid);
   }
 
   private resetWizard(): void {
     setTimeout(() => {
       this.widgetWizardService.resetWizard();
-      this.currentStep.set(WidgetWizardStep.TYPE);
+      this.$currentStep.set(WidgetWizardStep.TYPE);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }

@@ -127,11 +127,11 @@ export class CaseManagementWidgetFieldsColumnComponent implements OnInit, OnDest
   }
 
   public readonly CaseWidgetDisplayTypeKey = CaseWidgetDisplayTypeKey;
-  public readonly widgetType: Signal<CaseWidgetType> = computed(
-    () => this.widgetWizardService.selectedWidget()?.type ?? CaseWidgetType.FIELDS
+  public readonly $widgetType: Signal<CaseWidgetType> = computed(
+    () => this.widgetWizardService.$selectedWidget()?.type ?? CaseWidgetType.FIELDS
   );
-  public readonly isFieldWidget: Signal<boolean> = computed(
-    () => this.widgetType() === CaseWidgetType.FIELDS
+  public readonly $isFieldWidget: Signal<boolean> = computed(
+    () => this.$widgetType() === CaseWidgetType.FIELDS
   );
 
   public readonly inputTheme$: Observable<CurrentCarbonTheme> = this.cdsThemeService.currentTheme$;

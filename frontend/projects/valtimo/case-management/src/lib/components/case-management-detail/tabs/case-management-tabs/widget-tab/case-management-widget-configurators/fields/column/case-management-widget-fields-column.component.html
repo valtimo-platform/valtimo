@@ -37,7 +37,7 @@
               <v-input-label
                 [title]="'widgetTabManagement.content.fields.title' | translate"
                 [tooltip]="
-                  'widgetTabManagement.content.' + widgetType() + '.titleTooltip' | translate
+                  'widgetTabManagement.content.' + $widgetType() + '.titleTooltip' | translate
                 "
               >
               </v-input-label>
@@ -70,7 +70,7 @@
               <v-input-label
                 [title]="'widgetTabManagement.content.fields.value' | translate"
                 [tooltip]="
-                  'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
+                  'widgetTabManagement.content.' + $widgetType() + '.valueTooltip' | translate
                 "
               >
               </v-input-label>
@@ -305,7 +305,7 @@
 
             <cds-text-label
               *ngIf="
-                formRow.get('type').value.id === CaseWidgetDisplayTypeKey.TEXT && isFieldWidget
+                formRow.get('type').value.id === CaseWidgetDisplayTypeKey.TEXT && $isFieldWidget
               "
             >
               <v-input-label
