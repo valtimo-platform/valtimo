@@ -193,7 +193,7 @@ export class IkoManagementListComponent implements OnInit, OnDestroy {
   public onRowClicked(event: {key: string}): void {
     const listColumnDto = this.$ikoListColumnDtos().find(column => column.key === event.key);
     if (!listColumnDto) return;
-    this.$selectedListColumn.set(listColumnDto);
+    this.$selectedListColumn.set({...listColumnDto});
     this.$openModal.set(true);
     this.$modalMode.set(IkoListColumnModalMode.EDIT);
   }
