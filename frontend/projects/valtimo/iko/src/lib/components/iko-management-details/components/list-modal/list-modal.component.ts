@@ -174,6 +174,7 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
     ViewType.ARRAY_COUNT,
     ViewType.UNDERSCORES_TO_SPACES,
     ViewType.TAGS,
+    ViewType.HIDDEN,
   ];
 
   private readonly _dataAggregateKey$: Observable<string> = this.route.params.pipe(
