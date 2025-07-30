@@ -1918,6 +1918,7 @@
     "sortableTitle": "Sorteerbaar",
     "sortingDisabled": "Sorteren uitgeschakeld",
     "defaultSortTitle": "Standaard sortering",
-    "displayType": "Weergavetype"
+    "displayType": "Weergavetype",
+    "sortingEnabled": "Sorteren ingeschakeld"
   }
 }

@@ -1884,6 +1884,7 @@
     "sortableTitle": "Sortable",
     "sortingDisabled": "Sorting disabled",
     "defaultSortTitle": "Default Sort",
-    "displayType": "Display Type"
+    "displayType": "Display Type",
+    "sortingEnabled": "Sorting enabled"
   }
 }

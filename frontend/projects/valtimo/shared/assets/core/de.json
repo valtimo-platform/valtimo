@@ -1900,6 +1900,7 @@
     "sortableTitle": "Sortierbar",
     "sortingDisabled": "Sortierung deaktiviert",
     "defaultSortTitle": "Standardsortierung",
-    "displayType": "Anzeigetyp"
+    "displayType": "Anzeigetyp",
+    "sortingEnabled": "Sortierung aktiviert"
   }
 }
