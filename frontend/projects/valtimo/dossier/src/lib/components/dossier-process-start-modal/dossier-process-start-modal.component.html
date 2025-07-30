@@ -22,49 +22,53 @@
   </cds-modal-header>
 
   <section cdsModalContent [cdsLayer]="1" class="process-start-modal-content">
-    <ng-template #formViewModelComponent></ng-template>
+    @if ($loading()) {
+      <cds-loading></cds-loading>
+    } @else {
+      <ng-template #formViewModelComponent></ng-template>
 
-    <ng-template #formCustomComponent></ng-template>
+      <ng-template #formCustomComponent></ng-template>
 
-    @if (formDefinition && !isFormViewModel && !isUIComponent) {
-      <valtimo-form-io
-        #form
-        [form]="formDefinition"
-        [options]="options"
-        (submit)="onSubmit($event)"
-      >
-      </valtimo-form-io>
-    }
-
-    @if (formFlowInstanceId) {
-      <valtimo-form-flow
-        [formFlowInstanceId]="formFlowInstanceId"
-        (formFlowComplete)="formFlowSubmitted()"
-      ></valtimo-form-flow>
-    }
-
-    @if (!formFlowInstanceId && !formDefinition && isAdmin && !isUIComponent) {
-      <div
-        class="bg-warning text-black mb-0 p-3 text-center"
-        [translate]="'formManagement.noFormDefinitionFoundAdmin'"
-      ></div>
-      <div class="mb-0 mt-4 p-3 text-center">
-        <button
-          (click)="gotoProcessLinkScreen()"
-          class="btn btn-secondary btn-space"
-          id="process-link-button"
-          type="button"
+      @if (formDefinition && !isFormViewModel && !isUIComponent) {
+        <valtimo-form-io
+          #form
+          [form]="formDefinition"
+          [options]="options"
+          (submit)="onSubmit($event)"
         >
-          {{ 'formManagement.gotoProcessLinksButton' | translate }}
-        </button>
-      </div>
-    }
+        </valtimo-form-io>
+      }
 
-    @if (!formFlowInstanceId && !formDefinition && !isAdmin && !isUIComponent) {
-      <div
-        class="bg-warning text-black mb-0 p-3 text-center"
-        [translate]="'formManagement.noFormDefinitionFoundUser'"
-      ></div>
+      @if (formFlowInstanceId) {
+        <valtimo-form-flow
+          [formFlowInstanceId]="formFlowInstanceId"
+          (formFlowComplete)="formFlowSubmitted()"
+        ></valtimo-form-flow>
+      }
+
+      @if (!formFlowInstanceId && !formDefinition && isAdmin && !isUIComponent) {
+        <div
+          class="bg-warning text-black mb-0 p-3 text-center"
+          [translate]="'formManagement.noFormDefinitionFoundAdmin'"
+        ></div>
+        <div class="mb-0 mt-4 p-3 text-center">
+          <button
+            (click)="gotoProcessLinkScreen()"
+            class="btn btn-secondary btn-space"
+            id="process-link-button"
+            type="button"
+          >
+            {{ 'formManagement.gotoProcessLinksButton' | translate }}
+          </button>
+        </div>
+      }
+
+      @if (!formFlowInstanceId && !formDefinition && !isAdmin && !isUIComponent) {
+        <div
+          class="bg-warning text-black mb-0 p-3 text-center"
+          [translate]="'formManagement.noFormDefinitionFoundUser'"
+        ></div>
+      }
     }
   </section>
 </cds-modal>

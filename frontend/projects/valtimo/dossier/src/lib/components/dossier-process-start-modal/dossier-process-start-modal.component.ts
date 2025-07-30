@@ -26,6 +26,7 @@ import {
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
+  signal,
 } from '@angular/core';
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
@@ -86,6 +87,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   @Output() noProcessLinked = new EventEmitter();
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly $loading = signal<boolean>(true);
 
   private _subscriptions = new Subscription();
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
@@ -125,6 +127,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   private loadProcessLink() {
+    this.$loading.set(true);
     this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
@@ -141,6 +144,7 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
       )
       .pipe(take(1))
       .subscribe(startProcessResult => {
+        this.$loading.set(false);
         if (startProcessResult) {
           switch (startProcessResult.type) {
             case 'form':
