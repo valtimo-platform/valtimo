@@ -32,6 +32,7 @@
     [header]="false"
     [dragAndDrop]="true"
     [dragAndDropDisabled]="state.disableInput"
+    [actionItems]="ACTION_ITEMS"
     (itemsReordered)="onItemsReordered($event)"
     (rowClicked)="onRowClicked($event)"
   >
@@ -57,4 +58,14 @@
     [modalMode]="state.modalMode"
     (closeModalEvent)="onCloseModalEvent($event)"
   ></valtimo-iko-management-list-modal>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="ikoManagement.searchActions.deleteModalText"
+    [showModalSubject$]="openConfirmationModal$"
+    [outputOnConfirm]="state.selectedListColumn"
+    titleTranslationKey="interface.delete"
+    (confirmEvent)="onDeleteListColumn($event)"
+  ></valtimo-confirmation-modal>
 </ng-container>

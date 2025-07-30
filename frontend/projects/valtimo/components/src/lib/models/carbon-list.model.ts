@@ -30,6 +30,7 @@ enum ViewType {
   TEMPLATE = 'template',
   TEXT = 'text',
   UNDERSCORES_TO_SPACES = 'underscoresToSpaces',
+  HIDDEN = 'hidden',
 }
 interface CarbonListSelectTranslations {
   single: string;

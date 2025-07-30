@@ -26,7 +26,12 @@ import {
   tap,
 } from 'rxjs';
 import {map} from 'rxjs/operators';
-import {CarbonListModule, ColumnConfig} from '@valtimo/components';
+import {
+  ActionItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+} from '@valtimo/components';
 import {IkoManagementApiService} from '../../../../services';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -48,10 +53,12 @@ import {toObservable} from '@angular/core/rxjs-interop';
     IkoManagementListModalComponent,
     ButtonModule,
     IconModule,
+    ConfirmationModalModule,
   ],
 })
 export class IkoManagementListComponent implements OnInit, OnDestroy {
   public readonly $openModal = signal<boolean>(false);
+  public readonly openConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly $loading = signal<boolean>(true);
   public readonly $disableInput = signal<boolean>(true);
   public readonly $modalMode = signal<IkoListColumnModalMode>(IkoListColumnModalMode.ADD);
@@ -140,6 +147,18 @@ export class IkoManagementListComponent implements OnInit, OnDestroy {
     },
   ];
 
+  public readonly ACTION_ITEMS: ActionItem[] = [
+    {
+      label: 'interface.edit',
+      callback: this.onRowClicked.bind(this),
+    },
+    {
+      label: 'interface.delete',
+      callback: this.onDeleteClicked.bind(this),
+      type: 'danger',
+    },
+  ];
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -196,6 +215,29 @@ export class IkoManagementListComponent implements OnInit, OnDestroy {
     this.$selectedListColumn.set({...listColumnDto});
     this.$openModal.set(true);
     this.$modalMode.set(IkoListColumnModalMode.EDIT);
+  }
+
+  public onDeleteClicked(event: ListColumnDto): void {
+    const listColumnDto = this.$ikoListColumnDtos().find(column => column.key === event.key);
+    if (!listColumnDto) return;
+    this.$selectedListColumn.set({...listColumnDto});
+    this.openConfirmationModal$.next(true);
+  }
+
+  public onDeleteListColumn(event: ListColumnDto): void {
+    this.disableInput();
+
+    this._dataAggregateKey$
+      .pipe(switchMap(key => this.ikoManagementApiService.deleteIkoListColumn(key, event.key)))
+      .subscribe({
+        next: () => {
+          this.reloadColumns();
+          this.enableInput();
+        },
+        error: () => {
+          this.enableInput();
+        },
+      });
   }
 
   public openModal(): void {
