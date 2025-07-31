@@ -42,8 +42,8 @@ import {
   RenderInPageHeaderDirective,
   SelectedValue,
   SelectItem,
-  WidgetModule,
   SelectModule as ValtimoSelectModule,
+  WidgetModule,
 } from '@valtimo/components';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {EMPTY_DECISION} from './empty-decision';
@@ -103,6 +103,7 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
   public readonly isCreating$ = new BehaviorSubject<boolean>(false);
   public readonly selectionId$ = new BehaviorSubject<string>('');
   public readonly createdDecisionVersionSelectItems$ = new BehaviorSubject<Array<SelectItem>>([]);
+  public readonly refresh$ = new BehaviorSubject<boolean>(false);
 
   private _fileName!: string;
 
@@ -197,9 +198,11 @@ export class DecisionModelerComponent extends PendingChangesComponent implements
   }
 
   public switchVersion(decisionId: string | SelectedValue): void {
-    if (!decisionId) return;
+    if (!decisionId || Array.isArray(decisionId)) return;
+    this.refresh$.next(true);
 
     this.router.navigate(['../', decisionId], {relativeTo: this.route});
+    setTimeout(() => this.refresh$.next(false));
   }
 
   public deploy(): void {

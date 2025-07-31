@@ -47,7 +47,7 @@
   </div>
 </ng-template>
 
-<ng-container renderInPageHeader>
+<ng-container *ngIf="!(refresh$ | async)" renderInPageHeader>
   <ng-template>
     <div
       *ngIf="{
