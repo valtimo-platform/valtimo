@@ -15,21 +15,29 @@
  */
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {FormioCustomComponent, FormIoDomService, ValtimoModalService} from '@valtimo/components';
+import {
+  FormioCustomComponent,
+  FormIoDomService,
+  ValtimoModalService,
+  FormIoStateService,
+} from '@valtimo/components';
 import {DocumentenApiFileReference, UploadProviderService} from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
 import {
   BehaviorSubject,
   combineLatest,
+  EMPTY,
   Observable,
   of,
   startWith,
   Subscription,
   switchMap,
 } from 'rxjs';
-import {filter, map, take, tap} from 'rxjs/operators';
+import {catchError, filter, map, take, tap} from 'rxjs/operators';
 import {DocumentenApiMetadata, SupportedDocumentenApiFeatures} from '../../models';
 import {DocumentenApiVersionService} from '../../services';
+import {DocumentService} from '@valtimo/document';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -100,6 +108,30 @@ export class DocumentenApiUploaderComponent
 
   @Input() set documentType(defaultValue: string) {
     this.defaultValues['informatieobjecttype'] = defaultValue;
+    this.stateService.documentDefinitionName$
+      .pipe(
+        switchMap(documentDefinitionName =>
+          this.documentService.getCaseSettings(documentDefinitionName)
+        ),
+        switchMap(caseDefinition =>
+          this.documentService.getDocumentTypesForCase(
+            String(caseDefinition.caseDefinitionKey),
+            String(caseDefinition.caseDefinitionVersionTag)
+          )
+        ),
+        catchError(() => {
+          this.defaultValues['informatieobjecttype'] = defaultValue;
+          return EMPTY;
+        })
+      )
+      .subscribe(documentTypes => {
+        const foundDocumentType = documentTypes.find(
+          documentType => documentType.name === defaultValue
+        );
+        foundDocumentType
+          ? (this.defaultValues['informatieobjecttype'] = foundDocumentType.url)
+          : (this.defaultValues['informatieobjecttype'] = defaultValue);
+      });
   }
 
   @Input() set hideDocumentType(hide: boolean) {
@@ -188,7 +220,9 @@ export class DocumentenApiUploaderComponent
     private readonly modalService: ValtimoModalService,
     private readonly userProviderService: UserProviderService,
     private readonly route: ActivatedRoute,
-    private readonly documentenApiVersionService: DocumentenApiVersionService
+    private readonly documentenApiVersionService: DocumentenApiVersionService,
+    private readonly stateService: FormIoStateService,
+    private readonly documentService: DocumentService
   ) {}
 
   public ngOnInit(): void {
