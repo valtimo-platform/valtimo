@@ -1,6 +1,7 @@
 {
   "name": "@valtimo/form-flow-management",
-  "version": "12.2.0",
+  "license": "EUPL-1.2",
+  "version": "12.15.1",
   "peerDependencies": {
     "@angular/common": "^17.2.2",
     "@angular/core": "^17.2.2"
