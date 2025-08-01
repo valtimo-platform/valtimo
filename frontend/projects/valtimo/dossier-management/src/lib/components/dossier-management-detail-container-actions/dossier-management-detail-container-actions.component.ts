@@ -176,10 +176,10 @@ export class DossierManagementDetailContainerActionsComponent {
   private downloadZip(response: HttpResponse<Blob>, versionNumber: number): void {
     const link = document.createElement('a');
     const contentDisposition = response.headers.get('content-disposition');
-    const splitContentDisposition = contentDisposition.split('filename=');
+    const splitContentDisposition = contentDisposition?.split('filename=') ?? [];
     const fileName = splitContentDisposition.length > 1 && splitContentDisposition[1];
 
-    link.href = this.document.defaultView.URL.createObjectURL(response.body);
+    link.href = this.document.defaultView?.URL.createObjectURL(response.body) ?? '';
     link.download = fileName || `${this.documentDefinitionName}_${versionNumber}.valtimo.zip`;
     link.target = '_blank';
     link.click();
