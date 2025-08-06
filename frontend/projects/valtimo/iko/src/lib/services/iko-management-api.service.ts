@@ -15,7 +15,7 @@
  */
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   IkoDataAggregateCreateRequest,
@@ -100,6 +100,25 @@ export class IkoManagementApiService extends BaseApiService {
   public getIkoDataAggregatePropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
       this.getApiUrl(`/v1/iko-property-fields/${type}/data-aggregate`)
+    );
+  }
+
+  public getManagementIkoDataAggregates(
+    key?: string,
+    title?: string,
+    ikoRepositoryConfigKey?: string,
+    page: number = 0,
+    size: number = 100,
+    sort: string = 'title,asc'
+  ): Observable<Page<IkoDataAggregateResponse>> {
+    let params = new HttpParams().set('page', page).set('size', size).set('sort', sort);
+    if (key) params = params.set('key', key);
+    if (title) params = params.set('title', title);
+    if (ikoRepositoryConfigKey)
+      params = params.set('ikoRepositoryConfigKey', ikoRepositoryConfigKey);
+    return this.httpClient.get<Page<IkoDataAggregateResponse>>(
+      this.getApiUrl(`management/v1/iko-data-aggregate`),
+      {params}
     );
   }
 

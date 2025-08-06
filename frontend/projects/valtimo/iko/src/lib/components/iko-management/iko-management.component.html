@@ -16,7 +16,7 @@
 
 <valtimo-carbon-list
   [fields]="FIELDS"
-  [items]="cachedMenuItems$ | async"
+  [items]="ikoDataAggregates$ | async"
   [loading]="loading$ | async"
   [hideToolbar]="true"
   (rowClicked)="onRowClicked($event)"

@@ -25,7 +25,16 @@ import {
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {IkoManagementApiService} from '../../services';
-import {BehaviorSubject, combineLatest, Observable, of, Subscription, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  of,
+  startWith,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {Router} from '@angular/router';
 import {map} from 'rxjs/operators';
 import {
@@ -92,7 +101,7 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
   public readonly form = this.formBuilder.group({
     title: this.formBuilder.control('', [Validators.required]),
     key: this.formBuilder.control('', [Validators.required]),
-    type: this.formBuilder.control('', [Validators.required]),
+    type: this.formBuilder.control('iko', [Validators.required]),
     pluginId: this.formBuilder.control('', [Validators.required]),
   });
 
@@ -108,6 +117,7 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
   public readonly pluginSelectItems$: Observable<SelectItem[]> = this.form
     .get('type')
     .valueChanges.pipe(
+      startWith(this.form.get('type').value),
       tap(() => this.form.patchValue({pluginId: ''})),
       switchMap(type =>
         combineLatest([
