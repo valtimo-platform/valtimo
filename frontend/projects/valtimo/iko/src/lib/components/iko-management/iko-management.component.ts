@@ -51,7 +51,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly FIELDS: ColumnConfig[] = [
     {
       key: 'title',
-      label: 'ikoManagement.title',
+      label: 'ikoManagement.view',
     },
   ];
 

@@ -94,7 +94,7 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
   public readonly FIELDS: ColumnConfig[] = [
     {
       key: 'title',
-      label: 'ikoManagement.title',
+      label: 'ikoManagement.ikoServer',
     },
   ];
 

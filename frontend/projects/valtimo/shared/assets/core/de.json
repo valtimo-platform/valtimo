@@ -1864,7 +1864,9 @@
     "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
   },
   "ikoManagement": {
-    "title": "Bild",
+    "ikoServer": "IKO Server",
+    "view": "Bild",
+    "title": "Konfiguration",
     "list": "Liste",
     "tabs": "Tabs",
     "searchActions": {

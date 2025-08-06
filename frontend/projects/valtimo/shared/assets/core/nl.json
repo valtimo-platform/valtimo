@@ -1882,7 +1882,9 @@
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
   },
   "ikoManagement": {
-    "title": "Beeld",
+    "title": "Configuratie",
+    "ikoServer": "IKO Server",
+    "view": "Beeld",
     "list": "Lijst",
     "tabs": "Tabbladen",
     "searchActions": {

@@ -1848,7 +1848,9 @@
     "searchFieldsNoResults": "No search fields found for this entity"
   },
   "ikoManagement": {
-    "title": "View",
+    "ikoServer": "IKO Server",
+    "view": "View",
+    "title": "Configuration",
     "list": "List",
     "tabs": "Tabs",
     "searchActions": {
