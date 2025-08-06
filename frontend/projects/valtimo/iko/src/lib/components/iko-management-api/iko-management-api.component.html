@@ -65,13 +65,16 @@
       />
     </cds-label>
 
-    <v-select
-      [invalid]="getControlInvalid('type')"
-      formControlName="type"
-      [items]="ikoRepositoryTypeSelectItems$ | async"
-      [title]="'ikoManagement.typeTitle' | translate"
-      [appendInline]="false"
-    ></v-select>
+    @if (false) {
+      <!-- TODO: Discuss with Thomas-->
+      <v-select
+        [invalid]="getControlInvalid('type')"
+        formControlName="type"
+        [items]="ikoRepositoryTypeSelectItems$ | async"
+        [title]="'ikoManagement.typeTitle' | translate"
+        [appendInline]="false"
+      ></v-select>
+    }
 
     <v-select
       [invalid]="getControlInvalid('pluginId')"

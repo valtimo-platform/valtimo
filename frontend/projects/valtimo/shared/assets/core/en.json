@@ -1848,7 +1848,7 @@
     "searchFieldsNoResults": "No search fields found for this entity"
   },
   "ikoManagement": {
-    "title": "Configuration",
+    "title": "View",
     "list": "List",
     "tabs": "Tabs",
     "searchActions": {
@@ -1868,7 +1868,7 @@
       "noResultsTitle": "There are no search fields.",
       "noResultsDescription": "Click here to configure a search field."
     },
-    "addApiConfig": "Configure API",
+    "addApiConfig": "Configure IKO Server",
     "titleTitle": "Title",
     "titlePlaceholder": "Enter a title for the API configuration",
     "keyTitle": "Key",

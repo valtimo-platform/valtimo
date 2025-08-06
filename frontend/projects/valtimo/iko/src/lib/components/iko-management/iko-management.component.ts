@@ -32,13 +32,20 @@ import {map} from 'rxjs/operators';
 export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly cachedMenuItems$ = this.ikoApiService.cachedMenuItems$.pipe(
-    tap(() => this.loading$.next(false))
+  private readonly _apiKey$ = this.route.params.pipe(
+    map(params => params?.apiKey as string),
+    filter(key => !!key)
   );
 
-  private readonly _apiKey$ = this.route.params.pipe(
-    map(params => params?.apiKey),
-    filter(key => !!key)
+  public readonly ikoDataAggregates$ = this._apiKey$.pipe(
+    switchMap(apiKey =>
+      this.ikoManagementApiService
+        .getManagementIkoDataAggregates(undefined, undefined, apiKey)
+        .pipe(
+          map(dataAggregatePage => dataAggregatePage.content),
+          tap(() => this.loading$.next(false))
+        )
+    )
   );
 
   public readonly FIELDS: ColumnConfig[] = [

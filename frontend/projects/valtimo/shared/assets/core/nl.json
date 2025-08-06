@@ -1882,7 +1882,7 @@
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
   },
   "ikoManagement": {
-    "title": "Configuratie",
+    "title": "Beeld",
     "list": "Lijst",
     "tabs": "Tabbladen",
     "searchActions": {
@@ -1902,7 +1902,7 @@
       "noResultsTitle": "Er zijn geen zoekvelden.",
       "noResultsDescription": "Klik hier om een zoekveld te configureren."
     },
-    "addApiConfig": "API configureren",
+    "addApiConfig": "IKO Server configureren",
     "titleTitle": "Titel",
     "titlePlaceholder": "Voer een titel in voor de API-configuratie",
     "keyTitle": "Sleutel",
