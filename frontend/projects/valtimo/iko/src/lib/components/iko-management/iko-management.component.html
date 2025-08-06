@@ -18,7 +18,8 @@
   [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [items]="ikoDataAggregates$ | async"
-  [loading]="$loading()"
+  [loading]="loading$ | async"
+  [hideToolbar]="true"
   (rowClicked)="onRowClicked($event)"
 >
   <ng-container carbonToolbarContent [ngTemplateOutlet]="addViewButton"></ng-container>
