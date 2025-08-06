@@ -553,7 +553,12 @@ export class CaseListComponent implements OnInit, OnDestroy {
         `/cases/${caseDefinitionKey}`,
         this.route.snapshot.queryParams
       );
-      this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
+
+      if (item.ctrlClick) {
+        window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
+      } else {
+        this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
+      }
     });
   }
 
