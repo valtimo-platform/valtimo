@@ -1355,7 +1355,8 @@
     "title": "Titel",
     "yes": "Ja",
     "no": "Nee",
-    "upload": "Uploaden"
+    "upload": "Uploaden",
+    "noTranslationFound": "Geen vertaling gevonden"
   },
   "taskDetail": {"taskCreated": "Aangemaakt op", "taskCompleted": "is succesvol afgerond"},
   "assignTask": {

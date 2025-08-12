@@ -1351,7 +1351,8 @@
     "title": "Titel",
     "yes": "Ja",
     "no": "Nein",
-    "upload": "Hochladen"
+    "upload": "Hochladen",
+    "noTranslationFound": "Keine Übersetzung gefunden"
   },
   "taskDetail": {"taskCreated": "Erstellt", "taskCompleted": "erfolgreich abgeschlossen"},
   "assignTask": {
