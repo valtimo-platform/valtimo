@@ -1328,7 +1328,8 @@
     "title": "Title",
     "yes": "Yes",
     "no": "No",
-    "upload": "Upload"
+    "upload": "Upload",
+    "noTranslationFound": "No translation found"
   },
   "taskDetail": {"taskCreated": "Created", "taskCompleted": "has successfully been completed"},
   "assignTask": {
