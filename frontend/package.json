@@ -112,7 +112,7 @@
     "libs:build:object": "ng build @valtimo/object",
     "libs:build:access-control-management": "ng build @valtimo/access-control-management",
     "libs:build:logging": "ng build @valtimo/logging",
-    "libs:build:iko": "ng build @valtimo/iko",
+    "libs:build-7:iko": "ng build @valtimo/iko",
     "libs:build-7:copy-version": "npm run copy-frontend-version",
     "libs:test:shared": "cross-env-shell \"ng test @valtimo/shared --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
     "libs:test:access-control": "cross-env-shell \"ng test @valtimo/access-control --watch $WATCH_TESTS --browsers $TEST_BROWSER --source-map $SOURCE_MAPS\"",
