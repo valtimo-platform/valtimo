@@ -23,6 +23,7 @@ import {
   OnInit,
   Output,
   SimpleChanges,
+  ViewEncapsulation,
 } from '@angular/core';
 import {SelectedValue, SelectItem} from '../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
@@ -35,6 +36,7 @@ import {map, take} from 'rxjs/operators';
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
   standalone: false,
+  encapsulation: ViewEncapsulation.None,
 })
 export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public set items(value: Array<SelectItem>) {
@@ -62,6 +64,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public notFoundText!: string;
   @Input() public clearAllText!: string;
   @Input() public clearText!: string;
+  @Input() public clearable = true;
   @Input() public name = '';
   @Input() public title = '';
   @Input() public titleTranslationKey = '';

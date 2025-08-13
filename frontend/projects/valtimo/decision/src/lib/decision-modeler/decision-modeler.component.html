@@ -20,25 +20,11 @@
     decisionTitle: decisionTitle$ | async,
   } as obs"
   fitPage
+  [disableOverflow]="true"
   class="dmn-editor"
 >
   <ng-container *ngTemplateOutlet="diagram"></ng-container>
 </div>
-
-<ng-template #versionSelection>
-  <v-select
-    *ngIf="(isCreating$ | async) === false"
-    name="version"
-    [title]="'decisions.version' | translate"
-    [disabled]="versionSelectionDisabled$ | async"
-    [clearable]="false"
-    [loading]="(decisionVersionSelectItems$ | async) === null"
-    [items]="decisionVersionSelectItems$ | async"
-    [defaultSelectionId]="selectionId$ | async"
-    [widthInPx]="120"
-    (selectedChange)="switchVersion($event)"
-  ></v-select>
-</ng-template>
 
 <ng-template #diagram>
   <div class="editor-parent">
@@ -57,45 +43,67 @@
         compactMode: compactMode$ | async,
         hasEditPermissions: hasEditPermissions$ | async,
       } as obs"
-      class="header"
+      class="decision-modeler-actions"
     >
       <ng-container *ngTemplateOutlet="versionSelection"></ng-container>
 
-      <div>
-        <button
-          *ngIf="obs.context === 'case'"
-          cdsButton="secondary"
-          [size]="obs.compactMode ? 'sm' : 'md'"
-          (click)="navigateBack(null)"
-        >
-          <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+      <button
+        *ngIf="obs.context === 'case'"
+        cdsButton="secondary"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        (click)="navigateBack(null)"
+      >
+        <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
 
-          <span>{{ 'interface.back' | translate }}</span>
+        <span>{{ 'interface.back' | translate }}</span>
+      </button>
+
+      @if (obs.selectionId && !obs.isCreating) {
+        <button
+          *ngIf="obs.hasEditPermissions"
+          cdsButton="primary"
+          (click)="deploy()"
+          [size]="obs.compactMode ? 'sm' : 'md'"
+        >
+          {{ 'decisions.deploy' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
         </button>
 
-        @if (obs.selectionId && !obs.isCreating) {
-          <button
-            *ngIf="obs.hasEditPermissions"
-            cdsButton="primary"
-            (click)="deploy()"
-            [size]="obs.compactMode ? 'sm' : 'md'"
-          >
-            {{ 'decisions.deploy' | translate }}
-
-            <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
-          </button>
-
-          <cds-overflow-menu class="overflow-button">
-            <cds-overflow-menu-option (selected)="download()"
-              >{{ 'interface.export' | translate }}
-            </cds-overflow-menu-option>
-          </cds-overflow-menu>
-        } @else {
-          <button class="btn btn-success btn-space" (click)="deploy()">
-            <i class="icon mdi mdi-upload mr-1"></i>{{ 'decisions.deploy' | translate }}
-          </button>
-        }
-      </div>
+        <cds-overflow-menu class="overflow-button">
+          <cds-overflow-menu-option (selected)="download()"
+            >{{ 'interface.export' | translate }}
+          </cds-overflow-menu-option>
+        </cds-overflow-menu>
+      } @else {
+        <button class="btn btn-success btn-space" (click)="deploy()">
+          <i class="icon mdi mdi-upload mr-1"></i>{{ 'decisions.deploy' | translate }}
+        </button>
+      }
     </div>
   </ng-template>
 </ng-container>
+
+<ng-template #versionSelection>
+  <ng-container
+    *ngIf="{
+      selectItems: (decisionVersionSelectItems$ | async) || [],
+      isIndependent: isIndependent$ | async,
+      versionSelectionDisabled: versionSelectionDisabled$ | async,
+      selectionId: selectionId$ | async,
+    } as obs"
+  >
+    <v-select
+      *ngIf="obs.isIndependent"
+      name="version"
+      [title]="'decisions.version' | translate"
+      [disabled]="obs.versionSelectionDisabled"
+      [clearable]="false"
+      [loading]="obs.selectItems.length === 0"
+      [items]="obs.selectItems"
+      [defaultSelectionId]="obs.selectionId"
+      [widthInPx]="120"
+      (selectedChange)="switchVersion($event)"
+    ></v-select>
+  </ng-container>
+</ng-template>
