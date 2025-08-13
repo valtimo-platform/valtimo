@@ -18,10 +18,7 @@
   valtimoCdsModal
   *ngIf="{
     title:
-      (modalMode === IkoListColumnModalMode.ADD
-        ? 'ikoManagement.addColumn'
-        : 'ikoManagement.editColumn'
-      ) | translate,
+      (modalMode === 'add' ? 'ikoManagement.addColumn' : 'ikoManagement.editColumn') | translate,
   } as state"
   [open]="$openModal()"
   [title]="state.title"

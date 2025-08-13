@@ -1857,7 +1857,8 @@
     "view": "View",
     "title": "Configuration",
     "list": "List",
-    "tabs": "Tabs",
+    "tabs": {"title": "Tabs"},
+    "widgets": {"title": "Widgets"},
     "searchActions": {
       "addActionTitle": "Add search action",
       "editActionTitle": "Edit search action",
@@ -1892,6 +1893,17 @@
     "sortingDisabled": "Sorting disabled",
     "defaultSortTitle": "Default Sort",
     "displayType": "Display Type",
-    "sortingEnabled": "Sorting enabled"
+    "sortingEnabled": "Sorting enabled",
+    "tabKey": "Key",
+    "tabTitle": "Tab title",
+    "tabTitlePlaceholder": "Enter tab title",
+    "tabType": "Tab type",
+    "tabTypeTitle": "Tab type",
+    "tabTypePlaceholder": "Enter tab type",
+    "addTab": "Add tab",
+    "editTab": "Edit tab",
+    "tabTypes": {
+      "widgets": "Widgets"
+    }
   }
 }

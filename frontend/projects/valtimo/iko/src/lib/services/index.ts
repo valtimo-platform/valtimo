@@ -18,3 +18,4 @@ export * from './iko-api.service';
 export * from './iko-tab.service';
 export * from './iko-management-api.service';
 export * from './iko-menu.service';
+export * from './iko-management-widget-api.service';

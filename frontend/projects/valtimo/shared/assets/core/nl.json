@@ -1890,7 +1890,8 @@
     "ikoServer": "IKO Server",
     "view": "Beeld",
     "list": "Lijst",
-    "tabs": "Tabbladen",
+    "tabs": {"title": "Tabbladen"},
+    "widgets": {"title": "Widgets"},
     "searchActions": {
       "addActionTitle": "Zoekactie toevoegen",
       "editActionTitle": "Zoekactie bewerken",
@@ -1925,6 +1926,17 @@
     "sortingDisabled": "Sorteren uitgeschakeld",
     "defaultSortTitle": "Standaard sortering",
     "displayType": "Weergavetype",
-    "sortingEnabled": "Sorteren ingeschakeld"
+    "sortingEnabled": "Sorteren ingeschakeld",
+    "tabKey": "Sleutel",
+    "tabTitle": "Tabtitel",
+    "tabTitlePlaceholder": "Voer tabtitel in",
+    "tabType": "Tabtype",
+    "tabTypeTitle": "Tabtype",
+    "tabTypePlaceholder": "Voer tabtype in",
+    "addTab": "Tab toevoegen",
+    "editTab": "Tab bewerken",
+    "tabTypes": {
+      "widgets": "Widgets"
+    }
   }
 }

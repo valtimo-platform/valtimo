@@ -97,7 +97,7 @@ export class IkoManagementSearchActionsComponent {
   ) {}
 
   public onSearchActionClick(action: IkoDataRequestResponse): void {
-    this.router.navigate([`${action.key}`], {relativeTo: this.route});
+    this.router.navigate([`search-action/${action.key}`], {relativeTo: this.route});
   }
 
   public deleteSearchAction(action: IkoDataRequestResponse): void {
