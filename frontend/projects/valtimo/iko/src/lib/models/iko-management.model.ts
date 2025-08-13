@@ -202,4 +202,5 @@ export {
   TabDto,
   WidgetAction,
   WidgetDto,
+  IkoTabType,
 };
