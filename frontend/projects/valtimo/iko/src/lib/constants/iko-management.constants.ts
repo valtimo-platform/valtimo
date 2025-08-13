@@ -32,7 +32,7 @@ const IKO_MANAGEMENT_TABS: IkoManagementTab[] = [
   },
   {
     key: IkoManagementTabType.TABS,
-    title: 'ikoManagement.tabs',
+    title: 'ikoManagement.tabs.title',
     component: IkoManagementTabsComponent,
   },
 ];

@@ -258,3 +258,5 @@ export * from './lib/directives/muuri/muuri.directive';
 export * from './lib/directives/muuri/muuri-item.component';
 // read-only
 export * from './lib/directives/read-only.directive';
+// auto key
+export * from './lib/components/auto-key-input/auto-key-input.component';

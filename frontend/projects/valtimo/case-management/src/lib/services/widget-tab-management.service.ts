@@ -18,12 +18,13 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService, CaseManagementParams} from '@valtimo/shared';
 import {CaseWidgetsRes} from '@valtimo/case';
-import {Observable} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {BasicWidget, IWidgetManagementService} from '@valtimo/widget';
 
 @Injectable({
   providedIn: 'root',
 })
-export class WidgetTabManagementService {
+export class WidgetTabManagementService implements IWidgetManagementService<any> {
   private readonly valtimoEndpointBase: string;
 
   constructor(
@@ -31,6 +32,30 @@ export class WidgetTabManagementService {
     private readonly configService: ConfigService
   ) {
     this.valtimoEndpointBase = `${this.configService.config.valtimoApi.endpointUri}management/v1/case-definition`;
+  }
+  valueResolverApi$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>('');
+  //TODO: Update when IKO widget management is done
+
+  params$: BehaviorSubject<any>;
+  initParams(...params: any[]): void {
+    throw new Error('Method not implemented.');
+  }
+  deleteWidget(widget: BasicWidget): Observable<void> {
+    throw new Error('Method not implemented.');
+  }
+  updateWidget(widget: BasicWidget): Observable<BasicWidget> {
+    throw new Error('Method not implemented.');
+  }
+  createWidget(widget: BasicWidget): Observable<BasicWidget> {
+    throw new Error('Method not implemented.');
+  }
+
+  public getWidgetConfiguration(...params: any[]): Observable<BasicWidget[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  public updateWidgetConfiguration(...params: any[]): Observable<BasicWidget[]> {
+    throw new Error('Method not implemented.');
   }
 
   public getWidgetTabConfiguration(

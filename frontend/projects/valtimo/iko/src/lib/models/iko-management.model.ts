@@ -56,6 +56,7 @@ interface IkoManagementParams {
   aggregateKey: string;
   actionKey: string;
   tabKey: string;
+  widgetTabKey?: string;
 }
 
 interface IkoDataRequestResponse {
@@ -138,6 +139,7 @@ interface WidgetDto {
 enum IkoManagementTabType {
   LIST = 'list',
   SEARCH_FIELDS = 'search',
+  WIDGETS = 'widgets',
   TABS = 'tabs',
 }
 
@@ -168,6 +170,10 @@ interface IkoSearchFieldCreateRequest {
   visible?: boolean;
 }
 
+enum IkoTabType {
+  WIDGETS = 'widgets',
+}
+
 export {
   IkoDataAggregateCreateRequest,
   IkoDataAggregateListResponse,
@@ -191,4 +197,5 @@ export {
   TabDto,
   WidgetAction,
   WidgetDto,
+  IkoTabType,
 };

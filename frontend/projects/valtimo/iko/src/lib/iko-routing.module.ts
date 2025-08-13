@@ -22,6 +22,7 @@ import {IkoDetailsComponent} from './components/iko-details/iko-details.componen
 import {IkoListComponent} from './components/iko-list/iko-list.component';
 import {IkoManagementApiComponent} from './components/iko-management-api/iko-management-api.component';
 import {IkoManagementSearchFieldsComponent} from './components/iko-management-details/components/search-fields/iko-management-search-fields.component';
+import {IkoManagementWidgetsComponent} from './components/iko-management-details/components/widgets/iko-management-widgets.component';
 import {IkoManagementDetailsComponent} from './components/iko-management-details/iko-management-details.component';
 import {IkoManagementComponent} from './components/iko-management/iko-management.component';
 import {IkoSearchComponent} from './components/iko-search/iko-search.component';
@@ -83,12 +84,21 @@ const routes: Routes = [
     },
   },
   {
-    path: 'iko-management/:apiKey/:key/:tabKey/:actionKey',
+    path: 'iko-management/:apiKey/:key/:tabKey/search-action/:actionKey',
     component: IkoManagementSearchFieldsComponent,
     canActivate: [AuthGuardService],
     data: {
       customPageTitle: true,
       title: 'IKO Search action details',
+      roles: [ROLE_ADMIN],
+    },
+  },
+  {
+    path: 'iko-management/:apiKey/:key/:tabKey/widget-details/:widgetTabKey',
+    component: IkoManagementWidgetsComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'IKO Widget details',
       roles: [ROLE_ADMIN],
     },
   },

@@ -44,16 +44,11 @@ import {
   ValtimoCdsModalDirective,
   ViewType,
 } from '@valtimo/components';
-import {
-  CloseListColumnModalEvent,
-  ColumnDefaultSort,
-  IkoListColumnModalMode,
-  IkoListColumnRequest,
-  ListColumnDto,
-} from '../../../../models';
+import {ColumnDefaultSort, IkoListColumnRequest, ListColumnDto} from '../../../../models';
 import {map} from 'rxjs/operators';
 import {delay, filter, Observable, of, Subscription, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
+import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
 
 @Component({
   standalone: true,
@@ -93,13 +88,11 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
     this.form.markAsPristine();
   }
 
-  public readonly IkoListColumnModalMode = IkoListColumnModalMode;
-
-  private _modalMode: IkoListColumnModalMode = IkoListColumnModalMode.ADD;
+  private _modalMode: ModalMode = 'add';
   @Input()
-  public set modalMode(value: IkoListColumnModalMode) {
+  public set modalMode(value: ModalMode) {
     this._modalMode = value;
-    if (value === IkoListColumnModalMode.ADD) {
+    if (value === 'add') {
       this.key.setAsyncValidators(this.keyNotUsedValidator());
       this.key.enable();
     } else {
@@ -108,11 +101,11 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
     }
     this.key.updateValueAndValidity();
   }
-  public get modalMode(): IkoListColumnModalMode {
+  public get modalMode(): ModalMode {
     return this._modalMode;
   }
 
-  @Output() public readonly closeModalEvent = new EventEmitter<CloseListColumnModalEvent>();
+  @Output() public readonly closeModalEvent = new EventEmitter<ModalCloseEvent>();
 
   public readonly form = this.formBuilder.group({
     title: this.formBuilder.control('', [Validators.required]),
@@ -237,7 +230,7 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
     this._dataAggregateKey$
       .pipe(
         switchMap(dataAggregateKey =>
-          this.modalMode === IkoListColumnModalMode.ADD
+          this.modalMode === 'add'
             ? this.ikoManagementApiService.createIkoListColumn(
                 dataAggregateKey,
                 formValue.key,
@@ -312,7 +305,7 @@ export class IkoManagementListModalComponent implements OnInit, OnDestroy {
       sortable: Boolean(sortable),
       ...(defaultSort ? {defaultSort: defaultSort as ColumnDefaultSort} : {}),
       ...rest,
-      ...(this.modalMode === IkoListColumnModalMode.EDIT && {
+      ...(this.modalMode === 'edit' && {
         order: this._selectedListColumn.order,
       }),
       displayType: {

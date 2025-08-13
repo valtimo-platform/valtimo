@@ -42,18 +42,4 @@ interface IkoListColumnRequest {
   order?: number;
 }
 
-enum IkoListColumnModalMode {
-  ADD,
-  EDIT,
-}
-
-type CloseListColumnModalEvent = 'close' | 'closeAndRefresh';
-
-export {
-  IkoListColumnRequest,
-  ListColumnDto,
-  DisplayType,
-  ColumnDefaultSort,
-  IkoListColumnModalMode,
-  CloseListColumnModalEvent,
-};
+export {IkoListColumnRequest, ListColumnDto, DisplayType, ColumnDefaultSort};
