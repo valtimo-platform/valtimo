@@ -96,7 +96,9 @@
       "@valtimo/logging": ["dist/valtimo/logging"],
       "@valtimo/logging/*": ["dist/valtimo/logging/*"],
       "@valtimo/iko": ["dist/valtimo/iko"],
-      "@valtimo/iko/*": ["dist/valtimo/iko/*"]
+      "@valtimo/iko/*": ["dist/valtimo/iko/*"],
+      "@valtimo/widget-management": ["dist/valtimo/widget-management"],
+      "@valtimo/widget-management/*": ["dist/valtimo/widget-management/*"]
     }
   },
   "files": [],
@@ -355,6 +357,12 @@
     },
     {
       "path": "./projects/valtimo/iko/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/valtimo/widget/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/valtimo/widget/tsconfig.spec.json"
     }
   ]
 }
