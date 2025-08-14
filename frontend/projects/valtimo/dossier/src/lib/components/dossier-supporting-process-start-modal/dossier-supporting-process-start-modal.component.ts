@@ -24,10 +24,16 @@ import {
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
+  signal,
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
-import {FormioComponent, FormioOptionsImpl, FormioSubmission, ValtimoFormioOptions,} from '@valtimo/components';
+import {
+  FormioComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
 import {ProcessDocumentDefinition} from '@valtimo/document';
 import {ProcessService} from '@valtimo/process';
 import {
@@ -76,6 +82,7 @@ export class DossierSupportingProcessStartModalComponent {
     FormCustomComponentConfig | {}
   >({});
   public readonly closeModalEvent = new EventEmitter();
+  public readonly $loading = signal<boolean>(true);
 
   private readonly _subscriptions = new Subscription();
 
@@ -124,6 +131,7 @@ export class DossierSupportingProcessStartModalComponent {
               this.isUIComponent = true;
               break;
           }
+          this.$loading.set(false);
         }
       });
   }
@@ -219,7 +227,7 @@ export class DossierSupportingProcessStartModalComponent {
 
     this._subscriptions.add(
       this.closeModalEvent.subscribe(() => {
-          formViewModelComponent.destroy();
+        formViewModelComponent.destroy();
       })
     );
 

@@ -29,42 +29,46 @@
     <ng-template #formViewModelComponent></ng-template>
     <ng-template #formCustomComponent></ng-template>
 
-    @if (!isFormViewModel && !isUIComponent && (formDefinition$ | async)) {
-      <valtimo-form-io
-        #form
-        [submission]="submission$ | async"
-        [form]="formDefinition$ | async"
-        [options]="options$ | async"
-        (submit)="onSubmit($event)"
-      ></valtimo-form-io>
-    }
+    @if ($loading()) {
+      <cds-loading></cds-loading>
+    } @else {
+      @if (!isFormViewModel && !isUIComponent && (formDefinition$ | async)) {
+        <valtimo-form-io
+          #form
+          [submission]="submission$ | async"
+          [form]="formDefinition$ | async"
+          [options]="options$ | async"
+          (submit)="onSubmit($event)"
+        ></valtimo-form-io>
+      }
 
-    @if (formFlowInstanceId$ | async) {
-      <valtimo-form-flow
-        #formFlow
-        [formFlowInstanceId]="formFlowInstanceId$ | async"
-        (formFlowComplete)="formSubmitted()"
-      ></valtimo-form-flow>
-    }
+      @if (formFlowInstanceId$ | async) {
+        <valtimo-form-flow
+          #formFlow
+          [formFlowInstanceId]="formFlowInstanceId$ | async"
+          (formFlowComplete)="formSubmitted()"
+        ></valtimo-form-flow>
+      }
 
-    @if (!(formDefinition$ | async) && !(formFlowInstanceId$ | async) && !isUIComponent) {
-      <div class="bg-warning text-black mb-0 p-3 text-center">
-        {{
-          isAdmin
-            ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
-            : ('formManagement.noFormDefinitionFoundUser' | translate)
-        }}
-      </div>
-      <div class="mb-0 mt-4 p-3 text-center">
-        <button
-          class="btn btn-secondary btn-space"
-          type="button"
-          (click)="gotoFormLinkScreen()"
-          id="form-link-button"
-        >
-          {{ 'formManagement.gotoProcessLinksButton' | translate }}
-        </button>
-      </div>
+      @if (!(formDefinition$ | async) && !(formFlowInstanceId$ | async) && !isUIComponent) {
+        <div class="bg-warning text-black mb-0 p-3 text-center">
+          {{
+            isAdmin
+              ? ('formManagement.noFormDefinitionFoundAdmin' | translate)
+              : ('formManagement.noFormDefinitionFoundUser' | translate)
+          }}
+        </div>
+        <div class="mb-0 mt-4 p-3 text-center">
+          <button
+            class="btn btn-secondary btn-space"
+            type="button"
+            (click)="gotoFormLinkScreen()"
+            id="form-link-button"
+          >
+            {{ 'formManagement.gotoProcessLinksButton' | translate }}
+          </button>
+        </div>
+      }
     }
   </section>
 </cds-modal>
