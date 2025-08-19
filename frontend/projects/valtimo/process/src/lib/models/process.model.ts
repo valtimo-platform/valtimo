@@ -123,6 +123,7 @@ interface ProcessInstanceTask {
   tenantId: string;
   identityLinks: IdentityLink[];
   isLocked: boolean;
+  subtitles?: string[];
 }
 
 interface IdentityLink {
