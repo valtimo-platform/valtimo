@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {FormioModule} from '@formio/angular';
 import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/config';
+import {LayerModule} from 'carbon-components-angular';
 import {FormViewModelComponent} from './components/form-view-model';
 
 @NgModule({
+  declarations: [FormViewModelComponent],
+  imports: [CommonModule, FormioModule, LayerModule],
   providers: [
     {
       provide: FORM_VIEW_MODEL_TOKEN,
       useValue: {component: FormViewModelComponent},
     },
   ],
+  exports: [FormViewModelComponent],
 })
 export class FormViewModelModule {}

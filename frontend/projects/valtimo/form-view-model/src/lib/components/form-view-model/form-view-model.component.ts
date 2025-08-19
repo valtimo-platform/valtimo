@@ -13,7 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {HttpErrorResponse} from '@angular/common/http';
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild} from '@angular/core';
+import {
+  FormioComponent,
+  FormioOptions,
+  FormioSubmission,
+  FormioSubmissionCallback,
+} from '@formio/angular';
+import {TranslateService} from '@ngx-translate/core';
+import {FormIoStateService, ValtimoFormioOptions} from '@valtimo/components';
+import {deepmerge} from 'deepmerge-ts';
 import moment from 'moment';
 import {
   BehaviorSubject,
@@ -28,21 +38,8 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {
-  FormioComponent,
-  FormioModule,
-  FormioOptions,
-  FormioSubmission,
-  FormioSubmissionCallback,
-} from '@formio/angular';
-import {ViewModelService} from '../../services';
 import {distinctUntilChanged, map} from 'rxjs/operators';
-import {deepmerge} from 'deepmerge-ts';
-import {FormIoStateService, ValtimoFormioOptions} from '@valtimo/components';
-import {TranslateService} from '@ngx-translate/core';
-import {HttpErrorResponse} from '@angular/common/http';
-import {CommonModule} from '@angular/common';
-import {LayerModule} from 'carbon-components-angular';
+import {ViewModelService} from '../../services';
 
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
 
@@ -50,8 +47,6 @@ moment.defaultFormat = 'DD MMM YYYY HH:mm';
   selector: 'valtimo-form-view-model',
   templateUrl: './form-view-model.component.html',
   styleUrls: ['./form-view-model.component.css'],
-  standalone: true,
-  imports: [CommonModule, FormioModule, LayerModule],
 })
 export class FormViewModelComponent implements OnInit, OnDestroy {
   @ViewChild('formio') formio: FormioComponent;
