@@ -24,13 +24,17 @@ import com.ritense.zakenapi.ZakenApiPlugin.Companion.DOCUMENT_URL_PROCESS_VAR
 import com.ritense.zakenapi.ZakenApiPlugin.Companion.RESOURCE_ID_PROCESS_VAR
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
+import com.ritense.zakenapi.domain.Betalingsindicatie
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
+import com.ritense.zakenapi.domain.Geometry
+import com.ritense.zakenapi.domain.GeometryType
 import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
+import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakbesluitResponse
@@ -538,6 +542,117 @@ internal class ZakenApiPluginTest {
         assertEquals(plannedEndDate, request.einddatumGepland)
     }
 
+    @Test
+    fun `should patch zaak`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock()
+        val executionMock: DelegateExecution = mock()
+        val authenticationMock: ZakenApiAuthentication = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock()
+        val storageService: TemporaryResourceStorageService = mock()
+        val pluginService: PluginService = mock()
+        val zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock()
+        val platformTransactionManager: PlatformTransactionManager = mock()
+        val valueResolverService: ValueResolverService = mock()
+        val objectMapper: ObjectMapper = mock()
+
+        val documentId = UUID.fromString("dff80fb1-e24e-4287-b168-7bb199be5d58")
+        val zaakId = "f18146df-4b26-4a32-8e52-122cfa4475bd"
+        val zaakUrl = zaakUri(zaakId)
+        val zaakInstanceLink: ZaakInstanceLink = mock()
+        val zaakResponse: ZaakResponse = mock()
+
+        val description = "Omschrijving"
+        val explantation = "Toelichting"
+        val communicationChannel = communicationChannel()
+        val communicationChannelName = "Communicatiekanaal Naam"
+        val nowDate = LocalDate.parse("2025-07-23")
+        val plannedEndDate = nowDate.plusMonths(10).toString()
+        val finalDeliveryDate = nowDate.plusYears(1).toString()
+        val publicationDate = nowDate.minusWeeks(2).toString()
+        val paymentIndication = Betalingsindicatie.GEDEELTELIJK.key
+        val lastPaymentDate = nowDate.minusWeeks(1).toString()
+        val archiveActionDate = nowDate.plusYears(7).toString()
+        val startDateRetentionPeriod = nowDate.plusYears(5).toString()
+        val mainCase = zaakUrl("3a941618-b0f1-4a0e-a9d9-c9b25ef50eaf")
+        val caseGeometryType = GeometryType.POINT.key
+        val caseGeometryCoordinates = "[0.0, 1.0]"
+
+        whenever(executionMock.businessKey)
+            .thenReturn(documentId.toString())
+
+        whenever(zaakInstanceLink.zaakInstanceUrl)
+            .thenReturn(zaakUrl)
+
+        whenever(zaakInstanceLinkRepository.findByDocumentId(eq(documentId)))
+            .thenReturn(zaakInstanceLink)
+
+        whenever(zaakResponse.url)
+            .thenReturn(zaakUrl)
+
+        whenever(
+            zakenApiClient.patchZaak(
+                authentication = eq(authenticationMock),
+                baseUrl = eq(zakenApiUri()),
+                zaakUrl = eq(zaakUrl),
+                request = any<PatchZaakRequest>()
+            )
+        )
+            .thenReturn(zaakResponse)
+
+        val plugin = ZakenApiPlugin(
+            zakenApiClient,
+            zaakUrlProvider,
+            storageService,
+            zaakInstanceLinkRepository,
+            pluginService,
+            zaakHersteltermijnRepository,
+            platformTransactionManager,
+            valueResolverService,
+            objectMapper
+        )
+
+        plugin.patchZaak(
+            execution = executionMock,
+            description = description,
+            explanation = explantation,
+            plannedEndDate = plannedEndDate,
+            finalDeliveryDate = finalDeliveryDate,
+            publicationDate = publicationDate,
+            communicationChannel = communicationChannel,
+            communicationChannelName = communicationChannelName,
+            paymentIndication = paymentIndication,
+            lastPaymentDate = lastPaymentDate,
+            caseGeometryType = caseGeometryType,
+            caseGeometryCoordinates = caseGeometryCoordinates,
+            mainCase = mainCase,
+            archiveActionDate = archiveActionDate,
+            startDateRetentionPeriod = startDateRetentionPeriod
+        )
+
+        val captor = argumentCaptor<PatchZaakRequest>()
+        verify(zakenApiClient).patchZaak(
+            authentication = any(),
+            baseUrl = any(),
+            zaakUrl = any(),
+            request = captor.capture()
+        )
+
+        val request = captor.firstValue
+        assertThat(request.omschrijving).isEqualTo(description)
+        assertThat(request.toelichting).isEqualTo(explantation)
+        assertThat(request.einddatumGepland).isEqualTo(plannedEndDate)
+        assertThat(request.uiterlijkeEinddatumAfdoening).isEqualTo(finalDeliveryDate)
+        assertThat(request.publicatiedatum).isEqualTo(publicationDate)
+        assertThat(request.communicatiekanaal).isEqualTo(URI.create(communicationChannel))
+        assertThat(request.communicatiekanaalNaam).isEqualTo(communicationChannelName)
+        assertThat(request.betalingsindicatie).isEqualTo(Betalingsindicatie.GEDEELTELIJK)
+        assertThat(request.laatsteBetaaldatum).isEqualTo(lastPaymentDate)
+        assertThat(request.zaakgeometrie).isEqualTo(Geometry(GeometryType.POINT, listOf(0.0F, 1.0F)))
+        assertThat(request.hoofdzaak).isEqualTo(URI.create(mainCase))
+        assertThat(request.archiefactiedatum).isEqualTo(archiveActionDate)
+        assertThat(request.startdatumBewaartermijn).isEqualTo(startDateRetentionPeriod)
+    }
 
     @Test
     fun `should create zaak status`() {
@@ -1285,4 +1400,5 @@ internal class ZakenApiPluginTest {
 
     private fun besluitUri1() = URI(besluitUrl1())
     private fun besluitUri2() = URI(besluitUrl2())
+    private fun communicationChannel() = "https://example.com/comminicatiekanaal/example"
 }

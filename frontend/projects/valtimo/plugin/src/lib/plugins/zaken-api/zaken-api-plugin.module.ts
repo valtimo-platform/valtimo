@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import {
   GetZaakbesluitenConfigurationComponent
 } from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
 import {TranslateModule} from '@ngx-translate/core';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,7 @@ import {TranslateModule} from '@ngx-translate/core';
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     GetZaakbesluitenConfigurationComponent,
+    PatchZaakConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -95,6 +97,7 @@ import {TranslateModule} from '@ngx-translate/core';
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,
+    PatchZaakConfigurationComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
     DeleteZaakRolComponent,

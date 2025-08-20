@@ -33,6 +33,7 @@ import com.ritense.processdocument.service.impl.result.NewDocumentAndStartProces
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.resource.Resource
 import com.ritense.zakenapi.domain.CreateZaakRequest
+import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.SimpleZaakObjectRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
@@ -59,6 +60,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
@@ -337,6 +339,38 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
     }
 
     @Test
+    fun `should patch zaak with description and finalDeliveryDate`() {
+        // given
+        val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
+        val document = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(DOCUMENT_DEFINITION_KEY, objectMapper.createObjectNode())
+            ).resultingDocument().get()
+        }
+
+        zakenApiPlugin.createZaak(
+            documentId = document.id().id,
+            rsin = Rsin("155539620"),
+            zaaktypeUrl = ZAAKTYPE_URL,
+        )
+
+        val description = "omschrijving na patch"
+        val finalDeliveryDate = LocalDate.now().plusDays(10)
+
+        // when
+        zakenApiPlugin.patchZaak(
+            documentId = document.id().id,
+            description = description,
+            finalDeliveryDate = finalDeliveryDate
+        )
+
+        val requestBody = getRequestBody(PATCH, "${ZAKEN_API_PATH}/zaken/$ZAAK_ID", PatchZaakRequest::class.java)
+        assertEquals(requestBody.omschrijving, description)
+        assertEquals(requestBody.uiterlijkeEinddatumAfdoening, finalDeliveryDate)
+    }
+
+
+    @Test
     fun `should resolve values when creating zaak object`() {
         val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
 
@@ -602,5 +636,11 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         private const val INFORMATIE_OBJECT_URL = "http://informatie.object.url"
         private const val ZAKEN_API_PLUGIN_ID = "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
         private val ZAAK_URL = URI("http://localhost:56273/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609")
+        private const val ZAKEN_API_PATH = "/zaken/api/v1"
+        private const val ZAAKTYPE_ID = "21c0946a-9058-11ee-b9d1-0242ac120002"
+        private const val ZAAK_ID = "57f66ff6-db7f-43bc-84ef-6847640d3609"
+        private const val CATALOGI_API_PATH = "/catalogi/api/v1"
+        private const val CATALOGI_API_URL = "http://localhost:56273$CATALOGI_API_PATH"
+        private val ZAAKTYPE_URL = URI("${CATALOGI_API_URL}/zaaktypen/$ZAAKTYPE_ID")
     }
 }

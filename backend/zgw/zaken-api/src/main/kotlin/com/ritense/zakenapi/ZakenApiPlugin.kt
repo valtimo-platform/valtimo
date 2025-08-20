@@ -35,10 +35,13 @@ import com.ritense.valtimo.contract.validation.Url
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
+import com.ritense.zakenapi.domain.Betalingsindicatie
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
+import com.ritense.zakenapi.domain.Geometry
+import com.ritense.zakenapi.domain.GeometryType
 import com.ritense.zakenapi.domain.Opschorting
 import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.RelevanteZaak
@@ -256,6 +259,117 @@ class ZakenApiPlugin(
             logger.info { "Zaak with URL '${zaak.url}' created successfully for document with id '$documentId''" }
         }
     }
+
+    @PluginAction(
+        key = "patch-zaak",
+        title = "Patch zaak",
+        description = "Patches a zaak in the Zaken API",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun patchZaak(
+        execution: DelegateExecution,
+        @PluginActionProperty description: String? = null,
+        @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty plannedEndDate: String? = null,
+        @PluginActionProperty finalDeliveryDate: String? = null,
+        @PluginActionProperty publicationDate: String? = null,
+        @PluginActionProperty communicationChannel: String? = null,
+        @PluginActionProperty communicationChannelName: String? = null,
+        @PluginActionProperty paymentIndication: String? = null,
+        @PluginActionProperty lastPaymentDate: String? = null,
+        @PluginActionProperty caseGeometryType: String? = null,
+        @PluginActionProperty caseGeometryCoordinates: String? = null,
+        @PluginActionProperty mainCase: String? = null,
+        @PluginActionProperty archiveActionDate: String? = null,
+        @PluginActionProperty startDateRetentionPeriod: String? = null
+    ) {
+        val documentId = UUID.fromString(execution.businessKey)
+        val caseGeometry = geometryOrNullFrom(caseGeometryType, caseGeometryCoordinates)
+
+        patchZaak(
+            documentId = documentId,
+            description = description,
+            explanation = explanation,
+            plannedEndDate = plannedEndDate?.let { LocalDate.parse(it) },
+            finalDeliveryDate = finalDeliveryDate?.let { LocalDate.parse(it) },
+            publicationDate = publicationDate?.let { LocalDate.parse(it) },
+            communicationChannel = communicationChannel?.let { URI.create(it) },
+            communicationChannelName = communicationChannelName,
+            paymentIndication = paymentIndication?.let { Betalingsindicatie.create(it) },
+            lastPaymentDate = lastPaymentDate?.let { LocalDate.parse(it) },
+            caseGeometry = caseGeometry,
+            mainCase = mainCase?.let { URI.create(it) },
+            archiveActionDate = archiveActionDate?.let { LocalDate.parse(it) },
+            startDateRetentionPeriod = startDateRetentionPeriod?.let { LocalDate.parse(it) }
+        )
+    }
+
+    fun patchZaak(
+        documentId: UUID,
+        description: String? = null,
+        explanation: String? = null,
+        plannedEndDate: LocalDate? = null,
+        finalDeliveryDate: LocalDate? = null,
+        publicationDate: LocalDate? = null,
+        communicationChannel: URI? = null,
+        communicationChannelName: String? = null,
+        paymentIndication: Betalingsindicatie? = null,
+        lastPaymentDate: LocalDate? = null,
+        caseGeometry: Geometry? = null,
+        mainCase: URI? = null,
+        relevantOtherCases: List<RelevanteZaak>? = null,
+        archiveActionDate: LocalDate? = null,
+        startDateRetentionPeriod: LocalDate? = null
+    ) {
+        withLoggingContext(
+            "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
+        ) {
+            logger.debug { "Starting patch of zaak for document with id '$documentId'" }
+            val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
+            if (zaakInstanceLink == null) {
+                logger.warn { "Skipping patch zaak. Zaak does not exist for document with id '$documentId'." }
+                return
+            }
+
+            val zaak = client.patchZaak(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                zaakUrl = zaakInstanceLink.zaakInstanceUrl,
+                request = PatchZaakRequest(
+                    omschrijving = description,
+                    toelichting = explanation,
+                    einddatumGepland = plannedEndDate,
+                    uiterlijkeEinddatumAfdoening = finalDeliveryDate,
+                    publicatiedatum = publicationDate,
+                    communicatiekanaal = communicationChannel,
+                    communicatiekanaalNaam = communicationChannelName,
+                    betalingsindicatie = paymentIndication,
+                    laatsteBetaaldatum = lastPaymentDate,
+                    zaakgeometrie = caseGeometry,
+                    hoofdzaak = mainCase,
+                    relevanteAndereZaken = relevantOtherCases,
+                    archiefactiedatum = archiveActionDate,
+                    startdatumBewaartermijn = startDateRetentionPeriod
+                )
+            )
+
+            logger.info { "Zaak with URL '${zaak.url}' patched successfully for document with id '$documentId''" }
+        }
+    }
+
+    private fun geometryOrNullFrom(
+        geometryType: String?,
+        geometryCoordinates: String?
+    ): Geometry? =
+        if (geometryType != null && geometryCoordinates != null) {
+            Geometry(
+                type = GeometryType.entries.find { it.key.equals(geometryType, ignoreCase = true) }!!,
+                coordinates = pluginService.getObjectMapper()
+                    .readValue(geometryCoordinates, object : com.fasterxml.jackson.core.type.TypeReference<List<Float>>() {})
+            )
+        } else {
+            null
+        }
 
     @PluginAction(
         key = "create-natuurlijk-persoon-zaak-rol",

@@ -34,6 +34,7 @@ import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-o
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -57,6 +58,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
     'get-zaakbesluiten': GetZaakbesluitenConfigurationComponent,
+    'patch-zaak': PatchZaakConfigurationComponent
   },
   pluginTranslations: {
     nl: {
@@ -145,8 +147,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: 'Het burgerservicenummer van de initiator (Numeriek, max 9 tekens)',
       anpIdentificatieTooltip:
         'Het door de gemeente uitgegeven unieke nummer voor een ander natuurlijk persoon. (Max. 17 tekens)',
-      inpA_nummerTooltip:
-        'Het administratienummer van de persoon, bedoeld in de Wet BRP. (Numeriek, max. 10 tekens)',
+      inpA_nummerTooltip: 'Het administratienummer van de persoon, bedoeld in de Wet BRP. (Numeriek, max. 10 tekens)',
       'set-zaakstatus': 'Zaakstatus aanmaken',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL-referentie naar het statustype.',
@@ -216,6 +217,23 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rolUuidTooltip: 'De UUID van de rol',
       resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       'get-zaakbesluiten': 'Ophalen zaakbesluiten',
+      'patch-zaak': 'Zaak bijwerken',
+      patchZaakInformation: 'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
+      addPatchZaakProperty: 'Voeg parameter toe',
+      omschrijving: 'Omschrijving',
+      explanation: 'Toelichting',
+      publicationDate: 'Publicatiedatum',
+      communicationChannel: 'Communicatiekanaal (URL)',
+      communicationChannelName: 'Communicatiekanaal naam',
+      paymentIndication: 'Betalingsindicatie',
+      lastPaymentDate: 'Laatste betaaldatum',
+      caseGeometry: 'Zaakgeometrie',
+      caseGeometryType: 'Zaakgeometrie type',
+      caseGeometryCoordinates: 'Zaakgeometrie coördinaten',
+      caseGeometryCoordinatesTooltip: 'Lijst van punten, bv [0.0, 1.0]',
+      mainCase: 'Hoofdzaak',
+      archiveActionDate: 'Archief actiedatum',
+      startDateRetentionPeriod: 'Startdatum bewaartermijn'
     },
     en: {
       title: 'Zaken API',
@@ -303,8 +321,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: "The initiator's social security number",
       anpIdentificatieTooltip:
         'The unique number issued by the municipality for another natural person. (Max. 17 characters)',
-      inpA_nummerTooltip:
-        'The administration number of the person, as referred to in the Wet BRP. (Numeric, max. 10 characters)',
+      inpA_nummerTooltip: 'The administration number of the person, as referred to in the Wet BRP. (Numeric, max. 10 characters)',
       'set-zaakstatus': 'Create zaakstatus',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL reference to the status type.',
@@ -373,6 +390,23 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rolUuidTooltip: 'The UUID of the rol',
       resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.',
       'get-zaakbesluiten': 'Retrieve zaakbesluiten',
+      'patch-zaak': 'Update zaak',
+      patchZaakInformation: 'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
+      addPatchZaakProperty: 'Add property',
+      omschrijving: 'Description',
+      explanation: 'Explanation',
+      publicationDate: 'Publication date',
+      communicationChannel: 'Communication channel (URL)',
+      communicationChannelName: 'Communication channel name',
+      paymentIndication: 'Payment indication',
+      lastPaymentDate: 'Last payment date',
+      caseGeometry: 'Case geometry',
+      caseGeometryType: 'Case geometry type',
+      caseGeometryCoordinates: 'Case geometry coordinates',
+      caseGeometryCoordinatesTooltip: 'List of points, i.e. [0.0, 1.0]',
+      mainCase: 'Main case',
+      archiveActionDate: 'Archive action date',
+      startDateRetentionPeriod: 'Start date of retention period'
     },
     de: {
       title: 'Zaken API',
@@ -460,8 +494,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: 'Die Sozialversicherungsnummer des Initiators',
       anpIdentificatieTooltip:
         'Die eindeutige Nummer, die von der Gemeinde für eine andere natürliche Person vergeben wird. (Max. 17 Zeichen)',
-      inpA_nummerTooltip:
-        'Die Verwaltungsnummer der Person im Sinne des Wet BRP. (Numerisch, max. 10 Zeichen)',
+      inpA_nummerTooltip: 'Die Verwaltungsnummer der Person im Sinne des Wet BRP. (Numerisch, max. 10 Zeichen)',
       'set-zaakstatus': 'Fallstatus erstellen',
       statustypeUrl: 'URL des Zaakstatustyps',
       statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',
@@ -529,6 +562,23 @@ const zakenApiPluginSpecification: PluginSpecification = {
       rolUuidTooltip: 'Die UUID der Rolle',
       resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       'get-zaakbesluiten': 'Zaakbesluiten abrufen',
+      'patch-zaak': 'Zaak aktualisieren',
+      patchZaakInformation: 'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
+      addPatchZaakProperty: 'Parameter hinzufügen',
+      omschrijving: 'Beschreibung',
+      explanation: 'Erläuterung',
+      publicationDate: 'Veröffentlichungsdatum',
+      communicationChannel: 'Kommunikationskanal (URL)',
+      communicationChannelName: 'Name des Kommunikationskanals',
+      paymentIndication: 'Zahlungsanzeige',
+      lastPaymentDate: 'Letztes Zahlungsdatum',
+      caseGeometry: 'Vorgangsgeometrie',
+      caseGeometryType: 'Vorgangsgeometrie type',
+      caseGeometryCoordinates: 'Vorgangsgeometrie Koordinaten',
+      caseGeometryCoordinatesTooltip: 'Liste von Punkten, zB [0.0, 1.0]',
+      mainCase: 'Hauptvorgang',
+      archiveActionDate: 'Archivierungsaktionsdatum',
+      startDateRetentionPeriod: 'Startdatum der Aufbewahrungsfrist'
     },
   },
 };
