@@ -29,12 +29,12 @@ import {ZakenApiConfig} from '../../models';
 export class ZakenApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() save$: Observable<void>;
-  @Input() disabled$: Observable<boolean>;
-  @Input() pluginId: string;
-  @Input() prefillConfiguration$: Observable<ZakenApiConfig>;
-  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<ZakenApiConfig> = new EventEmitter<ZakenApiConfig>();
+  @Input() public save$: Observable<void>;
+  @Input() public disabled$: Observable<boolean>;
+  @Input() public pluginId: string;
+  @Input() public prefillConfiguration$: Observable<ZakenApiConfig>;
+  @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() public configuration: EventEmitter<ZakenApiConfig> = new EventEmitter<ZakenApiConfig>();
 
   private saveSubscription!: Subscription;
 
@@ -63,7 +63,7 @@ export class ZakenApiConfigurationComponent
     private readonly pluginTranslationService: PluginTranslationService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
   }
 
@@ -71,7 +71,7 @@ export class ZakenApiConfigurationComponent
     this.saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: ZakenApiConfig): void {
+  public formValueChange(formValue: ZakenApiConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }

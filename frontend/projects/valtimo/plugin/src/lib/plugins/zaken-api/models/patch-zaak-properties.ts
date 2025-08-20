@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.domain
+export const PatchZaakPropertyOptions = [
+  'description',
+  'explanation',
+  'plannedEndDate',
+  'finalDeliveryDate',
+  'publicationDate',
+  'communicationChannel',
+  'communicationChannelName',
+  'paymentIndication',
+  'lastPaymentDate',
+  'caseGeometryType',
+  'caseGeometryCoordinates',
+  'mainCase',
+  'archiveActionDate',
+  'startDateRetentionPeriod'
+] as const;
 
-data class Geometry(
-    val type: GeometryType,
-    val coordinates: List<Float>
-)
+export type PatchZaakProperties = (typeof PatchZaakPropertyOptions)[number];

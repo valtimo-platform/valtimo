@@ -1,0 +1,67 @@
+<ng-container
+        *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+  } as obs"
+>
+  <v-paragraph [margin]="true" [italic]="true">
+    {{ 'patchZaakInformation' | pluginTranslate: pluginId | async }}
+  </v-paragraph>
+
+  <div class="row">
+    <div class="col-12">
+      <button
+              cdsButton="primary"
+              [size]="'md'"
+              [cdsOverflowMenu]="addPropertyList"
+              [customPane]="true"
+              placement="bottom"
+              class="add-button"
+      >
+        {{ 'addPatchZaakProperty' | pluginTranslate: pluginId | async }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
+  </div>
+
+  <v-form (valueChange)="onFormValueChanged($event)">
+    @for (property of propertyList; track property) {
+      <div class="row">
+        <div class="col-11">
+          <v-input
+                  [name]="property.name"
+                  [title]="property.translationKey | pluginTranslate: pluginId | async"
+                  [tooltip]="property.tooltipTranslationKey ? (property.tooltipTranslationKey | pluginTranslate: pluginId | async) : null"
+                  [required]="true"
+                  [defaultValue]="prefillValueFor(property.name, obs.prefill)"
+                  [margin]="true"
+                  [presetOptions]="property.presetOptions"
+                  [disabled]="obs.disabled"
+                  (valueChange)="onPropertyChanged(property.name, $event)"
+          ></v-input>
+        </div>
+        <div class="col-1">
+          @if (property.name !== CASE_GEOMETRY_COORDINATES) {
+            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)">
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </v-form>
+</ng-container>
+
+<ng-template #addPropertyList>
+  @for (propertyOption of propertyOptions; track propertyOption) {
+    @if (propertyOption !== CASE_GEOMETRY_COORDINATES) {
+      <cds-overflow-menu-option
+              *ngIf="!hasPropertyBeenAdded(propertyOption)"
+              (click)="addProperty(propertyOption)"
+      >
+        {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+      </cds-overflow-menu-option>
+    }
+  }
+</ng-template>
