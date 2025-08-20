@@ -16,11 +16,13 @@
 
 import {PluginSpecification} from '../../models';
 import {CatalogiApiConfigurationComponent} from './components/catalogi-api-configuration/catalogi-api-configuration.component';
-import {CATALOGI_API_PLUGIN_LOGO_BASE64} from './assets';
+import {GetStatustypenConfigurationComponent} from './components/get-statustypen/get-statustypen-configuration.component';
 import {GetStatustypeConfigurationComponent} from './components/get-statustype/get-statustype-configuration.component';
 import {GetBesluittypeConfigurationComponent} from './components/get-besluittype/get-besluittype-configuration.component';
+import {GetResultaattypenConfigurationComponent} from './components/get-resultaattypen/get-resultaattypen-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
+import {CATALOGI_API_PLUGIN_LOGO_BASE64} from './assets';
 
 const catalogiApiPluginSpecification: PluginSpecification = {
   pluginId: 'catalogiapi',
@@ -28,7 +30,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
   pluginLogoBase64: CATALOGI_API_PLUGIN_LOGO_BASE64,
   functionConfigurationComponents: {
     'get-besluittype': GetBesluittypeConfigurationComponent,
+    'get-resultaattypen': GetResultaattypenConfigurationComponent,
     'get-resultaattype': GetResultaattypeConfigurationComponent,
+    'get-statustypen': GetStatustypenConfigurationComponent,
     'get-statustype': GetStatustypeConfigurationComponent,
     'get-eigenschap': GetEigenschapConfigurationComponent,
   },
@@ -43,6 +47,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'De naam van de huidige plugin-configuratie. Onder deze naam kan de configuratie in de rest van de applicatie teruggevonden worden.',
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
+      'get-statustypen': 'Statustypen opvragen',
+      getStatustypenInformation:
+        'De statustypen behorende bij het zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
       'get-statustype': 'Statustype opvragen',
       getStatustypeInformation:
         'De statustype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
@@ -58,6 +65,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       besluittypeTooltip: 'Omschrijving van de aard van het besluit.',
       besluitProcessVariableTooltip:
         'Nadat de besluittype is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
+      'get-resultaattypen': 'Resultaattypen opvragen',
+      getResultaattypenInformation:
+        'De resultaattypen behorende bij het zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
       'get-resultaattype': 'Resultaattype opvragen',
       getResultaattypeInformation:
         'Het resultaattype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
@@ -72,6 +82,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapTooltip: 'Naam van de aard van het eigenschaap.',
       eigenschapProcessVariableTooltip:
         'Nadat de eigenschap is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
+      zaakTypeUrl: 'Zaaktype URL',
     },
     en: {
       title: 'Catalogi API',
@@ -82,6 +93,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
+      'get-statustypen': 'Retrieve statustypen',
+      getStatustypenInformation:
+        'The statustypen are retrieved and then stored in a process variable.',
       'get-statustype': 'Retrieve statustype',
       getStatustypeInformation:
         'The statustype is retrieved and then stored in a process variable.',
@@ -97,6 +111,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       besluittypeTooltip: 'Description of the nature of the decision.',
       besluitProcessVariableTooltip:
         'After the besluittype is retrieved, it is stored in a process variable with this name.',
+      'get-resultaattypen': 'Retrieve resultaattypen',
+      getResultaattypenInformation:
+        'The resultaattypen are retrieved and then stored in a process variable.',
       'get-resultaattype': 'Retrieve resultaattype',
       getResultaattypeInformation:
         'The resultaattype is retrieved and then stored in a process variable.',
@@ -110,6 +127,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapTooltip: 'Name of the nature of the eigenschaap.',
       eigenschapProcessVariableTooltip:
         'After the eigenschap is retrieved, it is stored in a process variable with this name.',
+      zaakTypeUrl: 'Zaaktype URL',
     },
     de: {
       title: 'Catalogi API',
@@ -121,6 +139,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
       authenticationPluginConfiguration: 'Authentifizierungs-Plugin-Konfiguration',
+      'get-statustypen': 'Statustypen anfordern',
+      getStatustypenInformation:
+        'Der Statustypen wird abgerufen und dann in einer Prozessvariablen gespeichert.',
       'get-statustype': 'Statustype anfordern',
       getStatustypeInformation:
         'Der Statustyp wird abgerufen und dann in einer Prozessvariablen gespeichert.',
@@ -136,6 +157,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       besluittypeTooltip: 'Beschreibung der Art der besluit.',
       besluitProcessVariableTooltip:
         'Sobald der besluittype abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
+      'get-resultaattypen': 'Resultaattypen anfordern',
+      getResultaattypenInformation:
+        'Der resultaattypen wird abgerufen und dann in einer Prozessvariablen gespeichert.',
       'get-resultaattype': 'Resultaattype anfordern',
       getResultaattypeInformation:
         'Der resultaattype wird abgerufen und dann in einer Prozessvariablen gespeichert.',
@@ -150,6 +174,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapTooltip: 'Name der Art der eigenschap.',
       eigenschapProcessVariableTooltip:
         'Sobald der eigenschap abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
+      zaakTypeUrl: 'Zaaktype URL',
     },
   },
 };
