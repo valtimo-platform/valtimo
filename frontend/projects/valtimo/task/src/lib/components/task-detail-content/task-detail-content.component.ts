@@ -276,6 +276,7 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
       title: task.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
     });
+    this.stateService.setProcessInstanceId(task.processInstanceId);
   }
 
   private getCurrentProgress(formViewModelComponentRef?: ComponentRef<any>): void {

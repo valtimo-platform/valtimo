@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
+import {Injectable, signal} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {FormioComponent} from '@formio/angular';
 
@@ -24,6 +24,10 @@ import {FormioComponent} from '@formio/angular';
 export class FormIoStateService {
   private _documentDefinitionName$ = new BehaviorSubject<string>(undefined);
   private _documentId$ = new BehaviorSubject<string>(undefined);
+  private readonly _$processInstanceId = signal<string>('');
+  public get processInstanceId(): string {
+    return this._$processInstanceId();
+  }
 
   private _currentForm$ = new BehaviorSubject<FormioComponent>(undefined);
 
@@ -39,6 +43,10 @@ export class FormIoStateService {
     return this._documentId$.asObservable();
   }
 
+  public get documentId(): string {
+    return this._documentId$.getValue();
+  }
+
   public setDocumentId(documentId: string) {
     this._documentId$.next(documentId);
   }
@@ -51,7 +59,7 @@ export class FormIoStateService {
     this._currentForm$.next(form);
   }
 
-  flattenTranslationsObject(translations) {
+  public flattenTranslationsObject(translations) {
     const stack = [{prefix: '', value: translations}];
     const flattened = {};
 
@@ -70,5 +78,9 @@ export class FormIoStateService {
     }
 
     return flattened;
+  }
+
+  public setProcessInstanceId(id: string): void {
+    this._$processInstanceId.set(id);
   }
 }

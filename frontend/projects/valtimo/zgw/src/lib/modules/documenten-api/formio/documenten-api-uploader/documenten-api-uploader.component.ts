@@ -18,8 +18,8 @@ import {ActivatedRoute} from '@angular/router';
 import {
   FormioCustomComponent,
   FormIoDomService,
-  ValtimoModalService,
   FormIoStateService,
+  ValtimoModalService,
 } from '@valtimo/components';
 import {DocumentenApiFileReference, UploadProviderService} from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
@@ -37,7 +37,6 @@ import {catchError, filter, map, take, tap} from 'rxjs/operators';
 import {DocumentenApiMetadata, SupportedDocumentenApiFeatures} from '../../models';
 import {DocumentenApiVersionService} from '../../services';
 import {DocumentService} from '@valtimo/document';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -110,6 +109,7 @@ export class DocumentenApiUploaderComponent
     this.defaultValues['informatieobjecttype'] = defaultValue;
     this.stateService.documentDefinitionName$
       .pipe(
+        filter(documentDefinitionName => !!documentDefinitionName),
         switchMap(documentDefinitionName =>
           this.documentService.getCaseSettings(documentDefinitionName)
         ),
@@ -184,6 +184,8 @@ export class DocumentenApiUploaderComponent
   @Input() set hideTags(hide: boolean) {
     this.hideField(hide, 'trefwoorden');
   }
+
+  @Input() documentUrlProcessVariable: string;
 
   @Output() valueChange = new EventEmitter<Array<DocumentenApiFileReference>>();
 
@@ -271,7 +273,13 @@ export class DocumentenApiUploaderComponent
     this.fileToBeUploaded$
       .pipe(
         take(1),
-        switchMap(file => this.uploadProviderService.uploadTempFileWithMetadata(file, metadata)),
+        switchMap(file =>
+          this.uploadProviderService.uploadTempFileWithMetadata(file, {
+            ...metadata,
+            processInstanceId: this.stateService.processInstanceId,
+            documentUrlProcessVariable: this.documentUrlProcessVariable || null,
+          })
+        ),
         tap(result => {
           this.domService.toggleSubmitButton(false);
           this.uploading$.next(false);
