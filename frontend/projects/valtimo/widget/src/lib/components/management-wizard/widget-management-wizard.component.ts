@@ -41,7 +41,7 @@ import {WidgetWizardService} from '../../services';
 import {WIDGET_STEPS} from './steps';
 
 @Component({
-  selector: 'valtimo-widget-management-widget-wizard',
+  selector: 'valtimo-widget-management-wizard',
   templateUrl: './widget-management-wizard.component.html',
   styleUrls: ['./widget-management-wizard.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -160,16 +160,21 @@ export class WidgetManagementWizardComponent {
 
   public onNextButtonClick(): void {
     if (this.$currentStep() === WidgetWizardStep.CONTENT) {
-      if (!this.editMode && !this.widgetWizardService.$widgetKey())
+      const isDuplicateMode = this.editMode && !this.widgetWizardService.$widgetKey();
+      if (isDuplicateMode || !this.editMode) {
         this.widgetWizardService.$widgetKey.set(
           this.keyGeneratorService.getUniqueKey(
             this.widgetWizardService.$widgetTitle() ?? '',
             this.widgetWizardService.$usedWidgetKeys()
           )
         );
+      }
 
       this.closeEvent.emit({
-        type: this.editMode ? WidgetWizardCloseEventType.EDIT : WidgetWizardCloseEventType.CREATE,
+        type:
+          this.editMode && !isDuplicateMode
+            ? WidgetWizardCloseEventType.EDIT
+            : WidgetWizardCloseEventType.CREATE,
         widget: this.widgetWizardService.$widgetsConfig(),
       });
       this.resetWizard();
