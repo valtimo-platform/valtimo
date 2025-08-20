@@ -53,6 +53,36 @@ interface CreateNietNatuurlijkePersoonZaakRolConfig {
   rolToelichting: string;
   innNnpId: string;
   annIdentificatie: string;
+  kvkNummer?: string;
+  vestigingsNummer?: string;
+}
+
+interface CreateMedewerkerZaakRolConfig {
+  roltypeUrl: string;
+  rolToelichting: string;
+  identificatie: string;
+  achternaam: string;
+  voorletters: string;
+  voorvoegselAchternaam: string;
+  afwijkendeNaamBetrokkene?: string;
+  indicatieMachtiging?: string;
+}
+
+interface CreateOrganisatorischeEenheidZaakRolConfig {
+  roltypeUrl: string;
+  rolToelichting: string;
+  identificatie: string;
+  naam: string;
+  isGehuisvestIn: string;
+  afwijkendeNaamBetrokkene?: string;
+  indicatieMachtiging?: string;
+}
+
+interface CreateVestigingZaakRolConfig {
+  roltypeUrl: string;
+  rolToelichting: string;
+  kvkNummer: string;
+  vestigingsNummer: string;
 }
 
 interface CreateZaakConfig {
@@ -105,6 +135,9 @@ export {
   CreateZaakConfig,
   CreateNatuurlijkePersoonZaakRolConfig,
   CreateNietNatuurlijkePersoonZaakRolConfig,
+  CreateMedewerkerZaakRolConfig,
+  CreateOrganisatorischeEenheidZaakRolConfig,
+  CreateVestigingZaakRolConfig,
   SetZaakopschortingConfig,
   StartHersteltermijnConfig,
   CreateZaakeigenschapConfig,

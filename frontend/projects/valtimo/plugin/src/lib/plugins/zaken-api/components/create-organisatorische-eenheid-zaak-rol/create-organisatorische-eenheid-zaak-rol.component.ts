@@ -17,26 +17,28 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {CreateNatuurlijkePersoonZaakRolConfig} from '../../models';
+import {CreateOrganisatorischeEenheidZaakRolConfig} from '../../models';
+import {INDICATIE_MACHTIGING_VALUES} from '../../models/indicatie-machtiging-values';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-create-natuurlijk-persoon-zaak-rol-configuration',
-  templateUrl: './create-natuurlijk-persoon-zaak-rol.component.html',
+  selector: 'valtimo-create-organisatorische-eenheid-zaak-rol-configuration',
+  templateUrl: './create-organisatorische-eenheid-zaak-rol.component.html'
 })
-export class CreateNatuurlijkPersoonZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateOrganisatorischeEenheidZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
-  @Input() prefillConfiguration$: Observable<CreateNatuurlijkePersoonZaakRolConfig>;
+  @Input() prefillConfiguration$: Observable<CreateOrganisatorischeEenheidZaakRolConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<CreateNatuurlijkePersoonZaakRolConfig> =
-    new EventEmitter<CreateNatuurlijkePersoonZaakRolConfig>();
+  @Output() configuration: EventEmitter<CreateOrganisatorischeEenheidZaakRolConfig> =
+    new EventEmitter<CreateOrganisatorischeEenheidZaakRolConfig>();
+
+  public readonly INDICATIE_MACHTIGING_VALUES = INDICATIE_MACHTIGING_VALUES;
 
   private _saveSubscription!: Subscription;
-
   private readonly _formValue$ =
-    new BehaviorSubject<CreateNatuurlijkePersoonZaakRolConfig | null>(null);
+    new BehaviorSubject<CreateOrganisatorischeEenheidZaakRolConfig | null>(null);
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
   public ngOnInit(): void {
@@ -47,13 +49,19 @@ export class CreateNatuurlijkPersoonZaakRolComponent implements FunctionConfigur
     this._saveSubscription?.unsubscribe();
   }
 
-  public formValueChange(formValue: CreateNatuurlijkePersoonZaakRolConfig): void {
+  public formValueChange(formValue: CreateOrganisatorischeEenheidZaakRolConfig): void {
     this._formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
-  private handleValid(formValue: CreateNatuurlijkePersoonZaakRolConfig): void {
-    const valid = !!(formValue.rolToelichting && formValue.roltypeUrl);
+  private handleValid(formValue: CreateOrganisatorischeEenheidZaakRolConfig): void {
+    const valid = !!(
+      formValue.rolToelichting &&
+      formValue.roltypeUrl &&
+      formValue.identificatie &&
+      formValue.naam &&
+      formValue.isGehuisvestIn
+    );
 
     this._valid$.next(valid);
     this.valid.emit(valid);

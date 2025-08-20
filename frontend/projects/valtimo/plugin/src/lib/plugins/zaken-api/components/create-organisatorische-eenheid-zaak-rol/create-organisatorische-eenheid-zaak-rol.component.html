@@ -41,60 +41,74 @@
     [defaultValue]="obs.prefill?.rolToelichting"
     [disabled]="obs.disabled"
     [required]="true"
+    [trim]="true"
     [tooltip]="'rolToelichtingTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
 
   <v-input
-    name="innNnpId"
-    [title]="'innNnpId' | pluginTranslate: pluginId | async"
+    name="identificatie"
+    [title]="'identificatie' | pluginTranslate: pluginId | async"
     [margin]="true"
-    [defaultValue]="obs.prefill?.innNnpId"
+    [defaultValue]="obs.prefill?.identificatie"
     [disabled]="obs.disabled"
-    [required]="false"
+    [required]="true"
     [trim]="true"
-    [tooltip]="'innNnpIdTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="'identificatieOrganisatorischeEenheidTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
 
   <v-input
-    name="annIdentificatie"
-    [title]="'annIdentificatie' | pluginTranslate: pluginId | async"
+    name="naam"
+    [title]="'naam' | pluginTranslate: pluginId | async"
     [margin]="true"
-    [defaultValue]="obs.prefill?.annIdentificatie"
+    [defaultValue]="obs.prefill?.naam"
     [disabled]="obs.disabled"
-    [required]="false"
+    [required]="true"
     [trim]="true"
-    [tooltip]="'annIdentificatieTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="'naamTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
 
   <v-input
-    name="kvkNummer"
-    [title]="'kvkNummer' | pluginTranslate: pluginId | async"
+    name="isGehuisvestIn"
+    [title]="'isGehuisvestIn' | pluginTranslate: pluginId | async"
     [margin]="true"
-    [defaultValue]="obs.prefill?.kvkNummer"
+    [defaultValue]="obs.prefill?.isGehuisvestIn"
     [disabled]="obs.disabled"
-    [required]="false"
+    [required]="true"
     [trim]="true"
-    [tooltip]="'kvkNummerTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="'isGehuisvestInTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
 
   <v-input
-    name="vestigingsNummer"
-    [title]="'vestigingsNummer' | pluginTranslate: pluginId | async"
+    name="afwijkendeNaamBetrokkene"
+    [title]="'afwijkendeNaamBetrokkene' | pluginTranslate: pluginId | async"
     [margin]="true"
-    [defaultValue]="obs.prefill?.vestigingsNummer"
+    [defaultValue]="obs.prefill?.afwijkendeNaamBetrokkene"
     [disabled]="obs.disabled"
     [required]="false"
     [trim]="true"
-    [tooltip]="'vestigingsNummerTooltip' | pluginTranslate: pluginId | async"
+    [tooltip]="'afwijkendeNaamBetrokkeneTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>
+
+  <v-radio
+    name="indicatieMachtiging"
+    [title]="'indicatieMachtiging' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.indicatieMachtiging"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [tooltip]="'indicatieMachtigingTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+    [radioValues]="INDICATIE_MACHTIGING_VALUES"
+  >
+  </v-radio>
 </v-form>

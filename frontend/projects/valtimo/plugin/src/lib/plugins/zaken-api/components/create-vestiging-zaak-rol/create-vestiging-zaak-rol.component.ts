@@ -17,26 +17,26 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {CreateNatuurlijkePersoonZaakRolConfig} from '../../models';
+import {CreateVestigingZaakRolConfig} from '../../models';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-create-natuurlijk-persoon-zaak-rol-configuration',
-  templateUrl: './create-natuurlijk-persoon-zaak-rol.component.html',
+  selector: 'valtimo-create-vestiging-zaak-rol-configuration',
+  templateUrl: './create-vestiging-zaak-rol.component.html',
 })
-export class CreateNatuurlijkPersoonZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateVestigingZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
-  @Input() prefillConfiguration$: Observable<CreateNatuurlijkePersoonZaakRolConfig>;
+  @Input() prefillConfiguration$: Observable<CreateVestigingZaakRolConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<CreateNatuurlijkePersoonZaakRolConfig> =
-    new EventEmitter<CreateNatuurlijkePersoonZaakRolConfig>();
+  @Output() configuration: EventEmitter<CreateVestigingZaakRolConfig> =
+    new EventEmitter<CreateVestigingZaakRolConfig>();
 
   private _saveSubscription!: Subscription;
 
   private readonly _formValue$ =
-    new BehaviorSubject<CreateNatuurlijkePersoonZaakRolConfig | null>(null);
+    new BehaviorSubject<CreateVestigingZaakRolConfig | null>(null);
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
   public ngOnInit(): void {
@@ -47,13 +47,18 @@ export class CreateNatuurlijkPersoonZaakRolComponent implements FunctionConfigur
     this._saveSubscription?.unsubscribe();
   }
 
-  public formValueChange(formValue: CreateNatuurlijkePersoonZaakRolConfig): void {
+  public formValueChange(formValue: CreateVestigingZaakRolConfig): void {
     this._formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
-  private handleValid(formValue: CreateNatuurlijkePersoonZaakRolConfig): void {
-    const valid = !!(formValue.rolToelichting && formValue.roltypeUrl);
+  private handleValid(formValue: CreateVestigingZaakRolConfig): void {
+    const valid = !!(
+      formValue.rolToelichting &&
+      formValue.roltypeUrl &&
+      formValue.kvkNummer &&
+      formValue.vestigingsNummer
+    );
 
     this._valid$.next(valid);
     this.valid.emit(valid);
