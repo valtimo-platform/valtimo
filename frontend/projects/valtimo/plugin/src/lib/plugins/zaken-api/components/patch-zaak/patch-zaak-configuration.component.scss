@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,10 +14,36 @@
  * limitations under the License.
  */
 
-import {Versions} from '../models';
+div.presets {
+  margin-top: 0.2em;
+  margin-block-end: var(--v-input-margin);
+  font-size: var(--v-font-size-smaller);
 
-const VERSIONS: Versions = {
-  frontendLibraries: '13.0.1',
-};
+  span:first-child {
+    padding-right: 0.3em;
+  }
 
-export {VERSIONS};
+  a.preset {
+    cursor: pointer;
+    font-style: italic;
+  }
+}
+
+button.delete-button {
+  height: 46px;
+  width: 46px;
+  margin-top: 20px;
+}
+
+button.delete-button:hover {
+  background-color: #e12717;
+}
+
+button.add-button {
+  margin-block-end: var(--v-input-margin);
+}
+
+::ng-deep .cds--overflow-menu-options {
+  z-index: 10000 !important;
+  width: 230px;
+}

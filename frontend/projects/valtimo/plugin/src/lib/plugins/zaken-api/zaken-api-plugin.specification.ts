@@ -40,6 +40,7 @@ import {
 import {
   CreateVestigingZaakRolComponent
 } from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -63,6 +64,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'update-zaakeigenschap': UpdateZaakeigenschapComponent,
     'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
     'relateer-zaken': RelateerZakenComponent,
+    'patch-zaak': PatchZaakConfigurationComponent
   },
   pluginTranslations: {
     nl: {
@@ -175,10 +177,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
       addZaakProperty: 'Voeg nieuwe parameter toe',
-      plannedEndDate: 'Geplande eind datum',
-      finalDeliveryDate: 'Laatste opleverings datum',
-      dateformatTooltip:
-        'Een datum in formaat van yyyy-mm-dd. Kan ook een verwijzing zijn naar het document of process, bijvoorbeeld doc:customer/startDatum of pv:startDatum',
       'relateer-zaken': 'Relateer zaken',
       teRelaterenZaakUri: 'URL naar de te relateren zaak',
       aardRelatie: 'Aard van de relatie',
@@ -210,7 +208,28 @@ const zakenApiPluginSpecification: PluginSpecification = {
       kvkNummer: 'KVK-nummer',
       kvkNummerTooltip: 'Een uniek nummer toegekend door de Kamer van Koophandel. (Max. 8 tekens)',
       vestigingsNummer: 'Vestigingsnummer',
-      vestigingsNummerTooltip: 'Een korte unieke aanduiding van de Vestiging. (Max. 24 tekens)'
+      vestigingsNummerTooltip: 'Een korte unieke aanduiding van de Vestiging. (Max. 24 tekens)',
+      'patch-zaak': 'Zaak bijwerken',
+      patchZaakInformation: 'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
+      addPatchZaakProperty: 'Voeg parameter toe',
+      dateformatTooltip:
+        'Een datum in formaat van yyyy-mm-dd. Kan ook een verwijzing zijn naar het document of process, bijvoorbeeld doc:customer/startDatum of pv:startDatum',
+      omschrijving: 'Omschrijving',
+      explanation: 'Toelichting',
+      plannedEndDate: 'Geplande eind datum',
+      finalDeliveryDate: 'Laatste opleveringsdatum',
+      publicationDate: 'Publicatiedatum',
+      communicationChannel: 'Communicatiekanaal (URL)',
+      communicationChannelName: 'Communicatiekanaal naam',
+      paymentIndication: 'Betalingsindicatie',
+      lastPaymentDate: 'Laatste betaaldatum',
+      caseGeometry: 'Zaakgeometrie',
+      caseGeometryType: 'Zaakgeometrie type',
+      caseGeometryCoordinates: 'Zaakgeometrie coördinaten',
+      caseGeometryCoordinatesTooltip: 'Lijst van punten, bv [0.0, 1.0]',
+      mainCase: 'Hoofdzaak',
+      archiveActionDate: 'Archief actiedatum',
+      startDateRetentionPeriod: 'Startdatum bewaartermijn'
     },
     en: {
       title: 'Zaken API',
@@ -322,10 +341,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakStatusToggle: 'Input type Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Input type Zaakresultaat-URL',
       addZaakProperty: 'Add new case property',
-      plannedEndDate: 'Planned end date',
-      finalDeliveryDate: 'Final delivery date',
-      dateformatTooltip:
-        'A date in the format of yyyy-mm-dd. Can also be a reference to the document or process, for example doc:customer/startDate or pv:startDate',
       'relateer-zaken': 'Add relation between two Zaken',
       teRelaterenZaakUri: 'URL to the Zaak to be related',
       aardRelatie: 'Nature of the relationship',
@@ -355,7 +370,28 @@ const zakenApiPluginSpecification: PluginSpecification = {
       kvkNummer: 'Chamber of Commerce number',
       kvkNummerTooltip: 'A unique number assigned by the Chamber of Commerce. (Max. 8 characters)',
       vestigingsNummer: 'Branch number',
-      vestigingsNummerTooltip: 'A short unique designation of the branch. (Max. 24 characters)'
+      vestigingsNummerTooltip: 'A short unique designation of the branch. (Max. 24 characters)',
+      'patch-zaak': 'Update zaak',
+      patchZaakInformation: 'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
+      dateformatTooltip:
+        'A date in the format of yyyy-mm-dd. Can also be a reference to the document or process, for example doc:customer/startDate or pv:startDate',
+      addPatchZaakProperty: 'Add property',
+      omschrijving: 'Description',
+      explanation: 'Explanation',
+      plannedEndDate: 'Planned end date',
+      finalDeliveryDate: 'Final delivery date',
+      publicationDate: 'Publication date',
+      communicationChannel: 'Communication channel (URL)',
+      communicationChannelName: 'Communication channel name',
+      paymentIndication: 'Payment indication',
+      lastPaymentDate: 'Last payment date',
+      caseGeometry: 'Case geometry',
+      caseGeometryType: 'Case geometry type',
+      caseGeometryCoordinates: 'Case geometry coordinates',
+      caseGeometryCoordinatesTooltip: 'List of points, i.e. [0.0, 1.0]',
+      mainCase: 'Main case',
+      archiveActionDate: 'Archive action date',
+      startDateRetentionPeriod: 'Start date of retention period'
     },
     de: {
       title: 'Zaken API',
@@ -467,10 +503,6 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakStatusToggle: 'Eingabetyp Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Eingabetyp Zaakresultaat-URL',
       addZaakProperty: 'Neue Case-Eigenschaft hinzufügen',
-      plannedEndDate: 'Geplantes Enddatum',
-      finalDeliveryDate: 'Endgültiger Liefertermin',
-      dateformatTooltip:
-        'Ein Datum im Format yyyy-mm-dd. Kann auch ein Verweis auf das Dokument oder den Prozess sein, zum Beispiel doc:kunde/startDatum oder pv:startDatum',
       'relateer-zaken': 'Beziehung zwischen Zaken herstellen',
       teRelaterenZaakUri: 'URL zum zu verknüpfenden Zaak',
       aardRelatie: 'Art der Beziehung',
@@ -500,7 +532,28 @@ const zakenApiPluginSpecification: PluginSpecification = {
       kvkNummer: 'Handelskammernummer',
       kvkNummerTooltip: 'Eine eindeutige Nummer, die von der Handelskammer vergeben wird. (Max. 8 Zeichen)',
       vestigingsNummer: 'Niederlassungsnummer',
-      vestigingsNummerTooltip: 'Eine kurze eindeutige Bezeichnung der Niederlassung. (Max. 24 Zeichen)'
+      vestigingsNummerTooltip: 'Eine kurze eindeutige Bezeichnung der Niederlassung. (Max. 24 Zeichen)',
+      'patch-zaak': 'Zaak aktualisieren',
+      patchZaakInformation: 'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
+      addPatchZaakProperty: 'Parameter hinzufügen',
+      dateformatTooltip:
+        'Ein Datum im Format yyyy-mm-dd. Kann auch ein Verweis auf das Dokument oder den Prozess sein, zum Beispiel doc:kunde/startDatum oder pv:startDatum',
+      omschrijving: 'Beschreibung',
+      explanation: 'Erläuterung',
+      plannedEndDate: 'Geplantes Enddatum',
+      finalDeliveryDate: 'Letztes Lieferdatum',
+      publicationDate: 'Veröffentlichungsdatum',
+      communicationChannel: 'Kommunikationskanal (URL)',
+      communicationChannelName: 'Name des Kommunikationskanals',
+      paymentIndication: 'Zahlungsanzeige',
+      lastPaymentDate: 'Letztes Zahlungsdatum',
+      caseGeometry: 'Vorgangsgeometrie',
+      caseGeometryType: 'Vorgangsgeometrie type',
+      caseGeometryCoordinates: 'Vorgangsgeometrie Koordinaten',
+      caseGeometryCoordinatesTooltip: 'Liste von Punkten, zB [0.0, 1.0]',
+      mainCase: 'Hauptvorgang',
+      archiveActionDate: 'Archivierungsaktionsdatum',
+      startDateRetentionPeriod: 'Startdatum der Aufbewahrungsfrist'
     },
   },
 };

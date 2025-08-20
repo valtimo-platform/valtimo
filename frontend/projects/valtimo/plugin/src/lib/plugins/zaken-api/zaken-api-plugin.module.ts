@@ -25,6 +25,15 @@ import {
   RadioModule,
   SelectModule,
 } from '@valtimo/components';
+import {
+  ButtonModule,
+  DatePickerInputModule,
+  DialogModule,
+  IconModule,
+  LoadingModule,
+  ToggleModule,
+} from 'carbon-components-angular';
+import {TranslateModule} from '@ngx-translate/core';
 import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
 import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
 import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
@@ -37,21 +46,13 @@ import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
-import {
-  ButtonModule,
-  DatePickerInputModule,
-  DialogModule,
-  IconModule,
-  LoadingModule,
-  ToggleModule,
-} from 'carbon-components-angular';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {TranslateModule} from '@ngx-translate/core';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 
 @NgModule({
   declarations: [
@@ -73,6 +74,7 @@ import {TranslateModule} from '@ngx-translate/core';
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
     RelateerZakenComponent,
+    PatchZaakConfigurationComponent,
   ],
   imports: [
     CommonModule,

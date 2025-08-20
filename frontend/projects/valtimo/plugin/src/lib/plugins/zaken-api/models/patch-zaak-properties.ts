@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-import {Versions} from '../models';
-
-const VERSIONS: Versions = {
-  frontendLibraries: '13.0.1',
-};
-
-export {VERSIONS};
+export const PatchZaakPropertyOptions = [
+  'description',
+  'explanation',
+  'plannedEndDate',
+  'finalDeliveryDate',
+  'publicationDate',
+  'communicationChannel',
+  'communicationChannelName',
+  'paymentIndication',
+  'lastPaymentDate',
+  'caseGeometryType',
+  'caseGeometryCoordinates',
+  'mainCase',
+  'archiveActionDate',
+  'startDateRetentionPeriod'
+] as const;
+export type PatchZaakProperties = (typeof PatchZaakPropertyOptions)[number];
