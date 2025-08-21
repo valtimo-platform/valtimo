@@ -70,6 +70,7 @@ import {
   WidgetNumberDisplayType,
   WidgetTextDisplayType,
   WidgetType,
+  WidgetLinkDisplayType,
 } from '../../../../../models';
 
 @Component({
@@ -262,6 +263,11 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
           (row.displayProperties as WidgetDateTimeDisplayType).format ?? ''
         ),
       }),
+      ...(row.displayProperties?.type === WidgetDisplayTypeKey.LINK && {
+        linkText: this.fb.control<string>(
+          (row.displayProperties as WidgetLinkDisplayType).linkText ?? ''
+        ),
+      }),
       ...(row.displayProperties?.type === WidgetDisplayTypeKey.ENUM && {
         values: this.fb.array(
           Object.entries((row.displayProperties as WidgetEnumDisplayType).values).map(
@@ -310,6 +316,7 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
               ...(!!row?.currencyCode && {currencyCode: row.currencyCode}),
               ...(!!row?.display && {display: row.display}),
               ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
+              ...(!!row?.linkText && {linkText: row.linkText}),
               ...(!!row?.format && {format: row.format}),
               ...(!!row?.values && {
                 values: row.values?.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {}),

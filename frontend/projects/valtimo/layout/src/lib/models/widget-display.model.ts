@@ -23,6 +23,7 @@ enum WidgetDisplayTypeKey {
   ENUM = 'enum',
   NUMBER = 'number',
   PERCENT = 'percent',
+  LINK = 'link',
 }
 
 interface WidgetTextDisplayType {
@@ -76,6 +77,12 @@ interface WidgetPercentDisplayType {
   hideWhenEmpty: boolean;
 }
 
+interface WidgetLinkDisplayType {
+  type: WidgetDisplayTypeKey.LINK;
+  linkText?: string;
+  hideWhenEmpty: boolean;
+}
+
 type WidgetDisplayType =
   | WidgetTextDisplayType
   | WidgetBooleanDisplayType
@@ -84,7 +91,8 @@ type WidgetDisplayType =
   | WidgetDateTimeDisplayType
   | WidgetEnumDisplayType
   | WidgetNumberDisplayType
-  | WidgetPercentDisplayType;
+  | WidgetPercentDisplayType
+  | WidgetLinkDisplayType;
 
 export {
   WidgetBooleanDisplayType,
@@ -97,4 +105,5 @@ export {
   WidgetNumberDisplayType,
   WidgetPercentDisplayType,
   WidgetTextDisplayType,
+  WidgetLinkDisplayType,
 };

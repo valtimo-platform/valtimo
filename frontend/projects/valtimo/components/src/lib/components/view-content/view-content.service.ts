@@ -62,7 +62,7 @@ export class ViewContentService {
     return this.converters[0].isRawValue();
   }
 
-  getSeparatorIndex(definition, separator) {
+  public getSeparatorIndex(definition, separator): number {
     return definition.viewType.indexOf(separator);
   }
 }
