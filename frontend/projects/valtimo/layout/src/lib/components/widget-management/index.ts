@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-::ng-deep.cds--tab-content {
-  display: none;
-}
-
-::ng-deep.page-actions {
-  margin-left: unset !important;
-}
+export * from './management-content';
+export * from './management-editor/widget-management-editor.component';
+export * from './management-wizard/widget-management-wizard.component';
+export * from './management/widget-management.component';

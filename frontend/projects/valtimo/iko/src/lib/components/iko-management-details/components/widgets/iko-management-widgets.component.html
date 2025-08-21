@@ -14,4 +14,7 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-management [params]="params$ | async"></valtimo-widget-management>
+<valtimo-widget-management
+  [params]="params$ | async"
+  [availableWidgetTypes]="AVAILABLE_WIDGET_TYPES"
+></valtimo-widget-management>

@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,10 +14,20 @@
  * limitations under the License.
  */
 
-::ng-deep.cds--tab-content {
-  display: none;
+import {TagType} from 'carbon-components-angular';
+import {WidgetType} from './widget.model';
+
+enum WidgetManagementTab {
+  VISUAL = 'visual',
+  JSON = 'json',
 }
 
-::ng-deep.page-actions {
-  margin-left: unset !important;
-}
+const WidgetTypeTags: {[key: string]: TagType} = {
+  [WidgetType.COLLECTION]: 'teal',
+  [WidgetType.CUSTOM]: 'magenta',
+  [WidgetType.FIELDS]: 'blue',
+  [WidgetType.FORMIO]: 'green',
+  [WidgetType.TABLE]: 'purple',
+};
+
+export {WidgetManagementTab, WidgetTypeTags};

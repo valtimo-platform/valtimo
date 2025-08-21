@@ -16,7 +16,7 @@
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
-import {BasicWidget, IWidgetManagementService} from '@valtimo/widget';
+import {BasicWidget, IWidgetManagementService} from '@valtimo/layout';
 import {BehaviorSubject, filter, Observable, switchMap} from 'rxjs';
 import {IkoManagementParams} from '../models';
 import {isEqual} from 'lodash';
