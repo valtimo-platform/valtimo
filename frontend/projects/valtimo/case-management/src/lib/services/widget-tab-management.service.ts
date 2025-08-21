@@ -19,7 +19,7 @@ import {Injectable} from '@angular/core';
 import {ConfigService, CaseManagementParams} from '@valtimo/shared';
 import {CaseWidgetsRes} from '@valtimo/case';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {BasicWidget, IWidgetManagementService} from '@valtimo/widget';
+import {BasicWidget, IWidgetManagementService} from '@valtimo/layout';
 
 @Injectable({
   providedIn: 'root',

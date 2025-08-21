@@ -25,3 +25,4 @@ export * from './widget-table';
 export * from './widget-custom';
 export * from './widget-block';
 export * from './widget-container';
+export * from './widget-management';

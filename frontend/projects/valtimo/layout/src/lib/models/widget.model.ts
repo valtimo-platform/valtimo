@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {Type} from '@angular/core';
 import {
   WidgetCollectionContent,
@@ -139,7 +138,7 @@ interface WidgetPackResultItemsByRow {
   [rowY: string]: WidgetPackResultItem[];
 }
 
-interface CaseWidgetXY {
+interface WidgetXY {
   x: number;
   y: number;
 }
@@ -158,11 +157,12 @@ export {
   WidgetContentHeightsPx,
   WidgetContentHeightsPxWithContainerWidth,
   WidgetPackResult,
+  // WidgetsRes,
   WidgetType,
   WidgetWidth,
   WidgetWidthsPx,
   WidgetWithUuid,
-  CaseWidgetXY,
+  WidgetXY,
   CollectionFieldWidth,
   FieldsWidget,
   FieldsWidgetValue,

@@ -13,22 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {IkoWidgetManagementApiService} from '../../../../services';
-import {WIDGET_MANAGEMENT_SERVICE} from '@valtimo/layout';
+import {TranslateModule} from '@ngx-translate/core';
+import {TilesModule} from 'carbon-components-angular';
+import {WidgetWizardService} from '../../../../../services';
+import {WidgetStyle} from '../../../../../models';
 
 @Component({
-  templateUrl: './iko-management-widget-details.component.html',
-  styleUrl: './iko-management-widget-details.component.scss',
-  standalone: true,
+  selector: 'valtimo-widget-wizard-style-step',
+  templateUrl: './widget-wizard-style-step.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
-  providers: [
-    {
-      provide: WIDGET_MANAGEMENT_SERVICE,
-      useClass: IkoWidgetManagementApiService,
-    },
-  ],
+  standalone: true,
+  imports: [CommonModule, TranslateModule, TilesModule],
 })
-export class IkoManagementWidgetDetailsComponent {}
+export class WidgetWizardStyleStepComponent {
+  public readonly WidgetStyle = WidgetStyle;
+  public readonly $widgetStyle = this.widgetWizardService.$widgetStyle;
+
+  constructor(private readonly widgetWizardService: WidgetWizardService) {}
+
+  public onSelectedEvent(event: {value: WidgetStyle}): void {
+    this.widgetWizardService.$widgetStyle.set(event.value);
+  }
+}
