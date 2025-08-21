@@ -39,7 +39,7 @@ import {
   take,
 } from 'rxjs';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {DocumentService} from '@valtimo/document';
 import {KeycloakService} from 'keycloak-angular';
 import {tap} from 'rxjs/operators';
@@ -52,6 +52,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {
+  FormIoStateService,
   InputLabelModule,
   InputModule,
   ModalService,
@@ -398,15 +399,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly documentId$: Observable<string | null> = this.router.events.pipe(
-    filter(event => event instanceof NavigationEnd),
-    startWith(null),
-    map(() => {
-      const segments = window.location.pathname.split('/');
-      const i = segments.indexOf('document');
-      return i !== -1 && segments.length > i + 1 ? segments[i + 1] : null;
-    })
-  );
+  public readonly documentId$ = this.formioStateService.documentId$;
 
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentId$,
@@ -454,7 +447,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly valtimoModalService: ValtimoModalService,
     private readonly documentenApiVersionService: DocumentenApiVersionService,
-    private readonly router: Router
+    private readonly formioStateService: FormIoStateService
   ) {}
 
   public ngOnInit(): void {

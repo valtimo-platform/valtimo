@@ -76,6 +76,9 @@ export * from './lib/plugins/zaken-api/components/create-zaak-resultaat/create-z
 export * from './lib/plugins/zaken-api/components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
+export * from './lib/plugins/zaken-api/components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
+export * from './lib/plugins/zaken-api/components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
+export * from './lib/plugins/zaken-api/components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-zaak/create-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/set-zaakopschorting/set-zaakopschorting.component';
 export * from './lib/plugins/zaken-api/components/start-hersteltermijn/start-hersteltermijn-configuration.component';

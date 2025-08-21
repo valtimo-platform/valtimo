@@ -23,6 +23,7 @@ enum CaseWidgetDisplayTypeKey {
   ENUM = 'enum',
   NUMBER = 'number',
   PERCENT = 'percent',
+  LINK = 'link',
 }
 
 interface CaseWidgetTextDisplayType {
@@ -76,6 +77,12 @@ interface CaseWidgetPercentDisplayType {
   hideWhenEmpty: boolean;
 }
 
+interface CaseWidgetLinkDisplayType {
+  type: CaseWidgetDisplayTypeKey.LINK;
+  linkText?: string;
+  hideWhenEmpty: boolean;
+}
+
 type CaseWidgetDisplayType =
   | CaseWidgetTextDisplayType
   | CaseWidgetBooleanDisplayType
@@ -84,7 +91,8 @@ type CaseWidgetDisplayType =
   | CaseWidgetDateTimeDisplayType
   | CaseWidgetEnumDisplayType
   | CaseWidgetNumberDisplayType
-  | CaseWidgetPercentDisplayType;
+  | CaseWidgetPercentDisplayType
+  | CaseWidgetLinkDisplayType;
 
 export {
   CaseWidgetBooleanDisplayType,
@@ -97,4 +105,5 @@ export {
   CaseWidgetNumberDisplayType,
   CaseWidgetPercentDisplayType,
   CaseWidgetTextDisplayType,
+  CaseWidgetLinkDisplayType,
 };

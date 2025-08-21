@@ -32,6 +32,10 @@ export class CurrencyTypeConverter implements TypeConverter {
     return 'currency';
   }
 
+  public isRawValue(): boolean {
+    return false;
+  }
+
   public convert(value: any, definition: any): string {
     if (!value) return '-';
 

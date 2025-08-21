@@ -125,6 +125,26 @@ export const documentenApiUploaderEditForm = () => ({
     {
       label: 'HTML',
       tag: 'div',
+      content: '<h3>Process variables</h3>',
+      refreshOnChange: false,
+      type: 'htmlelement',
+      input: false,
+      tableView: false,
+    },
+    {
+      type: 'textfield',
+      input: true,
+      key: 'customOptions.documentUrlProcessVariable',
+      label: 'Document URL',
+      tooltip:
+        "Specify the process variable name where the Documenten API document URL will be stored. Defaults to 'documentUrl' if left empty.",
+      validate: {
+        required: false,
+      },
+    },
+    {
+      label: 'HTML',
+      tag: 'div',
       content: '<h3>Documenten API metadata</h3>',
       refreshOnChange: false,
       type: 'htmlelement',

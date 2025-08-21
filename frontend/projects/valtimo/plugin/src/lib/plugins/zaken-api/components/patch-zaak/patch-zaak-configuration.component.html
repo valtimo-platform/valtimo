@@ -1,0 +1,116 @@
+<ng-container
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+  } as obs"
+>
+  <v-paragraph [margin]="true" [italic]="true">
+    {{ 'patchZaakInformation' | pluginTranslate: pluginId | async }}
+  </v-paragraph>
+
+  <div class="row">
+      <div class="col-12">
+
+        <button
+            cdsButton="primary"
+            [size]="'md'"
+            [cdsOverflowMenu]="addPropertyList"
+            [customPane]="true"
+            placement="bottom"
+            class="add-button"
+          >
+            {{ 'addPatchZaakProperty' | pluginTranslate: pluginId | async }}
+            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+        </button>
+      </div>
+  </div>
+
+  <v-form (valueChange)="onFormValueChanged($event)" style="background-color: orange">
+    @for (property of propertyList; track property) {
+      @if (property !== CASE_GEOMETRY_COORDINATES) {
+        <div class="row">
+          <div class="col-11">
+            @if (property === CASE_GEOMETRY_TYPE) {
+              <v-input
+                [name]="CASE_GEOMETRY_TYPE"
+                [title]="translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async"
+                [required]="true"
+                [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
+                [margin]="false"
+                (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
+                [dataTestId]="dataTestIdFor(CASE_GEOMETRY_TYPE)"
+              />
+              <div class="presets">
+                  <span>Presets:</span>
+                  <ng-template ngFor let-preset [ngForOf]="geometryTypes" let-isFirst="first">
+                      <ng-template [ngIf]="!isFirst"> | </ng-template><a (click)="presetPropertyWithValue(CASE_GEOMETRY_TYPE, preset)" class="preset">{{ preset }}</a>
+                  </ng-template>
+              </div>
+              <v-input
+                [name]="CASE_GEOMETRY_COORDINATES"
+                [title]="translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async"
+                [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
+                [required]="true"
+                [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
+                [margin]="true"
+                (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
+                [dataTestId]="dataTestIdFor(CASE_GEOMETRY_COORDINATES)"
+              />
+            } @else if (property.includes('Date')) {
+              <v-input
+                [name]="property"
+                [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
+                [tooltip]="'dateformatTooltip' | pluginTranslate: pluginId | async"
+                [required]="true"
+                [defaultValue]="prefillValueFor(property, obs.prefill)"
+                [margin]="true"
+                [trim]="true"
+                (valueChange)="onPropertyChanged(property, $event)"
+                [dataTestId]="dataTestIdFor(property)"
+              ></v-input>
+            } @else {
+              <v-input
+                [name]="property"
+                [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
+                [required]="true"
+                [defaultValue]="prefillValueFor(property, obs.prefill)"
+                [margin]="(property !== PAYMENT_INDICATION_TYPE)"
+                [trim]="true"
+                (valueChange)="onPropertyChanged(property, $event)"
+                [dataTestId]="dataTestIdFor(property)"
+              />
+              @if (property === PAYMENT_INDICATION_TYPE) {
+                <div class="presets">
+                  <span>Presets:</span>
+                  <ng-template ngFor let-preset [ngForOf]="paymentIndicationTypes" let-isFirst="first">
+                      <ng-template [ngIf]="!isFirst"> | </ng-template><a (click)="presetPropertyWithValue(PAYMENT_INDICATION_TYPE, preset)" class="preset">{{ preset }}</a>
+                  </ng-template>
+                </div>
+              }
+            }
+          </div>
+          <div class="col-1">
+            <button
+              class="btn btn-space delete-button"
+              (click)="removeProperty(property)">
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </v-form>
+</ng-container>
+
+<ng-template #addPropertyList>
+  @for (propertyOption of propertyOptions; track propertyOption) {
+    @if (propertyOption !== CASE_GEOMETRY_COORDINATES) {
+      <cds-overflow-menu-option
+        *ngIf="!hasPropertyBeenAdded(propertyOption)"
+        (click)="addProperty(propertyOption)"
+      >
+        {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+      </cds-overflow-menu-option>
+    }
+  }
+</ng-template>

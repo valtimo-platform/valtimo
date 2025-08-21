@@ -23,11 +23,8 @@ import {CreateNietNatuurlijkePersoonZaakRolConfig} from '../../models';
   standalone: false,
   selector: 'valtimo-create-niet-natuurlijk-persoon-zaak-rol-configuration',
   templateUrl: './create-niet-natuurlijk-persoon-zaak-rol.component.html',
-  styleUrls: ['./create-niet-natuurlijk-persoon-zaak-rol.component.scss'],
 })
-export class CreateNietNatuurlijkPersoonZaakRolComponent
-  implements FunctionConfigurationComponent, OnInit, OnDestroy
-{
+export class CreateNietNatuurlijkPersoonZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -36,35 +33,35 @@ export class CreateNietNatuurlijkPersoonZaakRolComponent
   @Output() configuration: EventEmitter<CreateNietNatuurlijkePersoonZaakRolConfig> =
     new EventEmitter<CreateNietNatuurlijkePersoonZaakRolConfig>();
 
-  private saveSubscription!: Subscription;
+  private _saveSubscription!: Subscription;
 
-  private readonly formValue$ =
+  private readonly _formValue$ =
     new BehaviorSubject<CreateNietNatuurlijkePersoonZaakRolConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
+  private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  ngOnDestroy() {
-    this.saveSubscription?.unsubscribe();
+  public ngOnDestroy(): void {
+    this._saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: CreateNietNatuurlijkePersoonZaakRolConfig): void {
-    this.formValue$.next(formValue);
+  public formValueChange(formValue: CreateNietNatuurlijkePersoonZaakRolConfig): void {
+    this._formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
   private handleValid(formValue: CreateNietNatuurlijkePersoonZaakRolConfig): void {
     const valid = !!(formValue.rolToelichting && formValue.roltypeUrl);
 
-    this.valid$.next(valid);
+    this._valid$.next(valid);
     this.valid.emit(valid);
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this.formValue$, this.valid$])
+    this._saveSubscription = this.save$?.subscribe(save => {
+      combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {

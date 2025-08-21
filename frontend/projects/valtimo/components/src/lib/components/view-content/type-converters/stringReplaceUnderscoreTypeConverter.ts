@@ -23,6 +23,10 @@ export class StringReplaceUnderscoreTypeConverter implements TypeConverter {
     return 'stringReplaceUnderscore';
   }
 
+  public isRawValue(): boolean {
+    return false;
+  }
+
   public convert(value: any): string {
     return value.replace(this.regExpStringRemoveUnderscore, ' ');
   }

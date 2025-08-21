@@ -25,6 +25,7 @@ import {
   Output,
   signal,
   SimpleChanges,
+  ViewEncapsulation,
 } from '@angular/core';
 import {SelectedValue, SelectItem} from '../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
@@ -38,6 +39,7 @@ import {NG_VALUE_ACCESSOR} from '@angular/forms';
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
   standalone: false,
+  encapsulation: ViewEncapsulation.None,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -76,6 +78,7 @@ export class SelectComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public notFoundText!: string;
   @Input() public clearAllText!: string;
   @Input() public clearText!: string;
+  @Input() public clearable = true;
   @Input() public name = '';
   @Input() public title = '';
   @Input() public titleTranslationKey = '';

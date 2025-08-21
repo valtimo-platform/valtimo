@@ -69,7 +69,11 @@
                 >
 
                 <div [attr.title]="property?.value" class="widget-field__field-value">
-                  {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                  @if (property?.isRawValue) {
+                    <div [innerHTML]="property?.value"></div>
+                  } @else {
+                    {{ property?.value | valtimoEllipsis: property?.ellipsisCharacterLimit }}
+                  }
                 </div>
               </div>
             }

@@ -911,7 +911,10 @@
         "valuePlaceholder": "Pad naar waarde",
         "ellipsisCharacterLimit": "Tekenlimiet met beletselteken",
         "ellipsisCharacterLimitTooltip": "Voer het aantal tekens in dat wordt weergegeven voordat er een beletselteken wordt weergegeven",
-        "ellipsisCharacterLimitPlaceholder": "Kies een aantal tekens (optioneel)"
+        "ellipsisCharacterLimitPlaceholder": "Kies een aantal tekens (optioneel)",
+        "linkText": "Link tekst",
+        "linkTextTooltip": "De tekst die wordt weergegeven als een link. Als dit leeg is, wordt de URL als tekst gebruikt.",
+        "linkTextPlaceholder": "Link tekst (optioneel)"
       },
       "displayType": {
         "text": "Tekst",
@@ -921,7 +924,8 @@
         "datetime": "Datum en tijd",
         "enum": "Opsomming",
         "number": "Nummer",
-        "percent": "Percentage"
+        "percent": "Percentage",
+        "link": "Link"
       },
       "custom": {"selectComponent": "Angular-component", "placeholder": "Selecteer een component"},
       "formio": {

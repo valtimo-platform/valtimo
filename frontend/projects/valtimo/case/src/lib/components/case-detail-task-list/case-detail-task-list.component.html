@@ -95,7 +95,7 @@
 
       <div class="task__subtitles">
         @for (
-          subtitle of taskWithProcessLink?.processLinkActivityResult?.properties?.subtitles || [];
+          subtitle of taskWithProcessLink.task?.subtitles || [];
           track subtitle
         ) {
           <p class="task__subtitle">{{ subtitle }}</p>

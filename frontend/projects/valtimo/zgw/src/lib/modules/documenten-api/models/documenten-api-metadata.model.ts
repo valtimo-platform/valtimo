@@ -61,6 +61,8 @@ interface DocumentenApiMetadata {
   taal: DocumentLanguage;
   informatieobjecttype: string;
   trefwoorden?: string[];
+  processInstanceId?: string;
+  documentUrlProcessVariable: string | null;
 }
 
 type AdditionalDocumentDate = 'sent' | 'received' | 'neither';

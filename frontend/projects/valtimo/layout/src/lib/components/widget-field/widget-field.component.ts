@@ -77,6 +77,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
       value: string;
       ellipsisCharacterLimit: number | null;
       hideWhenEmpty: boolean | false;
+      isRawValue: boolean | false;
     }[][]
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
     map(([widget, widgetData]) =>
@@ -97,6 +98,10 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
                     }),
+                    isRawValue: this.viewContentService.isRawValue({
+                      ...property.displayProperties,
+                      viewType: property.displayProperties?.type ?? ViewType.TEXT,
+                    })
                   },
                 ]
               : []),

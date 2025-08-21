@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,3 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {TypeConverter} from './type-converters.model';
+
+export class LinkTypeConverter implements TypeConverter {
+  public getTypeString(): string {
+    return 'link';
+  }
+
+  public isRawValue(): boolean {
+    return true;
+  }
+
+  public convert(value: any, definition: any): string {
+    if (!value) return '-';
+
+    return (
+      '<a href="' +
+      value +
+      '" target="_blank" rel="noopener noreferrer">' +
+      (definition?.linkText ?? value) +
+      '</a>'
+    );
+  }
+}

@@ -34,7 +34,7 @@ import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
-import {ExtraProperties, ExtraPropertiesOptions} from '../../models/create-zaak-properties';
+import {CreateZaakExtraProperties, CreateZaakExtraPropertyOptions} from '../../models/create-zaak-properties';
 import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 @Component({
@@ -58,7 +58,7 @@ export class CreateZaakConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakConfig> = new EventEmitter<CreateZaakConfig>();
 
-  public readonly propertyList: Array<ExtraProperties> = [];
+  public readonly propertyList: Array<CreateZaakExtraProperties> = [];
 
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
@@ -81,7 +81,7 @@ export class CreateZaakConfigurationComponent
 
   private readonly formValue$ = new BehaviorSubject<CreateZaakConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
-  private readonly _properties = new Map<ExtraProperties, string>();
+  private readonly _properties = new Map<CreateZaakExtraProperties, string>();
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
@@ -149,7 +149,7 @@ export class CreateZaakConfigurationComponent
     this.openSaveSubscription();
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      ExtraPropertiesOptions.filter(property => prefill && !!prefill[property]).forEach(property =>
+      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property]).forEach(property =>
         this.addCaseProperty(property)
       );
     });
@@ -213,21 +213,21 @@ export class CreateZaakConfigurationComponent
     });
   }
 
-  public addCaseProperty(property: ExtraProperties): void {
+  public addCaseProperty(property: CreateZaakExtraProperties): void {
     this.propertyList.push(property);
   }
 
-  public removeCaseProperty(property: ExtraProperties): void {
+  public removeCaseProperty(property: CreateZaakExtraProperties): void {
     this.propertyList.splice(this.propertyList.indexOf(property), 1);
     this._properties.delete(property);
     this.onPropertyChanged(property, undefined);
   }
 
-  public hasPropertyBeenAdded(property: ExtraProperties): boolean {
+  public hasPropertyBeenAdded(property: CreateZaakExtraProperties): boolean {
     return this.propertyList.indexOf(property) !== -1;
   }
 
-  public onPropertyChanged(property: ExtraProperties, value: any): void {
+  public onPropertyChanged(property: CreateZaakExtraProperties, value: any): void {
     this._properties.set(property, value);
     this.formValue$
       .pipe(

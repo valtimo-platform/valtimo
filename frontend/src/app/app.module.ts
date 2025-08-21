@@ -236,6 +236,7 @@ export function tabsFactory() {
     BpmnJsDiagramModule,
     MenuModule,
     WidgetModule,
+    IkoModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

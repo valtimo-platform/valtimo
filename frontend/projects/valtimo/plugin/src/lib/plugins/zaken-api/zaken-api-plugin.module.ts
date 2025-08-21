@@ -25,15 +25,6 @@ import {
   RadioModule,
   SelectModule,
 } from '@valtimo/components';
-import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
-import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
-import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
-import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/set-zaak-status-configuration.component';
-import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
-import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
-import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
-import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
-import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {
   ButtonModule,
   DatePickerInputModule,
@@ -42,13 +33,26 @@ import {
   LoadingModule,
   ToggleModule,
 } from 'carbon-components-angular';
+import {TranslateModule} from '@ngx-translate/core';
+import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
+import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
+import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
+import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/set-zaak-status-configuration.component';
+import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
+import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
+import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
+import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
+import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
+import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
+import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
+import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {TranslateModule} from '@ngx-translate/core';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 
 @NgModule({
   declarations: [
@@ -57,8 +61,11 @@ import {TranslateModule} from '@ngx-translate/core';
     LinkUploadedDocumentToZaakConfigurationComponent,
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
+    CreateMedewerkerZaakRolComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
+    CreateOrganisatorischeEenheidZaakRolComponent,
+    CreateVestigingZaakRolComponent,
     CreateZaakConfigurationComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
@@ -67,6 +74,7 @@ import {TranslateModule} from '@ngx-translate/core';
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
     RelateerZakenComponent,
+    PatchZaakConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -92,8 +100,11 @@ import {TranslateModule} from '@ngx-translate/core';
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,
+    CreateMedewerkerZaakRolComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
+    CreateOrganisatorischeEenheidZaakRolComponent,
+    CreateVestigingZaakRolComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
     EndHersteltermijnComponent,
