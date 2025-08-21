@@ -14,4 +14,30 @@
  * limitations under the License.
  */
 
+<<<<<<<< HEAD:frontend/projects/valtimo/layout/src/lib/components/widget-interactive-table/index.ts
 export * from './widget-interactive-table.component';
+========
+import {TypeConverter} from './type-converters.model';
+
+export class LinkTypeConverter implements TypeConverter {
+  public getTypeString(): string {
+    return 'link';
+  }
+
+  public isRawValue(): boolean {
+    return true;
+  }
+
+  public convert(value: any, definition: any): string {
+    if (!value) return '-';
+
+    return (
+      '<a href="' +
+      value +
+      '" target="_blank" rel="noopener noreferrer">' +
+      (definition?.linkText ?? value) +
+      '</a>'
+    );
+  }
+}
+>>>>>>>> c3fb23ee6 (Merge next-minor into IKO):frontend/projects/valtimo/components/src/lib/components/view-content/type-converters/linkTypeConverter.ts
