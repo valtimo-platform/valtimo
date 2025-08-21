@@ -21,6 +21,10 @@ export class DateTimeTypeConverter implements TypeConverter {
     return 'datetime';
   }
 
+  public isRawValue(): boolean {
+    return false;
+  }
+
   public convert(value: any, definition: any): string {
     if (!value) return '-';
 

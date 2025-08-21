@@ -90,6 +90,7 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
       value: string;
       ellipsisCharacterLimit: number | null;
       hideWhenEmpty: boolean | false;
+      isRawValue: boolean | false;
     }[][]
   > = combineLatest([this.widgetConfiguration$, this.widgetData$]).pipe(
     map(([widget, widgetData]) =>
@@ -111,6 +112,10 @@ export class WidgetFieldComponent extends WidgetProcess implements AfterViewInit
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
                     }),
+                    isRawValue: this.viewContentService.isRawValue({
+                      ...property.displayProperties,
+                      viewType: property.displayProperties?.type ?? ViewType.TEXT,
+                    })
                   },
                 ]
               : []),

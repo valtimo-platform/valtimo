@@ -47,6 +47,7 @@ import {
   CaseWidgetEnumDisplayType,
   CaseWidgetNumberDisplayType,
   CaseWidgetTextDisplayType,
+  CaseWidgetLinkDisplayType,
   CaseWidgetType,
   FieldsCaseWidgetValue,
 } from '@valtimo/case';
@@ -265,6 +266,11 @@ export class CaseManagementWidgetFieldsColumnComponent implements OnInit, OnDest
           (row.displayProperties as CaseWidgetDateTimeDisplayType).format ?? ''
         ),
       }),
+      ...(row.displayProperties?.type === CaseWidgetDisplayTypeKey.LINK && {
+        linkText: this.fb.control<string>(
+          (row.displayProperties as CaseWidgetLinkDisplayType).linkText ?? ''
+        ),
+      }),
       ...(row.displayProperties?.type === CaseWidgetDisplayTypeKey.ENUM && {
         values: this.fb.array(
           Object.entries((row.displayProperties as CaseWidgetEnumDisplayType).values).map(
@@ -313,6 +319,7 @@ export class CaseManagementWidgetFieldsColumnComponent implements OnInit, OnDest
               ...(!!row?.currencyCode && {currencyCode: row.currencyCode}),
               ...(!!row?.display && {display: row.display}),
               ...(!!row?.digitsInfo && {digitsInfo: row.digitsInfo}),
+              ...(!!row?.linkText && {linkText: row.linkText}),
               ...(!!row?.format && {format: row.format}),
               ...(!!row?.values && {
                 values: row.values?.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {}),

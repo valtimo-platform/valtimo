@@ -50,6 +50,18 @@ export class ViewContentService {
     return this.converters[0].convert(value, definition);
   }
 
+  public isRawValue(definition: any): boolean {
+    const converter: TypeConverter | undefined = this.converters.find(
+      converter => converter.getTypeString() === definition.viewType
+    );
+
+    if (!!converter) {
+      return converter.isRawValue();
+    }
+
+    return this.converters[0].isRawValue();
+  }
+
   getSeparatorIndex(definition, separator) {
     return definition.viewType.indexOf(separator);
   }

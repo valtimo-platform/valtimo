@@ -21,6 +21,10 @@ export class EnumTypeConverter implements TypeConverter {
     return 'enum';
   }
 
+  public isRawValue(): boolean {
+    return false;
+  }
+
   public convert(value: any, definition: any): string {
     if (!value) return '-';
 

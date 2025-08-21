@@ -16,24 +16,24 @@
 
 import {TypeConverter} from './type-converters.model';
 
-export class StringTypeConverter implements TypeConverter {
+export class LinkTypeConverter implements TypeConverter {
   public getTypeString(): string {
-    return 'string';
+    return 'link';
   }
 
   public isRawValue(): boolean {
-    return false;
+    return true;
   }
 
-  public convert(value: any): string {
+  public convert(value: any, definition: any): string {
     if (!value) return '-';
 
-    if (Array.isArray(value) && typeof value[0] === 'string')
-      return value.reduce(
-        (acc, curr, index) => `${acc}${index < value.length && index > 0 ? ', ' : ''}${curr}`,
-        ''
-      );
-
-    return value;
+    return (
+      '<a href="' +
+      value +
+      '" target="_blank" rel="noopener noreferrer">' +
+      (definition?.linkText ?? value) +
+      '</a>'
+    );
   }
 }
