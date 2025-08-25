@@ -28,8 +28,9 @@ import {
 import {ValtimoFormioOptions} from '../../../../models';
 import {deepmerge} from 'deepmerge-ts';
 import {isEqual} from 'lodash';
-import {ConfigService, ValtimoConfig} from '@valtimo/shared';
+import {ConfigService, getCaseManagementRouteParams, ValtimoConfig} from '@valtimo/shared';
 import {FormIoTagsService} from '../../services/form-io.tags.service';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-form-io-builder',
@@ -92,7 +93,8 @@ export class FormioBuilderComponent implements OnInit {
     private readonly stateService: FormIoStateService,
     private readonly configService: ConfigService,
     private readonly injector: Injector,
-    private readonly tagsService: FormIoTagsService
+    private readonly tagsService: FormIoTagsService,
+    private readonly route: ActivatedRoute,
   ) {
     this.setOverrideOptions(this.configService.config);
     this.tagsService.reregisterTags(this.injector);
@@ -107,11 +109,12 @@ export class FormioBuilderComponent implements OnInit {
   }
 
   private modifyEditForm = (): void => {
+    const params = getCaseManagementRouteParams(this.route);
     const originalEditForm = Components.baseEditForm;
     Components.baseEditForm = function (...extend) {
       const editForm = originalEditForm(...extend);
       modiyEditFormApiKeyInput(editForm);
-      addValueResolverSelectorToEditform(editForm);
+      addValueResolverSelectorToEditform(editForm, params);
 
       return editForm;
     };
