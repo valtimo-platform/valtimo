@@ -27,7 +27,7 @@ import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, switchMap, take, tap} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {IKO_MANAGEMENT_TABS} from '../../constants';
-import {IkoDataAggregate, IkoDataAggregateResponse} from '../../models';
+import {IkoDataAggregateResponse} from '../../models';
 import {IkoManagementApiService} from '../../services';
 import {IkoManagementViewModalComponent} from './view-modal/iko-management-view-modal.component';
 import {TranslateModule} from '@ngx-translate/core';
@@ -72,7 +72,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly FIELDS: ColumnConfig[] = [
     {
       key: 'title',
-      label: 'ikoManagement.views',
+      label: 'ikoManagement.views.title',
     },
   ];
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -129,18 +129,27 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
       .subscribe(() => this._refresh$.next(null));
   }
 
-  public onModalClose(item: IkoDataAggregateResponse | null, apiKey: string) {
+  public onModalClose(item: IkoDataAggregateResponse | null, ikoRepositoryConfigKey: string) {
     this.$modalOpen.set(false);
+    const prefillData: IkoDataAggregateResponse | null = this.$prefillData();
+    this.$prefillData.set(null);
     if (!item) return;
 
-    if (this.$prefillData() !== null) {
-      //EDIT
-      this.$prefillData.set(null);
+    if (prefillData !== null) {
+      this.ikoManagementApiService
+        .updateIkoDataAggregate(item.key, {
+          ...item,
+          ikoRepositoryConfigKey,
+        })
+        .pipe(take(1))
+        .subscribe(() => this._refresh$.next(null));
+      return;
     }
 
     this.ikoManagementApiService
-      .createIkoDataAggregate(item.key, {...item, ikoRepositoryConfigKey: apiKey})
-      .subscribe();
+      .createIkoDataAggregate(item.key, {...item, ikoRepositoryConfigKey})
+      .pipe(take(1))
+      .subscribe(() => this._refresh$.next(null));
   }
 
   private setPageTitle(): void {

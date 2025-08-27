@@ -22,11 +22,17 @@
   (rowClicked)="onRowClicked($event)"
 >
   <ng-container carbonToolbarContent [ngTemplateOutlet]="addViewButton"></ng-container>
+
+  <valtimo-no-results
+    [action]="addViewButton"
+    [description]="'ikoManagement.views.noResultsDescription' | translate"
+    [title]="'ikoManagement.views.noResultsTitle' | translate"
+  ></valtimo-no-results>
 </valtimo-carbon-list>
 
 <ng-template #addViewButton>
   <button cdsButton="primary" (click)="openAddModal()">
-    {{ 'ikoManagement.addView' | translate }}
+    {{ 'ikoManagement.views.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
@@ -43,7 +49,7 @@
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="interface.delete"
   confirmButtonType="danger"
-  contentTranslationKey="ikoManagement.deleteViewContent"
+  contentTranslationKey="ikoManagement.views.deleteContent"
   [outputOnConfirm]="$keyToDelete()"
   [showModalSubject$]="showDeleteModal$"
   titleTranslationKey="interface.delete"

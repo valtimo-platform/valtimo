@@ -1870,14 +1870,18 @@
   },
   "ikoManagement": {
     "ikoServer": "IKO Server",
-    "views": "Bilder",
-    "addView": "Ansicht hinzufügen",
-    "deleteViewContent": "Sind Sie sicher, dass Sie diese Ansicht löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden",
     "dataUrl": "Daten-URL",
     "title": "Konfiguration",
     "list": "Liste",
     "tabs": {"title": "Tabs"},
     "widgets": {"title": "Widgets"},
+    "views": {
+      "title": "Bilder",
+      "add": "Bild hinzufügen",
+      "deleteContent": "Sind Sie sicher, dass Sie dieses Bild löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
+      "noResultsTitle": "Es sind keine konfigurierten Bilder vorhanden",
+      "noResultsDescription": "Klicken Sie hier, um ein Bild zu konfigurieren."
+    },    
     "searchActions": {
       "addActionTitle": "Suchaktion hinzufügen",
       "editActionTitle": "Suchaktion bearbeiten",
