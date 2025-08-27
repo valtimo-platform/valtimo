@@ -15,9 +15,9 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {GetResultaattypenConfig, GetStatustypenConfig} from '../../models';
+import {FunctionConfigurationComponent} from '../../../../models';
+import {GetStatustypenConfig} from '../../models';
 
 @Component({
   standalone: false,
@@ -27,15 +27,16 @@ import {GetResultaattypenConfig, GetStatustypenConfig} from '../../models';
 export class GetStatustypenConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input disabled$: Observable<boolean>;
-  @Input pluginId: string;
-  @Input prefillConfiguration$: Observable<GetStatustypenConfig>;
-  @Input save$: Observable<void>;
-  @Output configuration: EventEmitter<GetStatustypenConfig>;
-  @Output valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Input() disabled$: Observable<boolean>;
+  @Input() pluginId: string;
+  @Input() prefillConfiguration$: Observable<GetStatustypenConfig>;
+  @Input() save$: Observable<void>;
+  @Output() configuration: EventEmitter<GetStatustypenConfig> =
+    new EventEmitter<GetStatustypenConfig>();
+  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   private readonly _formValue$ =
-    new BehaviorSubject<GetResultaattypenConfig | null>(null);
+    new BehaviorSubject<GetStatustypenConfig | null>(null);
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 

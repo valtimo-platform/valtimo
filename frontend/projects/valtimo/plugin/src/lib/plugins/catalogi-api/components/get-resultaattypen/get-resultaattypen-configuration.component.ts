@@ -15,8 +15,8 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
+import {FunctionConfigurationComponent} from '../../../../models';
 import {GetResultaattypenConfig} from '../../models';
 
 @Component({
@@ -27,12 +27,13 @@ import {GetResultaattypenConfig} from '../../models';
 export class GetResultaattypenConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input disabled$: Observable<boolean>;
-  @Input pluginId: string;
-  @Input prefillConfiguration$: Observable<GetResultaattypenConfig>;
-  @Input save$: Observable<void>;
-  @Output configuration: EventEmitter<GetResultaattypenConfig>;
-  @Output valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Input() disabled$: Observable<boolean>;
+  @Input() pluginId: string;
+  @Input() prefillConfiguration$: Observable<GetResultaattypenConfig>;
+  @Input() save$: Observable<void>;
+  @Output() configuration: EventEmitter<GetResultaattypenConfig> =
+    new EventEmitter<GetResultaattypenConfig>();
+  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   private readonly _formValue$ =
     new BehaviorSubject<GetResultaattypenConfig | null>(null);
