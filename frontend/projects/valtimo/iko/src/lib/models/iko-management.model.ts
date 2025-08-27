@@ -15,6 +15,7 @@
  */
 
 import {Type} from '@angular/core';
+import {ViewType} from '@valtimo/components';
 
 interface IkoDataAggregateCreateRequest {
   ikoRepositoryConfigKey: string;
@@ -178,6 +179,7 @@ enum IkoTabType {
 }
 
 export {
+  DataAggregatePropertyField,
   IkoDataAggregateCreateRequest,
   IkoDataAggregateListResponse,
   IkoDataAggregateResponse,
@@ -202,5 +204,4 @@ export {
   TabDto,
   WidgetAction,
   WidgetDto,
-  IkoTabType,
 };

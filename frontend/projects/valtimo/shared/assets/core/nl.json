@@ -1906,7 +1906,10 @@
   "ikoManagement": {
     "title": "Configuratie",
     "ikoServer": "IKO Server",
-    "view": "Beeld",
+    "views": "Beelden",
+    "addView": "Weergave toevoegen",
+    "dataUrl": "Gegevens-URL",
+    "deleteViewContent": "Weet u zeker dat u deze weergave wilt verwijderen? Deze wijziging kan niet ongedaan worden gemaakt",
     "list": "Lijst",
     "tabs": {"title": "Tabbladen"},
     "widgets": {"title": "Widgets"},

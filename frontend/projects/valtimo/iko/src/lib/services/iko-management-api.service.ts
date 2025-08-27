@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
+  DataAggregatePropertyField,
   IkoDataAggregateCreateRequest,
   IkoDataAggregateListResponse,
   IkoDataAggregateResponse,
