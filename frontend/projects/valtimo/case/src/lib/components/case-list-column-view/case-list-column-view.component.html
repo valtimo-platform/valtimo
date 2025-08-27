@@ -1,0 +1,34 @@
+<div class="valtimo-case-list-column-view__icon">
+  <button
+    [cdsOverflowMenu]="visibleColumns"
+    [customPane]="true"
+    cdsButton="ghost"
+    [flip]="true"
+    [offset]="{x: 0, y: 47}"
+    placement="bottom"
+  >
+    <svg cdsIcon="view" size="16"></svg>
+  </button>
+
+  <cds-tag type="blue" class="valtimo-case-list-column-view__tag">
+    {{ $checkedItemsCount() }} {{ 'interface.of' | translate }} {{ $fields().length }}
+  </cds-tag>
+</div>
+
+<ng-template #visibleColumns>
+  <section class="valtimo-case-list-column-view__container" (click)="$event.stopImmediatePropagation()">
+    <h4>Columns available for view</h4>
+
+    <div>
+      @for (field of $fields(); track field.key) {
+        <cds-checkbox
+          [disabled]="field.selected && $checkedItemsCount() === 1"
+          [checked]="field.selected"
+          (checkedChange)="onCheckedChange($event, field.key)"
+        >
+          {{ field.label }}
+        </cds-checkbox>
+      }
+    </div>
+  </section>
+</ng-template>

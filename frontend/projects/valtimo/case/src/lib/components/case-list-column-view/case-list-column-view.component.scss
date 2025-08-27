@@ -1,0 +1,24 @@
+::ng-deep.cds--overflow-menu-options {
+  min-width: max-content;
+}
+
+.valtimo-case-list-column-view {
+  &__icon {
+    display: inline-block;
+    position: relative;
+  }
+
+  &__container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__tag {
+    position: absolute;
+    left: 20px;
+    z-index: 2;
+    top: -8px;
+  }
+}

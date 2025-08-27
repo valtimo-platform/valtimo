@@ -15,6 +15,7 @@
  */
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
+import {View16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
@@ -30,16 +31,6 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {
-  AssigneeFilter,
-  CaseListTab,
-  ConfigService,
-  DefinitionColumn,
-  Direction,
-  SearchField,
-  SearchFieldValues,
-  SortState,
-} from '@valtimo/shared';
-import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,
   CaseTag,
@@ -50,7 +41,17 @@ import {
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
-import {Tab, Tabs, TagType} from 'carbon-components-angular';
+import {
+  AssigneeFilter,
+  CaseListTab,
+  ConfigService,
+  DefinitionColumn,
+  Direction,
+  SearchField,
+  SearchFieldValues,
+  SortState,
+} from '@valtimo/shared';
+import {IconService, Tab, Tabs} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
@@ -549,8 +550,11 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly statusService: CaseListStatusService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
-    private readonly caseExportService: CaseExportService
-  ) {}
+    private readonly caseExportService: CaseExportService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([View16]);
+  }
 
   public ngOnInit(): void {
     this.setVisibleTabs();
@@ -706,6 +710,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
 
   public onStartButtonDisableEvent(disabled: boolean): void {
     this.disableStartButton$.next(disabled);
+  }
+
+  public onViewUpdateEvent(visibleColumns: string[]): void {
+    console.log({visibleColumns});
   }
 
   private openCaseDefinitionKeySubscription(): void {

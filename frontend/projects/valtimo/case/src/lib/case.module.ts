@@ -77,6 +77,7 @@ import {
   TagModule,
   TilesModule,
   TooltipModule,
+  CheckboxModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {CaseAssignUserComponent} from './components/case-assign-user/case-assign-user.component';
@@ -103,6 +104,7 @@ import {CaseDetailWidgetsComponent} from './components/case-detail/tab/widgets/w
 import {CaseDetailTaskListComponent} from './components/case-detail-task-list/case-detail-task-list.component';
 import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
 import {AngularSplitModule} from 'angular-split';
+import {CaseListColumnViewComponent} from './components/case-list-column-view/case-list-column-view.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -125,6 +127,7 @@ export type TabsFactory = () => Map<string, object>;
     CaseAssignUserComponent,
     NoteModalComponent,
     CaseDetailTabFormioComponent,
+    CaseListColumnViewComponent,
   ],
   imports: [
     CommonModule,
@@ -194,6 +197,7 @@ export type TabsFactory = () => Map<string, object>;
     NotificationModule,
     CarbonInputModule,
     TooltipModule,
+    CheckboxModule,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
 })
