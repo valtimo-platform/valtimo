@@ -50,7 +50,7 @@ export class CaseManagementExternalStartFormComponent implements OnInit, OnDestr
   }
 
   private readonly _URL_PATTERN = new RegExp(
-    '^(?:https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?$'
+    '^(?:https?:\\/\\/)?(?:localhost|[\\w]+(?:-[\\w]+)*(?:\\.[\\w]+(?:-[\\w]+)*)+)(:\\d+)?(\\/\\S*)?$'
   );
 
   public readonly form = this.fb.group({
