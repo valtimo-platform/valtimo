@@ -25,9 +25,11 @@
     @if ($loading()) {
       <cds-loading></cds-loading>
     } @else {
-      <ng-template #formViewModelComponent></ng-template>
+      @if (modalOpen$ | async) {
+        <ng-template #formViewModelComponent></ng-template>
 
-      <ng-template #formCustomComponent></ng-template>
+        <ng-template #formCustomComponent></ng-template>
+      }
 
       @if (formDefinition && !isFormViewModel && !isUIComponent) {
         <valtimo-form-io

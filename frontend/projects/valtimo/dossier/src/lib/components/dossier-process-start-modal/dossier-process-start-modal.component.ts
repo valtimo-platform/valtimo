@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   Component,
   ComponentRef,
@@ -23,33 +22,37 @@ import {
   OnInit,
   Optional,
   Output,
+  signal,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
-  signal,
 } from '@angular/core';
+import {Router} from '@angular/router';
+import {FormioForm} from '@formio/angular';
+import {FormioBeforeSubmit} from '@formio/angular/formio.common';
 import {PermissionService} from '@valtimo/access-control';
-import {DocumentService, ProcessDocumentDefinition} from '@valtimo/document';
+import {
+  FormioComponent,
+  FormioOptionsImpl,
+  FormioSubmission,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
+import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
+import {ProcessDocumentDefinition} from '@valtimo/document';
+import {ProcessService} from '@valtimo/process';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
   FormCustomComponent,
   FormCustomComponentConfig,
-  FormFlowService,
   FormSubmissionResult,
   ProcessLinkService,
   UrlResolverService,
 } from '@valtimo/process-link';
-import {ActivatedRoute, Router} from '@angular/router';
-import {ProcessService} from '@valtimo/process';
-import {FormioComponent, FormioOptionsImpl, FormioSubmission, ValtimoFormioOptions,} from '@valtimo/components';
-import {FormioBeforeSubmit} from '@formio/angular/formio.common';
-import {FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
-import {take} from 'rxjs/operators';
+import {BehaviorSubject, Observable, Subscription} from 'rxjs';
+import {filter, take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, DOSSIER_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {DossierListService, StartModalService} from '../../services';
-import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
-import {BehaviorSubject, Subscription} from 'rxjs';
 
 @Component({
   selector: 'valtimo-dossier-process-start-modal',
@@ -74,10 +77,27 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   public isFormViewModel = false;
   public isUIComponent = false;
   @ViewChild('form', {static: false}) form: FormioComponent;
-  @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
-  public formViewModelDynamicContainer: ViewContainerRef;
-  @ViewChild('formCustomComponent', {static: false, read: ViewContainerRef})
-  public formCustomComponentDynamicContainer: ViewContainerRef;
+  private _formViewModelDynamicContainer$ = new BehaviorSubject<ViewContainerRef | undefined>(
+    undefined
+  );
+  @ViewChild('formViewModelComponent', {read: ViewContainerRef}) set formViewModelDynamicContainer(
+    vcr: ViewContainerRef | undefined
+  ) {
+    this._formViewModelDynamicContainer$.next(vcr);
+  }
+  get formViewModelDynamicContainer$(): Observable<ViewContainerRef> {
+    return this._formViewModelDynamicContainer$.pipe(filter(temp => !!temp));
+  }
+  private _formCustomComponentDynamicContainer$ = new BehaviorSubject<ViewContainerRef | undefined>(
+    undefined
+  );
+  @ViewChild('formCustomComponent', {read: ViewContainerRef})
+  set formCustomComponentDynamicContainer(vcr: ViewContainerRef | undefined) {
+    this._formCustomComponentDynamicContainer$.next(vcr);
+  }
+  get formCustomComponentDynamicContainer$(): Observable<ViewContainerRef> {
+    return this._formCustomComponentDynamicContainer$.pipe(filter(temp => !!temp));
+  }
   @Output() formFlowComplete = new EventEmitter();
   @Output() noProcessLinked = new EventEmitter();
 
@@ -90,14 +110,10 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   >({});
   public readonly closeModalEvent = new EventEmitter();
 
-
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private processService: ProcessService,
-    private documentService: DocumentService,
     private processLinkService: ProcessLinkService,
-    private formFlowService: FormFlowService,
     private userProviderService: UserProviderService,
     private permissionService: PermissionService,
     private listService: DossierListService,
@@ -142,6 +158,8 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(startProcessResult => {
         this.$loading.set(false);
+
+        this.openCdsModal();
         if (startProcessResult) {
           this.isUIComponent = false;
           this.isFormViewModel = false;
@@ -149,11 +167,9 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
             case 'form':
               this.formDefinition = startProcessResult.properties.prefilledForm;
               this.processLinkId = startProcessResult.processLinkId;
-              this.openCdsModal();
               break;
             case 'form-flow':
               this.formFlowInstanceId = startProcessResult.properties.formFlowInstanceId;
-              this.openCdsModal();
               break;
             case 'form-view-model':
               this.formDefinition = startProcessResult.properties.formDefinition;
@@ -161,7 +177,6 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
               this.processLinkId = startProcessResult.processLinkId;
               this.isFormViewModel = true;
               this.setFormViewModelComponent();
-              this.openCdsModal();
               break;
             case 'url':
               this.processLinkId = startProcessResult.processLinkId;
@@ -184,7 +199,6 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
             case 'ui-component':
               this.setFormCustomComponent(startProcessResult.properties.componentKey);
               this.isUIComponent = true;
-              this.openCdsModal();
               break;
           }
         } else {
@@ -274,51 +288,53 @@ export class DossierProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   private setFormViewModelComponent() {
-    if (!this.formViewModel.component) return;
-    this.formViewModelDynamicContainer.clear();
-    const formViewModelComponent = this.formViewModelDynamicContainer.createComponent(
-      this.formViewModel.component
-    );
-    formViewModelComponent.instance.form = this.formDefinition;
-    formViewModelComponent.instance.formName = this.formName;
-    formViewModelComponent.instance.isStartForm = true;
-    formViewModelComponent.instance.processDefinitionKey = this.processDefinitionKey;
-    formViewModelComponent.instance.documentDefinitionName = this.documentDefinitionName;
-    this._subscriptions.add(
-      formViewModelComponent.instance.formSubmit.subscribe(() => {
-        this.listService.forceRefresh();
-        this.closeCdsModal();
-      })
-    );
-
-    this._subscriptions.add(
-      this.closeModalEvent.subscribe(() => {
-        formViewModelComponent.destroy();
-      })
-    );
-  }
-
-  private setFormCustomComponent(formCustomComponentKey: string): void {
-    this.formCustomComponentDynamicContainer.clear();
-    if (!this.formCustomComponentConfig) return;
-    this._formCustomComponentConfig$.pipe(take(1)).subscribe(formCustomComponentConfig => {
-      const customComponent = formCustomComponentConfig[formCustomComponentKey];
-      const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
-        customComponent
-      ) as ComponentRef<FormCustomComponent>;
-
-      renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
-      renderedComponent.instance.documentDefinitionName = this.documentDefinitionName;
-
-      renderedComponent.instance.submittedEvent.subscribe(() => {
-        this.closeCdsModal();
-      });
+    this.formViewModelDynamicContainer$.pipe(take(1)).subscribe(template => {
+      if (!this.formViewModel.component) return;
+      template.clear();
+      const formViewModelComponent = template.createComponent(this.formViewModel.component);
+      formViewModelComponent.instance.form = this.formDefinition;
+      formViewModelComponent.instance.formName = this.formName;
+      formViewModelComponent.instance.isStartForm = true;
+      formViewModelComponent.instance.processDefinitionKey = this.processDefinitionKey;
+      formViewModelComponent.instance.documentDefinitionName = this.documentDefinitionName;
+      this._subscriptions.add(
+        formViewModelComponent.instance.formSubmit.subscribe(() => {
+          this.listService.forceRefresh();
+          this.closeCdsModal();
+        })
+      );
 
       this._subscriptions.add(
         this.closeModalEvent.subscribe(() => {
-          renderedComponent.destroy();
+          formViewModelComponent.destroy();
         })
       );
+    });
+  }
+
+  private setFormCustomComponent(formCustomComponentKey: string): void {
+    this.formCustomComponentDynamicContainer$.pipe(take(1)).subscribe(template => {
+      template.clear();
+      if (!this.formCustomComponentConfig) return;
+      this._formCustomComponentConfig$.pipe(take(1)).subscribe(formCustomComponentConfig => {
+        const customComponent = formCustomComponentConfig[formCustomComponentKey];
+        const renderedComponent = template.createComponent(
+          customComponent
+        ) as ComponentRef<FormCustomComponent>;
+
+        renderedComponent.instance.processDefinitionKey = this.processDefinitionKey;
+        renderedComponent.instance.documentDefinitionName = this.documentDefinitionName;
+
+        renderedComponent.instance.submittedEvent.subscribe(() => {
+          this.closeCdsModal();
+        });
+
+        this._subscriptions.add(
+          this.closeModalEvent.subscribe(() => {
+            renderedComponent.destroy();
+          })
+        );
+      });
     });
   }
 
