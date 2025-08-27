@@ -1854,7 +1854,10 @@
   },
   "ikoManagement": {
     "ikoServer": "IKO Server",
-    "view": "View",
+    "views": "Views",
+    "addView": "Add view",
+    "deleteViewContent": "Are you sure you want to delete this view? This change cannot be reverted",
+    "dataUrl": "Data URL",
     "title": "Configuration",
     "list": "List",
     "tabs": {"title": "Tabs"},

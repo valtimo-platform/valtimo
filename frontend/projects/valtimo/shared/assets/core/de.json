@@ -1870,7 +1870,10 @@
   },
   "ikoManagement": {
     "ikoServer": "IKO Server",
-    "view": "Bild",
+    "views": "Bilder",
+    "addView": "Ansicht hinzufügen",
+    "deleteViewContent": "Sind Sie sicher, dass Sie diese Ansicht löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden",
+    "dataUrl": "Daten-URL",
     "title": "Konfiguration",
     "list": "Liste",
     "tabs": {"title": "Tabs"},

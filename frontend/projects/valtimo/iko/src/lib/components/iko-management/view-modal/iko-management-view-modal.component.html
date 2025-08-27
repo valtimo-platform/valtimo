@@ -1,0 +1,146 @@
+<cds-modal valtimoCdsModal [open]="open" size="sm" showFooter="true" (close)="onCancel()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>Add view</h3>
+  </cds-modal-header>
+
+  <form [formGroup]="formGroup" cdsModalContent>
+    <cds-label>
+      {{ 'interface.title' | translate }}
+
+      <input
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'interface.title' | translate }}"
+        [attr.modal-primary-focus]="true"
+      />
+    </cds-label>
+
+    <cds-label>
+      {{ 'interface.key' | translate }}
+
+      <input
+        formControlName="key"
+        cdsText
+        placeholder="{{ 'interface.key' | translate }}"
+        [attr.modal-primary-focus]="true"
+      />
+    </cds-label>
+
+    <form [formGroup]="propertiesFormGroup">
+      @for (propertyField of propertyFields$ | async; track propertyField.key) {
+        @switch (true) {
+          @case (
+            propertyField.type === 'text' ||
+            propertyField.type === 'url' ||
+            propertyField.type === 'integer'
+          ) {
+            <cds-label>
+              {{ propertyField.title }}
+              <input
+                [formControlName]="propertyField.key"
+                cdsText
+                [placeholder]="propertyField.title"
+                [attr.modal-primary-focus]="true"
+              />
+            </cds-label>
+          }
+          @case (propertyField.type === 'dropdown') {
+            <div [formArrayName]="propertyField.key">
+              <cds-text-label>
+                {{ propertyField.title }}
+
+                @for (
+                  dropdownControl of propertiesFormGroup.get(propertyField.key).controls;
+                  track dropdownControl
+                ) {
+                  <fieldset>
+                    <input
+                      [formControlName]="$index"
+                      cdsText
+                      [placeholder]="'interface.value' | translate"
+                      [attr.modal-primary-focus]="true"
+                    />
+
+                    <button
+                      cdsButton="danger--ghost"
+                      [disabled]="$count === 1"
+                      [iconOnly]="true"
+                      (click)="onDeleteRowClick(propertyField.key, $index)"
+                    >
+                      <svg cdsIcon="trash-can" size="16"></svg>
+                    </button>
+                  </fieldset>
+                }
+              </cds-text-label>
+
+              <button
+                cdsButton="primary"
+                (click)="onAddDropdownValue(propertyField.key, propertyField.required)"
+              >
+                Add Dropdown Value
+
+                <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+              </button>
+            </div>
+          }
+          @case (propertyField.type === 'keyValueList') {
+            <div [formArrayName]="propertyField.key">
+              @for (
+                keyValueControl of propertiesFormGroup.get(propertyField.key).controls;
+                track keyValueControl
+              ) {
+                <cds-text-label>
+                  {{ propertyField.title }}
+
+                  <fieldset [formGroupName]="$index">
+                    <input
+                      formControlName="key"
+                      cdsText
+                      [placeholder]="'interface.key' | translate"
+                      [attr.modal-primary-focus]="true"
+                    />
+
+                    <input
+                      formControlName="value"
+                      cdsText
+                      [placeholder]="'interface.value' | translate"
+                      [attr.modal-primary-focus]="true"
+                    />
+
+                    <button
+                      cdsButton="danger--ghost"
+                      [disabled]="$count === 1"
+                      [iconOnly]="true"
+                      (click)="onDeleteRowClick(propertyField.key, $index)"
+                    >
+                      <svg cdsIcon="trash-can" size="16"></svg>
+                    </button>
+                  </fieldset>
+                </cds-text-label>
+              }
+
+              <button
+                cdsButton="primary"
+                (click)="onAddKeyValue(propertyField.key, propertyField.required)"
+              >
+                Add Key Value
+
+                <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+              </button>
+            </div>
+          }
+        }
+      }
+    </form>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

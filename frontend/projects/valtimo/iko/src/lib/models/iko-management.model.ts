@@ -15,6 +15,7 @@
  */
 
 import {Type} from '@angular/core';
+import {ViewType} from '@valtimo/components';
 
 interface IkoDataAggregateCreateRequest {
   ikoRepositoryConfigKey: string;
@@ -109,6 +110,16 @@ interface TabDto {
   type: string;
 }
 
+type PropertyFieldType = 'text' | 'keyValueList' | 'integer' | 'dropdown' | 'url';
+
+interface DataAggregatePropertyField {
+  key: string;
+  required: boolean;
+  title: string;
+  tooltip: string;
+  type: PropertyFieldType;
+}
+
 interface PropertyField {
   key: string;
   type: 'dropdown';
@@ -175,6 +186,7 @@ enum IkoTabType {
 }
 
 export {
+  DataAggregatePropertyField,
   IkoDataAggregateCreateRequest,
   IkoDataAggregateListResponse,
   IkoDataAggregateResponse,
@@ -192,10 +204,11 @@ export {
   IkoSearchField,
   IkoSearchFieldCreateRequest,
   IkoTabCreateRequest,
+  IkoTabType,
   IkoTabUpdateRequest,
   PropertyField,
+  PropertyFieldType,
   TabDto,
   WidgetAction,
   WidgetDto,
-  IkoTabType,
 };

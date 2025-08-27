@@ -15,9 +15,37 @@
   -->
 
 <valtimo-carbon-list
+  [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [items]="ikoDataAggregates$ | async"
-  [loading]="loading$ | async"
-  [hideToolbar]="true"
+  [loading]="$loading()"
   (rowClicked)="onRowClicked($event)"
-></valtimo-carbon-list>
+>
+  <ng-container carbonToolbarContent [ngTemplateOutlet]="addViewButton"></ng-container>
+</valtimo-carbon-list>
+
+<ng-template #addViewButton>
+  <button cdsButton="primary" (click)="openAddModal()">
+    {{ 'ikoManagement.addView' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>
+
+<valtimo-iko-management-view-modal
+  *ngIf="apiKey$ | async as apiKey"
+  [apiKey]="apiKey"
+  [open]="$modalOpen()"
+  [prefillData]="$prefillData()"
+  (modalClose)="onModalClose($event, apiKey)"
+></valtimo-iko-management-view-modal>
+
+<valtimo-confirmation-modal
+  confirmButtonTextTranslationKey="interface.delete"
+  confirmButtonType="danger"
+  contentTranslationKey="ikoManagement.deleteViewContent"
+  [outputOnConfirm]="$keyToDelete()"
+  [showModalSubject$]="showDeleteModal$"
+  titleTranslationKey="interface.delete"
+  (confirmEvent)="onDeleteConfirm($event)"
+></valtimo-confirmation-modal>

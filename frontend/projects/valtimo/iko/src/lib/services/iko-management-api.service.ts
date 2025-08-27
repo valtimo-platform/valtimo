@@ -18,6 +18,7 @@ import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
+  DataAggregatePropertyField,
   IkoDataAggregateCreateRequest,
   IkoDataAggregateListResponse,
   IkoDataAggregateResponse,
@@ -77,7 +78,7 @@ export class IkoManagementApiService extends BaseApiService {
     body: IkoDataAggregateCreateRequest
   ): Observable<IkoDataAggregateResponse> {
     return this.httpClient.post<IkoDataAggregateResponse>(
-      this.getApiUrl(`/v1/iko-data-aggregate/${key}`),
+      this.getApiUrl(`management/v1/iko-data-aggregate/${key}`),
       body
     );
   }
@@ -93,12 +94,18 @@ export class IkoManagementApiService extends BaseApiService {
   }
 
   public deleteIkoDataAggregate(key: string): Observable<void> {
-    return this.httpClient.delete<void>(this.getApiUrl(`/v1/iko-data-aggregate/${key}`));
+    return this.httpClient.delete<void>(this.getApiUrl(`management/v1/iko-data-aggregate/${key}`));
   }
 
-  public getIkoDataAggregatePropertyFields(type: string): Observable<PropertyField[]> {
-    return this.httpClient.get<PropertyField[]>(
-      this.getApiUrl(`/v1/iko-property-fields/${type}/data-aggregate`)
+  public getIkoDataAggregatePropertyFields(type: string): Observable<DataAggregatePropertyField[]> {
+    return this.httpClient.get<DataAggregatePropertyField[]>(
+      this.getApiUrl(`management/v1/iko-property-fields/${type}/data-aggregate`)
+    );
+  }
+
+  public getIkoDataAggregateType(key: string): Observable<IkoRepositoryConfigResponse> {
+    return this.httpClient.get<IkoRepositoryConfigResponse>(
+      this.getApiUrl(`/management/v1/iko/${key}`)
     );
   }
 
