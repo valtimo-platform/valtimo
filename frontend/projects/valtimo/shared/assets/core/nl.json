@@ -440,6 +440,7 @@
     "duplicate": "Dupliceren",
     "readOnly": "Alleen-lezen",
     "add": "Formulier toevoegen",
+    "navigateToRelatedCase": "Ga naar dossier (opent in nieuw tabblad)",
     "tabs": {
       "formBuilder": "Formulier-bewerker",
       "jsonEditor": "JSON-bewerker",

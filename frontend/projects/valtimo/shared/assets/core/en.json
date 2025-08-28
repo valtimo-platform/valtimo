@@ -437,6 +437,7 @@
     "duplicate": "Duplicate",
     "readOnly": "Read-only",
     "add": "Add form",
+    "navigateToRelatedCase": "Go to case (opens in new tab)",
     "tabs": {"formBuilder": "Form builder", "jsonEditor": "JSON editor", "output": "Output"},
     "intermediateSave": {
       "save": "Save progress",

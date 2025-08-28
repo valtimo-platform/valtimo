@@ -440,6 +440,7 @@
     "duplicate": "Duplizieren",
     "readOnly": "Schreibgeschützt",
     "add": "Formular hinzufügen",
+    "navigateToRelatedCase": "Zum Vorgang gehen (öffnet in neuem Tab)",
     "tabs": {"formBuilder": "Formulareditor", "jsonEditor": "JSON-Editor", "output": "Output"},
     "intermediateSave": {
       "save": "Fortschritt speichern",
