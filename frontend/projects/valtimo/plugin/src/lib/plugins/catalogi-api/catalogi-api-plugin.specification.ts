@@ -83,6 +83,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapProcessVariableTooltip:
         'Nadat de eigenschap is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
       zaakTypeUrl: 'Zaaktype URL',
+      zaakTypeUrlTooltip: 'Specificeer hier de URL van het betreffende Zaaktype indien deze afwijkt van de aan de Case gekoppelde Zaak',
     },
     en: {
       title: 'Catalogi API',
@@ -128,6 +129,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapProcessVariableTooltip:
         'After the eigenschap is retrieved, it is stored in a process variable with this name.',
       zaakTypeUrl: 'Zaaktype URL',
+      zaakTypeUrlTooltip: 'Specify the URL of the relevant Case type here if it differs from the Case linked to the Case',
     },
     de: {
       title: 'Catalogi API',
@@ -175,6 +177,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapProcessVariableTooltip:
         'Sobald der eigenschap abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
       zaakTypeUrl: 'Zaaktype URL',
+      zaakTypeUrlTooltip: 'Geben Sie hier die URL des jeweiligen Falltyps an, falls diese von der mit dem Fall verknüpften URL abweicht.',
     },
   },
 };
