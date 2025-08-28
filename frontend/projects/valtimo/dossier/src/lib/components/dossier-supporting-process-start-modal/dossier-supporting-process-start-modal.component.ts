@@ -21,19 +21,21 @@ import {
   Input,
   Optional,
   Output,
+  signal,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
-  signal,
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {
+  CARBON_CONSTANTS,
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
   ValtimoFormioOptions,
 } from '@valtimo/components';
+import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 import {ProcessDocumentDefinition} from '@valtimo/document';
 import {ProcessService} from '@valtimo/process';
 import {
@@ -45,7 +47,6 @@ import {
 } from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
 import {take} from 'rxjs/operators';
-import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-dossier-supporting-process-start-modal',
@@ -69,14 +70,14 @@ export class DossierSupportingProcessStartModalComponent {
   public readonly processDefinitionKey$ = new BehaviorSubject<string>('');
   public readonly documentDefinitionName$ = new BehaviorSubject<string>('');
   public readonly processName$ = new BehaviorSubject<string>('');
-  public readonly formDefinition$ = new BehaviorSubject<FormioForm>(undefined);
-  public readonly formioSubmission$ = new BehaviorSubject<FormioSubmission>(undefined);
+  public readonly formDefinition$ = new BehaviorSubject<FormioForm | null>(null);
+  public readonly formioSubmission$ = new BehaviorSubject<FormioSubmission | null>(null);
   public readonly processLinkId$ = new BehaviorSubject<string>('');
-  public readonly options$ = new BehaviorSubject<ValtimoFormioOptions>(undefined);
-  public readonly submission$ = new BehaviorSubject<object>(undefined);
-  public readonly processDefinitionId$ = new BehaviorSubject<string>(undefined);
-  public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
-  public readonly documentId$ = new BehaviorSubject<string>(undefined);
+  public readonly options$ = new BehaviorSubject<ValtimoFormioOptions | null>(null);
+  public readonly submission$ = new BehaviorSubject<object | null>(null);
+  public readonly processDefinitionId$ = new BehaviorSubject<string | null>(null);
+  public readonly formFlowInstanceId$ = new BehaviorSubject<string | null>(null);
+  public readonly documentId$ = new BehaviorSubject<string | null>(null);
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
@@ -99,14 +100,15 @@ export class DossierSupportingProcessStartModalComponent {
   }
 
   private loadProcessLink(): void {
+    this.$loading.set(true);
     combineLatest([this.processDefinitionId$, this.documentId$])
       .pipe(
         take(1),
         switchMap(([processDefinitionId, documentId]) =>
           this.processService.getProcessDefinitionStartProcessLink(
-            processDefinitionId,
-            documentId,
-            null
+            processDefinitionId ?? '',
+            documentId ?? '',
+            ''
           )
         )
       )
@@ -120,10 +122,12 @@ export class DossierSupportingProcessStartModalComponent {
               this.processLinkId$.next(startProcessResult.processLinkId);
               break;
             case 'form-flow':
-              this.formFlowInstanceId$.next(startProcessResult.properties.formFlowInstanceId);
+              this.formFlowInstanceId$.next(
+                startProcessResult.properties.formFlowInstanceId ?? null
+              );
               break;
             case 'form-view-model':
-              this.formDefinition$.next(startProcessResult.properties.formDefinition);
+              this.formDefinition$.next(startProcessResult.properties.formDefinition ?? null);
               this.setFormViewModelComponent(startProcessResult.properties.formName);
               break;
             case 'ui-component':
@@ -131,8 +135,8 @@ export class DossierSupportingProcessStartModalComponent {
               this.isUIComponent = true;
               break;
           }
-          this.$loading.set(false);
         }
+        this.$loading.set(false);
       });
   }
 
@@ -165,7 +169,7 @@ export class DossierSupportingProcessStartModalComponent {
         .pipe(
           take(1),
           switchMap(([processLinkId, documentId]) =>
-            this.processLinkService.submitForm(processLinkId, submission.data, documentId)
+            this.processLinkService.submitForm(processLinkId, submission.data, documentId ?? '')
           )
         )
         .subscribe({
@@ -182,7 +186,6 @@ export class DossierSupportingProcessStartModalComponent {
   public formSubmitted(): void {
     this.closeCdsModal();
     this.formSubmit.emit();
-    this.formDefinition$.next(null);
   }
 
   public gotoFormLinkScreen(): void {
@@ -196,8 +199,8 @@ export class DossierSupportingProcessStartModalComponent {
     this.closeCdsModal();
   }
 
-  private setFormViewModelComponent(formName: string): void {
-    if (!this.formViewModel.component) return;
+  private setFormViewModelComponent(formName: string | undefined): void {
+    if (!this.formViewModel.component || !formName) return;
     this.formViewModelDynamicContainer.clear();
     const formViewModelComponent = this.formViewModelDynamicContainer.createComponent(
       this.formViewModel.component
@@ -234,9 +237,9 @@ export class DossierSupportingProcessStartModalComponent {
     this.isFormViewModel = true;
   }
 
-  private setFormCustomComponent(formCustomComponentKey: string): void {
+  private setFormCustomComponent(formCustomComponentKey: string | undefined): void {
     this.formCustomComponentDynamicContainer.clear();
-    if (!this.formCustomComponentConfig) return;
+    if (!this.formCustomComponentConfig || !formCustomComponentKey) return;
     this._formCustomComponentConfig$.pipe(take(1)).subscribe(formCustomComponentConfig => {
       const customComponent = formCustomComponentConfig[formCustomComponentKey];
       const renderedComponent = this.formCustomComponentDynamicContainer.createComponent(
@@ -265,10 +268,17 @@ export class DossierSupportingProcessStartModalComponent {
   private closeCdsModal(): void {
     this.modalOpen$.next(false);
     this.closeModalEvent.emit();
+    this.reset();
   }
 
   private openCdsModal(): void {
-    this.loadProcessLink();
     this.modalOpen$.next(true);
+  }
+
+  private reset(): void {
+    setTimeout(() => {
+      this.formDefinition$.next(null);
+      this.formFlowInstanceId$.next(null);
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 }
