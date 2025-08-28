@@ -49,7 +49,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       authenticationPluginConfiguration: 'Configuratie authenticatie-plug-in',
       'get-statustypen': 'Statustypen opvragen',
       getStatustypenInformation:
-        'De statustypen behorende bij het zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
+        'De Statustypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
       'get-statustype': 'Statustype opvragen',
       getStatustypeInformation:
         'De statustype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
@@ -67,7 +67,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'Nadat de besluittype is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
       'get-resultaattypen': 'Resultaattypen opvragen',
       getResultaattypenInformation:
-        'De resultaattypen behorende bij het zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
+        'De Resultaattypen behorende bij het Zaaktype worden opgehaald en daarna opgeslagen in een procesvariabele.',
       'get-resultaattype': 'Resultaattype opvragen',
       getResultaattypeInformation:
         'Het resultaattype wordt opgehaald en daarna opgeslagen in een procesvariabele.',
@@ -94,9 +94,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
-      'get-statustypen': 'Retrieve statustypen',
+      'get-statustypen': 'Retrieve Statustypen',
       getStatustypenInformation:
-        'The statustypen are retrieved and then stored in a process variable.',
+        'The Statustypen belonging to the Case type are retrieved and then stored in a process variable.',
       'get-statustype': 'Retrieve statustype',
       getStatustypeInformation:
         'The statustype is retrieved and then stored in a process variable.',
@@ -112,9 +112,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       besluittypeTooltip: 'Description of the nature of the decision.',
       besluitProcessVariableTooltip:
         'After the besluittype is retrieved, it is stored in a process variable with this name.',
-      'get-resultaattypen': 'Retrieve resultaattypen',
+      'get-resultaattypen': 'Retrieve Resultaattypen',
       getResultaattypenInformation:
-        'The resultaattypen are retrieved and then stored in a process variable.',
+        'The Resulttypen belonging to the Case type are retrieved and then stored in a process variable.',
       'get-resultaattype': 'Retrieve resultaattype',
       getResultaattypeInformation:
         'The resultaattype is retrieved and then stored in a process variable.',
@@ -146,7 +146,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'Der Statustypen wird abgerufen und dann in einer Prozessvariablen gespeichert.',
       'get-statustype': 'Statustype anfordern',
       getStatustypeInformation:
-        'Der Statustyp wird abgerufen und dann in einer Prozessvariablen gespeichert.',
+        'Die zum Falltyp gehörenden Statustypen werden abgerufen und anschließend in einer Prozessvariablen gespeichert.',
       statustype: 'Statustype',
       statustypeTooltip: 'Generische Angabe der Art eines Status.',
       processVariable: 'Prozessvariablenname',
@@ -161,7 +161,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'Sobald der besluittype abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
       'get-resultaattypen': 'Resultaattypen anfordern',
       getResultaattypenInformation:
-        'Der resultaattypen wird abgerufen und dann in einer Prozessvariablen gespeichert.',
+        'Die zum Falltyp gehörenden Ergebnistypen werden abgerufen und anschließend in einer Prozessvariablen gespeichert.',
       'get-resultaattype': 'Resultaattype anfordern',
       getResultaattypeInformation:
         'Der resultaattype wird abgerufen und dann in einer Prozessvariablen gespeichert.',
