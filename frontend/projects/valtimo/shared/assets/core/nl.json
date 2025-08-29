@@ -1551,7 +1551,7 @@
     "searchFieldPlaceholder": "Kies een type...",
     "noSearchFieldsConfiguredWarningTitle": "Geen zoekvelden geconfigureerd",
     "deleteSearchField": "Zoekveld verwijderen",
-    "deleteSearchFieldConfirmation": "Weet u zeker dat u deze zoekveld wilt verwijderen?",
+    "deleteSearchFieldConfirmation": "Weet je zeker dat je dit zoekveld wilt verwijderen?",
     "dropdownDataProvider": "Dropdown-databron",
     "dropdownDatabaseDataProvider": "Zet waarde",
     "dropdownJsonFileDataProvider": "Configuratiebestand",
