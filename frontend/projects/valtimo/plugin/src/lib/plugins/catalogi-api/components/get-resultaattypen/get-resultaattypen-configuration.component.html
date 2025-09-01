@@ -23,6 +23,7 @@
   <v-paragraph [margin]="true" [italic]="true">
     {{ 'getResultaattypenInformation' | pluginTranslate: pluginId | async }}
   </v-paragraph>
+
   <v-form (valueChange)="formValueChange($event)">
     <v-input
       name="processVariable"
@@ -36,6 +37,7 @@
       [fullWidth]="true"
     >
     </v-input>
+
     <v-input
       name="zaakTypeUrl"
       [title]="'zaakTypeUrl' | pluginTranslate: pluginId | async"
