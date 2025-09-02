@@ -55,6 +55,7 @@ import com.ritense.case.web.rest.CaseTabResource
 import com.ritense.case.web.rest.TaskListResource
 import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.case_.repository.HiddenCaseListColumnRepository
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
@@ -160,6 +161,7 @@ class CaseAutoConfiguration {
         caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
         documentDefinitionService: DocumentDefinitionService,
         caseDefinitionRepository: CaseDefinitionRepository,
+        hiddenCaseListColumnRepository: HiddenCaseListColumnRepository,
         valueResolverService: ValueResolverService,
         authorizationService: AuthorizationService,
         caseDefinitionChecker: CaseDefinitionChecker,
@@ -169,6 +171,7 @@ class CaseAutoConfiguration {
             caseDefinitionListColumnRepository,
             documentDefinitionService,
             caseDefinitionRepository,
+            hiddenCaseListColumnRepository,
             valueResolverService,
             authorizationService,
             applicationEventPublisher,
