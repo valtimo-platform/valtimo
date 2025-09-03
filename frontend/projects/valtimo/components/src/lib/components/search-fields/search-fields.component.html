@@ -620,9 +620,6 @@
         cdsButton="secondary"
         data-testid="search-fields-save-button"
         (click)="saveSearch()"
-        [disabled]="
-          loading || noSearchFields || (hasValidValues$ | async) === false || inputDisabled
-        "
         type="button"
         id="save"
       >

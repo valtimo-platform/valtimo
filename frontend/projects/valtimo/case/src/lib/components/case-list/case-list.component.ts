@@ -157,7 +157,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     tap(() => (this.loadingStatuses = false))
   );
   public readonly selectedStatusKeys$ = this.statusService.selectedCaseStatuses$;
-  public readonly selectedCaseTags$ = this.caseListCaseTagService.selectedCaseTags$;
+  public readonly selectedCaseTagKeys$ = this.caseListCaseTagService.selectedCaseTagKeys$;
 
   public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$.pipe(
     tap((caseDefinitionKey: string) =>
@@ -335,7 +335,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.assigneeFilter$,
         this.searchFieldValues$,
         this.statusService.selectedCaseStatuses$,
-        this.caseListCaseTagService.selectedCaseTags$,
+        this.caseListCaseTagService.selectedCaseTagKeys$,
         this.listService.forceRefresh$,
         this._hasApiColumnConfig$,
         this.statusService.caseStatuses$,
@@ -349,7 +349,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
           prevAssigneeFilter,
           prevSearchFieldValues,
           prevSelectedStatuses,
-          prevCaseTags,
+          prevCaseTagKeys,
           prevForceRefresh,
         ],
         [
@@ -357,7 +357,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
           currAssigneeFilter,
           currSearchFieldValues,
           currSelectedStatuses,
-          currCaseTags,
+          currCaseTagKeys,
           currForceRefresh,
         ]
       ) =>
@@ -367,7 +367,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
             assignee: prevAssigneeFilter,
             ...prevSearchFieldValues,
             ...prevSelectedStatuses,
-            ...prevCaseTags.map((caseTag: CaseTag) => caseTag.key),
+            ...prevCaseTagKeys,
             forceRefresh: prevForceRefresh,
           },
           {
@@ -375,7 +375,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
             assignee: currAssigneeFilter,
             ...currSearchFieldValues,
             ...currSelectedStatuses,
-            ...currCaseTags.map((caseTag: CaseTag) => caseTag.key),
+            ...currCaseTagKeys,
             forceRefresh: currForceRefresh,
           }
         )
@@ -386,7 +386,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         assigneeFilter,
         searchValues,
         selectedStatuses,
-        selectedCaseTags,
+        selectedCaseTagKeys,
         _,
         hasApiColumnConfig,
         allStatuses,
@@ -395,7 +395,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         const statusKeys: (string | null)[] = selectedStatuses.map((statusKey: string) =>
           statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
         );
-        const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
+        // const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents: !hasApiColumnConfig
@@ -405,7 +405,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   assigneeFilter,
                   this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
-                  caseTagsKeys
+                  selectedCaseTagKeys
                 )
               : this.documentService.getSpecifiedDocumentsSearch(
                   documentSearchRequest,
@@ -413,7 +413,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   assigneeFilter,
                   this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
-                  caseTagsKeys
+                  selectedCaseTagKeys
                 ),
             hasApiColumnConfig: obsApi,
             isSearchResult: of(true),
@@ -429,7 +429,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 undefined,
                 statusKeys,
-                caseTagsKeys
+                selectedCaseTagKeys
               )
             : this.documentService.getSpecifiedDocumentsSearch(
                 documentSearchRequest,
@@ -437,7 +437,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 undefined,
                 statusKeys,
-                caseTagsKeys
+                selectedCaseTagKeys
               ),
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
@@ -718,8 +718,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.statusService.setSelectedStatuses(statusKeys);
   }
 
-  public onSelectedCaseTagsChange(caseTags: CaseTag[]): void {
-    this.caseListCaseTagService.setSelectedCaseTags(caseTags);
+  public onSelectedCaseTagsChange(caseTagKeys: string[]): void {
+    this.caseListCaseTagService.setSelectedCaseTags(caseTagKeys);
   }
 
   public onStartButtonDisableEvent(disabled: boolean): void {
@@ -729,15 +729,12 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public onSaveSearchEvent(event): void {
     combineLatest([
       this.statusService.selectedCaseStatuses$,
-      this.caseListCaseTagService.selectedCaseTags$,
+      this.caseListCaseTagService.selectedCaseTagKeys$,
     ])
       .pipe(take(1))
       .subscribe(([statusKeys, tags]) => {
         this.quickSearchStateService.openModal({
-          ...this.parameterService.getSearchParameter(
-            'casetags',
-            tags.map(tag => tag.key)
-          ),
+          ...this.parameterService.getSearchParameter('casetags', tags),
           ...this.parameterService.getSearchParameter('status', statusKeys),
           ...this.parameterService.getSearchParameter('search', event),
         });
@@ -756,6 +753,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
         });
         this.statusService.setSelectedStatuses(
           this.parameterService.getSearchObject(queryParams['status']) as string[]
+        );
+        this.caseListCaseTagService.setSelectedCaseTags(
+          this.parameterService.getSearchObject(queryParams['casetags']) as string[]
         );
         this.parameterService.setSearchFieldValues(
           this.parameterService.getSearchObject(queryParams['search']) as SearchFieldValues
