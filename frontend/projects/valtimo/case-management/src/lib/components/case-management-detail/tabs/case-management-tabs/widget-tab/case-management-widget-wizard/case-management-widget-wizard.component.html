@@ -72,13 +72,14 @@
       ></valtimo-widget-wizard-style-step>
     </div>
 
-    <div
-      class="valtimo-widget-wizard-step"
-      *ngIf="$currentStep() === WidgetWizardSteps.CONTENT"
-    >
+    <div class="valtimo-widget-wizard-step" *ngIf="$currentStep() === WidgetWizardSteps.CONTENT">
       <valtimo-widget-wizard-content-step
         (contentValidEvent)="onContentValidEvent($event)"
       ></valtimo-widget-wizard-content-step>
+    </div>
+
+    <div class="valtimo-widget-wizard-step" *ngIf="$currentStep() === WidgetWizardSteps.DISPLAY">
+      <valtimo-widget-wizard-display-step></valtimo-widget-wizard-display-step>
     </div>
 
     <div
@@ -118,7 +119,7 @@
       (click)="onNextButtonClick()"
     >
       {{
-        'interface.' + ($currentStep() === WidgetWizardSteps.CONTENT ? 'save' : 'next') | translate
+        'interface.' + (currentStep() === WidgetWizardSteps.DISPLAY ? 'save' : 'next') | translate
       }}
     </button>
   </cds-modal-footer>

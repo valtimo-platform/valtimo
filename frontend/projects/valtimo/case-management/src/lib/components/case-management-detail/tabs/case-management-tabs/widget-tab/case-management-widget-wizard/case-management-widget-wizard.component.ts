@@ -33,6 +33,9 @@ import {combineLatest, map, Observable} from 'rxjs';
 import {WIDGET_STYLE_LABELS, WIDGET_WIDTH_LABELS, WidgetWizardStep} from '../../../../../../models';
 import {WidgetWizardService} from '../../../../../../services';
 import {WIDGET_STEPS} from './steps';
+import {
+  WidgetWizardDisplayStepComponent
+} from './steps/widget-wizard-display-step/widget-wizard-display-step.component';
 
 @Component({
   selector: 'valtimo-case-management-widget-wizard',
@@ -48,6 +51,7 @@ import {WIDGET_STEPS} from './steps';
     ModalModule,
     ButtonModule,
     ...WIDGET_STEPS,
+    WidgetWizardDisplayStepComponent,
   ],
 })
 export class CasManagementWidgetWizardComponent {
@@ -118,6 +122,15 @@ export class CasManagementWidgetWizardComponent {
             !secondaryLabels[WidgetWizardStep.STYLE],
           complete: !!this.widgetWizardService.$widgetContent(),
         },
+        {
+          label: this.translateService.instant('widgetTabManagement.wizard.steps.display'),
+          disabled:
+            !secondaryLabels[WidgetWizardStep.TYPE] ||
+            !secondaryLabels[WidgetWizardStep.WIDTH] ||
+            !secondaryLabels[WidgetWizardStep.STYLE] ||
+            !secondaryLabels[WidgetWizardStep.CONTENT],
+          complete: !!this.widgetWizardService.widgetContent(),
+        },
       ];
     })
   );
@@ -136,7 +149,9 @@ export class CasManagementWidgetWizardComponent {
       case WidgetWizardStep.STYLE:
         return this.widgetWizardService.$widgetStyle() === null;
       case WidgetWizardStep.CONTENT:
-        return this.widgetWizardService.$widgetContent() === null || !this._$contentStepValid();
+        return this.widgetWizardService.widgetContent() === null || !this._contentStepValid();
+      case WidgetWizardStep.DISPLAY:
+        return this.widgetWizardService.widgetDisplay() === null;
       default:
         return true;
     }
@@ -161,8 +176,8 @@ export class CasManagementWidgetWizardComponent {
   }
 
   public onNextButtonClick(): void {
-    if (this.$currentStep() === WidgetWizardStep.CONTENT) {
-      this.closeEvent.emit(this.widgetWizardService.$widgetsConfig());
+    if (this.currentStep() === WidgetWizardStep.DISPLAY) {
+      this.closeEvent.emit(this.widgetWizardService.widgetsConfig());
       this.resetWizard();
       return;
     }
