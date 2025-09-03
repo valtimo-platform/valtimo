@@ -1,0 +1,35 @@
+<cds-modal
+  valtimoCdsModal
+  [open]="$modalOpen()"
+  size="sm"
+  showFooter="true"
+  (close)="closeModal()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>Edit or Add quick search</h3>
+  </cds-modal-header>
+
+  <form cdsModalContent [formGroup]="formGroup">
+    <cds-text-label>
+      {{ 'interface.title' | translate }}
+
+      <input
+        formControlName="title"
+        cdsText
+        type="text"
+        [placeholder]="'interface.title' | translate"
+        [attr.modal-primary-focus]="true"
+      />
+    </cds-text-label>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="closeModal(true)">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

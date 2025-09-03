@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
@@ -24,21 +24,14 @@ import {
   CarbonListNoResultsMessage,
   CarbonPaginationSelection,
   CASES_WITHOUT_STATUS_KEY,
+  IQuickSearchService,
   ListField,
   PageTitleService,
   Pagination,
+  QUICK_SEARCH_SERVICE,
+  QuickSearchStateService,
   ViewType,
 } from '@valtimo/components';
-import {
-  AssigneeFilter,
-  CaseListTab,
-  ConfigService,
-  DefinitionColumn,
-  Direction,
-  SearchField,
-  SearchFieldValues,
-  SortState,
-} from '@valtimo/shared';
 import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,
@@ -50,7 +43,17 @@ import {
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
-import {Tab, Tabs, TagType} from 'carbon-components-angular';
+import {
+  AssigneeFilter,
+  CaseListTab,
+  ConfigService,
+  DefinitionColumn,
+  Direction,
+  SearchField,
+  SearchFieldValues,
+  SortState,
+} from '@valtimo/shared';
+import {Tab, Tabs} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
@@ -68,12 +71,12 @@ import {
   take,
   tap,
 } from 'rxjs';
-
 import {
   CASE_LIST_NO_RESULTS_MESSAGE,
   CASE_LIST_TABLE_TRANSLATIONS,
   DEFAULT_CASE_LIST_TABS,
 } from '../../constants';
+import {CaseListQuickSearchParams} from '../../models';
 import {
   CAN_CREATE_CASE_PERMISSION,
   CAN_EXPORT_CASE_PERMISSION,
@@ -87,6 +90,7 @@ import {
   CaseListAssigneeService,
   CaseListCaseTagService,
   CaseListPaginationService,
+  CaseListQuickSearchService,
   CaseListSearchService,
   CaseListService,
   CaseListStatusService,
@@ -108,6 +112,10 @@ import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.c
     CaseListStatusService,
     CaseListCaseTagService,
     CaseExportService,
+    {
+      provide: QUICK_SEARCH_SERVICE,
+      useClass: CaseListQuickSearchService,
+    },
   ],
 })
 export class CaseListComponent implements OnInit, OnDestroy {
@@ -151,7 +159,11 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly selectedStatuses$ = this.statusService.selectedCaseStatuses$;
   public readonly selectedCaseTags$ = this.caseListCaseTagService.selectedCaseTags$;
 
-  public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$;
+  public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$.pipe(
+    tap((caseDefinitionKey: string) =>
+      this.caseListQuickSearchService.initParams(caseDefinitionKey)
+    )
+  );
 
   public readonly selectedCaseIds$ = new BehaviorSubject<string[]>([]);
 
@@ -549,7 +561,13 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly statusService: CaseListStatusService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
+<<<<<<< HEAD
     private readonly caseExportService: CaseExportService
+=======
+    private readonly quickSearchStateService: QuickSearchStateService,
+    @Inject(QUICK_SEARCH_SERVICE)
+    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
+>>>>>>> c44502e34 (Add base functionality)
   ) {}
 
   public ngOnInit(): void {
@@ -706,6 +724,36 @@ export class CaseListComponent implements OnInit, OnDestroy {
 
   public onStartButtonDisableEvent(disabled: boolean): void {
     this.disableStartButton$.next(disabled);
+  }
+
+  public onSaveSearchEvent(event): void {
+    combineLatest([
+      this.statusService.selectedCaseStatuses$,
+      this.caseListCaseTagService.selectedCaseTags$,
+    ])
+      .pipe(take(1))
+      .subscribe(([statuses, tags]) => {
+        this.quickSearchStateService.openModal({
+          ...this.parameterService.getSearchParameter(
+            'casetags',
+            tags.map(tag => tag.key)
+          ),
+          ...this.parameterService.getSearchParameter(
+            'status',
+            statuses.map(status => status.key)
+          ),
+          ...this.parameterService.getSearchParameter('search', event),
+        });
+      });
+  }
+
+  public onQuickSearchEvent(queryPath: string): void {
+    combineLatest([this.route.queryParams, this.caseDefinitionKey$])
+      .pipe(take(1))
+      .subscribe(([urlParams, caseDefinitionKey]) => {
+        const queryParams = {...urlParams, ...Object.fromEntries(new URLSearchParams(queryPath))};
+        this.router.navigate([`/cases/${caseDefinitionKey}`], {queryParams});
+      });
   }
 
   private openCaseDefinitionKeySubscription(): void {

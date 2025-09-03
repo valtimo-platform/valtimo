@@ -1,0 +1,24 @@
+<ng-container
+  *ngIf="{paramsToSave: paramsToSave$ | async, quickSearchItems: quickSearchItems$ | async} as obs"
+>
+  @for (item of obs.quickSearchItems; track item.title) {
+    <cds-tag-filter type="blue" (click)="onItemClick(item)" (close)="deleteItem(item)">
+      {{ item.title }}
+    </cds-tag-filter>
+  }
+
+  <valtimo-quick-search-modal
+    [prefillTitle]="$prefillTitle()"
+    (closeEvent)="onModalCloseEvent($event, obs.paramsToSave)"
+  ></valtimo-quick-search-modal>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="Are you sure you want to delete this quickSearch?"
+    [outputOnConfirm]="$itemToDelete()"
+    [showModalSubject$]="showDeleteModal$"
+    titleTranslationKey="interface.delete"
+    (confirmEvent)="onDeleteConfirm($event)"
+  ></valtimo-confirmation-modal>
+</ng-container>

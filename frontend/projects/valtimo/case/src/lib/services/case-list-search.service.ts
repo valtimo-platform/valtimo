@@ -41,6 +41,7 @@ export class CaseListSearchService {
   ) {}
 
   public search(searchFieldValues: SearchFieldValues): void {
+    console.log({searchFieldValues});
     this.caseParameterService.setSearchFieldValues(searchFieldValues || {});
     this.caseParameterService.setSearchParameters(searchFieldValues);
     this.caseListService.checkRefresh();
