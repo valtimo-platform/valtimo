@@ -47,9 +47,11 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   @Input() public defaultValues!: SearchFieldValues;
   @Input() public inputDisabled = false;
   @Input() public externalSearchField = false;
+  @Input() public canSaveSearch = false;
 
   @Output() public doSearch: EventEmitter<SearchFieldValues> =
     new EventEmitter<SearchFieldValues>();
+  @Output() public saveSearchEvent = new EventEmitter<SearchFieldValues>();
 
   public readonly searchFields$ = new BehaviorSubject<Array<SearchField>>([]);
   public readonly values$ = new BehaviorSubject<SearchFieldValues>({});
@@ -176,6 +178,10 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  public saveSearch(): void {
+    this.values$.pipe(take(1)).subscribe(values => this.saveSearchEvent.emit(values));
+  }
+
   private getSingleValue(value: any, isDateTime?: boolean): any {
     if (isDateTime) {
       return new Date(value).toISOString();
@@ -187,7 +193,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    return value;
+    return value
   }
 
   private openCaseDefinitionKeySubscription(): void {
