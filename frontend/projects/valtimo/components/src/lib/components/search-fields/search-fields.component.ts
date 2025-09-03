@@ -44,7 +44,14 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
   @Input() public setValuesSubject$!: Observable<SearchFieldValues>;
   @Input() public clearValuesSubject$!: Observable<null>;
-  @Input() public defaultValues!: SearchFieldValues;
+  private _defaultValues: SearchFieldValues;
+  @Input() public set defaultValues(value: SearchFieldValues) {
+    this._defaultValues = value;
+    this.setDefaultValues();
+  }
+  public get defaultValues(): SearchFieldValues {
+    return this._defaultValues;
+  }
   @Input() public inputDisabled = false;
   @Input() public externalSearchField = false;
   @Input() public canSaveSearch = false;
