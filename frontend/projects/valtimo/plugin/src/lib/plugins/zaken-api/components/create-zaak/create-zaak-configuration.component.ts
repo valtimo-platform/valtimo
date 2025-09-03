@@ -16,25 +16,17 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  Observable,
-  Subscription,
-  switchMap,
-  take,
-  tap,
-} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription, switchMap, take, tap,} from 'rxjs';
 import {CreateZaakConfig, InputOption} from '../../models';
 import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
 import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
 import {CreateZaakExtraProperties, CreateZaakExtraPropertyOptions} from '../../models/create-zaak-properties';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import {GEOMETRY_TYPES} from '../../models/geometry-types';
+import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
 
 @Component({
   standalone: false,
@@ -46,19 +38,18 @@ import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 export class CreateZaakConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() save$: Observable<void>;
-  @Input() disabled$: Observable<boolean>;
-  @Input() set pluginId(value: string) {
-    this.pluginId$.next(value);
-  }
   @Input() context$: Observable<[ManagementContext, CaseManagementParams]>;
-
+  @Input() disabled$: Observable<boolean>;
+  @Input() pluginId: string;
+  @Input() save$: Observable<void>;
   @Input() prefillConfiguration$: Observable<CreateZaakConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakConfig> = new EventEmitter<CreateZaakConfig>();
 
   public readonly propertyOptions: string[] = Object.values(CreateZaakExtraPropertyOptions);
   public readonly propertyList: Array<CreateZaakExtraProperties> = [];
+  public readonly geometryTypes: string[] = GEOMETRY_TYPES;
+  public readonly paymentIndicationTypes: string[] = PAYMENT_INDICATION_TYPES;
 
   public readonly pluginId$ = new BehaviorSubject<string>('');
   public readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
@@ -130,6 +121,7 @@ export class CreateZaakConfigurationComponent
   protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';
   protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
 
+  private readonly DATA_TEST_ID_PREFIX: string = 'create-zaak-property_';
   private readonly _formValue$ = new BehaviorSubject<CreateZaakConfig | null>(null);
   private readonly _properties = new Map<CreateZaakExtraProperties, string>();
   private saveSubscription!: Subscription;
@@ -149,7 +141,7 @@ export class CreateZaakConfigurationComponent
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
       CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property])
-        .forEach(property => this.addCaseProperty(property));
+        .forEach(property => this.addProperty(property));
     });
   }
 
@@ -185,6 +177,10 @@ export class CreateZaakConfigurationComponent
     return false;
   }
 
+  public prefillValueFor(property: string, prefill: CreateZaakConfig): string | null {
+    return (prefill != null) ? prefill[property] : null;
+  }
+
   public translationKeyFor(property: string): string {
     return (property === 'description' ? 'beschrijving' : property);
   }
@@ -193,14 +189,14 @@ export class CreateZaakConfigurationComponent
     return (property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property));
   }
 
-  public addCaseProperty(property: CreateZaakExtraProperties): void {
+  public addProperty(property: CreateZaakExtraProperties): void {
     // only add the property to the list if it is not in the list
     if (this.propertyList.indexOf(property) == -1) {
       this.propertyList.push(property);
     }
   }
 
-  public removeCaseProperty(property: CreateZaakExtraProperties): void {
+  public removeProperty(property: CreateZaakExtraProperties): void {
     // only remove the property from the list if it is in the list
     if (this.propertyList.indexOf(property) != -1) {
       this.propertyList.splice(this.propertyList.indexOf(property), 1);
@@ -222,6 +218,19 @@ export class CreateZaakConfigurationComponent
       .subscribe(formValue => {
         this.onFormValueChanged(formValue);
       });
+  }
+
+  public dataTestIdFor(property: CreateZaakExtraProperties): string {
+    return this.DATA_TEST_ID_PREFIX + property
+  }
+
+  public presetPropertyWithValue(property: CreateZaakExtraProperties, value: string): void {
+    const input =
+      document.querySelector<HTMLInputElement>(`[data-testid="${this.DATA_TEST_ID_PREFIX + property}"]`);
+    if (input) {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    }
   }
 
   private handleValid(formValue: CreateZaakConfig): void {
