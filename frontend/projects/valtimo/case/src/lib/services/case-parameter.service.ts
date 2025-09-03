@@ -45,9 +45,8 @@ export class CaseParameterService implements OnDestroy {
   public get querySearchParams$(): Observable<SearchFieldValues> {
     return this.route.queryParams.pipe(
       map(params => {
-        if (params.search) {
-          return JSON.parse(atob(params.search)) as SearchFieldValues;
-        }
+        if (params.search) return JSON.parse(atob(params.search)) as SearchFieldValues;
+
         return {};
       }),
       distinctUntilChanged(
@@ -260,7 +259,7 @@ export class CaseParameterService implements OnDestroy {
     return urlTree.toString();
   }
 
-  private setCaseParameters(): void {
+  public setCaseParameters(): void {
     combineLatest([
       this.queryPaginationParams$,
       this.querySearchParams$,

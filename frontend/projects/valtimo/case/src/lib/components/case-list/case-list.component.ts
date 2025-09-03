@@ -156,7 +156,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly caseTags$ = this.caseListCaseTagService.caseTags$.pipe(
     tap(() => (this.loadingStatuses = false))
   );
-  public readonly selectedStatuses$ = this.statusService.selectedCaseStatuses$;
+  public readonly selectedStatusKeys$ = this.statusService.selectedCaseStatuses$;
   public readonly selectedCaseTags$ = this.caseListCaseTagService.selectedCaseTags$;
 
   public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$.pipe(
@@ -366,7 +366,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
             ...prevSearchRequest,
             assignee: prevAssigneeFilter,
             ...prevSearchFieldValues,
-            ...prevSelectedStatuses.map((status: InternalCaseStatus) => status.key),
+            ...prevSelectedStatuses,
             ...prevCaseTags.map((caseTag: CaseTag) => caseTag.key),
             forceRefresh: prevForceRefresh,
           },
@@ -374,7 +374,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
             ...currSearchRequest,
             assignee: currAssigneeFilter,
             ...currSearchFieldValues,
-            ...currSelectedStatuses.map((status: InternalCaseStatus) => status.key),
+            ...currSelectedStatuses,
             ...currCaseTags.map((caseTag: CaseTag) => caseTag.key),
             forceRefresh: currForceRefresh,
           }
@@ -392,8 +392,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
         allStatuses,
       ]) => {
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
-        const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
-          status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
+        const statusKeys: (string | null)[] = selectedStatuses.map((statusKey: string) =>
+          statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
         );
         const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
@@ -714,8 +714,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.listService.forceRefresh();
   }
 
-  public onSelectedStatusesChange(statuses: InternalCaseStatus[]): void {
-    this.statusService.setSelectedStatuses(statuses);
+  public onSelectedStatusesChange(statusKeys: string[]): void {
+    this.statusService.setSelectedStatuses(statusKeys);
   }
 
   public onSelectedCaseTagsChange(caseTags: CaseTag[]): void {
@@ -732,16 +732,13 @@ export class CaseListComponent implements OnInit, OnDestroy {
       this.caseListCaseTagService.selectedCaseTags$,
     ])
       .pipe(take(1))
-      .subscribe(([statuses, tags]) => {
+      .subscribe(([statusKeys, tags]) => {
         this.quickSearchStateService.openModal({
           ...this.parameterService.getSearchParameter(
             'casetags',
             tags.map(tag => tag.key)
           ),
-          ...this.parameterService.getSearchParameter(
-            'status',
-            statuses.map(status => status.key)
-          ),
+          ...this.parameterService.getSearchParameter('status', statusKeys),
           ...this.parameterService.getSearchParameter('search', event),
         });
       });
@@ -752,7 +749,15 @@ export class CaseListComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(([urlParams, caseDefinitionKey]) => {
         const queryParams = {...urlParams, ...Object.fromEntries(new URLSearchParams(queryPath))};
-        this.router.navigate([`/cases/${caseDefinitionKey}`], {queryParams});
+        this.router.navigate([`/cases/${caseDefinitionKey}`], {
+          queryParams,
+          replaceUrl: true,
+          queryParamsHandling: 'replace',
+        });
+        this.statusService.setSelectedStatuses(
+          this.parameterService.getSearchObject(queryParams['status']) as string[]
+        );
+        // this.parameterService.setCaseParameters();
       });
   }
 
