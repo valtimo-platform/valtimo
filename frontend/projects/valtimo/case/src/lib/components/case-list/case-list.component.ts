@@ -757,7 +757,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.statusService.setSelectedStatuses(
           this.parameterService.getSearchObject(queryParams['status']) as string[]
         );
-        // this.parameterService.setCaseParameters();
+        this.parameterService.setSearchFieldValues(
+          this.parameterService.getSearchObject(queryParams['search']) as SearchFieldValues
+        );
       });
   }
 
