@@ -1,7 +1,13 @@
 import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Inject, Output, signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {ContextMenuModule, DialogModule, IconModule, IconService, TagModule} from 'carbon-components-angular';
+import {
+  ContextMenuModule,
+  DialogModule,
+  IconModule,
+  IconService,
+  TagModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, switchMap} from 'rxjs';
 import {QUICK_SEARCH_SERVICE} from '../../constants/quick-search.constants';
 import {IQuickSearchService} from '../../interfaces';
@@ -23,7 +29,7 @@ import {TrashCan16} from '@carbon/icons';
     TagModule,
     ConfirmationModalModule,
     ContextMenuModule,
-    IconModule
+    IconModule,
   ],
 })
 export class QuickSearchComponent {
@@ -35,8 +41,6 @@ export class QuickSearchComponent {
   public readonly quickSearchItems$ = this._refresh$.pipe(
     switchMap(() => this.quickSearchService.getQuickSearchItems())
   );
-  public readonly $prefillTitle = signal<string | null>(null);
-  private readonly _$prefillItem = signal<QuickSearchItem | null>(null);
   public readonly paramsToSave$ = this.quickSearchStateService.paramsToSave$;
 
   @Output() public readonly quickSearchEvent = new EventEmitter<string>();
@@ -47,18 +51,12 @@ export class QuickSearchComponent {
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly quickSearchService: IQuickSearchService<any>
   ) {
-    this.iconService.register(TrashCan16)
+    this.iconService.register(TrashCan16);
   }
 
   public deleteItem(item: QuickSearchItem): void {
     this.$itemToDelete.set(item);
     this.showDeleteModal$.next(true);
-  }
-
-  public editItem(item: QuickSearchItem): void {
-    this.$prefillTitle.set(item.title);
-    this._$prefillItem.set(item);
-    this.quickSearchStateService.openModal();
   }
 
   public onDeleteConfirm(item: QuickSearchItem): void {
@@ -78,18 +76,6 @@ export class QuickSearchComponent {
     this.quickSearchStateService.closeModal();
 
     if (!title) return;
-
-    const prefillItem = this._$prefillItem();
-    if (!!prefillItem) {
-      this.quickSearchService
-        .editQuickSearchItem({
-          ...prefillItem,
-          title,
-        })
-        .subscribe(() => this._refresh$.next(null));
-
-      return;
-    }
 
     const queryPath = new URLSearchParams(paramsToSave ?? {}).toString();
     this.quickSearchService

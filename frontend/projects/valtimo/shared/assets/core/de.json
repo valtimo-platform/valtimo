@@ -1924,5 +1924,10 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "quickSearch": {
+    "addItem": "Schnellsuche-Element hinzufügen",
+    "deleteModalTitle": "Schnellsuche-Element löschen",
+    "deleteModalContent": "Sind Sie sicher, dass Sie dieses Schnellsuche-Element löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden."
   }
 }

@@ -1,6 +1,13 @@
-<cds-modal valtimoCdsModal [open]="$modalOpen()" size="sm" showFooter="true" (close)="closeModal()">
+<cds-modal
+  valtimoCdsModal
+  [minContentHeight]="0"
+  [open]="$modalOpen()"
+  size="sm"
+  showFooter="true"
+  (close)="closeModal()"
+>
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
-    <h3 cdsModalHeaderHeading>Edit or Add quick search</h3>
+    <h3 cdsModalHeaderHeading>{{ 'quickSearch.addItem' | translate }}</h3>
   </cds-modal-header>
 
   <form cdsModalContent [formGroup]="formGroup">

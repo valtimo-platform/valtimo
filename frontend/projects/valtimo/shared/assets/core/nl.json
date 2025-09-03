@@ -1939,5 +1939,10 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "quickSearch": {
+    "addItem": "Snelzoekitem toevoegen",
+    "deleteModalTitle": "Snelzoekitem verwijderen",
+    "deleteModalContent": "Weet u zeker dat u dit snelzoekitem wilt verwijderen? Deze wijziging kan niet ongedaan worden gemaakt."
   }
 }

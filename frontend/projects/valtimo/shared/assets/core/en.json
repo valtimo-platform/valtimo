@@ -1906,5 +1906,10 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "quickSearch": {
+    "addItem": "Add quick search item",
+    "deleteModalTitle": "Delete quick search item",
+    "deleteModalContent": "Are you sure you want to delete this quick search item? This change cannot be undone"
   }
 }
