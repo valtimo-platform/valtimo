@@ -1,15 +1,15 @@
 import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Inject, Output, signal} from '@angular/core';
-import {Edit16, TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {ContextMenuModule, IconModule, IconService, TagModule} from 'carbon-components-angular';
-import {BehaviorSubject, switchMap, tap} from 'rxjs';
+import {ContextMenuModule, DialogModule, IconModule, IconService, TagModule} from 'carbon-components-angular';
+import {BehaviorSubject, switchMap} from 'rxjs';
 import {QUICK_SEARCH_SERVICE} from '../../constants/quick-search.constants';
 import {IQuickSearchService} from '../../interfaces';
 import {QuickSearchItem} from '../../models';
 import {QuickSearchStateService} from '../../services';
 import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
 import {QuickSearchModal} from './modal/quick-search-modal.component';
+import {TrashCan16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-quick-search',
@@ -23,7 +23,7 @@ import {QuickSearchModal} from './modal/quick-search-modal.component';
     TagModule,
     ConfirmationModalModule,
     ContextMenuModule,
-    IconModule,
+    IconModule
   ],
 })
 export class QuickSearchComponent {
@@ -42,12 +42,12 @@ export class QuickSearchComponent {
   @Output() public readonly quickSearchEvent = new EventEmitter<string>();
 
   constructor(
-    private readonly quickSearchStateService: QuickSearchStateService,
     private readonly iconService: IconService,
+    private readonly quickSearchStateService: QuickSearchStateService,
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly quickSearchService: IQuickSearchService<any>
   ) {
-    this.iconService.registerAll([Edit16, TrashCan16]);
+    this.iconService.register(TrashCan16)
   }
 
   public deleteItem(item: QuickSearchItem): void {

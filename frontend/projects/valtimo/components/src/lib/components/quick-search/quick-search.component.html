@@ -2,9 +2,11 @@
   *ngIf="{paramsToSave: paramsToSave$ | async, quickSearchItems: quickSearchItems$ | async} as obs"
 >
   @for (item of obs.quickSearchItems; track item.title) {
-    <cds-tag-filter type="blue" (click)="onItemClick(item)" (close)="deleteItem(item)">
+    <cds-tag type="blue" (click)="onItemClick(item)">
       {{ item.title }}
-    </cds-tag-filter>
+
+      <svg cdsTagIcon cdsIcon="trash-can" size="16" (click)="deleteItem(item)"></svg>
+    </cds-tag>
   }
 
   <valtimo-quick-search-modal
