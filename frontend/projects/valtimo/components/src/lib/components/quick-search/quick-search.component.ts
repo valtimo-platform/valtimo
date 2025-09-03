@@ -3,7 +3,7 @@ import {Component, EventEmitter, Inject, Output, signal} from '@angular/core';
 import {Edit16, TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {ContextMenuModule, IconModule, IconService, TagModule} from 'carbon-components-angular';
-import {BehaviorSubject, switchMap} from 'rxjs';
+import {BehaviorSubject, switchMap, tap} from 'rxjs';
 import {QUICK_SEARCH_SERVICE} from '../../constants/quick-search.constants';
 import {IQuickSearchService} from '../../interfaces';
 import {QuickSearchItem} from '../../models';
