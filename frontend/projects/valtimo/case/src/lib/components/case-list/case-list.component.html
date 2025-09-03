@@ -26,7 +26,7 @@
     statuses: statuses$ | async,
     caseTags: caseTags$ | async,
     selectedStatusKeys: selectedStatusKeys$ | async,
-    selectedCaseTags: selectedCaseTags$ | async,
+    selectedCaseTagKeys: selectedCaseTagKeys$ | async,
     showStatusSelector: showStatusSelector$ | async,
     showCaseTagsSelector: showCaseTagsSelector$ | async,
     loaded:
@@ -80,7 +80,7 @@
     <valtimo-case-tags-selector
       *ngIf="obs.showCaseTagsSelector"
       [caseTags]="obs.caseTags"
-      [selectedCaseTags]="obs.selectedCaseTags"
+      [selectedCaseTagKeys]="obs.selectedCaseTagKeys"
       [disabled]="!obs.loaded"
       (selectedCaseTagsChangeEvent)="onSelectedCaseTagsChange($event)"
     ></valtimo-case-tags-selector>
