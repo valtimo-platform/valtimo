@@ -10,17 +10,16 @@
   }
 
   <valtimo-quick-search-modal
-    [prefillTitle]="$prefillTitle()"
     (closeEvent)="onModalCloseEvent($event, obs.paramsToSave)"
   ></valtimo-quick-search-modal>
 
   <valtimo-confirmation-modal
     confirmButtonTextTranslationKey="interface.delete"
     confirmButtonType="danger"
-    contentTranslationKey="Are you sure you want to delete this quickSearch?"
+    contentTranslationKey="quickSearch.deleteModalContent"
     [outputOnConfirm]="$itemToDelete()"
     [showModalSubject$]="showDeleteModal$"
-    titleTranslationKey="interface.delete"
+    titleTranslationKey="quickSearch.deleteModalTitle"
     (confirmEvent)="onDeleteConfirm($event)"
   ></valtimo-confirmation-modal>
 </ng-container>
