@@ -20,7 +20,7 @@
     valuePathListItems: valuePathListItems$ | async,
     loadingValuePathItems: loadingValuePathItems$ | async,
     disabled: disabled$ | async,
-    showToggle: showToggle$ | async
+    showToggle: showToggle$ | async,
   } as obs"
 >
   <v-input-label [required]="required" [title]="label" [tooltip]="tooltip"> </v-input-label>
@@ -28,8 +28,8 @@
   <form
     [formGroup]="formGroup"
     [ngClass]="{
-    'value-path-selector__form--case-def-input':
-       showCaseDefinitionSelector && obs.inputModeIsDropdown  && !obs.showToggle
+      'value-path-selector__form--case-def-input':
+        showCaseDefinitionSelector && obs.inputModeIsDropdown && !obs.showToggle,
     }"
     class="value-path-selector__form"
   >
