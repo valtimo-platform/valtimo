@@ -18,5 +18,11 @@ export const CreateZaakExtraPropertyOptions = [
   'description',
   'plannedEndDate',
   'finalDeliveryDate',
+  'explanation',
+  'communicationChannel',
+  'paymentIndication',
+  'caseGeometry',
+  'mainCase',
+  'relevantOtherCases'
 ] as const;
 export type CreateZaakExtraProperties = (typeof CreateZaakExtraPropertyOptions)[number];
