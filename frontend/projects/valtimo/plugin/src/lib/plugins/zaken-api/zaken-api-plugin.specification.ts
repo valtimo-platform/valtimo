@@ -32,15 +32,9 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {
-  CreateOrganisatorischeEenheidZaakRolComponent
-} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
-import {
-  CreateMedewerkerZaakRolComponent
-} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
-import {
-  CreateVestigingZaakRolComponent
-} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
+import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
+import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
+import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
@@ -66,7 +60,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
-    'patch-zaak': PatchZaakConfigurationComponent
+    'patch-zaak': PatchZaakConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -156,7 +150,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: 'Het burgerservicenummer van de initiator (Numeriek, max 9 tekens)',
       anpIdentificatieTooltip:
         'Het door de gemeente uitgegeven unieke nummer voor een ander natuurlijk persoon. (Max. 17 tekens)',
-      inpA_nummerTooltip: 'Het administratienummer van de persoon, bedoeld in de Wet BRP. (Numeriek, max. 10 tekens)',
+      inpA_nummerTooltip:
+        'Het administratienummer van de persoon, bedoeld in de Wet BRP. (Numeriek, max. 10 tekens)',
       'set-zaakstatus': 'Zaakstatus aanmaken',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL-referentie naar het statustype.',
@@ -189,16 +184,22 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'option-bijdrage':
         'Aan het bereiken van de uitkomst van de andere zaak levert de onderhanden zaak een bijdrage.',
       identificatie: 'Identificatie',
-      identificatieMedewerkerTooltip: 'Een korte unieke aanduiding van de medewerker. (Max. 24 tekens)',
-      identificatieOrganisatorischeEenheidTooltip: 'Een korte identificatie van de organisatorische eenheid. (Max. 24 tekens)',
+      identificatieMedewerkerTooltip:
+        'Een korte unieke aanduiding van de medewerker. (Max. 24 tekens)',
+      identificatieOrganisatorischeEenheidTooltip:
+        'Een korte identificatie van de organisatorische eenheid. (Max. 24 tekens)',
       voorletters: 'Voorletters',
-      voorlettersTooltip: 'De verzameling letters die gevormd wordt door de eerste letter van alle in volgorde voorkomende voornamen. (Max. 20 tekens)',
+      voorlettersTooltip:
+        'De verzameling letters die gevormd wordt door de eerste letter van alle in volgorde voorkomende voornamen. (Max. 20 tekens)',
       achternaam: 'Achternaam',
-      achternaamTooltip: 'De achternaam zoals de medewerker die in het dagelijkse verkeer gebruikt. (Max. 200 tekens)',
+      achternaamTooltip:
+        'De achternaam zoals de medewerker die in het dagelijkse verkeer gebruikt. (Max. 200 tekens)',
       voorvoegselAchternaam: 'Achternaam voorvoegsel',
-      voorvoegselAchternaamTooltip: 'Deel van de geslachtsnaam dat voorkomt in Tabel 36 (GBA), voorvoegseltabel, en door een spatie van de geslachtsnaam is. (Max. 10 tekens)',
+      voorvoegselAchternaamTooltip:
+        'Deel van de geslachtsnaam dat voorkomt in Tabel 36 (GBA), voorvoegseltabel, en door een spatie van de geslachtsnaam is. (Max. 10 tekens)',
       afwijkendeNaamBetrokkene: 'Afwijkende naam betrokkene',
-      afwijkendeNaamBetrokkeneTooltip: 'De naam van de betrokkene waaronder deze in relatie tot de zaak aangesproken wil worden. (Max. 625 tekens)',
+      afwijkendeNaamBetrokkeneTooltip:
+        'De naam van de betrokkene waaronder deze in relatie tot de zaak aangesproken wil worden. (Max. 625 tekens)',
       indicatieMachtiging: 'Indicatie machtiging',
       indicatieMachtigingTooltip: 'Het type machtiging.',
       nvt: 'N.v.t',
@@ -215,7 +216,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       vestigingsNummer: 'Vestigingsnummer',
       vestigingsNummerTooltip: 'Een korte unieke aanduiding van de Vestiging. (Max. 24 tekens)',
       'patch-zaak': 'Zaak bijwerken',
-      patchZaakInformation: 'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
+      patchZaakInformation:
+        'Deze actie maakt het mogelijk eigenschappen van de Zaak in de Zaken API gekoppeld aan het dossier bij te werken.',
       addPatchZaakProperty: 'Voeg parameter toe',
       dateformatTooltip:
         'Een datum in formaat van yyyy-mm-dd. Kan ook een verwijzing zijn naar het document of process, bijvoorbeeld doc:customer/startDatum of pv:startDatum',
@@ -343,7 +345,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: "The initiator's social security number",
       anpIdentificatieTooltip:
         'The unique number issued by the municipality for another natural person. (Max. 17 characters)',
-      inpA_nummerTooltip: 'The administration number of the person, as referred to in the Wet BRP. (Numeric, max. 10 characters)',
+      inpA_nummerTooltip:
+        'The administration number of the person, as referred to in the Wet BRP. (Numeric, max. 10 characters)',
       'set-zaakstatus': 'Create zaakstatus',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL reference to the status type.',
@@ -374,16 +377,22 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'option-onderwerp': 'The other Zaak is relevant to or the subject of the current Zaak.',
       'option-bijdrage': 'The current Zaak contributes to the outcome of the other Zaak.',
       identificatie: 'Identification',
-      identificatieMedewerkerTooltip: 'A short unique designation of the employee. (Max. 24 characters)',
-      identificatieOrganisatorischeEenheidTooltip: 'A short identification of the organizational unit. (Max. 24 characters)',
+      identificatieMedewerkerTooltip:
+        'A short unique designation of the employee. (Max. 24 characters)',
+      identificatieOrganisatorischeEenheidTooltip:
+        'A short identification of the organizational unit. (Max. 24 characters)',
       voorletters: 'Initials',
-      voorlettersTooltip: 'The collection of letters formed by the first letter of all forenames in order. (Max. 20 characters)',
+      voorlettersTooltip:
+        'The collection of letters formed by the first letter of all forenames in order. (Max. 20 characters)',
       achternaam: 'Last name',
-      achternaamTooltip: 'The last name as used by the employee in daily life. (Max. 200 characters)',
+      achternaamTooltip:
+        'The last name as used by the employee in daily life. (Max. 200 characters)',
       voorvoegselAchternaam: 'Prefix to last name',
-      voorvoegselAchternaamTooltip: 'Part of the genus name that appears in Table 36 (GBA), prefix table, and is separated from the genus name by a space. (Max. 10 characters)',
+      voorvoegselAchternaamTooltip:
+        'Part of the genus name that appears in Table 36 (GBA), prefix table, and is separated from the genus name by a space. (Max. 10 characters)',
       afwijkendeNaamBetrokkene: 'Alternative name of the person involved',
-      afwijkendeNaamBetrokkeneTooltip: 'The name of the person involved under which they wish to be addressed in relation to the case. (Max. 625 characters)',
+      afwijkendeNaamBetrokkeneTooltip:
+        'The name of the person involved under which they wish to be addressed in relation to the case. (Max. 625 characters)',
       indicatieMachtiging: 'Authorization indication',
       indicatieMachtigingTooltip: 'The type that represents the authorization indication',
       nvt: 'N/A',
@@ -400,7 +409,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       vestigingsNummer: 'Branch number',
       vestigingsNummerTooltip: 'A short unique designation of the branch. (Max. 24 characters)',
       'patch-zaak': 'Update zaak',
-      patchZaakInformation: 'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
+      patchZaakInformation:
+        'This action allows you to update properties of a Zaak in the Zaken API which is linked to the case.',
       dateformatTooltip:
         'A date in the format of yyyy-mm-dd. Can also be a reference to the document or process, for example doc:customer/startDate or pv:startDate',
       addPatchZaakProperty: 'Add property',
@@ -528,7 +538,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inpBsnTooltip: 'Die Sozialversicherungsnummer des Initiators',
       anpIdentificatieTooltip:
         'Die eindeutige Nummer, die von der Gemeinde für eine andere natürliche Person vergeben wird. (Max. 17 Zeichen)',
-      inpA_nummerTooltip: 'Die Verwaltungsnummer der Person im Sinne des Wet BRP. (Numerisch, max. 10 Zeichen)',
+      inpA_nummerTooltip:
+        'Die Verwaltungsnummer der Person im Sinne des Wet BRP. (Numerisch, max. 10 Zeichen)',
       'set-zaakstatus': 'Fallstatus erstellen',
       statustypeUrl: 'URL des Zaakstatustyps',
       statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',
@@ -559,16 +570,22 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'option-onderwerp': 'Der andere Zaak ist relevant für bzw. Gegenstand des aktuellen Zaak.',
       'option-bijdrage': 'Der aktuelle Zaak trägt zum Ergebnis des anderen Zaak bei.',
       identificatie: 'Identifikation',
-      identificatieMedewerkerTooltip: 'Eine kurze, eindeutige Bezeichnung des Mitarbeiters. (Max. 24 Zeichen)',
-      identificatieOrganisatorischeEenheidTooltip: 'Eine kurze Identifikation der organisatorischen Einheit. (Max. 24 Zeichen)',
+      identificatieMedewerkerTooltip:
+        'Eine kurze, eindeutige Bezeichnung des Mitarbeiters. (Max. 24 Zeichen)',
+      identificatieOrganisatorischeEenheidTooltip:
+        'Eine kurze Identifikation der organisatorischen Einheit. (Max. 24 Zeichen)',
       voorletters: 'Initialen',
-      voorlettersTooltip: 'Die Sammlung von Buchstaben, die durch den ersten Buchstaben aller in Reihenfolge vorkommenden Vornamen gebildet wird.',
+      voorlettersTooltip:
+        'Die Sammlung von Buchstaben, die durch den ersten Buchstaben aller in Reihenfolge vorkommenden Vornamen gebildet wird.',
       achternaam: 'Nachname',
-      achternaamTooltip: 'Der Nachname, wie ihn der Mitarbeiter im täglichen Verkehr verwendet. (Max. 200 Zeichen)',
+      achternaamTooltip:
+        'Der Nachname, wie ihn der Mitarbeiter im täglichen Verkehr verwendet. (Max. 200 Zeichen)',
       voorvoegselAchternaam: 'Nachnamenspräfix',
-      voorvoegselAchternaamTooltip: 'Teil des Gattungsnamens, der in Tabelle 36 (GBA), Präfixtabelle, erscheint und durch ein Leerzeichen vom Gattungsnamen getrennt ist. (Max. 10 Zeichen)',
+      voorvoegselAchternaamTooltip:
+        'Teil des Gattungsnamens, der in Tabelle 36 (GBA), Präfixtabelle, erscheint und durch ein Leerzeichen vom Gattungsnamen getrennt ist. (Max. 10 Zeichen)',
       afwijkendeNaamBetrokkene: 'Abweichender Name der betroffenen Person',
-      afwijkendeNaamBetrokkeneTooltip: 'Der Name der betroffenen Person, unter dem sie im Zusammenhang mit dem Vorgang angesprochen werden möchte. (Max. 625 Zeichen)',
+      afwijkendeNaamBetrokkeneTooltip:
+        'Der Name der betroffenen Person, unter dem sie im Zusammenhang mit dem Vorgang angesprochen werden möchte. (Max. 625 Zeichen)',
       indicatieMachtiging: 'Vollmachtsanzeige',
       indicatieMachtigingTooltip: 'Der Typ, der die Vollmachtsanzeige darstellt',
       nvt: 'Nicht zutreffend',
@@ -581,11 +598,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
       handelsnaam: 'Handelsname',
       handelsnaamTooltip: 'Der Name der Niederlassung, in der das Geschäft betrieben wird. (Max. 625 Zeichen)',
       kvkNummer: 'Handelskammernummer',
-      kvkNummerTooltip: 'Eine eindeutige Nummer, die von der Handelskammer vergeben wird. (Max. 8 Zeichen)',
+      kvkNummerTooltip:
+        'Eine eindeutige Nummer, die von der Handelskammer vergeben wird. (Max. 8 Zeichen)',
       vestigingsNummer: 'Niederlassungsnummer',
-      vestigingsNummerTooltip: 'Eine kurze eindeutige Bezeichnung der Niederlassung. (Max. 24 Zeichen)',
+      vestigingsNummerTooltip:
+        'Eine kurze eindeutige Bezeichnung der Niederlassung. (Max. 24 Zeichen)',
       'patch-zaak': 'Zaak aktualisieren',
-      patchZaakInformation: 'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
+      patchZaakInformation:
+        'Mit dieser Aktion können Sie die Eigenschaften des Falls in der mit der Datei verknüpften Zaken-API aktualisieren.',
       addPatchZaakProperty: 'Parameter hinzufügen',
       dateformatTooltip:
         'Ein Datum im Format yyyy-mm-dd. Kann auch ein Verweis auf das Dokument oder den Prozess sein, zum Beispiel doc:kunde/startDatum oder pv:startDatum',

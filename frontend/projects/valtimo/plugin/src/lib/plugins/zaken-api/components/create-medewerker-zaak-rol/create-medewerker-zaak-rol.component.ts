@@ -25,7 +25,9 @@ import {INDICATIE_MACHTIGING_VALUES} from '../../models/indicatie-machtiging-val
   selector: 'valtimo-create-medewerker-zaak-rol-configuration',
   templateUrl: './create-medewerker-zaak-rol.component.html',
 })
-export class CreateMedewerkerZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateMedewerkerZaakRolComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -37,8 +39,7 @@ export class CreateMedewerkerZaakRolComponent implements FunctionConfigurationCo
   public readonly INDICATIE_MACHTIGING_VALUES = INDICATIE_MACHTIGING_VALUES;
 
   private _saveSubscription!: Subscription;
-  private readonly _formValue$ =
-    new BehaviorSubject<CreateMedewerkerZaakRolConfig | null>(null);
+  private readonly _formValue$ = new BehaviorSubject<CreateMedewerkerZaakRolConfig | null>(null);
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
   public ngOnInit(): void {
