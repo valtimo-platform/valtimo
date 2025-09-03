@@ -28,6 +28,8 @@ import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {CaseWidgetDisplayProperties, Operator} from '@valtimo/case';
 import {DropdownModule, InputModule, StructuredListModule, ToggleModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../../../../../services';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-widget-wizard-display-step',
@@ -52,6 +54,7 @@ export class WidgetWizardDisplayStepComponent implements OnInit{
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService,
+    private readonly route: ActivatedRoute,
   ) {}
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
@@ -59,6 +62,8 @@ export class WidgetWizardDisplayStepComponent implements OnInit{
   public readonly useConditionsToDisplay$ = new BehaviorSubject<boolean>(false);
   public readonly defaultConditionValues$ = new BehaviorSubject<MultiInputValues | null>(null);
   public readonly allConditionsValid$ = new BehaviorSubject<boolean>(true);
+
+  public readonly params$ = getCaseManagementRouteParams(this.route);
 
   private readonly _OPERATORS: Array<Operator> = [
     Operator.NOT_EQUAL_TO,
