@@ -1917,13 +1917,18 @@
     }
   },
   "condition": {
-    "operator" : {
-      "!=" : "Not equal to",
-      "==" : "Equal to",
-      ">" : "Greater than",
-      ">=" : "Greater than or equal to",
-      "<" : "Less than",
-      "<=" : "Less than or equal to"
+    "operator": {
+      "!=": "Not equal to",
+      "==": "Equal to",
+      ">": "Greater than",
+      ">=": "Greater than or equal to",
+      "<": "Less than",
+      "<=": "Less than or equal to"
     }
+  },
+  "quickSearch": {
+    "addItem": "Add quick search item",
+    "deleteModalTitle": "Delete quick search item",
+    "deleteModalContent": "Are you sure you want to delete this quick search item? This change cannot be undone"
   }
 }

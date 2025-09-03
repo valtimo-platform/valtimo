@@ -24,9 +24,6 @@ import {CARBON_CONSTANTS} from '../../../constants';
   ],
 })
 export class QuickSearchModal {
-  @Input() public set prefillTitle(title: string | undefined) {
-    this.formGroup.patchValue({title});
-  }
   @Output() public readonly closeEvent = new EventEmitter<string | null>();
 
   public readonly $modalOpen = this.quickSearchStateService.$modalOpen;
