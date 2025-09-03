@@ -163,10 +163,14 @@ export class CaseManagementWidgetsEditorComponent {
     this.widgetWizardService.$selectedWidget.set(
       AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
     );
-    this.widgetWizardService.$widgetContent.set(tabWidget.properties);
-    this.widgetWizardService.$editMode.set(true);
-    this.widgetWizardService.$widgetKey.set(tabWidget.key);
-    this.widgetWizardService.$widgetActions.set(tabWidget.actions);
+    this.widgetWizardService.widgetContent.set(tabWidget.properties);
+    this.widgetWizardService.editMode.set(true);
+    this.widgetWizardService.widgetKey.set(tabWidget.key);
+    this.widgetWizardService.widgetActions.set(tabWidget.actions);
+    this.widgetWizardService.widgetDisplay.set({
+      useConditionsToDisplay: tabWidget.useConditionsToDisplay,
+      displayConditions: tabWidget.displayConditions,
+    });
     this.isWizardOpen$.next(true);
   }
 

@@ -35,6 +35,11 @@ enum CaseWidgetType {
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
 type CollectionFieldWidth = 'half' | 'full';
 
+interface CaseWidgetDisplayProperties {
+  useConditionsToDisplay: boolean;
+  displayConditions: Array<Condition>;
+}
+
 interface CaseWidgetAction {
   name?: string;
   processDefinitionKey: string;
@@ -48,6 +53,8 @@ interface BasicCaseWidget {
   key: string;
   properties: WidgetContentProperties;
   actions?: CaseWidgetAction[];
+  useConditionsToDisplay: boolean;
+  displayConditions: Array<Condition>;
 }
 
 interface FieldsCaseWidgetValue {
@@ -159,6 +166,21 @@ interface CustomCaseWidgetConfig {
   [componentKey: string]: Type<any>;
 }
 
+enum Operator {
+  NOT_EQUAL_TO = '!=',
+  EQUAL_TO = '==',
+  GREATER_THAN = '>',
+  GREATER_THAN_OR_EQUAL_TO = '>=',
+  LESS_THAN = '<',
+  LESS_THAN_OR_EQUAL_TO = '<=',
+}
+
+interface Condition {
+  path: string;
+  operator: string;
+  value: string;
+}
+
 export {
   BasicCaseWidget,
   CaseWidget,
@@ -173,6 +195,7 @@ export {
   CaseWidgetWidthsPx,
   CaseWidgetWithUuid,
   CaseWidgetXY,
+  CaseWidgetDisplayProperties,
   CollectionFieldWidth,
   FieldsCaseWidget,
   FieldsCaseWidgetValue,
@@ -184,4 +207,6 @@ export {
   CaseWidgetPackResultItemsByRow,
   FormioCaseWidgetWidgetWithUuid,
   MaxRectsResult,
+  Operator,
+  Condition,
 };
