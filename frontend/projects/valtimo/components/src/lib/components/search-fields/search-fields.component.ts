@@ -193,7 +193,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    return value
+    return value;
   }
 
   private openCaseDefinitionKeySubscription(): void {

@@ -150,7 +150,9 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
 
   private readonly _params$ = getCaseManagementRouteParams(this.route);
 
-  public readonly caseDefinitionKey$ = this._params$.pipe(map(params => params?.caseDefinitionKey ?? null));
+  public readonly caseDefinitionKey$ = this._params$.pipe(
+    map(params => params?.caseDefinitionKey ?? null)
+  );
 
   public readonly caseDefinitionVersionTag$ = this._params$.pipe(
     map(params => params?.caseDefinitionVersionTag ?? null)
@@ -207,16 +209,15 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
   @Output() collectionSelected: EventEmitter<ValuePathItem> = new EventEmitter();
 
-  private readonly _caseDefinitionKeySubject$ = new BehaviorSubject<string| null>(null);
+  private readonly _caseDefinitionKeySubject$ = new BehaviorSubject<string | null>(null);
   private get _caseDefinitionKey$(): Observable<string> {
     return this._caseDefinitionKeySubject$.pipe(filter(value => !!value));
   }
   private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
 
-  public readonly showToggle$ = this._caseDefinitionKey$
-    .pipe(
-      map(caseDefinitionKey => !!caseDefinitionKey),
-    );
+  public readonly showToggle$ = this._caseDefinitionKey$.pipe(
+    map(caseDefinitionKey => !!caseDefinitionKey)
+  );
 
   private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
 
@@ -240,22 +241,22 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       parentItem
         ? of(parentItem.children?.map((child: string) => ({path: child})) ?? [])
         : combineLatest([
-          this._caseDefinitionKey$,
-          this._prefixes$,
-          this._type$,
-          this._caseDefinitionVersionTag$,
-          this.showToggle$
-        ]).pipe(
-          filter(([, , , , showToggle]) => showToggle),
-          switchMap(([caseDefinitionKey, prefixes, type, caseDefinitionVersionTag]) =>
-            this.valuePathSelectorService.getResolvableKeys(
-              prefixes,
-              caseDefinitionKey,
-              type,
-              caseDefinitionVersionTag
+            this._caseDefinitionKey$,
+            this._prefixes$,
+            this._type$,
+            this._caseDefinitionVersionTag$,
+            this.showToggle$,
+          ]).pipe(
+            filter(([, , , , showToggle]) => showToggle),
+            switchMap(([caseDefinitionKey, prefixes, type, caseDefinitionVersionTag]) =>
+              this.valuePathSelectorService.getResolvableKeys(
+                prefixes,
+                caseDefinitionKey,
+                type,
+                caseDefinitionVersionTag
+              )
             )
           )
-        )
     ),
     map((results: ValuePathItem[]) =>
       results
@@ -298,7 +299,7 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     private readonly valuePathSelectorService: ValuePathSelectorService,
     private readonly formBuilder: FormBuilder,
     private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute,
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngOnInit(): void {
