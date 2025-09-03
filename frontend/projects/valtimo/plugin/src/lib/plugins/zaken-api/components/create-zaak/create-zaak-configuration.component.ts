@@ -29,7 +29,6 @@ import {
 } from 'rxjs';
 import {CreateZaakConfig, InputOption} from '../../models';
 import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
-import {DocumentService} from '@valtimo/document';
 import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {Add16, TrashCan16} from '@carbon/icons';
@@ -58,6 +57,7 @@ export class CreateZaakConfigurationComponent
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakConfig> = new EventEmitter<CreateZaakConfig>();
 
+  public readonly propertyOptions: string[] = Object.values(CreateZaakExtraPropertyOptions);
   public readonly propertyList: Array<CreateZaakExtraProperties> = [];
 
   public readonly pluginId$ = new BehaviorSubject<string>('');
@@ -126,6 +126,10 @@ export class CreateZaakConfigurationComponent
     })
   );
 
+  protected readonly CASE_GEOMETRY_TYPE: string = 'caseGeometryType';
+  protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';
+  protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
+
   private readonly _formValue$ = new BehaviorSubject<CreateZaakConfig | null>(null);
   private readonly _properties = new Map<CreateZaakExtraProperties, string>();
   private saveSubscription!: Subscription;
@@ -183,6 +187,10 @@ export class CreateZaakConfigurationComponent
 
   public translationKeyFor(property: string): string {
     return (property === 'description' ? 'beschrijving' : property);
+  }
+
+  public translationKeyForPropertyList(property: string): string {
+    return (property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property));
   }
 
   public addCaseProperty(property: CreateZaakExtraProperties): void {

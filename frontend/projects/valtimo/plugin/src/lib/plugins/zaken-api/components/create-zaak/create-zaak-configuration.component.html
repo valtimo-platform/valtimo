@@ -155,12 +155,12 @@
 </ng-template>
 
 <ng-template #addCasePropertyList>
-  @for (propertyOption of extraPropertiesOptions; track propertyOption) {
+  @for (propertyOption of propertyOptions; track propertyOption) {
     <cds-overflow-menu-option
       *ngIf="!hasPropertyBeenAdded(propertyOption)"
       (click)="addCaseProperty(propertyOption)"
     >
-      {{ translationKeyFor(propertyOption) | pluginTranslate: (pluginId$ | async) | async }}
+      {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: (pluginId$ | async) | async }}
     </cds-overflow-menu-option>
   }
 </ng-template>
