@@ -50,7 +50,7 @@
             valuePathSelectorNotation="dots"
             [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
             [valuePathSelectorShowCaseDefinitionSelector]="false"
-            [valuePathSelectorCaseDefinitionKey]="'bezwaar'"
+            [valuePathSelectorCaseDefinitionKey]="(params$ | async)?.caseDefinitionKey"
             [keyColumnFlex]="2"
             [dropdownColumnFlex]="1"
             [valueColumnFlex]="1"
