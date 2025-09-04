@@ -395,7 +395,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
         const statusKeys: (string | null)[] = selectedStatuses.map((statusKey: string) =>
           statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
         );
-        // const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents: !hasApiColumnConfig

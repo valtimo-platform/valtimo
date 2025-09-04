@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm">
+<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm" [minContentHeight]="480">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()" [cdsLayer]="1"
     ><h3 cdsModalHeaderHeading>
       {{
