@@ -56,9 +56,10 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   @Input() public externalSearchField = false;
   @Input() public canSaveSearch = false;
 
-  @Output() public doSearch: EventEmitter<SearchFieldValues> =
+  @Output() public readonly doSearch: EventEmitter<SearchFieldValues> =
     new EventEmitter<SearchFieldValues>();
-  @Output() public saveSearchEvent = new EventEmitter<SearchFieldValues>();
+  @Output() public readonly saveSearchEvent = new EventEmitter<SearchFieldValues>();
+  @Output() public readonly clearEvent = new EventEmitter();
 
   public readonly searchFields$ = new BehaviorSubject<Array<SearchField>>([]);
   public readonly values$ = new BehaviorSubject<SearchFieldValues>({});
@@ -169,6 +170,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   public clear(): void {
     this.clear$.next(null);
     this.doSearch.emit({});
+    this.clearEvent.emit();
   }
 
   public getDefaultBooleanSelectionId(
@@ -279,11 +281,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   private setDefaultValues(): void {
-    if (
-      this.defaultValues &&
-      typeof this.defaultValues === 'object' &&
-      Object.keys(this.defaultValues).length > 0
-    ) {
+    if (this.defaultValues && typeof this.defaultValues === 'object') {
       this.values$.next(this.defaultValues);
       this.search();
       this.expand();

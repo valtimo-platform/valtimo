@@ -5,7 +5,7 @@
     <cds-tag type="blue" (click)="onItemClick(item)">
       {{ item.title }}
 
-      <svg cdsTagIcon cdsIcon="trash-can" size="16" (click)="deleteItem(item)"></svg>
+      <svg cdsTagIcon cdsIcon="trash-can" size="16" (click)="deleteItem(item, $event)"></svg>
     </cds-tag>
   }
 
