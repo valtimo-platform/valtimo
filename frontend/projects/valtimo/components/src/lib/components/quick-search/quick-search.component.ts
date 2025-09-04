@@ -9,7 +9,7 @@ import {IQuickSearchService} from '../../interfaces';
 import {QuickSearchItem} from '../../models';
 import {QuickSearchStateService} from '../../services';
 import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
-import {QuickSearchModal} from './modal/quick-search-modal.component';
+import {QuickSearchModalComponent} from './modal/quick-search-modal.component';
 
 @Component({
   selector: 'valtimo-quick-search',
@@ -19,7 +19,7 @@ import {QuickSearchModal} from './modal/quick-search-modal.component';
   imports: [
     CommonModule,
     TranslateModule,
-    QuickSearchModal,
+    QuickSearchModalComponent,
     TagModule,
     ConfirmationModalModule,
     ContextMenuModule,

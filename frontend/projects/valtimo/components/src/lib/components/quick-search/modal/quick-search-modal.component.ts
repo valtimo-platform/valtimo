@@ -23,7 +23,7 @@ import {CARBON_CONSTANTS} from '../../../constants';
     InputModule,
   ],
 })
-export class QuickSearchModal {
+export class QuickSearchModalComponent {
   @Output() public readonly closeEvent = new EventEmitter<string | null>();
 
   public readonly $modalOpen = this.quickSearchStateService.$modalOpen;
