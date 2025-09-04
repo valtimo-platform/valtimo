@@ -763,6 +763,11 @@ export class CaseListComponent implements OnInit, OnDestroy {
       });
   }
 
+  public onClearEvent(): void {
+    this.statusService.setSelectedStatuses([]);
+    this.caseListCaseTagService.setSelectedCaseTags([]);
+  }
+
   private openCaseDefinitionKeySubscription(): void {
     this._caseDefinitionKeySubscription = this.route.params
       .pipe(

@@ -62,12 +62,13 @@
   <valtimo-search-fields
     [canSaveSearch]="true"
     [searchFields]="obs.searchFields"
-    (doSearch)="search($event)"
-    (saveSearchEvent)="onSaveSearchEvent($event)"
     [caseDefinitionKey]="caseDefinitionKey$ | async"
     [defaultValues]="searchFieldValues$ | async"
     [inputDisabled]="!obs.loaded"
     [externalSearchField]="obs.showStatusSelector"
+    (clearEvent)="onClearEvent()"
+    (doSearch)="search($event)"
+    (saveSearchEvent)="onSaveSearchEvent($event)"
   >
     <valtimo-status-selector
       *ngIf="obs.showStatusSelector"

@@ -1,21 +1,15 @@
 import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Inject, Output, signal} from '@angular/core';
+import {TrashCan16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  ContextMenuModule,
-  DialogModule,
-  IconModule,
-  IconService,
-  TagModule,
-} from 'carbon-components-angular';
-import {BehaviorSubject, switchMap} from 'rxjs';
+import {ContextMenuModule, IconModule, IconService, TagModule} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, switchMap} from 'rxjs';
 import {QUICK_SEARCH_SERVICE} from '../../constants/quick-search.constants';
 import {IQuickSearchService} from '../../interfaces';
 import {QuickSearchItem} from '../../models';
 import {QuickSearchStateService} from '../../services';
 import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
 import {QuickSearchModal} from './modal/quick-search-modal.component';
-import {TrashCan16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-quick-search',
@@ -38,9 +32,10 @@ export class QuickSearchComponent {
   public readonly $itemToDelete = signal<QuickSearchItem | null>(null);
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
-  public readonly quickSearchItems$ = this._refresh$.pipe(
-    switchMap(() => this.quickSearchService.getQuickSearchItems())
-  );
+  public readonly quickSearchItems$ = combineLatest([
+    this._refresh$,
+    this.quickSearchService.params$,
+  ]).pipe(switchMap(() => this.quickSearchService.getQuickSearchItems()));
   public readonly paramsToSave$ = this.quickSearchStateService.paramsToSave$;
 
   @Output() public readonly quickSearchEvent = new EventEmitter<string>();
@@ -54,13 +49,14 @@ export class QuickSearchComponent {
     this.iconService.register(TrashCan16);
   }
 
-  public deleteItem(item: QuickSearchItem): void {
+  public deleteItem(item: QuickSearchItem, event: Event): void {
+    event.stopImmediatePropagation();
     this.$itemToDelete.set(item);
     this.showDeleteModal$.next(true);
   }
 
   public onDeleteConfirm(item: QuickSearchItem): void {
-    this.quickSearchService.deleteQuickSearchItem(item).subscribe(res => {
+    this.quickSearchService.deleteQuickSearchItem(item).subscribe(() => {
       this._refresh$.next(null);
     });
   }
