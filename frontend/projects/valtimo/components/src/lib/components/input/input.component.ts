@@ -123,7 +123,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
     event.stopPropagation();
   }
 
-  public presetWithValue(value: string) {
+  public presetWithValue(value: string): void {
     this.inputValue$.next(value);
   }
 
