@@ -122,7 +122,7 @@ export class CreateZaakConfigurationComponent
   protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
 
   private readonly DATA_TEST_ID_PREFIX: string = 'create-zaak-property_';
-  private readonly _formValue$ = new BehaviorSubject<CreateZaakConfig | null>(null);
+  private readonly _formValue$ = new BehaviorSubject<CreateZaakConfig>(null);
   private readonly _properties = new Map<CreateZaakExtraProperties, string>();
   private saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
@@ -150,9 +150,8 @@ export class CreateZaakConfigurationComponent
   }
 
   public onFormValueChanged(formValue: CreateZaakConfig): void {
+    const inputTypeZaakTypeToggle = formValue?.inputTypeZaakTypeToggle;
     this._properties.forEach((value, key) => (formValue[key] = value));
-
-    const inputTypeZaakTypeToggle = formValue.inputTypeZaakTypeToggle;
     this._formValue$.next(formValue);
     this.handleValid(formValue);
 
@@ -165,7 +164,6 @@ export class CreateZaakConfigurationComponent
     if (Array.isArray(selectItems)) {
       return selectItems.length === 1;
     }
-
     return false;
   }
 
@@ -173,7 +171,6 @@ export class CreateZaakConfigurationComponent
     if (Array.isArray(selectItems)) {
       return !!selectItems.find(item => item.id === id);
     }
-
     return false;
   }
 
@@ -194,6 +191,9 @@ export class CreateZaakConfigurationComponent
     if (this.propertyList.indexOf(property) == -1) {
       this.propertyList.push(property);
     }
+    if (property === this.CASE_GEOMETRY_TYPE) {
+      this.addProperty(this.CASE_GEOMETRY_COORDINATES as CreateZaakExtraProperties);
+    }
   }
 
   public removeProperty(property: CreateZaakExtraProperties): void {
@@ -201,6 +201,9 @@ export class CreateZaakConfigurationComponent
     if (this.propertyList.indexOf(property) != -1) {
       this.propertyList.splice(this.propertyList.indexOf(property), 1);
       this.onPropertyChanged(property, undefined);
+    }
+    if (property === this.CASE_GEOMETRY_TYPE) {
+      this.removeProperty(this.CASE_GEOMETRY_COORDINATES as CreateZaakExtraProperties);
     }
   }
 
@@ -210,11 +213,7 @@ export class CreateZaakConfigurationComponent
 
   public onPropertyChanged(property: CreateZaakExtraProperties, value: any): void {
     this._properties.set(property, value);
-    this._formValue$
-      .pipe(
-        filter(formValue => formValue !== null),
-        take(1)
-      )
+    this._formValue$.pipe(filter(formValue => formValue !== null), take(1))
       .subscribe(formValue => {
         this.onFormValueChanged(formValue);
       });
@@ -235,14 +234,17 @@ export class CreateZaakConfigurationComponent
 
   private handleValid(formValue: CreateZaakConfig): void {
     const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
-    const valid = !!(formValue.rsin && formValue.zaaktypeUrl) && !isPropertyInvalid;
+    const valid = !!(
+      formValue.rsin &&
+      formValue.zaaktypeUrl
+    ) && !isPropertyInvalid;
 
     this._valid$.next(valid);
     this.valid.emit(valid);
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
+    this.saveSubscription = this.save$?.subscribe(() => {
       combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
@@ -250,7 +252,7 @@ export class CreateZaakConfigurationComponent
             const payload: CreateZaakConfig = {
               rsin: formValue.rsin,
               zaaktypeUrl: formValue.zaaktypeUrl,
-              manualZaakTypeUrl: formValue.manualZaakTypeUrl,
+              manualZaakTypeUrl: formValue.manualZaakTypeUrl
             };
             this.propertyList.forEach(property => (payload[property] = formValue[property]));
             this.configuration.emit(payload);

@@ -16,30 +16,29 @@
 
 <ng-container
   *ngIf="{
-    disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
-    pluginId: pluginId$ | async,
-    selectedInputOption: selectedInputOption$ | async,
-    zaakTypeSelectItems: zaakTypeItems$ | async,
-    loading: loading$ | async,
     context: context$ | async,
+    disabled: disabled$ | async,
+    loading: loading$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    selectedInputOption: selectedInputOption$ | async,
+    zaakTypeSelectItems: zaakTypeItems$ | async
   } as obs"
 >
   <ng-container *ngIf="obs.loading === false; else loading">
     <v-paragraph [margin]="true" [italic]="true">
-      {{ 'createZaakInformation' | pluginTranslate: obs.pluginId | async }}
+      {{ 'createZaakInformation' | pluginTranslate: pluginId | async }}
     </v-paragraph>
 
     <v-form (valueChange)="onFormValueChanged($event)">
       <v-input
         name="rsin"
-        [title]="'rsin' | pluginTranslate: obs.pluginId | async"
-        [tooltip]="'rsinTooltip' | pluginTranslate: obs.pluginId | async"
+        [title]="'rsin' | pluginTranslate: pluginId | async"
+        [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
         [defaultValue]="obs.prefill?.rsin"
-        [margin]="true"
+        [disabled]="obs.disabled"
         [required]="true"
         [trim]="true"
-        [disabled]="obs.disabled"
+        [margin]="true"
         [widthPx]="350"
       >
       </v-input>
@@ -47,61 +46,61 @@
       <v-radio
         *ngIf="obs?.context?.[0] === 'case'"
         name="inputTypeZaakTypeToggle"
-        [disabled]="obs.disabled"
-        [title]="'inputTypeZaakTypeToggle' | pluginTranslate: obs.pluginId | async"
+        [title]="'inputTypeZaakTypeToggle' | pluginTranslate: pluginId | async"
         [defaultValue]="selectedInputOption$ | async"
-        [margin]="true"
         [radioValues]="inputTypeOptions$ | async"
+        [disabled]="obs.disabled"
+        [margin]="true"
       >
       </v-radio>
 
       <v-input
         *ngIf="obs.selectedInputOption === 'text'"
         name="zaaktypeUrl"
-        [title]="'zaakTypeUrl' | pluginTranslate: obs.pluginId | async"
-        [tooltip]="'zaakTypeTooltip' | pluginTranslate: obs.pluginId | async"
+        [title]="'zaakTypeUrl' | pluginTranslate: pluginId | async"
+        [tooltip]="'zaakTypeTooltip' | pluginTranslate: pluginId | async"
         [defaultValue]="obs.prefill?.zaaktypeUrl"
         [disabled]="obs.disabled || obs.selectedInputOption === 'selection'"
-        [margin]="true"
         [required]="true"
         [trim]="true"
-        [fullWidth]="true"
+        [margin]="true"
+        [widthPx]="700"
       >
       </v-input>
 
-      <ng-container *ngIf="obs.selectedInputOption === 'selection'">
-        <v-select
-          name="zaaktypeUrl"
-          [title]="'zaakType' | pluginTranslate: obs.pluginId | async"
-          [tooltip]="'zaakTypeSelectTooltip' | pluginTranslate: obs.pluginId | async"
-          [margin]="true"
-          [required]="true"
-          [items]="obs.zaakTypeSelectItems"
-          [widthInPx]="350"
-          [disabled]="
-            obs.disabled ||
-            obs.selectedInputOption === 'text' ||
-            oneSelectItem(obs.zaakTypeSelectItems)
-          "
-          [defaultSelectionId]="
-            (selectItemsIncludeId(obs.zaakTypeSelectItems, obs.prefill?.zaaktypeUrl) &&
-              obs.prefill?.zaaktypeUrl) ||
-            (oneSelectItem(obs.zaakTypeSelectItems) && obs.zaakTypeSelectItems[0].id)
-          "
-          [loading]="!obs.zaakTypeSelectItems"
-        ></v-select>
-      </ng-container>
+      <v-select
+        *ngIf="obs.selectedInputOption === 'selection'"
+        name="zaaktypeUrl"
+        [title]="'zaakType' | pluginTranslate: pluginId | async"
+        [tooltip]="'zaakTypeSelectTooltip' | pluginTranslate: pluginId | async"
+        [required]="true"
+        [items]="obs.zaakTypeSelectItems"
+        [loading]="!obs.zaakTypeSelectItems"
+        [disabled]="
+          obs.disabled ||
+          obs.selectedInputOption === 'text' ||
+          oneSelectItem(obs.zaakTypeSelectItems)
+        "
+        [margin]="true"
+        [defaultSelectionId]="
+          (selectItemsIncludeId(obs.zaakTypeSelectItems, obs.prefill?.zaaktypeUrl) && obs.prefill?.zaaktypeUrl)
+          ||
+          (oneSelectItem(obs.zaakTypeSelectItems) && obs.zaakTypeSelectItems[0].id)
+        "
+        [widthInPx]="350"
+      ></v-select>
 
       <div class="row">
         <div class="col-12">
           <button
             cdsButton="primary"
+            class="add-button"
             [size]="'md'"
             [cdsOverflowMenu]="addCasePropertyList"
             [customPane]="true"
             placement="bottom"
           >
-            {{ 'addZaakProperty' | pluginTranslate: obs.pluginId | async }}
+            {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
             <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
           </button>
         </div>
@@ -114,58 +113,60 @@
               <v-input
                 [name]="CASE_GEOMETRY_TYPE"
                 [title]="translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async"
-                [required]="true"
                 [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
-                [margin]="false"
                 (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
                 [dataTestId]="dataTestIdFor(CASE_GEOMETRY_TYPE)"
+                [required]="true"
+                [margin]="false"
               />
-              <div class="presets">
-                  <span>Presets:</span>
-                  <ng-template ngFor let-preset [ngForOf]="geometryTypes" let-isFirst="first">
-                      <ng-template [ngIf]="!isFirst"> | </ng-template><a (click)="presetPropertyWithValue(CASE_GEOMETRY_TYPE, preset)" class="preset">{{ preset }}</a>
-                  </ng-template>
-              </div>
+              <ng-container
+                [ngTemplateOutlet]="presets"
+                [ngTemplateOutletContext]="{
+                  property: CASE_GEOMETRY_TYPE,
+                  presetOptions: geometryTypes
+                }">
+              </ng-container>
             } @else if (property === CASE_GEOMETRY_COORDINATES) {
               <v-input
                 [name]="CASE_GEOMETRY_COORDINATES"
                 [title]="translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async"
                 [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
-                [required]="true"
                 [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
-                [margin]="true"
                 (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
+                [required]="true"
+                [margin]="true"
               />
             } @else if (property.includes('Date')) {
               <v-input
                 [name]="property"
                 [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
                 [tooltip]="'dateformatTooltip' | pluginTranslate: pluginId | async"
-                [required]="true"
                 [defaultValue]="prefillValueFor(property, obs.prefill)"
-                [margin]="true"
-                [trim]="true"
                 (valueChange)="onPropertyChanged(property, $event)"
                 [dataTestId]="dataTestIdFor(property)"
+                [required]="true"
+                [margin]="true"
+                [trim]="true"
               ></v-input>
             } @else {
               <v-input
                 [name]="property"
                 [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
-                [required]="true"
                 [defaultValue]="prefillValueFor(property, obs.prefill)"
-                [margin]="(property !== PAYMENT_INDICATION_TYPE)"
-                [trim]="true"
                 (valueChange)="onPropertyChanged(property, $event)"
                 [dataTestId]="dataTestIdFor(property)"
+                [required]="true"
+                [margin]="(property !== PAYMENT_INDICATION_TYPE)"
+                [trim]="true"
               />
               @if (property === PAYMENT_INDICATION_TYPE) {
-                <div class="presets">
-                  <span>Presets:</span>
-                  <ng-template ngFor let-preset [ngForOf]="paymentIndicationTypes" let-isFirst="first">
-                      <ng-template [ngIf]="!isFirst"> | </ng-template><a (click)="presetPropertyWithValue(PAYMENT_INDICATION_TYPE, preset)" class="preset">{{ preset }}</a>
-                  </ng-template>
-                </div>
+                <ng-container
+                  [ngTemplateOutlet]="presets"
+                  [ngTemplateOutletContext]="{
+                    property: PAYMENT_INDICATION_TYPE,
+                    presetOptions: paymentIndicationTypes
+                  }">
+                </ng-container>
               }
             }
           </div>
@@ -192,11 +193,23 @@
 
 <ng-template #addCasePropertyList>
   @for (propertyOption of propertyOptions; track propertyOption) {
-    <cds-overflow-menu-option
-      *ngIf="!hasPropertyBeenAdded(propertyOption)"
-      (click)="addProperty(propertyOption)"
-    >
-      {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: (pluginId$ | async) | async }}
-    </cds-overflow-menu-option>
+    @if (propertyOption !== CASE_GEOMETRY_COORDINATES) {
+      <cds-overflow-menu-option
+        *ngIf="!hasPropertyBeenAdded(propertyOption)"
+        (click)="addProperty(propertyOption)"
+      >
+        {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+      </cds-overflow-menu-option>
+    }
   }
+</ng-template>
+
+<ng-template #presets let-property="property" let-presetOptions="presetOptions">
+  <div class="presets">
+      <span>Presets:</span>
+      @for (preset of presetOptions; track $index; let isFirst = $first) {
+        @if (!isFirst) { | }
+        <a (click)="presetPropertyWithValue(property, preset)" class="preset">{{ preset }}</a>
+      }
+  </div>
 </ng-template>
