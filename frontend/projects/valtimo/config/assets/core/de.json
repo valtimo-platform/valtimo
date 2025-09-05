@@ -177,7 +177,7 @@
     "rowLocked": "Kein Zugriff zu dieser Fall!",
     "widgets": {
       "noData": "Keine Data gefunden",
-      "emptyFields": "Niets hier",
+      "emptyFields": "Nichts hier",
       "noWidgets": "Keine Widgets",
       "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
       "noCustomComponent": "Widget nicht verfügbar",
