@@ -23,6 +23,35 @@
   align-items: center;
 }
 
+div.presets {
+  margin-top: 0.2em;
+  margin-block-end: var(--v-input-margin);
+  font-size: var(--v-font-size-smaller);
+
+  span:first-child {
+    padding-right: 0.3em;
+  }
+
+  a.preset {
+    cursor: pointer;
+    font-style: italic;
+  }
+}
+
+button.delete-button {
+  height: 46px;
+  width: 46px;
+  margin-top: 20px;
+}
+
+button.delete-button:hover {
+  background-color: #e12717;
+}
+
+button.add-button {
+  margin-block-end: var(--v-input-margin);
+}
+
 ::ng-deep .cds--overflow-menu-options {
   z-index: 10000 !important;
   width: 230px;
@@ -41,8 +70,4 @@
     width: 46px;
     margin: 16px;
   }
-}
-
-.delete-button:hover {
-  background-color: #e12717;
 }
