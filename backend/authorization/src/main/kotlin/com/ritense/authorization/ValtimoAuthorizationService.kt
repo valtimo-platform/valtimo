@@ -76,9 +76,9 @@ class ValtimoAuthorizationService(
         request: AuthorizationRequest<T>,
         permissions: List<Permission>?
     ): AuthorizationSpecification<T> {
-        val userPermissions = Supplier { permissions ?: getPermissions(request) }.lazy()
+        val usedPermissions = lazySupplier { permissions ?: getPermissions(request) }
 
-        return getAuthorizationSpecification(request, userPermissions, enablePermissionLogging = true)
+        return getAuthorizationSpecification(request, usedPermissions, enablePermissionLogging = true)
     }
 
     override fun getPermissions(resourceType: Class<*>, action: Action<*>): List<Permission> {
@@ -105,7 +105,7 @@ class ValtimoAuthorizationService(
 
     private fun <T : Any> getAuthorizationSpecification(
         request: AuthorizationRequest<T>,
-        permissionSupplier: Supplier<List<Permission>>,
+        permissionSupplier: () -> List<Permission>,
         enablePermissionLogging: Boolean
     ): AuthorizationSpecification<T> {
         if (enablePermissionLogging) {
@@ -166,12 +166,10 @@ class ValtimoAuthorizationService(
         }
     }
 
-    private fun <T> Supplier<T>.lazy() = LazySupplier(this)
+    private fun <T> lazySupplier(delegate: () -> T) = object : () -> T {
+        private val value by lazy(delegate)
 
-    private class LazySupplier<T>(delegate: Supplier<T>): Supplier<T> {
-        private val value by lazy { delegate.get() }
-
-        override fun get() = value
+        override fun invoke() = value
     }
 
     companion object {

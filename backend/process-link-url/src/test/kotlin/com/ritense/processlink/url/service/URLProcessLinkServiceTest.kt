@@ -17,7 +17,7 @@
 package com.ritense.processlink.url.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.ValtimoAuthorizationService
+import com.ritense.authorization.AuthorizationService
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
@@ -73,7 +73,7 @@ class URLProcessLinkServiceTest {
     lateinit var operatonTaskService: OperatonTaskService
 
     @Mock
-    lateinit var authorizationService: ValtimoAuthorizationService
+    lateinit var authorizationService: AuthorizationService
 
     @InjectMocks
     lateinit var urlProcessLinkService: URLProcessLinkService
