@@ -115,17 +115,10 @@
                 [title]="translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async"
                 [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
                 (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
-                [dataTestId]="dataTestIdFor(CASE_GEOMETRY_TYPE)"
                 [required]="true"
-                [margin]="false"
+                [margin]="true"
+                [presetOptions]="geometryTypes"
               />
-              <ng-container
-                [ngTemplateOutlet]="presets"
-                [ngTemplateOutletContext]="{
-                  property: CASE_GEOMETRY_TYPE,
-                  presetOptions: geometryTypes
-                }">
-              </ng-container>
             } @else if (property === CASE_GEOMETRY_COORDINATES) {
               <v-input
                 [name]="CASE_GEOMETRY_COORDINATES"
@@ -143,7 +136,6 @@
                 [tooltip]="'dateformatTooltip' | pluginTranslate: pluginId | async"
                 [defaultValue]="prefillValueFor(property, obs.prefill)"
                 (valueChange)="onPropertyChanged(property, $event)"
-                [dataTestId]="dataTestIdFor(property)"
                 [required]="true"
                 [margin]="true"
                 [trim]="true"
@@ -154,20 +146,11 @@
                 [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
                 [defaultValue]="prefillValueFor(property, obs.prefill)"
                 (valueChange)="onPropertyChanged(property, $event)"
-                [dataTestId]="dataTestIdFor(property)"
                 [required]="true"
-                [margin]="(property !== PAYMENT_INDICATION_TYPE)"
+                [margin]="true"
                 [trim]="true"
+                [presetOptions]="property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []"
               />
-              @if (property === PAYMENT_INDICATION_TYPE) {
-                <ng-container
-                  [ngTemplateOutlet]="presets"
-                  [ngTemplateOutletContext]="{
-                    property: PAYMENT_INDICATION_TYPE,
-                    presetOptions: paymentIndicationTypes
-                  }">
-                </ng-container>
-              }
             }
           </div>
           <div class="col-1">
@@ -202,14 +185,4 @@
       </cds-overflow-menu-option>
     }
   }
-</ng-template>
-
-<ng-template #presets let-property="property" let-presetOptions="presetOptions">
-  <div class="presets">
-      <span>Presets:</span>
-      @for (preset of presetOptions; track $index; let isFirst = $first) {
-        @if (!isFirst) { | }
-        <a (click)="presetPropertyWithValue(property, preset)" class="preset">{{ preset }}</a>
-      }
-  </div>
 </ng-template>

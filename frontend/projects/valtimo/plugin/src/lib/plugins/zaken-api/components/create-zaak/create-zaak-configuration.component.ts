@@ -121,7 +121,6 @@ export class CreateZaakConfigurationComponent
   protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';
   protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
 
-  private readonly DATA_TEST_ID_PREFIX: string = 'create-zaak-property_';
   private readonly _formValue$ = new BehaviorSubject<CreateZaakConfig>(null);
   private readonly _properties = new Map<CreateZaakExtraProperties, string>();
   private saveSubscription!: Subscription;
@@ -217,19 +216,6 @@ export class CreateZaakConfigurationComponent
       .subscribe(formValue => {
         this.onFormValueChanged(formValue);
       });
-  }
-
-  public dataTestIdFor(property: CreateZaakExtraProperties): string {
-    return this.DATA_TEST_ID_PREFIX + property
-  }
-
-  public presetPropertyWithValue(property: CreateZaakExtraProperties, value: string): void {
-    const input =
-      document.querySelector<HTMLInputElement>(`[data-testid="${this.DATA_TEST_ID_PREFIX + property}"]`);
-    if (input) {
-      input.value = value;
-      input.dispatchEvent(new Event('input'));
-    }
   }
 
   private handleValid(formValue: CreateZaakConfig): void {
