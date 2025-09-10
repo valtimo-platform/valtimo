@@ -167,10 +167,7 @@ export class CaseManagementWidgetsEditorComponent {
     this.widgetWizardService.editMode.set(true);
     this.widgetWizardService.widgetKey.set(tabWidget.key);
     this.widgetWizardService.widgetActions.set(tabWidget.actions);
-    this.widgetWizardService.widgetDisplay.set({
-      useConditionsToDisplay: tabWidget.useConditionsToDisplay,
-      displayConditions: tabWidget.displayConditions,
-    });
+    this.widgetWizardService.widgetDisplayConditions.set(tabWidget.displayConditions);
     this.isWizardOpen$.next(true);
   }
 

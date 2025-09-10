@@ -34,8 +34,8 @@ import {WIDGET_STYLE_LABELS, WIDGET_WIDTH_LABELS, WidgetWizardStep} from '../../
 import {WidgetWizardService} from '../../../../../../services';
 import {WIDGET_STEPS} from './steps';
 import {
-  WidgetWizardDisplayStepComponent
-} from './steps/widget-wizard-display-step/widget-wizard-display-step.component';
+  WidgetWizardDisplayConditionsStepComponent
+} from './steps/widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
 
 @Component({
   selector: 'valtimo-case-management-widget-wizard',
@@ -51,7 +51,7 @@ import {
     ModalModule,
     ButtonModule,
     ...WIDGET_STEPS,
-    WidgetWizardDisplayStepComponent,
+    WidgetWizardDisplayConditionsStepComponent,
   ],
 })
 export class CasManagementWidgetWizardComponent {
@@ -123,7 +123,9 @@ export class CasManagementWidgetWizardComponent {
           complete: !!this.widgetWizardService.$widgetContent(),
         },
         {
-          label: this.translateService.instant('widgetTabManagement.wizard.steps.display'),
+          label: this.translateService.instant(
+            'widgetTabManagement.wizard.steps.displayConditions'
+          ),
           disabled:
             !secondaryLabels[WidgetWizardStep.TYPE] ||
             !secondaryLabels[WidgetWizardStep.WIDTH] ||
@@ -150,8 +152,8 @@ export class CasManagementWidgetWizardComponent {
         return this.widgetWizardService.$widgetStyle() === null;
       case WidgetWizardStep.CONTENT:
         return this.widgetWizardService.widgetContent() === null || !this._contentStepValid();
-      case WidgetWizardStep.DISPLAY:
-        return this.widgetWizardService.widgetDisplay() === null;
+      case WidgetWizardStep.DISPLAY_CONDITIONS:
+        return this.widgetWizardService.widgetDisplayConditions() === null;
       default:
         return true;
     }
@@ -176,7 +178,7 @@ export class CasManagementWidgetWizardComponent {
   }
 
   public onNextButtonClick(): void {
-    if (this.currentStep() === WidgetWizardStep.DISPLAY) {
+    if (this.currentStep() === WidgetWizardStep.DISPLAY_CONDITIONS) {
       this.closeEvent.emit(this.widgetWizardService.widgetsConfig());
       this.resetWizard();
       return;

@@ -14,20 +14,9 @@
   ~ limitations under the License.
   -->
 
-<p>{{ 'widgetTabManagement.deisplay.description' | translate }}</p>
+<p>{{ 'widgetTabManagement.display.description' | translate }}</p>
 
 <div class="valtimo-widget-wizard-step__display">
-  <div class="form__element">
-    <cds-toggle
-            [label]="'Show widget only when conditions are met' | async"
-            [onText]="'interface.on' | translate"
-            [offText]="'interface.off' | translate"
-            [ngModel]="useConditionsToDisplay$ | async"
-            (ngModelChange)="onChangeUseConditionsToDisplay($event)"
-    >
-    </cds-toggle>
-  </div>
-
   <div class="form__element conditions-multi-input">
     <cds-label
             [helperText]="'conditionsHelperText' | async"

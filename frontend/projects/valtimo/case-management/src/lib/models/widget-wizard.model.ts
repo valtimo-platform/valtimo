@@ -30,7 +30,7 @@ enum WidgetWizardStep {
   WIDTH,
   STYLE,
   CONTENT,
-  DISPLAY,
+  DISPLAY_CONDITIONS,
 }
 
 enum WidgetStyle {
