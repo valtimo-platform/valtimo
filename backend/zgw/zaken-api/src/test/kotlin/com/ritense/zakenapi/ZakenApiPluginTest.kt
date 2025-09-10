@@ -17,9 +17,7 @@
 package com.ritense.zakenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.document.service.DocumentService
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
@@ -40,7 +38,6 @@ import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakObject
-import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
@@ -50,6 +47,7 @@ import com.ritense.zakenapi.domain.rol.RolNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolOrganisatorischeEenheid
 import com.ritense.zakenapi.domain.rol.RolVestiging
+import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import com.ritense.zgw.Page
@@ -554,7 +552,67 @@ internal class ZakenApiPluginTest {
     }
 
     @Test
-    fun `should create zaak`() {
+    fun `should create zaak with required properties only`() {
+        val zakenApiClient: ZakenApiClient = mock()
+        val executionMock = mock<DelegateExecution>()
+        val authenticationMock = mock<ZakenApiAuthentication>()
+
+        val documentId = UUID.randomUUID()
+        val rsin = Rsin("051845623")
+        val zaaktypeUrl = zaaktypeUri()
+
+        whenever(executionMock.businessKey)
+            .thenReturn(documentId.toString())
+
+        whenever(
+            zakenApiClient.createZaak(
+                authentication = eq(authenticationMock),
+                baseUrl = eq(zakenApiUri()),
+                request = any()
+            )
+        ).thenReturn(
+            ZaakResponse(
+                url = zaakUri(),
+                uuid = UUID.randomUUID(),
+                zaaktype = zaaktypeUrl,
+                bronorganisatie = rsin,
+                startdatum = LocalDate.now(),
+                verantwoordelijkeOrganisatie = rsin,
+            )
+        )
+
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock,
+            pluginService = pluginServiceMock()
+        )
+
+        plugin.createZaak(
+            execution = executionMock,
+            rsin = rsin,
+            zaaktypeUrl = zaaktypeUrl
+        )
+
+        val captor = argumentCaptor<CreateZaakRequest>()
+        verify(zakenApiClient).createZaak(any(), any(), captor.capture())
+
+        val request = captor.firstValue
+        assertThat(request.bronorganisatie).isEqualTo(rsin)
+        assertThat(request.zaaktype).isEqualTo(zaaktypeUrl)
+        assertThat(request.verantwoordelijkeOrganisatie).isEqualTo(rsin)
+        assertThat(request.startdatum).isNotNull()
+        assertThat(request.omschrijving).isNull()
+        assertThat(request.einddatumGepland).isNull()
+        assertThat(request.toelichting).isNull()
+        assertThat(request.uiterlijkeEinddatumAfdoening).isNull()
+        assertThat(request.communicatiekanaal).isNull()
+        assertThat(request.betalingsindicatie).isNull()
+        assertThat(request.zaakgeometrie).isNull()
+        assertThat(request.hoofdzaak).isNull()
+    }
+
+    @Test
+    fun `should create zaak with additional properties`() {
         val zakenApiClient: ZakenApiClient = mock()
         val executionMock = mock<DelegateExecution>()
         val authenticationMock = mock<ZakenApiAuthentication>()
