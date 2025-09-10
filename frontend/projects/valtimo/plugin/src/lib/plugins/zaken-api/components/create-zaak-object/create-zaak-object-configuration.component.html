@@ -74,7 +74,7 @@
           [tooltip]="'relatieomschrijvingTooltip' | pluginTranslate: obs.pluginId | async"
   ></v-input>
 
-  @if (obs.formValue?.zaakObjectRequest?.objectType == 'zakelijk_recht') {
+  @if (obs.formValue?.zaakObjectRequest?.objectType === 'zakelijk_recht') {
     <v-input
             name="zakelijkRechtIdentificatie"
             [title]="'zakelijkRechtIdentificatie' | pluginTranslate: obs.pluginId | async"
@@ -96,7 +96,7 @@
     ></v-input>
   }
 
-  @if (obs.formValue?.zaakObjectRequest?.objectType == 'overige') {
+  @if (obs.formValue?.zaakObjectRequest?.objectType === 'overige') {
     <v-input
             name="objectTypeOverige"
             [title]="'objectTypeOverige' | pluginTranslate: obs.pluginId | async"
