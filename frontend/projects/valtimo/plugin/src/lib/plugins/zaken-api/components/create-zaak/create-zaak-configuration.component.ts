@@ -174,7 +174,7 @@ export class CreateZaakConfigurationComponent
   }
 
   public prefillValueFor(property: string, prefill: CreateZaakConfig): string | null {
-    return (prefill != null) ? prefill[property] : null;
+    return (prefill !== null) ? prefill[property] : null;
   }
 
   public translationKeyFor(property: string): string {
@@ -187,7 +187,7 @@ export class CreateZaakConfigurationComponent
 
   public addProperty(property: CreateZaakExtraProperties): void {
     // only add the property to the list if it is not in the list
-    if (this.propertyList.indexOf(property) == -1) {
+    if (this.propertyList.indexOf(property) === -1) {
       this.propertyList.push(property);
     }
     if (property === this.CASE_GEOMETRY_TYPE) {
@@ -197,7 +197,7 @@ export class CreateZaakConfigurationComponent
 
   public removeProperty(property: CreateZaakExtraProperties): void {
     // only remove the property from the list if it is in the list
-    if (this.propertyList.indexOf(property) != -1) {
+    if (this.propertyList.indexOf(property) !== -1) {
       this.propertyList.splice(this.propertyList.indexOf(property), 1);
       this.onPropertyChanged(property, undefined);
     }
