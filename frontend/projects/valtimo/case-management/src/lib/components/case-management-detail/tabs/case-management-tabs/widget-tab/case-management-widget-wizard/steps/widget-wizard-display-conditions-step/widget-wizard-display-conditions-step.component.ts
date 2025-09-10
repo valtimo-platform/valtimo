@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {
   CarbonMultiInputModule,
   ListItemWithId,
@@ -25,15 +25,15 @@ import {
 import {BehaviorSubject, map, Observable} from 'rxjs';
 import {FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
-import {CaseWidgetDisplayProperties, Operator} from '@valtimo/case';
+import {Condition, Operator} from '@valtimo/case';
 import {DropdownModule, InputModule, StructuredListModule, ToggleModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../../../../../services';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 
 @Component({
-  selector: 'valtimo-widget-wizard-display-step',
-  templateUrl: './widget-wizard-display-step.component.html',
+  selector: 'valtimo-widget-wizard-display-conditions-step',
+  templateUrl: './widget-wizard-display-conditions-step.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
@@ -49,7 +49,7 @@ import {ActivatedRoute} from '@angular/router';
     TranslatePipe,
   ],
 })
-export class WidgetWizardDisplayStepComponent implements OnInit{
+export class WidgetWizardDisplayConditionsStepComponent implements OnInit{
   constructor(
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
@@ -59,7 +59,6 @@ export class WidgetWizardDisplayStepComponent implements OnInit{
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
-  public readonly useConditionsToDisplay$ = new BehaviorSubject<boolean>(false);
   public readonly defaultConditionValues$ = new BehaviorSubject<MultiInputValues | null>(null);
   public readonly allConditionsValid$ = new BehaviorSubject<boolean>(true);
 
@@ -87,7 +86,6 @@ export class WidgetWizardDisplayStepComponent implements OnInit{
     );
 
   public readonly form = this.fb.group({
-    useConditionsToDisplay: this.fb.control(null),
     conditions: this.fb.control(null),
   });
 
@@ -115,28 +113,15 @@ export class WidgetWizardDisplayStepComponent implements OnInit{
         }))
       );
     }
-    this.widgetWizardService.widgetDisplay.update(display => ({
-      ...(display as CaseWidgetDisplayProperties),
-      displayConditions: this.conditions.value,
-    }));
-  }
-
-  public onChangeUseConditionsToDisplay(event: boolean): void {
-    this.useConditionsToDisplay$.next(event);
-    this.widgetWizardService.widgetDisplay.update(display => ({
-      ...(display as CaseWidgetDisplayProperties),
-      useConditionsToDisplay: event,
-    }));
+    this.widgetWizardService.widgetDisplayConditions.set(this.conditions.value);
   }
 
   private prefill(): void {
-    const formData = (this.widgetWizardService.widgetDisplay() as CaseWidgetDisplayProperties);
-    if (!formData) return;
+    const conditions = (this.widgetWizardService.widgetDisplayConditions() as Array<Condition>);
+    if (!conditions) return;
 
-    console.log('formData', formData)
-    this.useConditionsToDisplay$.next(formData.useConditionsToDisplay || false)
     this.defaultConditionValues$.next(
-      formData.displayConditions.map(condition => ({
+      conditions.map(condition => ({
         key: condition.path,
         dropdown: condition.operator,
         value: condition.value,

@@ -21,7 +21,7 @@ import {
   CaseWidgetType,
   CaseWidgetWidth,
   WidgetContentProperties,
-  CaseWidgetDisplayProperties,
+  Condition,
 } from '@valtimo/case';
 import {WidgetStyle, WidgetTypeSelection} from '../models';
 
@@ -37,7 +37,7 @@ export class WidgetWizardService {
 
   public readonly $widgetContent: WritableSignal<WidgetContentProperties | null> = signal(null);
 
-  public readonly widgetDisplay: WritableSignal<CaseWidgetDisplayProperties | null> = signal(null);
+  public readonly widgetDisplayConditions: WritableSignal<Array<Condition> | null> = signal(null);
 
   public readonly widgetTitle: WritableSignal<string | null> = signal(null);
 
@@ -54,8 +54,7 @@ export class WidgetWizardService {
     highContrast: (this.widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
     properties: this.widgetContent() ?? ({} as any),
     actions: this.widgetActions() ?? [],
-    useConditionsToDisplay: this.widgetDisplay().useConditionsToDisplay ?? false,
-    displayConditions: this.widgetDisplay().displayConditions ?? [],
+    displayConditions: this.widgetDisplayConditions() ?? [],
   }));
 
   public readonly $editMode: WritableSignal<boolean> = signal(false);
@@ -65,7 +64,7 @@ export class WidgetWizardService {
     this.widgetWidth.set(null);
     this.widgetStyle.set(null);
     this.widgetContent.set(null);
-    this.widgetDisplay.set(null);
+    this.widgetDisplayConditions.set(null);
     this.widgetTitle.set(null);
     this.widgetKey.set(null);
     this.widgetActions.set(undefined);

@@ -933,6 +933,7 @@
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
       }
     },
+    "displayConditions": {} ,
     "cancelModal": {
       "title": "Leaving the editor",
       "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost."

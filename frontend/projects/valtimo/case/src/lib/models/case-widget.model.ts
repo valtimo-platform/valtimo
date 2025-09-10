@@ -35,11 +35,6 @@ enum CaseWidgetType {
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
 type CollectionFieldWidth = 'half' | 'full';
 
-interface CaseWidgetDisplayProperties {
-  useConditionsToDisplay: boolean;
-  displayConditions: Array<Condition>;
-}
-
 interface CaseWidgetAction {
   name?: string;
   processDefinitionKey: string;
@@ -53,7 +48,6 @@ interface BasicCaseWidget {
   key: string;
   properties: WidgetContentProperties;
   actions?: CaseWidgetAction[];
-  useConditionsToDisplay: boolean;
   displayConditions: Array<Condition>;
 }
 
@@ -195,7 +189,6 @@ export {
   CaseWidgetWidthsPx,
   CaseWidgetWithUuid,
   CaseWidgetXY,
-  CaseWidgetDisplayProperties,
   CollectionFieldWidth,
   FieldsCaseWidget,
   FieldsCaseWidgetValue,
