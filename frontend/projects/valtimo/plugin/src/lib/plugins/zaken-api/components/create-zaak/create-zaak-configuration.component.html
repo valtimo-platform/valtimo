@@ -90,8 +90,8 @@
         [widthInPx]="350"
       ></v-select>
 
-      <div class="row">
-        <div class="col-12">
+      <div class="property-row">
+        <div class="property-input-col">
           <button
             cdsButton="primary"
             class="add-button"
@@ -107,8 +107,8 @@
       </div>
 
       @for (property of propertyList; track property) {
-        <div class="row">
-          <div class="col-11">
+        <div class="property-row">
+          <div class="property-input-col">
             @switch (property) {
               @case (CASE_GEOMETRY_TYPE) {
                 <v-input
@@ -147,7 +147,7 @@
               }
             }
           </div>
-          <div class="col-1">
+          <div class="property-delete-col">
             @if (property !== CASE_GEOMETRY_COORDINATES) {
               <button
                 class="btn btn-space delete-button"
