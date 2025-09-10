@@ -56,3 +56,17 @@ button.add-button {
     margin: 16px;
   }
 }
+
+div.property-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 92% 8%; /* precise 95/5 split */
+}
+div.property-row > * {
+  box-sizing: border-box; /* keeps borders/padding inside the column width */
+  min-width: 0;           /* prevents overflow from long content */
+}
+div.property-input-col  { }
+div.property-delete-col {
+  margin-left: auto;
+}
