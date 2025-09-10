@@ -109,48 +109,42 @@
       @for (property of propertyList; track property) {
         <div class="row">
           <div class="col-11">
-            @if (property === CASE_GEOMETRY_TYPE) {
-              <v-input
-                [name]="CASE_GEOMETRY_TYPE"
-                [title]="translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async"
-                [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
-                (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
-                [required]="true"
-                [margin]="true"
-                [presetOptions]="geometryTypes"
-              />
-            } @else if (property === CASE_GEOMETRY_COORDINATES) {
-              <v-input
-                [name]="CASE_GEOMETRY_COORDINATES"
-                [title]="translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async"
-                [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
-                [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
-                (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
-                [required]="true"
-                [margin]="true"
-              />
-            } @else if (property.includes('Date')) {
-              <v-input
-                [name]="property"
-                [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
-                [tooltip]="'dateformatTooltip' | pluginTranslate: pluginId | async"
-                [defaultValue]="prefillValueFor(property, obs.prefill)"
-                (valueChange)="onPropertyChanged(property, $event)"
-                [required]="true"
-                [margin]="true"
-                [trim]="true"
-              ></v-input>
-            } @else {
-              <v-input
-                [name]="property"
-                [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
-                [defaultValue]="prefillValueFor(property, obs.prefill)"
-                (valueChange)="onPropertyChanged(property, $event)"
-                [required]="true"
-                [margin]="true"
-                [trim]="true"
-                [presetOptions]="property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []"
-              />
+            @switch (property) {
+              @case (CASE_GEOMETRY_TYPE) {
+                <v-input
+                  [name]="CASE_GEOMETRY_TYPE"
+                  [title]="translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async"
+                  [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
+                  (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
+                  [required]="true"
+                  [margin]="true"
+                  [presetOptions]="geometryTypes"
+                />
+              }
+              @case (CASE_GEOMETRY_COORDINATES) {
+                <v-input
+                  [name]="CASE_GEOMETRY_COORDINATES"
+                  [title]="translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async"
+                  [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
+                  [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
+                  (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
+                  [required]="true"
+                  [margin]="true"
+                />
+              }
+              @default {
+                <v-input
+                  [name]="property"
+                  [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
+                  [tooltip]="property.includes('Date') ? ('dateformatTooltip' | pluginTranslate: pluginId | async) : null"
+                  [defaultValue]="prefillValueFor(property, obs.prefill)"
+                  (valueChange)="onPropertyChanged(property, $event)"
+                  [required]="true"
+                  [margin]="true"
+                  [trim]="true"
+                  [presetOptions]="property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []"
+                />
+              }
             }
           </div>
           <div class="col-1">
