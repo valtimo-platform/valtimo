@@ -63,7 +63,7 @@ interface CreateMedewerkerZaakRolConfig {
   identificatie: string;
   achternaam: string;
   voorletters: string;
-  voorvoegselAchternaam: string;
+  voorvoegselAchternaam?: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
 }
@@ -81,6 +81,7 @@ interface CreateOrganisatorischeEenheidZaakRolConfig {
 interface CreateVestigingZaakRolConfig {
   roltypeUrl: string;
   rolToelichting: string;
+  handelsnaam?: string;
   kvkNummer: string;
   vestigingsNummer: string;
 }
