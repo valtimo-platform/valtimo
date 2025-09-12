@@ -262,5 +262,7 @@ export * from './lib/directives/muuri/muuri-item.component';
 export * from './lib/directives/read-only.directive';
 // auto key
 export * from './lib/components/auto-key-input/auto-key-input.component';
+// context-menu
+export * from './lib/directives/context-menu.directive';
 // interfaces
 export * from './lib/interfaces';

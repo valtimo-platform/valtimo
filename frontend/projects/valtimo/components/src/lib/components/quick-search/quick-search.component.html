@@ -1,12 +1,36 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <ng-container
   *ngIf="{paramsToSave: paramsToSave$ | async, quickSearchItems: quickSearchItems$ | async} as obs"
 >
   @for (item of obs.quickSearchItems; track item.title) {
-    <cds-tag type="blue" (click)="onItemClick(item)">
-      {{ item.title }}
-
-      <svg cdsTagIcon cdsIcon="trash-can" size="16" (click)="deleteItem(item, $event)"></svg>
-    </cds-tag>
+    <cds-tooltip
+      [description]="'quickSearch.rightClickTooltip' | translate"
+      [enterDelayMs]="TOOLTIP_DELAY"
+    >
+      <cds-tag
+        type="blue"
+        [valtimoContextMenu]="contextMenuTpl"
+        [contextData]="item"
+        (click)="onItemClick(item)"
+      >
+        {{ item.title }}
+      </cds-tag>
+    </cds-tooltip>
   }
 
   <valtimo-quick-search-modal
@@ -22,4 +46,12 @@
     titleTranslationKey="quickSearch.deleteModalTitle"
     (confirmEvent)="onDeleteConfirm($event)"
   ></valtimo-confirmation-modal>
+
+  <ng-template #contextMenuTpl let-data="data" let-close="close">
+    <cds-overflow-menu-option (click)="deleteItem(data); close()">
+      {{ 'interface.delete' | translate }}
+
+      <svg cdsIcon="trash-can" size="16"></svg
+    ></cds-overflow-menu-option>
+  </ng-template>
 </ng-container>
