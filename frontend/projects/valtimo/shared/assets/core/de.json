@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Aufgabefrist gesetzt > {{taskName}}"
   },
   "case": {
+    "exportButtonTooltip": "Aktuelle Aktenliste exportieren",
     "summaryFormNotFound": "Zusammenfassungsformular für '{{caseDefinitionKey}}' wurde nicht gefunden. Es muss ein Formular mit dem Namen '{{caseDefinitionKey}}.summary' existieren, das den Falldefinitionsschlüssel verwendet.",
     "bulkAssign": {
       "assign": "Zuweisen",
@@ -802,9 +803,7 @@
         "title": "Keine Tags konfiguriert",
         "description": "Klicken Sie hier, um einen Tag für diesen Casetyp zu konfigurieren"
       },
-      "noResultsFinalVersion": {
-        "description": "Für diesen Vorgangstyp wurden keine Tags erstellt."
-      }
+      "noResultsFinalVersion": {"description": "Für diesen Vorgangstyp wurden keine Tags erstellt."}
     },
     "draftWarning": {
       "title": "Nicht mit einer Version des Case verknüpft",
@@ -1590,6 +1589,8 @@
     "selectDefaultSort": "Wählen Sie eine Standardsortierung aus",
     "sortableYes": "Ja",
     "sortableNo": "Nein",
+    "exportField": "Exportierbar",
+    "exportTooltip": "Es können nur Felder des Dokuments oder des Dossiers exportiert werden. Wenn ein anderer Feldtyp ausgewählt wird, wird die Export-Schaltfläche auf ‚deaktiviert‘ gesetzt.",
     "sortableAsc": "Aufsteigend",
     "sortableDesc": "Absteigend",
     "hasEnvConfigWarningTitle": "Dieser Dossiertyp hat bereits eine Spaltenkonfiguration",

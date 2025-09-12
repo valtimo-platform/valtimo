@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
   },
   "case": {
+    "exportButtonTooltip": "Export current case list",
     "summaryFormNotFound": "Summary form not found for '{{caseDefinitionKey}}'. A form named '{{caseDefinitionKey}}.summary' must exist using the case definition key.",
     "bulkAssign": {
       "assign": "Assign to",
@@ -772,9 +773,7 @@
         "title": "No statuses configured",
         "description": "Click here to configure a status for this case type"
       },
-      "noResultsFinalVersion": {
-        "description": "No statuses have been created for this case type."
-      }
+      "noResultsFinalVersion": {"description": "No statuses have been created for this case type."}
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -790,9 +789,7 @@
         "title": "No tags configured",
         "description": "Click here to configure a tag for this case type"
       },
-      "noResultsFinalVersion": {
-        "description": "No tags have been created for this case type."
-      }
+      "noResultsFinalVersion": {"description": "No tags have been created for this case type."}
     },
     "draftWarning": {
       "title": "Not linked to a version of the case",
@@ -1569,6 +1566,8 @@
     "selectDefaultSort": "Select a default sort",
     "sortableYes": "Yes",
     "sortableNo": "No",
+    "exportField": "Exportable",
+    "exportTooltip": "Only fields from the document or the case can be exported. If another type of field is selected, the export button will be set to ‘disabled’.",
     "sortableAsc": "Ascending",
     "sortableDesc": "Descending",
     "hasEnvConfigWarningTitle": "Case type already has a column configuration",

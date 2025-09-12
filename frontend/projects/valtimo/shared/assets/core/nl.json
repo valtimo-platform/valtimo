@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
   },
   "case": {
+    "exportButtonTooltip": "Exporteer huidige dossier lijst",
     "summaryFormNotFound": "Formulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary'.",
     "bulkAssign": {
       "assign": "Toewijzen",
@@ -786,9 +787,7 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {
-        "description": "Er zijn geen status aangemaakt voor dit zaaktype."
-      }
+      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit zaaktype."}
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -809,9 +808,7 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {
-        "description": "Er zijn geen tags aangemaakt voor dit zaaktype."
-      }
+      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit zaaktype."}
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
@@ -1596,6 +1593,8 @@
     "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",
     "sortableNo": "Nee",
+    "exportField": "Exporteerbaar",
+    "exportTooltip": "Alleen velden van het document of het dossier kunnen geëxporteerd worden. Als er een ander type veld wordt gekozen, dan wordt de export knop op 'disabled' staat gezet.",
     "sortableAsc": "Oplopend",
     "sortableDesc": "Aflopend",
     "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolom-configuratie",
