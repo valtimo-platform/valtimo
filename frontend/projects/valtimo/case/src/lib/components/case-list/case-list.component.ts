@@ -29,7 +29,6 @@ import {
   PageTitleService,
   Pagination,
   ViewType,
-  ListHiddenColumn,
 } from '@valtimo/components';
 import {
   AdvancedDocumentSearchRequest,
@@ -572,11 +571,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly statusService: CaseListStatusService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
     private readonly caseExportService: CaseExportService,
-    private readonly iconService: IconService,
     private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService
-  ) {
-    this.iconService.registerAll([View16]);
-  }
+  ) {}
 
   public ngOnInit(): void {
     this.setVisibleTabs();

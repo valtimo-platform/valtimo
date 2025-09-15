@@ -1930,5 +1930,9 @@
       "<": "Less than",
       "<=": "Less than or equal to"
     }
+  },
+  "listViewColumns": {
+    "title": "Columns available for view",
+    "columnCount": "{{count}} of {{total}}"
   }
 }

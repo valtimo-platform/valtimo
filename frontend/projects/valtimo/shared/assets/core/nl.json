@@ -1963,5 +1963,9 @@
       "<": "Minder dan",
       "<=": "Minder dan of gelijk aan"
     }
+  },
+  "listViewColumns": {
+    "title": "Kolommen beschikbaar voor weergave",
+    "columnCount": "{{count}} van {{total}}"
   }
 }

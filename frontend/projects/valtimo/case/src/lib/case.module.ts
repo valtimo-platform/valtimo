@@ -55,7 +55,6 @@ import {
   ValtimoCdsOverflowButtonDirective,
   VModalModule,
   WidgetModule,
-  ListColumnViewComponent,
 } from '@valtimo/components';
 import {FormModule} from '@valtimo/form';
 import {ProcessModule} from '@valtimo/process';
