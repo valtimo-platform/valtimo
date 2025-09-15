@@ -15,7 +15,6 @@
  */
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
-import {View16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
@@ -26,10 +25,10 @@ import {
   CarbonPaginationSelection,
   CASES_WITHOUT_STATUS_KEY,
   ListField,
+  ListHiddenColumn,
   PageTitleService,
   Pagination,
   ViewType,
-  ListHiddenColumn,
 } from '@valtimo/components';
 import {
   AdvancedDocumentSearchRequest,
@@ -52,7 +51,7 @@ import {
   SearchFieldValues,
   SortState,
 } from '@valtimo/shared';
-import {IconService, Tab, Tabs} from 'carbon-components-angular';
+import {Tab, Tabs} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
@@ -243,7 +242,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.INTERNAL_STATUS_COLUMN,
   ]);
   private readonly _caseTagsKeys$ = new BehaviorSubject<string[]>([this.CASE_TAGS_COLUMN]);
-  public readonly availableFields$: Observable<Array<ListField>> = combineLatest([
+  public readonly availableFields$: Observable<ListField[]> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
     this._hasApiColumnConfig$,
@@ -292,7 +291,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly fields$ = combineLatest([this.availableFields$, this.hiddenColumns$]).pipe(
+  public readonly fields$: Observable<ListField[]> = combineLatest([
+    this.availableFields$,
+    this.hiddenColumns$,
+  ]).pipe(
     map(([fields, hiddenColumns]) =>
       fields.filter(
         (field: ListField) =>
@@ -569,11 +571,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly statusService: CaseListStatusService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
     private readonly caseExportService: CaseExportService,
-    private readonly iconService: IconService,
     private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService
-  ) {
-    this.iconService.registerAll([View16]);
-  }
+  ) {}
 
   public ngOnInit(): void {
     this.setVisibleTabs();
@@ -739,9 +738,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
           this.caseListHiddenColumnsService.saveHiddenColumns(caseDefinitionKey, hiddenColumns)
         )
       )
-      .subscribe(res => {
-        this._refreshHiddenColumns$.next(null);
-      });
+      .subscribe(() => this._refreshHiddenColumns$.next(null));
   }
 
   private openCaseDefinitionKeySubscription(): void {

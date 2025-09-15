@@ -1938,5 +1938,9 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "listViewColumns": {
+    "title": "Kolommen beschikbaar voor weergave",
+    "columnCount": "{{count}} van {{total}}"
   }
 }

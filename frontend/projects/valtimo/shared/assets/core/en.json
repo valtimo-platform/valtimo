@@ -1905,5 +1905,9 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "listViewColumns": {
+    "title": "Columns available for view",
+    "columnCount": "{{count}} of {{total}}"
   }
 }

@@ -1,3 +1,19 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <cds-overflow-menu
   [customTrigger]="customTrigger"
   [cdsOverflowMenu]="visibleColumns"
@@ -15,17 +31,21 @@
     </button>
 
     <cds-tag type="blue" class="valtimo-list-column-view__tag">
-      {{ $checkedItemsCount() }} {{ 'interface.of' | translate }} {{ $availableFields().length }}
+      {{
+        'listViewColumns.columnCount'
+          | translate
+            : {
+                count: $checkedItemsCount(),
+                total: $availableFields().length,
+              }
+      }}
     </cds-tag>
   </div>
 </ng-template>
 
 <ng-template #visibleColumns>
-  <section
-    class="valtimo-list-column-view__container"
-    (click)="$event.stopImmediatePropagation()"
-  >
-    <h4>Columns available for view</h4>
+  <section class="valtimo-list-column-view__container" (click)="$event.stopImmediatePropagation()">
+    <h4>{{ 'listViewColumns.title' | translate }}</h4>
 
     <div>
       @for (field of $availableFields(); track field.key) {

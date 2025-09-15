@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,18 +21,20 @@ import {
   EventEmitter,
   Input,
   Output,
+  Signal,
   signal,
 } from '@angular/core';
-import {ListField, ListHiddenColumn} from '../../models';
-import {CommonModule} from '@angular/common';
+import {View16} from '@carbon/icons';
+import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule,
   CheckboxModule,
   DialogModule,
   IconModule,
+  IconService,
   TagModule,
 } from 'carbon-components-angular';
-import {TranslateModule} from '@ngx-translate/core';
+import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
 
 @Component({
   selector: 'valtimo-list-column-view',
@@ -35,7 +53,7 @@ import {TranslateModule} from '@ngx-translate/core';
   ],
 })
 export class ListColumnViewComponent {
-  private readonly _$availableFields = signal<(ListField & {selected: boolean | undefined})[]>([]);
+  private readonly _$availableFields = signal<ListAvailableField[]>([]);
   @Input() public set availableFields(value: ListField[]) {
     if (!value) return;
 
@@ -51,24 +69,26 @@ export class ListColumnViewComponent {
   @Output() public readonly viewUpdateEvent = new EventEmitter<ListHiddenColumn[]>();
 
   public readonly $availableFields = computed(() =>
-    this._$availableFields().map(field => {
-      return {
-        ...field,
-        selected:
-          field.selected === undefined
-            ? !this._$hiddenColumns().find(hiddenColumn => hiddenColumn.key === field.key)
-            : field.selected,
-      };
-    })
+    this._$availableFields().map(field => ({
+      ...field,
+      selected:
+        field.selected === undefined
+          ? !this._$hiddenColumns().find(hiddenColumn => hiddenColumn.key === field.key)
+          : field.selected,
+    }))
   );
 
-  public readonly $checkedItemsCount = computed(
+  public readonly $checkedItemsCount: Signal<number> = computed(
     () => this.$availableFields().filter(field => field.selected).length
   );
 
+  constructor(private readonly iconService: IconService) {
+    this.iconService.register(View16);
+  }
+
   public onCheckedChange(selected: boolean, fieldKey: string): void {
-    this._$availableFields.update((fields: (ListField & {selected: boolean | undefined})[]) =>
-      fields.map((field: ListField & {selected: boolean | undefined}) =>
+    this._$availableFields.update((fields: ListAvailableField[]) =>
+      fields.map((field: ListAvailableField) =>
         fieldKey !== field.key ? field : {...field, selected}
       )
     );
