@@ -2,8 +2,7 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService} from '@valtimo/shared';
 import {Observable} from 'rxjs';
-import {CaseListHiddenColumn} from '../models';
-import {ListField} from '@valtimo/components';
+import {ListField, ListHiddenColumn} from '@valtimo/components';
 
 @Injectable({
   providedIn: 'root',
@@ -24,9 +23,9 @@ export class CaseListHiddenColumnsService extends BaseApiService {
 
   public saveHiddenColumns(
     caseDefinitionKey: string,
-    hiddenColumns: CaseListHiddenColumn[]
-  ): Observable<CaseListHiddenColumn[]> {
-    return this.httpClient.post<CaseListHiddenColumn[]>(
+    hiddenColumns: ListHiddenColumn[]
+  ): Observable<ListHiddenColumn[]> {
+    return this.httpClient.post<ListHiddenColumn[]>(
       this.getApiUrl(`v1/case/${caseDefinitionKey}/hidden-list-column`),
       hiddenColumns
     );

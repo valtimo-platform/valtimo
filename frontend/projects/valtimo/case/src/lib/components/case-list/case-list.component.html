@@ -106,11 +106,11 @@
     </ng-container>
 
     <div carbonToolbarContent>
-      <valtimo-case-list-column-view
+      <valtimo-list-column-view
         [fields]="fields$ | async"
         [hiddenColumns]="hiddenColumns$ | async"
         (viewUpdateEvent)="onViewUpdateEvent($event)"
-      ></valtimo-case-list-column-view>
+      ></valtimo-list-column-view>
 
       <ng-container *ngTemplateOutlet="caseListActions"></ng-container>
     </div>

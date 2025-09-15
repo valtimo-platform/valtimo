@@ -229,6 +229,8 @@ export * from './lib/components/render-in-body/render-in-body.component';
 // JSON editor
 export * from './lib/components/json-editor/json-editor.component';
 
+// List column view
+export * from './lib/components/list-column-view/list-column-view.component';
 /*
 directives
  */

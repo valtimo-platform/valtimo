@@ -7,17 +7,34 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {ListField} from '@valtimo/components';
-import {CaseListHiddenColumn} from '../../models';
+import {ListField, ListHiddenColumn} from '../../models';
+import {CommonModule} from '@angular/common';
+import {
+  ButtonModule,
+  CheckboxModule,
+  DialogModule,
+  IconModule,
+  TagModule,
+} from 'carbon-components-angular';
+import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
-  selector: 'valtimo-case-list-column-view',
-  templateUrl: './case-list-column-view.component.html',
-  styleUrl: './case-list-column-view.component.scss',
-  standalone: false,
+  selector: 'valtimo-list-column-view',
+  templateUrl: './list-column-view.component.html',
+  styleUrl: './list-column-view.component.scss',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    DialogModule,
+    TagModule,
+    CheckboxModule,
+    ButtonModule,
+    TranslateModule,
+    IconModule,
+  ],
 })
-export class CaseListColumnViewComponent {
+export class ListColumnViewComponent {
   private readonly _$fields = signal<(ListField & {selected: boolean | undefined})[]>([]);
   @Input() public set fields(value: ListField[]) {
     if (!value) return;
@@ -31,7 +48,7 @@ export class CaseListColumnViewComponent {
     this._$hiddenColumns.set(value);
   }
 
-  @Output() public readonly viewUpdateEvent = new EventEmitter<CaseListHiddenColumn[]>();
+  @Output() public readonly viewUpdateEvent = new EventEmitter<ListHiddenColumn[]>();
 
   public readonly $fields = computed(() =>
     this._$fields().map(field => {

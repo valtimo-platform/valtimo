@@ -29,6 +29,7 @@ import {
   PageTitleService,
   Pagination,
   ViewType,
+  ListHiddenColumn,
 } from '@valtimo/components';
 import {
   AdvancedDocumentSearchRequest,
@@ -95,7 +96,6 @@ import {
   CaseParameterService,
 } from '../../services';
 import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.component';
-import {CaseListHiddenColumn} from '../../models';
 
 @Component({
   standalone: false,
@@ -722,7 +722,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.disableStartButton$.next(disabled);
   }
 
-  public onViewUpdateEvent(hiddenColumns: CaseListHiddenColumn[]): void {
+  public onViewUpdateEvent(hiddenColumns: ListHiddenColumn[]): void {
     this.caseDefinitionKey$
       .pipe(
         take(1),

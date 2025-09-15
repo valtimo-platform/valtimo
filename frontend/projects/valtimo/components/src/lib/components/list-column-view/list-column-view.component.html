@@ -9,12 +9,12 @@
 </cds-overflow-menu>
 
 <ng-template #customTrigger>
-  <div class="valtimo-case-list-column-view__icon">
+  <div class="valtimo-list-column-view__icon">
     <button cdsButton="ghost" (click)="onOpenChange()">
       <svg cdsIcon="view" size="16"></svg>
     </button>
 
-    <cds-tag type="blue" class="valtimo-case-list-column-view__tag">
+    <cds-tag type="blue" class="valtimo-list-column-view__tag">
       {{ $checkedItemsCount() }} {{ 'interface.of' | translate }} {{ $fields().length }}
     </cds-tag>
   </div>
@@ -22,7 +22,7 @@
 
 <ng-template #visibleColumns>
   <section
-    class="valtimo-case-list-column-view__container"
+    class="valtimo-list-column-view__container"
     (click)="$event.stopImmediatePropagation()"
   >
     <h4>Columns available for view</h4>

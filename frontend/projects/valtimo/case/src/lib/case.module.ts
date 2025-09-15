@@ -54,6 +54,7 @@ import {
   ValtimoCdsOverflowButtonDirective,
   VModalModule,
   WidgetModule,
+  ListColumnViewComponent,
 } from '@valtimo/components';
 import {ConfigModule, HttpLoaderFactory} from '@valtimo/shared';
 import {FormModule} from '@valtimo/form';
@@ -104,7 +105,6 @@ import {CaseDetailWidgetsComponent} from './components/case-detail/tab/widgets/w
 import {CaseDetailTaskListComponent} from './components/case-detail-task-list/case-detail-task-list.component';
 import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
 import {AngularSplitModule} from 'angular-split';
-import {CaseListColumnViewComponent} from './components/case-list-column-view/case-list-column-view.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -127,7 +127,6 @@ export type TabsFactory = () => Map<string, object>;
     CaseAssignUserComponent,
     NoteModalComponent,
     CaseDetailTabFormioComponent,
-    CaseListColumnViewComponent,
   ],
   imports: [
     CommonModule,
@@ -198,6 +197,7 @@ export type TabsFactory = () => Map<string, object>;
     CarbonInputModule,
     TooltipModule,
     CheckboxModule,
+    ListColumnViewComponent,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
 })
