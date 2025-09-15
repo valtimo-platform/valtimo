@@ -2,14 +2,13 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   EventEmitter,
   Input,
   Output,
   signal,
-  WritableSignal,
 } from '@angular/core';
 import {ListField} from '@valtimo/components';
+import {CaseListHiddenColumn} from '../../models';
 
 @Component({
   selector: 'valtimo-case-list-column-view',
@@ -19,37 +18,51 @@ import {ListField} from '@valtimo/components';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseListColumnViewComponent {
-  private _checkChangeInit = false;
-
-  private readonly _$fields = signal<(ListField & {selected: boolean})[]>([]);
+  private readonly _$fields = signal<(ListField & {selected: boolean | undefined})[]>([]);
   @Input() public set fields(value: ListField[]) {
     if (!value) return;
-    this._$fields.set(value.map(item => ({...item, selected: true})));
+
+    this._$fields.set(value.map(item => ({...item, selected: undefined})));
   }
-  public get $fields(): WritableSignal<(ListField & {selected: boolean})[]> {
-    return this._$fields;
+
+  private readonly _$hiddenColumns = signal<ListField[]>([]);
+  @Input() public set hiddenColumns(value: ListField[] | undefined) {
+    if (!value) return;
+    this._$hiddenColumns.set(value);
   }
-  @Output() public readonly viewUpdateEvent = new EventEmitter<string[]>();
+
+  @Output() public readonly viewUpdateEvent = new EventEmitter<CaseListHiddenColumn[]>();
+
+  public readonly $fields = computed(() =>
+    this._$fields().map(field => {
+      return {
+        ...field,
+        selected:
+          field.selected === undefined
+            ? !this._$hiddenColumns().find(hiddenColumn => hiddenColumn.key === field.key)
+            : field.selected,
+      };
+    })
+  );
 
   public readonly $checkedItemsCount = computed(
     () => this.$fields().filter(field => field.selected).length
   );
 
-  constructor() {
-    effect(() => {
-      const keys = this.$fields().flatMap(field => (field.selected ? [field.key] : []));
-      if (!!this._checkChangeInit) this.viewUpdateEvent.emit(keys);
-    });
-  }
-
   public onCheckedChange(selected: boolean, fieldKey: string): void {
-    if (!this._checkChangeInit) {
-      this._checkChangeInit = true;
-    }
-    this.$fields.update((fields: (ListField & {selected: boolean})[]) =>
-      fields.map((field: ListField & {selected: boolean}) =>
+    this._$fields.update((fields: (ListField & {selected: boolean | undefined})[]) =>
+      fields.map((field: ListField & {selected: boolean | undefined}) =>
         fieldKey !== field.key ? field : {...field, selected}
       )
     );
+  }
+
+  public onOpenChange(paneOpen: boolean | undefined): void {
+    if (paneOpen === undefined || paneOpen) return;
+    const hiddenColumns = this.$fields().flatMap(field =>
+      !field.selected ? [{columnKey: field.key}] : []
+    );
+
+    this.viewUpdateEvent.emit(hiddenColumns);
   }
 }

@@ -87,6 +87,7 @@ import {
   CaseExportService,
   CaseListAssigneeService,
   CaseListCaseTagService,
+  CaseListHiddenColumnsService,
   CaseListPaginationService,
   CaseListSearchService,
   CaseListService,
@@ -94,6 +95,7 @@ import {
   CaseParameterService,
 } from '../../services';
 import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.component';
+import {CaseListHiddenColumn} from '../../models';
 
 @Component({
   standalone: false,
@@ -155,6 +157,13 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$;
 
   public readonly selectedCaseIds$ = new BehaviorSubject<string[]>([]);
+  private readonly _refreshHiddenColumns$ = new BehaviorSubject<null>(null);
+  public readonly hiddenColumns$: Observable<ListField[]> = this._refreshHiddenColumns$.pipe(
+    switchMap(() => this.caseDefinitionKey$),
+    switchMap((caseDefinitionKey: string) =>
+      this.caseListHiddenColumnsService.getHiddenColumns(caseDefinitionKey)
+    )
+  );
 
   public readonly schema$ = this.listService.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey => this.documentService.getDocumentDefinition(caseDefinitionKey)),
@@ -551,7 +560,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly statusService: CaseListStatusService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
     private readonly caseExportService: CaseExportService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService
   ) {
     this.iconService.registerAll([View16]);
   }
@@ -712,8 +722,17 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.disableStartButton$.next(disabled);
   }
 
-  public onViewUpdateEvent(visibleColumns: string[]): void {
-    console.log({visibleColumns});
+  public onViewUpdateEvent(hiddenColumns: CaseListHiddenColumn[]): void {
+    this.caseDefinitionKey$
+      .pipe(
+        take(1),
+        switchMap((caseDefinitionKey: string) =>
+          this.caseListHiddenColumnsService.saveHiddenColumns(caseDefinitionKey, hiddenColumns)
+        )
+      )
+      .subscribe(res => {
+        this._refreshHiddenColumns$.next(null);
+      });
   }
 
   private openCaseDefinitionKeySubscription(): void {

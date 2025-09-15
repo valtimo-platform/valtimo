@@ -108,6 +108,7 @@
     <div carbonToolbarContent>
       <valtimo-case-list-column-view
         [fields]="fields$ | async"
+        [hiddenColumns]="hiddenColumns$ | async"
         (viewUpdateEvent)="onViewUpdateEvent($event)"
       ></valtimo-case-list-column-view>
 

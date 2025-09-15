@@ -1,22 +1,30 @@
-<div class="valtimo-case-list-column-view__icon">
-  <button
-    [cdsOverflowMenu]="visibleColumns"
-    [customPane]="true"
-    cdsButton="ghost"
-    [flip]="true"
-    [offset]="{x: 0, y: 47}"
-    placement="bottom"
-  >
-    <svg cdsIcon="view" size="16"></svg>
-  </button>
+<cds-overflow-menu
+  [customTrigger]="customTrigger"
+  [cdsOverflowMenu]="visibleColumns"
+  [customPane]="true"
+  [offset]="{x: -2, y: 74}"
+  placement="bottom"
+  (openChange)="onOpenChange($event)"
+>
+</cds-overflow-menu>
 
-  <cds-tag type="blue" class="valtimo-case-list-column-view__tag">
-    {{ $checkedItemsCount() }} {{ 'interface.of' | translate }} {{ $fields().length }}
-  </cds-tag>
-</div>
+<ng-template #customTrigger>
+  <div class="valtimo-case-list-column-view__icon">
+    <button cdsButton="ghost" (click)="onOpenChange()">
+      <svg cdsIcon="view" size="16"></svg>
+    </button>
+
+    <cds-tag type="blue" class="valtimo-case-list-column-view__tag">
+      {{ $checkedItemsCount() }} {{ 'interface.of' | translate }} {{ $fields().length }}
+    </cds-tag>
+  </div>
+</ng-template>
 
 <ng-template #visibleColumns>
-  <section class="valtimo-case-list-column-view__container" (click)="$event.stopImmediatePropagation()">
+  <section
+    class="valtimo-case-list-column-view__container"
+    (click)="$event.stopImmediatePropagation()"
+  >
     <h4>Columns available for view</h4>
 
     <div>
