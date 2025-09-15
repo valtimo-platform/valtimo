@@ -243,7 +243,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.INTERNAL_STATUS_COLUMN,
   ]);
   private readonly _caseTagsKeys$ = new BehaviorSubject<string[]>([this.CASE_TAGS_COLUMN]);
-  public readonly fields$: Observable<Array<ListField>> = combineLatest([
+  public readonly availableFields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
     this._hasApiColumnConfig$,
@@ -289,7 +289,16 @@ export class CaseListComponent implements OnInit, OnDestroy {
       ) && !hasApiConfig
         ? [...fieldsToReturn, this._statusField]
         : fieldsToReturn;
-    }),
+    })
+  );
+
+  public readonly fields$ = combineLatest([this.availableFields$, this.hiddenColumns$]).pipe(
+    map(([fields, hiddenColumns]) =>
+      fields.filter(
+        (field: ListField) =>
+          !hiddenColumns.find((hiddenColumn: ListField) => hiddenColumn.key === field.key)
+      )
+    ),
     tap(listFields => {
       const defaultListField = listFields.find(field => field.default);
       // set default sort state if no pagination query parameters for sorting are available

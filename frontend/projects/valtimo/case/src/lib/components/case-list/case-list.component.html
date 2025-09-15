@@ -16,6 +16,7 @@
 
 <ng-container
   *ngIf="{
+    availableFields: availableFields$ | async,
     fields: fields$ | async,
     documentItems: documentItems$ | async,
     noResultsMessage: noResultsMessage$ | async,
@@ -107,7 +108,7 @@
 
     <div carbonToolbarContent>
       <valtimo-list-column-view
-        [fields]="fields$ | async"
+        [availableFields]="availableFields$ | async"
         [hiddenColumns]="hiddenColumns$ | async"
         (viewUpdateEvent)="onViewUpdateEvent($event)"
       ></valtimo-list-column-view>

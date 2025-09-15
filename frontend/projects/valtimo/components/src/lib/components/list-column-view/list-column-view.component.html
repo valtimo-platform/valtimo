@@ -15,7 +15,7 @@
     </button>
 
     <cds-tag type="blue" class="valtimo-list-column-view__tag">
-      {{ $checkedItemsCount() }} {{ 'interface.of' | translate }} {{ $fields().length }}
+      {{ $checkedItemsCount() }} {{ 'interface.of' | translate }} {{ $availableFields().length }}
     </cds-tag>
   </div>
 </ng-template>
@@ -28,7 +28,7 @@
     <h4>Columns available for view</h4>
 
     <div>
-      @for (field of $fields(); track field.key) {
+      @for (field of $availableFields(); track field.key) {
         <cds-checkbox
           [disabled]="field.selected && $checkedItemsCount() === 1"
           [checked]="field.selected"

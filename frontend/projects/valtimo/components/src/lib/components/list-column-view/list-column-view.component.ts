@@ -35,11 +35,11 @@ import {TranslateModule} from '@ngx-translate/core';
   ],
 })
 export class ListColumnViewComponent {
-  private readonly _$fields = signal<(ListField & {selected: boolean | undefined})[]>([]);
-  @Input() public set fields(value: ListField[]) {
+  private readonly _$availableFields = signal<(ListField & {selected: boolean | undefined})[]>([]);
+  @Input() public set availableFields(value: ListField[]) {
     if (!value) return;
 
-    this._$fields.set(value.map(item => ({...item, selected: undefined})));
+    this._$availableFields.set(value.map(item => ({...item, selected: undefined})));
   }
 
   private readonly _$hiddenColumns = signal<ListField[]>([]);
@@ -50,8 +50,8 @@ export class ListColumnViewComponent {
 
   @Output() public readonly viewUpdateEvent = new EventEmitter<ListHiddenColumn[]>();
 
-  public readonly $fields = computed(() =>
-    this._$fields().map(field => {
+  public readonly $availableFields = computed(() =>
+    this._$availableFields().map(field => {
       return {
         ...field,
         selected:
@@ -63,11 +63,11 @@ export class ListColumnViewComponent {
   );
 
   public readonly $checkedItemsCount = computed(
-    () => this.$fields().filter(field => field.selected).length
+    () => this.$availableFields().filter(field => field.selected).length
   );
 
   public onCheckedChange(selected: boolean, fieldKey: string): void {
-    this._$fields.update((fields: (ListField & {selected: boolean | undefined})[]) =>
+    this._$availableFields.update((fields: (ListField & {selected: boolean | undefined})[]) =>
       fields.map((field: ListField & {selected: boolean | undefined}) =>
         fieldKey !== field.key ? field : {...field, selected}
       )
@@ -76,7 +76,7 @@ export class ListColumnViewComponent {
 
   public onOpenChange(paneOpen: boolean | undefined): void {
     if (paneOpen === undefined || paneOpen) return;
-    const hiddenColumns = this.$fields().flatMap(field =>
+    const hiddenColumns = this.$availableFields().flatMap(field =>
       !field.selected ? [{columnKey: field.key}] : []
     );
 
