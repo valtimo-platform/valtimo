@@ -46,7 +46,6 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';
   protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
 
-  private readonly DATA_TEST_ID_PREFIX: string = 'patch-zaak-property_';
   private readonly _formValue$ = new BehaviorSubject<PatchZaakConfig>({});
   private readonly _properties = new Map<PatchZaakProperties, string>();
   private _saveSubscription!: Subscription;
@@ -81,8 +80,8 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   public onPropertyChanged(property: PatchZaakProperties, value: any): void {
     this._properties.set(property, value);
     const formValue = this._formValue$.value;
-    this._properties.forEach((value, key) => {
-        formValue[key] = value;
+    this._properties.forEach((pValue, pKey) => {
+        formValue[pKey] = pValue;
     });
     this.onFormValueChanged(formValue);
   }
@@ -100,14 +99,24 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   }
 
   public addProperty(property: PatchZaakProperties): void {
-    this.propertyList.push(property);
+    // only add the property to the list if it is not in the list
+    if (this.propertyList.indexOf(property) == -1) {
+      this.propertyList.push(property);
+      this.onPropertyChanged(property, undefined);
+    }
+    // add linked field coordinates
+    if (property === this.CASE_GEOMETRY_TYPE) {
+      this.addProperty(this.CASE_GEOMETRY_COORDINATES as PatchZaakProperties);
+    }
   }
 
   public removeProperty(property: PatchZaakProperties): void {
-    this.propertyList.splice(this.propertyList.indexOf(property), 1);
-    this._properties.delete(property);
-    this.onPropertyChanged(property, undefined);
-
+    // only remove the property from the list if it is in the list
+    if (this.propertyList.indexOf(property) != -1) {
+      this.propertyList.splice(this.propertyList.indexOf(property), 1);
+      this.onPropertyChanged(property, undefined);
+    }
+    // remove linked field coordinates
     if (property === this.CASE_GEOMETRY_TYPE) {
       this.removeProperty(this.CASE_GEOMETRY_COORDINATES as PatchZaakProperties);
     }
@@ -115,19 +124,6 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
 
   public hasPropertyBeenAdded(property: PatchZaakProperties): boolean {
     return this.propertyList.indexOf(property) !== -1;
-  }
-
-  public dataTestIdFor(property: PatchZaakProperties): string {
-    return this.DATA_TEST_ID_PREFIX + property
-  }
-
-  public presetPropertyWithValue(property: PatchZaakProperties, value: string): void {
-    const input =
-      document.querySelector<HTMLInputElement>(`[data-testid="${this.DATA_TEST_ID_PREFIX + property}"]`);
-    if (input) {
-      input.value = value;
-      input.dispatchEvent(new Event('input'));
-    }
   }
 
   private handleValid(formValue: PatchZaakConfig): void {

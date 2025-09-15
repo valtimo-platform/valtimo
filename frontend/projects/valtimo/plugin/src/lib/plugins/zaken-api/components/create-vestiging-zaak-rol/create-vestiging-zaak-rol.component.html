@@ -47,19 +47,6 @@
   </v-input>
 
   <v-input
-    name="kvkNummer"
-    [title]="'kvkNummer' | pluginTranslate: pluginId | async"
-    [margin]="true"
-    [defaultValue]="obs.prefill?.kvkNummer"
-    [disabled]="obs.disabled"
-    [required]="true"
-    [trim]="true"
-    [tooltip]="'kvkNummerTooltip' | pluginTranslate: pluginId | async"
-    [fullWidth]="true"
-  >
-  </v-input>
-
-  <v-input
     name="vestigingsNummer"
     [title]="'vestigingsNummer' | pluginTranslate: pluginId | async"
     [margin]="true"
@@ -68,6 +55,32 @@
     [required]="true"
     [trim]="true"
     [tooltip]="'vestigingsNummerTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
+
+  <v-input
+    name="handelsnaam"
+    [title]="'handelsnaam' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.handelsnaam"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [trim]="true"
+    [tooltip]="'handelsnaamTooltip' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
+
+  <v-input
+    name="kvkNummer"
+    [title]="'kvkNummer' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.kvkNummer"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [trim]="true"
+    [tooltip]="'kvkNummerTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >
   </v-input>

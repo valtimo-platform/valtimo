@@ -56,6 +56,7 @@
 
   <valtimo-task-detail-modal
     #taskDetail
+    [openFromCaseManagement]="true"
     [modalSize]="formSize$ | async"
     (formSubmit)="onFormSubmit()"
     (assignmentOfTaskChanged)="refresh()"

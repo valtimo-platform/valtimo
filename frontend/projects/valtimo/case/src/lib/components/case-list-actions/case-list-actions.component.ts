@@ -117,19 +117,12 @@ export class CaseListActionsComponent implements OnInit {
     const associatedProcessDocumentDefinitions = this._cachedAssociatedProcessDocumentDefinitions;
     const hasExternalStartForm = this._caseSettings?.hasExternalStartForm;
 
-    if (associatedProcessDocumentDefinitions.length > 1) {
-      this.startSelectionModalOpen$.next(true);
+    if (hasExternalStartForm && associatedProcessDocumentDefinitions.length === 0) {
+      this.openExternalCaseStartForm();
+    } else if (associatedProcessDocumentDefinitions.length === 1 && !hasExternalStartForm) {
+      this.selectProcess(associatedProcessDocumentDefinitions[0]);
     } else {
-      this.selectedProcessDefinitionCaseDefinition = associatedProcessDocumentDefinitions[0];
-      this.showStartProcessModal();
-      if (hasExternalStartForm && associatedProcessDocumentDefinitions.length === 0) {
-        this.openExternalCaseStartForm();
-      } else if (associatedProcessDocumentDefinitions.length === 1 && !hasExternalStartForm) {
-        this.selectedProcessDefinitionCaseDefinition = associatedProcessDocumentDefinitions[0];
-        this.showStartProcessModal();
-      } else if (associatedProcessDocumentDefinitions.length > 0) {
-        this.startSelectionModalOpen$.next(true);
-      }
+      this.startSelectionModalOpen$.next(true);
     }
   }
 
