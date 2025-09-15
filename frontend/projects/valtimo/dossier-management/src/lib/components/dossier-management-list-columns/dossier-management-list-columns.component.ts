@@ -58,8 +58,8 @@ import {ListColumnModal} from '../../models';
   styleUrls: ['./dossier-management-list-columns.component.scss'],
 })
 export class DossierManagementListColumnsComponent implements AfterViewInit {
-  readonly downloadName$ = new BehaviorSubject<string>('');
-  readonly downloadUrl$ = new BehaviorSubject<SafeUrl | undefined>(undefined);
+  public readonly downloadName$ = new BehaviorSubject<string>('');
+  public readonly downloadUrl$ = new BehaviorSubject<SafeUrl | undefined>(undefined);
 
   public readonly actionItems: ActionItem[] = [
     {
@@ -114,6 +114,12 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
       sortable: false,
       key: 'defaultSort',
       label: 'listColumn.defaultSort',
+    },
+    {
+      viewType: 'boolean',
+      sortable: false,
+      key: 'exportable',
+      label: 'listColumn.exportField'
     },
   ];
 
@@ -206,6 +212,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
     }),
     enum: new FormControl([]),
     tagAmount: new FormControl(1),
+    exportable: new FormControl(false),
   });
 
   readonly disableDefaultSort$ = combineLatest([
@@ -346,6 +353,8 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
+  public displayExportButton = true;
+
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
@@ -357,6 +366,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
+    this.disableExportToggle();
   }
 
   openModal(modalType: ListColumnModal): void {
@@ -493,6 +503,7 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
           ...(tagAmount && {
             tagAmount: tagAmount,
           }),
+          exportable: column?.exportable,
         });
 
         this.openModal('edit');
@@ -658,6 +669,16 @@ export class DossierManagementListColumnsComponent implements AfterViewInit {
             }),
         },
       },
+      exportable: this.displayExportButton ? formValue.exportable : false,
     };
+  }
+
+  private disableExportToggle(): void {
+    this.formGroup.controls.path.valueChanges
+      .pipe(startWith(this.formGroup.controls.path.value))
+      .subscribe(value => {
+        const pathMustStartWithCaseOrDocRegex = /^(case:|doc:)/;
+        this.displayExportButton = pathMustStartWithCaseOrDocRegex.test(String(value));
+      });
   }
 }

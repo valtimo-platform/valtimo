@@ -199,6 +199,24 @@
 </ng-template>
 
 <ng-template #dossierListActions>
+  <cds-tooltip
+    *ngIf="canExportCase$ | async"
+    [description]="'case.exportButtonTooltip' | translate"
+  >
+    <cds-loading *ngIf="loadingExport" size="sm" class="loading-spinner"></cds-loading>
+
+    <button
+      *ngIf="!loadingExport"
+      data-testid="case-list-export-button"
+      cdsButton="ghost"
+      iconOnly="true"
+      (click)="export()"
+      [disabled]="disableExportButton$ | async"
+    >
+      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+    </button>
+  </cds-tooltip>
+
   <button
     *ngIf="canCreateDocument$ | async"
     cdsButton="primary"

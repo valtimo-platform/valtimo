@@ -76,6 +76,7 @@ import {
 } from '../../constants';
 import {
   CAN_CREATE_CASE_PERMISSION,
+  CAN_EXPORT_CASE_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
   DOSSIER_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
@@ -89,6 +90,7 @@ import {
   DossierListStatusService,
   DossierParameterService,
   DossierListCaseTagService,
+  CaseExportService,
 } from '../../services';
 import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-actions.component';
 
@@ -105,6 +107,7 @@ import {DossierListActionsComponent} from '../dossier-list-actions/dossier-list-
     DossierListSearchService,
     DossierListStatusService,
     DossierListCaseTagService,
+    CaseExportService,
   ],
 })
 export class DossierListComponent implements OnInit, OnDestroy {
@@ -122,6 +125,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public pagination!: Pagination;
   public canHaveAssignee!: boolean;
   public visibleDossierTabs: Array<DossierListTab> | null = null;
+  public loadingExport = false;
 
   public readonly defaultTabs = DEFAULT_DOSSIER_LIST_TABS;
   public readonly tableTranslations = DOSSIER_LIST_TABLE_TRANSLATIONS;
@@ -133,6 +137,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
+  public readonly disableExportButton$ = new BehaviorSubject<boolean>(false);
 
   public readonly searchFields$: Observable<Array<SearchField> | null> =
     this.searchService.documentSearchFields$.pipe(tap(() => (this.loadingSearchFields = false)));
@@ -168,6 +173,22 @@ export class DossierListComponent implements OnInit, OnDestroy {
         identifier: documentDefinitionName,
       })
     )
+  );
+
+  public readonly canExportCase$: Observable<boolean> = this.documentDefinitionName$.pipe(
+    switchMap(caseDefinitionKey =>
+      combineLatest([
+        this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
+          resource: DOSSIER_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+          identifier: caseDefinitionKey,
+        }),
+        this.documentService.getCaseList(caseDefinitionKey),
+      ])
+    ),
+    switchMap(([canExportPermission, caseList]) => {
+      const isExportableColumns = caseList.some(caseListitem => caseListitem.exportable);
+      return of(canExportPermission && isExportableColumns);
+    })
   );
 
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
@@ -483,6 +504,7 @@ export class DossierListComponent implements OnInit, OnDestroy {
     ),
     map(res => {
       if (!Array.isArray(res.data)) return res.data;
+      this.disableExportButton$.next(res.data.length === 0 ? true : false);
       return res.data.map(item => {
         const mappedInternalStatusColumns = res.statusColumnKeys.reduce((acc, curr) => {
           const status = res.statuses.find(
@@ -544,7 +566,8 @@ export class DossierListComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly permissionService: PermissionService,
     private readonly statusService: DossierListStatusService,
-    private readonly dossierListCaseTagService: DossierListCaseTagService
+    private readonly dossierListCaseTagService: DossierListCaseTagService,
+    private readonly caseExportService: CaseExportService
   ) {}
 
   public ngOnInit(): void {
@@ -671,6 +694,12 @@ export class DossierListComponent implements OnInit, OnDestroy {
 
   public startDossier(): void {
     this.listActionsComponent.startDossier();
+  }
+
+  public export(): void {
+    this.caseExportService
+      .downloadExport()
+      .subscribe(data => (this.loadingExport = data.isLoading));
   }
 
   public forceRefresh(): void {

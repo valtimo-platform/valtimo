@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Aufgabefrist gesetzt > {{taskName}}"
   },
   "dossier": {
+    "exportButtonTooltip": "Aktuelle Aktenliste exportieren",
     "bulkAssign": {
       "assign": "Zuweisen",
       "modal": {
@@ -1711,6 +1712,8 @@
     "selectDefaultSort": "Wählen Sie eine Standardsortierung aus",
     "sortableYes": "Ja",
     "sortableNo": "Nein",
+    "exportField": "Exportierbar",
+    "exportTooltip": "Es können nur Felder des Dokuments oder des Dossiers exportiert werden. Wenn ein anderer Feldtyp ausgewählt wird, wird die Export-Schaltfläche auf ‚deaktiviert‘ gesetzt.",
     "sortableAsc": "Aufsteigend",
     "sortableDesc": "Absteigend",
     "hasEnvConfigWarningTitle": "Dieser Dossiertyp hat bereits eine Spaltenkonfiguration",

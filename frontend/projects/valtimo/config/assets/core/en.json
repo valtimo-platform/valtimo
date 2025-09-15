@@ -15,6 +15,7 @@
     "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
   },
   "dossier": {
+    "exportButtonTooltip": "Export current case list",
     "bulkAssign": {
       "assign": "Assign to",
       "modal": {
@@ -1718,6 +1719,8 @@
     "selectDefaultSort": "Select a default sort",
     "sortableYes": "Yes",
     "sortableNo": "No",
+    "exportField": "Exportable",
+    "exportTooltip": "Only fields from the document or the case can be exported. If another type of field is selected, the export button will be set to ‘disabled’.",
     "sortableAsc": "Ascending",
     "sortableDesc": "Descending",
     "hasEnvConfigWarningTitle": "Case type already has a column configuration",

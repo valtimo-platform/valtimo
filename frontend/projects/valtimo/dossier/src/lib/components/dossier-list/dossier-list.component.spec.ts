@@ -27,6 +27,7 @@ import {KeycloakService} from 'keycloak-angular';
 import {DatePipe} from '@angular/common';
 import {MockProvider} from 'ng-mocks';
 import {DossierBulkAssignService} from '../../services';
+import {ToastrModule} from 'ngx-toastr';
 
 describe('DossierListComponent', () => {
   let httpClient: HttpClient;
@@ -34,7 +35,15 @@ describe('DossierListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, HttpClientTestingModule, LoggerTestingModule],
+      imports: [
+        RouterTestingModule,
+        HttpClientTestingModule,
+        LoggerTestingModule,
+        ToastrModule.forRoot({
+          positionClass: 'toast-bottom-full-width',
+          preventDuplicates: true,
+        }),
+      ],
       declarations: [DossierListComponent],
       providers: [
         {
@@ -50,6 +59,7 @@ describe('DossierListComponent', () => {
 
     httpClient = TestBed.inject(HttpClient);
     httpTestingController = TestBed.inject(HttpTestingController);
+
   });
 
   it('should create the component', () => {
