@@ -55,6 +55,7 @@ import {
   ValtimoCdsOverflowButtonDirective,
   VModalModule,
   WidgetModule,
+  ListColumnViewComponent,
 } from '@valtimo/components';
 import {FormModule} from '@valtimo/form';
 import {ProcessModule} from '@valtimo/process';
@@ -89,9 +90,7 @@ import {CaseDetailTaskListComponent} from './components/case-detail-task-list/ca
 import {CaseDetailComponent} from './components/case-detail/case-detail.component';
 import {CaseDetailTabAuditComponent} from './components/case-detail/tab/audit/audit.component';
 import {CaseDetailTabDocumentsComponent} from './components/case-detail/tab/documents/documents.component';
-import {
-  CaseDetailTabFormioComponent,
-} from './components/case-detail/tab/formio/formio.component';
+import {CaseDetailTabFormioComponent} from './components/case-detail/tab/formio/formio.component';
 import {CaseDetailTabNotFoundComponent} from './components/case-detail/tab/not-found/not-found.component';
 import {CaseDetailTabNotesComponent} from './components/case-detail/tab/notes/notes.component';
 import {CaseDetailTabProgressComponent} from './components/case-detail/tab/progress/progress.component';
@@ -106,11 +105,7 @@ import {CaseUpdateComponent} from './components/case-update/case-update.componen
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {TAB_MAP} from './constants';
 import {TabTranslatePipeModule} from './pipes';
-import {
-  CaseBulkAssignService,
-  CaseMenuService,
-  CaseService,
-} from './services';
+import {CaseBulkAssignService, CaseMenuService, CaseService} from './services';
 
 export type TabsFactory = () => Map<string, object>;
 
