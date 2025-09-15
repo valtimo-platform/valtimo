@@ -53,7 +53,6 @@ export class FormComponent implements AfterContentInit, OnDestroy {
   radioComponents!: QueryList<RadioComponent>;
   @ContentChildren(ValuePathSelectorComponent)
   valuePathSelectorComponents!: QueryList<ValuePathSelectorComponent>;
-
   @Input() className = '';
 
   @Output() valueChange: EventEmitter<FormOutput> = new EventEmitter();

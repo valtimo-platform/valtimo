@@ -15,6 +15,9 @@
  */
 
 import {ValtimoWindow} from '@valtimo/shared';
+import {Observable} from 'rxjs';
+
+let formioParams: Observable<{caseDefinitionKey: '', caseDefinitionVersionTag: ''}>;
 
 const modiyEditFormApiKeyInput = (editForm: any): void => {
   const keyField = editForm?.components
@@ -27,9 +30,10 @@ const modiyEditFormApiKeyInput = (editForm: any): void => {
   return editForm;
 };
 
-const addValueResolverSelectorToEditform = (editForm: any): void => {
+const addValueResolverSelectorToEditform = (editForm: any, params: any): void => {
   const valtimoWindow = window as ValtimoWindow;
   const valtimoTabKey = 'valtimo';
+  formioParams = params;
 
   if (valtimoWindow?.flags?.formioValueResolverSelectorComponentRegistered) {
     const tabComponents = editForm?.components?.find(element => element.key === 'tabs')?.components;
@@ -58,4 +62,4 @@ const addValueResolverSelectorToEditform = (editForm: any): void => {
   return editForm;
 };
 
-export {modiyEditFormApiKeyInput, addValueResolverSelectorToEditform};
+export {modiyEditFormApiKeyInput, addValueResolverSelectorToEditform, formioParams};

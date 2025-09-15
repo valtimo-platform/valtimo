@@ -23,6 +23,7 @@ enum PERMISSION_ACTION {
   delete = 'delete',
   edit = 'modify',
   view = 'view',
+  export = 'export',
 }
 
 enum CASE_DETAIL_PERMISSION_RESOURCE {
@@ -71,6 +72,11 @@ const CAN_DELETE_CASE_PERMISSION: PermissionRequest = {
   resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
 };
 
+const CAN_EXPORT_CASE_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.export,
+  resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument
+};
+
 export {
   CAN_ADD_NOTE_PERMISSION,
   CAN_ASSIGN_CASE_PERMISSION,
@@ -81,4 +87,5 @@ export {
   CAN_VIEW_CASE_PERMISSION,
   CAN_CREATE_CASE_PERMISSION,
   CAN_DELETE_CASE_PERMISSION,
+  CAN_EXPORT_CASE_PERMISSION,
 };

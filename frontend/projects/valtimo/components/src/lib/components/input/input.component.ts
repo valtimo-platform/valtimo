@@ -64,6 +64,8 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public placeholder = '';
   @Input() public dataTestId?: string;
   @Input() public trim: boolean = false;
+  @Input() public presetsTitle: string = 'Presets';
+  @Input() public presetOptions: string[] = [];
 
   @Output() public valueChange: EventEmitter<any> = new EventEmitter();
 
@@ -81,7 +83,7 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   private valueSubscription!: Subscription;
   private clearSubscription!: Subscription;
 
-  constructor(private readonly iconService: IconService) {}
+  constructor(private readonly iconService: IconService) { }
 
   public ngOnInit(): void {
     this.setInputType();
@@ -119,6 +121,10 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
 
   public stopCheckboxEventPropagation(event: MouseEvent): void {
     event.stopPropagation();
+  }
+
+  public presetWithValue(value: string): void {
+    this.inputValue$.next(value);
   }
 
   private setDefaultValue(value: any): void {

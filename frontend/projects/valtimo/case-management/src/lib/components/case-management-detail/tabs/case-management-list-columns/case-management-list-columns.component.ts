@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AfterViewInit, Component, computed, signal} from '@angular/core';
+import {AfterViewInit, Component, computed, OnDestroy, signal} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
@@ -43,6 +43,7 @@ import {
   Observable,
   startWith,
   Subject,
+  Subscription,
   switchMap,
   tap,
 } from 'rxjs';
@@ -55,16 +56,13 @@ import {ListColumnModal} from '../../../../models';
   templateUrl: './case-management-list-columns.component.html',
   styleUrls: ['./case-management-list-columns.component.scss'],
 })
-export class CaseManagementListColumnsComponent implements AfterViewInit {
+export class CaseManagementListColumnsComponent implements AfterViewInit, OnDestroy {
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<string | null>(null);
+  private readonly _subscriptions = new Subscription();
 
   public readonly actionItems: ActionItem[] = [
-    {
-      label: 'interface.delete',
-      callback: this.deleteRow.bind(this),
-      type: 'danger',
-    },
+    {label: 'interface.delete', callback: this.deleteRow.bind(this), type: 'danger'},
   ];
 
   public readonly params$ = getCaseManagementRouteParams(this.route);
@@ -74,48 +72,19 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   public readonly lastItemIndex$ = new BehaviorSubject<number>(-1);
 
   public readonly fields: Array<ColumnConfig> = [
-    {
-      viewType: 'string',
-      sortable: false,
-      key: 'title',
-      label: 'listColumn.title',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      key: 'key',
-      label: 'listColumn.key',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      key: 'path',
-      label: 'listColumn.path',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      key: 'displayType',
-      label: 'listColumn.displayType',
-    },
+    {viewType: 'string', sortable: false, key: 'title', label: 'listColumn.title'},
+    {viewType: 'string', sortable: false, key: 'key', label: 'listColumn.key'},
+    {viewType: 'string', sortable: false, key: 'path', label: 'listColumn.path'},
+    {viewType: 'string', sortable: false, key: 'displayType', label: 'listColumn.displayType'},
     {
       viewType: 'string',
       sortable: false,
       key: 'displayTypeParameters',
       label: 'listColumn.displayTypeParameters',
     },
-    {
-      viewType: 'string',
-      sortable: false,
-      key: 'sortable',
-      label: 'listColumn.sortable',
-    },
-    {
-      viewType: 'string',
-      sortable: false,
-      key: 'defaultSort',
-      label: 'listColumn.defaultSort',
-    },
+    {viewType: 'string', sortable: false, key: 'sortable', label: 'listColumn.sortable'},
+    {viewType: 'string', sortable: false, key: 'defaultSort', label: 'listColumn.defaultSort'},
+    {viewType: 'boolean', sortable: false, key: 'exportable', label: 'listColumn.exportField'},
   ];
 
   public readonly disableInput$ = new BehaviorSubject<boolean>(false);
@@ -192,15 +161,12 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
     key: new FormControl('', Validators.required),
     path: new FormControl('', Validators.required),
     dateFormat: new FormControl(''),
-    displayType: new FormControl({
-      key: this.INVALID_KEY,
-    }),
+    displayType: new FormControl({key: this.INVALID_KEY}),
     sortable: new FormControl(false),
-    defaultSort: new FormControl({
-      key: this.INVALID_KEY,
-    }),
+    defaultSort: new FormControl({key: this.INVALID_KEY}),
     enum: new FormControl([]),
     tagAmount: new FormControl(1),
+    exportable: new FormControl(false),
   });
 
   public readonly disableDefaultSort$ = combineLatest([
@@ -277,10 +243,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
           content: this.translateService.instant(`listColumnDisplayType.${type}`),
           key: type,
         })),
-      ].map((item, index) => ({
-        ...item,
-        selected: index === selectedViewTypeItemIndex,
-      }))
+      ].map((item, index) => ({...item, selected: index === selectedViewTypeItemIndex}))
     )
   );
 
@@ -296,18 +259,9 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
           content: this.translateService.instant(`listColumn.selectDefaultSort`),
           key: this.INVALID_KEY,
         },
-        {
-          content: this.translateService.instant(`listColumn.sortableAsc`),
-          key: 'ASC',
-        },
-        {
-          content: this.translateService.instant(`listColumn.sortableDesc`),
-          key: 'DESC',
-        },
-      ].map((item, index) => ({
-        ...item,
-        selected: index === selectedSortItemIndex,
-      }))
+        {content: this.translateService.instant(`listColumn.sortableAsc`), key: 'ASC'},
+        {content: this.translateService.instant(`listColumn.sortableDesc`), key: 'DESC'},
+      ].map((item, index) => ({...item, selected: index === selectedSortItemIndex}))
     )
   );
 
@@ -355,18 +309,23 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
 
   public readonly jsonEditorActive = signal<boolean>(false);
   public readonly buttonTheme = computed(() => (this.jsonEditorActive() ? 'primary' : 'ghost'));
+  public displayExportButton = true;
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
-    private readonly configService: ConfigService,
     private readonly iconService: IconService,
     private readonly editPermissionsService: EditPermissionsService
   ) {}
 
   public ngAfterViewInit(): void {
     this.iconService.registerAll([ArrowDown16, ArrowUp16]);
+    this.disableExportToggle();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
   }
 
   public openModal(modalType: ListColumnModal): void {
@@ -490,6 +449,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
           defaultSort: sortItem ? {...sortItem} : {...sortItems[0]},
           ...(columnDateFormat && {dateFormat: columnDateFormat}),
           ...(tagAmount && {tagAmount: tagAmount}),
+          exportable: column?.exportable,
         });
 
         this.openModal('edit');
@@ -632,6 +592,7 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
   }
 
   private mapFormValuesToColumn(formValue: any): CaseListColumn {
+    console.log('this.hideExportButton', this.displayExportButton);
     return {
       key: formValue.key,
       sortable: formValue.sortable,
@@ -651,6 +612,16 @@ export class CaseManagementListColumnsComponent implements AfterViewInit {
             }),
         },
       },
+      exportable: this.displayExportButton ? formValue.exportable : false,
     };
+  }
+
+  private disableExportToggle(): void {
+    this.formGroup.controls.path.valueChanges
+      .pipe(startWith(this.formGroup.controls.path.value))
+      .subscribe(value => {
+        const pathMustStartWithCaseOrDocRegex = /^(case:|doc:)/;
+        this.displayExportButton = pathMustStartWithCaseOrDocRegex.test(String(value));
+      });
   }
 }
