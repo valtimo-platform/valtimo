@@ -54,7 +54,7 @@ import {
     WidgetWizardDisplayConditionsStepComponent,
   ],
 })
-export class CasManagementWidgetWizardComponent {
+export class CaseManagementWidgetWizardComponent {
   @Input() public open = false;
   private _editMode: boolean;
   @Input() public set editMode(value: boolean) {
