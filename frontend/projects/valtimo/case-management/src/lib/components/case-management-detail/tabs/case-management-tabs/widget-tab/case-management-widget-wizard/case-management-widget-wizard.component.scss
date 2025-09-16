@@ -78,3 +78,15 @@
     }
   }
 }
+
+.valtimo-widget-wizard-step--hidden {
+  display: none;
+}
+
+.valtimo-widget-wizard-step--shown {
+  display: block;
+
+  p {
+    margin-bottom: 32px;
+  }
+}
