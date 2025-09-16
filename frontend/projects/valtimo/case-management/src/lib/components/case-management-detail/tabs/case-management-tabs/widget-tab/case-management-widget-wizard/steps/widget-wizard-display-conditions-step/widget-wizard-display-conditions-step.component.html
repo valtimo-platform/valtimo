@@ -14,26 +14,24 @@
   ~ limitations under the License.
   -->
 
-<p>{{ 'widgetTabManagement.display.description' | translate }}</p>
-
 <div class="valtimo-widget-wizard-step__display">
   <div class="form__element conditions-multi-input">
     <cds-label
-            [helperText]="'conditionsHelperText' | async"
+            [helperText]="'widgetTabManagement.displayConditions.conditionsHelperText' | translate"
             class="conditions-label"
-    >{{ 'conditions' | async }}</cds-label
+    >{{ 'widgetTabManagement.displayConditions.conditions' | translate }}</cds-label
     >
     <valtimo-carbon-multi-input
             type="valuePathSelectorDropdownValue"
-            [addRowText]="'addCondition' | async"
+            [addRowText]="'widgetTabManagement.displayConditions.addCondition' | translate"
             [defaultValues]="defaultConditionValues$ | async"
-            [dropdownColumnTitle]="'operator' | async"
+            [dropdownColumnTitle]="'widgetTabManagement.displayConditions.operator' | translate"
             [dropdownItems]="operatorItems$ | async"
             [fullWidth]="true"
             [initialAmountOfRows]="0"
-            [keyColumnTitle]="'path' | async"
+            [keyColumnTitle]="'widgetTabManagement.displayConditions.path' | translate"
             [minimumAmountOfRows]="0"
-            [valueColumnTitle]="'value' | async"
+            [valueColumnTitle]="'widgetTabManagement.displayConditions.value' | translate"
             (allValuesValidEvent)="onAllConditionsValid($event)"
             (valueChange)="conditionsValueChange($event)"
             valuePathSelectorNotation="dots"

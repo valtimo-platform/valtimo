@@ -78,7 +78,10 @@
       ></valtimo-widget-wizard-content-step>
     </div>
 
-    <div class="valtimo-widget-wizard-step" *ngIf="$currentStep() === WidgetWizardSteps.DISPLAY_CONDITIONS">
+    <div
+      class="valtimo-widget-wizard-step"
+      *ngIf="$currentStep() === WidgetWizardSteps.DISPLAY_CONDITIONS"
+    >
       <valtimo-widget-wizard-display-conditions-step></valtimo-widget-wizard-display-conditions-step>
     </div>
 
@@ -89,6 +92,19 @@
       <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
 
       <valtimo-widget-wizard-type-step></valtimo-widget-wizard-type-step>
+    </div>
+
+    <div
+      class="valtimo-widget-wizard-step--hidden"
+      [class.valtimo-widget-wizard-step--shown]="
+        currentStep() === WidgetWizardSteps.DISPLAY_CONDITIONS
+      "
+    >
+      <p>{{ 'widgetTabManagement.displayConditions.description' | translate }}</p>
+
+      <valtimo-widget-wizard-display-conditions-step
+        class="valtimo-widget-wizard-step"
+      ></valtimo-widget-wizard-display-conditions-step>
     </div>
   </section>
 

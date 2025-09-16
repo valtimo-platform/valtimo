@@ -55,7 +55,6 @@
           (obs.valuePathListItems || []).length === 0
         "
         (selected)="onPathSelected($event)"
-        cdsLayer
         [placeholder]="'valuePathSelector.placeholder' | translate"
       >
         <cds-dropdown-list [items]="obs.valuePathListItems || []"></cds-dropdown-list>
@@ -66,7 +65,6 @@
         cdsText
         type="text"
         formControlName="selectedPath"
-        cdsLayer
       />
     }
   </form>
