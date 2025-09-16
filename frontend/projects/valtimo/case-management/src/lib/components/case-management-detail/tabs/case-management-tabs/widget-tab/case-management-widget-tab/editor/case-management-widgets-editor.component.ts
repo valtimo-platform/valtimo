@@ -39,7 +39,7 @@ import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rxjs';
 import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../../../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../../../../../services';
-import {CasManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
+import {CaseManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
 
 @Component({
   selector: 'valtimo-case-management-widgets-editor',
@@ -53,7 +53,7 @@ import {CasManagementWidgetWizardComponent} from '../../case-management-widget-w
     ButtonModule,
     IconModule,
     TabsModule,
-    CasManagementWidgetWizardComponent,
+    CaseManagementWidgetWizardComponent,
     ConfirmationModalModule,
   ],
 })
