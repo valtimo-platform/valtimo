@@ -24,16 +24,6 @@
   } as obs"
 >
   <v-input
-          name="zaak"
-          [title]="'zaakObjectZaakUrl' | pluginTranslate: obs.pluginId | async"
-          [margin]="true"
-          [defaultValue]="obs.prefill?.zaakObjectRequest?.zaak"
-          [disabled]="obs.disabled"
-          [required]="false"
-          [tooltip]="'zaakObjectZaakUrlTooltip' | pluginTranslate: obs.pluginId | async"
-  ></v-input>
-
-  <v-input
           name="object"
           [title]="'zaakObjectObjectUrl' | pluginTranslate: obs.pluginId | async"
           [margin]="true"
@@ -41,16 +31,6 @@
           [disabled]="obs.disabled"
           [required]="false"
           [tooltip]="'zaakObjectObjectUrlTooltip' | pluginTranslate: obs.pluginId | async"
-  ></v-input>
-
-  <v-input
-          name="zaakobjecttype"
-          [title]="'zaakObjectType' | pluginTranslate: obs.pluginId | async"
-          [margin]="true"
-          [defaultValue]="obs.prefill?.zaakObjectRequest?.zaakobjecttype"
-          [disabled]="obs.disabled"
-          [required]="false"
-          [tooltip]="'zaakObjectTypeTooltip' | pluginTranslate: obs.pluginId | async"
   ></v-input>
 
   <v-select

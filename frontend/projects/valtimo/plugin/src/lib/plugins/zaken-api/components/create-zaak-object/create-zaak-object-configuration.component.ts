@@ -96,9 +96,7 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
   formValueChange(input: any): void {
     const formValue: any = {
       zaakObjectRequest: {
-        zaak: input.zaak,
         object: input.object,
-        zaakobjecttype: input.zaakobjecttype,
         objectType: input.objectType,
         relatieomschrijving: input.relatieomschrijving,
       }
