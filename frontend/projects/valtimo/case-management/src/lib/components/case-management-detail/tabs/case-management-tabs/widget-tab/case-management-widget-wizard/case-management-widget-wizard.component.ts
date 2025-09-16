@@ -130,7 +130,7 @@ export class CasManagementWidgetWizardComponent {
             !secondaryLabels[WidgetWizardStep.TYPE] ||
             !secondaryLabels[WidgetWizardStep.WIDTH] ||
             !secondaryLabels[WidgetWizardStep.STYLE] ||
-            !secondaryLabels[WidgetWizardStep.CONTENT],
+            !this.widgetWizardService.widgetContent(),
           complete: !!this.widgetWizardService.widgetContent(),
         },
       ];
@@ -170,10 +170,11 @@ export class CasManagementWidgetWizardComponent {
 
   public isDefaultStep(): boolean {
     return (
-      this.$currentStep() !== WidgetWizardStep.CONTENT &&
-      this.$currentStep() !== WidgetWizardStep.TYPE &&
-      this.$currentStep() !== WidgetWizardStep.STYLE &&
-      this.$currentStep() !== WidgetWizardStep.WIDTH
+      this.currentStep() !== WidgetWizardStep.CONTENT &&
+      this.currentStep() !== WidgetWizardStep.TYPE &&
+      this.currentStep() !== WidgetWizardStep.STYLE &&
+      this.currentStep() !== WidgetWizardStep.WIDTH &&
+      this.currentStep() !== WidgetWizardStep.DISPLAY_CONDITIONS
     );
   }
 
