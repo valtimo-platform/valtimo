@@ -21,10 +21,12 @@
     loading: loading$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
     selectedInputOption: selectedInputOption$ | async,
-    zaakTypeSelectItems: zaakTypeItems$ | async
+    zaakTypeSelectItems: zaakTypeItems$ | async,
   } as obs"
 >
-  <ng-container *ngIf="obs.loading === false; else loading">
+  @if (obs.loading) {
+    <cds-loading></cds-loading>
+  } @else {
     <v-paragraph [margin]="true" [italic]="true">
       {{ 'createZaakInformation' | pluginTranslate: pluginId | async }}
     </v-paragraph>
@@ -83,8 +85,8 @@
         "
         [margin]="true"
         [defaultSelectionId]="
-          (selectItemsIncludeId(obs.zaakTypeSelectItems, obs.prefill?.zaaktypeUrl) && obs.prefill?.zaaktypeUrl)
-          ||
+          (selectItemsIncludeId(obs.zaakTypeSelectItems, obs.prefill?.zaaktypeUrl) &&
+            obs.prefill?.zaaktypeUrl) ||
           (oneSelectItem(obs.zaakTypeSelectItems) && obs.zaakTypeSelectItems[0].id)
         "
         [widthInPx]="350"
@@ -98,9 +100,10 @@
             [size]="'md'"
             [cdsOverflowMenu]="addCasePropertyList"
             [customPane]="true"
-            placement="bottom"
+            placement="bottom,top"
           >
             {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
+
             <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
           </button>
         </div>
@@ -113,7 +116,9 @@
               @case (CASE_GEOMETRY_TYPE) {
                 <v-input
                   [name]="CASE_GEOMETRY_TYPE"
-                  [title]="translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async"
+                  [title]="
+                    translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async
+                  "
                   [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
                   (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
                   [required]="true"
@@ -124,7 +129,9 @@
               @case (CASE_GEOMETRY_COORDINATES) {
                 <v-input
                   [name]="CASE_GEOMETRY_COORDINATES"
-                  [title]="translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async"
+                  [title]="
+                    translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async
+                  "
                   [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
                   [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
                   (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
@@ -136,22 +143,27 @@
                 <v-input
                   [name]="property"
                   [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
-                  [tooltip]="property.includes('Date') ? ('dateformatTooltip' | pluginTranslate: pluginId | async) : null"
+                  [tooltip]="
+                    property.includes('Date')
+                      ? ('dateformatTooltip' | pluginTranslate: pluginId | async)
+                      : null
+                  "
                   [defaultValue]="prefillValueFor(property, obs.prefill)"
                   (valueChange)="onPropertyChanged(property, $event)"
                   [required]="true"
                   [margin]="true"
                   [trim]="true"
-                  [presetOptions]="property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []"
+                  [presetOptions]="
+                    property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []
+                  "
                 />
               }
             }
           </div>
+
           <div class="property-delete-col">
             @if (property !== CASE_GEOMETRY_COORDINATES) {
-              <button
-                class="btn btn-space delete-button"
-                (click)="removeProperty(property)">
+              <button class="btn btn-space delete-button" (click)="removeProperty(property)">
                 <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
               </button>
             }
@@ -159,22 +171,13 @@
         </div>
       }
     </v-form>
-  </ng-container>
+  }
 </ng-container>
-
-<ng-template #loading>
-  <div class="loading-container">
-    <cds-loading></cds-loading>
-  </div>
-</ng-template>
 
 <ng-template #addCasePropertyList>
   @for (propertyOption of propertyOptions; track propertyOption) {
-    @if (propertyOption !== CASE_GEOMETRY_COORDINATES) {
-      <cds-overflow-menu-option
-        *ngIf="!hasPropertyBeenAdded(propertyOption)"
-        (click)="addProperty(propertyOption)"
-      >
+    @if (propertyOption !== CASE_GEOMETRY_COORDINATES && !hasPropertyBeenAdded(propertyOption)) {
+      <cds-overflow-menu-option (click)="addProperty(propertyOption)">
         {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
       </cds-overflow-menu-option>
     }

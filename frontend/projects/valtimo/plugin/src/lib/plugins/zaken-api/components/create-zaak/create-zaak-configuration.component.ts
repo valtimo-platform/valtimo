@@ -16,7 +16,17 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription, switchMap, take, tap,} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {CreateZaakConfig, InputOption} from '../../models';
 import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
 import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
@@ -24,7 +34,10 @@ import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
-import {CreateZaakExtraProperties, CreateZaakExtraPropertyOptions} from '../../models/create-zaak-properties';
+import {
+  CreateZaakExtraProperties,
+  CreateZaakExtraPropertyOptions,
+} from '../../models/create-zaak-properties';
 import {GEOMETRY_TYPES} from '../../models/geometry-types';
 import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
 
@@ -139,8 +152,9 @@ export class CreateZaakConfigurationComponent
     this.openSaveSubscription();
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property])
-        .forEach(property => this.addProperty(property));
+      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property]).forEach(
+        property => this.addProperty(property)
+      );
     });
   }
 
@@ -174,15 +188,15 @@ export class CreateZaakConfigurationComponent
   }
 
   public prefillValueFor(property: string, prefill: CreateZaakConfig): string | null {
-    return (prefill !== null) ? prefill[property] : null;
+    return prefill !== null ? (prefill?.[property] ?? null) : null;
   }
 
   public translationKeyFor(property: string): string {
-    return (property === 'description' ? 'beschrijving' : property);
+    return property === 'description' ? 'beschrijving' : property;
   }
 
   public translationKeyForPropertyList(property: string): string {
-    return (property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property));
+    return property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property);
   }
 
   public addProperty(property: CreateZaakExtraProperties): void {
@@ -212,7 +226,11 @@ export class CreateZaakConfigurationComponent
 
   public onPropertyChanged(property: CreateZaakExtraProperties, value: any): void {
     this._properties.set(property, value);
-    this._formValue$.pipe(filter(formValue => formValue !== null), take(1))
+    this._formValue$
+      .pipe(
+        filter(formValue => formValue !== null),
+        take(1)
+      )
       .subscribe(formValue => {
         this.onFormValueChanged(formValue);
       });
@@ -220,10 +238,7 @@ export class CreateZaakConfigurationComponent
 
   private handleValid(formValue: CreateZaakConfig): void {
     const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
-    const valid = !!(
-      formValue.rsin &&
-      formValue.zaaktypeUrl
-    ) && !isPropertyInvalid;
+    const valid = !!(formValue.rsin && formValue.zaaktypeUrl) && !isPropertyInvalid;
 
     this._valid$.next(valid);
     this.valid.emit(valid);
@@ -238,7 +253,7 @@ export class CreateZaakConfigurationComponent
             const payload: CreateZaakConfig = {
               rsin: formValue.rsin,
               zaaktypeUrl: formValue.zaaktypeUrl,
-              manualZaakTypeUrl: formValue.manualZaakTypeUrl
+              manualZaakTypeUrl: formValue.manualZaakTypeUrl,
             };
             this.propertyList.forEach(property => (payload[property] = formValue[property]));
             this.configuration.emit(payload);
