@@ -179,7 +179,6 @@ enum IkoTabType {
 }
 
 export {
-  DataAggregatePropertyField,
   IkoDataAggregateCreateRequest,
   IkoDataAggregateListResponse,
   IkoDataAggregateResponse,
