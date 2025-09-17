@@ -146,7 +146,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'Der Statustypen wird abgerufen und dann in einer Prozessvariablen gespeichert.',
       'get-statustype': 'Statustype anfordern',
       getStatustypeInformation:
-        'Die zum Falltyp gehörenden Statustypen werden abgerufen und anschließend in einer Prozessvariablen gespeichert.',
+        'Die zum Zaaktype gehörenden Statustypen werden abgerufen und anschließend in einer Prozessvariablen gespeichert.',
       statustype: 'Statustype',
       statustypeTooltip: 'Generische Angabe der Art eines Status.',
       processVariable: 'Prozessvariablenname',
@@ -161,7 +161,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
         'Sobald der besluittype abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
       'get-resultaattypen': 'Resultaattypen anfordern',
       getResultaattypenInformation:
-        'Die zum Falltyp gehörenden Ergebnistypen werden abgerufen und anschließend in einer Prozessvariablen gespeichert.',
+        'Die zum Zaaktype gehörenden Ergebnistypen werden abgerufen und anschließend in einer Prozessvariablen gespeichert.',
       'get-resultaattype': 'Resultaattype anfordern',
       getResultaattypeInformation:
         'Der resultaattype wird abgerufen und dann in einer Prozessvariablen gespeichert.',
