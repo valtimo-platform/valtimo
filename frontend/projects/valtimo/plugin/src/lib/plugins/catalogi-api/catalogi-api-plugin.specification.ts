@@ -83,20 +83,20 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapProcessVariableTooltip:
         'Nadat de eigenschap is opgehaald, wordt deze opgeslagen in een procesvariabele met deze naam.',
       zaakTypeUrl: 'Zaaktype URL',
-      zaakTypeUrlTooltip: 'Specificeer hier de URL van het betreffende Zaaktype indien deze afwijkt van de aan de Case gekoppelde Zaak',
+      zaakTypeUrlTooltip: 'Specificeer hier de URL van het betreffende Zaaktype indien deze afwijkt van de aan het Dossier gekoppelde Zaak',
     },
     en: {
       title: 'Catalogi API',
       url: 'Catalogi API URL',
       urlTooltip: 'A URL to the REST API of Catalogi',
-      description: 'API for storage and retrieval of zaaktype catalogs, zaaktypes and child types.',
+      description: 'API for storage and retrieval of Zaaktype catalogs, Zaaktypen and child types.',
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'The name of the current plugin configuration. Under this name, the configuration can be found in the rest of the application.',
       authenticationPluginConfiguration: 'Authentication plugin configuration',
-      'get-statustypen': 'Retrieve Statustypen',
+      'get-statustypen': 'Retrieve statustypen',
       getStatustypenInformation:
-        'The Statustypen belonging to the Case type are retrieved and then stored in a process variable.',
+        'The Statustypen belonging to the Zaaktype are retrieved and then stored in a process variable.',
       'get-statustype': 'Retrieve statustype',
       getStatustypeInformation:
         'The statustype is retrieved and then stored in a process variable.',
@@ -112,9 +112,9 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       besluittypeTooltip: 'Description of the nature of the decision.',
       besluitProcessVariableTooltip:
         'After the besluittype is retrieved, it is stored in a process variable with this name.',
-      'get-resultaattypen': 'Retrieve Resultaattypen',
+      'get-resultaattypen': 'Retrieve resultaattypen',
       getResultaattypenInformation:
-        'The Resulttypen belonging to the Case type are retrieved and then stored in a process variable.',
+        'The Resultaattypen belonging to the Zaak type are retrieved and then stored in a process variable.',
       'get-resultaattype': 'Retrieve resultaattype',
       getResultaattypeInformation:
         'The resultaattype is retrieved and then stored in a process variable.',
@@ -125,18 +125,18 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       'get-eigenschap': 'Retrieve eigenschap',
       getEigenschapInformation: 'The eigenschap is retrieved and then stored in a process variable',
       eigenschap: 'Eigenschap',
-      eigenschapTooltip: 'Name of the nature of the eigenschaap.',
+      eigenschapTooltip: 'Name of the nature of the eigenschap.',
       eigenschapProcessVariableTooltip:
         'After the eigenschap is retrieved, it is stored in a process variable with this name.',
       zaakTypeUrl: 'Zaaktype URL',
-      zaakTypeUrlTooltip: 'Specify the URL of the relevant Case type here if it differs from the Case linked to the Case',
+      zaakTypeUrlTooltip: 'Specify the URL of the relevant Zaaktype here if it differs from the Zaak linked to the Case',
     },
     de: {
       title: 'Catalogi API',
       url: 'Catalogi API URL',
       urlTooltip: 'Die URL zur REST API von Catalogi',
       description:
-        'API zum Speichern und Abrufen von Falltypkatalogen, Falltypen und untergeordneten Typen.',
+        'API zum Speichern und Abrufen von Zaaktype katalogen, Zaaktypen und untergeordneten Typen.',
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
         'Der Name der aktuellen Plugin-Konfiguration. Unter diesem Namen ist die Konfiguration im Rest der Anwendung zu finden.',
@@ -177,7 +177,7 @@ const catalogiApiPluginSpecification: PluginSpecification = {
       eigenschapProcessVariableTooltip:
         'Sobald der eigenschap abgerufen wurde, wird er in einer Prozessvariablen mit diesem Namen gespeichert.',
       zaakTypeUrl: 'Zaaktype URL',
-      zaakTypeUrlTooltip: 'Geben Sie hier die URL des jeweiligen Falltyps an, falls diese von der mit dem Fall verknüpften URL abweicht.',
+      zaakTypeUrlTooltip: 'Geben Sie hier die URL des jeweiligen Zaaktype an, falls diese von der mit dem Fall verknüpften Zaak abweicht.',
     },
   },
 };
