@@ -112,19 +112,12 @@ interface TabDto {
 
 type PropertyFieldType = 'text' | 'keyValueList' | 'integer' | 'dropdown' | 'url';
 
-interface DataAggregatePropertyField {
+interface PropertyField {
   key: string;
   required: boolean;
   title: string;
   tooltip: string;
   type: PropertyFieldType;
-}
-
-interface PropertyField {
-  key: string;
-  type: 'dropdown';
-  tooltip: string | null;
-  title: string;
   dropdownList: {
     first: string;
     second: string;
@@ -186,7 +179,6 @@ enum IkoTabType {
 }
 
 export {
-  DataAggregatePropertyField,
   IkoDataAggregateCreateRequest,
   IkoDataAggregateListResponse,
   IkoDataAggregateResponse,

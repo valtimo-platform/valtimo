@@ -4,29 +4,21 @@ import {
   Component,
   EventEmitter,
   Input,
-  OnDestroy,
-  OnInit,
   Output,
+  signal,
 } from '@angular/core';
-import {FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {ButtonModule, IconModule, InputModule, ModalModule} from 'carbon-components-angular';
+import {BehaviorSubject, filter, Observable, switchMap, take} from 'rxjs';
 import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  Observable,
-  Subscription,
-  switchMap,
-  tap,
-} from 'rxjs';
-import {
-  DataAggregatePropertyField,
+  PropertyField,
   IkoDataAggregateResponse,
   IkoRepositoryConfigResponse,
 } from '../../../models';
 import {IkoManagementApiService} from '../../../services';
+import {PropertiesFormComponent} from '../../iko-management-properties/iko-management-properties.component';
 
 @Component({
   selector: 'valtimo-iko-management-view-modal',
@@ -43,45 +35,51 @@ import {IkoManagementApiService} from '../../../services';
     ReactiveFormsModule,
     ButtonModule,
     IconModule,
+    PropertiesFormComponent,
   ],
 })
-export class IkoManagementViewModalComponent implements OnInit, OnDestroy {
+export class IkoManagementViewModalComponent {
   private readonly _open$ = new BehaviorSubject<boolean>(false);
+
   @Input() public set open(value: boolean) {
     this._open$.next(value);
 
     if (!value) this.resetForm();
   }
+
   public get open$(): Observable<boolean> {
     return this._open$.asObservable();
   }
+
   private readonly _apiKey$ = new BehaviorSubject<string | null>(null);
+
   @Input() public set apiKey(value: string | null) {
     if (!value) return;
 
     this._apiKey$.next(value);
   }
-  private readonly _prefillData$ = new BehaviorSubject<IkoDataAggregateResponse | null>(null);
+
+  public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
+
   @Input() public set prefillData(value: IkoDataAggregateResponse | null) {
-    this._prefillData$.next(value);
+    this.$prefillData.set(value);
     if (!value) return;
 
+    this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
+
   @Output() public readonly modalClose = new EventEmitter<any | null>();
 
-  public readonly propertyFields$: Observable<DataAggregatePropertyField[]> = this.open$.pipe(
+  public readonly propertyFields$: Observable<PropertyField[]> = this.open$.pipe(
     filter((open: boolean) => !!open),
     switchMap(() => this._apiKey$),
-    switchMap((apiKey: string | null) =>
-      this.ikoManagementApiService.getIkoDataAggregateType(apiKey ?? '')
+    switchMap((repositoryKey: string | null) =>
+      this.ikoManagementApiService.getIkoDataAggregateType(repositoryKey ?? '')
     ),
-    switchMap((type: IkoRepositoryConfigResponse) =>
-      this.ikoManagementApiService.getIkoDataAggregatePropertyFields(type.type)
-    ),
-    tap((fields: DataAggregatePropertyField[]) => {
-      this.addPropertiesForms(fields);
-    })
+    switchMap((repository: IkoRepositoryConfigResponse) =>
+      this.ikoManagementApiService.getIkoDataAggregatePropertyFields(repository.type)
+    )
   );
   public formGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
@@ -89,29 +87,14 @@ export class IkoManagementViewModalComponent implements OnInit, OnDestroy {
     properties: this.fb.group({}, Validators.required),
   });
 
-  private readonly _subscriptions = new Subscription();
-
-  public get propertiesFormGroup(): FormGroup {
-    return this.formGroup.get('properties') as FormGroup;
-  }
-
   constructor(
     private readonly fb: FormBuilder,
     private readonly ikoManagementApiService: IkoManagementApiService
   ) {}
 
-  public ngOnInit(): void {
-    this._subscriptions.add(
-      combineLatest([this._prefillData$, this.propertyFields$]).subscribe(
-        ([prefillData, propertyFields]) => {
-          this.mapPrefillDataToForm(prefillData, propertyFields);
-        }
-      )
-    );
-  }
-
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+  public get properties(): FormGroup | null {
+    const properties = this.formGroup.get('properties');
+    return !properties ? null : (properties as FormGroup);
   }
 
   public onCancel(): void {
@@ -119,85 +102,22 @@ export class IkoManagementViewModalComponent implements OnInit, OnDestroy {
   }
 
   public onSave(): void {
-    this.modalClose.emit(this.formGroup.getRawValue());
-  }
-
-  public onDeleteRowClick(formKey: string, index: number): void {
-    (this.formGroup.get('properties')?.get(formKey) as FormArray).removeAt(index);
-  }
-
-  public onAddKeyValue(formKey: string, required: boolean): void {
-    (this.formGroup.get('properties')?.get(formKey) as FormArray)?.push(
-      this.fb.group({
-        key: this.fb.control('', ...[required ? [Validators.required] : []]),
-        value: this.fb.control('', ...[required ? [Validators.required] : []]),
-      })
-    );
-  }
-
-  public onAddDropdownValue(formKey: string, required: boolean): void {
-    (this.formGroup.get('properties')?.get(formKey) as FormArray)?.push(
-      this.fb.control('', ...[required ? [Validators.required] : []])
-    );
-  }
-
-  private addPropertiesForms(fields: DataAggregatePropertyField[]): void {
-    const propertiesFormGroup: FormGroup = this.formGroup.get('properties') as FormGroup;
-    if (!propertiesFormGroup) return;
-
-    fields.forEach((field: DataAggregatePropertyField) => {
-      switch (field.type) {
-        case 'text':
-        case 'url':
-        case 'integer':
-          propertiesFormGroup.addControl(
-            field.key,
-            this.fb.control('', ...(field.required ? [Validators.required] : []))
-          );
-          break;
-        case 'dropdown':
-          propertiesFormGroup.addControl(
-            field.key,
-            this.fb.array([this.fb.control('', Validators.required)])
-          );
-          break;
-        case 'keyValueList':
-          propertiesFormGroup.addControl(
-            field.key,
-            this.fb.array([
-              this.fb.group({
-                key: this.fb.control('', Validators.required),
-                value: this.fb.control('', Validators.required),
-              }),
-            ])
-          );
-      }
+    this.propertyFields$.pipe(take(1)).subscribe(fields => {
+      const formData = this.formGroup.getRawValue();
+      fields.forEach(field => {
+        if (formData.properties[field.key] && field.type === 'keyValueList') {
+          formData.properties[field.key] = Array.isArray(formData.properties[field.key])
+            ? formData.properties[field.key].reduce((acc: Record<string, any>, cur: any) => {
+                if (cur.key) {
+                  acc[cur.key] = cur.value;
+                }
+                return acc;
+              }, {})
+            : {};
+        }
+      });
+      this.modalClose.emit(formData);
     });
-  }
-
-  private mapPrefillDataToForm(
-    prefillData: IkoDataAggregateResponse | null,
-    propertyFields: DataAggregatePropertyField[]
-  ): void {
-    const propertiesFormGroup: FormGroup = this.formGroup.get('properties') as FormGroup;
-    if (!prefillData || !propertiesFormGroup) return;
-
-    propertyFields.forEach((field: DataAggregatePropertyField) => {
-      if (field.type === 'dropdown')
-        prefillData.properties[field.key].forEach((_, index: number) => {
-          if (index !== prefillData.properties[field.key].length - 1)
-            this.onAddDropdownValue(field.key, field.required);
-        });
-
-      if (field.type === 'keyValueList') {
-        prefillData.properties[field.key].forEach((_, index: number) => {
-          if (index !== prefillData.properties[field.key].length - 1)
-            this.onAddKeyValue(field.key, field.required);
-        });
-      }
-    });
-
-    this.formGroup.patchValue(prefillData);
   }
 
   private resetForm(): void {
@@ -205,8 +125,8 @@ export class IkoManagementViewModalComponent implements OnInit, OnDestroy {
       this.formGroup.reset({
         title: '',
         key: '',
+        properties: {},
       });
-      this.formGroup.setControl('properties', this.fb.group({}, Validators.required));
       this.formGroup.get('key')?.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }

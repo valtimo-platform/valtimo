@@ -3,28 +3,40 @@
     <h3 cdsModalHeaderHeading>Add view</h3>
   </cds-modal-header>
 
-  <form [formGroup]="formGroup" cdsModalContent>
-    <cds-label>
-      {{ 'interface.title' | translate }}
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="formGroup" class="iko-api-form">
+    <cds-label [invalid]="getControlInvalid('title')">
+      {{ 'ikoManagement.titleTitle' | translate }}
 
       <input
+        [invalid]="getControlInvalid('title')"
         formControlName="title"
         cdsText
-        placeholder="{{ 'interface.title' | translate }}"
-        [attr.modal-primary-focus]="true"
+        placeholder="{{ 'ikoManagement.titlePlaceholder' | translate }}"
       />
     </cds-label>
 
-    <cds-label>
-      {{ 'interface.key' | translate }}
+    <cds-label [invalid]="getControlInvalid('key')">
+      {{ 'ikoManagement.keyTitle' | translate }}
 
       <input
+        [invalid]="getControlInvalid('key')"
         formControlName="key"
         cdsText
-        placeholder="{{ 'interface.key' | translate }}"
-        [attr.modal-primary-focus]="true"
+        placeholder="{{ 'ikoManagement.keyPlaceholder' | translate }}"
       />
     </cds-label>
+
+    @if (enableIkoType) {
+      <v-select
+        [invalid]="getControlInvalid('type')"
+        formControlName="type"
+        [disabled]="!enableIkoType"
+        [items]="ikoRepositoryTypeSelectItems$ | async"
+        [title]="'ikoManagement.typeTitle' | translate"
+        [appendInline]="false"
+        [dropUp]="false"
+      ></v-select>
+    }
 
     <valtimo-iko-management-properties
       [propertiesFormGroup]="properties"
@@ -32,6 +44,7 @@
       [prefillData]="$prefillData()?.properties"
     />
   </form>
+
 
   <cds-modal-footer>
     <button cdsButton="ghost" (click)="onCancel()">
