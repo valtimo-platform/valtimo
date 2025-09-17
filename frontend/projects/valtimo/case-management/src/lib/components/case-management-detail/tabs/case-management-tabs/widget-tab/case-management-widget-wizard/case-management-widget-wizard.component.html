@@ -41,7 +41,7 @@
 
     <div
       class="valtimo-widget-wizard-step--hidden"
-      [class.valtimo-widget-wizard-step--shown]="currentStep() === WidgetWizardSteps.TYPE"
+      [class.valtimo-widget-wizard-step--shown]="$currentStep() === WidgetWizardSteps.TYPE"
     >
       <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
 
@@ -52,7 +52,7 @@
 
     <div
       class="valtimo-widget-wizard-step--hidden"
-      [class.valtimo-widget-wizard-step--shown]="currentStep() === WidgetWizardSteps.WIDTH"
+      [class.valtimo-widget-wizard-step--shown]="$currentStep() === WidgetWizardSteps.WIDTH"
     >
       <p>{{ 'widgetTabManagement.width.description' | translate }}</p>
 
@@ -63,7 +63,7 @@
 
     <div
       class="valtimo-widget-wizard-step--hidden"
-      [class.valtimo-widget-wizard-step--shown]="currentStep() === WidgetWizardSteps.STYLE"
+      [class.valtimo-widget-wizard-step--shown]="$currentStep() === WidgetWizardSteps.STYLE"
     >
       <p>{{ 'widgetTabManagement.style.description' | translate }}</p>
 
@@ -74,7 +74,7 @@
 
     <div
       class="valtimo-widget-wizard-step"
-      *ngIf="currentStep() === WidgetWizardSteps.CONTENT"
+      *ngIf="$currentStep() === WidgetWizardSteps.CONTENT"
     >
       <valtimo-widget-wizard-content-step
         (contentValidEvent)="onContentValidEvent($event)"

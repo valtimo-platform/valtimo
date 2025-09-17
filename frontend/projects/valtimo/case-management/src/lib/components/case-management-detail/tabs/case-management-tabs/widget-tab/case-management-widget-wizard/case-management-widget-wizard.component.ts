@@ -153,10 +153,10 @@ export class CasManagementWidgetWizardComponent {
 
   public isDefaultStep(): boolean {
     return (
-      this.currentStep() !== WidgetWizardStep.CONTENT &&
-      this.currentStep() !== WidgetWizardStep.TYPE &&
-      this.currentStep() !== WidgetWizardStep.STYLE &&
-      this.currentStep() !== WidgetWizardStep.WIDTH
+      this.$currentStep() !== WidgetWizardStep.CONTENT &&
+      this.$currentStep() !== WidgetWizardStep.TYPE &&
+      this.$currentStep() !== WidgetWizardStep.STYLE &&
+      this.$currentStep() !== WidgetWizardStep.WIDTH
     );
   }
 
