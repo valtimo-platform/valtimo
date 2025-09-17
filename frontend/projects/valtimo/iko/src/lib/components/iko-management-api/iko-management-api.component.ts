@@ -115,9 +115,7 @@ export class IkoManagementApiComponent implements OnInit, OnDestroy {
   constructor(
     private readonly ikoManagementApiService: IkoManagementApiService,
     private readonly pageTitleService: PageTitleService,
-    private readonly router: Router,
-    private readonly formBuilder: FormBuilder,
-    private readonly translateService: TranslateService
+    private readonly router: Router
   ) {}
 
   public ngOnInit(): void {
