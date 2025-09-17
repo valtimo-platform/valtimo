@@ -31,10 +31,15 @@ export class KeyStateService implements OnDestroy {
     );
 
     const keyUps$: Observable<boolean> = fromEvent<KeyboardEvent>(document, 'keyup').pipe(
-      map(() => false)
+      map(event => event.ctrlKey || event.metaKey)
     );
 
-    merge(keyDowns$, keyUps$)
+    const blur$ = fromEvent(window, 'blur').pipe(
+      map(() => false),
+      takeUntil(this._destroy$)
+    );
+
+    merge(keyDowns$, keyUps$, blur$)
       .pipe(takeUntil(this._destroy$))
       .subscribe(isPressed => {
         this._isCtrlOrCmdPressed = isPressed;
