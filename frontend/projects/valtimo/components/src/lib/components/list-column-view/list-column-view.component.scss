@@ -37,4 +37,31 @@
     z-index: 2;
     top: -8px;
   }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    ::ng-deep .cds--checkbox-label-text {
+      color: var(--cds-text-primary);
+    }
+  }
+
+  &__warning {
+    display: flex;
+    gap: 8px;
+
+    margin-left: 3px;
+    align-items: center;
+    font-size: 12px;
+
+    svg {
+      fill: var(--warning);
+
+      ::ng-deep path[data-icon-path='inner-path'] {
+        fill: black;
+      }
+    }
+  }
 }

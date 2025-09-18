@@ -24,7 +24,7 @@ import {
   Signal,
   signal,
 } from '@angular/core';
-import {View16} from '@carbon/icons';
+import {ViewOff16, WarningAltFilled16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   ButtonModule,
@@ -32,6 +32,7 @@ import {
   DialogModule,
   IconModule,
   IconService,
+  InputModule,
   TagModule,
 } from 'carbon-components-angular';
 import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
@@ -50,6 +51,7 @@ import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
     ButtonModule,
     TranslateModule,
     IconModule,
+    InputModule,
   ],
 })
 export class ListColumnViewComponent {
@@ -83,7 +85,7 @@ export class ListColumnViewComponent {
   );
 
   constructor(private readonly iconService: IconService) {
-    this.iconService.register(View16);
+    this.iconService.registerAll([ViewOff16, WarningAltFilled16]);
   }
 
   public onCheckedChange(selected: boolean, fieldKey: string): void {

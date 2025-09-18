@@ -1907,7 +1907,8 @@
     }
   },
   "listViewColumns": {
-    "title": "Columns available for view",
-    "columnCount": "{{count}} of {{total}}"
+    "label": "Select visible columns",
+    "tooltip": "Show or hide columns in the list",
+    "warning": "At least one option must be selected"
   }
 }
