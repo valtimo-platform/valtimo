@@ -1,0 +1,72 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    tabs: (ikoTabs$ | async) || [],
+    ikoTabColumnDtos: $ikoTabDtos(),
+    selectedTab: $selectedTab(),
+    loading: $loading(),
+    openModal: $openModal(),
+    disableInput: $disableInput(),
+    modalMode: $modalMode(),
+    usedKeys: $usedKeys(),
+  } as state"
+>
+  <valtimo-carbon-list
+    [items]="state.tabs"
+    [loading]="state.loading"
+    [fields]="FIELDS"
+    [header]="false"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="state.disableInput"
+    [actionItems]="ACTION_ITEMS"
+    (itemsReordered)="onItemsReordered($event)"
+    (rowClicked)="onRowClicked($event)"
+  >
+    <div carbonToolbarContent>
+      <button cdsButton="primary" (click)="onCreateButtonClicked()">
+        {{ 'ikoManagement.addTab' | translate }}
+
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </div>
+
+    <valtimo-no-results
+      [title]="'ikoManagement.noTabConfigWarningTitle' | translate"
+      [description]="'ikoManagement.noTabConfigWarning' | translate"
+      illustration="valtimo-layout/img/emptystate-empty.svg"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="ikoManagement.deleteTabModalText"
+    [showModalSubject$]="openConfirmationModal$"
+    [outputOnConfirm]="state.selectedTab"
+    titleTranslationKey="interface.delete"
+    (confirmEvent)="onDeleteTab($event)"
+  ></valtimo-confirmation-modal>
+
+  <valtimo-iko-management-tab-details-modal
+    [openModal]="state.openModal"
+    [selectedTab]="state.selectedTab"
+    [modalMode]="state.modalMode"
+    [usedKeys]="state.usedKeys"
+    (closeModalEvent)="onCloseModalEvent($event)"
+  ></valtimo-iko-management-tab-details-modal>
+</ng-container>

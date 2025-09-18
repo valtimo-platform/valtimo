@@ -1280,6 +1280,8 @@
       "valtimo-backend-libraries": "Valtimo back-end",
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
+    "results": "Resultaten",
+    "details": "Details",
     "email": "E-mail",
     "username": "Gebruikersnaam",
     "name": "Naam",
@@ -1626,7 +1628,8 @@
     "enum": "Opsomming",
     "arrayCount": "Hoeveelheid",
     "underscoresToSpaces": "Lage strepen naar spaties",
-    "tags": "Tags"
+    "tags": "Tags",
+    "hidden": "Verborgen"
   },
   "object": {
     "title": "Objects",
@@ -1870,5 +1873,70 @@
     "dueDateText": "Einddatum:",
     "removeButtonText": "Einddatum verwijderen"
   },
-  "processStartSuccessful": "{{processName}} is succesvol gestart"
+  "processStartSuccessful": "{{processName}} is succesvol gestart",
+  "widgets": {
+    "noData": "Geen data gevonden",
+    "emptyFields": "Nichts hier",
+    "noWidgets": "Geen widgets",
+    "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
+    "noWidget": "Widget niet beschikbaar",
+    "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden."
+  },
+  "iko": {
+    "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
+  },
+  "ikoManagement": {
+    "title": "Configuratie",
+    "ikoServer": "IKO Server",
+    "view": "Beeld",
+    "list": "Lijst",
+    "tabs": {"title": "Tabbladen"},
+    "widgets": {"title": "Widgets"},
+    "searchActions": {
+      "addActionTitle": "Zoekactie toevoegen",
+      "editActionTitle": "Zoekactie bewerken",
+      "deleteModalTitle": "Zoekactie verwijderen",
+      "deleteModalText": "Weet je zeker dat je deze zoekactie wilt verwijderen?",
+      "title": "Zoekacties",
+      "numberOfFields": "Aantal zoekvelden",
+      "noResultsTitle": "Er zijn geen zoekacties.",
+      "noResultsDescription": "Klik hier om een zoekactie te configureren."
+    },
+    "searchFields": {
+      "pageTitle": "Zoekactie: {{searchActionTitle}}",
+      "title": "Zoekvelden",
+      "deleteModalText": "Weet je zeker dat je dit zoekveld wilt verwijderen?",
+      "noResultsTitle": "Er zijn geen zoekvelden.",
+      "noResultsDescription": "Klik hier om een zoekveld te configureren."
+    },
+    "addApiConfig": "IKO Server configureren",
+    "titleTitle": "Titel",
+    "titlePlaceholder": "Voer een titel in voor de API-configuratie",
+    "keyTitle": "Sleutel",
+    "keyPlaceholder": "Voer een sleutel in voor de API-configuratie",
+    "pluginIdTitle": "Pluginconfiguratie",
+    "typeTitle": "Type",
+    "addColumn": "Kolom toevoegen",
+    "editColumn": "Kolom bewerken",
+    "columnTitlePlaceholder": "Voer kolomtitel in",
+    "columnKeyPlaceholder": "Voer kolomsleutel in",
+    "pathTitle": "Pad",
+    "columnPathPlaceholder": "Voer kolompad in",
+    "sortableTitle": "Sorteerbaar",
+    "sortingDisabled": "Sorteren uitgeschakeld",
+    "defaultSortTitle": "Standaard sortering",
+    "displayType": "Weergavetype",
+    "sortingEnabled": "Sorteren ingeschakeld",
+    "tabKey": "Sleutel",
+    "tabTitle": "Tabtitel",
+    "tabTitlePlaceholder": "Voer tabtitel in",
+    "tabType": "Tabtype",
+    "tabTypeTitle": "Tabtype",
+    "tabTypePlaceholder": "Voer tabtype in",
+    "addTab": "Tab toevoegen",
+    "editTab": "Tab bewerken",
+    "tabTypes": {
+      "widgets": "Widgets"
+    }
+  }
 }

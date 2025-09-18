@@ -1,0 +1,97 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<valtimo-carbon-list
+  [fields]="FIELDS"
+  [items]="apiConfigs$ | async"
+  [loading]="loading$ | async"
+  (rowClicked)="onRowClicked($event)"
+>
+  <div carbonToolbarContent>
+    <button cdsButton="primary" (click)="openModal()">
+      {{ 'ikoManagement.addApiConfig' | translate }}
+
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </div>
+</valtimo-carbon-list>
+
+<cds-modal
+  valtimoCdsModal
+  [open]="openModal$ | async"
+  showFooter="true"
+  title="{{ 'ikoManagement.addApiConfig' | translate }}"
+  (close)="closeModal()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'ikoManagement.addApiConfig' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="form" class="iko-api-form">
+    <cds-label [invalid]="getControlInvalid('title')">
+      {{ 'ikoManagement.titleTitle' | translate }}
+
+      <input
+        [invalid]="getControlInvalid('title')"
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'ikoManagement.titlePlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <cds-label [invalid]="getControlInvalid('key')">
+      {{ 'ikoManagement.keyTitle' | translate }}
+
+      <input
+        [invalid]="getControlInvalid('key')"
+        formControlName="key"
+        cdsText
+        placeholder="{{ 'ikoManagement.keyPlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    @if (false) {
+      <!-- TODO: Discuss with Thomas-->
+      <v-select
+        [invalid]="getControlInvalid('type')"
+        formControlName="type"
+        [items]="ikoRepositoryTypeSelectItems$ | async"
+        [title]="'ikoManagement.typeTitle' | translate"
+        [appendInline]="false"
+      ></v-select>
+    }
+
+    <v-select
+      [invalid]="getControlInvalid('pluginId')"
+      formControlName="pluginId"
+      [items]="pluginSelectItems$ | async"
+      [title]="'ikoManagement.pluginIdTitle' | translate"
+      [appendInline]="false"
+    ></v-select>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button [disabled]="this.form.invalid" cdsButton="primary" (click)="createApiConfig()">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

@@ -128,8 +128,8 @@ export class DashboardDetailsComponent implements AfterViewInit {
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly jsonEditorActive = signal<boolean>(false);
-  public readonly buttonTheme = computed(() => (this.jsonEditorActive() ? 'primary' : 'ghost'));
+  public readonly $jsonEditorActive = signal<boolean>(false);
+  public readonly $buttonTheme = computed(() => (this.$jsonEditorActive() ? 'primary' : 'ghost'));
 
   constructor(
     private readonly dashboardManagementService: DashboardManagementService,
@@ -177,9 +177,9 @@ export class DashboardDetailsComponent implements AfterViewInit {
   }
 
   public switchView(): void {
-    this.jsonEditorActive.set(!this.jsonEditorActive());
+    this.$jsonEditorActive.set(!this.$jsonEditorActive());
 
-    if (!this.jsonEditorActive()) this.refreshWidgets();
+    if (!this.$jsonEditorActive()) this.refreshWidgets();
   }
 
   private duplicateWidget(event: DashboardWidgetConfiguration): void {

@@ -22,3 +22,7 @@ export * from './lib/services';
 export * from './lib/components/layout/layout.component';
 export * from './lib/layout.module';
 export * from './lib/translation-management.module';
+export * from './lib/components';
+export * from './lib/models';
+export * from './lib/constants';
+export * from './lib/interfaces';

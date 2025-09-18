@@ -24,7 +24,14 @@
   <cds-label [disabled]="disabled">
     <span class="label-with-tooltip">
       {{ displayTitle$ | async }}
-      <v-tooltip-icon *ngIf="tooltip" [disabled]="disabled" [tooltip]="tooltip"></v-tooltip-icon>
+
+      <v-tooltip-icon
+        *ngIf="tooltip || tooltipTranslationKey"
+        [disabled]="disabled"
+        [tooltip]="tooltipTranslationKey ? (tooltipTranslationKey | translate) : tooltip"
+      ></v-tooltip-icon>
     </span>
+
+    <ng-content></ng-content>
   </cds-label>
 </div>

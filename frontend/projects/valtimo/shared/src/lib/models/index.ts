@@ -35,3 +35,5 @@ export * from './management.model';
 export * from './tag-color.model';
 export * from './global-configuration.model';
 export * from './case-management.model';
+export * from './display-type.model';
+export * from './modal.model';

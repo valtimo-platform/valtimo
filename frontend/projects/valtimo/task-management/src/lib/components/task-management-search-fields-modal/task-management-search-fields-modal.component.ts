@@ -139,6 +139,7 @@ export class TaskManagementSearchFieldsModalComponent implements OnInit {
   public get dropdownDataProvider(): AbstractControl<ListItem | null> | null {
     return this.form.get('dropdownDataProvider');
   }
+
   public get dropdownDataProviderValue$(): Observable<ListItem | null> {
     return (
       this.dropdownDataProvider?.valueChanges.pipe(startWith(this.dropdownDataProvider.value)) ??

@@ -67,7 +67,7 @@ export class CaseManagementWidgetsEditorComponent {
     this._currentWidgetTab = value;
     this._items$.next(value?.widgets);
     this._usedKeys = value?.widgets.map(widget => widget.key);
-    this.dragAndDropDisabled.set(false);
+    this.$dragAndDropDisabled.set(false);
   }
   public get currentWidgetTab(): CaseWidgetsRes {
     return this._currentWidgetTab;
@@ -139,11 +139,11 @@ export class CaseManagementWidgetsEditorComponent {
   );
 
   public readonly isWizardOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly isEditMode = this.widgetWizardService.editMode;
+  public readonly $isEditMode = this.widgetWizardService.$editMode;
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteRowKey$ = new Subject<number>();
 
-  public readonly dragAndDropDisabled = signal(false);
+  public readonly $dragAndDropDisabled = signal(false);
 
   private _usedKeys: string[];
 
@@ -155,18 +155,18 @@ export class CaseManagementWidgetsEditorComponent {
   ) {}
 
   public editWidget(tabWidget: CaseWidget): void {
-    this.widgetWizardService.widgetTitle.set(tabWidget.title);
-    this.widgetWizardService.widgetStyle.set(
+    this.widgetWizardService.$widgetTitle.set(tabWidget.title);
+    this.widgetWizardService.$widgetStyle.set(
       tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
     );
-    this.widgetWizardService.widgetWidth.set(tabWidget.width);
-    this.widgetWizardService.selectedWidget.set(
+    this.widgetWizardService.$widgetWidth.set(tabWidget.width);
+    this.widgetWizardService.$selectedWidget.set(
       AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
     );
-    this.widgetWizardService.widgetContent.set(tabWidget.properties);
-    this.widgetWizardService.editMode.set(true);
-    this.widgetWizardService.widgetKey.set(tabWidget.key);
-    this.widgetWizardService.widgetActions.set(tabWidget.actions);
+    this.widgetWizardService.$widgetContent.set(tabWidget.properties);
+    this.widgetWizardService.$editMode.set(true);
+    this.widgetWizardService.$widgetKey.set(tabWidget.key);
+    this.widgetWizardService.$widgetActions.set(tabWidget.actions);
     this.isWizardOpen$.next(true);
   }
 
@@ -222,7 +222,7 @@ export class CaseManagementWidgetsEditorComponent {
   }
 
   public onItemsReordered(widgets: CaseWidget[]): void {
-    this.dragAndDropDisabled.set(true);
+    this.$dragAndDropDisabled.set(true);
 
     this.widgetTabManagementService
       .updateWidgets({

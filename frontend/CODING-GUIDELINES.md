@@ -251,3 +251,26 @@ if (selectedTheme) {
   this.themeService.parseThemeAndSaveAccentColorsInApi(selectedTheme);
 }
 ```
+
+### Signals for simple state management
+
+For simple and local state management within a component (e.g. toggles, UI flags, or local caching),
+we **prefer using Angular signals** over `BehaviorSubject`, `EventEmitter`. Signals reduce
+boilerplate, improve readability, and are well-suited for tightly scoped component logic.
+
+#### Naming Convention
+
+- **Public signal state** variables should be prefixed with `$` (e.g., `$context`) to clearly denote
+  their reactive nature and usage in templates.
+- **Private signal state** variables should be prefixed with `_$` (e.g., `_$context`) to indicate
+  they are private and reactive.
+
+#### Example
+
+```typescript
+// Public signal (can be used in templates)
+public $context = signal<boolean>(false);
+
+// Private signal
+private _$context = signal<string>('');
+```

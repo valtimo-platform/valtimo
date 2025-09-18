@@ -28,7 +28,7 @@ import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 
 import {ShellService} from '../../services/shell.service';
-import {MenuService} from '../menu/menu.service';
+import {MenuService} from '../menu/services/menu.service';
 
 @Component({
   selector: 'valtimo-left-sidebar',
@@ -60,6 +60,7 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
 
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
   public readonly menuItems$: Observable<Array<MenuItem>> = this.menuService.menuItems$;
+  public readonly menuItemsLoaded$ = this.menuService.menuItemsLoaded$;
   public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
   public readonly closestSequence$: Observable<string> = this.menuService.closestSequence$;
   public readonly overflowMenuSequence$ = new BehaviorSubject<string>('');
