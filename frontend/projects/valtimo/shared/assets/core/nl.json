@@ -1965,7 +1965,8 @@
     }
   },
   "listViewColumns": {
-    "title": "Kolommen beschikbaar voor weergave",
-    "columnCount": "{{count}} van {{total}}"
+    "label": "Selecteer zichtbare kolommen",
+    "tooltip": "Toon of verberg kolommen in de lijst",
+    "warning": "Er moet minimaal één optie zijn geselecteerd"
   }
 }
