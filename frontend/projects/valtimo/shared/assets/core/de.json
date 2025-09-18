@@ -1950,7 +1950,8 @@
     }
   },
   "listViewColumns": {
-    "title": "Spalten zur Ansicht verfügbar",
-    "columnCount": "{{count}} von {{total}}"
+    "label": "Sichtbare Spalten auswählen",
+    "tooltip": "Spalten in der Liste anzeigen oder ausblenden",
+    "warning": "Es muss mindestens eine Option ausgewählt sein"
   }
 }
