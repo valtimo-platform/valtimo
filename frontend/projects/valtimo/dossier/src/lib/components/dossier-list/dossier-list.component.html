@@ -117,7 +117,7 @@
     </div>
 
     <valtimo-no-results
-      [action]="obs.noResultsMessage.isSearchResult ? null : dossierListActions"
+      [action]="obs.noResultsMessage.isSearchResult ? null : emptyResultDossierListActions"
       [description]="obs.noResultsMessage.description | translate"
       [title]="obs.noResultsMessage.title | translate"
     ></valtimo-no-results>
@@ -201,7 +201,7 @@
 <ng-template #dossierListActions>
   <cds-tooltip
     *ngIf="canExportCase$ | async"
-    [description]="'case.exportButtonTooltip' | translate"
+    [description]="'dossier.exportButtonTooltip' | translate"
   >
     <cds-loading *ngIf="loadingExport" size="sm" class="loading-spinner"></cds-loading>
 
@@ -217,6 +217,19 @@
     </button>
   </cds-tooltip>
 
+  <button
+    *ngIf="canCreateDocument$ | async"
+    cdsButton="primary"
+    [disabled]="disableStartButton$ | async"
+    (click)="startDossier()"
+  >
+    {{ 'Start Dossier' | translate }}
+
+    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+  </button>
+</ng-template>
+
+<ng-template #emptyResultDossierListActions>
   <button
     *ngIf="canCreateDocument$ | async"
     cdsButton="primary"
