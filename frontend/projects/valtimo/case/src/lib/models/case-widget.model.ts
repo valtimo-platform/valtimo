@@ -30,6 +30,7 @@ enum CaseWidgetType {
   CUSTOM = 'custom',
   COLLECTION = 'collection',
   FORMIO = 'formio',
+  DIVIDER = 'divider'
 }
 
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
@@ -46,7 +47,7 @@ interface BasicCaseWidget {
   width: CaseWidgetWidth;
   highContrast: boolean;
   key: string;
-  properties: WidgetContentProperties;
+  properties?: WidgetContentProperties;
   actions?: CaseWidgetAction[];
 }
 
@@ -85,12 +86,17 @@ interface FormioCaseWidget extends BasicCaseWidget {
   };
 }
 
+interface DividerCaseWidget extends BasicCaseWidget {
+  type: CaseWidgetType.DIVIDER;
+}
+
 type CaseWidget =
   | FieldsCaseWidget
   | CollectionCaseWidget
   | CustomCaseWidget
   | TableCaseWidget
-  | FormioCaseWidget;
+  | FormioCaseWidget
+  | DividerCaseWidget;
 
 type CaseWidgetWithUuid = CaseWidget & {
   uuid: string;

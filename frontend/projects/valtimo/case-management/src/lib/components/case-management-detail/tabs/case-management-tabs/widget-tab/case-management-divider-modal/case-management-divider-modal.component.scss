@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-import {CaseWidgetType} from '@valtimo/case';
-import {TagType} from 'carbon-components-angular';
-
-enum WidgetEditorTab {
-  VISUAL = 'visual',
-  JSON = 'json',
+.divider-key-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  inline-size: 100%;
 }
 
-const WidgetTypeTags: {[key: string]: TagType} = {
-  [CaseWidgetType.COLLECTION]: 'teal',
-  [CaseWidgetType.CUSTOM]: 'magenta',
-  [CaseWidgetType.FIELDS]: 'blue',
-  [CaseWidgetType.FORMIO]: 'green',
-  [CaseWidgetType.TABLE]: 'purple',
-  [CaseWidgetType.DIVIDER]: 'outline'
-};
-
-export {WidgetEditorTab, WidgetTypeTags};
+.title-input {
+  margin-bottom: 32px;
+}
