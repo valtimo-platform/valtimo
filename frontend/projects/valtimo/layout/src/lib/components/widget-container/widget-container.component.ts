@@ -43,6 +43,7 @@ import {TranslatePipe} from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, WidgetBlockComponent, LoadingModule, CarbonListModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [WidgetLayoutService],
 })
 export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('widgetsContainer') private _widgetsContainerRef: ElementRef<HTMLDivElement>;

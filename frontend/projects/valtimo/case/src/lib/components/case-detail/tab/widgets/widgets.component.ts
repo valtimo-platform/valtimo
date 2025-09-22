@@ -27,6 +27,13 @@ import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
+import {
+  BasicCaseWidget,
+  CaseWidget,
+  CaseWidgetGroup,
+  CaseWidgetType,
+  DividerCaseWidget,
+} from '../../../../models';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -53,10 +60,14 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
 
-  public readonly widgetConfiguration$ = combineLatest([this._documentId$, this._tabKey$]).pipe(
+  private readonly _widgetConfiguration$ = combineLatest([this._documentId$, this._tabKey$]).pipe(
     switchMap(([documentId, tabKey]) =>
       this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey)
     )
+  );
+
+  public readonly widgetGroups$: Observable<CaseWidgetGroup[]> = this._widgetConfiguration$.pipe(
+    map(res => this.toCaseWidgetGroups(res.widgets))
   );
 
   public readonly widgetComponentMap: WidgetComponentMap = {
@@ -79,5 +90,17 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.caseTabService.enableTabHorizontalOverflow();
+  }
+
+  private toCaseWidgetGroups(widgets: BasicCaseWidget[]): CaseWidgetGroup[] {
+    return widgets.reduce<CaseWidgetGroup[]>((groups, widget) => {
+      if (widget.type === CaseWidgetType.DIVIDER) {
+        groups.push({divider: widget as DividerCaseWidget, widgets: []});
+      } else {
+        if (groups.length === 0) groups.push({divider: null, widgets: []});
+        groups[groups.length - 1].widgets.push(widget as CaseWidget);
+      }
+      return groups;
+    }, []);
   }
 }
