@@ -111,6 +111,12 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
 
     if (input.objectType === 'overige') {
       formValue.zaakObjectRequest.objectTypeOverige = input.objectTypeOverige;
+
+      if (
+        input.objectTypeOverigeDefinitieUrl ||
+        input.objectTypeOverigeDefinitieSchema ||
+        input.objectTypeOverigeDefinitieObjectData
+      )
       formValue.zaakObjectRequest.objectTypeOverigeDefinitie = {
         url: input.objectTypeOverigeDefinitieUrl,
         schema: input.objectTypeOverigeDefinitieSchema,
