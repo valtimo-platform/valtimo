@@ -93,14 +93,21 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   }
 
   private toCaseWidgetGroups(widgets: BasicCaseWidget[]): CaseWidgetGroup[] {
-    return widgets.reduce<CaseWidgetGroup[]>((groups, widget) => {
+    const groups = widgets.reduce<CaseWidgetGroup[]>((acc, widget) => {
       if (widget.type === CaseWidgetType.DIVIDER) {
-        groups.push({divider: widget as DividerCaseWidget, widgets: []});
+        acc.push({divider: widget as DividerCaseWidget, widgets: []});
       } else {
-        if (groups.length === 0) groups.push({divider: null, widgets: []});
-        groups[groups.length - 1].widgets.push(widget as CaseWidget);
+        if (acc.length === 0) acc.push({divider: null, widgets: []});
+        acc[acc.length - 1].widgets.push(widget as CaseWidget);
       }
-      return groups;
+      return acc;
     }, []);
+
+    // if there is more than one group and the last group has only a divider and no widgets, don't render this last group
+    if (groups.length > 1 && groups[groups.length - 1].widgets.length === 0) {
+      groups.pop();
+    }
+
+    return groups;
   }
 }
