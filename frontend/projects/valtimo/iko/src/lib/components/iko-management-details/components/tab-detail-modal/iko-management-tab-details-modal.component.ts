@@ -33,7 +33,7 @@ import {
   SelectItem,
   SelectModule,
   ValtimoCdsModalDirective,
-} from 'dist/valtimo/components';
+} from '@valtimo/components';
 import {filter, map, Observable, switchMap} from 'rxjs';
 import {IkoTabType, TabDto} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
