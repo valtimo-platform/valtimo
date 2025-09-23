@@ -15,7 +15,7 @@
  */
 
 import {WidgetDisplayType} from './widget-display.model';
-import {FieldsWidgetValue} from './widget.model';
+import {FieldsWidgetValue, WidgetAction} from './widget.model';
 
 interface WidgetFieldsContent {
   columns: FieldsWidgetValue[][];
@@ -64,6 +64,14 @@ interface WidgetTableContent {
   defaultPageSize: number;
 }
 
+interface WidgetInteractiveTableContent {
+  columns: FieldsWidgetValue[];
+  collection: string;
+  firstColumnAsTitle: boolean;
+  rowClickAction: WidgetAction;
+  defaultPageSize: number;
+}
+
 interface WidgetCustomContent {
   componentKey: string;
 }
@@ -75,6 +83,7 @@ interface WidgetFormioContent {
 type WidgetContentProperties =
   | WidgetFieldsContent
   | WidgetTableContent
+  | WidgetInteractiveTableContent
   | WidgetCustomContent
   | WidgetFormioContent
   | WidgetCollectionContent;
@@ -85,6 +94,7 @@ export {
   WidgetFieldsContent,
   WidgetFormioContent,
   WidgetTableContent,
+  WidgetInteractiveTableContent,
   WidgetCollectionContent,
   CollectionWidgetField,
   CollectionWidgetFieldWidth,

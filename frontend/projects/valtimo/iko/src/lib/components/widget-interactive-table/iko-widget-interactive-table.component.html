@@ -14,20 +14,18 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-field
-  *ngIf="{
-    widgetConfiguration: widgetConfiguration$ | async,
-    widgetData: widgetData$ | async,
-  } as obs"
-  [widgetConfiguration]="obs.widgetConfiguration"
-  [widgetData]="obs.widgetData"
+<valtimo-widget-interactive-table
+  [widgetData]="widgetData$ | async"
+  [widgetConfiguration]="widgetConfiguration"
+  (paginationEvent)="onPaginationEvent($event)"
+  (rowClickEvent)="onRowClickEvent($event)"
 >
-  @if (obs.widgetConfiguration?.actions?.length >= 1) {
+  @if (widgetConfiguration?.actions?.length >= 1) {
     <button
       cdsButton="ghost"
-      (click)="onWidgetActionClick(obs.widgetConfiguration?.actions[0])"
+      (click)="onWidgetActionClick(widgetConfiguration?.actions[0])"
     >
-      {{ obs.widgetConfiguration?.actions[0].name }}
+      {{ widgetConfiguration?.actions[0].name }}
     </button>
   }
-</valtimo-widget-field>
+</valtimo-widget-interactive-table>
