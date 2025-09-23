@@ -18,53 +18,54 @@ import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@ang
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {
-  CollectionWidget,
-  WidgetAction,
-  WidgetCollectionComponent,
-  WidgetLayoutService,
-} from '@valtimo/layout';
-import {
   ButtonModule,
-  InputModule,
   PaginationModel,
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
+import {
+  InteractiveTableWidget,
+  WidgetAction,
+  WidgetLayoutService,
+  WidgetInteractiveTableComponent,
+} from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 
 @Component({
-  selector: 'valtimo-iko-widget-collection',
-  templateUrl: './iko-widget-collection.component.html',
+  selector: 'valtimo-iko-widget-interactive-table',
+  templateUrl: './iko-widget-interactive-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     CommonModule,
-    InputModule,
+    CarbonListModule,
     PaginationModule,
     TilesModule,
-    CarbonListModule,
     TranslateModule,
     ButtonModule,
-    WidgetCollectionComponent,
+    WidgetInteractiveTableComponent,
   ],
 })
-export class IkoWidgetCollectionComponent {
-  @Input() public set widgetConfiguration(value: CollectionWidget) {
-    if (!value) return;
+export class IkoWidgetInteractiveTableComponent {
+  private _widgetConfiguration: InteractiveTableWidget;
+  public readonly widgetConfiguration$ = new BehaviorSubject<InteractiveTableWidget | null>(null);
+  @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
+    this._widgetConfiguration = value;
     this.widgetConfiguration$.next(value);
   }
+  public get widgetConfiguration(): InteractiveTableWidget {
+    return this._widgetConfiguration;
+  }
+
+  @Input() public readonly widgetUuid: string;
 
   private readonly _widgetParams$ = new BehaviorSubject<IkoWidgetParams | null>(null);
   @Input() public set widgetParams(value: IkoWidgetParams) {
     this._widgetParams$.next(value);
   }
-
-  @Input() public readonly widgetUuid: string;
-
-  public readonly widgetConfiguration$ = new BehaviorSubject<CollectionWidget | null>(null);
 
   private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
 
@@ -94,6 +95,23 @@ export class IkoWidgetCollectionComponent {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
   }
 
+  public onRowClickEvent(event: any): void {
+    this.widgetConfiguration$
+      .pipe(take(1))
+      .subscribe((widgetConfiguration: InteractiveTableWidget) => {
+        const navigateToWithPlaceholders =
+          widgetConfiguration.properties.rowClickAction?.navigateTo;
+        if (navigateToWithPlaceholders) {
+          const navigateTo = event.resolved[navigateToWithPlaceholders];
+          if (navigateTo.startsWith(window.location.origin) || navigateTo.startsWith('/')) {
+            window.open(navigateTo, '_self');
+          } else {
+            window.open(navigateTo, '_blank');
+          }
+        }
+      });
+  }
+
   public onWidgetActionClick(action: WidgetAction): void {
     if (action.navigateTo) {
       if (
@@ -104,6 +122,9 @@ export class IkoWidgetCollectionComponent {
       } else {
         window.open(action.navigateTo, '_blank');
       }
+    }
+    if (action.caseDefinitionKey) {
+      console.log(`Start Case Definition ${action.caseDefinitionKey}`);
     }
   }
 }
