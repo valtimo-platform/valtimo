@@ -814,20 +814,20 @@
     "columns": {"highContrast": "Hoher Kontrast", "type": "Typ", "width": "Breite"},
     "list": {
       "dividerModal": {
-        "createDividerTitle": "Neuen Widget-Teiler hinzufügen",
+        "addDividerTitle": "Neuen Widget-Teiler hinzufügen",
         "editDividerTitle": "Widget-Teiler bearbeiten",
         "duplicateDividerTitle": "Widget-Teiler duplizieren",
         "dividerTitleLabel": "Titel des Teilers (optional)",
         "dividerTitlePlaceholder": "Teiler-Titel",
         "dividerKeyLabel": "Teiler-Schlüssel",
-        "dividerKeyPlaceholder": "Schlüssel wird automatisch generiert",
-        "create": "Erstellen",
+        "dividerKeyPlaceholder": "Trennschlüssel",
+        "add": "Erstellen",
         "duplicate": "Duplizieren",
         "edit": "Bearbeiten",
         "idError": "Dieser Trenner-Schlüssel wird bereits verwendet. Bitte wählen Sie einen eindeutigen Schlüssel.",
-        "keyRequiredError": "Divider-sleutel is verplicht"
       },
       "add": "Widget hinzufügen",
+      "addDivider": "Trennlinie hinzufügen",
       "noResults": {
         "title": "Es wurden keine Widgets konfiguriert",
         "description": "Klicken Sie hier, um Widgets zu konfigurieren"

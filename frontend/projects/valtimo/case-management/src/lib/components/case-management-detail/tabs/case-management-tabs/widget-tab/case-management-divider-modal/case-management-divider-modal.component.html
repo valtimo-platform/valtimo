@@ -14,16 +14,10 @@
   ~ limitations under the License.
   -->
 
-<cds-modal *ngIf="{
-    editDisabled: editDisabled$ | async,
-    idError: idError$ | async,
-    editActive: editActive$ | async,
-    submitDisabled: submitDisabled$ | async,
-  } as obs"
-     valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()">
+<cds-modal valtimoCdsModal showFooter="true" [open]="open" (close)="onCloseModal()">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseModal()">
     <h3 cdsModalHeaderHeading>
-      {{ ('widgetTabManagement.list.dividerModal.' + mode + 'DividerTitle') | translate }}
+      {{ ('widgetTabManagement.list.dividerModal.' + modalMode + 'DividerTitle') | translate }}
     </h3>
   </cds-modal-header>
 
@@ -39,33 +33,21 @@
           placeholder="{{ 'widgetTabManagement.list.dividerModal.dividerTitlePlaceholder' | translate }}"
           [cdsLayer]="1"
           [attr.modal-primary-focus]="true"
-          (focusout)="onFocusOut()"
+          (keyup)="onFocusOut()"
         />
       </cds-label>
 
-      <cds-label [invalid]="!!obs.idError" [invalidText]="obs.idError | translate">
-        {{ 'widgetTabManagement.list.dividerModal.dividerKeyLabel' | translate }}
+      <valtimo-auto-key-input
+        [mode]="modalMode"
+        [usedKeys]="usedKeys"
+        [sourceText]="title.value"
+        formControlName="key"
+        labelTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyLabel"
+        placeholderTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyPlaceholder"
 
-        <div class="divider-key-wrapper">
-          <input
-            cdsText
-            formControlName="key"
-            [invalid]="!!obs.idError"
-            placeholder="{{ 'widgetTabManagement.list.dividerModal.dividerKeyPlaceholder' | translate }}"
-          />
+      >
+      </valtimo-auto-key-input>
 
-          <button
-            *ngIf="!obs.editActive"
-            cdsButton="secondary"
-            size="md"
-            [disabled]="mode === 'edit' || obs.editDisabled"
-            [iconOnly]="true"
-            (click)="enableEdit()"
-          >
-            <svg cdsIcon="edit" size="16"></svg>
-          </button>
-        </div>
-      </cds-label>
     </form>
   </section>
 

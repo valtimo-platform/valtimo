@@ -41,7 +41,7 @@ import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../../../../
 import {WidgetTabManagementService, WidgetWizardService} from '../../../../../../../services';
 import {CasManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
 import { IconService } from 'carbon-components-angular';
-import {ModalMode} from '../../../../../../../models/widget-divider.model';
+import {ModalMode} from '@valtimo/shared';
 import {DragVertical16} from '@carbon/icons';
 import {
   CaseManagementDividerModalComponent,
@@ -134,15 +134,24 @@ export class CaseManagementWidgetsEditorComponent {
     map(([items]) =>
       items.map(item => ({
         ...item,
-        widthTranslation: this.translateService.instant(this.getWidthTranslationKey(item.width)),
-        tags: [
+          widthTranslation:
+          item.type === 'divider'
+            ? '-'
+            : this.translateService.instant(
+              this.getWidthTranslationKey(item.width)
+            ),
+          highContrast:
+          item.type === 'divider' ? null : item.highContrast,
+          tags: [
           {
-            content: this.translateService.instant(`widgetTabManagement.types.${item.type}.title`),
+            content: this.translateService.instant(
+              `widgetTabManagement.types.${item.type}.title`
+            ),
             type: WidgetTypeTags[item.type],
           },
         ],
       }))
-    )
+    ),
   );
 
   public readonly isWizardOpen$ = new BehaviorSubject<boolean>(false);
@@ -151,8 +160,7 @@ export class CaseManagementWidgetsEditorComponent {
   public readonly deleteRowKey$ = new Subject<number>();
   public readonly dividerDefinition$ = new BehaviorSubject<CaseWidget | null>(null);
   public readonly isDividerModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly dividerModalMode$ = new BehaviorSubject<ModalMode>(ModalMode.CREATE);
-
+  public readonly $dividerModalMode = signal<ModalMode>('add');
 
   public readonly $dragAndDropDisabled = signal(false);
 
@@ -170,7 +178,7 @@ export class CaseManagementWidgetsEditorComponent {
 
   public editWidget(tabWidget: CaseWidget): void {
     if(tabWidget.type === CaseWidgetType.DIVIDER) {
-      this.dividerModalMode$.next(ModalMode.EDIT);
+      this.$dividerModalMode.set('edit');
       this.dividerDefinition$.next(tabWidget);
       this.openAddDividerModal();
     } else {
@@ -195,7 +203,7 @@ export class CaseManagementWidgetsEditorComponent {
     tabWidgetClone.key = '';
 
     if(tabWidget.type === CaseWidgetType.DIVIDER) {
-      this.dividerModalMode$.next(ModalMode.DUPLICATE);
+      this.$dividerModalMode.set('duplicate');
       this.dividerDefinition$.next(tabWidget);
       this.openAddDividerModal();
     } else {
@@ -226,8 +234,8 @@ export class CaseManagementWidgetsEditorComponent {
   public onCloseAddDividerModalEvent(dividerDefinition: BasicCaseWidget, existingWidgets: CaseWidget[]): void {
     this.isDividerModalOpen$.next(false);
     this.widgetWizardService.resetWizard();
-    this.dividerModalMode$.next(ModalMode.CREATE);
     this.dividerDefinition$.next(null);
+    this.$dividerModalMode.set('add');
 
     if (!dividerDefinition) return;
 

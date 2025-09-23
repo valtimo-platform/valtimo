@@ -16,7 +16,7 @@
 
 enum ModalMode {
   EDIT = 'edit',
-  CREATE = 'create',
+  ADD = 'add',
   DUPLICATE = 'duplicate'
 }
 

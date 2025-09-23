@@ -827,20 +827,20 @@
     "columns": {"highContrast": "Hoog contrast", "type": "Type", "width": "Breedte"},
     "list": {
       "dividerModal": {
-        "createDividerTitle": "Nieuwe widget-scheiding toevoegen",
+        "addDividerTitle": "Nieuwe widget-scheiding toevoegen",
         "editDividerTitle": "Widget-scheiding bewerken",
         "duplicateDividerTitle": "Widget-scheiding dupliceren",
         "dividerTitleLabel": "Scheider-titel (optioneel)",
         "dividerTitlePlaceholder": "Scheider-titel",
         "dividerKeyLabel": "Scheider-sleutel (automatisch gegenereerd)",
-        "dividerKeyPlaceholder": "Sleutel wordt automatisch gegenereerd",
-        "create": "Aanmaken",
+        "dividerKeyPlaceholder": "Scheidingssleutel",
+        "add": "Aanmaken",
         "duplicate": "Dupliceren",
         "edit": "Bewerken",
         "idError": "Deze scheidingssleutel is al in gebruik. Kies een unieke sleutel.",
-        "keyRequiredError": "Divider-Schlüssel ist erforderlich"
       },
       "add": "Widget toevoegen",
+      "addDivider": "Scheiding toevoegen",
       "noResults": {
         "title": "Er zijn geen widgets geconfigureerd",
         "description": "Klik hier om widgets te configureren"

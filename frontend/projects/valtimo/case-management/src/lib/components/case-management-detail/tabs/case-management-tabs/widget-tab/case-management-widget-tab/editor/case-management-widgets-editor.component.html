@@ -45,10 +45,11 @@
   <ng-template #addDividerButton>
     <button
       cdsButton="ghost"
-      iconOnly="true"
-      cdsIcon="drag--vertical"
       (click)="openAddDividerModal()"
-    ></button>
+    >
+      {{ 'widgetTabManagement.list.addDivider' | translate }}
+      <svg cdsIcon="drag--vertical" size="16" class="cds--btn__icon"></svg>
+    </button>
   </ng-template>
 
   <ng-template #addWidgetButton>
@@ -67,7 +68,7 @@
 
   <valtimo-case-management-divider-modal
     [open]="isDividerModalOpen$ | async"
-    [mode]="dividerModalMode$ | async"
+    [modalMode]="$dividerModalMode()"
     [prefillData]="dividerDefinition$ | async"
     [usedKeys]="_usedKeys"
     (closeEvent)="onCloseAddDividerModalEvent($event, obs.items)"

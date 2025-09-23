@@ -85,6 +85,7 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
   public onTouched = () => {};
 
   private readonly subscription = new Subscription();
+  private duplicateInitialized = new BehaviorSubject<boolean>(false);
 
   constructor(private readonly iconService: IconService) {
     this.iconService.registerAll([Edit16, Close16]);
@@ -98,7 +99,11 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
     this.subscription.add(
       combineLatest([this.mode$, this.editingKey$, this._usedKeys$, this._sourceText$]).subscribe(
         ([mode, editingKey, usedKeys, sourceText]) => {
-          if (mode === 'add' && !editingKey) {
+          if (mode === 'add'&& !editingKey) {
+            const newKey = sourceText ? this.getUniqueKey(sourceText, usedKeys) : '';
+            this.value = newKey;
+            this.onChange(newKey);
+          } else if(mode === 'duplicate' && !editingKey) {
             const newKey = sourceText ? this.getUniqueKey(sourceText, usedKeys) : '';
             this.value = newKey;
             this.onChange(newKey);
@@ -110,6 +115,7 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
 
   public ngOnDestroy(): void {
     this.subscription.unsubscribe();
+    this.duplicateInitialized.next(false);
   }
 
   public setDisabledState(disabled: boolean): void {
