@@ -16,8 +16,13 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
-import {FieldsWidget, WidgetFieldComponent, WidgetLayoutService} from '@valtimo/layout';
+import {CarbonListModule} from '@valtimo/components';
+import {
+  FieldsWidget,
+  WidgetAction,
+  WidgetFieldComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
@@ -33,7 +38,6 @@ import {IkoApiService} from '../../services';
     InputModule,
     TranslateModule,
     CarbonListModule,
-    EllipsisPipe,
     ButtonModule,
     WidgetFieldComponent,
   ],
@@ -74,4 +78,17 @@ export class IkoWidgetFieldComponent {
     private readonly ikoApiService: IkoApiService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {}
+
+  public onWidgetActionClick(action: WidgetAction): void {
+    if (action.navigateTo) {
+      if (
+        action.navigateTo.startsWith(window.location.origin) ||
+        action.navigateTo.startsWith('/')
+      ) {
+        window.open(action.navigateTo, '_self');
+      } else {
+        window.open(action.navigateTo, '_blank');
+      }
+    }
+  }
 }
