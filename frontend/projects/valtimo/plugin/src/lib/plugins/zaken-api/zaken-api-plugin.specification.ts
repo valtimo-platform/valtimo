@@ -247,12 +247,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zakelijkRechtAvgAardTooltip: 'Aanduiding voor de aard van het recht',
       objectTypeOverige: 'Object type overige',
       objectTypeOverigeTooltip: 'Beschrijft het type OBJECT als objectType de waarde "overige" heeft.',
-      objectTypeOverigeDefinitieUrl: 'Object type overige URL',
+      objectTypeOverigeDefinitie: 'Object type overige definitie',
+      objectTypeOverigeDefinitieUrl: 'URL',
       objectTypeOverigeDefinitieUrlTooltip: 'URL-referentie naar de objecttype resource in een API. Deze resource moet de JSON-schema-definitie van het objecttype bevatten.',
-      objectTypeOverigeDefinitieSchema: 'Object type overige Schema',
+      objectTypeOverigeDefinitieSchema: 'Schema',
       objectTypeOverigeDefinitieSchemaTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de resource uit het url-attribuut om het schema van het objecttype uit te lezen. Bijvoorbeeld: .jsonSchema.',
-      objectTypeOverigeDefinitieObjectData: 'Object type overige Object data',
-      objectTypeOverigeDefinitieObjectDataTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.'
+      objectTypeOverigeDefinitieObjectData: 'Object data',
+      objectTypeOverigeDefinitieObjectDataTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
+      objectIdentificatie: 'Object identificatie'
     },
     en: {
       title: 'Zaken API',
@@ -430,12 +432,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zakelijkRechtAvgAardTooltip: "Indication of the nature of the right",
       objectTypeOverige: "Object type other",
       objectTypeOverigeTooltip: "Describes the type of OBJECT when objectType has the value 'overige'.",
-      objectTypeOverigeDefinitieUrl: "Object type other URL",
+      objectTypeOverigeDefinitie: 'Object type other definition',
+      objectTypeOverigeDefinitieUrl: "URL",
       objectTypeOverigeDefinitieUrlTooltip: "URL reference to the object type resource in an API. This resource must contain the JSON schema definition of the object type.",
-      objectTypeOverigeDefinitieSchema: "Object type other Schema",
+      objectTypeOverigeDefinitieSchema: "Schema",
       objectTypeOverigeDefinitieSchemaTooltip: "A valid jq expression. This is combined with the resource from the url attribute to read the schema of the object type. Example: .jsonSchema.",
-      objectTypeOverigeDefinitieObjectData: "Object type other Object data",
-      objectTypeOverigeDefinitieObjectDataTooltip: "A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data."
+      objectTypeOverigeDefinitieObjectData: "Object data",
+      objectTypeOverigeDefinitieObjectDataTooltip: "A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.",
+      objectIdentificatie: 'Object identification'
     },
     de: {
       title: 'Zaken API',
@@ -613,12 +617,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zakelijkRechtAvgAardTooltip: "Kennzeichnung der Art des Rechts",
       objectTypeOverige: "Sonstiger Objekttyp",
       objectTypeOverigeTooltip: "Beschreibt den Typ des OBJECT, wenn objectType den Wert „overige“ hat.",
-      objectTypeOverigeDefinitieUrl: "Sonstiger Objekttyp-URL",
+      objectTypeOverigeDefinitie: 'Sonstiger Objekttyp-Definition',
+      objectTypeOverigeDefinitieUrl: "URL",
       objectTypeOverigeDefinitieUrlTooltip: "URL-Referenz zur Objekttyp-Ressource in einer API. Diese Ressource muss die JSON-Schema-Definition des Objekttyps enthalten.",
-      objectTypeOverigeDefinitieSchema: "Sonstiger Objekttyp-Schema",
+      objectTypeOverigeDefinitieSchema: "Schema",
       objectTypeOverigeDefinitieSchemaTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit der Ressource aus dem URL-Attribut kombiniert, um das Schema des Objekttyps auszulesen. Beispiel: .jsonSchema.",
-      objectTypeOverigeDefinitieObjectData: "Sonstiger Objekttyp-Objektdaten",
-      objectTypeOverigeDefinitieObjectDataTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data."
+      objectTypeOverigeDefinitieObjectData: "Objektdaten",
+      objectTypeOverigeDefinitieObjectDataTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.",
+      objectIdentificatie: 'Objektidentifikation'
     },
   },
 };

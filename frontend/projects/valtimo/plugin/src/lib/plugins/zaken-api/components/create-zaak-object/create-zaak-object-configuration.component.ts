@@ -103,25 +103,38 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
     };
 
     if (input.objectType === 'zakelijk_recht') {
-      formValue.zaakObjectRequest.objectIdentificatie = {
-        identificatie: input.zakelijkRechtIdentificatie,
-        avgAard: input.zakelijkRechtAvgAard
-      };
+      // Keep track of include flag for template condition
+      formValue.includeZakelijkRechtObjectIdentificatie = !!input.includeZakelijkRechtObjectIdentificatie;
+
+      if (
+        formValue.includeZakelijkRechtObjectIdentificatie &&
+        (input.zakelijkRechtIdentificatie || input.zakelijkRechtAvgAard)
+      ) {
+        formValue.zaakObjectRequest.objectIdentificatie = {
+          identificatie: input.zakelijkRechtIdentificatie,
+          avgAard: input.zakelijkRechtAvgAard
+        };
+      }
     }
 
     if (input.objectType === 'overige') {
       formValue.zaakObjectRequest.objectTypeOverige = input.objectTypeOverige;
 
+      // Keep track of include flag for template condition
+      formValue.includeObjectTypeOverigeDefinitie = !!input.includeObjectTypeOverigeDefinitie;
+
       if (
-        input.objectTypeOverigeDefinitieUrl ||
-        input.objectTypeOverigeDefinitieSchema ||
-        input.objectTypeOverigeDefinitieObjectData
-      )
-      formValue.zaakObjectRequest.objectTypeOverigeDefinitie = {
-        url: input.objectTypeOverigeDefinitieUrl,
-        schema: input.objectTypeOverigeDefinitieSchema,
-        objectData: input.objectTypeOverigeDefinitieObjectData
-      };
+        formValue.includeObjectTypeOverigeDefinitie &&
+        (input.objectTypeOverigeDefinitieUrl ||
+          input.objectTypeOverigeDefinitieSchema ||
+          input.objectTypeOverigeDefinitieObjectData)
+      ) {
+        formValue.zaakObjectRequest.objectTypeOverigeDefinitie = {
+          url: input.objectTypeOverigeDefinitieUrl,
+          schema: input.objectTypeOverigeDefinitieSchema,
+          objectData: input.objectTypeOverigeDefinitieObjectData
+        };
+      }
     }
 
     this.formValue$.next(formValue);
@@ -131,8 +144,27 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
   private handleValid(formValue: any): void {
     let valid = !!formValue.zaakObjectRequest.objectType;
 
+    if (valid && formValue.zaakObjectRequest.objectType === 'zakelijk_recht') {
+      if (
+        formValue.zaakObjectRequest.objectIdentificatie &&
+        (!formValue.zaakObjectRequest.objectIdentificatie.identificatie ||
+        !formValue.zaakObjectRequest.objectIdentificatie.avgAard)
+      ) {
+        valid = false;
+      }
+    }
+
     if (valid && formValue.zaakObjectRequest.objectType === 'overige') {
       valid = !!formValue.zaakObjectRequest.objectTypeOverige;
+
+      if (
+        formValue.zaakObjectRequest.objectTypeOverigeDefinitie &&
+        (!formValue.zaakObjectRequest.objectTypeOverigeDefinitie.url ||
+          !formValue.zaakObjectRequest.objectTypeOverigeDefinitie.schema ||
+          !formValue.zaakObjectRequest.objectTypeOverigeDefinitie.objectData)
+      ) {
+        valid = false;
+      }
     }
 
     this.valid$.next(valid);
