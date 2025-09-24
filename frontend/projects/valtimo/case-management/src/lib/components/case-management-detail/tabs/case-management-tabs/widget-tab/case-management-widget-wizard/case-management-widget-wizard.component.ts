@@ -152,10 +152,8 @@ export class CaseManagementWidgetWizardComponent {
         return this.widgetWizardService.$widgetStyle() === null;
       case WidgetWizardStep.CONTENT:
         return this.widgetWizardService.widgetContent() === null || !this._contentStepValid();
-      case WidgetWizardStep.DISPLAY_CONDITIONS:
-        return this.widgetWizardService.widgetDisplayConditions() === null;
       default:
-        return true;
+        return false;
     }
   });
 

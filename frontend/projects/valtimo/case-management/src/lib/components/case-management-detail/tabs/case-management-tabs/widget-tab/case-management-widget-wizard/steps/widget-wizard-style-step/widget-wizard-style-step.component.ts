@@ -17,7 +17,7 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {TilesModule} from 'carbon-components-angular';
+import {LayerModule, TilesModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../../../../../services';
 import {WidgetStyle} from '../../../../../../../../models';
 
@@ -26,7 +26,7 @@ import {WidgetStyle} from '../../../../../../../../models';
   templateUrl: './widget-wizard-style-step.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, TilesModule],
+  imports: [CommonModule, TranslateModule, TilesModule, LayerModule],
 })
 export class WidgetWizardStyleStepComponent {
   public readonly WidgetStyle = WidgetStyle;

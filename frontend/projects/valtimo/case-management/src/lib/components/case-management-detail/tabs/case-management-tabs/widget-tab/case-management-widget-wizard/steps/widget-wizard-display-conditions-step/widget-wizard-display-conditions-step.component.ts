@@ -20,13 +20,18 @@ import {
   ListItemWithId,
   MultiInputKeyValue,
   MultiInputValues,
-  ValuePathSelectorPrefix
+  ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {BehaviorSubject, map, Observable} from 'rxjs';
-import {FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {Condition, Operator} from '@valtimo/case';
-import {DropdownModule, InputModule, StructuredListModule, ToggleModule} from 'carbon-components-angular';
+import {
+  DropdownModule,
+  InputModule,
+  StructuredListModule,
+  ToggleModule,
+} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../../../../../services';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
@@ -34,8 +39,8 @@ import {ActivatedRoute} from '@angular/router';
 @Component({
   selector: 'valtimo-widget-wizard-display-conditions-step',
   templateUrl: './widget-wizard-display-conditions-step.component.html',
+  styleUrl: './widget-wizard-display-conditions-step.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  encapsulation: ViewEncapsulation.None,
   standalone: true,
   imports: [
     CommonModule,
@@ -49,14 +54,7 @@ import {ActivatedRoute} from '@angular/router';
     TranslatePipe,
   ],
 })
-export class WidgetWizardDisplayConditionsStepComponent implements OnInit{
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly translateService: TranslateService,
-    private readonly widgetWizardService: WidgetWizardService,
-    private readonly route: ActivatedRoute,
-  ) {}
-
+export class WidgetWizardDisplayConditionsStepComponent implements OnInit {
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   public readonly defaultConditionValues$ = new BehaviorSubject<MultiInputValues | null>(null);
@@ -89,12 +87,19 @@ export class WidgetWizardDisplayConditionsStepComponent implements OnInit{
     conditions: this.fb.control(null),
   });
 
-  ngOnInit(): void {
-    this.prefill();
+  public get conditions(): AbstractControl {
+    return this.form.get('conditions') as AbstractControl;
   }
 
-  public get conditions() {
-    return this.form.get('conditions');
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly translateService: TranslateService,
+    private readonly widgetWizardService: WidgetWizardService,
+    private readonly route: ActivatedRoute
+  ) {}
+
+  public ngOnInit(): void {
+    this.prefill();
   }
 
   public onAllConditionsValid(allConditionsValid: boolean): void {
@@ -117,7 +122,7 @@ export class WidgetWizardDisplayConditionsStepComponent implements OnInit{
   }
 
   private prefill(): void {
-    const conditions = (this.widgetWizardService.widgetDisplayConditions() as Array<Condition>);
+    const conditions = this.widgetWizardService.widgetDisplayConditions() as Array<Condition>;
     if (!conditions) return;
 
     this.defaultConditionValues$.next(
