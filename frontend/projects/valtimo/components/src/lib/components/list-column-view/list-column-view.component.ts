@@ -34,6 +34,7 @@ import {
   IconService,
   InputModule,
   TagModule,
+  TooltipModule,
 } from 'carbon-components-angular';
 import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
 
@@ -52,6 +53,7 @@ import {ListAvailableField, ListField, ListHiddenColumn} from '../../models';
     TranslateModule,
     IconModule,
     InputModule,
+    TooltipModule
   ],
 })
 export class ListColumnViewComponent {
@@ -67,6 +69,7 @@ export class ListColumnViewComponent {
     if (!value) return;
     this._$hiddenColumns.set(value);
   }
+  @Input() public disabled: boolean;
 
   @Output() public readonly viewUpdateEvent = new EventEmitter<ListHiddenColumn[]>();
 

@@ -1942,6 +1942,7 @@
   "listViewColumns": {
     "label": "Selecteer zichtbare kolommen",
     "tooltip": "Toon of verberg kolommen in de lijst",
+    "disabledTooltip": "Kolommen verbergen/tonen is niet beschikbaar tenzij lijstkolommen zijn gedefinieerd",
     "warning": "Er moet minimaal één optie zijn geselecteerd"
   }
 }

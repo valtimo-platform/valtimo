@@ -211,13 +211,13 @@ export class CaseListComponent implements OnInit, OnDestroy {
       this.loadingPagination = false;
     })
   );
-  private readonly _hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
+  public readonly hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
   private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
   private readonly _columns$: Observable<Array<DefinitionColumn>> =
     this.listService.caseDefinitionKey$.pipe(
       switchMap(caseDefinitionKey => this.columnService.getDefinitionColumns(caseDefinitionKey)),
       map(res => {
-        this._hasApiColumnConfig$.next(res.hasApiConfig);
+        this.hasApiColumnConfig$.next(res.hasApiConfig);
         return res.columns;
       }),
       tap(columns => {
@@ -245,7 +245,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly availableFields$: Observable<ListField[]> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
-    this._hasApiColumnConfig$,
+    this.hasApiColumnConfig$,
     this.statuses$,
     this.translateService.stream('key'),
   ]).pipe(
@@ -346,7 +346,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.statusService.selectedCaseStatuses$,
         this.caseListCaseTagService.selectedCaseTags$,
         this.listService.forceRefresh$,
-        this._hasApiColumnConfig$,
+        this.hasApiColumnConfig$,
         this.statusService.caseStatuses$,
         this.caseListCaseTagService.caseTags$,
       ]).pipe(debounceTime(50))

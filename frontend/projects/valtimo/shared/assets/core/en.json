@@ -1909,6 +1909,7 @@
   "listViewColumns": {
     "label": "Select visible columns",
     "tooltip": "Show or hide columns in the list",
+    "disabledTooltip": "Hiding/showing columns is not available unless list columns are defined",
     "warning": "At least one option must be selected"
   }
 }

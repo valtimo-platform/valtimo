@@ -14,20 +14,28 @@
   ~ limitations under the License.
   -->
 
-<cds-overflow-menu
-  [customTrigger]="customTrigger"
-  [cdsOverflowMenu]="visibleColumns"
-  [customPane]="true"
-  [flip]="true"
-  [description]="'listViewColumns.tooltip' | translate"
-  [offset]="{x: 2, y: 64}"
-  placement="bottom"
-  (openChange)="onOpenChange($event)"
->
-</cds-overflow-menu>
+@if (disabled) {
+  <cds-tooltip [description]="'listViewColumns.disabledTooltip' | translate">
+    <button [disabled]="disabled" iconOnly="true" cdsButton="ghost">
+      <svg cdsIcon="view--off" size="16"></svg>
+    </button>
+  </cds-tooltip>
+} @else {
+  <cds-overflow-menu
+    [customTrigger]="customTrigger"
+    [cdsOverflowMenu]="visibleColumns"
+    [customPane]="true"
+    [flip]="true"
+    [description]="'listViewColumns.tooltip' | translate"
+    [offset]="{x: 2, y: 64}"
+    placement="bottom"
+    (openChange)="onOpenChange($event)"
+  >
+  </cds-overflow-menu>
+}
 
 <ng-template #customTrigger>
-  <button cdsButton="ghost" (click)="onOpenChange()">
+  <button iconOnly="true" cdsButton="ghost" (click)="onOpenChange()">
     <svg cdsIcon="view--off" size="16"></svg>
   </button>
 

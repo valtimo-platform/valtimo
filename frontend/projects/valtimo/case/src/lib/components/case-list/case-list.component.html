@@ -20,6 +20,7 @@
     fields: fields$ | async,
     documentItems: documentItems$ | async,
     noResultsMessage: noResultsMessage$ | async,
+    hasApiColumnConfig: hasApiColumnConfig$ | async,
     searchFields: searchFields$ | async,
     schema: schema$ | async,
     showAssignModal: showAssignModal$ | async,
@@ -109,6 +110,7 @@
     <div carbonToolbarContent>
       <valtimo-list-column-view
         [availableFields]="availableFields$ | async"
+        [disabled]="!obs.hasApiColumnConfig"
         [hiddenColumns]="hiddenColumns$ | async"
         (viewUpdateEvent)="onViewUpdateEvent($event)"
       ></valtimo-list-column-view>
