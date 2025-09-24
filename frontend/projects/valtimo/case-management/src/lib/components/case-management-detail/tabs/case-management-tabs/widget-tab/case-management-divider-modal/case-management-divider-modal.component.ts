@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
 import {
@@ -56,7 +56,7 @@ import { CARBON_CONSTANTS, CarbonListItem } from '@valtimo/components';
     AutoKeyInputComponent
   ],
 })
-export class CaseManagementDividerModalComponent implements OnInit {
+export class CaseManagementDividerModalComponent {
   private _modalMode: ModalMode;
   @Input()
   public set modalMode(value: ModalMode) {
@@ -77,6 +77,14 @@ export class CaseManagementDividerModalComponent implements OnInit {
 
   @Input() public widgets: CarbonListItem;
   @Input() public usedKeys: string[] = [];
+
+  public dividerForm: FormGroup = this.fb.group({
+    title: this.fb.control<string>(''),
+    key: this.fb.control<string>('', [
+      Validators.required,
+      Validators.pattern('[A-Za-z0-9-]*'),
+    ]),
+  });
 
   @Input() public set prefillData(value: CaseWidget | null) {
     if (!value) return;
@@ -106,8 +114,6 @@ export class CaseManagementDividerModalComponent implements OnInit {
     }
   }
 
-  public dividerForm: FormGroup;
-
   public divider: BasicCaseWidget = {
     type: CaseWidgetType.DIVIDER,
     title: '',
@@ -121,16 +127,6 @@ export class CaseManagementDividerModalComponent implements OnInit {
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Edit16]);
-  }
-
-  public ngOnInit(): void {
-    this.dividerForm = this.fb.group({
-      title: this.fb.control<string>(''),
-      key: this.fb.control<string>('', [
-        Validators.required,
-        Validators.pattern('[A-Za-z0-9-]*'),
-      ]),
-    });
   }
 
   public onCloseModal(dividerCreated?: boolean): void {
