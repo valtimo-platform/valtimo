@@ -148,11 +148,7 @@ export class IkoApiService extends BaseApiService {
     });
   }
 
-  private resolveProperty(property: string, resolved: {[key: string]: string}) {
-    if (property) {
-      return resolved ? resolved[property] : property;
-    } else {
-      return null;
-    }
+  private resolveProperty(property: string, resolved: {[key: string]: string}): string {
+    return property ? (resolved ? resolved[property] : property) : null;
   }
 }

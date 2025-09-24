@@ -23,10 +23,7 @@
   [widgetData]="obs.widgetData"
 >
   @if (obs.widgetConfiguration?.actions?.length >= 1) {
-    <button
-      cdsButton="ghost"
-      (click)="onWidgetActionClick(obs.widgetConfiguration?.actions[0])"
-    >
+    <button cdsButton="ghost" (click)="onWidgetActionClick(obs.widgetConfiguration?.actions[0])">
       {{ obs.widgetConfiguration?.actions[0].name }}
     </button>
   }
