@@ -205,7 +205,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       naam: 'Naam',
       naamTooltip: 'De feitelijke naam van de organisatorische eenheid.',
       isGehuisvestIn: 'Is gehuisvest in',
-      isGehuisvestInTooltip: 'Locatie waar de organisatorische eenheid gehuisvest is. (Max. 24 tekens)',
+      isGehuisvestInTooltip:
+        'Locatie waar de organisatorische eenheid gehuisvest is. (Max. 24 tekens)',
       handelsnaam: 'Handelsnaam',
       handelsnaamTooltip: 'De naam van de vestiging waaronder gehandeld wordt. (Max. 625 tekens)',
       kvkNummer: 'KVK-nummer',
@@ -377,14 +378,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       naam: 'Name',
       naamTooltip: 'The actual name of the organizational unit.',
       isGehuisvestIn: 'Is housed in',
-<<<<<<< HEAD
-      isGehuisvestInTooltip: 'Location where the organizational unit is housed. (Max. 24 characters)',
-      handelsnaam: 'Trade name',
-      handelsnaamTooltip: 'The name of the establishment where the business is conducted. (Max. 625 characters)',
-=======
       isGehuisvestInTooltip:
         'Location where the organizational unit is housed. (Max. 24 characters)',
->>>>>>> f11f01062 (Prettier write)
+      handelsnaam: 'Trade name',
+      handelsnaamTooltip:
+        'The name of the establishment where the business is conducted. (Max. 625 characters)',
       kvkNummer: 'Chamber of Commerce number',
       kvkNummerTooltip: 'A unique number assigned by the Chamber of Commerce. (Max. 8 characters)',
       vestigingsNummer: 'Branch number',
@@ -554,14 +552,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       naam: 'Name',
       naamTooltip: 'Der tatsächliche Name der organisatorischen Einheit.',
       isGehuisvestIn: 'Ist untergebracht in',
-<<<<<<< HEAD
-      isGehuisvestInTooltip: 'Ort, an dem die organisatorische Einheit untergebracht ist. (Max. 24 Zeichen)',
-      handelsnaam: 'Handelsname',
-      handelsnaamTooltip: 'Der Name der Niederlassung, in der das Geschäft betrieben wird. (Max. 625 Zeichen)',
-=======
       isGehuisvestInTooltip:
         'Ort, an dem die organisatorische Einheit untergebracht ist. (Max. 24 Zeichen)',
->>>>>>> f11f01062 (Prettier write)
+      handelsnaam: 'Handelsname',
+      handelsnaamTooltip:
+        'Der Name der Niederlassung, in der das Geschäft betrieben wird. (Max. 625 Zeichen)',
       kvkNummer: 'Handelskammernummer',
       kvkNummerTooltip:
         'Eine eindeutige Nummer, die von der Handelskammer vergeben wird. (Max. 8 Zeichen)',

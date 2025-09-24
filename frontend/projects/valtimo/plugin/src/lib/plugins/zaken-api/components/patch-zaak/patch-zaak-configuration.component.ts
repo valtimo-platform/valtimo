@@ -134,20 +134,6 @@ export class PatchZaakConfigurationComponent
     return this.propertyList.indexOf(property) !== -1;
   }
 
-  public dataTestIdFor(property: PatchZaakProperties): string {
-    return this.DATA_TEST_ID_PREFIX + property;
-  }
-
-  public presetPropertyWithValue(property: PatchZaakProperties, value: string): void {
-    const input = document.querySelector<HTMLInputElement>(
-      `[data-testid="${this.DATA_TEST_ID_PREFIX + property}"]`
-    );
-    if (input) {
-      input.value = value;
-      input.dispatchEvent(new Event('input'));
-    }
-  }
-
   private handleValid(formValue: PatchZaakConfig): void {
     const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
     const valid = !isPropertyInvalid;
