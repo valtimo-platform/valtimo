@@ -99,32 +99,14 @@ export class IkoWidgetInteractiveTableComponent {
     this.widgetConfiguration$
       .pipe(take(1))
       .subscribe((widgetConfiguration: InteractiveTableWidget) => {
-        const navigateToWithPlaceholders =
-          widgetConfiguration.properties.rowClickAction?.navigateTo;
-        if (navigateToWithPlaceholders) {
-          const navigateTo = event.resolved[navigateToWithPlaceholders];
-          if (navigateTo.startsWith(window.location.origin) || navigateTo.startsWith('/')) {
-            window.open(navigateTo, '_self');
-          } else {
-            window.open(navigateTo, '_blank');
-          }
-        }
+        this.ikoApiService.handleAction(
+          widgetConfiguration.properties.rowClickAction,
+          event.resolved
+        );
       });
   }
 
   public onWidgetActionClick(action: WidgetAction): void {
-    if (action.navigateTo) {
-      if (
-        action.navigateTo.startsWith(window.location.origin) ||
-        action.navigateTo.startsWith('/')
-      ) {
-        window.open(action.navigateTo, '_self');
-      } else {
-        window.open(action.navigateTo, '_blank');
-      }
-    }
-    if (action.caseDefinitionKey) {
-      console.log(`Start Case Definition ${action.caseDefinitionKey}`);
-    }
+    this.ikoApiService.handleAction(action);
   }
 }

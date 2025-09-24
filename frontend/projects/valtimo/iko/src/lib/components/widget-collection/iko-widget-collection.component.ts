@@ -95,15 +95,6 @@ export class IkoWidgetCollectionComponent {
   }
 
   public onWidgetActionClick(action: WidgetAction): void {
-    if (action.navigateTo) {
-      if (
-        action.navigateTo.startsWith(window.location.origin) ||
-        action.navigateTo.startsWith('/')
-      ) {
-        window.open(action.navigateTo, '_self');
-      } else {
-        window.open(action.navigateTo, '_blank');
-      }
-    }
+    this.ikoApiService.handleAction(action);
   }
 }
