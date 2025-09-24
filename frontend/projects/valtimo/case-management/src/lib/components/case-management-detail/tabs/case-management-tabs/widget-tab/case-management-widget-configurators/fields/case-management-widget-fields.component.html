@@ -44,6 +44,7 @@
   @for (column of $columns(); track $index) {
     <cds-tab
       [active]="activeTab() === $index"
+      cdsLayer="1"
       [heading]="columnHeading"
       [context]="{index: $index, count: $count}"
       (selected)="onTabSelected($index)"

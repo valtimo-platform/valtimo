@@ -17,7 +17,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, computed, Signal} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CaseWidgetType, CaseWidgetWidth} from '@valtimo/case';
-import {TilesModule} from 'carbon-components-angular';
+import {LayerModule, TilesModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../../../../../services';
 
 @Component({
@@ -25,7 +25,7 @@ import {WidgetWizardService} from '../../../../../../../../services';
   templateUrl: './widget-wizard-width-step.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, TilesModule],
+  imports: [CommonModule, TranslateModule, TilesModule, LayerModule],
 })
 export class WidgetWizardWidthStepComponent {
   public readonly $fieldsColumnsLength: Signal<number> = computed(() =>

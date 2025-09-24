@@ -18,7 +18,7 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {AVAILABLE_WIDGETS, WidgetTypeSelection} from '../../../../../../../../models';
-import {TilesModule} from 'carbon-components-angular';
+import {LayerModule, TilesModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../../../../../services';
 
 @Component({
@@ -27,7 +27,7 @@ import {WidgetWizardService} from '../../../../../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, TranslateModule, TilesModule],
+  imports: [CommonModule, TranslateModule, TilesModule, LayerModule],
 })
 export class WidgetWizardTypeStepComponent {
   public readonly availableWidgets = AVAILABLE_WIDGETS;
