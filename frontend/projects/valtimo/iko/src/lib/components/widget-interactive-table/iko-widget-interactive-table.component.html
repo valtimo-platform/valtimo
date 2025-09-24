@@ -21,10 +21,7 @@
   (rowClickEvent)="onRowClickEvent($event)"
 >
   @if (widgetConfiguration?.actions?.length >= 1) {
-    <button
-      cdsButton="ghost"
-      (click)="onWidgetActionClick(widgetConfiguration?.actions[0])"
-    >
+    <button cdsButton="ghost" (click)="onWidgetActionClick(widgetConfiguration?.actions[0])">
       {{ widgetConfiguration?.actions[0].name }}
     </button>
   }
