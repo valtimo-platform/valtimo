@@ -208,7 +208,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       naam: 'Naam',
       naamTooltip: 'De feitelijke naam van de organisatorische eenheid.',
       isGehuisvestIn: 'Is gehuisvest in',
-      isGehuisvestInTooltip: 'Locatie waar de organisatorische eenheid gehuisvest is. (Max. 24 tekens)',
+      isGehuisvestInTooltip:
+        'Locatie waar de organisatorische eenheid gehuisvest is. (Max. 24 tekens)',
       handelsnaam: 'Handelsnaam',
       handelsnaamTooltip: 'De naam van de vestiging waaronder gehandeld wordt. (Max. 625 tekens)',
       kvkNummer: 'KVK-nummer',
@@ -240,7 +241,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zaakObjectObjectUrl: 'Object URL',
       zaakObjectObjectUrlTooltip: 'URL-referentie naar de resource die het OBJECT beschrijft.',
       objectType: 'Object Type',
-      objectTypeTooltip: 'Beschrijft het type OBJECT gerelateerd aan de ZAAK. Als er geen passend type is, dan moet het type worden opgegeven onder objectTypeOverige.',
+      objectTypeTooltip:
+        'Beschrijft het type OBJECT gerelateerd aan de ZAAK. Als er geen passend type is, dan moet het type worden opgegeven onder objectTypeOverige.',
       relatieomschrijving: 'Relatieomschrijving',
       relatieomschrijvingTooltip: 'Omschrijving van de betrekking tussen de ZAAK en het OBJECT.',
       zakelijkRechtIdentificatie: 'Zakelijk recht identificatie',
@@ -248,15 +250,19 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zakelijkRechtAvgAard: 'Zakelijk recht AVG aard',
       zakelijkRechtAvgAardTooltip: 'Aanduiding voor de aard van het recht',
       objectTypeOverige: 'Object type overige',
-      objectTypeOverigeTooltip: 'Beschrijft het type OBJECT als objectType de waarde "overige" heeft.',
+      objectTypeOverigeTooltip:
+        'Beschrijft het type OBJECT als objectType de waarde "overige" heeft.',
       objectTypeOverigeDefinitie: 'Object type overige definitie',
       objectTypeOverigeDefinitieUrl: 'URL',
-      objectTypeOverigeDefinitieUrlTooltip: 'URL-referentie naar de objecttype resource in een API. Deze resource moet de JSON-schema-definitie van het objecttype bevatten.',
+      objectTypeOverigeDefinitieUrlTooltip:
+        'URL-referentie naar de objecttype resource in een API. Deze resource moet de JSON-schema-definitie van het objecttype bevatten.',
       objectTypeOverigeDefinitieSchema: 'Schema',
-      objectTypeOverigeDefinitieSchemaTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de resource uit het url-attribuut om het schema van het objecttype uit te lezen. Bijvoorbeeld: .jsonSchema.',
+      objectTypeOverigeDefinitieSchemaTooltip:
+        'Een geldige jq expressie. Dit wordt gecombineerd met de resource uit het url-attribuut om het schema van het objecttype uit te lezen. Bijvoorbeeld: .jsonSchema.',
       objectTypeOverigeDefinitieObjectData: 'Object data',
-      objectTypeOverigeDefinitieObjectDataTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
-      objectIdentificatie: 'Object identificatie'
+      objectTypeOverigeDefinitieObjectDataTooltip:
+        'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
+      objectIdentificatie: 'Object identificatie',
     },
     en: {
       title: 'Zaken API',
@@ -401,9 +407,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       naam: 'Name',
       naamTooltip: 'The actual name of the organizational unit.',
       isGehuisvestIn: 'Is housed in',
-      isGehuisvestInTooltip: 'Location where the organizational unit is housed. (Max. 24 characters)',
+      isGehuisvestInTooltip:
+        'Location where the organizational unit is housed. (Max. 24 characters)',
       handelsnaam: 'Trade name',
-      handelsnaamTooltip: 'The name of the establishment where the business is conducted. (Max. 625 characters)',
+      handelsnaamTooltip:
+        'The name of the establishment where the business is conducted. (Max. 625 characters)',
       kvkNummer: 'Chamber of Commerce number',
       kvkNummerTooltip: 'A unique number assigned by the Chamber of Commerce. (Max. 8 characters)',
       vestigingsNummer: 'Branch number',
@@ -430,26 +438,32 @@ const zakenApiPluginSpecification: PluginSpecification = {
       mainCase: 'Main case',
       archiveActionDate: 'Archive action date',
       startDateRetentionPeriod: 'Start date of retention period',
-      zaakObjectObjectUrl: "Object URL",
-      zaakObjectObjectUrlTooltip: "URL reference to the resource that describes the OBJECT.",
-      objectType: "Object Type",
-      objectTypeTooltip: "Describes the type of OBJECT related to the ZAAK. If there is no suitable type, then the type must be specified under objectTypeOverige.",
-      relatieomschrijving: "Relationship description",
-      relatieomschrijvingTooltip: "Description of the relationship between the ZAAK and the OBJECT.",
-      zakelijkRechtIdentificatie: "Property right identification",
-      zakelijkRechtIdentificatieTooltip: "The unique identification of the OBJECT",
-      zakelijkRechtAvgAard: "Property right AVG nature",
-      zakelijkRechtAvgAardTooltip: "Indication of the nature of the right",
-      objectTypeOverige: "Object type other",
-      objectTypeOverigeTooltip: "Describes the type of OBJECT when objectType has the value 'overige'.",
+      zaakObjectObjectUrl: 'Object URL',
+      zaakObjectObjectUrlTooltip: 'URL reference to the resource that describes the OBJECT.',
+      objectType: 'Object Type',
+      objectTypeTooltip:
+        'Describes the type of OBJECT related to the ZAAK. If there is no suitable type, then the type must be specified under objectTypeOverige.',
+      relatieomschrijving: 'Relationship description',
+      relatieomschrijvingTooltip:
+        'Description of the relationship between the ZAAK and the OBJECT.',
+      zakelijkRechtIdentificatie: 'Property right identification',
+      zakelijkRechtIdentificatieTooltip: 'The unique identification of the OBJECT',
+      zakelijkRechtAvgAard: 'Property right AVG nature',
+      zakelijkRechtAvgAardTooltip: 'Indication of the nature of the right',
+      objectTypeOverige: 'Object type other',
+      objectTypeOverigeTooltip:
+        "Describes the type of OBJECT when objectType has the value 'overige'.",
       objectTypeOverigeDefinitie: 'Object type other definition',
-      objectTypeOverigeDefinitieUrl: "URL",
-      objectTypeOverigeDefinitieUrlTooltip: "URL reference to the object type resource in an API. This resource must contain the JSON schema definition of the object type.",
-      objectTypeOverigeDefinitieSchema: "Schema",
-      objectTypeOverigeDefinitieSchemaTooltip: "A valid jq expression. This is combined with the resource from the url attribute to read the schema of the object type. Example: .jsonSchema.",
-      objectTypeOverigeDefinitieObjectData: "Object data",
-      objectTypeOverigeDefinitieObjectDataTooltip: "A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.",
-      objectIdentificatie: 'Object identification'
+      objectTypeOverigeDefinitieUrl: 'URL',
+      objectTypeOverigeDefinitieUrlTooltip:
+        'URL reference to the object type resource in an API. This resource must contain the JSON schema definition of the object type.',
+      objectTypeOverigeDefinitieSchema: 'Schema',
+      objectTypeOverigeDefinitieSchemaTooltip:
+        'A valid jq expression. This is combined with the resource from the url attribute to read the schema of the object type. Example: .jsonSchema.',
+      objectTypeOverigeDefinitieObjectData: 'Object data',
+      objectTypeOverigeDefinitieObjectDataTooltip:
+        'A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.',
+      objectIdentificatie: 'Object identification',
     },
     de: {
       title: 'Zaken API',
@@ -594,9 +608,11 @@ const zakenApiPluginSpecification: PluginSpecification = {
       naam: 'Name',
       naamTooltip: 'Der tatsächliche Name der organisatorischen Einheit.',
       isGehuisvestIn: 'Ist untergebracht in',
-      isGehuisvestInTooltip: 'Ort, an dem die organisatorische Einheit untergebracht ist. (Max. 24 Zeichen)',
+      isGehuisvestInTooltip:
+        'Ort, an dem die organisatorische Einheit untergebracht ist. (Max. 24 Zeichen)',
       handelsnaam: 'Handelsname',
-      handelsnaamTooltip: 'Der Name der Niederlassung, in der das Geschäft betrieben wird. (Max. 625 Zeichen)',
+      handelsnaamTooltip:
+        'Der Name der Niederlassung, in der das Geschäft betrieben wird. (Max. 625 Zeichen)',
       kvkNummer: 'Handelskammernummer',
       kvkNummerTooltip:
         'Eine eindeutige Nummer, die von der Handelskammer vergeben wird. (Max. 8 Zeichen)',
@@ -625,26 +641,31 @@ const zakenApiPluginSpecification: PluginSpecification = {
       mainCase: 'Hauptvorgang',
       archiveActionDate: 'Archivierungsaktionsdatum',
       startDateRetentionPeriod: 'Startdatum der Aufbewahrungsfrist',
-      zaakObjectObjectUrl: "Objekt-URL",
-      zaakObjectObjectUrlTooltip: "URL-Referenz zur Ressource, die das OBJECT beschreibt.",
-      objectType: "Objekttyp",
-      objectTypeTooltip: "Beschreibt den Typ des OBJECT, das mit dem ZAAK verbunden ist. Wenn kein passender Typ vorhanden ist, muss der Typ unter objectTypeOverige angegeben werden.",
-      relatieomschrijving: "Beziehungsbeschreibung",
-      relatieomschrijvingTooltip: "Beschreibung der Beziehung zwischen dem ZAAK und dem OBJECT.",
-      zakelijkRechtIdentificatie: "Grundstücksrechtsidentifikation",
-      zakelijkRechtIdentificatieTooltip: "Die eindeutige Identifikation des OBJECT",
-      zakelijkRechtAvgAard: "Grundstücksrecht AVG Art",
-      zakelijkRechtAvgAardTooltip: "Kennzeichnung der Art des Rechts",
-      objectTypeOverige: "Sonstiger Objekttyp",
-      objectTypeOverigeTooltip: "Beschreibt den Typ des OBJECT, wenn objectType den Wert „overige“ hat.",
+      zaakObjectObjectUrl: 'Objekt-URL',
+      zaakObjectObjectUrlTooltip: 'URL-Referenz zur Ressource, die das OBJECT beschreibt.',
+      objectType: 'Objekttyp',
+      objectTypeTooltip:
+        'Beschreibt den Typ des OBJECT, das mit dem ZAAK verbunden ist. Wenn kein passender Typ vorhanden ist, muss der Typ unter objectTypeOverige angegeben werden.',
+      relatieomschrijving: 'Beziehungsbeschreibung',
+      relatieomschrijvingTooltip: 'Beschreibung der Beziehung zwischen dem ZAAK und dem OBJECT.',
+      zakelijkRechtIdentificatie: 'Grundstücksrechtsidentifikation',
+      zakelijkRechtIdentificatieTooltip: 'Die eindeutige Identifikation des OBJECT',
+      zakelijkRechtAvgAard: 'Grundstücksrecht AVG Art',
+      zakelijkRechtAvgAardTooltip: 'Kennzeichnung der Art des Rechts',
+      objectTypeOverige: 'Sonstiger Objekttyp',
+      objectTypeOverigeTooltip:
+        'Beschreibt den Typ des OBJECT, wenn objectType den Wert „overige“ hat.',
       objectTypeOverigeDefinitie: 'Sonstiger Objekttyp-Definition',
-      objectTypeOverigeDefinitieUrl: "URL",
-      objectTypeOverigeDefinitieUrlTooltip: "URL-Referenz zur Objekttyp-Ressource in einer API. Diese Ressource muss die JSON-Schema-Definition des Objekttyps enthalten.",
-      objectTypeOverigeDefinitieSchema: "Schema",
-      objectTypeOverigeDefinitieSchemaTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit der Ressource aus dem URL-Attribut kombiniert, um das Schema des Objekttyps auszulesen. Beispiel: .jsonSchema.",
-      objectTypeOverigeDefinitieObjectData: "Objektdaten",
-      objectTypeOverigeDefinitieObjectDataTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.",
-      objectIdentificatie: 'Objektidentifikation'
+      objectTypeOverigeDefinitieUrl: 'URL',
+      objectTypeOverigeDefinitieUrlTooltip:
+        'URL-Referenz zur Objekttyp-Ressource in einer API. Diese Ressource muss die JSON-Schema-Definition des Objekttyps enthalten.',
+      objectTypeOverigeDefinitieSchema: 'Schema',
+      objectTypeOverigeDefinitieSchemaTooltip:
+        'Ein gültiger jq-Ausdruck. Dies wird mit der Ressource aus dem URL-Attribut kombiniert, um das Schema des Objekttyps auszulesen. Beispiel: .jsonSchema.',
+      objectTypeOverigeDefinitieObjectData: 'Objektdaten',
+      objectTypeOverigeDefinitieObjectDataTooltip:
+        'Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.',
+      objectIdentificatie: 'Objektidentifikation',
     },
   },
 };
