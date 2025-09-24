@@ -560,13 +560,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly statusService: CaseListStatusService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
-<<<<<<< HEAD
-    private readonly caseExportService: CaseExportService
-=======
+    private readonly caseExportService: CaseExportService,
     private readonly quickSearchStateService: QuickSearchStateService,
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
->>>>>>> c44502e34 (Add base functionality)
   ) {}
 
   public ngOnInit(): void {
@@ -745,6 +742,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(([urlParams, caseDefinitionKey]) => {
         const queryParams = {...urlParams, ...Object.fromEntries(new URLSearchParams(queryPath))};
+        console.log({queryParams});
         this.router.navigate([`/cases/${caseDefinitionKey}`], {
           queryParams,
           replaceUrl: true,
