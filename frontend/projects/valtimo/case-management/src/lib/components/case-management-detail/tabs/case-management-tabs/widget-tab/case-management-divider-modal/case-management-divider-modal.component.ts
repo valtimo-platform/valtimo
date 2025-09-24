@@ -32,7 +32,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { BehaviorSubject } from 'rxjs';
 import { Edit16 } from '@carbon/icons';
 import { BasicCaseWidget, CaseWidget, CaseWidgetType } from '@valtimo/case';
 import { ModalMode } from '@valtimo/shared';
@@ -106,8 +105,6 @@ export class CaseManagementDividerModalComponent implements OnInit {
         return 'widgetTabManagement.list.dividerModal.add';
     }
   }
-
-  public readonly submitDisabled$ = new BehaviorSubject<boolean>(true);
 
   public dividerForm: FormGroup;
 
