@@ -35,8 +35,7 @@ import {
 import { Edit16 } from '@carbon/icons';
 import { BasicCaseWidget, CaseWidget, CaseWidgetType } from '@valtimo/case';
 import { ModalMode } from '@valtimo/shared';
-import { AutoKeyInputComponent } from 'dist/valtimo/components';
-import { CARBON_CONSTANTS, CarbonListItem } from '@valtimo/components';
+import { AutoKeyInputComponent, CarbonListItem, runAfterCarbonModalClosed } from 'dist/valtimo/components';
 
 @Component({
   selector: 'valtimo-case-management-divider-modal',
@@ -66,9 +65,15 @@ export class CaseManagementDividerModalComponent {
     return this._modalMode;
   }
 
+  public showAutoKey = true;
+
   private _open = false;
   @Input() public set open(value: boolean) {
     this._open = value;
+
+    if (value) {
+      this.showAutoKey = true;
+    }
   }
 
   public get open(): boolean {
@@ -132,17 +137,22 @@ export class CaseManagementDividerModalComponent {
   public onCloseModal(dividerCreated?: boolean): void {
     if (!dividerCreated) {
       this.closeEvent.emit(null);
-      this.resetForm();
+      runAfterCarbonModalClosed(() => {
+        this.showAutoKey = false;
+        this.resetForm();
+      });
       return;
     }
 
     const { title, key } = this.dividerForm.controls;
-
     this.divider.title = title.value ?? '';
     this.divider.key = key.value ?? '';
 
     this.closeEvent.emit(this.divider);
-    this.resetForm();
+    runAfterCarbonModalClosed(() => {
+      this.showAutoKey = false;
+      this.resetForm();
+    });
   }
 
   public onFocusOut(): void {
@@ -153,9 +163,10 @@ export class CaseManagementDividerModalComponent {
     }
   }
 
-  private resetForm(): void {
-    setTimeout(() => {
-      this.dividerForm.reset();
-    }, CARBON_CONSTANTS.modalAnimationMs);
-  }
+  private resetForm = (): void => {
+    this.dividerForm.reset();
+    this.dividerForm.markAsPristine();
+    this.dividerForm.markAsUntouched();
+    this.dividerForm.updateValueAndValidity();
+  };
 }

@@ -21,35 +21,34 @@
     </h3>
   </cds-modal-header>
 
-  <section>
-    <form [formGroup]="dividerForm" cdsModalContent>
-      <cds-label>
-        {{ 'widgetTabManagement.list.dividerModal.dividerTitleLabel' | translate }}
+  <form [formGroup]="dividerForm" cdsModalContent>
+    <cds-label>
+      {{ 'widgetTabManagement.list.dividerModal.dividerTitleLabel' | translate }}
 
-        <input
-          class="title-input"
-          formControlName="title"
-          cdsText
-          placeholder="{{ 'widgetTabManagement.list.dividerModal.dividerTitlePlaceholder' | translate }}"
-          [cdsLayer]="1"
-          [attr.modal-primary-focus]="true"
-          (keyup)="onFocusOut()"
-        />
-      </cds-label>
+      <input
+        class="title-input"
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'widgetTabManagement.list.dividerModal.dividerTitlePlaceholder' | translate }}"
+        [cdsLayer]="1"
+        [attr.modal-primary-focus]="true"
+        (keyup)="onFocusOut()"
+      />
+    </cds-label>
 
-      <valtimo-auto-key-input
-        [mode]="modalMode"
-        [usedKeys]="usedKeys"
-        [sourceText]="title.value"
-        formControlName="key"
-        labelTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyLabel"
-        placeholderTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyPlaceholder"
+    <valtimo-auto-key-input
+      *ngIf="showAutoKey"
+      [mode]="modalMode"
+      [usedKeys]="usedKeys"
+      [sourceText]="title.value"
+      formControlName="key"
+      labelTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyLabel"
+      placeholderTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyPlaceholder"
 
-      >
-      </valtimo-auto-key-input>
+    >
+    </valtimo-auto-key-input>
 
-    </form>
-  </section>
+  </form>
 
   <cds-modal-footer>
     <button cdsButton="ghost" (click)="onCloseModal()">

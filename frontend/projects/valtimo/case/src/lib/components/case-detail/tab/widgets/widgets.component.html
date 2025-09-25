@@ -15,7 +15,7 @@
   -->
 
 @for (widgetGroup of widgetGroups$ | async; track $index) {
-  <div *ngIf="widgetGroup.divider" class="divider" [ngClass]="{'divider--first': $index === 0}">
+  <div *ngIf="widgetGroup.divider" class="divider" [ngClass]="{'divider--first': $first}">
     {{ widgetGroup.divider.title || '-' }}
   </div>
 
