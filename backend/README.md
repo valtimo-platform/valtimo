@@ -2,7 +2,7 @@
 
 This folder contains:
 - A collection of Java/Kotlin libraries that together form the Valtimo backend.
-- The `app:gzac` module, containing a Spring Boot application, used for library development.
+- The `app:gzac` module, containing a Spring Boot application, used for development.
 
 ### Starting the Valtimo platform
 Starting up the Valtimo platform requires two steps:
