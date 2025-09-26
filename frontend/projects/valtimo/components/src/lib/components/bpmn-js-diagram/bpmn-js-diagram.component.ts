@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
   selector: 'valtimo-bpmn-js-diagram',
   templateUrl: './bpmn-js-diagram.component.html',
   styleUrls: ['./bpmn-js-diagram.component.css'],
-  standalone: false,
 })
 export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestroy {
   private bpmnViewer: BpmnViewer;

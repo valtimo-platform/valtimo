@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@
   size="sm"
   (close)="onClose()"
 >
-  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()" [cdsLayer]="1">
+  <cds-modal-header showCloseButton="true" (closeSelect)="onClose()">
     <h3 cdsModalHeaderHeading>
       {{ 'zgw.tags.addModal.header' | translate }}
     </h3>
   </cds-modal-header>
 
-  <section cdsModalContent [cdsLayer]="1">
+  <section cdsModalContent>
     <form [formGroup]="tagFormGroup" class="tag-form">
       <cds-label
         [invalidText]="
@@ -52,7 +52,7 @@
     </form>
   </section>
 
-  <cds-modal-footer [cdsLayer]="1">
+  <cds-modal-footer>
     <button cdsButton="secondary" (click)="onClose()" [disabled]="obs.disabled">
       {{ 'interface.cancel' | translate }}
     </button>

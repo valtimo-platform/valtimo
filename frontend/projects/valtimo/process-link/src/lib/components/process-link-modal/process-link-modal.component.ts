@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,10 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {take} from 'rxjs/operators';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {ProcessLinkEditMode} from '../../models';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-process-link-modal',
   templateUrl: './process-link-modal.component.html',
   styleUrls: ['./process-link-modal.component.scss'],
@@ -80,16 +79,13 @@ export class ProcessLinkModalComponent {
   }
 
   unlinkButtonClick(): void {
-    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      if (this.processLinkStateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.processLinkStateService.sendProcessLinkDeleteEvent({
-          activityId: selectedProcessLink.activityId,
-        });
+    this.stateService.startSaving();
 
+    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
+      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+        this.stateService.sendProcessLinkDeleteEvent({activityId: selectedProcessLink.activityId});
         return;
       }
-
-      this.stateService.startSaving();
 
       this.processLinkService.deleteProcessLink(selectedProcessLink.id).subscribe(
         () => {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Output} from '@angular/core';
 import {Upload16} from '@carbon/icons';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {TranslateModule} from '@ngx-translate/core';
 import {
   ActionItem,
   CarbonListModule,
@@ -24,19 +24,11 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {
-  EditPermissionsService,
-  EnvironmentService,
-  getCaseManagementRouteParams,
-  GlobalNotificationService,
-} from '@valtimo/shared';
 import {ProcessDefinition} from '@valtimo/process';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, Observable, switchMap, tap} from 'rxjs';
-import {ProcessDefinitionResult} from '../../models';
+import {BehaviorSubject, map, Observable, switchMap, take, tap} from 'rxjs';
+import {CaseProcessInstance} from '../../models';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
-import {ActivatedRoute} from '@angular/router';
-import {getContextObservable} from '../../utils';
 
 @Component({
   selector: 'valtimo-process-management-list',
@@ -55,83 +47,47 @@ import {getContextObservable} from '../../utils';
   ],
 })
 export class ProcessManagementListComponent {
-  @Output() public readonly processSelected = new EventEmitter<
-    ProcessDefinitionResult | 'create'
-  >();
+  @Output() public readonly processSelected = new EventEmitter<CaseProcessInstance | 'create'>();
 
-  public readonly $context = this.processManagementService.$context;
   public readonly processToDelete$ = new BehaviorSubject<ProcessDefinition | null>(null);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly ACTION_ITEMS: ActionItem[] = [
-    {label: 'Delete', callback: this.onDeleteProcess.bind(this), type: 'danger'},
+    {
+      label: 'Delete',
+      callback: this.onDeleteProcess.bind(this),
+      type: 'danger',
+    },
   ];
 
-  public readonly context$ = getContextObservable(this.route);
-
-  public readonly processDefinitions$: Observable<ProcessDefinitionResult[]> =
-    this.processManagementStateService.reloadDefinitions$.pipe(
-      tap(() => this.loading$.next(true)),
-      switchMap(() => this.processManagementService.processes$),
-      tap(() => this.loading$.next(false))
-    );
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    getCaseManagementRouteParams(this.route),
-    this.context$,
-  ]).pipe(
-    switchMap(([params, context]) => {
-      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      );
-    })
+  public readonly processDefinitions$: Observable<
+    (ProcessDefinition & {data: CaseProcessInstance})[]
+  > = this.processManagementStateService.reloadDefinitions$.pipe(
+    tap(() => this.loading$.next(true)),
+    switchMap(() => this.processManagementService.getProcesses()),
+    tap(res => console.log({res})),
+    map(res => res.map(i => ({...i.processDefinition, data: i}))),
+    tap(() => this.loading$.next(false))
   );
 
   public readonly FIELDS: ColumnConfig[] = [
-    {key: 'processDefinition.name', label: 'processManagement.name'},
-    {key: 'processDefinition.key', label: 'processManagement.key'},
-    {
-      key: 'processDefinition.readOnly',
-      label: 'processManagement.readOnly',
-      viewType: ViewType.BOOLEAN,
-    },
-    ...(this.processManagementService.$context() === 'case'
-      ? [
-          {
-            key: 'processCaseLink.canInitializeDocument',
-            label: 'processManagement.canInitializeDocument',
-            viewType: ViewType.BOOLEAN,
-          },
-        ]
-      : []),
-    ...(this.processManagementService.$context() === 'case'
-      ? [
-          {
-            key: 'processCaseLink.startableByUser',
-            label: 'processManagement.startableByUser',
-            viewType: ViewType.BOOLEAN,
-          },
-        ]
-      : []),
+    {key: 'name', label: 'Name'},
+    {key: 'key', label: 'Key'},
+    {key: 'readOnly', label: 'Read-only', viewType: ViewType.BOOLEAN},
   ];
 
   constructor(
-    private readonly iconService: IconService,
-    private readonly notificationService: GlobalNotificationService,
     private readonly processManagementService: ProcessManagementService,
     private readonly processManagementStateService: ProcessManagementStateService,
-    private readonly translateService: TranslateService,
-    private readonly environmentService: EnvironmentService,
-    private readonly route: ActivatedRoute,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Upload16]);
   }
 
-  public editProcessDefinition(processDefinition: ProcessDefinitionResult): void {
-    this.processSelected.emit(processDefinition);
+  public editProcessDefinition(
+    processDefinition: ProcessDefinition & {data: CaseProcessInstance}
+  ): void {
+    this.processSelected.emit(processDefinition.data);
   }
 
   public openModal(): void {
@@ -143,22 +99,16 @@ export class ProcessManagementListComponent {
   }
 
   public onDeleteConfirm(processDefinition: ProcessDefinition): void {
-    (this.$context() === 'case'
-      ? this.processManagementService.deleteProcess(processDefinition.key)
-      : this.processManagementService.deleteUnlinkedProcess(processDefinition.key)
-    ).subscribe(() => {
-      this.processManagementStateService.reloadDefinitions();
-
-      this.notificationService.showToast({
-        title: this.translateService.instant(`interface.delete`),
-        caption: this.translateService.instant(`processManagement.deleteNotification`),
-        type: 'success',
+    this.processManagementService
+      .deleteProcess(processDefinition.key)
+      .pipe(take(1))
+      .subscribe(() => {
+        this.processManagementStateService.reloadDefinitions();
       });
-    });
   }
 
-  public onDeleteProcess(process: ProcessDefinitionResult): void {
-    this.processToDelete$.next(process.processDefinition);
+  public onDeleteProcess(processDefinition: ProcessDefinition): void {
+    this.processToDelete$.next(processDefinition);
     this.showDeleteModal$.next(true);
   }
 }

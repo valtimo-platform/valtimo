@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ButtonModule,
   FileUploaderModule,
   LayerModule,
   ModalModule,
+  NotificationService,
 } from 'carbon-components-angular';
 import {map, startWith} from 'rxjs';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
@@ -32,6 +32,7 @@ import {ProcessManagementService, ProcessManagementStateService} from '../../ser
   selector: 'valtimo-process-management-upload',
   templateUrl: './process-management-upload.component.html',
   styleUrls: ['./process-management-upload.component.scss'],
+  providers: [NotificationService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -59,10 +60,10 @@ export class ProcessManagementUploadComponent {
   );
 
   constructor(
-    private readonly formBuilder: FormBuilder,
-    private readonly notificationService: GlobalNotificationService,
-    private readonly processManagementService: ProcessManagementService,
     private readonly processManagementStateService: ProcessManagementStateService,
+    private readonly processManagementService: ProcessManagementService,
+    private readonly formBuilder: FormBuilder,
+    private readonly notificationService: NotificationService,
     private readonly translateService: TranslateService
   ) {}
 
@@ -84,6 +85,7 @@ export class ProcessManagementUploadComponent {
         this.notificationService.showNotification({
           type: 'success',
           title: this.translateService.instant('processManagement.upload.success'),
+          duration: CARBON_CONSTANTS.notificationDuration,
         });
         this.closeModal();
         this.processManagementStateService.reloadDefinitions();
@@ -92,6 +94,7 @@ export class ProcessManagementUploadComponent {
         this.notificationService.showNotification({
           type: 'error',
           title: this.translateService.instant('processManagement.upload.failure'),
+          duration: CARBON_CONSTANTS.notificationDuration,
         });
       },
     });

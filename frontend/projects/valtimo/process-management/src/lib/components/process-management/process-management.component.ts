@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
-import {LoadingModule, NotificationModule} from 'carbon-components-angular';
-import {isEqual} from 'lodash';
-import {BehaviorSubject, combineLatest, startWith, Subscription, switchMap} from 'rxjs';
-import {distinctUntilChanged, filter} from 'rxjs/operators';
-import {ProcessDefinitionResult} from '../../models';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {LoadingModule} from 'carbon-components-angular';
+import {BehaviorSubject} from 'rxjs';
 import {ProcessManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
 import {ProcessManagementBuilderComponent} from '../process-management-builder/process-management-builder.component';
 import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
 import {ProcessManagementUploadComponent} from '../process-management-upload/process-management-upload.component';
+import {CaseProcessInstance} from '../../models';
 
 @Component({
   selector: 'valtimo-process-management',
@@ -41,62 +35,26 @@ import {ProcessManagementUploadComponent} from '../process-management-upload/pro
     ProcessManagementUploadComponent,
     ProcessManagementBuilderComponent,
     LoadingModule,
-    NotificationModule,
   ],
-  providers: [TranslateService],
 })
-export class ProcessManagementComponent implements OnInit, OnDestroy {
-  public readonly context$ = getContextObservable(this.route);
-
-  public readonly params$ = this.context$.pipe(
-    filter(context => context === 'case'),
-    switchMap(() => getCaseManagementRouteParams(this.route)),
-    distinctUntilChanged((previous, current) => isEqual(previous, current))
-  );
-
+export class ProcessManagementComponent {
+  public readonly selectedProcess$ = new BehaviorSubject<CaseProcessInstance | null>(null);
   public readonly paramsAreSet$ = new BehaviorSubject<boolean>(false);
+  @Input() public set params(value: {documentDefinitionKey: string; versionTag: string} | null) {
+    if (!value) return;
 
-  private readonly _subscriptions = new Subscription();
-
-  constructor(
-    private readonly processManagementService: ProcessManagementService,
-    private readonly route: ActivatedRoute,
-    private readonly router: Router
-  ) {}
-
-  public ngOnInit(): void {
-    this.openParamsAndContextSubscription();
+    this.processManagementService.setParams(value.documentDefinitionKey, value.versionTag);
+    this.paramsAreSet$.next(true);
   }
 
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+  constructor(private readonly processManagementService: ProcessManagementService) {}
+
+  public navigateBack(): void {
+    this.selectedProcess$.next(null);
   }
 
-  public onProcessSelected(selectedProcessEvent: ProcessDefinitionResult | 'create'): void {
-    const editParam =
-      selectedProcessEvent === 'create' ? 'create' : selectedProcessEvent?.processDefinition?.key;
-
-    this.router.navigate([editParam], {
-      relativeTo: this.route,
-    });
-  }
-
-  private openParamsAndContextSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([this.context$, this.params$.pipe(startWith(null))]).subscribe(
-        ([context, params]) => {
-          if (context) this.processManagementService.context = context;
-
-          if (params) {
-            this.processManagementService.setParams(
-              params.caseDefinitionKey,
-              params.caseDefinitionVersionTag
-            );
-          }
-
-          this.paramsAreSet$.next(true);
-        }
-      )
-    );
+  public onProcessSelected(process: CaseProcessInstance): void {
+    console.log({process});
+    this.selectedProcess$.next(process);
   }
 }

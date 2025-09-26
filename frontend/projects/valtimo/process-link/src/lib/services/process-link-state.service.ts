@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Inject, Injectable, OnDestroy, Optional} from '@angular/core';
+
+import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, map, Observable, Subject, Subscription} from 'rxjs';
 import {
-  FormCustomComponentConfig,
   ModalParams,
   ProcessLink,
   ProcessLinkCreateEvent,
@@ -25,10 +25,9 @@ import {
   ProcessLinkType,
   ProcessLinkUpdateEvent,
 } from '../models';
-import {PluginStateService} from './plugin-state.service';
-import {ProcessLinkButtonService} from './process-link-button.service';
 import {ProcessLinkStepService} from './process-link-step.service';
-import {FORM_CUSTOM_COMPONENT_TOKEN} from '../constants';
+import {ProcessLinkButtonService} from './process-link-button.service';
+import {PluginStateService} from './plugin-state.service';
 
 @Injectable({
   providedIn: 'root',
@@ -65,21 +64,9 @@ export class ProcessLinkStateService implements OnDestroy {
   public get elementName$(): Observable<string> {
     return this._elementName$.asObservable();
   }
-
-  public get availableProcessLinkTypes$(): Observable<ProcessLinkType[]> {
-    return this._availableProcessLinkTypes$.pipe(
-      map(types =>
-        (!this.formCustomComponentConfig
-          ? types.map(type => ({
-              ...type,
-              enabled: type.processLinkType === 'ui-component' ? false : type.enabled,
-            }))
-          : types
-        ).filter(type => type.processLinkType !== 'url')
-      )
-    );
+  public get availableProcessLinkTypes$(): Observable<Array<ProcessLinkType>> {
+    return this._availableProcessLinkTypes$.asObservable();
   }
-
   public get hideProgressIndicator$(): Observable<boolean> {
     return this._availableProcessLinkTypes$
       .asObservable()
@@ -123,10 +110,7 @@ export class ProcessLinkStateService implements OnDestroy {
   constructor(
     private readonly processLinkStepService: ProcessLinkStepService,
     private readonly buttonService: ProcessLinkButtonService,
-    private readonly pluginStateService: PluginStateService,
-    @Optional()
-    @Inject(FORM_CUSTOM_COMPONENT_TOKEN)
-    private readonly formCustomComponentConfig: FormCustomComponentConfig
+    private readonly pluginStateService: PluginStateService
   ) {
     this.openAvailableProcessLinkTypesSubscription();
   }

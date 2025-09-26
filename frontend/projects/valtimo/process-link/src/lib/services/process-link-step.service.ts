@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,14 +99,6 @@ export class ProcessLinkStepService {
   setSingleFormStep(): void {
     this._steps$.next([{label: 'selectForm'}]);
     this._currentStepIndex$.next(0);
-  }
-
-  setUIComponentStep(): void {
-    this._steps$.next([
-      {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.ui-component'},
-      {label: 'uiComponent'},
-    ]);
-    this._currentStepIndex$.next(1);
   }
 
   setFormFlowSteps(): void {
@@ -281,11 +273,6 @@ export class ProcessLinkStepService {
           this.buttonService.showBackButton();
           this.buttonService.showSaveButton();
         }
-        break;
-      case 'ui-component':
-        this.setUIComponentStep();
-        this.buttonService.showBackButton();
-        this.buttonService.showSaveButton();
         break;
     }
   }

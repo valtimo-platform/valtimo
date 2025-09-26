@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,16 @@
   align-items: flex-end;
   margin-bottom: 24px;
 
-  &--small-title {
-    align-items: flex-start;
-    margin-bottom: 0;
-  }
-
-  &--hidden {
+  &.--hidden {
     display: none;
   }
 
-  &--compact {
+  &.--compact {
     margin-bottom: 16px;
   }
 
-  &--no-content,
-  &--no-margin {
+  &.--no-content,
+  &.--no-margin {
     margin-bottom: 0;
   }
 }
@@ -43,19 +38,12 @@
 .page-header-container {
   width: min-content;
 
-  &--compact {
+  &.--compact {
     width: 100%;
     display: flex;
     width: 100%;
     justify-content: space-between;
     align-items: center;
     padding-inline: 16px;
-  }
-
-  &--small-title {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-    width: min-content;
   }
 }

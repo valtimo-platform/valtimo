@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -9,7 +9,8 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHimport { LabelModule } from 'carbon-components-angular';
+OUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -17,14 +18,14 @@
 import {Component, EventEmitter, HostBinding, Input, Output} from '@angular/core';
 import {MultiInputChangeEventType, MultiInputKeyValue} from '../../../../models';
 import {CommonModule} from '@angular/common';
-import {InputModule, LayerModule} from 'carbon-components-angular';
+import {InputModule} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-key-value',
   templateUrl: './key-value.component.html',
   styleUrls: ['key-value.component.scss'],
   standalone: true,
-  imports: [CommonModule, InputModule, LayerModule],
+  imports: [CommonModule, InputModule],
 })
 export class KeyValueComponent {
   @Input() public readonly keyColumnTitle!: string;
@@ -33,8 +34,6 @@ export class KeyValueComponent {
   @Input() public readonly value!: MultiInputKeyValue;
   @Input() @HostBinding('class.--full-width') public readonly fullWidth = false;
   @Input() public readonly disabled = false;
-  @Input() public readonly keyColumnFlex = 1;
-  @Input() public readonly valueColumnFlex = 1;
 
   @Output() public readonly valueChange: EventEmitter<{
     value: MultiInputKeyValue;

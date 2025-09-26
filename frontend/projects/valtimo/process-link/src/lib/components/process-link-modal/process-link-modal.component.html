@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -91,15 +91,12 @@
       >
         <valtimo-select-form-flow></valtimo-select-form-flow>
       </ng-container>
-
       <ng-container *ngIf="obs.currentStepId === 'choosePluginConfiguration'">
         <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
       </ng-container>
-
       <ng-container *ngIf="obs.currentStepId === 'choosePluginAction'">
         <valtimo-select-plugin-action></valtimo-select-plugin-action>
       </ng-container>
-
       <ng-container
         *ngIf="
           obs.currentStepId === 'configurePluginAction' ||
@@ -111,14 +108,9 @@
         ></valtimo-plugin-action-configuration>
       </ng-container>
     </ng-container>
-
-    <ng-container
-      *ngIf="
-        obs.currentStepId === 'uiComponent' || obs.typeOfSelectedProgressLink === 'ui-component'
-      "
-    >
-      <valtimo-select-ui-component></valtimo-select-ui-component>
-    </ng-container>
+    <valtimo-select-url
+      *ngIf="obs.currentStepId === 'selectURL' || obs.typeOfSelectedProgressLink === 'url'"
+    ></valtimo-select-url>
   </div>
 </ng-template>
 
@@ -140,7 +132,7 @@
       <button
         cdsButton="primary"
         *ngIf="obs.showNextButton && !obs.saving"
-        [disabled]="!obs.enableNextButton"
+        [disabled]="obs.enableNextButton === false"
         (click)="nextButtonClick()"
       >
         {{ 'processLinkConfiguration.next' | translate }}
@@ -155,7 +147,7 @@
       <button
         cdsButton="primary"
         *ngIf="(obs.showSaveButton && !obs.saving) || obs.typeOfSelectedProgressLink"
-        [disabled]="!obs.enableSaveButton"
+        [disabled]="obs.enableSaveButton === false"
         (click)="saveButtonClick()"
       >
         {{ 'processLinkConfiguration.complete' | translate }}

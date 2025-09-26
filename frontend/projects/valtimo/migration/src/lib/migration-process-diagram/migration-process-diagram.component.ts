@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import {NGXLogger} from 'ngx-logger';
 import {from, take} from 'rxjs';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-migration-process-diagram',
   templateUrl: './migration-process-diagram.component.html',
   styleUrls: ['./migration-process-diagram.component.scss'],

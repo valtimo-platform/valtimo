@@ -15,11 +15,8 @@
       },
       "architect": {
         "build": {
-          "builder": "@angular-builders/custom-webpack:browser",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "customWebpackConfig": {
-              "path": "./webpack.config.js"
-            },
             "aot": false,
             "outputPath": "deployment/valtimo-angular-console",
             "index": "src/index.html",
@@ -36,7 +33,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "node_modules/@valtimo/shared/assets/core",
+                "input": "node_modules/@valtimo/config/assets/core",
                 "output": "./valtimo-translation/core/"
               },
               {
@@ -50,6 +47,7 @@
               "node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
               "node_modules/@mdi/font/css/materialdesignicons.css",
               "node_modules/@foxythemes/bootstrap-datetime-picker-bs4/css/bootstrap-datetimepicker.css",
+              "node_modules/ngx-toastr/toastr.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/dmn-js/dist/assets/diagram-js.css",
               "node_modules/dmn-js/dist/assets/dmn-js-decision-table.css",
@@ -147,9 +145,8 @@
           "defaultConfiguration": ""
         },
         "serve": {
-          "builder": "@angular-builders/custom-webpack:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "proxyConfig": "proxy.conf.json",
             "buildTarget": "valtimo-angular-console:build"
           },
           "configurations": {
@@ -449,21 +446,21 @@
         }
       }
     },
-    "@valtimo/case": {
-      "root": "projects/valtimo/case",
-      "sourceRoot": "projects/valtimo/case/src",
+    "@valtimo/dossier": {
+      "root": "projects/valtimo/dossier",
+      "sourceRoot": "projects/valtimo/dossier/src",
       "projectType": "library",
       "prefix": "valtimo",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/case/tsconfig.lib.json",
-            "project": "projects/valtimo/case/ng-package.json"
+            "tsConfig": "projects/valtimo/dossier/tsconfig.lib.json",
+            "project": "projects/valtimo/dossier/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/case/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/dossier/tsconfig.lib.prod.json"
             }
           }
         },
@@ -471,16 +468,16 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/case/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/case/karma.conf.js"
+            "tsConfig": "projects/valtimo/dossier/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/dossier/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/case/src/**/*.ts",
-              "projects/valtimo/case/src/**/*.html"
+              "projects/valtimo/dossier/src/**/*.ts",
+              "projects/valtimo/dossier/src/**/*.html"
             ]
           }
         }
@@ -933,6 +930,43 @@
         }
       }
     },
+    "@valtimo/connector-management": {
+      "projectType": "library",
+      "root": "projects/valtimo/connector-management",
+      "sourceRoot": "projects/valtimo/connector-management/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "tsConfig": "projects/valtimo/connector-management/tsconfig.lib.json",
+            "project": "projects/valtimo/connector-management/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/valtimo/connector-management/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "src/test.ts",
+            "tsConfig": "projects/valtimo/connector-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/connector-management/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/valtimo/connector-management/src/**/*.ts",
+              "projects/valtimo/connector-management/src/**/*.html"
+            ]
+          }
+        }
+      }
+    },
     "@valtimo/process-management": {
       "projectType": "library",
       "root": "projects/valtimo/process-management",
@@ -1229,21 +1263,21 @@
         }
       }
     },
-    "@valtimo/case-management": {
+    "@valtimo/dossier-management": {
       "projectType": "library",
-      "root": "projects/valtimo/case-management",
-      "sourceRoot": "projects/valtimo/case-management/src",
+      "root": "projects/valtimo/dossier-management",
+      "sourceRoot": "projects/valtimo/dossier-management/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/case-management/tsconfig.lib.json",
-            "project": "projects/valtimo/case-management/ng-package.json"
+            "tsConfig": "projects/valtimo/dossier-management/tsconfig.lib.json",
+            "project": "projects/valtimo/dossier-management/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/case-management/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/dossier-management/tsconfig.lib.prod.json"
             }
           }
         },
@@ -1251,16 +1285,16 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/case-management/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/case-management/karma.conf.js"
+            "tsConfig": "projects/valtimo/dossier-management/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/dossier-management/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/case-management/src/**/*.ts",
-              "projects/valtimo/case-management/src/**/*.html"
+              "projects/valtimo/dossier-management/src/**/*.ts",
+              "projects/valtimo/dossier-management/src/**/*.html"
             ]
           }
         }
@@ -1340,21 +1374,21 @@
         }
       }
     },
-    "@valtimo/shared": {
+    "@valtimo/config": {
       "projectType": "library",
-      "root": "projects/valtimo/shared",
-      "sourceRoot": "projects/valtimo/shared/src",
+      "root": "projects/valtimo/config",
+      "sourceRoot": "projects/valtimo/config/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/valtimo/shared/tsconfig.lib.json",
-            "project": "projects/valtimo/shared/ng-package.json"
+            "tsConfig": "projects/valtimo/config/tsconfig.lib.json",
+            "project": "projects/valtimo/config/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/valtimo/shared/tsconfig.lib.prod.json"
+              "tsConfig": "projects/valtimo/config/tsconfig.lib.prod.json"
             }
           }
         },
@@ -1362,16 +1396,16 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/shared/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/shared/karma.conf.js"
+            "tsConfig": "projects/valtimo/config/tsconfig.spec.json",
+            "karmaConfig": "projects/valtimo/config/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
             "lintFilePatterns": [
-              "projects/valtimo/shared/src/**/*.ts",
-              "projects/valtimo/shared/src/**/*.html"
+              "projects/valtimo/config/src/**/*.ts",
+              "projects/valtimo/config/src/**/*.html"
             ]
           }
         }
@@ -1600,43 +1634,6 @@
             "lintFilePatterns": [
               "projects/valtimo/object/**/*.ts",
               "projects/valtimo/object/**/*.html"
-            ]
-          }
-        }
-      }
-    },
-    "@valtimo/iko": {
-      "root": "projects/valtimo/iko",
-      "sourceRoot": "projects/valtimo/iko/src",
-      "projectType": "library",
-      "prefix": "valtimo",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
-          "options": {
-            "tsConfig": "projects/valtimo/iko/tsconfig.lib.json",
-            "project": "projects/valtimo/iko/ng-package.json"
-          },
-          "configurations": {
-            "production": {
-              "tsConfig": "projects/valtimo/iko/tsconfig.lib.prod.json"
-            }
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "src/test.ts",
-            "tsConfig": "projects/valtimo/iko/tsconfig.spec.json",
-            "karmaConfig": "projects/valtimo/iko/karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": [
-              "projects/valtimo/iko/src/**/*.ts",
-              "projects/valtimo/iko/src/**/*.html"
             ]
           }
         }

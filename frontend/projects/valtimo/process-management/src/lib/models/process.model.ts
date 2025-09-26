@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ import {ProcessDocumentDefinition} from '@valtimo/document';
 import {ProcessDefinition} from '@valtimo/process';
 import {ProcessLink} from '@valtimo/process-link';
 
-interface ProcessDefinitionResult {
+export interface CaseProcessInstance {
   bpmn20Xml: string;
-  processCaseLink?: ProcessDocumentDefinition;
+  processCaseLink: ProcessDocumentDefinition;
   processDefinition: ProcessDefinition;
   processLinks: ProcessLink[];
 }
-
-export {ProcessDefinitionResult};

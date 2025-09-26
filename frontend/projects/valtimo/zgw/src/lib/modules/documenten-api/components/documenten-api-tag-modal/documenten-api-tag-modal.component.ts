@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,14 +30,16 @@ import {
   ButtonModule,
   DropdownModule,
   InputModule,
-  LayerModule,
   ModalModule,
   TagModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CommonModule} from '@angular/common';
 import {DocumentenApiTagService} from '../../services/documenten-api-tag.service';
+import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
+import {Utils} from 'formiojs';
+import getValue = Utils.getValue;
 
 @Component({
   selector: 'valtimo-documenten-api-tag-modal',
@@ -54,11 +56,10 @@ import {DocumentenApiTagService} from '../../services/documenten-api-tag.service
     ButtonModule,
     DropdownModule,
     ToggleModule,
-    LayerModule,
   ],
 })
 export class DocumentenApiTagModalComponent implements OnDestroy {
-  @Input() public caseDefinitionKey!: string;
+  @Input() public documentDefinitionName!: string;
   @Input() public open = false;
 
   @Output() public closeModalEvent = new EventEmitter<DocumentenApiColumnModalTypeCloseEvent>();
@@ -99,16 +100,18 @@ export class DocumentenApiTagModalComponent implements OnDestroy {
   public addTag(): void {
     this.disable();
 
-    this.documentenApiTagService.createTag(this.caseDefinitionKey, this.value.value).subscribe({
-      next: () => {
-        this.enable();
-        this.closeAndRefresh();
-        this.resetForm();
-      },
-      error: () => {
-        this.enable(false);
-      },
-    });
+    this.documentenApiTagService
+      .createTag(this.documentDefinitionName, this.value.value)
+      .subscribe({
+        next: () => {
+          this.enable();
+          this.closeAndRefresh();
+          this.resetForm();
+        },
+        error: () => {
+          this.enable(false);
+        },
+      });
   }
 
   private resetForm(): void {
