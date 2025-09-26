@@ -37,9 +37,9 @@ export class WidgetWizardService {
 
   public readonly $widgetContent: WritableSignal<WidgetContentProperties | null> = signal(null);
 
-  public readonly widgetDisplayConditions: WritableSignal<Array<Condition> | null> = signal(null);
+  public readonly $widgetDisplayConditions: WritableSignal<Array<Condition> | null> = signal(null);
 
-  public readonly widgetTitle: WritableSignal<string | null> = signal(null);
+  public readonly $widgetTitle: WritableSignal<string | null> = signal(null);
 
   public readonly $widgetKey: WritableSignal<string | null> = signal(null);
 
@@ -47,27 +47,27 @@ export class WidgetWizardService {
     signal(undefined);
 
   public readonly widgetsConfig: Signal<BasicCaseWidget> = computed(() => ({
-    key: this.widgetKey() ?? '',
-    title: this.widgetTitle() ?? '',
-    type: this.selectedWidget()?.type ?? CaseWidgetType.FIELDS,
-    width: this.widgetWidth() ?? 4,
-    highContrast: (this.widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
-    properties: this.widgetContent() ?? ({} as any),
-    actions: this.widgetActions() ?? [],
-    displayConditions: this.widgetDisplayConditions() ?? [],
+    key: this.$widgetKey() ?? '',
+    title: this.$widgetTitle() ?? '',
+    type: this.$selectedWidget()?.type ?? CaseWidgetType.FIELDS,
+    width: this.$widgetWidth() ?? 4,
+    highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
+    properties: this.$widgetContent() ?? ({} as any),
+    actions: this.$widgetActions() ?? [],
+    displayConditions: this.$widgetDisplayConditions() ?? [],
   }));
 
   public readonly $editMode: WritableSignal<boolean> = signal(false);
 
   public resetWizard(): void {
-    this.selectedWidget.set(null);
-    this.widgetWidth.set(null);
-    this.widgetStyle.set(null);
-    this.widgetContent.set(null);
-    this.widgetDisplayConditions.set(null);
-    this.widgetTitle.set(null);
-    this.widgetKey.set(null);
-    this.widgetActions.set(undefined);
-    this.editMode.set(false);
+    this.$selectedWidget.set(null);
+    this.$widgetWidth.set(null);
+    this.$widgetStyle.set(null);
+    this.$widgetContent.set(null);
+    this.$widgetDisplayConditions.set(null);
+    this.$widgetTitle.set(null);
+    this.$widgetKey.set(null);
+    this.$widgetActions.set(undefined);
+    this.$editMode.set(false);
   }
 }

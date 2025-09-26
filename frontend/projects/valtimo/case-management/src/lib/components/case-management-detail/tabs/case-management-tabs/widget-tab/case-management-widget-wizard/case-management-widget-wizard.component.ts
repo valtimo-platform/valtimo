@@ -130,8 +130,8 @@ export class CaseManagementWidgetWizardComponent {
             !secondaryLabels[WidgetWizardStep.TYPE] ||
             !secondaryLabels[WidgetWizardStep.WIDTH] ||
             !secondaryLabels[WidgetWizardStep.STYLE] ||
-            !this.widgetWizardService.widgetContent(),
-          complete: !!this.widgetWizardService.widgetContent(),
+            !this.widgetWizardService.$widgetContent(),
+          complete: !!this.widgetWizardService.$widgetContent(),
         },
       ];
     })
@@ -151,7 +151,7 @@ export class CaseManagementWidgetWizardComponent {
       case WidgetWizardStep.STYLE:
         return this.widgetWizardService.$widgetStyle() === null;
       case WidgetWizardStep.CONTENT:
-        return this.widgetWizardService.widgetContent() === null || !this._contentStepValid();
+        return this.widgetWizardService.$widgetContent() === null || !this._$contentStepValid();
       default:
         return false;
     }
@@ -168,16 +168,16 @@ export class CaseManagementWidgetWizardComponent {
 
   public isDefaultStep(): boolean {
     return (
-      this.currentStep() !== WidgetWizardStep.CONTENT &&
-      this.currentStep() !== WidgetWizardStep.TYPE &&
-      this.currentStep() !== WidgetWizardStep.STYLE &&
-      this.currentStep() !== WidgetWizardStep.WIDTH &&
-      this.currentStep() !== WidgetWizardStep.DISPLAY_CONDITIONS
+      this.$currentStep() !== WidgetWizardStep.CONTENT &&
+      this.$currentStep() !== WidgetWizardStep.TYPE &&
+      this.$currentStep() !== WidgetWizardStep.STYLE &&
+      this.$currentStep() !== WidgetWizardStep.WIDTH &&
+      this.$currentStep() !== WidgetWizardStep.DISPLAY_CONDITIONS
     );
   }
 
   public onNextButtonClick(): void {
-    if (this.currentStep() === WidgetWizardStep.DISPLAY_CONDITIONS) {
+    if (this.$currentStep() === WidgetWizardStep.DISPLAY_CONDITIONS) {
       this.closeEvent.emit(this.widgetWizardService.widgetsConfig());
       this.resetWizard();
       return;
