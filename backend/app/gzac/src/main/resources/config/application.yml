@@ -1,0 +1,296 @@
+management:
+    endpoints:
+        web:
+            base-path: /management
+            exposure:
+                include: ["configprops", "env", "health", "info", "logfile", "loggers", "mappings" ]
+    endpoint:
+        health:
+            show-details: when_authorized
+            roles:
+                - ROLE_ACTUATOR
+spring:
+    application:
+        name: gzac
+    jackson:
+        date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+        time-zone: UTC
+    devtools:
+        restart:
+            enabled: true
+        livereload:
+            enabled: true
+    datasource:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:54320/gzac
+        username: gzac
+        hikari:
+            auto-commit: false
+            maximum-pool-size: 25
+            leak-detection-threshold: 20000
+            connection-timeout: 10000
+            data-source-properties:
+                cachePrepStmts: true
+                prepStmtCacheSize: 500
+                prepStmtCacheSqlLimit: 2048
+                useServerPrepStmts: true
+                characterEncoding: utf8
+                useUnicode: true
+                useLegacyDatetimeCode: false
+                useSSL: false
+                useLocalSessionState: true
+                rewriteBatchedStatements: true
+                cacheResultSetMetadata: true
+                cacheServerConfiguration: true
+                elideSetAutoCommits: true
+                maintainTimeStats: false
+                serverTimezone: UTC
+                stringtype: unspecified
+                allowPublicKeyRetrieval: true
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    jwk-set-uri: http://localhost:8081/auth/realms/valtimo/protocol/openid-connect/certs
+            client:
+                provider:
+                    keycloakjwt:
+                        issuer-uri: http://localhost:8081/auth/realms/valtimo
+                    keycloakapi:
+                        issuer-uri: http://localhost:8081/auth/realms/valtimo
+                registration:
+                    keycloakjwt:
+                        client-id: valtimo-console
+                    keycloakapi:
+                        client-id: valtimo-user-m2m-client
+                        authorization-grant-type: authorization_code
+                        scope: openid
+
+    groovy:
+        template:
+            check-template-location: false
+    liquibase:
+        enabled: false
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+        open-in-view: false
+        properties:
+            hibernate:
+                hbm2ddl.auto: none
+                generate_statistics: false
+                naming-strategy: org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy
+                cache:
+                    use_second_level_cache: false
+                    use_query_cache: false
+                    region.factory_class: org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+                format_sql: true
+                jdbc:
+                    time_zone: UTC
+                connection:
+                    provider_disables_autocommit: true
+        hibernate:
+            ddl-auto: none
+    messages:
+        basename: i18n/messages
+    main.allow-bean-definition-overriding: true
+    servlet:
+        multipart:
+            max-file-size: 10MB
+            max-request-size: 10MB
+    jersey:
+        application-path: /api/camunda-rest
+    autoconfigure:
+        exclude:
+            - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
+    cloud:
+        stream:
+            function:
+                definition: createExternalCaseConsumer;completeTaskConsumer;updatedExternalIdConsumer;externalDomainMessageSupplier
+            bindings:
+                createExternalCaseConsumer-in-0:
+                    destination: create-external-case
+                    binder: rabbit
+                    group: Q1
+                completeTaskConsumer-in-0:
+                    destination: complete-task
+                    binder: rabbit
+                    group: Q2
+                updatedExternalIdConsumer-in-0:
+                    destination: external-id-portal-case-updated
+                    binder: rabbit
+                    group: Q3
+            binders:
+                rabbit:
+                    type: rabbit
+                    environment:
+                        spring:
+                            rabbitmq:
+                                host: localhost
+                                port: 5672
+                                username: guest
+                                password: guest
+                                virtual-host: /
+            source: externalDomainMessageSupplier
+    rabbitmq:
+        host: localhost
+        port: 5672
+        username: guest
+        password: guest
+        publisher-confirm-type: correlated
+        publisher-returns: true
+
+logging:
+    level:
+        org.springframework.beans: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        org.jboss.resteasy: INFO
+        org.postgresql.jdbc.PgConnection: INFO
+
+server:
+    port: 8080
+    compression:
+        enabled: true
+        mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
+        min-response-size: 1024
+    forward-headers-strategy: NATIVE
+mailing:
+    onlyAllowWhitelistedRecipients: true
+    redirectAllMails: false
+    whitelistedEmailAddresses:
+        - valtimodemo@gmail.com
+    whitelistedDomains:
+        - ritense.com
+    sendRedirectedMailsTo:
+
+valtimo:
+    app:
+        scheme: http
+    database: postgres
+    mandrill:
+        apiKey: #external
+        dateFormat: dd-MM-yyyy
+        notificationTemplate: bpc-task-notification
+        completionTemplate: bpc-task-completion
+        reminderTemplate: bpc-task-reminder
+    oauth:
+        tokenValidityInSeconds: 3600 # Token is valid 1 hour
+        identifier-field: username
+
+    hardening:
+        allowStacktraceOnIps:
+            - 127.0.0.1
+            - 0:0:0:0:0:0:0:1
+    security:
+        whitelist:
+            hosts:
+                - localhost
+    openapi:
+        enabled: false
+        title: Valtimo Implementation API
+        description: Valtimo Implementation API documentation
+        version: 1.0.0
+        termsOfServiceUrl:
+        contactName:
+        contactUrl:
+        contactEmail:
+        license:
+        licenseUrl:
+    portal:
+        hostname: localhost:4201
+        scheme: http
+    web:
+        cors:
+            corsConfiguration:
+                allowedOrigins:
+                    - "*"
+                allowedMethods:
+                    - "*"
+                allowedHeaders:
+                    - "*"
+            paths:
+                - "/**"
+    openklant:
+        url: "http://localhost:8006"
+        clientId: "valtimo_client"
+        rsin: "051845623"
+
+    genericTemplateName: "template-name"
+    besluitDocumentRequired: true
+
+    upload:
+        acceptedMimeTypes:
+            - text/plain
+            - application/pdf
+            - application/xml
+            - image/jpeg
+            - image/png
+    changelog:
+        pbac:
+            clear-tables: false
+        case-tabs:
+            clear-tables: false
+        zgw-document-list-column:
+            clear-tables: false
+        task-search-fields:
+            clear-tables: false
+
+    outbox:
+        enabled: true
+        publisher:
+            cloudevent-source: "com.ritense.gzac"
+            rabbitmq:
+                routing-key: valtimo-audit
+                delivery-timeout: "PT0.5S"
+            polling.rate: "PT1M"
+
+    authorization:
+        dashboard:
+            enabled: true
+        zgwDocuments:
+            enabled:true
+    logging:
+        retentionInMinutes: 1440
+    docker:
+        filter:
+            enabled: true
+
+spring-actuator:
+    username: admin
+    password: password
+
+audit:
+    record:
+        retention: 365 # days
+
+# ==================
+# CRON job settings
+# ==================
+scheduling:
+    enabled: true
+    job:
+        cron:
+            cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
+            taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
+camunda:
+    bpm:
+        history-level: AUDIT
+        history-level-default: AUDIT
+        generic-properties:
+            properties:
+                enforceHistoryTimeToLive: false
+        admin-user:
+            id: Admin
+            password: admin
+            first-name: Admin account
+
+external:
+    case:
+        links:
+            person:
+                caseKey: portal-person
+                processDefinitionKey: portal-person
+            bezwaar:
+                caseKey: bezwaar
+                processDefinitionKey: bezwaar
