@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3321:5432"
+        environment:
+            - POSTGRES_DB=form-flow-test
