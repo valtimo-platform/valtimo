@@ -33,7 +33,6 @@
                 <username>${spring.datasource.username}</username>
                 <user>${spring.datasource.username}</user>
                 <password>${spring.datasource.password}</password>
-                <autoCommit>false</autoCommit>
             </dataSource>
         </connectionSource>
         <insertHeaders>true</insertHeaders>

@@ -18,7 +18,6 @@ package com.ritense.case_.widget.collection
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
-import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
@@ -30,26 +29,11 @@ import org.hibernate.annotations.Type
 @Entity
 @DiscriminatorValue("collection")
 class CollectionCaseWidget(
-    id: CaseWidgetTabWidgetId,
-    title: String,
-    order: Int,
-    width: Int,
-    highContrast: Boolean,
-    actions: List<CaseWidgetAction>,
+    id: CaseWidgetTabWidgetId, title: String, order: Int, width: Int, highContrast: Boolean,
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: CollectionWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, actions
-) {
-    override fun copy(id: CaseWidgetTabWidgetId) = CollectionCaseWidget(
-        id = id,
-        title = title,
-        order = order,
-        width = width,
-        highContrast = highContrast,
-        actions = actions,
-        properties = properties
-    )
-}
+    id, title, order, width, highContrast
+)

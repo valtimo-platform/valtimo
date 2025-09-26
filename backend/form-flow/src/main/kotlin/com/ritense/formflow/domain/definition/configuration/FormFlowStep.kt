@@ -46,7 +46,6 @@ data class FormFlowStep(
         if (key != other.id.key) return false
         if (title != other.title) return false
 
-        val nextSteps = getAllNextSteps()
         if (nextSteps.size != other.nextSteps.size) return false
         if (nextSteps.any { nextStep ->
             other.nextSteps.none { otherNextStep ->
@@ -63,7 +62,12 @@ data class FormFlowStep(
     }
 
     fun toDefinition(): FormFlowStepEntity {
-        val nextSteps = getAllNextSteps().map(FormFlowNextStep::toDefinition)
+        val nextSteps =
+            if (this.nextStep != null)
+                listOf(FormFlowNextStep(step = this.nextStep).toDefinition())
+            else
+                this.nextSteps.map(FormFlowNextStep::toDefinition)
+
 
         return FormFlowStepEntity(
             FormFlowStepId.create(key),
@@ -74,13 +78,6 @@ data class FormFlowStep(
             onComplete,
             type
         )
-    }
-
-    private fun getAllNextSteps(): List<FormFlowNextStep> {
-        return if (this.nextStep != null)
-            listOf(FormFlowNextStep(step = this.nextStep))
-        else
-            this.nextSteps
     }
 
     companion object {

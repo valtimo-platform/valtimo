@@ -198,7 +198,6 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
             objectMapper.readTree("""{}""") as ObjectNode,
             objectMapper.readTree("""{}""") as ObjectNode,
             "displayType",
-            null,
             1
         )
         widgets.add(widget)

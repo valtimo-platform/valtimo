@@ -1,5 +1,5 @@
 {
-    "changesetId": "user-dashboard-v8",
+    "changesetId": "user-dashboard-v7",
     "dashboards": [
         {
             "key": "user-dashboard",
@@ -26,8 +26,7 @@
                         "title": "Zaken zonder behandelaar",
                         "subtitle": "Bezwaar",
                         "label": "zaken"
-                    },
-                    "url": "/dossiers/bezwaar"
+                    }
                 },
                 {
                     "key": "donut_chart",

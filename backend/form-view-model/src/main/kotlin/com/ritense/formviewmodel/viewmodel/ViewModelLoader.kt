@@ -16,9 +16,7 @@
 
 package com.ritense.formviewmodel.viewmodel
 
-import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.processlink.domain.ProcessLink
-import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.camunda.domain.CamundaTask
 import org.springframework.transaction.annotation.Transactional
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSupertypes
@@ -26,15 +24,15 @@ import kotlin.reflect.full.allSupertypes
 @Transactional
 interface ViewModelLoader<T : ViewModel> {
 
-    fun load(task: OperatonTask? = null, document: JsonSchemaDocument? = null): T = load(task)
+    fun load(task: CamundaTask? = null): T
 
-    @Deprecated("Since 12.6", ReplaceWith("load(task, documentId)"))
-    fun load(task: OperatonTask? = null): T = load(task, null)
-
-    fun supports(processLink: ProcessLink): Boolean
+    fun supports(formName: String) = getFormName() == formName
 
     @Suppress("UNCHECKED_CAST")
     fun getViewModelType(): KClass<T> =
         this::class.allSupertypes.first { it.classifier == ViewModelLoader::class }.arguments.first().type?.let { it.classifier as KClass<T> }
             ?: throw IllegalArgumentException("Could not resolve ViewModelType for ${this::class}")
+
+    fun getFormName(): String
+
 }

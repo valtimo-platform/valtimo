@@ -35,17 +35,16 @@ import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byActive
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.camunda.domain.CamundaTask
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byActive
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byProcessInstanceId
+import com.ritense.valtimo.service.CamundaTaskService
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.delegate.VariableScope
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.containsInAnyOrder
 import org.junit.jupiter.api.BeforeEach
@@ -72,7 +71,6 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-// TODO: Fix all portaal taak related things
 @Transactional
 internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
 
@@ -92,7 +90,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
     lateinit var processDocumentService: ProcessDocumentService
 
     @Autowired
-    lateinit var taskService: OperatonTaskService
+    lateinit var taskService: CamundaTaskService
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
@@ -105,7 +103,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
     lateinit var server: MockWebServer
     lateinit var notificatiesApiPluginConfiguration: PluginConfiguration
     lateinit var objectenApiPluginConfiguration: PluginConfiguration
-    var task: OperatonTask? = null
+    var task: CamundaTask? = null
     var documentId: UUID? = null
 
     @BeforeEach
@@ -165,7 +163,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
         val processInstanceIdCaptor = argumentCaptor<String>()
         val variableScopeCaptor = argumentCaptor<VariableScope>()
         val mapCaptor = argumentCaptor<Map<String, Any>>()
-        doReturn(null).whenever(operatonProcessService).startProcess(any(), any(), any())
+        doReturn(null).whenever(camundaProcessService).startProcess(any(), any(), any())
 
         val event = getEvent()
         portaalTaakEventListener.processCompletePortaalTaakEvent(event)
@@ -178,17 +176,9 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
 
         val processDefinitionKeyCaptor = argumentCaptor<String>()
         val businessKeyCaptor = argumentCaptor<String>()
-        val caseDefinitionIdCaptor = argumentCaptor<CaseDefinitionId>()
         val processVariableCaptor = argumentCaptor<Map<String, Any>>()
 
-        verify(operatonProcessService, times(1)).startProcess(
-            processDefinitionKeyCaptor.capture(),
-            businessKeyCaptor.capture(),
-            caseDefinitionIdCaptor.capture(),
-            processVariableCaptor.capture()
-        )
-
-        verify(operatonProcessService, times(1)).startProcess(
+        verify(camundaProcessService, times(2)).startProcess(
             processDefinitionKeyCaptor.capture(),
             businessKeyCaptor.capture(),
             processVariableCaptor.capture()
@@ -201,7 +191,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
         assertEquals(1, mapOfValuesToUpdate.size)
         assertEquals("Luis", mapOfValuesToUpdate["doc:/name"])
 
-        // assert second call to operatonProcessService.startProcess() where handling process is started
+        // assert second call to camundaProcessService.startProcess() where handling process is started
         assertEquals("process-completed-portaaltaak-mock", processDefinitionKeyCaptor.secondValue)
         assertEquals(documentId!!.toString(), businessKeyCaptor.secondValue)
         val processVariables = processVariableCaptor.secondValue
@@ -412,15 +402,10 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
         )
     }
 
-    private fun startPortaalTaakProcess(content: String): OperatonTask {
+    private fun startPortaalTaakProcess(content: String): CamundaTask {
         return runWithoutAuthorization {
             val newDocumentRequest =
-                NewDocumentRequest(
-                    DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
-                    objectMapper.readTree(content)
-                )
+                NewDocumentRequest(DOCUMENT_DEFINITION_KEY, objectMapper.readTree(content))
             val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
             val processResult = processDocumentService.newDocumentAndStartProcess(request)
             documentId = processResult.resultingDocument().get().id().id

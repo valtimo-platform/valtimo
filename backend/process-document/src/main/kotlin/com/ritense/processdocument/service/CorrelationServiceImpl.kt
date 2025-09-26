@@ -17,246 +17,176 @@
 package com.ritense.processdocument.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.exception.DocumentNotFoundException
 import com.ritense.document.service.DocumentService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.RuntimeService
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.operaton.bpm.engine.runtime.MessageCorrelationResult
-import org.operaton.bpm.engine.runtime.ProcessInstance
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper.Companion.byLatestVersion
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
+import com.ritense.valtimo.camunda.service.CamundaRuntimeService
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.runtime.MessageCorrelationResult
+import org.camunda.bpm.engine.runtime.MessageCorrelationResultType
+import org.camunda.bpm.engine.runtime.ProcessInstance
+import java.util.UUID
 
 class CorrelationServiceImpl(
     val runtimeService: RuntimeService,
-    val operatonRuntimeService: OperatonRuntimeService,
+    val camundaRuntimeService: CamundaRuntimeService,
     val documentService: DocumentService,
-    val operatonRepositoryService: OperatonRepositoryService,
+    val camundaRepositoryService: CamundaRepositoryService,
     val repositoryService: RepositoryService,
     val associationService: ProcessDocumentAssociationService
-) : CorrelationService {
+) : CorrelationService{
 
     override fun sendStartMessage(message: String, businessKey: String): MessageCorrelationResult {
         return sendStartMessage(message, businessKey, null)
     }
 
-    override fun sendStartMessage(
-        message: String,
-        businessKey: String,
-        vararg variables: Any?
-    ): MessageCorrelationResult {
-        return sendStartMessage(message, businessKey, toVariableMap(*variables))
-    }
-
-    override fun sendStartMessage(
-        message: String,
-        businessKey: String,
-        variables: Map<String, Any?>?
-    ): MessageCorrelationResult {
-        val result = correlate(message, businessKey, variables)
+    override fun sendStartMessage(message: String, businessKey: String, variables: Map<String, Any>?): MessageCorrelationResult {
+        val result = correlate(message, businessKey,variables)
         val processName = getProcessDefinitionName(result.processInstance.processDefinitionId)
         associateDocumentToProcess(result.processInstance.id, processName, businessKey)
+
         return result
     }
 
     override fun sendStartMessageWithProcessDefinitionKey(
         message: String,
         targetProcessDefinitionKey: String,
-        businessKey: String
-    ) {
-        sendStartMessageWithProcessDefinitionKey(message, targetProcessDefinitionKey, businessKey, null)
-    }
-
-    override fun sendStartMessageWithProcessDefinitionKey(
-        message: String,
-        targetProcessDefinitionKey: String,
         businessKey: String,
-        variables: Map<String, Any?>?
-    ) {
+        variables: Map<String, Any>?
+    ){
         val processDefinitionId = getLatestProcessDefinitionIdByKey(targetProcessDefinitionKey)
-        val result = correlateWithProcessDefinitionId(message, businessKey, processDefinitionId.id, variables)
-        val processName = getProcessDefinitionName(result.processDefinitionId)
-        associateDocumentToProcess(result.processInstanceId, processName, businessKey)
+        val correlationResultProcess = correlateWithProcessDefinitionId(message, businessKey, processDefinitionId.id, variables)
+        val processName = getProcessDefinitionName(correlationResultProcess.processDefinitionId)
+        associateDocumentToProcess(correlationResultProcess.processInstanceId, processName, businessKey)
     }
 
-    override fun sendStartMessageWithProcessDefinitionKey(
-        message: String,
-        targetProcessDefinitionKey: String,
-        businessKey: String,
-        vararg variables: Any?
-    ) {
-        sendStartMessageWithProcessDefinitionKey(
-            message,
-            targetProcessDefinitionKey,
-            businessKey,
-            toVariableMap(*variables)
-        )
-    }
-
-    override fun sendCatchEventMessage(message: String, businessKey: String): MessageCorrelationResult {
+    override fun sendCatchEventMessage(message: String, businessKey: String): MessageCorrelationResult{
         return sendCatchEventMessage(message, businessKey, null)
     }
 
-    override fun sendCatchEventMessage(
-        message: String,
-        businessKey: String,
-        variables: Map<String, Any?>?
-    ): MessageCorrelationResult {
+    override fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any>?): MessageCorrelationResult {
         val result = correlate(message, businessKey, variables)
-        val processInstanceId = result.execution.processInstanceId
-        val processName = getProcessDefinitionNameByProcessInstanceId(processInstanceId)
-        associateDocumentToProcess(processInstanceId, processName, businessKey)
-        return result
-    }
+        val correlationResultProcessInstance = runWithoutAuthorization {
+            camundaRuntimeService.findProcessInstanceById(result.execution.processInstanceId)!!
+        }
+        val processInstanceId = correlationResultProcessInstance.processInstanceId
+        val processName = getProcessDefinitionName(correlationResultProcessInstance.processDefinitionId)
+        val associationExists = associationExists(processInstanceId)
+        if(!associationExists) {
+            associateDocumentToProcess(
+                processInstanceId,
+                processName,
+                correlationResultProcessInstance.businessKey)
+        }
 
-    override fun sendCatchEventMessage(
-        message: String,
-        businessKey: String,
-        vararg variables: Any?
-    ): MessageCorrelationResult {
-        return sendCatchEventMessage(message, businessKey, toVariableMap(*variables))
+        return result
     }
 
     override fun sendCatchEventMessageToAll(message: String, businessKey: String): List<MessageCorrelationResult> {
         return sendCatchEventMessageToAll(message, businessKey, null)
     }
 
-    override fun sendCatchEventMessageToAll(
-        message: String,
-        businessKey: String,
-        variables: Map<String, Any?>?
-    ): List<MessageCorrelationResult> {
+    override fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String,Any>?): List<MessageCorrelationResult> {
         val correlationResultProcessList = correlateAll(message, businessKey, variables)
         correlationResultProcessList.forEach { correlationResultProcess ->
             val processInstanceId = correlationResultProcess.execution.processInstanceId
-            val processName = getProcessDefinitionNameByProcessInstanceId(processInstanceId)
-            associateDocumentToProcess(processInstanceId, processName, businessKey)
+            val runningProcessInstance = runWithoutAuthorization {
+                camundaRuntimeService.findProcessInstanceById(processInstanceId)!!
+            }
+            val processName = getProcessDefinitionName(runningProcessInstance.processDefinitionId)
+            val correlationStartedNewProcess = MessageCorrelationResultType.ProcessDefinition == correlationResultProcess.resultType
+            val associationExists = associationExists(processInstanceId)
+            if(correlationStartedNewProcess || !associationExists) {
+                associateDocumentToProcess(
+                    processInstanceId,
+                    processName,
+                    runningProcessInstance.businessKey)
+            }
         }
 
         return correlationResultProcessList
     }
 
-    override fun sendCatchEventMessageToAll(
-        message: String,
-        businessKey: String,
-        vararg variables: Any?
-    ): List<MessageCorrelationResult> {
-        return sendCatchEventMessageToAll(message, businessKey, toVariableMap(*variables))
-    }
-
-    override fun sendMessage(message: String, execution: DelegateExecution): MessageCorrelationResult {
-        val result = correlate(message, execution.businessKey, execution.variables)
-        associateDocumentToProcess(result, execution.businessKey)
-        return result
-    }
-
-    override fun sendMessageToAll(message: String, execution: DelegateExecution): List<MessageCorrelationResult> {
-        val results = correlateAll(message, execution.businessKey, execution.variables)
-        results.forEach { associateDocumentToProcess(it, execution.businessKey) }
-        return results
-    }
-
-    private fun getLatestProcessDefinitionIdByKey(processDefinitionKey: String): OperatonProcessDefinition {
+    private fun getLatestProcessDefinitionIdByKey(processDefinitionKey: String): CamundaProcessDefinition {
         return runWithoutAuthorization {
-            operatonRepositoryService.findProcessDefinition(byKey(processDefinitionKey).and(byLatestVersion()))
+            camundaRepositoryService.findProcessDefinition(byKey(processDefinitionKey).and(byLatestVersion()))
                 ?: throw RuntimeException("Failed to get process definition with key $processDefinitionKey")
         }
     }
 
     private fun associationExists(processInstanceId: String): Boolean {
         return runWithoutAuthorization {
-            associationService.findProcessDocumentInstance(OperatonProcessInstanceId(processInstanceId)).isPresent
-        }
-    }
-
-    private fun associateDocumentToProcess(result: MessageCorrelationResult, businessKey: String) {
-        if (result.processInstance?.processDefinitionId != null) {
-            val processName = getProcessDefinitionName(result.processInstance.processDefinitionId)
-            associateDocumentToProcess(result.processInstance.id, processName, businessKey)
-        } else {
-            val processInstanceId = result.execution.processInstanceId
-            val processName = getProcessDefinitionNameByProcessInstanceId(processInstanceId)
-            associateDocumentToProcess(processInstanceId, processName, businessKey)
+            associationService.findProcessDocumentInstance(CamundaProcessInstanceId(processInstanceId)).isPresent
         }
     }
 
     private fun associateDocumentToProcess(
-        processInstanceId: String,
+        processInstanceId: String?,
         processName: String,
         businessKey: String
     ) {
         runWithoutAuthorization {
-            if (!associationExists(processInstanceId)) {
-                val document = documentService[businessKey]
-                associationService.createProcessDocumentInstance(
-                    processInstanceId,
-                    document.id().id,
-                    processName
-                )
-            }
+            documentService.findBy(JsonSchemaDocumentId.existingId(UUID.fromString(businessKey)))
+                .ifPresentOrElse({ document: Document ->
+                    associationService.createProcessDocumentInstance(
+                        processInstanceId,
+                        UUID.fromString(document.id().toString()),
+                        processName
+                    )
+                }) { throw DocumentNotFoundException("No Document found with id $businessKey") }
         }
     }
 
     private fun correlate(
-        message: String,
-        businessKey: String,
-        variables: Map<String, Any?>?
-    ): MessageCorrelationResult {
+        message: String, businessKey: String, variables: Map<String, Any>?):MessageCorrelationResult{
         val builder = runtimeService.createMessageCorrelation(message)
         builder.processInstanceBusinessKey(businessKey)
-        variables?.run { builder.setVariables(variables) }
+        variables?.run {
+            builder.processInstanceVariablesEqual(variables)
+        }
         return builder.correlateWithResult()
-    }
 
+    }
     private fun correlateWithProcessDefinitionId(
         message: String,
         businessKey: String,
         processDefinitionId: String,
-        variables: Map<String, Any?>?,
+        variables: Map<String, Any>?,
     ): ProcessInstance {
         val builder = runtimeService.createMessageCorrelation(message)
         builder.processDefinitionId(processDefinitionId)
         builder.processInstanceBusinessKey(businessKey)
-        variables?.run { builder.setVariables(variables) }
+        variables?.run {builder.setVariables(variables)}
         return builder.correlateStartMessage()
     }
 
     private fun correlateAll(
         message: String,
         businessKey: String,
-        variables: Map<String, Any?>?
+        variables: Map<String, Any>?
     ): List<MessageCorrelationResult> {
         val builder = runtimeService.createMessageCorrelation(message)
         builder.processInstanceBusinessKey(businessKey)
-        variables?.run { builder.setVariables(variables) }
+        variables?.run {
+            builder.processInstanceVariablesEqual(variables)
+        }
         return builder.correlateAllWithResult()
     }
 
     private fun getProcessDefinitionName(processDefinitionId: String): String {
         val process = runWithoutAuthorization {
-            operatonRepositoryService.findProcessDefinitionById(processDefinitionId)
+            camundaRepositoryService.findProcessDefinitionById(processDefinitionId)
                 ?: throw IllegalStateException("No process definition exists with id '$processDefinitionId'")
         }
 
         return process.name
             ?: throw IllegalStateException("Process definition with id '$processDefinitionId' doesn't have a name")
-    }
-
-    private fun getProcessDefinitionNameByProcessInstanceId(processInstanceId: String): String {
-        return runWithoutAuthorization {
-            val processInstance = operatonRuntimeService.findProcessInstanceById(processInstanceId)!!
-            getProcessDefinitionName(processInstance.processDefinitionId)
-        }
-    }
-
-    private fun toVariableMap(vararg variables: Any?): Map<String, Any?>? {
-        return if (variables.isNotEmpty()) {
-            (0 until variables.size / 2).associate { i -> variables[i * 2] as String to variables[i * 2 + 1] }
-        } else {
-            null
-        }
     }
 }

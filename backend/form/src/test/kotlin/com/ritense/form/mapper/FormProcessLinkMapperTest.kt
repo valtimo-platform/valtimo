@@ -25,9 +25,7 @@ import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkCreateRequestDto
 import com.ritense.form.web.rest.dto.FormProcessLinkResponseDto
 import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -48,18 +46,12 @@ internal class FormProcessLinkMapperTest {
 
     private lateinit var formProcessLinkMapper: FormProcessLinkMapper
 
-    @Mock
-    lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
-
-    val caseDefinitionId = CaseDefinitionId.of("person", "1.0.0")
-
     @BeforeEach
     fun beforeEach() {
         MockitoAnnotations.openMocks(this)
         formProcessLinkMapper = FormProcessLinkMapper(
             MapperSingleton.get(),
             formDefinitionService,
-            processDefinitionCaseDefinitionService,
         )
     }
 
@@ -74,7 +66,6 @@ internal class FormProcessLinkMapperTest {
             viewModelEnabled = false,
             formDisplayType = FormDisplayType.panel,
             formSize = FormSizes.small,
-            subtitles = SUBTITLES,
         )
 
         val formProcessLinkResponseDto = formProcessLinkMapper.toProcessLinkResponseDto(formProcessLink)
@@ -88,7 +79,6 @@ internal class FormProcessLinkMapperTest {
         assertEquals(formProcessLink.viewModelEnabled, formProcessLinkResponseDto.viewModelEnabled)
         assertEquals(formProcessLink.formDisplayType, formProcessLinkResponseDto.formDisplayType)
         assertEquals(formProcessLink.formSize, formProcessLinkResponseDto.formSize)
-        assertEquals(formProcessLink.subtitles, formProcessLinkResponseDto.subtitles)
     }
 
     @Test
@@ -101,11 +91,10 @@ internal class FormProcessLinkMapperTest {
             viewModelEnabled = false,
             formDisplayType = FormDisplayType.panel,
             formSize = FormSizes.small,
-            subtitles = SUBTITLES,
         )
         whenever(formDefinitionService.formDefinitionExistsById(createRequestDto.formDefinitionId)).thenReturn(true)
 
-        val formProcessLink = formProcessLinkMapper.toNewProcessLink(createRequestDto, caseDefinitionId)
+        val formProcessLink = formProcessLinkMapper.toNewProcessLink(createRequestDto)
 
         assertTrue(formProcessLink is FormProcessLink)
         assertEquals(createRequestDto.processDefinitionId, formProcessLink.processDefinitionId)
@@ -115,7 +104,6 @@ internal class FormProcessLinkMapperTest {
         assertEquals(createRequestDto.viewModelEnabled, formProcessLink.viewModelEnabled)
         assertEquals(createRequestDto.formDisplayType, formProcessLink.formDisplayType)
         assertEquals(createRequestDto.formSize, formProcessLink.formSize)
-        assertEquals(createRequestDto.subtitles, formProcessLink.subtitles)
     }
 
     @Test
@@ -134,11 +122,10 @@ internal class FormProcessLinkMapperTest {
             viewModelEnabled = false,
             formDisplayType = FormDisplayType.panel,
             formSize = FormSizes.small,
-            subtitles = SUBTITLES
         )
         whenever(formDefinitionService.formDefinitionExistsById(updateRequestDto.formDefinitionId)).thenReturn(true)
 
-        val formProcessLink = formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
+        val formProcessLink = formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto)
 
         assertTrue(formProcessLink is FormProcessLink)
         assertEquals(processLinkToUpdate.processDefinitionId, formProcessLink.processDefinitionId)
@@ -148,7 +135,6 @@ internal class FormProcessLinkMapperTest {
         assertEquals(updateRequestDto.viewModelEnabled, formProcessLink.viewModelEnabled)
         assertEquals(updateRequestDto.formDisplayType, formProcessLink.formDisplayType)
         assertEquals(updateRequestDto.formSize, formProcessLink.formSize)
-        assertEquals(updateRequestDto.subtitles, formProcessLink.subtitles)
     }
 
     @Test
@@ -162,7 +148,7 @@ internal class FormProcessLinkMapperTest {
         )
 
         val exception = assertThrows<RuntimeException> {
-            formProcessLinkMapper.toNewProcessLink(createRequestDto, caseDefinitionId)
+            formProcessLinkMapper.toNewProcessLink(createRequestDto)
         }
 
         assertEquals("Form definition not found with id ${createRequestDto.formDefinitionId}", exception.message)
@@ -185,7 +171,7 @@ internal class FormProcessLinkMapperTest {
         )
 
         val exception = assertThrows<RuntimeException> {
-            formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
+            formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto)
         }
 
         assertEquals("Form definition not found with id ${updateRequestDto.formDefinitionId}", exception.message)
@@ -197,7 +183,6 @@ internal class FormProcessLinkMapperTest {
             UUID.randomUUID(),
             "testing",
             "{}",
-            CaseDefinitionId.of("house", "1.0.0"),
             true
         )
         val formProcessLink = FormProcessLink(
@@ -211,14 +196,10 @@ internal class FormProcessLinkMapperTest {
 
         whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
             .thenReturn(Optional.of(formDefinition))
-        val relatedExportRequests = formProcessLinkMapper.createRelatedExportRequests(formProcessLink, caseDefinitionId)
+        val relatedExportRequests = formProcessLinkMapper.createRelatedExportRequests(formProcessLink)
 
         assertThat(relatedExportRequests).contains(
-            FormDefinitionExportRequest("testing", caseDefinitionId)
+            FormDefinitionExportRequest("testing")
         )
-    }
-
-    companion object {
-        val SUBTITLES = listOf("test", "test2")
     }
 }

@@ -47,7 +47,7 @@ internal class PermissionDeployerIntTest : BaseIntegrationTest() {
         assertThat(changeset.get().filename).endsWith("/testdocument.permission.json")
         assertThat(changeset.get().dateExecuted).isBetween(Instant.parse("2023-06-13T00:00:00Z"), Instant.now())
         assertThat(changeset.get().orderExecuted).isBetween(0, 1000)
-        assertThat(changeset.get().md5sum).isEqualTo("7ab83105f788211f135e89686e5f2451")
+        assertThat(changeset.get().md5sum).isEqualTo("ec0f3428909e35d0f9eac83b72cad697")
     }
 
     @Test
@@ -58,8 +58,7 @@ internal class PermissionDeployerIntTest : BaseIntegrationTest() {
         assertThat(permissions).hasSize(1)
         assertThat(permissions[0].id).isNotNull()
         assertThat(permissions[0].resourceType).isEqualTo(TestDocument::class.java)
-        assertThat(permissions[0].actions).contains(Action<Any>(VIEW))
-        assertThat(permissions[0].actions).hasSize(1)
+        assertThat(permissions[0].action).isEqualTo(Action<Any>(VIEW))
         assertThat(permissions[0].role.key).isEqualTo("ROLE_USER")
         assertThat(permissions[0].conditionContainer.conditions).hasSize(1)
         assertTrue(permissions[0].conditionContainer.conditions[0] is FieldPermissionCondition<*>)

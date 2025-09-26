@@ -26,7 +26,6 @@ class TableCaseWidgetMapper : CaseWidgetMapper<TableCaseWidget, TableCaseWidgetD
         title = entity.title,
         width = entity.width,
         highContrast = entity.highContrast,
-        actions = entity.actions,
         properties = entity.properties
     )
 
@@ -35,7 +34,6 @@ class TableCaseWidgetMapper : CaseWidgetMapper<TableCaseWidget, TableCaseWidgetD
         title = dto.title,
         width = dto.width,
         highContrast = dto.highContrast,
-        actions = dto.actions ?: emptyList(),
         properties = dto.properties,
         order = index
     )

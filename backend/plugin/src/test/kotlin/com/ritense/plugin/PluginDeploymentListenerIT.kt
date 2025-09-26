@@ -25,6 +25,7 @@ import com.ritense.plugin.repository.PluginActionPropertyDefinitionRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
+import jakarta.transaction.Transactional
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsInAnyOrder
@@ -37,7 +38,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
 
 internal class PluginDeploymentListenerIT: BaseIntegrationTest() {
 

@@ -18,10 +18,10 @@ package com.ritense.processlink.autodeployment
 
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.processlink.BaseIntegrationTest
-import com.ritense.processlink.domain.TestProcessLink
+import com.ritense.processlink.domain.CustomProcessLink
 import com.ritense.processlink.repository.ProcessLinkRepository
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.hasSize
@@ -32,27 +32,29 @@ import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class ProcessLinkDeploymentApplicationReadyEventListenerIntTest @Autowired constructor(
-    private val repositoryService: OperatonRepositoryService,
+    private val repositoryService: CamundaRepositoryService,
     private val processLinkRepository: ProcessLinkRepository,
     private val listener: ProcessLinkDeploymentApplicationReadyEventListener
 ) : BaseIntegrationTest() {
 
     @Test
-    fun `should find 1 deployed process link on user task`() {
+    fun `should find 1 deployed process link on service task`() {
+        listener.deployProcessLinks()
+
         val processDefinition = getLatestProcessDefinition()
         val processLinks =
-            processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinition.id, "test-user-task")
+            processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinition.id, "my-service-task")
 
         assertThat(processLinks, hasSize(1))
         val processLink = processLinks.first()
-        assertThat(processLink, Matchers.isA(TestProcessLink::class.java))
-        processLink as TestProcessLink
-        assertThat(processLink.someValue, Matchers.equalTo("test"))
+        assertThat(processLink, Matchers.isA(CustomProcessLink::class.java))
+        processLink as CustomProcessLink
+        assertThat(processLink.someValue, Matchers.equalTo("changed"))
     }
 
-    private fun getLatestProcessDefinition(): OperatonProcessDefinition {
+    private fun getLatestProcessDefinition(): CamundaProcessDefinition {
         return AuthorizationContext.runWithoutAuthorization {
-            repositoryService.findLatestProcessDefinition("test-system-process")!!
+            repositoryService.findLatestProcessDefinition("auto-deploy-process-link-with-long-key")!!
         }
     }
 }

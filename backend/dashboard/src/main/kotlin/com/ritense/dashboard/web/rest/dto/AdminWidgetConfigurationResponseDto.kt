@@ -18,7 +18,6 @@ package com.ritense.dashboard.web.rest.dto
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.dashboard.domain.WidgetConfiguration
-import java.net.URI
 
 data class AdminWidgetConfigurationResponseDto(
     val key: String,
@@ -26,8 +25,7 @@ data class AdminWidgetConfigurationResponseDto(
     val dataSourceKey: String,
     val displayType: String,
     val dataSourceProperties: ObjectNode,
-    val displayTypeProperties: ObjectNode,
-    val url: URI?,
+    val displayTypeProperties: ObjectNode
 ) {
     companion object {
         fun of(widget: WidgetConfiguration) = AdminWidgetConfigurationResponseDto(
@@ -36,8 +34,7 @@ data class AdminWidgetConfigurationResponseDto(
             dataSourceKey = widget.dataSourceKey,
             displayType = widget.displayType,
             dataSourceProperties = widget.dataSourceProperties,
-            displayTypeProperties = widget.displayTypeProperties,
-            url = widget.url
+            displayTypeProperties = widget.displayTypeProperties
         )
     }
 }

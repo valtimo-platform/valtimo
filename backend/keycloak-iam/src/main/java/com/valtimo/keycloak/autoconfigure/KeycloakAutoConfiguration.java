@@ -27,8 +27,6 @@ import com.valtimo.keycloak.security.jwt.authentication.KeycloakTokenAuthenticat
 import com.valtimo.keycloak.security.jwt.provider.KeycloakSecretKeyProvider;
 import com.valtimo.keycloak.service.KeycloakService;
 import com.valtimo.keycloak.service.KeycloakUserManagementService;
-import com.valtimo.keycloak.service.CacheManagerUserCache;
-import com.valtimo.keycloak.service.UserCache;
 import javax.sql.DataSource;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,8 +37,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -49,7 +45,6 @@ import org.springframework.core.annotation.Order;
 
 @AutoConfiguration
 @EnableConfigurationProperties(KeycloakSpringBootProperties.class)
-@EnableCaching
 public class KeycloakAutoConfiguration {
 
     @Bean
@@ -82,10 +77,9 @@ public class KeycloakAutoConfiguration {
     @ConditionalOnWebApplication
     public KeycloakUserManagementService keycloakUserManagementService(
         final KeycloakService keycloakService,
-        @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName,
-        final UserCache userCache
+        @Value("#{'${spring.security.oauth2.client.registration.keycloakjwt.client-id:${valtimo.keycloak.client:}}'}") final String keycloakClientName
     ) {
-        return new KeycloakUserManagementService(keycloakService, keycloakClientName, userCache);
+        return new KeycloakUserManagementService(keycloakService, keycloakClientName);
     }
 
     @Bean
@@ -126,14 +120,6 @@ public class KeycloakAutoConfiguration {
         final ApplicationContext applicationContext
     ) {
         return new ValtimoKeycloakPropertyResolver(properties, applicationContext);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(UserCache.class)
-    public UserCache cacheManagerUserCache(
-        CacheManager cacheManager
-    ) {
-        return new CacheManagerUserCache(cacheManager);
     }
 
 }

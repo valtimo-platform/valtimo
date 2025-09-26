@@ -18,9 +18,9 @@ package com.ritense.zaakdetails.documentobjectenapisync
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.zaakdetails.mock.MockObjectManagement
+import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -37,7 +37,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Transactional
@@ -47,10 +46,8 @@ internal class DocumentObjectenApiSyncManagementResourceTest {
 
     lateinit var mockMvc: MockMvc
     lateinit var resource: DocumentObjectenApiSyncManagementResource
-    lateinit var service: DocumentObjectenApiSyncManagementService
+    lateinit var service: DocumentObjectenApiSyncService
     lateinit var objectManagementInfoProvider: ObjectManagementInfoProvider
-
-    val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
 
     @BeforeEach
     fun init() {
@@ -63,9 +60,10 @@ internal class DocumentObjectenApiSyncManagementResourceTest {
     @Test
     fun `should get sync configuration`() {
         val objectManagementConfigurationId = UUID.randomUUID()
-        whenever(service.getSyncConfiguration(caseDefinitionId)).thenReturn(
+        whenever(service.getSyncConfiguration("test-case", 1)).thenReturn(
             DocumentObjectenApiSync(
-                caseDefinitionId = caseDefinitionId,
+                documentDefinitionName = "test-case",
+                documentDefinitionVersion = 1,
                 objectManagementConfigurationId = objectManagementConfigurationId,
             )
         )
@@ -76,7 +74,7 @@ internal class DocumentObjectenApiSyncManagementResourceTest {
             )
         )
         mockMvc.perform(
-            get("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync", "profile", "1.0.0")
+            get("/api/management/v1/document-definition/{name}/version/{version}/objecten-api-sync", "test-case", 1)
         )
             .andDo(print())
             .andExpect(status().isOk())
@@ -93,7 +91,7 @@ internal class DocumentObjectenApiSyncManagementResourceTest {
             enabled = true,
         )
         mockMvc.perform(
-            put("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync", "profile", "1.0.0")
+            put("/api/management/v1/document-definition/{name}/version/{version}/objecten-api-sync", "test-case", 1)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request))
         )
@@ -106,11 +104,11 @@ internal class DocumentObjectenApiSyncManagementResourceTest {
     @Test
     fun `should delete sync configuration`() {
         mockMvc.perform(
-            delete("/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/objecten-api-sync", "profile", "1.0.0")
+            delete("/api/management/v1/document-definition/{name}/version/{version}/objecten-api-sync", "test-case", 1)
         )
             .andDo(print())
             .andExpect(status().isOk())
 
-        verify(service, times(1)).deleteSyncConfigurationByDocumentDefinition(caseDefinitionId)
+        verify(service, times(1)).deleteSyncConfigurationByDocumentDefinition("test-case", 1)
     }
 }

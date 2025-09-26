@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 data class PermissionAvailableRequest(
     val resource: String,
     val action: String,
-    val context: PermissionContext? = null,
+    val context: PermissionContext
 ) {
     @JsonIgnore
     fun getResourceAsClass(): Class<*> {

@@ -1,6 +1,7 @@
 package com.ritense.dashboard.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationContext
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.dashboard.BaseIntegrationTest
 import com.ritense.dashboard.TestDataSource
@@ -9,9 +10,9 @@ import com.ritense.dashboard.TestDataSource.Companion.NUMBER_DATA_KEY
 import com.ritense.dashboard.TestDataSourceProperties
 import com.ritense.dashboard.TestWidgetNumberResult
 import com.ritense.dashboard.TestWidgetNumbersResult
+import com.ritense.dashboard.domain.Dashboard
 import com.ritense.dashboard.domain.WidgetConfiguration
 import com.ritense.dashboard.repository.WidgetConfigurationRepository
-import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -24,16 +25,15 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.cache.CacheManager
-import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 
 class DashboardDataServiceIntTest @Autowired constructor(
     private val dashboardDataService: DashboardDataService,
     private val objectMapper: ObjectMapper,
-    @MockitoSpyBean private val widgetConfigurationRepository: WidgetConfigurationRepository,
-    @MockitoSpyBean private val testDataSource: TestDataSource,
-    @MockitoSpyBean private val dashboardService: DashboardService,
+    @SpyBean private val widgetConfigurationRepository: WidgetConfigurationRepository,
+    @SpyBean private val testDataSource: TestDataSource,
+    @SpyBean private val dashboardService: DashboardService,
     val cacheManager: CacheManager
 ): BaseIntegrationTest() {
 
@@ -48,12 +48,12 @@ class DashboardDataServiceIntTest @Autowired constructor(
             NUMBER_CONFIG_KEY, "", mock(), NUMBER_DATA_KEY,
             objectMapper.valueToTree(TestDataSourceProperties("xyz")),
             objectMapper.createObjectNode(),
-            "", null, 0
+            "", 0
         )
         numbersConfiguration = WidgetConfiguration(
             NUMBERS_CONFIG_KEY, "", mock(), NUMBERS_DATA_KEY,
             objectMapper.createObjectNode(), objectMapper.createObjectNode(),
-            "", null,1
+            "", 1
         )
 
         whenever(widgetConfigurationRepository.findAllByDashboardKey(DASHBOARD_KEY)).thenReturn(
@@ -80,7 +80,6 @@ class DashboardDataServiceIntTest @Autowired constructor(
         }
     }
     @Test
-    @WithMockUser(username = "user@ritense.com", authorities = [USER])
     fun `should get data from test datasource`() {
         runWithoutAuthorization {
             dashboardService.createDashboard("Test", "Test description")

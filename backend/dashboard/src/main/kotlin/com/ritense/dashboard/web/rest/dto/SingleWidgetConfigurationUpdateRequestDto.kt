@@ -17,13 +17,11 @@
 package com.ritense.dashboard.web.rest.dto
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import java.net.URI
 
 data class SingleWidgetConfigurationUpdateRequestDto(
     val title: String,
     val dataSourceKey: String,
     val displayType: String,
     val dataSourceProperties: ObjectNode,
-    val displayTypeProperties: ObjectNode,
-    val url: URI? = null
+    val displayTypeProperties: ObjectNode
 )

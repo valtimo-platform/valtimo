@@ -18,7 +18,6 @@ package com.ritense.valtimo.contract.config;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.ritense.valtimo.contract.OauthConfigHolder;
-import javax.annotation.Nonnull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
@@ -148,6 +147,7 @@ public class ValtimoProperties {
     public static class Oauth {
         private String publicKey;
         private long tokenValidityInSeconds = 180000;
+        private IdentifierField identifierField = IdentifierField.USERID;
 
         public String getPublicKey() {
             return publicKey;
@@ -163,6 +163,14 @@ public class ValtimoProperties {
 
         public void setTokenValidityInSeconds(long tokenValidityInSeconds) {
             this.tokenValidityInSeconds = tokenValidityInSeconds;
+        }
+
+        public IdentifierField getIdentifierField() {
+            return identifierField;
+        }
+
+        public void setIdentifierField(IdentifierField identifierField) {
+            this.identifierField = identifierField;
         }
     }
 
@@ -203,4 +211,30 @@ public class ValtimoProperties {
             this.systemProcessUpdatable = systemProcessUpdatable;
         }
     }
+
+    public enum IdentifierField {
+        USERID("userId"), USERNAME("userName");
+
+        private final String fieldName;
+
+        IdentifierField(String fieldName) {
+            this.fieldName = fieldName;
+        }
+
+        @JsonCreator
+        public static IdentifierField fromString(String text) {
+            for (IdentifierField identifierField : IdentifierField.values()) {
+                if (identifierField.fieldName.equalsIgnoreCase(text)) {
+                    return identifierField;
+                }
+            }
+            throw new IllegalStateException(String.format("Cannot create Identifier from string %s", text));
+        }
+
+        @Override
+        public String toString() {
+            return this.fieldName;
+        }
+    }
+
 }

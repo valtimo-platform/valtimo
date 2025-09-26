@@ -129,8 +129,7 @@ class AdminDashboardResource(
             widgetDto.dataSourceKey,
             widgetDto.displayType,
             widgetDto.dataSourceProperties,
-            widgetDto.displayTypeProperties,
-            widgetDto.url,
+            widgetDto.displayTypeProperties
         )
         return ResponseEntity.ok(AdminWidgetConfigurationResponseDto.of(widget))
     }

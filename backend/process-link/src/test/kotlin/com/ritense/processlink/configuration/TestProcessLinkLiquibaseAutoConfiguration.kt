@@ -17,13 +17,13 @@
 package com.ritense.processlink.configuration
 
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
+import javax.sql.DataSource
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
-import javax.sql.DataSource
 
 @AutoConfiguration
 @ConditionalOnClass(DataSource::class)
@@ -33,6 +33,6 @@ class TestProcessLinkLiquibaseAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(name = ["testProcessLinkLiquibaseMasterChangeLogLocation"])
     fun testProcessLinkLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/process-link-test-only-master.xml")
+        return LiquibaseMasterChangeLogLocation("config/liquibase/test-process-link-master.xml")
     }
 }

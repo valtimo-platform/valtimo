@@ -23,10 +23,9 @@ import com.ritense.formviewmodel.submission.FormViewModelStartFormSubmissionHand
 import com.ritense.formviewmodel.submission.FormViewModelStartFormSubmissionHandlerFactory
 import com.ritense.formviewmodel.submission.FormViewModelUserTaskSubmissionHandler
 import com.ritense.formviewmodel.submission.FormViewModelUserTaskSubmissionHandlerFactory
-import com.ritense.formviewmodel.viewmodel.FormViewModelLoader
 import com.ritense.formviewmodel.viewmodel.Submission
 import com.ritense.formviewmodel.viewmodel.ViewModelLoader
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import kotlin.reflect.KClass
@@ -40,13 +39,13 @@ class OnStartUpViewModelValidator(
 
     @EventListener(ApplicationReadyEvent::class)
     fun validate() {
-        for (viewModelLoader in viewModelLoaders.filterIsInstance(FormViewModelLoader::class.java)) {
+        for (viewModelLoader in viewModelLoaders) {
             validateViewModelLoader(viewModelLoader)
         }
     }
 
     fun validateViewModelLoader(
-        viewModelLoader: FormViewModelLoader<*>
+        viewModelLoader: ViewModelLoader<*>
     ) {
         val formDefinition =
             formIoFormDefinitionService.getFormDefinitionByName(viewModelLoader.getFormName())
@@ -66,7 +65,7 @@ class OnStartUpViewModelValidator(
                         "(${viewModelLoader.getFormName()}): $missingProperties"
                 }
                 // Validate Start form submission for the view model
-                formViewModelStartFormSubmissionHandlerFactory.getHandlerForFormValidation(
+                formViewModelStartFormSubmissionHandlerFactory.getHandler(
                     viewModelLoader.getFormName()
                 )?.let {
                     validateStartFormSubmission(it, formDefinition).let { missingSubmissionProperties ->
@@ -79,7 +78,7 @@ class OnStartUpViewModelValidator(
                     }
                 }
 
-                formViewModelUserTaskSubmissionHandlerFactory.getHandlerForFormValidation(
+                formViewModelUserTaskSubmissionHandlerFactory.getHandler(
                     viewModelLoader.getFormName()
                 )?.let {
                     validateUserTaskSubmission(it, formDefinition).let { missingSubmissionProperties ->

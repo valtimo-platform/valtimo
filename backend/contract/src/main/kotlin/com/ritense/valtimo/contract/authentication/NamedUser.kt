@@ -46,7 +46,7 @@ data class NamedUser(
         @JvmStatic
         fun from(user: ManageableUser): NamedUser {
             return NamedUser(
-                id = user.username,
+                id = user.userIdentifier,
                 email = user.email,
                 firstName = user.firstName,
                 lastName = user.lastName,

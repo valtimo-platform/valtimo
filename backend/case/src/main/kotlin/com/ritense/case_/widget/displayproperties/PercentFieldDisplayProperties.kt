@@ -20,6 +20,5 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 
 @JsonTypeName("percent")
 data class PercentFieldDisplayProperties(
-    val digitsInfo: String? = null,
-    override val hideWhenEmpty: Boolean? = false
+    val digitsInfo: String? = null
 ) : FieldDisplayProperties

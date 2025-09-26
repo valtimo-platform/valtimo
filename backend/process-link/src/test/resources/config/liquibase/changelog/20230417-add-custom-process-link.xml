@@ -24,8 +24,9 @@
             <tableExists tableName="process_link"/>
         </preConditions>
         <addColumn tableName="process_link">
-            <column name="some_value" type="varchar(256)" />
-            <column name="another_value" type="varchar(256)" />
+            <column name="some_value" type="varchar(256)">
+                <constraints nullable="false"/>
+            </column>
         </addColumn>
     </changeSet>
 
