@@ -23,6 +23,8 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.document.service.result.DeployDocumentDefinitionResult;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import jakarta.validation.ValidationException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -32,17 +34,13 @@ public interface DocumentDefinitionService {
 
     Page<? extends DocumentDefinition> findAll(Pageable pageable);
 
-    List<? extends DocumentDefinition> findAllBy(CaseDefinitionId caseDefinitionId);
-
     Page<? extends DocumentDefinition> findAllForManagement(Pageable pageable);
 
     JsonSchemaDocumentDefinitionId findIdByName(String name);
 
     Optional<? extends DocumentDefinition> findBy(DocumentDefinition.Id id);
 
-    Optional<? extends DocumentDefinition> findActiveByName(String documentDefinitionName);
-
-    boolean existsByName(String documentDefinitionName);
+    Optional<? extends DocumentDefinition> findLatestByName(String documentDefinitionName);
 
     void requirePermission(String documentDefinitionName, Action action);
 
@@ -64,8 +62,6 @@ public interface DocumentDefinitionService {
     void store(JsonSchemaDocumentDefinition documentDefinition);
 
     void removeDocumentDefinition(String documentDefinitionName);
-
-    void removeDocumentDefinition(String documentDefinitionName, CaseDefinitionId caseDefinitionId);
 
     boolean currentUserCanAccessDocumentDefinition(String documentDefinitionName);
 

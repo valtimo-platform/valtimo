@@ -20,7 +20,7 @@ import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.domain.Document
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 
 data class DataField(
@@ -43,7 +43,7 @@ data class DataField(
         fun isDataFieldComponent(jsonNode: ObjectNode): Boolean {
             return (jsonNode.has("type")
                     && !jsonNode["type"].textValue().equals("button", ignoreCase = true)
-                    && jsonNode.has("input") && jsonNode["input"].booleanValue()
+                    && jsonNode["input"].booleanValue()
                     && jsonNode.has(PROPERTY_KEY))
         }
     }

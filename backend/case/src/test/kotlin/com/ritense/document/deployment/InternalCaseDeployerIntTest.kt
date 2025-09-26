@@ -16,7 +16,8 @@
 
 package com.ritense.document.deployment
 
-import com.ritense.BaseIntegrationTest
+import com.ritense.document.BaseIntegrationTest
+import com.ritense.document.domain.InternalCaseStatusColor
 import com.ritense.document.repository.InternalCaseStatusRepository
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,7 +34,7 @@ class InternalCaseDeployerIntTest @Autowired constructor(
     @Test
     fun `should have imported two internal case statuses for person case`() {
         val internalCaseStatuses =
-            internalCaseStatusRepository.findByIdCaseDefinitionKeyOrderByOrder("person")
+            internalCaseStatusRepository.findByIdCaseDefinitionNameOrderByOrder("person")
 
         assertEquals(2, internalCaseStatuses.size)
         assertEquals("closed", internalCaseStatuses[0].id.key)
@@ -42,6 +43,14 @@ class InternalCaseDeployerIntTest @Autowired constructor(
         assertEquals("started", internalCaseStatuses[1].id.key)
         assertEquals("Started", internalCaseStatuses[1].title)
         assertTrue(internalCaseStatuses[1].visibleInCaseListByDefault)
+    }
+
+    @Test
+    fun `should have updated internal case status for house case`() {
+        val internalCaseStatuses =
+            internalCaseStatusRepository.findByIdCaseDefinitionNameOrderByOrder("house")
+
+        assertEquals(InternalCaseStatusColor.BLUE, internalCaseStatuses.filter{ it.title == "Closed" }.first().color)
     }
 
 }

@@ -29,8 +29,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ritense.BaseTest;
+import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
+import com.ritense.document.BaseTest;
 import com.ritense.document.domain.impl.JsonSchema;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
@@ -41,10 +42,10 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.data.jpa.domain.Specification;
 
 class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
@@ -60,10 +61,23 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         documentDefinitionService = spy(new JsonSchemaDocumentDefinitionService(
             resourceLoader,
             jsonSchemaDocumentDefinitionRepository,
-            mock(AuthorizationService.class),
-            mock()
+            mock(AuthorizationService.class)
         ));
-        definition = definitionOfForUnitTests("person");
+        definition = definitionOf("person");
+    }
+
+    @Test
+    @Disabled
+        //TODO try to mock resource loading or refactor
+    void shouldDeployAll() {
+        when(jsonSchemaDocumentDefinitionRepository.findAllByIdName(anyString())).thenReturn(Collections.emptyList());
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString())).thenReturn(
+            Optional.empty());
+        AuthorizationContext.runWithoutAuthorization(() -> {
+            documentDefinitionService.deployAll();
+            return null;
+        });
+        verify(documentDefinitionService, times(3)).store(any(JsonSchemaDocumentDefinition.class));
     }
 
     @Test
@@ -76,6 +90,32 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         documentDefinitionService.store(definition);
 
         verify(jsonSchemaDocumentDefinitionRepository, times(1)).saveAndFlush(definition);
+    }
+
+    @Test
+    void shouldReturnSaveOnceWhenDeployingUnchangedSchema() {
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString()))
+            .thenReturn(Optional.empty());
+        when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class)))
+            .thenReturn(Optional.empty())
+            .thenReturn(Optional.of(definition));
+
+        documentDefinitionService.store(definition);
+        documentDefinitionService.store(definition);
+
+        verify(jsonSchemaDocumentDefinitionRepository, times(1)).saveAndFlush(definition);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeployingChangedSchema() {
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString())).thenReturn(
+            Optional.empty());
+        when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class))).thenReturn(
+            Optional.of(definition));
+
+        final var definitionChanged = definitionOf("house");
+
+        assertThrows(UnsupportedOperationException.class, () -> documentDefinitionService.store(definitionChanged));
     }
 
     @Test
@@ -104,21 +144,21 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldValidateJsonPathInDefinitionWithReference() {
-        var definition = definitionOfForUnitTests("combined-schema-additional-property-example");
+        var definition = definitionOf("combined-schema-additional-property-example");
         assertTrue(documentDefinitionService.isValidJsonPath(definition, "$.address.streetName"));
         assertFalse(documentDefinitionService.isValidJsonPath(definition, "$.address.nonExistent"));
     }
 
     @Test
     void shouldValidateJsonPathInDefinitionWithReferenceToOtherFile() {
-        var definition = definitionOfForUnitTests("referenced");
+        var definition = definitionOf("referenced");
         assertTrue(documentDefinitionService.isValidJsonPath(definition, "$.address.streetName"));
         assertFalse(documentDefinitionService.isValidJsonPath(definition, "$.address.nonExistent"));
     }
 
     @Test
     void shouldValidateJsonPathWithArray() {
-        var definition = definitionOfForUnitTests("array-example");
+        var definition = definitionOf("array-example");
         assertTrue(documentDefinitionService.isValidJsonPath(definition, "$.files[0].id"));
         assertTrue(documentDefinitionService.isValidJsonPath(definition, "$.files.[0].id"));
         assertTrue(documentDefinitionService.isValidJsonPath(definition, "$.['files'][0]['id']"));
@@ -128,7 +168,7 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldValidateJsonPathWithFunctions() {
-        var definition = definitionOfForUnitTests("array-example");
+        var definition = definitionOf("array-example");
         assertTrue(documentDefinitionService.isValidJsonPath(definition, "$.files.length()"));
         assertTrue(documentDefinitionService.isValidJsonPath(definition, "$.files.someDatabaseSpecificFunction()"));
         assertFalse(documentDefinitionService.isValidJsonPath(definition, "$.files.missingBracket("));
@@ -136,7 +176,7 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldValidateJsonPathWithWildcard() {
-        var definition = definitionOfForUnitTests("array-example");
+        var definition = definitionOf("array-example");
         assertTrue(documentDefinitionService.isValidJsonPath(definition, "$.files[*].id"));
         assertFalse(documentDefinitionService.isValidJsonPath(definition, "$.nonExistent[*].id"));
     }
@@ -146,9 +186,8 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         var definitionName = "combined-schema-additional-property-example";
         mockDefinition(definitionName);
         documentDefinitionService.validateJsonPointer(definitionName, "/address/streetName");
-        var exception = assertThrows(
-            ValidationException.class, () ->
-                documentDefinitionService.validateJsonPointer(definitionName, "/address/nonExistent")
+        var exception = assertThrows(ValidationException.class, () ->
+            documentDefinitionService.validateJsonPointer(definitionName, "/address/nonExistent")
         );
         assertEquals(
             "JsonPointer '/address/nonExistent' doesn't point to any property inside document definition 'combined-schema-additional-property-example'",
@@ -162,9 +201,8 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         mockDefinition(definitionName);
         documentDefinitionService.validateJsonPointer(definitionName, "/address/streetName");
         documentDefinitionService.validateJsonPointer(definitionName, "/address/nonExistent");
-        var exception = assertThrows(
-            ValidationException.class, () ->
-                documentDefinitionService.validateJsonPointer(definitionName, "/nonExistent")
+        var exception = assertThrows(ValidationException.class, () ->
+            documentDefinitionService.validateJsonPointer(definitionName, "/nonExistent")
         );
         assertEquals(
             "JsonPointer '/nonExistent' doesn't point to any property inside document definition 'allows-additional-properties'",
@@ -180,25 +218,23 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
         var names = documentDefinitionService.getPropertyNames(definition);
 
         Collections.sort(names);
-        assertArrayEquals(
-            names.toArray(), new String[]{
-                "/address/city",
-                "/address/country",
-                "/address/number",
-                "/address/province",
-                "/address/streetName"
-            }
-        );
+        assertArrayEquals(names.toArray(), new String[]{
+            "/address/city",
+            "/address/country",
+            "/address/number",
+            "/address/province",
+            "/address/streetName"
+        });
     }
 
     public JsonSchemaDocumentDefinition mockDefinition(String definitionName) {
-        var definition = definitionOfForUnitTests(definitionName);
-        when(jsonSchemaDocumentDefinitionRepository.findOne(any(Specification.class)))
+        var definition = definitionOf(definitionName);
+        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(definitionName))
             .thenReturn(Optional.of(definition));
         return definition;
     }
 
     public URI path(String name) {
-        return URI.create(String.format("config/unit-test/document/definition/%s.json", name + ".schema"));
+        return URI.create(String.format("config/document/definition/%s.json", name + ".schema"));
     }
 }

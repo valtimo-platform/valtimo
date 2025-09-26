@@ -17,11 +17,11 @@ import com.ritense.formviewmodel.submission.TestUserTaskSubmissionHandler
 import com.ritense.formviewmodel.viewmodel.TestViewModel
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.camunda.domain.CamundaExecution
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.domain.CamundaTask
 import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.CamundaTaskService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,10 +44,10 @@ import java.util.UUID
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FormViewModelSubmissionServiceTest(
     @Mock private var authorizationService: AuthorizationService,
-    @Mock private val operatonTaskService: OperatonTaskService,
+    @Mock private val camundaTaskService: CamundaTaskService,
     @Mock private val processAuthorizationService: ProcessAuthorizationService,
     @Mock private val formDefinitionService: FormDefinitionService,
-    @Mock private val operatonTask: OperatonTask,
+    @Mock private val camundaTask: CamundaTask,
     @Mock private val processLinkService: ProcessLinkService,
     @Mock private val userTaskProcessLink: FormProcessLink,
     @Mock private val startEventProcessLink: FormProcessLink,
@@ -78,22 +78,22 @@ class FormViewModelSubmissionServiceTest(
             formViewModelStartFormSubmissionHandlerFactory = formViewModelStartFormSubmissionHandlerFactory,
             formViewModelUserTaskSubmissionHandlerFactory = formViewModelUserTaskSubmissionHandlerFactory,
             authorizationService = authorizationService,
-            operatonTaskService = operatonTaskService,
+            camundaTaskService = camundaTaskService,
             objectMapper = objectMapper,
             processAuthorizationService = processAuthorizationService,
             processLinkService = processLinkService,
             documentService = documentService,
         )
 
-        val processInstance = mock<OperatonExecution>().apply {
+        val processInstance = mock<CamundaExecution>().apply {
             whenever(this.businessKey).thenReturn(BUSINESS_KEY)
         }
-        val processDefinition = mock<OperatonProcessDefinition>().apply {
+        val processDefinition = mock<CamundaProcessDefinition>().apply {
             whenever(this.key).thenReturn(PROC_DEF_KEY)
         }
-        whenever(operatonTask.processInstance).thenReturn(processInstance)
-        whenever(operatonTask.processDefinition).thenReturn(processDefinition)
-        whenever(operatonTaskService.findTaskById(TASK_INSTANCE_ID)).thenReturn(operatonTask)
+        whenever(camundaTask.processInstance).thenReturn(processInstance)
+        whenever(camundaTask.processDefinition).thenReturn(processDefinition)
+        whenever(camundaTaskService.findTaskById(TASK_INSTANCE_ID)).thenReturn(camundaTask)
 
         val formDefinitionId = UUID.randomUUID()
         whenever(userTaskProcessLink.formDefinitionId).thenReturn(formDefinitionId)
@@ -115,7 +115,7 @@ class FormViewModelSubmissionServiceTest(
             taskInstanceId = TASK_INSTANCE_ID
         )
         val submissionCaptor = argumentCaptor<TestViewModel>()
-        val taskCaptor = argumentCaptor<OperatonTask>()
+        val taskCaptor = argumentCaptor<CamundaTask>()
         val businessKeyCaptor = argumentCaptor<String>()
         verify(testUserTaskSubmissionHandler).handle(
             submission = submissionCaptor.capture(),
@@ -123,7 +123,7 @@ class FormViewModelSubmissionServiceTest(
             businessKey = businessKeyCaptor.capture()
         )
         assertThat(submissionCaptor.firstValue).isInstanceOf(TestViewModel::class.java)
-        assertThat(taskCaptor.firstValue).isEqualTo(operatonTask)
+        assertThat(taskCaptor.firstValue).isEqualTo(camundaTask)
         assertThat(businessKeyCaptor.firstValue).isEqualTo(BUSINESS_KEY)
     }
 

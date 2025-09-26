@@ -16,9 +16,7 @@
 
 package com.ritense.document.repository.impl.specification
 
-import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Root
@@ -41,49 +39,22 @@ class JsonSchemaDocumentDefinitionSpecificationHelper {
             return Specification { root: Root<JsonSchemaDocumentDefinition>,
                                    query: CriteriaQuery<*>,
                                    cb: CriteriaBuilder ->
-                val caseDefinitionIdPath = root.get<Any>(ID).get<String>(CASE_DEFINITION_ID)
-                val subquery = query.subquery(Long::class.java)
-                val subRoot = subquery.from(CaseDefinition::class.java)
-                subquery.select(cb.max(subRoot.get<Any>(ID).get(VERSION_TAG)))
-                subquery.where(cb.equal(subRoot.get<Any>(ID).get<String>(KEY), caseDefinitionIdPath.get<Any>(KEY)))
 
-                cb.equal(subquery, caseDefinitionIdPath.get<Any>(VERSION_TAG))
-            }
-        }
-
-        @JvmStatic
-        fun byIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): Specification<JsonSchemaDocumentDefinition> {
-            return Specification { root: Root<JsonSchemaDocumentDefinition>,
-                                   _: CriteriaQuery<*>,
-                                   criteriaBuilder: CriteriaBuilder ->
-                val caseDefinitionIdPath = root.get<Any>(ID).get<String>(CASE_DEFINITION_ID)
-                criteriaBuilder.and(
-                    criteriaBuilder.equal(caseDefinitionIdPath.get<String>(KEY), caseDefinitionId.key),
-                    criteriaBuilder.equal(caseDefinitionIdPath.get<String>(VERSION_TAG), caseDefinitionId.versionTag)
+                val sub = query.subquery(Long::class.java)
+                val subRoot = sub.from(JsonSchemaDocumentDefinition::class.java)
+                sub.select(cb.max(subRoot.get<Any>(ID).get(VERSION)))
+                sub.where(
+                    cb.and(
+                        cb.equal(subRoot.get<Any>(ID).get<String>(NAME), root.get<Any>(ID).get<String>(NAME)),
+                    )
                 )
-            }
-        }
 
-        @JvmStatic
-        fun byCaseDefinitionActive() = Specification<JsonSchemaDocumentDefinition> { root, query, cb ->
-            val caseDefinitionIdPath = root.get<Any>(ID).get<String>(CASE_DEFINITION_ID)
-            val subquery = query.subquery(Long::class.java)
-            val subRoot = subquery.from(CaseDefinition::class.java)
-            subquery.select(cb.count(subRoot.get<Any>(ID).get<CaseDefinitionId>(KEY)))
-            subquery.where(
-                cb.and(
-                    cb.isTrue(subRoot["active"]),
-                    cb.equal(subRoot.get<Any>(ID).get<String>(KEY), caseDefinitionIdPath.get<Any>(KEY)),
-                    cb.equal(subRoot.get<Any>(ID).get<Any>(VERSION_TAG), caseDefinitionIdPath.get<Any>(VERSION_TAG)),
-                )
-            )
-            cb.equal(subquery, 1L)
+                cb.equal(root.get<Any>(ID).get<Long>(VERSION), sub)
+            }
         }
 
         private const val ID: String = "id"
-        private const val CASE_DEFINITION_ID: String = "caseDefinitionId"
-        private const val KEY: String = "key"
-        private const val VERSION_TAG: String = "versionTag"
+        private const val VERSION: String = "version"
         private const val NAME: String = "name"
     }
 }

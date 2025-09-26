@@ -18,10 +18,10 @@ package com.ritense.form.repository;
 
 import com.ritense.form.domain.FormDefinition;
 import com.ritense.form.domain.FormIoFormDefinition;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,26 +34,11 @@ public interface FormDefinitionRepository extends JpaRepository<FormIoFormDefini
 
     List<FormIoFormDefinition> findAllByOrderByNameAsc();
 
-    List<FormIoFormDefinition> findAllByCaseDefinitionIdIsNullOrderByNameAsc();
-
-    List<FormIoFormDefinition> findAllByCaseDefinitionIdOrderByNameAsc(CaseDefinitionId caseDefinitionId);
-
-    Page<FormIoFormDefinition> findByCaseDefinitionIdIsNull(Pageable pageable);
-
-    Optional<FormIoFormDefinition> findByNameAndCaseDefinitionIdIsNull(String name);
-
-    Optional<FormIoFormDefinition> findByIdAndCaseDefinitionId(
-        UUID formDefinitionId,
-        CaseDefinitionId caseDefinitionId
-    );
+    Optional<FormIoFormDefinition> findByName(String name);
 
     Optional<FormIoFormDefinition> findByNameAndCaseDefinitionId(String name, CaseDefinitionId caseDefinitionId);
 
-    List<FormIoFormDefinition> findAllByCaseDefinitionId(CaseDefinitionId caseDefinitionId);
-
-    void deleteAllByCaseDefinitionId(CaseDefinitionId caseDefinitionId);
-
-    Optional<FormIoFormDefinition> findByNameIgnoreCaseAndCaseDefinitionIdIsNull(String name);
+    Optional<FormIoFormDefinition> findByNameIgnoreCase(String name);
 
     @Query("SELECT f FROM FormIoFormDefinition f WHERE upper(f.name) LIKE upper(concat('%', :name, '%'))")
     Page<FormDefinition> findAllByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
@@ -68,7 +53,4 @@ public interface FormDefinitionRepository extends JpaRepository<FormIoFormDefini
         @Param("name") String name,
         Pageable pageable
     );
-
-    @Query("SELECT f FROM FormIoFormDefinition f WHERE upper(f.name) LIKE upper(concat('%', :name, '%')) AND f.caseDefinitionId IS NULL")
-    Page<FormDefinition> findAllWithoutCaseByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
 }

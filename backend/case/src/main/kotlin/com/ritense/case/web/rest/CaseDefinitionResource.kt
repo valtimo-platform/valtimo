@@ -16,35 +16,27 @@
 
 package com.ritense.case.web.rest
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case.web.rest.dto.CaseDefinitionCheckResponse
-import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
 import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
 import com.ritense.case.web.rest.dto.CaseDefinitionSettingsResponseDto
-import com.ritense.case.web.rest.dto.CaseDefinitionUpdateRequest
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
-import com.ritense.case.web.rest.dto.CaseVersionDto
-import com.ritense.case_.repository.CaseDefinitionRepository
-import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.exporter.ExportService
 import com.ritense.exporter.request.CaseDefinitionExportRequest
 import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
-import org.springframework.data.web.SortDefault
-import org.springframework.data.web.SortDefault.SortDefaults
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -66,152 +58,43 @@ import java.time.format.DateTimeFormatter
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseDefinitionResource(
     private val service: CaseDefinitionService,
-    private val activeCaseDefinitionService: ActiveCaseDefinitionService,
     private val exportService: ExportService,
-    private val importService: ImportService,
-    private val caseDefinitionRepository: CaseDefinitionRepository,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val importService: ImportService
 ) {
 
-    @RunWithoutAuthorization
-    @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}")
-    fun getCaseDefinition(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-        @LoggableResource("versionTag") @PathVariable versionTag: String,
-    ): ResponseEntity<CaseDefinitionResponseDto> {
-        val caseDefinition = service.getCaseDefinition(CaseDefinitionId.of(caseDefinitionKey, versionTag))
-        val similarCaseDefinitions = caseDefinition.basedOnVersionTag?.let {
-            service.getCaseDefinitionsBasedOnVersion(caseDefinitionKey, caseDefinition.basedOnVersionTag)
-                .filter { it.id != caseDefinition.id }
-        } ?: emptyList()
-        val conflictingVersions = if (similarCaseDefinitions.isNotEmpty()) {
-            similarCaseDefinitions.joinToString { it.id.versionTag.toString() }
-        } else {
-            null
-        }
-        return ResponseEntity.ok(CaseDefinitionResponseDto.of(caseDefinition, conflictingVersions))
-    }
-
-    @RunWithoutAuthorization
-    @PostMapping("/management/v1/case-definition/draft")
-    fun createCaseDefinitionDraft(
-        @RequestBody request: CaseDefinitionDraftCreateRequest
-    ): ResponseEntity<CaseDefinitionResponseDto> {
-        return ResponseEntity.ok(
-            CaseDefinitionResponseDto.of(
-                service.createCaseDefinitionDraft(request)
-            )
-        )
-    }
-
-    @RunWithoutAuthorization
-    @DeleteMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}")
-    fun deleteCaseDefinition(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-        @LoggableResource("versionTag") @PathVariable versionTag: String,
-    ): ResponseEntity<Unit> {
-        service.deleteCaseDefinition(CaseDefinitionId.of(caseDefinitionKey, versionTag))
-        return ResponseEntity.ok().build()
-    }
-
-    @RunWithoutAuthorization
-    @PatchMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}")
-    fun updateCaseDefinition(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-        @LoggableResource("versionTag") @PathVariable versionTag: String,
-        @RequestBody request: CaseDefinitionUpdateRequest
-    ): ResponseEntity<CaseDefinitionResponseDto> {
-        val caseDefinition = service.updateCaseDefinition(
-            CaseDefinitionId.of(caseDefinitionKey, versionTag),
-            request.name,
-            request.description
-        )
-        return ResponseEntity.ok(CaseDefinitionResponseDto.of(caseDefinition))
-    }
-
-    @GetMapping("/v1/case-definition")
-    fun getCaseDefinitions(
-        @RequestParam caseDefinitionKey: String?,
-        @RequestParam active: Boolean?,
-        @RequestParam final: Boolean?,
-    ): ResponseEntity<List<CaseDefinitionResponseDto>> {
-        val caseDefinitions = service.getCaseDefinitions(
-            caseDefinitionKey = caseDefinitionKey,
-            active = active,
-            final = final,
-        )
-        return ResponseEntity.ok(caseDefinitions.map { CaseDefinitionResponseDto.of(it) })
-    }
-
-    @RunWithoutAuthorization
     @GetMapping("/management/v1/case-definition")
-    fun getCaseDefinitionsForManagement(
-        @RequestParam caseDefinitionKey: String?,
-        @RequestParam active: Boolean?,
-        @RequestParam final: Boolean?,
-        @SortDefaults(
-            SortDefault(sort = ["name"]),
-            SortDefault(sort = ["active", "id.versionTag"], direction = Sort.Direction.DESC)
-        ) pageable: Pageable
+    fun getCaseDefinitions(
+        @PageableDefault(sort = ["case_definition_key"], direction = Sort.Direction.ASC) pageable: Pageable
     ): ResponseEntity<Page<CaseDefinitionResponseDto>> {
-        val caseDefinitions = service.getCaseDefinitions(
-            caseDefinitionKey = caseDefinitionKey,
-            active = active,
-            final = final,
-            pageable = pageable
+        return ResponseEntity.ok(
+            runWithoutAuthorization {
+                service.getCaseDefinitions(pageable).map { CaseDefinitionResponseDto.of(it) }
+            }
         )
-        return ResponseEntity.ok(caseDefinitions.map { CaseDefinitionResponseDto.of(it) })
     }
 
-    @RunWithoutAuthorization
     @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version")
     fun getCaseDefinitionVersions(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-        @PageableDefault(size = 5, sort = ["active", "id.versionTag"], direction = Sort.Direction.DESC)
-        pageable: Pageable
-    ): ResponseEntity<List<CaseVersionDto>> {
-        val caseDefinitions = service.getCaseDefinitions(caseDefinitionKey = caseDefinitionKey, pageable = pageable)
-        return ResponseEntity.ok(caseDefinitions.map { CaseVersionDto.of(it) }.content)
-    }
-
-    @RunWithoutAuthorization
-    @PostMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/finalize")
-    fun finalizeCaseDefinition(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-        @LoggableResource("versionTag") @PathVariable versionTag: String,
-    ): ResponseEntity<CaseDefinitionResponseDto> {
+    ): ResponseEntity<List<String>> {
         return ResponseEntity.ok(
-            CaseDefinitionResponseDto.of(
-                service.finalizeCaseDefinition(CaseDefinitionId.of(caseDefinitionKey, versionTag))
-            )
+            runWithoutAuthorization {
+                service.getCaseDefinitionVersions(caseDefinitionKey)
+            }
         )
     }
 
-    @GetMapping("/v1/case-definition/{caseDefinitionKey}/settings")
+    @GetMapping("/v1/case/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
     fun getCaseSettings(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-    ): ResponseEntity<CaseDefinitionSettingsResponseDto> {
-        return try {
-            ResponseEntity.ok(
-                CaseDefinitionSettingsResponseDto.of(
-                    activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
-                )
-            )
-        } catch (exception: UnknownCaseDefinitionException) {
-            ResponseEntity.notFound().build()
-        }
-    }
-
-    @GetMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
-    @RunWithoutAuthorization
-    fun getCaseSettingsForManagement(
         @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
     ): ResponseEntity<CaseDefinitionSettingsResponseDto> {
         return try {
             ResponseEntity.ok(
                 CaseDefinitionSettingsResponseDto.of(
-                    service.getCaseDefinition(CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag))
+                    service.getCaseDefinition(
+                        CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
+                    )
                 )
             )
         } catch (exception: UnknownCaseDefinitionException) {
@@ -219,7 +102,14 @@ class CaseDefinitionResource(
         }
     }
 
-    @PatchMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
+    @GetMapping("/management/v1/case/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
+    @RunWithoutAuthorization
+    fun getCaseSettingsForManagement(
+        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
+        @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
+    ): ResponseEntity<CaseDefinitionSettingsResponseDto> = getCaseSettings(caseDefinitionKey, caseDefinitionVersionTag)
+
+    @PatchMapping("/management/v1/case/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")
     @RunWithoutAuthorization
     fun updateCaseSettingsForManagement(
         @RequestBody caseSettingsDto: CaseSettingsDto,
@@ -232,38 +122,6 @@ class CaseDefinitionResource(
                     service.updateCaseSettings(
                         CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
                         caseSettingsDto
-                    )
-                )
-            )
-        } catch (exception: UnknownCaseDefinitionException) {
-            ResponseEntity.notFound().build()
-        }
-    }
-
-    @GetMapping("/management/v1/case-definition/{caseDefinitionKey}")
-    @RunWithoutAuthorization
-    fun getActive(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-    ): ResponseEntity<CaseDefinitionResponseDto> {
-        return try {
-            val caseDefinition = activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
-            ResponseEntity.ok(CaseDefinitionResponseDto.of(caseDefinition))
-        } catch (exception: UnknownCaseDefinitionException) {
-            ResponseEntity.notFound().build()
-        }
-    }
-
-    @PostMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/active")
-    @RunWithoutAuthorization
-    fun setActive(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-        @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
-    ): ResponseEntity<CaseDefinitionResponseDto> {
-        return try {
-            ResponseEntity.ok(
-                CaseDefinitionResponseDto.of(
-                    activeCaseDefinitionService.setGlobalActiveCaseDefinition(
-                        CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
                     )
                 )
             )
@@ -325,7 +183,7 @@ class CaseDefinitionResource(
         @LoggableResource("caseDefinitionVersionTag") @PathVariable caseDefinitionVersionTag: String,
     ): ResponseEntity<ByteArray> {
         val baos = exportService
-            .export(CaseDefinitionExportRequest(CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)))
+            .export(CaseDefinitionExportRequest(caseDefinitionKey, caseDefinitionVersionTag))
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))
         val fileName = "${caseDefinitionKey}_${caseDefinitionVersionTag}_$timestamp.valtimo.zip"
         return ResponseEntity
@@ -340,23 +198,12 @@ class CaseDefinitionResource(
         @RequestParam("file") file: MultipartFile
     ): ResponseEntity<Unit> {
         return try {
-            importService.import(file.inputStream, caseDefinitionRepository.findAll().map { it.id })
-            service.setLatestToActiveIfNoneIsActive()
+            importService.import(file.inputStream)
             ResponseEntity.ok().build()
         } catch (exception: ImportServiceException) {
             logger.info(exception) { "Import failed" }
             ResponseEntity.badRequest().build()
         }
-    }
-
-    @RunWithoutAuthorization
-    @GetMapping("/management/v1/case-definition/check")
-    fun checkCaseDefinition(): ResponseEntity<CaseDefinitionCheckResponse> {
-        return ResponseEntity.ok(
-            CaseDefinitionCheckResponse(
-                canUpdateGlobalConfiguration = caseDefinitionChecker.canUpdateGlobalConfiguration(),
-            )
-        )
     }
 
     companion object {

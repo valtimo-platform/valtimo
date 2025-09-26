@@ -19,14 +19,11 @@ package com.ritense.case.service
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ValtimoImportService
-import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
 import org.springframework.stereotype.Service
@@ -40,86 +37,56 @@ import java.io.FileNotFoundException
 class CaseDefinitionDeploymentService(
     val resourceLoader: ResourceLoader,
     val valtimoImportService: ValtimoImportService,
-    val caseDefinitionRepository: CaseDefinitionRepository,
-    val changelogDeployer: ChangelogDeployer,
+    val caseDefinitionRepository: CaseDefinitionRepository
 ) {
-    @Order(Ordered.LOWEST_PRECEDENCE)
+
     @EventListener(ApplicationReadyEvent::class)
     fun deployOnStartup() {
-        deployCase()
-        deployGlobal()
-
-        // TODO: convert changelogdeployers to importers
-        changelogDeployer.deployAll()
-    }
-
-    private fun deployCase() {
-        try {
-            val resources =
-                ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(CASE_DEFINITION_PATH)
-                    .groupBy { resource ->
-                        val relativePath = resource.url.path.substringAfter(CASE_DEFINITION_FOLDER_STRUCTURE)
-                        relativePath.substring(0, StringUtils.ordinalIndexOf(relativePath, "/", 3))
-                    }
-                    .map { (key, files) ->
-                        key to (files.map {
-                            it.url.path.substringAfter(CASE_DEFINITION_FOLDER_STRUCTURE).substring(key.length) to it
-                        })
-                    }
-            resources.forEach { (_, files) ->
-                runWithoutAuthorization {
-                    valtimoImportService.importCaseDefinition(files, caseDefinitionRepository.findAllByFinalTrue().map { it.id })
-                }
-            }
-            setLatestToActiveIfNoneIsActive()
-
+        val absoluteBasePathLength = try {
+            ResourcePatternUtils
+                .getResourcePatternResolver(resourceLoader)
+                .getResource("classpath:/config/case/")
+                .file
+                .absolutePath
+                .length
         } catch (ex: FileNotFoundException) {
             // No resources found, nothing to import
-            logger.info { "No case definitions found. Continuing startup without importing case definitions." }
+            logger.info { "No case definitions found. Continuing startup without importing." }
+            return
         }
-    }
 
+        val resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH)
+            .groupBy {
+                val relativePath = it.file.absolutePath.substring(
+                    absoluteBasePathLength
+                )
 
-    private fun deployGlobal() {
-        try {
-            val resources =
-                ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(GLOBAL_DEFINITION_PATH)
-                    .groupBy {
-                        it.url.path.substringAfter(GLOBAL_DEFINITION_FOLDER_STRUCTURE)
-                    }
-                    .map { (key, files) ->
-                        key to (files.map {
-                           "/global" + it.url.path.substringAfter(GLOBAL_DEFINITION_FOLDER_STRUCTURE) to it
-                        })
-                    }
-            resources.forEach { (_, files) ->
-                runWithoutAuthorization {
-                    valtimoImportService.importGlobalDefinitions(files)
-                }
+                relativePath.substring(0, StringUtils.ordinalIndexOf(relativePath, "/", 3))
             }
-
-        } catch (ex: FileNotFoundException) {
-            // No resources found, nothing to import
-            logger.info { "No global definitions found. Continuing startup without importing global definitions." }
+            .map { (key, files) ->
+                key to (files.map {
+                    it.file.absolutePath.substring(
+                        absoluteBasePathLength
+                    ).substring(key.length) to it
+                })
+            }
+        resources.forEach { (_, files) ->
+            runWithoutAuthorization {
+                valtimoImportService.importCaseDefinition(files, caseDefinitionRepository.findAll().map { it.id })
+            }
         }
+
+        // Group by 1st * and 2nd *
+        // Turn back into list of list resources
+        // Import for each list of resources in the list
+        // If one fails, everything fails.
+        // TODO Implement triggering of imports
     }
 
-    private fun setLatestToActiveIfNoneIsActive() {
-        caseDefinitionRepository.findAll()
-            .groupBy { it.id.key }
-            .map { it.value }
-            .filter { caseDefinitions -> caseDefinitions.none { caseDefinition -> caseDefinition.active } }
-            .map { caseDefinitions -> caseDefinitions.maxBy { it.id.versionTag } }
-            .map { caseDefinition -> caseDefinition.copy(active = true) }
-            .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
-    }
+    //private fun getRelativeMap
 
     companion object {
-        private const val CASE_DEFINITION_PATH = "classpath*:config/case/*/*/**/*.*"
-        private const val CASE_DEFINITION_FOLDER_STRUCTURE = "/config/case"
-        private const val GLOBAL_DEFINITION_PATH = "classpath*:config/global/**/*.*"
-        private const val GLOBAL_DEFINITION_FOLDER_STRUCTURE = "/config/global"
-
+        private const val PATH = "classpath:config/case/*/*/**/*.*" // TODO: Determine if we want to do config/case/ instead
         val logger = KotlinLogging.logger {}
     }
 }

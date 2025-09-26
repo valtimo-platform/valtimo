@@ -32,8 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ritense.BaseTest;
-import com.ritense.document.domain.impl.DocumentContentFilter;
+import com.ritense.document.BaseTest;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
@@ -69,10 +68,10 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
 
         var content = new JsonDocumentContent("{\"firstName\": \"John\"}");
         final JsonSchemaDocument.CreateDocumentResultImpl result = JsonSchemaDocument.create(
-            definitionOfForUnitTests("person"),
+            definitionOf("person"),
             content,
             USERNAME,
-            getDocumentSequenceGeneratorService(),
+            documentSequenceGeneratorService,
             null
         );
         document = result.resultingDocument().orElseThrow();
@@ -96,42 +95,6 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
     }
 
     @Test
-    void shouldReturnDocumentWithoutContent() throws Exception {
-        when(documentService.findBy(any()))
-            .thenReturn(Optional.of(document));
-
-        mockMvc.perform(get("/api/v1/document/{id}", UUID.randomUUID().toString())
-                .accept(APPLICATION_JSON_VALUE)
-                .contentType(APPLICATION_JSON_VALUE)
-            )
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.content").doesNotExist());
-    }
-
-    @Test
-    void shouldReturnDocumentWithContentWhenEnabled() throws Exception {
-        when(documentService.findBy(any()))
-            .thenReturn(Optional.of(document));
-
-        //enable output of document content
-        DocumentContentFilter.setIncludeDocumentContent(true);
-
-        mockMvc.perform(get("/api/v1/document/{id}", UUID.randomUUID().toString())
-                .accept(APPLICATION_JSON_VALUE)
-                .contentType(APPLICATION_JSON_VALUE)
-            )
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.content").exists());
-
-        //reset to default for cleanup
-        DocumentContentFilter.setIncludeDocumentContent(false);
-    }
-
-    @Test
     void shouldReturnDocumentWithAssignee() throws Exception {
         when(documentService.findBy(any()))
             .thenReturn(Optional.of(document));
@@ -152,7 +115,7 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
     void shouldModifyDocument() throws Exception {
         final var json = "{\"firstName\": \"John\"}";
         final var content = new JsonDocumentContent(json);
-        final var document = createDocument(definitionOfForUnitTests("person"), content).resultingDocument().get();
+        final var document = createDocument(definitionOf("person"), content).resultingDocument().get();
         final var modifyDocumentResult = new JsonSchemaDocument.ModifyDocumentResultImpl(document);
         when(documentService.modifyDocument(any())).thenReturn(modifyDocumentResult);
         when(documentService.get(document.id().getId().toString()))
@@ -192,7 +155,7 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
     void shouldAddResourceForDocument() throws Exception {
         final var json = "{\"firstName\": \"John\"}";
         final var content = new JsonDocumentContent(json);
-        final var document = createDocument(definitionOfForUnitTests("person"), content).resultingDocument().get();
+        final var document = createDocument(definitionOf("person"), content).resultingDocument().get();
 
         when(documentService.get(document.id().getId().toString()))
             .thenReturn(document);
@@ -212,7 +175,7 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
     void shouldRemoveRelatedFile() throws Exception {
         final var json = "{\"firstName\": \"John\"}";
         final var content = new JsonDocumentContent(json);
-        final var document = createDocument(definitionOfForUnitTests("person"), content).resultingDocument().get();
+        final var document = createDocument(definitionOf("person"), content).resultingDocument().get();
 
         when(documentService.get(document.id().getId().toString()))
             .thenReturn(document);
@@ -232,7 +195,7 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
     void shouldGetCandidateUsers() throws Exception {
         final var json = "{\"firstName\": \"John\"}";
         final var content = new JsonDocumentContent(json);
-        final var document = createDocument(definitionOfForUnitTests("person"), content).resultingDocument().get();
+        final var document = createDocument(definitionOf("person"), content).resultingDocument().get();
 
         when(documentService.getCandidateUsers(document.id()))
             .thenReturn(List.of(new NamedUser("1234", "John", "Doe")));
@@ -249,7 +212,7 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
     void shouldNotGetCandidateUsersWhenNoAccessToDocument() throws Exception {
         final var json = "{\"firstName\": \"John\"}";
         final var content = new JsonDocumentContent(json);
-        final var document = createDocument(definitionOfForUnitTests("person"), content).resultingDocument().get();
+        final var document = createDocument(definitionOf("person"), content).resultingDocument().get();
 
         mockMvc.perform(get("/api/v1/document/{document-id}/candidate-user", document.id()).accept(APPLICATION_JSON_VALUE))
             .andDo(print())

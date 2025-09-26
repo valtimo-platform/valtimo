@@ -16,13 +16,9 @@
 
 package com.ritense.valtimo.contract.client
 
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Profile
 
 @AutoConfiguration
 @EnableConfigurationProperties(ValtimoHttpRestClientConfigurationProperties::class)
@@ -35,34 +31,4 @@ class RestClientAutoConfiguration {
         return ApacheRequestFactoryCustomizer(valtimoHttpRestClientConfigurationProperties)
     }
 
-    @Bean
-    @ConditionalOnMissingBean(HostDockerInternalRestClientCustomizer::class)
-    @ConditionalOnProperty(value = ["valtimo.docker.filter.enabled"], havingValue = "true", matchIfMissing = false)
-    fun hostDockerInternalRestClientCustomizer(
-        @Value("\${valtimo.docker.filter.ports:8001,8002,8003,8006,8010,8011}") dockerPorts: List<String>,
-        @Value("\${valtimo.docker.filter.rewriteRequestHost:false}") rewriteRequestHost: Boolean,
-        @Value("\${server.port:8080}") webServerPort: Int,
-    ): HostDockerInternalRestClientCustomizer {
-        return HostDockerInternalRestClientCustomizer(
-            dockerPorts.map { it.toInt() },
-            rewriteRequestHost,
-            webServerPort,
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(HostDockerInternalRestClientCustomizer::class)
-    @Profile("dev")
-    @ConditionalOnProperty(value = ["valtimo.docker.filter.enabled"], havingValue = "true", matchIfMissing = true)
-    fun devHostDockerInternalRestClientCustomizer(
-        @Value("\${valtimo.docker.filter.ports:8001,8002,8003,8006,8010,8011}") dockerPorts: List<String>,
-        @Value("\${valtimo.docker.filter.rewriteRequestHost:false}") rewriteRequestHost: Boolean,
-        @Value("\${server.port:8080}") webServerPort: Int,
-    ): HostDockerInternalRestClientCustomizer {
-        return HostDockerInternalRestClientCustomizer(
-            dockerPorts.map { it.toInt() },
-            rewriteRequestHost,
-            webServerPort,
-        )
-    }
 }

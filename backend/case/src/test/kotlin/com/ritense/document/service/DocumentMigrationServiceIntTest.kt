@@ -16,11 +16,10 @@
 
 package com.ritense.document.service
 
-import com.ritense.BaseIntegrationTest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.document.BaseIntegrationTest
 import com.ritense.document.domain.DocumentMigrationPatch
 import com.ritense.document.domain.DocumentMigrationRequest
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.repository.impl.specification.JsonSchemaDocumentSpecificationHelper.Companion.byDocumentDefinitionIdName
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.Test
@@ -36,14 +35,7 @@ class DocumentMigrationServiceIntTest @Autowired constructor(
     @Test
     fun `should migrate document`() {
         createDocument(
-            definitionOf(
-                JsonSchemaDocumentDefinitionId.of(
-                "referenced",
-                    CaseDefinitionId.of(
-                        "referenced",
-                        "1.0.0"
-                    )
-            )),
+            definitionOf("referenced"),
             """{"address": {"streetName": "Straatnaam"}}"""
         )
 

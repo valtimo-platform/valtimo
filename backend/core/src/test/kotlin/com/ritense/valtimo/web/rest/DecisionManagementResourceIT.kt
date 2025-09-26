@@ -20,8 +20,8 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.valtimo.BaseIntegrationTest
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.security.DecisionHttpSecurityConfigurer.Companion.DECISION_MANAGEMENT_URL
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.RepositoryService
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.RepositoryService
 import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
@@ -33,6 +33,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 import java.io.ByteArrayInputStream
@@ -42,7 +43,7 @@ import kotlin.test.assertEquals
 @Transactional
 class DecisionManagementResourceIT(
     @Autowired
-    private val operatonProcessService: OperatonProcessService,
+    private val camundaProcessService: CamundaProcessService,
 
     @Autowired
     private val webApplicationContext: WebApplicationContext,
@@ -50,19 +51,16 @@ class DecisionManagementResourceIT(
     @Autowired
     private val repositoryService: RepositoryService
 ): BaseIntegrationTest() {
-    val caseDefinitionId = CaseDefinitionId("everything", "1.0.0")
+    val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
 
     lateinit var mockMvc: MockMvc
     lateinit var testDecisionId : String
 
     @BeforeEach
     fun setup() {
-        repositoryService.createDeploymentQuery().list().forEach { deployment ->
-            repositoryService.deleteDeployment(deployment.id, true, false, false)
-        }
         testDecisionId = deployExampleDmn("test", caseDefinitionId)
-        deployExampleDmn("test-version", caseDefinitionId)
-        deployExampleDmn("test-other", caseDefinitionId)
+        deployExampleDmn("test-version", CaseDefinitionId("test", "1.1.0"))
+        deployExampleDmn("test-other", CaseDefinitionId("other", "1.0.0"))
 
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build()
     }
@@ -70,20 +68,22 @@ class DecisionManagementResourceIT(
     @Test
     fun `should get decision definitions`() {
         mockMvc.perform(
-            get(DECISION_MANAGEMENT_URL, "everything", "1.0.0")
+            get(DECISION_MANAGEMENT_URL, "test", "1.0.0")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
         .andDo(MockMvcResultHandlers.print())
         .andExpect(status().isOk)
         .andExpect(jsonPath("$").isNotEmpty)
         .andExpect(jsonPath("$").isArray)
-        .andExpect(jsonPath("$[0].versionTag").value("CD:everything:1.0.0"))
+        .andExpect(jsonPath("$[0].name").value("Test Decision"))
+        .andExpect(jsonPath("$[0].key").value("test"))
+        .andExpect(jsonPath("$[0].versionTag").value("test-1.0.0"))
     }
 
     @Test
     fun `should create a new decision definition`() {
         mockMvc.perform(
-            MockMvcRequestBuilders.multipart(DECISION_MANAGEMENT_URL, "everything", "1.0.0")
+            MockMvcRequestBuilders.multipart(DECISION_MANAGEMENT_URL, "test-case", "1.0.0")
                 .file(
                     MockMultipartFile(
                         "file",
@@ -96,21 +96,22 @@ class DecisionManagementResourceIT(
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
         .andDo(MockMvcResultHandlers.print())
-        .andExpect(status().isOk)
+        .andExpect(status().isNoContent)
 
         repositoryService.createDecisionDefinitionQuery()
             .decisionDefinitionKey("test-2")
             .singleResult()
             .let {
                 assertEquals("test-2", it.key)
-                assertEquals("CD:everything:1.0.0", it.versionTag)
+                assertEquals("test-case-1.0.0", it.versionTag)
             }
     }
 
     @Test
+    @Transactional(propagation = Propagation.NEVER)
     fun `should delete an existing decision definition`() {
         mockMvc.perform(
-            MockMvcRequestBuilders.delete("$DECISION_MANAGEMENT_URL/{decisionDefinitionId}", "everything", "1.0.0", "test")
+            MockMvcRequestBuilders.delete("$DECISION_MANAGEMENT_URL/{decisionDefinitionId}", "test", "1.0.0", "test")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
         .andDo(MockMvcResultHandlers.print())
@@ -127,7 +128,7 @@ class DecisionManagementResourceIT(
         val dmnExample = getDecisionXml(key)
 
         val deployment = runWithoutAuthorization {
-            operatonProcessService.deploy(
+            camundaProcessService.deploy(
                 caseDefinitionId,
                 "test.dmn",
                 ByteArrayInputStream(dmnExample.toByteArray()),

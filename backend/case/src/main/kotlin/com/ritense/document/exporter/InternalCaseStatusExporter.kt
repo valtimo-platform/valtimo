@@ -17,6 +17,7 @@
 package com.ritense.document.exporter
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.document.importer.InternalCaseStatusDeploymentDto
 import com.ritense.document.importer.InternalCaseStatusDto
 import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.exporter.ExportFile
@@ -41,19 +42,18 @@ class InternalCaseStatusExporter(
             return ExportResult()
         }
 
-        val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
-            "${it.major}-${it.minor}-${it.patch}"
-        }
-
+        val caseTabChangeset = InternalCaseStatusDeploymentDto(
+            statuses.map(InternalCaseStatusDto::of)
+        )
         val internalCaseStatusExport = ExportFile(
-            PATH.format(request.caseDefinitionId.key, formattedCaseDefinitionVersion, request.name),
-            objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(statuses.map(InternalCaseStatusDto::of))
+            PATH.format(request.name),
+            objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(caseTabChangeset)
         )
 
         return ExportResult(internalCaseStatusExport)
     }
 
     companion object {
-        private const val PATH = "config/case/%s/%s/case/internal-status/%s.internal-case-status.json"
+        private const val PATH = "config/internal-case-status/%s.internal-case-status.json"
     }
 }

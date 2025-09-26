@@ -17,13 +17,11 @@
 package com.ritense.objectenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationService
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.objectenapi.client.ObjectenApiClient
 import com.ritense.objectenapi.listener.ZaakObjectListener
 import com.ritense.objectenapi.management.ErrorObjectManagementInfoProvider
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
-import com.ritense.objectenapi.security.ObjectSpecificationFactory
 import com.ritense.objectenapi.security.ObjectenApiHttpSecurityConfigurer
 import com.ritense.objectenapi.service.ZaakObjectDataResolver
 import com.ritense.objectenapi.service.ZaakObjectService
@@ -34,8 +32,6 @@ import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.zakenapi.ZaakUrlProvider
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -61,16 +57,12 @@ class ObjectenApiAutoConfiguration {
     fun objectenApiClient(
         restClientBuilder: RestClient.Builder,
         outboxService: OutboxService,
-        objectMapper: ObjectMapper,
-        authorizationService: AuthorizationService
-    ): ObjectenApiClient {
-        return ObjectenApiClient(
-            restClientBuilder,
-            outboxService,
-            objectMapper,
-            authorizationService
-        )
-    }
+        objectMapper: ObjectMapper
+    ) = ObjectenApiClient(
+        restClientBuilder,
+        outboxService,
+        objectMapper
+    )
 
     @Bean
     fun objectenApiPluginFactory(
@@ -138,15 +130,5 @@ class ObjectenApiAutoConfiguration {
     @ConditionalOnMissingBean(ObjectManagementInfoProvider::class)
     fun errorObjectManagementInfoProvider(): ObjectManagementInfoProvider {
         return ErrorObjectManagementInfoProvider()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ObjectSpecificationFactory::class)
-    fun objectSpecificationFactory(): ObjectSpecificationFactory {
-        return ObjectSpecificationFactory()
-    }
-
-    companion object {
-        val logger = KotlinLogging.logger {}
     }
 }

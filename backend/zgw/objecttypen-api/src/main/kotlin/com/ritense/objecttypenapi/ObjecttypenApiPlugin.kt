@@ -22,7 +22,7 @@ import com.ritense.objecttypenapi.client.ObjecttypenApiClient
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.valtimo.contract.validation.Url
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 
@@ -70,8 +70,7 @@ class ObjecttypenApiPlugin(
         private val logger = KotlinLogging.logger {}
         const val URL_PROPERTY = "url"
 
-        fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
-            url.toString().startsWith(properties[URL_PROPERTY].textValue())
-        }
+        fun findConfigurationByUrl(url: URI) =
+            { properties: JsonNode -> url.toString().startsWith(properties.get(URL_PROPERTY).textValue()) }
     }
 }

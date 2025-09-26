@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ritense.BaseTest;
+import com.ritense.document.BaseTest;
 import com.ritense.document.domain.Document;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
@@ -81,7 +81,7 @@ class JsonSchemaDocumentSearchResourceTest extends BaseTest {
 
         var content = new JsonDocumentContent("{\"firstName\": \"John\"}");
         final JsonSchemaDocument.CreateDocumentResultImpl result = JsonSchemaDocument.create(
-            definitionOfForUnitTests("person"),
+            definitionOf("person"),
             content,
             USERNAME,
             documentSequenceGeneratorService,
@@ -161,7 +161,7 @@ class JsonSchemaDocumentSearchResourceTest extends BaseTest {
             .andExpect(jsonPath("$").isNotEmpty())
             .andExpect(jsonPath("$.content").isArray())
             .andExpect(jsonPath("$.content.length()").value(1))
-            .andExpect(jsonPath("$.content[0].content").doesNotExist());
+            .andExpect(jsonPath("$.content[0].content.firstName").value("John"));
     }
 
 }

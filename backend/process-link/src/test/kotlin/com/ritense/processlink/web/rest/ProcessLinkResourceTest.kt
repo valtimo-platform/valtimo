@@ -17,18 +17,15 @@
 package com.ritense.processlink.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.TestProcessLink
 import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
 import com.ritense.processlink.domain.TestProcessLinkMapper
 import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
 import com.ritense.processlink.mapper.ProcessLinkMapper
-import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.RepositoryService
+import com.ritense.valtimo.service.CamundaProcessService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -44,8 +41,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.camunda.bpm.engine.RepositoryService
 import java.nio.charset.StandardCharsets
 import java.util.UUID
 
@@ -56,10 +55,9 @@ internal class ProcessLinkResourceTest {
     lateinit var processLinkMappers: List<ProcessLinkMapper>
     lateinit var processLinkResource: ProcessLinkResource
     lateinit var objectMapper: ObjectMapper
-    lateinit var camdunaProcessService: OperatonProcessService
+    lateinit var camdunaProcessService: CamundaProcessService
     lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
     lateinit var repositoryService: RepositoryService
-    lateinit var processDeploymentService: ProcessDeploymentService
 
     @BeforeEach
     fun init() {
@@ -68,15 +66,13 @@ internal class ProcessLinkResourceTest {
         camdunaProcessService = mock()
         processDefinitionCaseDefinitionService = mock()
         repositoryService = mock()
-        processDeploymentService = mock()
         processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
         processLinkResource = ProcessLinkResource(
             processLinkService,
             processLinkMappers,
             camdunaProcessService,
             processDefinitionCaseDefinitionService,
-            repositoryService,
-            processDeploymentService
+            repositoryService
         )
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
@@ -151,10 +147,7 @@ internal class ProcessLinkResourceTest {
             .andDo(print())
             .andExpect(status().isNoContent)
 
-        verify(processLinkService).createProcessLink(
-            processLinkDto,
-            null
-        )
+        verify(processLinkService).createProcessLink(processLinkDto)
     }
 
     @Test
@@ -173,10 +166,7 @@ internal class ProcessLinkResourceTest {
             .andDo(print())
             .andExpect(status().isNoContent)
 
-        verify(processLinkService).updateProcessLink(
-            processLinkDto,
-            null
-        )
+        verify(processLinkService).updateProcessLink(processLinkDto)
     }
 
     @Test

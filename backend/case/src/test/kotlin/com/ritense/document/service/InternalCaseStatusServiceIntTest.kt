@@ -16,8 +16,8 @@
 
 package com.ritense.document.service
 
-import com.ritense.BaseIntegrationTest
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.document.BaseIntegrationTest
 import com.ritense.document.domain.InternalCaseStatusColor.GRAY
 import com.ritense.document.exception.InternalCaseStatusAlreadyExistsException
 import com.ritense.document.exception.InternalCaseStatusNotFoundException
@@ -42,7 +42,6 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
     private val internalCaseStatusService: InternalCaseStatusService,
     private val internalCaseStatusRepository: InternalCaseStatusRepository
 ) : BaseIntegrationTest() {
-
     @Test
     fun `should have imported two person internal case statuses`() {
         val internalCaseStatuses =
@@ -56,7 +55,6 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals("Started", internalCaseStatuses[1].title)
         assertTrue(internalCaseStatuses[1].visibleInCaseListByDefault)
     }
-
     @Test
     fun `should create status for existing definition`() {
         AuthorizationContext.runWithoutAuthorization {
@@ -120,7 +118,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
 
     @Test
     fun `should not create status for missing definition`() {
-        assertThrows<IllegalArgumentException> {
+        assertThrows<NoSuchElementException> {
             AuthorizationContext.runWithoutAuthorization {
                 internalCaseStatusService.create(
                     "case-definition-that-does-not-exist",

@@ -25,21 +25,21 @@ import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
 import com.ritense.processdocument.domain.config.ProcessDocumentLinkConfigItem
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 
 class ProcessDocumentLinkExporter(
     private val objectMapper: ObjectMapper,
-    private val operatonRepositoryService: OperatonRepositoryService,
+    private val camundaRepositoryService: CamundaRepositoryService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
 ) : Exporter<DocumentDefinitionExportRequest> {
 
     override fun supports() = DocumentDefinitionExportRequest::class.java
 
     override fun export(request: DocumentDefinitionExportRequest): ExportResult {
-        val processDefinitions = processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(
+        val processDefinitions = processDefinitionCaseDefinitionService.findProcessDocumentDefinitions(
             request.caseDefinitionId
         ).map { definition ->
-            Pair(definition, operatonRepositoryService.findProcessDefinitionById(definition.id.processDefinitionId.id)!!)
+            Pair(definition, camundaRepositoryService.findProcessDefinitionById(definition.id.processDefinitionId.toString())!!)
         }
 
         if (processDefinitions.isEmpty()) {
@@ -57,24 +57,18 @@ class ProcessDocumentLinkExporter(
         val relatedRequests = processDefinitions.asSequence()
             .map { it.second }
             .map { processDefinition ->
-                ProcessDefinitionExportRequest(processDefinition.id, request.caseDefinitionId)
+                ProcessDefinitionExportRequest(processDefinition.id)
             }.toSet()
-
-        val caseDefinitionKey = request.caseDefinitionId.key
-        val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
-            "${it.major}-${it.minor}-${it.patch}"
-        }
 
         return ExportResult(
             ExportFile(
-                PATH.format(caseDefinitionKey, formattedCaseDefinitionVersion, request.name),
+                PATH.format(request.name),
                 objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(exportItems)
             ),
             relatedRequests
         )
     }
-
     companion object {
-        private const val PATH = "config/case/%s/%s/process-document-link/%s.process-document-link.json"
+        private const val PATH = "config/process-document-link/%s.json";
     }
 }

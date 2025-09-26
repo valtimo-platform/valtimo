@@ -19,14 +19,12 @@ package com.ritense.document.autoconfiguration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.exporter.InternalCaseStatusExporter
 import com.ritense.document.importer.InternalCaseStatusImporter
 import com.ritense.document.repository.InternalCaseStatusRepository
 import com.ritense.document.security.InternalCaseHttpSecurityConfigurer
 import com.ritense.document.service.InternalCaseStatusService
 import com.ritense.document.web.rest.InternalCaseStatusResource
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -55,14 +53,8 @@ class InternalCaseStatusAutoConfiguration {
         repository: InternalCaseStatusRepository,
         caseDefinitionService: CaseDefinitionService,
         authorizationService: AuthorizationService,
-        caseDefinitionChecker: CaseDefinitionChecker,
     ): InternalCaseStatusService {
-        return InternalCaseStatusService(
-            repository,
-            caseDefinitionService,
-            authorizationService,
-            caseDefinitionChecker,
-        )
+        return InternalCaseStatusService(repository, caseDefinitionService, authorizationService)
     }
 
     @Bean

@@ -86,7 +86,7 @@ data class ContainerPermissionCondition<TO : Any>(
             listOf(
                 Permission(
                     resourceType = resourceType,
-                    actions = mutableListOf(Action<Any>(Action.IGNORE)),
+                    action = Action<Any>(Action.IGNORE),
                     conditionContainer = ConditionContainer(conditions),
                     role = Role(key = "")
                 )

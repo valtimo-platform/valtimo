@@ -23,7 +23,6 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
-import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DOCUMENT_LINK
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
@@ -32,8 +31,9 @@ import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.domain.config.ProcessDocumentLinkConfigItem
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KLogger
+import mu.KotlinLogging
+import org.camunda.bpm.engine.RepositoryService
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -41,12 +41,12 @@ class ProcessDocumentLinkImporter(
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val documentDefinitionService: DocumentDefinitionService,
     private val objectMapper: ObjectMapper,
-    private val processService: OperatonProcessService,
+    private val repositoryService: RepositoryService
 ) : Importer {
 
     override fun type() = PROCESS_DOCUMENT_LINK
 
-    override fun dependsOn() = setOf(CASE_DEFINITION, PROCESS_DEFINITION)
+    override fun dependsOn() = setOf(PROCESS_DEFINITION)
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
@@ -76,10 +76,11 @@ class ProcessDocumentLinkImporter(
         documentDefinitionName: String,
         item: ProcessDocumentLinkConfigItem
     ) {
-        val processDefinition = processService.getLatestDefinitionByKeyAndCaseDefinition(
-            caseDefinitionId,
-            item.processDefinitionKey
-        )
+        val processDefinition = repositoryService
+            .createProcessDefinitionQuery()
+            .processDefinitionKey(item.processDefinitionKey)
+            .versionTag("$caseDefinitionId")
+            .singleResult()
 
         val request = ProcessDocumentDefinitionRequest(
             ProcessDefinitionId(processDefinition.id),
@@ -100,7 +101,7 @@ class ProcessDocumentLinkImporter(
                         "Updating process-document-links from {}.json",
                         documentDefinitionName
                     )
-                    processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
+                    processDefinitionCaseDefinitionService.deleteProcessDocumentDefinition(
                         request.processDefinitionId,
                         request.caseDefinitionId
                     )
@@ -113,6 +114,7 @@ class ProcessDocumentLinkImporter(
                 )
                 processDefinitionCaseDefinitionService.createProcessDocumentDefinition(request)
             }
+            null
         }
     }
 
@@ -121,7 +123,7 @@ class ProcessDocumentLinkImporter(
     }
 
     companion object {
-        private val FILENAME_REGEX = """/process-document-link/([^/]+)\.process-document-link\.json""".toRegex()
-        private val logger = KotlinLogging.logger {}
+        private val FILENAME_REGEX = """/process-document-link/([^/]+)\.json""".toRegex()
+        private val logger: KLogger = KotlinLogging.logger {}
     }
 }

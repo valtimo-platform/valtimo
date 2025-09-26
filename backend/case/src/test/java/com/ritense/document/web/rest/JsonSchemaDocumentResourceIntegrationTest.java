@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,10 +34,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ritense.BaseIntegrationTest;
+import com.ritense.document.BaseIntegrationTest;
+import com.ritense.document.domain.Document;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.request.AssignToDocumentsRequest;
+import com.ritense.document.exception.DocumentNotFoundException;
+import com.ritense.document.repository.DocumentRepository;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
 import com.ritense.outbox.domain.BaseEvent;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
@@ -70,7 +74,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
             definition(),
             content,
             USERNAME,
-            getDocumentSequenceGeneratorService(),
+            documentSequenceGeneratorService,
             null
         );
         document = result.resultingDocument().orElseThrow();
@@ -87,11 +91,11 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
     void shouldAssignUserToCase() throws Exception {
         var user = mockUser("John", "Doe");
         var loggedInUser = mockUser("Henk", "de Vries");
-        when(userManagementService.findByUsername(user.getUsername())).thenReturn(user);
+        when(userManagementService.findByUserIdentifier(user.getUserIdentifier())).thenReturn(user);
         when(userManagementService.findById(user.getId())).thenReturn(user);
         when(userManagementService.getCurrentUser()).thenReturn(loggedInUser);
 
-        var postContent = "{ \"assigneeId\": \"" + user.getId() + "\"}";
+        var postContent = "{ \"assigneeId\": \"" + user.getUserIdentifier() + "\"}";
 
         mockMvc.perform(
                 post("/api/v1/document/{documentId}/assign", document.id().getId().toString())
@@ -108,7 +112,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
 
         var savedDocument = (JsonSchemaDocument) result.get();
         assertNotNull(savedDocument.assigneeId());
-        assertEquals(user.getUsername(), savedDocument.assigneeId());
+        assertEquals(user.getUserIdentifier(), savedDocument.assigneeId());
         assertNotNull(savedDocument.assigneeFullName());
         assertEquals(user.getFullName(), savedDocument.assigneeFullName());
     }
@@ -121,7 +125,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
             definition(),
             content,
             USERNAME,
-            getDocumentSequenceGeneratorService(),
+            documentSequenceGeneratorService,
             null
         );
         var document2 = resultDoc.resultingDocument().orElseThrow();
@@ -129,7 +133,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
 
         var user = mockUser("John", "Doe");
         var loggedInUser = mockUser("Henk", "de Vries");
-        when(userManagementService.findByUsername(user.getUsername())).thenReturn(user);
+        when(userManagementService.findByUserIdentifier(user.getUserIdentifier())).thenReturn(user);
         when(userManagementService.findById(user.getId())).thenReturn(user);
         when(userManagementService.getCurrentUser()).thenReturn(loggedInUser);
 
@@ -154,13 +158,13 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
 
         var savedDocument = (JsonSchemaDocument) result1.get();
         assertNotNull(savedDocument.assigneeId());
-        assertEquals(user.getUsername(), savedDocument.assigneeId());
+        assertEquals(user.getUserIdentifier(), savedDocument.assigneeId());
         assertNotNull(savedDocument.assigneeFullName());
         assertEquals(user.getFullName(), savedDocument.assigneeFullName());
 
         var savedDocument2 = (JsonSchemaDocument) result2.get();
         assertNotNull(savedDocument2.assigneeId());
-        assertEquals(user.getUsername(), savedDocument2.assigneeId());
+        assertEquals(user.getUserIdentifier(), savedDocument2.assigneeId());
         assertNotNull(savedDocument2.assigneeFullName());
         assertEquals(user.getFullName(), savedDocument2.assigneeFullName());
     }
@@ -173,7 +177,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
             definition(),
             content,
             USERNAME,
-            getDocumentSequenceGeneratorService(),
+            documentSequenceGeneratorService,
             null
         );
         var document2 = resultDoc.resultingDocument().orElseThrow();
@@ -181,7 +185,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
 
         var user = mockUser("John", "Doe");
         var loggedInUser = mockUser("Henk", "de Vries");
-        when(userManagementService.findByUsername(user.getUsername())).thenReturn(user);
+        when(userManagementService.findByUserIdentifier(user.getUserIdentifier())).thenReturn(user);
         when(userManagementService.findById(user.getId())).thenReturn(user);
         when(userManagementService.getCurrentUser()).thenReturn(loggedInUser);
 
@@ -206,7 +210,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
 
         var savedDocument = (JsonSchemaDocument) result1.get();
         assertNotNull(savedDocument.assigneeId());
-        assertEquals(user.getUsername(), savedDocument.assigneeId());
+        assertEquals(user.getUserIdentifier(), savedDocument.assigneeId());
         assertNotNull(savedDocument.assigneeFullName());
         assertEquals(user.getFullName(), savedDocument.assigneeFullName());
 
@@ -219,13 +223,13 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
     @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
     void shouldNotAssignInvalidUserId() throws Exception {
         var user = mockUser("John", "Doe");
-        when(userManagementService.findByUsername(user.getUsername())).thenReturn(null);
+        when(userManagementService.findByUserIdentifier(user.getUserIdentifier())).thenReturn(null);
 
         var postContent = "{ \"assigneeId\": \"" + user.getId() + "\"}";
 
         mockMvc.perform(
                 post("/api/v1/document/{documentId}/assign", document.id().getId().toString())
-                    .content(user.getUsername())
+                    .content(user.getUserIdentifier())
                     .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andDo(print())
             .andExpect(status().isBadRequest());
@@ -235,7 +239,7 @@ class JsonSchemaDocumentResourceIntegrationTest extends BaseIntegrationTest {
     @WithMockUser(username = USER_EMAIL, authorities = {FULL_ACCESS_ROLE})
     void shouldUnassignUserFromCase() throws Exception {
         var user = mockUser("John", "Doe");
-        when(userManagementService.findByUsername(user.getUsername())).thenReturn(user);
+        when(userManagementService.findByUserIdentifier(user.getUserIdentifier())).thenReturn(user);
         when(userManagementService.findById(user.getId())).thenReturn(user);
 
         mockMvc.perform(

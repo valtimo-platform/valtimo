@@ -20,10 +20,10 @@ import com.ritense.form.domain.FormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
 import com.ritense.form.web.rest.dto.FormOption;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -31,9 +31,7 @@ public interface FormDefinitionService {
 
     Page<? extends FormDefinition> getAll(Pageable pageable);
 
-    List<FormOption> getUnlinkedFormOptions();
-
-    List<FormOption> getFormOptionsForCaseDefinition(CaseDefinitionId caseDefinitionId);
+    List<FormOption> getAllFormOptions();
 
     Page<? extends FormDefinition> queryFormDefinitions(String searchTerm, Pageable pageable);
 
@@ -43,19 +41,11 @@ public interface FormDefinitionService {
         Pageable pageable
     );
 
-    List<? extends FormDefinition> getFormDefinitions(CaseDefinitionId caseDefinitionId);
-
     Optional<? extends FormDefinition> getFormDefinitionById(UUID id);
-
-    Optional<? extends FormDefinition> getFormDefinitionById(CaseDefinitionId caseDefinitionId, UUID id);
 
     Optional<? extends FormDefinition> getFormDefinitionByName(String name);
 
-    Optional<? extends FormDefinition> getFormDefinitionByName(String name, CaseDefinitionId caseDefinitionId);
-
     Optional<? extends FormDefinition> getFormDefinitionByNameIgnoringCase(String name);
-
-    FormDefinition createFormDefinition(CreateFormDefinitionRequest request);
 
     FormDefinition createFormDefinition(CaseDefinitionId caseDefinitionId, CreateFormDefinitionRequest request);
 
@@ -68,8 +58,6 @@ public interface FormDefinitionService {
     void deleteFormDefinition(UUID id);
 
     void deleteFormDefinition(CaseDefinitionId caseDefinitionId, UUID id);
-
-    void deleteAllFormDefinitions(CaseDefinitionId caseDefinitionId);
 
     boolean formDefinitionExistsById(UUID id);
 

@@ -25,7 +25,6 @@ import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkCreateRequestDto
 import com.ritense.form.web.rest.dto.FormProcessLinkResponseDto
 import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -48,18 +47,12 @@ internal class FormProcessLinkMapperTest {
 
     private lateinit var formProcessLinkMapper: FormProcessLinkMapper
 
-    @Mock
-    lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
-
-    val caseDefinitionId = CaseDefinitionId.of("person", "1.0.0")
-
     @BeforeEach
     fun beforeEach() {
         MockitoAnnotations.openMocks(this)
         formProcessLinkMapper = FormProcessLinkMapper(
             MapperSingleton.get(),
             formDefinitionService,
-            processDefinitionCaseDefinitionService,
         )
     }
 
@@ -105,7 +98,7 @@ internal class FormProcessLinkMapperTest {
         )
         whenever(formDefinitionService.formDefinitionExistsById(createRequestDto.formDefinitionId)).thenReturn(true)
 
-        val formProcessLink = formProcessLinkMapper.toNewProcessLink(createRequestDto, caseDefinitionId)
+        val formProcessLink = formProcessLinkMapper.toNewProcessLink(createRequestDto)
 
         assertTrue(formProcessLink is FormProcessLink)
         assertEquals(createRequestDto.processDefinitionId, formProcessLink.processDefinitionId)
@@ -138,7 +131,7 @@ internal class FormProcessLinkMapperTest {
         )
         whenever(formDefinitionService.formDefinitionExistsById(updateRequestDto.formDefinitionId)).thenReturn(true)
 
-        val formProcessLink = formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
+        val formProcessLink = formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto)
 
         assertTrue(formProcessLink is FormProcessLink)
         assertEquals(processLinkToUpdate.processDefinitionId, formProcessLink.processDefinitionId)
@@ -162,7 +155,7 @@ internal class FormProcessLinkMapperTest {
         )
 
         val exception = assertThrows<RuntimeException> {
-            formProcessLinkMapper.toNewProcessLink(createRequestDto, caseDefinitionId)
+            formProcessLinkMapper.toNewProcessLink(createRequestDto)
         }
 
         assertEquals("Form definition not found with id ${createRequestDto.formDefinitionId}", exception.message)
@@ -185,7 +178,7 @@ internal class FormProcessLinkMapperTest {
         )
 
         val exception = assertThrows<RuntimeException> {
-            formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
+            formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto)
         }
 
         assertEquals("Form definition not found with id ${updateRequestDto.formDefinitionId}", exception.message)
@@ -211,10 +204,10 @@ internal class FormProcessLinkMapperTest {
 
         whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
             .thenReturn(Optional.of(formDefinition))
-        val relatedExportRequests = formProcessLinkMapper.createRelatedExportRequests(formProcessLink, caseDefinitionId)
+        val relatedExportRequests = formProcessLinkMapper.createRelatedExportRequests(formProcessLink)
 
         assertThat(relatedExportRequests).contains(
-            FormDefinitionExportRequest("testing", caseDefinitionId)
+            FormDefinitionExportRequest("testing")
         )
     }
 

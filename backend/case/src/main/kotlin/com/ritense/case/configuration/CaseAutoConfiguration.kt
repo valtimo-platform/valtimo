@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,27 +20,23 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.jsontype.NamedType
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.deployment.CaseTabDeploymentService
+import com.ritense.case.deployment.CaseTaskListDeploymentService
 import com.ritense.case.domain.BooleanDisplayTypeParameter
 import com.ritense.case.domain.DateFormatDisplayTypeParameter
 import com.ritense.case.domain.EnumDisplayTypeParameter
-import com.ritense.case.domain.TagsDisplayTypeParameter
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.repository.CaseTabSpecificationFactory
-import com.ritense.case.repository.QuickSearchRepository
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.case.security.config.CaseHttpSecurityConfigurer
-import com.ritense.case.service.CaseDefinitionCheckerImpl
 import com.ritense.case.service.CaseDefinitionDeploymentService
 import com.ritense.case.service.CaseDefinitionExporter
 import com.ritense.case.service.CaseDefinitionImporter
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case.service.CaseExporter
 import com.ritense.case.service.CaseInstanceService
 import com.ritense.case.service.CaseListExporter
 import com.ritense.case.service.CaseListImporter
-import com.ritense.case.service.CaseListRowMapper
 import com.ritense.case.service.CaseTabExporter
 import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
@@ -53,20 +49,16 @@ import com.ritense.case.web.rest.CaseInstanceResource
 import com.ritense.case.web.rest.CaseTabManagementResource
 import com.ritense.case.web.rest.CaseTabResource
 import com.ritense.case.web.rest.TaskListResource
-import com.ritense.case_.authorization.CaseDefinitionSpecificationFactory
 import com.ritense.case_.repository.CaseDefinitionRepository
-import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentSearchService
 import com.ritense.document.service.DocumentService
-import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
-import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
+import com.ritense.valtimo.changelog.service.ChangelogService
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
@@ -78,9 +70,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Lazy
 import org.springframework.core.Ordered
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
-import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
@@ -100,31 +90,17 @@ class CaseAutoConfiguration {
     fun caseDefinitionResource(
         service: CaseDefinitionService,
         exportService: ExportService,
-        importService: ImportService,
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
-        caseDefinitionRepository: CaseDefinitionRepository,
-        caseDefinitionChecker: CaseDefinitionChecker,
+        importService: ImportService
     ): CaseDefinitionResource {
-        return CaseDefinitionResource(
-            service,
-            activeCaseDefinitionService,
-            exportService,
-            importService,
-            caseDefinitionRepository,
-            caseDefinitionChecker,
-        )
+        return CaseDefinitionResource(service, exportService, importService)
     }
 
     @Bean
     @ConditionalOnMissingBean(name = ["caseInstanceResource"]) // because integration tests fail to initialise in portaaltaak
     fun caseInstanceResource(
-        service: CaseInstanceService,
-        exporter: CaseExporter
+        service: CaseInstanceService
     ): CaseInstanceResource {
-        return CaseInstanceResource(
-            service,
-            exporter
-        )
+        return CaseInstanceResource(service)
     }
 
     @Bean
@@ -161,32 +137,14 @@ class CaseAutoConfiguration {
         documentDefinitionService: DocumentDefinitionService,
         caseDefinitionRepository: CaseDefinitionRepository,
         valueResolverService: ValueResolverService,
-        authorizationService: AuthorizationService,
-        caseDefinitionChecker: CaseDefinitionChecker,
-        applicationEventPublisher: ApplicationEventPublisher
+        authorizationService: AuthorizationService
     ): CaseDefinitionService {
         return CaseDefinitionService(
             caseDefinitionListColumnRepository,
             documentDefinitionService,
             caseDefinitionRepository,
             valueResolverService,
-            authorizationService,
-            applicationEventPublisher,
-            caseDefinitionChecker
-        )
-    }
-
-    @ConditionalOnMissingBean(CaseDefinitionChecker::class)
-    @Bean
-    fun caseDefinitionCheckerImpl(
-        caseDefinitionRepository: CaseDefinitionRepository,
-        environment: Environment,
-        @Value("\${valtimo.draft.environments:inttest,dev,test}") draftEnvironments: String,
-    ): CaseDefinitionChecker {
-        return CaseDefinitionCheckerImpl(
-            caseDefinitionRepository,
-            environment,
-            draftEnvironments,
+            authorizationService
         )
     }
 
@@ -198,8 +156,7 @@ class CaseAutoConfiguration {
         documentDefinitionService: DocumentDefinitionService,
         applicationEventPublisher: ApplicationEventPublisher,
         userManagementService: UserManagementService,
-        documentService: DocumentService,
-        caseDefinitionChecker: CaseDefinitionChecker,
+        documentService: DocumentService
     ): CaseTabService {
         return CaseTabService(
             caseTabRepository,
@@ -207,8 +164,7 @@ class CaseAutoConfiguration {
             authorizationService,
             applicationEventPublisher,
             userManagementService,
-            documentService,
-            caseDefinitionChecker
+            documentService
         )
     }
 
@@ -216,18 +172,14 @@ class CaseAutoConfiguration {
     fun caseInstanceService(
         caseDefinitionService: CaseDefinitionService,
         caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
-        quickSearchRepository: QuickSearchRepository,
         documentSearchService: DocumentSearchService,
         valueResolverService: ValueResolverService,
-        authorizationService: AuthorizationService
     ): CaseInstanceService {
         return CaseInstanceService(
             caseDefinitionService,
             caseDefinitionListColumnRepository,
-            quickSearchRepository,
             documentSearchService,
             valueResolverService,
-            authorizationService,
         )
     }
 
@@ -237,14 +189,12 @@ class CaseAutoConfiguration {
         documentDefinitionService: DocumentDefinitionService,
         valueResolverService: ValueResolverService,
         authorizationService: AuthorizationService,
-        caseDefinitionChecker: CaseDefinitionChecker,
     ): TaskColumnService {
         return TaskColumnService(
             repository,
             documentDefinitionService,
             valueResolverService,
-            authorizationService,
-            caseDefinitionChecker
+            authorizationService
         )
     }
 
@@ -252,14 +202,12 @@ class CaseAutoConfiguration {
     fun caseDefinitionDeploymentService(
         resourceLoader: ResourceLoader,
         valtimoImportService: ValtimoImportService,
-        caseDefinitionRepository: CaseDefinitionRepository,
-        changelogDeployer: ChangelogDeployer,
+        caseDefinitionRepository: CaseDefinitionRepository
     ): CaseDefinitionDeploymentService {
         return CaseDefinitionDeploymentService(
             resourceLoader,
             valtimoImportService,
-            caseDefinitionRepository,
-            changelogDeployer,
+            caseDefinitionRepository
         )
     }
 
@@ -299,16 +247,45 @@ class CaseAutoConfiguration {
     }
 
     @Bean
-    fun tagsDisplayTypeParameterType(): NamedType {
-        return NamedType(TagsDisplayTypeParameter::class.java, "tags")
-    }
-
-    @Bean
     fun caseObjectMapper(
         objectMapper: ObjectMapper,
         displayTypeParameterTypes: Collection<NamedType>
     ): ObjectMapperConfigurer {
         return ObjectMapperConfigurer(objectMapper, displayTypeParameterTypes)
+    }
+
+    @Bean
+    fun caseTabDeployer(
+        objectMapper: ObjectMapper,
+        caseTabRepository: CaseTabRepository,
+        changelogService: ChangelogService,
+        caseTabService: CaseTabService,
+        @Value("\${valtimo.changelog.case-tabs.clear-tables:false}") clearTables: Boolean
+    ): CaseTabDeploymentService {
+        return CaseTabDeploymentService(
+            objectMapper,
+            caseTabRepository,
+            changelogService,
+            caseTabService,
+            clearTables
+        )
+    }
+
+    @Bean
+    fun TaskListDeployer(
+        objectMapper: ObjectMapper,
+        taskListColumnRepository: TaskListColumnRepository,
+        changelogService: ChangelogService,
+        taskColumnService: TaskColumnService,
+        @Value("\${valtimo.changelog.case-task-list.clear-tables:false}") clearTables: Boolean
+    ): CaseTaskListDeploymentService {
+        return CaseTaskListDeploymentService(
+            objectMapper,
+            taskListColumnRepository,
+            changelogService,
+            taskColumnService,
+            clearTables
+        )
     }
 
     @Bean
@@ -354,9 +331,9 @@ class CaseAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CaseTabImporter::class)
     fun caseTabImporter(
-        objectMapper: ObjectMapper,
-        caseTabRepository: CaseTabRepository
-    ) = CaseTabImporter(objectMapper, caseTabRepository)
+        caseTabDeploymentService: CaseTabDeploymentService,
+        changelogDeployer: ChangelogDeployer
+    ) = CaseTabImporter(caseTabDeploymentService, changelogDeployer)
 
     @Bean
     @ConditionalOnMissingBean(CaseTaskListExporter::class)
@@ -371,33 +348,27 @@ class CaseAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CaseTaskListImporter::class)
     fun caseTaskListImporter(
-        objectMapper: ObjectMapper,
-        taskColumnService: TaskColumnService,
-    ) = CaseTaskListImporter(objectMapper, taskColumnService)
+        caseTaskListDeploymentService: CaseTaskListDeploymentService,
+        changelogDeployer: ChangelogDeployer
+    ) = CaseTaskListImporter(caseTaskListDeploymentService, changelogDeployer)
 
     @Bean
     @ConditionalOnMissingBean(CaseDefinitionExporter::class)
     fun caseDefinitionSettingsExporter(
         objectMapper: ObjectMapper,
         caseDefinitionService: CaseDefinitionService,
-        documentDefinitionService: DocumentDefinitionService
     ) = CaseDefinitionExporter(
         objectMapper,
-        caseDefinitionService,
-        documentDefinitionService
+        caseDefinitionService
     )
 
-    @Order(HIGHEST_PRECEDENCE)
     @Bean
     @ConditionalOnMissingBean(CaseDefinitionImporter::class)
     fun caseDefinitionSettingsImporter(
         objectMapper: ObjectMapper,
-        caseDefinitionRepository: CaseDefinitionRepository,
-        caseDefinitionChecker: CaseDefinitionChecker,
+        caseDefinitionRepository: CaseDefinitionRepository
     ) = CaseDefinitionImporter(
-        objectMapper,
-        caseDefinitionRepository,
-        caseDefinitionChecker
+        objectMapper, caseDefinitionRepository
     )
 
     @Bean
@@ -405,50 +376,5 @@ class CaseAutoConfiguration {
         @Lazy documentDefinitionService: DocumentDefinitionService,
     ): CaseTabDocumentDefinitionMapper {
         return CaseTabDocumentDefinitionMapper(documentDefinitionService)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(CaseDefinitionSpecificationFactory::class)
-    fun caseDefinitionSpecificationFactory(
-        @Lazy caseDefinitionService: CaseDefinitionService,
-        queryDialectHelper: QueryDialectHelper
-    ): CaseDefinitionSpecificationFactory {
-        return CaseDefinitionSpecificationFactory(
-            caseDefinitionService,
-            queryDialectHelper
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(CaseTabDeploymentService::class)
-    fun caseTabDeploymentService(
-        caseTabService: CaseTabService
-    ): CaseTabDeploymentService {
-        return CaseTabDeploymentService(
-            caseTabService
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(CaseExporter::class)
-    fun caseExporter(
-        caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
-        documentSearchService: JsonSchemaDocumentSearchService,
-        outboxService: OutboxService,
-        mapper: ObjectMapper,
-        caseListRowMapper: CaseListRowMapper
-    ): CaseExporter {
-        return CaseExporter(
-            caseDefinitionListColumnRepository,
-            documentSearchService,
-            outboxService,
-            mapper,
-            caseListRowMapper
-        )
-    }
-
-    @Bean
-    fun caseListRowMapper(): CaseListRowMapper {
-        return CaseListRowMapper()
     }
 }
