@@ -17,9 +17,8 @@
 package com.ritense.zakenapi.uploadprocess
 
 import com.ritense.authorization.AuthorizationService
-import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.service.DocumentService
-import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.processdocument.service.DocumentDefinitionProcessLinkService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import org.springframework.beans.factory.annotation.Value
@@ -47,11 +46,14 @@ class UploadProcessAutoConfiguration {
         resourceService: TemporaryResourceStorageService,
         uploadProcessService: UploadProcessService,
         authorizationService: AuthorizationService,
+        @Value("\${valtimo.authorization.zgwDocuments.enabled:false}")
+        authorizationEnabled: Boolean,
     ): ResourceUploadedToDocumentEventListener {
         return ResourceUploadedToDocumentEventListener(
             resourceService,
             uploadProcessService,
             authorizationService,
+            authorizationEnabled,
         )
     }
 
@@ -60,24 +62,21 @@ class UploadProcessAutoConfiguration {
     fun uploadProcessService(
         documentService: DocumentService,
         processDocumentService: ProcessDocumentService,
-        caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
+        documentDefinitionProcessLinkService: DocumentDefinitionProcessLinkService,
     ): UploadProcessService {
         return UploadProcessService(
             documentService,
             processDocumentService,
-            caseDefinitionProcessLinkService,
-            activeCaseDefinitionService,
+            documentDefinitionProcessLinkService,
         )
     }
 
     @Bean
     @ConditionalOnMissingBean(UploadProcessResource::class)
     fun uploadProcessResource(
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
-        caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
+        documentDefinitionProcessLinkService: DocumentDefinitionProcessLinkService
     ): UploadProcessResource {
-        return UploadProcessResource(activeCaseDefinitionService, caseDefinitionProcessLinkService)
+        return UploadProcessResource(documentDefinitionProcessLinkService)
     }
 
     @Order(360)

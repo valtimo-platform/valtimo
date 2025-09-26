@@ -17,7 +17,7 @@
 package com.ritense.valtimo.service;
 
 import com.ritense.authorization.AuthorizationContext;
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.domain.processdefinition.ProcessDefinitionProperties;
 import com.ritense.valtimo.processdefinition.repository.ProcessDefinitionPropertiesRepository;
@@ -26,12 +26,12 @@ public class ProcessPropertyService {
 
     private final ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository;
     private final ValtimoProperties valtimoProperties;
-    private final OperatonRepositoryService repositoryService;
+    private final CamundaRepositoryService repositoryService;
 
     public ProcessPropertyService(
         ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository,
         ValtimoProperties valtimoProperties,
-        OperatonRepositoryService repositoryService
+        CamundaRepositoryService repositoryService
     ) {
         this.processDefinitionPropertiesRepository = processDefinitionPropertiesRepository;
         this.valtimoProperties = valtimoProperties;

@@ -2,7 +2,9 @@ spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
     liquibase:
-        enabled: false
+        enabled: true
+        change-log: classpath:/config/liquibase/audit-master.xml
+        contexts: unit-test
     jpa:
         show_sql: true
         open-in-view: false
