@@ -1,0 +1,78 @@
+{
+    "changesetId": "task-v1",
+    "permissions": [
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "assign",
+            "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "assignable",
+            "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "claim",
+            "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "complete",
+            "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "view_list",
+            "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "modify",
+            "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "view",
+            "roleKey": "ROLE_ADMIN"
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "view_list",
+            "roleKey": "IDENTITY_LINK_ROLE",
+            "conditions": [
+                {
+                    "type": "container",
+                    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "groupId",
+                            "operator": "==",
+                            "value": "IDENTITY_LINK_ROLE"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "action": "view",
+            "roleKey": "IDENTITY_LINK_ROLE",
+            "conditions": [
+                {
+                    "type": "container",
+                    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
+                    "conditions": [
+                        {
+                            "type": "field",
+                            "field": "groupId",
+                            "operator": "==",
+                            "value": "IDENTITY_LINK_ROLE"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
