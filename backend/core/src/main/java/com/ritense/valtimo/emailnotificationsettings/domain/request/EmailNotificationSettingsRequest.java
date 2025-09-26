@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,31 +20,31 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public interface EmailNotificationSettingsRequest {
 
-    @JsonProperty("emailNotifications")
+    @JsonProperty(value = "emailNotifications")
     boolean reminderNotificationsEnabled();
 
-    @JsonProperty("emailNotificationOnMonday")
+    @JsonProperty(value = "emailNotificationOnMonday")
     boolean monday();
 
-    @JsonProperty("emailNotificationOnTuesday")
+    @JsonProperty(value = "emailNotificationOnTuesday")
     boolean tuesday();
 
-    @JsonProperty("emailNotificationOnWednesday")
+    @JsonProperty(value = "emailNotificationOnWednesday")
     boolean wednesday();
 
-    @JsonProperty("emailNotificationOnThursday")
+    @JsonProperty(value = "emailNotificationOnThursday")
     boolean thursday();
 
-    @JsonProperty("emailNotificationOnFriday")
+    @JsonProperty(value = "emailNotificationOnFriday")
     boolean friday();
 
-    @JsonProperty("emailNotificationOnSaturday")
+    @JsonProperty(value = "emailNotificationOnSaturday")
     boolean saturday();
 
-    @JsonProperty("emailNotificationOnSunday")
+    @JsonProperty(value = "emailNotificationOnSunday")
     boolean sunday();
 
-    @JsonProperty("taskNotifications")
+    @JsonProperty(value = "taskNotifications")
     boolean taskNotificationsEnabled();
 
 }

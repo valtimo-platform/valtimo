@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ public class TaskCompletionDTO {
     private List<UUID> filesToDelete = new ArrayList<>();
 
     public TaskCompletionDTO() {
-        // Default value empty constructor
     }
 
     public Map<String, Object> getVariables() {

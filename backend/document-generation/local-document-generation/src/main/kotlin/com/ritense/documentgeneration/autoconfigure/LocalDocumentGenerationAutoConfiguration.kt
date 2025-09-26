@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@
 
 package com.ritense.documentgeneration.autoconfigure
 
-import com.ritense.documentgeneration.service.LocalOperatonProcessDocumentGenerator
+import com.ritense.documentgeneration.service.LocalCamundaProcessDocumentGenerator
 import com.ritense.documentgeneration.service.LocalPdfDocumentGenerator
 import com.ritense.documentgeneration.service.PdfDocumentGenerator
-import com.ritense.valtimo.contract.annotation.ProcessBean
-import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
-@AutoConfiguration
+@Configuration
 class LocalDocumentGenerationAutoConfiguration {
 
     @Bean
@@ -34,10 +33,9 @@ class LocalDocumentGenerationAutoConfiguration {
     }
 
     @Bean
-    @ProcessBean
-    @ConditionalOnMissingBean(LocalOperatonProcessDocumentGenerator::class)
-    fun processDocumentGenerator(): LocalOperatonProcessDocumentGenerator {
-        return LocalOperatonProcessDocumentGenerator()
+    @ConditionalOnMissingBean(LocalCamundaProcessDocumentGenerator::class)
+    fun processDocumentGenerator(): LocalCamundaProcessDocumentGenerator {
+        return LocalCamundaProcessDocumentGenerator()
     }
 
 }

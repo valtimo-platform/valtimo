@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,8 @@ package com.ritense.plugin
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
-import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
-import com.ritense.plugin.domain.EventType
-import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
-import java.net.URI
+import com.ritense.plugin.domain.ActivityType.SERVICE_TASK
 
 @Plugin(
     key = "test-plugin",
@@ -33,16 +29,13 @@ import java.net.URI
 )
 class TestPlugin(
     val someObject: String
-) : TestPluginParent(), TestPluginInterface {
+) : TestPluginParent(), TestPluginInterface{
     @PluginProperty(key = "property1", secret = true)
     lateinit var property1: String
-
     @PluginProperty(key = "property2", required = false, secret = false)
     var property2: Boolean? = null
-
     @PluginProperty(key = "property3", secret = false)
     lateinit var property3: Number
-
     @PluginProperty(key = "property4", secret = false)
     lateinit var property4: TestPluginCategory
 
@@ -50,19 +43,9 @@ class TestPlugin(
         key = "test-action",
         title = "Test action",
         description = "This is an action used to verify plugin framework functionality",
-        activityTypes = [SERVICE_TASK_START]
+        activityTypes = [SERVICE_TASK]
     )
     fun testAction() {
-        //do nothing
-    }
-
-    @PluginAction(
-        key = "test-action-task",
-        title = "Test action task",
-        description = "This is an action used to verify plugin framework functionality",
-        activityTypes = [ActivityTypeWithEventName.USER_TASK_CREATE]
-    )
-    fun testActionTask() {
         //do nothing
     }
 
@@ -70,20 +53,10 @@ class TestPlugin(
         key = "other-test-action",
         title = "Test action 2",
         description = "This is an action used to test method overloading",
-        activityTypes = [SERVICE_TASK_START]
+        activityTypes = [SERVICE_TASK]
     )
     fun testAction(@PluginActionProperty someString: String): String {
         return someString
-    }
-
-    @PluginAction(
-        key = "test-action-with-uri-parameter",
-        title = "Test action with uri parameter",
-        description = "This is an action used to test having an uri as a parameter",
-        activityTypes = [SERVICE_TASK_START]
-    )
-    fun testActionWithUriParameter(@PluginActionProperty uriParam: URI): URI {
-        return uriParam
     }
 
     @PluginAction(
@@ -106,25 +79,5 @@ class TestPlugin(
 
     fun shouldAlsoNotBeDeployed() {
         //meant to test correct deployment of only methods annotated correctly
-    }
-
-    @PluginEvent([EventType.CREATE])
-    fun shouldRunOnCreate() {
-        //meant to test correct invocation of plugin event
-    }
-
-    @PluginEvent([EventType.CREATE, EventType.DELETE])
-    fun shouldRunOnCreateAndDelete() {
-        //meant to test correct multiple invocation of plugin event
-    }
-
-    @PluginEvent([EventType.UPDATE])
-    fun shouldRunOnUpdate() {
-        //meant to test correct invocation of plugin event
-    }
-
-    @PluginEvent([EventType.DELETE])
-    fun shouldRunOnDelete() {
-        //meant to test correct invocation of plugin event
     }
 }

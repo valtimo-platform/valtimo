@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,39 +18,27 @@ package com.ritense.processdocument.autoconfigure;
 
 import com.ritense.audit.service.AuditSearchService;
 import com.ritense.audit.service.AuditService;
-import com.ritense.authorization.AuthorizationService;
-import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
-import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAuditService;
+import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentAuditService;
 import com.ritense.processdocument.web.rest.ProcessDocumentAuditResource;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@AutoConfiguration
+@Configuration
 @ConditionalOnClass(AuditSearchService.class)
 public class ProcessDocumentAuditAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ProcessDocumentAuditService.class)
-    public OperatonProcessJsonSchemaDocumentAuditService processDocumentAuditService(
-        AuditService auditService,
-        JsonSchemaDocumentService documentService,
-        AuthorizationService authorizationService
-    ) {
-        return new OperatonProcessJsonSchemaDocumentAuditService(
-            auditService,
-            documentService,
-            authorizationService
-        );
+    public CamundaProcessJsonSchemaDocumentAuditService processDocumentAuditService(AuditService auditService) {
+        return new CamundaProcessJsonSchemaDocumentAuditService(auditService);
     }
 
     @Bean
     @ConditionalOnMissingBean(ProcessDocumentAuditResource.class)
-    public ProcessDocumentAuditResource processDocumentAuditResource(
-        ProcessDocumentAuditService processDocumentAuditService
-    ) {
+    public ProcessDocumentAuditResource processDocumentAuditResource(ProcessDocumentAuditService processDocumentAuditService) {
         return new ProcessDocumentAuditResource(processDocumentAuditService);
     }
 

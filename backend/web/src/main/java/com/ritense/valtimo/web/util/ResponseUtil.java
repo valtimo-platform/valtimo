@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package com.ritense.valtimo.web.util;
 
-import java.util.Optional;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import java.util.Optional;
 
 /**
  * Utility class for ResponseEntity creation.
@@ -34,7 +34,7 @@ public interface ResponseUtil {
      * @param maybeResponse response to return if present
      * @return response containing {@code maybeResponse} if present or {@link HttpStatus#NOT_FOUND}
      */
-    static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse) {
+    public static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse) {
         return wrapOrNotFound(maybeResponse, null);
     }
 
@@ -47,7 +47,7 @@ public interface ResponseUtil {
      * @param header        headers to be added to the response
      * @return response containing {@code maybeResponse} if present or {@link HttpStatus#NOT_FOUND}
      */
-    static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse, HttpHeaders header) {
+    public static <X> ResponseEntity<X> wrapOrNotFound(Optional<X> maybeResponse, HttpHeaders header) {
         return maybeResponse.map(response -> ResponseEntity.ok().headers(header).body(response))
             .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }

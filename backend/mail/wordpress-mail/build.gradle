@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,20 @@
 
 dockerCompose {
     projectName = "wordpress-mail"
-
-    integrationTestingPostgresql {
-        isRequiredBy(project.tasks.integrationTestingPostgresql)
-        isRequiredBy(project.tasks.securityTesting)
-        useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
-    }
-
-    integrationTestingMysql {
-        isRequiredBy(project.tasks.integrationTestingMysql)
-        useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-mysql.yml", "docker-compose-override-mysql.yml")
-    }
+    isRequiredBy(integrationTesting)
+    isRequiredBy(securityTesting)
+    useComposeFiles.addAll("../../docker-resources/docker-compose-base-test.yml", "docker-compose-override.yml")
 }
 
 dependencies {
     api project(":mail")
-    implementation project(":case")
+    implementation project(":connector")
+    implementation project(":document")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
+    api "javax.inject:javax.inject:1"
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-web"
@@ -44,7 +38,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-validation"
 
-    implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
+    implementation "com.fasterxml.jackson.module:jackson-module-afterburner"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"
     implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
@@ -52,7 +46,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "io.github.microutils:kotlin-logging:2.0.4"
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -61,13 +55,11 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-autoconfigure"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
 
-    testImplementation project(":core")
     testImplementation project(":mail")
-    testImplementation project(":test-utils-common")
-    testImplementation project(":resource:local-resource")
+    testImplementation project(":connector")
 
     //Kotlin
-    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
 
     jar {
         enabled = true

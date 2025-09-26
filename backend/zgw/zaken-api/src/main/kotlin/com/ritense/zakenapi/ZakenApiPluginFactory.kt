@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,36 +19,19 @@ package com.ritense.zakenapi
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.zakenapi.client.ZakenApiClient
-import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
-import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
-import org.springframework.transaction.PlatformTransactionManager
 
 class ZakenApiPluginFactory(
     pluginService: PluginService,
     private val client: ZakenApiClient,
     private val zaakUrlProvider: ZaakUrlProvider,
-    private val storageService: TemporaryResourceStorageService,
-    private val zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
-    private val zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
-    private val platformTransactionManager: PlatformTransactionManager,
+    private val resourceProvider: ResourceProvider,
     private val documentService: DocumentService,
-    private val processDocumentAssociationService: ProcessDocumentAssociationService,
+    private val storageService: TemporaryResourceStorageService,
 ) : PluginFactory<ZakenApiPlugin>(pluginService) {
 
     override fun create(): ZakenApiPlugin {
-        return ZakenApiPlugin(
-            client,
-            zaakUrlProvider,
-            storageService,
-            zaakInstanceLinkRepository,
-            pluginService,
-            zaakHersteltermijnRepository,
-            platformTransactionManager,
-            documentService,
-            processDocumentAssociationService,
-        )
+        return ZakenApiPlugin(client, zaakUrlProvider, resourceProvider, documentService, storageService)
     }
 }

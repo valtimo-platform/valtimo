@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,59 +19,30 @@ package com.ritense.form.service;
 import com.ritense.form.domain.FormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
-import com.ritense.form.web.rest.dto.FormOption;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface FormDefinitionService {
 
     Page<? extends FormDefinition> getAll(Pageable pageable);
 
-    List<FormOption> getUnlinkedFormOptions();
-
-    List<FormOption> getFormOptionsForCaseDefinition(CaseDefinitionId caseDefinitionId);
-
     Page<? extends FormDefinition> queryFormDefinitions(String searchTerm, Pageable pageable);
-
-    Page<? extends FormDefinition> queryFormDefinitions(
-        CaseDefinitionId caseDefinitionId,
-        String searchTerm,
-        Pageable pageable
-    );
-
-    List<? extends FormDefinition> getFormDefinitions(CaseDefinitionId caseDefinitionId);
 
     Optional<? extends FormDefinition> getFormDefinitionById(UUID id);
 
-    Optional<? extends FormDefinition> getFormDefinitionById(CaseDefinitionId caseDefinitionId, UUID id);
-
     Optional<? extends FormDefinition> getFormDefinitionByName(String name);
-
-    Optional<? extends FormDefinition> getFormDefinitionByName(String name, CaseDefinitionId caseDefinitionId);
 
     Optional<? extends FormDefinition> getFormDefinitionByNameIgnoringCase(String name);
 
     FormDefinition createFormDefinition(CreateFormDefinitionRequest request);
 
-    FormDefinition createFormDefinition(CaseDefinitionId caseDefinitionId, CreateFormDefinitionRequest request);
-
     FormDefinition modifyFormDefinition(ModifyFormDefinitionRequest request);
-
-    FormDefinition modifyFormDefinition(CaseDefinitionId caseDefinitionId, ModifyFormDefinitionRequest request);
 
     FormDefinition modifyFormDefinition(UUID id, String name, String definition, Boolean readOnly);
 
     void deleteFormDefinition(UUID id);
 
-    void deleteFormDefinition(CaseDefinitionId caseDefinitionId, UUID id);
-
-    void deleteAllFormDefinitions(CaseDefinitionId caseDefinitionId);
-
     boolean formDefinitionExistsById(UUID id);
-
-    Long countAllForms();
 }

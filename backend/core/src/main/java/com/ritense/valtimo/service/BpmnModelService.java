@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 package com.ritense.valtimo.service;
 
-import com.ritense.valtimo.operaton.domain.OperatonTask;
-import org.operaton.bpm.engine.RepositoryService;
-import org.operaton.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.task.Task;
+import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 
 public class BpmnModelService {
 
@@ -28,7 +28,7 @@ public class BpmnModelService {
         this.repositoryService = repositoryService;
     }
 
-    public org.operaton.bpm.model.bpmn.instance.Task getTask(OperatonTask task) {
+    public org.camunda.bpm.model.bpmn.instance.Task getTask(Task task) {
         final BpmnModelInstance bpmnModelInstance = repositoryService.getBpmnModelInstance(task.getProcessDefinitionId());
         return bpmnModelInstance.getModelElementById(task.getTaskDefinitionKey());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ public class DocumentDefinitionProcessRequest {
 
     public DocumentDefinitionProcessRequest(
         @JsonProperty(value = "processDefinitionKey", required = true) String processDefinitionKey,
-        @JsonProperty("linkType") String linkType
+        @JsonProperty(value = "linkType") String linkType
     ) {
         this.processDefinitionKey = processDefinitionKey;
         this.linkType = linkType;

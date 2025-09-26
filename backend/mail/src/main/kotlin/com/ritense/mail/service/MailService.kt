@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.ritense.mail.service
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.basictype.EmailAddress
 import com.ritense.valtimo.contract.basictype.SimpleName
 import com.ritense.valtimo.contract.mail.MailSender
@@ -26,14 +25,11 @@ import com.ritense.valtimo.contract.mail.model.value.MailTemplateIdentifier
 import com.ritense.valtimo.contract.mail.model.value.Recipient
 import com.ritense.valtimo.contract.mail.model.value.Sender
 import com.ritense.valtimo.contract.mail.model.value.Subject
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.operaton.bpm.model.bpmn.instance.operaton.OperatonProperties
-import org.springframework.stereotype.Service
+import org.camunda.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties
 import java.util.Optional
 import java.util.regex.Pattern
 
-@Service
-@SkipComponentScan
 class MailService(
     private val mailSender: MailSender
 ) {
@@ -46,25 +42,24 @@ class MailService(
     }
 
     fun getMailSettings(delegateExecution: DelegateExecution): MailSettings {
-        var operatonPropertiesMap = mutableMapOf<String, Any>()
-        operatonPropertiesMap = delegateExecution
+        var camundaPropertiesMap = mutableMapOf<String, Any>()
+        camundaPropertiesMap = delegateExecution
             .bpmnModelElementInstance
             .extensionElements
             .elementsQuery
-            .filterByType(OperatonProperties::class.java)
+            .filterByType(CamundaProperties::class.java)
             .singleResult()
-            .operatonProperties
-            .filter { it.operatonName != null && it.operatonValue != null }
-            .associateTo(operatonPropertiesMap) {
-                it.getAttributeValue("name") to parseValue(it.operatonValue, delegateExecution)
+            .camundaProperties
+            .associateTo(camundaPropertiesMap) {
+                it.getAttributeValue("name") to parseValue(it.camundaValue, delegateExecution)
             }
-        return MailSettings(operatonPropertiesMap, delegateExecution)
+        return MailSettings(camundaPropertiesMap, delegateExecution)
     }
 
     private fun parseValue(value: String, delegateExecution: DelegateExecution): String {
-        val operatonExpressionMatcher = MailSettings.operatonExpressionPattern.matcher(value)
-        return if (operatonExpressionMatcher.find()) {
-            val keyNameFromExpression = operatonExpressionMatcher.group(1)
+        val camundaExpressionMatcher = MailSettings.camundaExpressionPattern.matcher(value)
+        return if (camundaExpressionMatcher.find()) {
+            val keyNameFromExpression = camundaExpressionMatcher.group(1)
             // return key value from process variables
             // for example '${emailaddress}' will result in 'emailaddress'
             delegateExecution.variables[keyNameFromExpression] as String
@@ -111,7 +106,7 @@ class MailService(
 
         companion object {
             // Check for `${someProcessVarName}` pattern
-            val operatonExpressionPattern = Pattern.compile("^\\$\\{([a-zA-Z0-9_\\-\\.]+)\\}$")!!
+            val camundaExpressionPattern = Pattern.compile("^\\$\\{([a-zA-Z0-9_\\-\\.]+)\\}$")!!
         }
     }
 

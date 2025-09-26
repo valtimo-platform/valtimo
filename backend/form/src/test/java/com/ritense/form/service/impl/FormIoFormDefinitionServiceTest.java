@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,15 @@
 
 package com.ritense.form.service.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.ritense.form.BaseTest;
 import com.ritense.form.domain.FormIoFormDefinition;
-import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.repository.FormDefinitionRepository;
 import java.util.Optional;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class FormIoFormDefinitionServiceTest extends BaseTest {
 
@@ -39,13 +34,13 @@ public class FormIoFormDefinitionServiceTest extends BaseTest {
     @BeforeEach
     public void setUp() {
         formDefinitionRepository = mock(FormDefinitionRepository.class);
-        formIoFormDefinitionService = new FormIoFormDefinitionService(formDefinitionRepository, mock());
+        formIoFormDefinitionService = new FormIoFormDefinitionService(formDefinitionRepository);
     }
 
     @Test
     public void shouldCallRepositoryWhenGettingFormByName() {
         FormIoFormDefinition formIoFormDefinition = mock(FormIoFormDefinition.class);
-        when(formDefinitionRepository.findByNameAndCaseDefinitionIdIsNull("test")).thenReturn(Optional.of(formIoFormDefinition));
+        when(formDefinitionRepository.findByName("test")).thenReturn(Optional.of(formIoFormDefinition));
         Optional<FormIoFormDefinition> formDefinition = formIoFormDefinitionService.getFormDefinitionByName("test");
         assertEquals(formIoFormDefinition, formDefinition.get());
     }
@@ -53,23 +48,8 @@ public class FormIoFormDefinitionServiceTest extends BaseTest {
     @Test
     public void shouldCallRepositoryWhenGettingFormByNameIgnoringCase() {
         FormIoFormDefinition formIoFormDefinition = mock(FormIoFormDefinition.class);
-        when(formDefinitionRepository.findByNameIgnoreCaseAndCaseDefinitionIdIsNull("test")).thenReturn(Optional.of(formIoFormDefinition));
+        when(formDefinitionRepository.findByNameIgnoreCase("test")).thenReturn(Optional.of(formIoFormDefinition));
         Optional<FormIoFormDefinition> formDefinition = formIoFormDefinitionService.getFormDefinitionByNameIgnoringCase("test");
         assertEquals(formIoFormDefinition, formDefinition.get());
-    }
-
-    @Test
-    public void shouldNotCreateNewCaseWhenNameExistsForCaseDefinitionId() {
-        var caseDefinitionId = CaseDefinitionId.of("person", "1.0.0");
-        FormIoFormDefinition formIoFormDefinition = mock(FormIoFormDefinition.class);
-        when(formDefinitionRepository.findByNameAndCaseDefinitionId("test", caseDefinitionId)).thenReturn(Optional.of(formIoFormDefinition));
-        CreateFormDefinitionRequest request = new CreateFormDefinitionRequest("test", "", false);
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> formIoFormDefinitionService.createFormDefinition(
-                caseDefinitionId,
-                request
-            )
-        );
     }
 }

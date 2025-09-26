@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,4 +20,5 @@ import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.domain.PluginPropertyId
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface PluginPropertyRepository: JpaRepository<PluginProperty, PluginPropertyId>
+interface PluginPropertyRepository: JpaRepository<PluginProperty, PluginPropertyId> {
+}

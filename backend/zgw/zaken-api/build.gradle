@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,56 +16,38 @@
 
 dockerCompose {
     projectName = "zaken-api"
-
-    integrationTestingPostgresql {
-        isRequiredBy(project.tasks.integrationTestingPostgresql)
-        isRequiredBy(project.tasks.securityTesting)
-        useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
-    }
-
-    integrationTestingMysql {
-        isRequiredBy(project.tasks.integrationTestingMysql)
-        useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-mysql.yml", "docker-compose-override-mysql.yml")
-    }
+    isRequiredBy(integrationTesting)
+    isRequiredBy(securityTesting)
+    useComposeFiles.addAll("../../docker-resources/docker-compose-base-test.yml", "docker-compose-override.yml")
 }
 
 dependencies {
-    implementation project(":case")
     implementation project(":core")
     implementation project(":contract")
+    implementation project(":document")
     implementation project(":plugin")
     implementation project(":process-document")
-    implementation project(":resource")
     implementation project(":resource:temporary-resource-storage")
-    implementation project(":value-resolver")
     implementation project(":zgw")
     implementation project(':zgw:catalogi-api')
-    implementation project(':zgw:documenten-api')
-    implementation project(":outbox")
-    implementation project(":logging")
-    implementation project(":importer")
-    implementation project(":exporter")
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "io.github.microutils:kotlin-logging:2.0.4"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
-    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    testImplementation project(":form")
     testImplementation project(":process-document")
+    testImplementation project(":resource:openzaak-resource")
+    testImplementation project(":openzaak")
     testImplementation project(":plugin-valtimo")
-    testImplementation project(":resource")
 
     testImplementation "org.springframework.boot:spring-boot-starter-data-jpa"
-    testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
-    testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.10.0"
+    testImplementation "com.squareup.okhttp3:okhttp:4.10.0"
     //Kotlin
-    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
 
     testImplementation project(":test-utils-common")
 

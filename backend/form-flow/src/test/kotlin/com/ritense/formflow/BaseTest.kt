@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,18 @@
 package com.ritense.formflow
 
 import com.fasterxml.jackson.databind.jsontype.NamedType
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
 import com.ritense.formflow.domain.definition.configuration.step.FormStepTypeProperties
-import com.ritense.formflow.json.MapperSingleton
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
 abstract class BaseTest {
     fun readFileAsString(fileName: String): String = this::class.java.getResource(fileName)!!.readText(Charsets.UTF_8)
 
     fun getFormFlowDefinition(formFlowKey: String, formFlowJson: String): FormFlowDefinition {
-        val mapper = MapperSingleton.get().copy()
+        val mapper = jacksonObjectMapper()
         mapper.registerSubtypes(NamedType(FormStepTypeProperties::class.java, "form"))
         val config = mapper.readValue(formFlowJson, com.ritense.formflow.domain.definition.configuration.FormFlowDefinition::class.java)
-        return config.toDefinition(FormFlowDefinitionId.newId(formFlowKey, CaseDefinitionId("profile", "1.0.0")))
+        return config.toDefinition(FormFlowDefinitionId.newId(formFlowKey))
     }
 }

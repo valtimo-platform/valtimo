@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,15 @@
 
 package com.ritense.mail;
 
+import com.ritense.mail.config.MandrillProperties;
+import com.ritense.mail.domain.webhook.MandrillMessageEvent;
+import com.ritense.mail.domain.webhook.MandrillMessageEventMessage;
+import com.ritense.mail.domain.webhook.MandrillWebhookRequest;
+import com.ritense.mail.service.BlacklistService;
+import com.ritense.mail.service.WebhookService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.io.IOException;
 import static com.microtripit.mandrillapp.lutung.view.MandrillWebhook.HARD_BOUNCE;
 import static com.microtripit.mandrillapp.lutung.view.MandrillWebhook.SOFT_BOUNCE;
 import static com.microtripit.mandrillapp.lutung.view.MandrillWebhook.UNSUB;
@@ -25,17 +34,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
-import com.ritense.mail.config.MandrillProperties;
-import com.ritense.mail.domain.webhook.MandrillMessageEvent;
-import com.ritense.mail.domain.webhook.MandrillMessageEventMessage;
-import com.ritense.mail.domain.webhook.MandrillWebhookRequest;
-import com.ritense.mail.service.BlacklistService;
-import com.ritense.mail.service.WebhookService;
-import com.ritense.valtimo.contract.json.MapperSingleton;
-import java.io.IOException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class WebhookServiceTest {
 
@@ -52,11 +50,7 @@ public class WebhookServiceTest {
     public void setUp() {
         blacklistService = mock(BlacklistService.class);
         mandrillProperties = mock(MandrillProperties.class);
-        webhookService = new WebhookService(
-            mandrillProperties,
-            blacklistService,
-            MapperSingleton.INSTANCE.get()
-        );
+        webhookService = new WebhookService(mandrillProperties, blacklistService);
     }
 
     @Test

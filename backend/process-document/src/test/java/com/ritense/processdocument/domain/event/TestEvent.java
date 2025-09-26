@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,17 +75,18 @@ public class TestEvent extends AuditMetaData implements AuditEvent {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof TestEvent testEvent)) {
+        if (!(o instanceof TestEvent)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        return getName().equals(testEvent.getName())
-            && getAge().equals(testEvent.getAge())
-            && getCountry().equals(testEvent.getCountry())
-            && getGender().equals(testEvent.getGender())
-            && getProcessInstanceId().equals(testEvent.getProcessInstanceId());
+        TestEvent testEvent = (TestEvent) o;
+        return getName().equals(testEvent.getName()) &&
+            getAge().equals(testEvent.getAge()) &&
+            getCountry().equals(testEvent.getCountry()) &&
+            getGender().equals(testEvent.getGender()) &&
+            getProcessInstanceId().equals(testEvent.getProcessInstanceId());
     }
 
     @Override

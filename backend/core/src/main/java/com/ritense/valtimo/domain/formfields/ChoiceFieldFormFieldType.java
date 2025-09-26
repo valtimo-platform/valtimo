@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package com.ritense.valtimo.domain.formfields;
 
-import org.operaton.bpm.engine.impl.form.type.AbstractFormFieldType;
-import org.operaton.bpm.engine.variable.value.TypedValue;
+import org.camunda.bpm.engine.impl.form.type.AbstractFormFieldType;
+import org.camunda.bpm.engine.variable.value.TypedValue;
 
 public class ChoiceFieldFormFieldType extends AbstractFormFieldType {
 

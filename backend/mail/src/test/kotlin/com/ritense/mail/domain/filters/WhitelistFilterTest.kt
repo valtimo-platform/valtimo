@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,8 @@ internal class WhitelistFilterTest : BaseTest() {
             MailingProperties(whitelistedEmailAddresses = listOf(whitelistRecipient.email.get()))
         )
         val rawMailMessageTest: RawMailMessage = rawMailMessage(testRecipient)
-        val filteredMessage = whitelistFilter.doFilter(rawMailMessageTest)
+        whitelistFilter.doFilter(rawMailMessageTest)
 
-        assertThat(filteredMessage.isPresent).isFalse
         assertThat(rawMailMessageTest.recipients.isPresent).isFalse
         assertThat(rawMailMessageTest.recipients.get()).isEmpty()
     }
@@ -56,9 +55,8 @@ internal class WhitelistFilterTest : BaseTest() {
             MailingProperties(whitelistedEmailAddresses = listOf(whitelistRecipient.email.get()))
         )
         val rawMailMessageTest: RawMailMessage = rawMailMessage(whitelistRecipient)
-        val filteredMessage = whitelistFilter.doFilter(rawMailMessageTest)
+        whitelistFilter.doFilter(rawMailMessageTest)
 
-        assertThat(filteredMessage.isPresent).isTrue
         assertThat(rawMailMessageTest.recipients.isPresent).isTrue
         assertThat(rawMailMessageTest.recipients.get()).containsOnly(whitelistRecipient)
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2021 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package com.ritense.audit.repository.impl;
 
 import com.ritense.audit.domain.AuditRecord;
+import com.ritense.audit.domain.AuditRecordId;
 import com.ritense.audit.repository.AuditRecordRepository;
+import com.ritense.valtimo.contract.audit.AuditEvent;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +32,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 @NoRepositoryBean
-public interface MySqlAuditRecordRepository extends AuditRecordRepository<AuditRecord> {
+public interface MySqlAuditRecordRepository extends AuditRecordRepository<AuditRecord, AuditRecordId> {
 
     @Query(" SELECT  ar " +
         "    FROM    AuditRecord ar " +
@@ -53,7 +55,7 @@ public interface MySqlAuditRecordRepository extends AuditRecordRepository<AuditR
         "    AND     documentId = :documentId " +
         "    ORDER BY ar.metaData.occurredOn DESC")
     Page<AuditRecord> findByEventAndDocumentId(
-        List<String> eventTypes,
+        List<Class<? extends AuditEvent>> eventTypes,
         UUID documentId,
         Pageable pageable
     );

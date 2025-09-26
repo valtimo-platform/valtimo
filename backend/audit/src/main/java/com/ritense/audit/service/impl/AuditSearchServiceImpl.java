@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,15 @@ package com.ritense.audit.service.impl;
 
 import com.ritense.audit.domain.AuditRecord;
 import com.ritense.audit.service.AuditSearchService;
-import com.ritense.authorization.Action;
-import com.ritense.authorization.AuthorizationService;
-import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
 import java.util.List;
+import java.util.stream.Collectors;
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -41,32 +39,25 @@ public class AuditSearchServiceImpl implements AuditSearchService {
 
     private final QueryDialectHelper queryDialectHelper;
 
-    private final AuthorizationService authorizationService;
-
-    public AuditSearchServiceImpl(
-        EntityManager entityManager,
-        QueryDialectHelper queryDialectHelper,
-        AuthorizationService authorizationService
-    ) {
+    public AuditSearchServiceImpl(EntityManager entityManager, QueryDialectHelper queryDialectHelper) {
         this.entityManager = entityManager;
         this.queryDialectHelper = queryDialectHelper;
-        this.authorizationService = authorizationService;
     }
 
     @Override
     public Page<AuditRecord> search(List<SearchCriteria> criteriaList, Pageable pageable) {
-        denyAuthorization();
         final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<AuditRecord> query = cb.createQuery(AuditRecord.class);
         Root<AuditRecord> root = query.from(AuditRecord.class);
 
         final List<Predicate> predicateList = criteriaList
             .stream()
-            .map(searchCriteria -> cb.and(
+            .map((searchCriteria) ->
+                cb.and(
                     isNotNull(cb, root, searchCriteria.getPath(), searchCriteria.getValue()),
                     isNotNull(cb, root, "$.className", searchCriteria.getAuditEvent().getName())
                 )
-            ).toList();
+            ).collect(Collectors.toList());
 
         query
             .where(cb.or(predicateList.toArray(Predicate[]::new)))
@@ -82,15 +73,6 @@ public class AuditSearchServiceImpl implements AuditSearchService {
 
     private Predicate isNotNull(CriteriaBuilder cb, Root<AuditRecord> root, String path, String value) {
         return queryDialectHelper.getJsonValueExistsInPathExpression(cb, root.get("auditEvent"), path, value);
-    }
-
-    private void denyAuthorization() {
-        authorizationService.requirePermission(
-            new EntityAuthorizationRequest<>(
-                AuditRecord.class,
-                Action.deny()
-            )
-        );
     }
 
 }

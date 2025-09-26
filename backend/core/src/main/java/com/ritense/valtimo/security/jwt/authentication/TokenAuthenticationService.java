@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@
 package com.ritense.valtimo.security.jwt.authentication;
 
 import com.ritense.valtimo.contract.security.jwt.TokenAuthenticator;
-import com.ritense.valtimo.security.jwt.exception.TokenAuthenticatorNotFoundException;
 import com.ritense.valtimo.security.jwt.provider.SecretKeyResolver;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import java.util.List;
 
 public class TokenAuthenticationService {
 
@@ -45,19 +44,15 @@ public class TokenAuthenticationService {
             .filter(tokenAuthenticator -> tokenAuthenticator.supports(claims))
             .findFirst()
             .map(tokenAuthenticator -> tokenAuthenticator.authenticate(jwt, claims))
-            .orElseThrow(() -> {
-                String errorMessage = "No suitable token authenticator found";
-                logger.info(errorMessage);
-                return new TokenAuthenticatorNotFoundException(errorMessage);
-            });
+            .orElse(null);
     }
 
     public boolean validateToken(final String jwt) {
         try {
-            jwtSignedParser().parseClaimsJws(jwt);
+            jwtSignedParser().parse(jwt);
             return true;
         } catch (SecurityException e) {
-            logger.warn("Invalid JWT signature: {}", e.getMessage());
+            logger.warn("Invalid JWT signature: " + e.getMessage());
             return false;
         } catch (IllegalArgumentException e) {
             logger.warn("Invalid token.", e);
@@ -70,7 +65,7 @@ public class TokenAuthenticationService {
     }
 
     private JwtParser jwtSignedParser() {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
             .setSigningKeyResolver(secretKeyResolver)
             .build();
     }

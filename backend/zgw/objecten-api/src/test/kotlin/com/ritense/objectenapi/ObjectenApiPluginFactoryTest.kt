@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,21 @@
 
 package com.ritense.objectenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import com.ritense.objectenapi.client.ObjectenApiClient
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.springframework.web.util.DefaultUriBuilderFactory
 import java.net.URI
 
 internal class ObjectenApiPluginFactoryTest {
@@ -39,7 +41,7 @@ internal class ObjectenApiPluginFactoryTest {
         val objectenApiClient = mock<ObjectenApiClient>()
         val authenticationMock = mock<ObjectenApiAuthentication>()
         whenever(pluginService.createInstance(any<PluginConfigurationId>())).thenReturn(authenticationMock)
-        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+        whenever(pluginService.getObjectMapper()).thenReturn(jacksonObjectMapper())
 
         val factory = ObjectenApiPluginFactory(
             pluginService,
@@ -57,13 +59,14 @@ internal class ObjectenApiPluginFactoryTest {
         val pluginConfiguration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get().readTree(objectenApiPluginProperties) as ObjectNode,
+            ObjectMapper().readTree(objectenApiPluginProperties) as ObjectNode,
             pluginDefinition
         )
         val plugin = factory.create(pluginConfiguration)
 
         assertEquals(URI("http://objecten.plugin.url"), plugin.url)
         assertEquals(authenticationMock, plugin.authenticationPluginConfiguration)
+        assertEquals(objectenApiClient, plugin.objectenApiClient)
     }
 
     private fun createPluginDefinition(): PluginDefinition {

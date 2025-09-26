@@ -1,9 +1,19 @@
 spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3307/audit-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
     liquibase:
-        enabled: false
+        enabled: true
+        change-log: classpath:/config/liquibase/audit-master.xml
+        contexts: unit-test
     jpa:
+        database-platform: org.hibernate.dialect.MySQL57Dialect
+        database: mysql
         show_sql: true
         open-in-view: false
         properties:
@@ -22,10 +32,11 @@ spring:
                     provider_disables_autocommit: true
         hibernate:
             ddl-auto: none
+            naming:
+                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            use-new-id-generator-mappings: false
 
-spring-actuator:
-    username: admin
-    password: test123
 audit:
     record:
         retention: 15

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,28 @@
 package com.ritense.valtimo.contract.form;
 
 import java.util.Map;
+import java.util.UUID;
 
-@Deprecated(since = "11.0", forRemoval = true)
 public interface FormFieldDataResolver {
 
-    boolean supports(String externalFormFieldType);
+    @Deprecated(forRemoval = true, since = "9.18")
+    default boolean supports(ExternalFormFieldType externalFormFieldType) {
+        return false;
+    }
 
-    Map<String, Object> get(
+    default boolean supports(String externalFormFieldType) {
+        return supports(ExternalFormFieldType.fromKey(externalFormFieldType));
+    }
+
+    @Deprecated(forRemoval = true, since = "9.21")
+    default Map<String, Object> get(String documentDefinitionName, UUID documentId, String... varNames) {
+        throw new RuntimeException("The 'get' method should be implemented!");
+    }
+
+    default Map<String, Object> get(
         DataResolvingContext dataResolvingContext,
         String... varNames
-    );
-
+    ) {
+        return get(dataResolvingContext.getDocumentDefinitionName(), dataResolvingContext.getDocumentId(), varNames);
+    }
 }

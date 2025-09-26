@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,51 +16,46 @@
 
 package com.ritense.form.service.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import com.ritense.form.BaseIntegrationTest;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
 import java.util.Optional;
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
+import javax.transaction.Transactional;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Transactional
-class FormIoFormDefinitionServiceIntTest extends BaseIntegrationTest {
+public class FormIoFormDefinitionServiceIntTest extends BaseIntegrationTest {
 
     private FormIoFormDefinitionService formIoFormDefinitionService;
-    @Autowired
-    private CaseDefinitionChecker caseDefinitionChecker;
 
     @BeforeEach
-    void setUp() {
-        formIoFormDefinitionService = new FormIoFormDefinitionService(formDefinitionRepository, caseDefinitionChecker);
+    public void setUp() {
+        formIoFormDefinitionService = new FormIoFormDefinitionService(formDefinitionRepository);
     }
 
     @Test
-    void shouldCreateFormDefinition() {
+    public void shouldCreateFormDefinition() {
         var request = new CreateFormDefinitionRequest(DEFAULT_FORM_DEFINITION_NAME, "{}", false);
         var formDefinition = formIoFormDefinitionService.createFormDefinition(request);
 
         assertThat(formDefinition.getName()).isEqualTo(DEFAULT_FORM_DEFINITION_NAME);
-        assertThat(formDefinition.getFormDefinition().toString()).hasToString("{}");
+        assertThat(formDefinition.getFormDefinition().toString()).isEqualTo("{}");
         assertThat(formDefinition.isReadOnly()).isFalse();
     }
 
     @Test
-    void shouldCreateReadonlyFormDefinition() {
+    public void shouldCreateReadonlyFormDefinition() {
         var request = new CreateFormDefinitionRequest(DEFAULT_FORM_DEFINITION_NAME, "{}", true);
         var formDefinition = formIoFormDefinitionService.createFormDefinition(request);
         assertThat(formDefinition.isReadOnly()).isTrue();
     }
 
     @Test
-    void shouldModifyFormDefinition() {
+    public void shouldModifyFormDefinition() {
         var request = new CreateFormDefinitionRequest(DEFAULT_FORM_DEFINITION_NAME, "{}", false);
         var formDefinition = formIoFormDefinitionService.createFormDefinition(request);
 
@@ -77,7 +72,7 @@ class FormIoFormDefinitionServiceIntTest extends BaseIntegrationTest {
     }
 
     @Test
-    void shouldNotModifyFormDefinition() {
+    public void shouldNotModifyFormDefinition() {
         var request = new CreateFormDefinitionRequest(DEFAULT_FORM_DEFINITION_NAME, "{}", true);
         var formDefinition = formIoFormDefinitionService.createFormDefinition(request);
 
@@ -92,7 +87,7 @@ class FormIoFormDefinitionServiceIntTest extends BaseIntegrationTest {
     }
 
     @Test
-    void shouldModifyFormDefinitionSystem() {
+    public void shouldModifyFormDefinitionSystem() {
         var request = new CreateFormDefinitionRequest(DEFAULT_FORM_DEFINITION_NAME, "{}", true);
         var formDefinition = formIoFormDefinitionService.createFormDefinition(request);
 
@@ -109,7 +104,7 @@ class FormIoFormDefinitionServiceIntTest extends BaseIntegrationTest {
     }
 
     @Test
-    void shouldGetFormDefinitionByNameIgnoringCase() {
+    public void shouldGetFormDefinitionByNameIgnoringCase() {
         var request = new CreateFormDefinitionRequest(DEFAULT_FORM_DEFINITION_NAME, "{}", true);
         var formDefinition = formIoFormDefinitionService.createFormDefinition(request);
 

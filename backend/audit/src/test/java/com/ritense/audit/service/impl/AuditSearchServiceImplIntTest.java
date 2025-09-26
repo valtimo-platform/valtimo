@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,19 @@
 
 package com.ritense.audit.service.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.ritense.audit.BaseIntegrationTest;
 import com.ritense.audit.domain.AuditRecord;
 import com.ritense.audit.domain.event.TestEvent;
-import com.ritense.authorization.AuthorizationContext;
 import com.ritense.valtimo.contract.audit.AuditEvent;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import java.time.LocalDateTime;
+import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
 
-class AuditSearchServiceImplIntTest extends BaseIntegrationTest {
+public class AuditSearchServiceImplIntTest extends BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() {
@@ -40,20 +38,18 @@ class AuditSearchServiceImplIntTest extends BaseIntegrationTest {
     }
 
     @Test
-    void shouldFindBySearchCriteria() {
+    public void shouldFindBySearchCriteria() {
         final List<SearchCriteria> searchCriteriaList = List.of(new SearchCriteria("$.processInstanceId", TestEvent.class, "myProcessInstanceId"));
-        final Page<AuditRecord> page = AuthorizationContext
-            .runWithoutAuthorization(() -> auditSearchService.search(searchCriteriaList, PageRequest.of(0, 1)));
+        final Page<AuditRecord> page = auditSearchService.search(searchCriteriaList, PageRequest.of(0, 1));
         assertThat(page).isNotNull();
         assertThat(page.getTotalElements()).isEqualTo(1);
         assertThat(page.getTotalPages()).isEqualTo(1);
     }
 
     @Test
-    void shouldNotFindBySearchCriteria() {
+    public void shouldNotFindBySearchCriteria() {
         final List<SearchCriteria> searchCriteriaList = List.of(new SearchCriteria("$.processInstanceId2", TestEvent.class, "myProcessInstanceId"));
-        final Page<AuditRecord> page = AuthorizationContext
-            .runWithoutAuthorization(() -> auditSearchService.search(searchCriteriaList, PageRequest.of(0, 1)));
+        final Page<AuditRecord> page = auditSearchService.search(searchCriteriaList, PageRequest.of(0, 1));
         assertThat(page).isNotNull();
         assertThat(page.getTotalElements()).isEqualTo(0);
         assertThat(page.getTotalPages()).isEqualTo(1);

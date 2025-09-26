@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,41 +14,20 @@
  * limitations under the License.
  */
 
-dockerCompose {
-    projectName = "plugin-valtimo"
-
-    securityTesting {
-        isRequiredBy(project.tasks.securityTesting)
-        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
-    }
-
-    integrationTestingPostgresql {
-        isRequiredBy(project.tasks.integrationTestingPostgresql)
-        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
-    }
-
-    integrationTestingMysql {
-        isRequiredBy(project.tasks.integrationTestingMysql)
-        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-mysql.yml", "docker-compose-override-mysql.yml")
-    }
-}
-
 dependencies {
-    api project(":plugin")
-    implementation project(":contract")
-    implementation project(":core")
-    implementation project(":logging")
+    api project(':plugin')
+    implementation project(':core')
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-security"
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation 'io.github.microutils:kotlin-logging:2.1.23'
 
-    testImplementation project(":test-utils-common")
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation 'org.camunda.bpm.extension.mockito:camunda-bpm-mockito:5.16.0'
 
     jar {
         enabled = true

@@ -3,9 +3,17 @@ spring:
         allow-bean-definition-overriding: false
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3310/process-document-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
     liquibase:
         enabled: false
     jpa:
+        database-platform: org.hibernate.dialect.MySQL57Dialect
+        database: mysql
         show_sql: true
         open-in-view: false
         properties:
@@ -24,6 +32,10 @@ spring:
                     provider_disables_autocommit: true
         hibernate:
             ddl-auto: none
+            naming:
+                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            use-new-id-generator-mappings: false
 
 audit:
     record:
@@ -53,12 +65,13 @@ valtimo:
         notificationTemplate: bpc-task-notification
         completionTemplate: bpc-task-completion
         reminderTemplate: bpc-task-reminder
+    auth0:
+        clientId: z07PPstdpIFTCPo52ZkanGjnVU9u1mTs
+        defaultConnection: bp-console
+        managementTokenApiClientId: 4b2rIa9Kbu6WVwtOgZ6k1xrEJub9IWHA
+        enabled: false
+        domain: ritense.eu.auth0.com
+        issuer: https://ritense.eu.auth0.com/
+        managementTokenApiClientSecret: #external
     plugin:
         encryption-secret: "abcdefghijklmnop"
-
-operaton:
-    bpm:
-        history-level: audit
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false

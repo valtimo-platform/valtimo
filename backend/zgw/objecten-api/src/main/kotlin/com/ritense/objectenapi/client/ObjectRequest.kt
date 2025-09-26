@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,10 @@
 
 package com.ritense.objectenapi.client
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import java.net.URI
-import java.util.UUID
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class ObjectRequest(
-    val uuid: UUID?,
+class ObjectRequest(
     val type: URI,
     val record: ObjectRecord
 ) {
-    constructor(
-        type: URI,
-        record: ObjectRecord
-    ) : this(null, type, record)
 }

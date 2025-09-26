@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2021 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,17 @@
 
 package com.ritense.valtimo.contract.database;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
-import java.util.UUID;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
 
 public interface QueryDialectHelper {
 
-    <T> Expression<T> getJsonValueExpression(CriteriaBuilder cb, Path column, String path, Class<T> type);
+    Expression<?> getJsonValueExpression(CriteriaBuilder cb, Path column, String path);
 
     Predicate getJsonValueExistsExpression(CriteriaBuilder cb, Path column, String value);
 
     Predicate getJsonValueExistsInPathExpression(CriteriaBuilder cb, Path column, String path, String value);
 
-    Predicate getJsonArrayContainsExpression(CriteriaBuilder cb, Path column, String path, String value);
-
-    Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column);
 }

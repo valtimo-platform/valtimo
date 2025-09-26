@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,31 +16,20 @@
 
 package com.ritense.form.domain;
 
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.kotlin.KotlinModule;
 
-/**
- * @deprecated Replaced by {@link com.ritense.valtimo.contract.json.MapperSingleton }
- */
-@Deprecated(since = "11.2.0", forRemoval = true)
 public enum Mapper {
     INSTANCE;
-    private final ObjectMapper objectMapper = new ObjectMapper()
-        .registerModule(new JavaTimeModule())
-        .registerModule(new KotlinModule.Builder().build());
+    private final ObjectMapper mapper = new ObjectMapper();
 
     Mapper() {
         // Perform any configuration on the ObjectMapper here.
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.disable(WRITE_DATES_AS_TIMESTAMPS);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public ObjectMapper get() {
-        return objectMapper;
+        return mapper;
     }
 
 }

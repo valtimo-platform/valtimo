@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,9 @@
 package com.ritense.processdocument.domain.impl.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.processdocument.domain.request.Request;
-import jakarta.validation.constraints.NotNull;
-import java.util.Optional;
-import java.util.function.Consumer;
+import javax.validation.constraints.NotNull;
 
 public class ProcessDocumentDefinitionRequest implements Request {
 
@@ -33,17 +29,11 @@ public class ProcessDocumentDefinitionRequest implements Request {
     @JsonProperty
     private String documentDefinitionName;
 
-    @JsonProperty
-    private Optional<Long> documentDefinitionVersion;
-
     @JsonProperty("canInitializeDocument")
     private boolean canInitializeDocument;
 
     @JsonProperty("startableByUser")
     private boolean startableByUser;
-
-    @JsonIgnore
-    private Consumer<? super JsonSchemaDocument> additionalModifications;
 
     public ProcessDocumentDefinitionRequest(
         @JsonProperty(value = "processDefinitionKey", required = true) @NotNull String processDefinitionKey,
@@ -54,24 +44,6 @@ public class ProcessDocumentDefinitionRequest implements Request {
         this.documentDefinitionName = documentDefinitionName;
         this.canInitializeDocument = canInitializeDocument;
         this.startableByUser = true;
-        this.documentDefinitionVersion = Optional.empty();
-    }
-
-    public ProcessDocumentDefinitionRequest(
-        @JsonProperty(value = "processDefinitionKey", required = true) @NotNull String processDefinitionKey,
-        @JsonProperty(value = "documentDefinitionName", required = true) @NotNull String documentDefinitionName,
-        @JsonProperty(value = "canInitializeDocument", required = true) boolean canInitializeDocument,
-        @JsonProperty("startableByUser") Boolean startableByUser
-    ) {
-        this.processDefinitionKey = processDefinitionKey;
-        this.documentDefinitionName = documentDefinitionName;
-        this.canInitializeDocument = canInitializeDocument;
-        this.documentDefinitionVersion = Optional.empty();
-        if (startableByUser == null) {
-            this.startableByUser = true;
-        } else {
-            this.startableByUser = startableByUser;
-        }
     }
 
     @JsonCreator
@@ -79,13 +51,11 @@ public class ProcessDocumentDefinitionRequest implements Request {
         @JsonProperty(value = "processDefinitionKey", required = true) @NotNull String processDefinitionKey,
         @JsonProperty(value = "documentDefinitionName", required = true) @NotNull String documentDefinitionName,
         @JsonProperty(value = "canInitializeDocument", required = true) boolean canInitializeDocument,
-        @JsonProperty("startableByUser") Boolean startableByUser,
-        @JsonProperty("documentDefinitionVersion") Optional<Long> documentDefinitionVersion
+        @JsonProperty(value = "startableByUser") Boolean startableByUser
     ) {
         this.processDefinitionKey = processDefinitionKey;
         this.documentDefinitionName = documentDefinitionName;
         this.canInitializeDocument = canInitializeDocument;
-        this.documentDefinitionVersion = documentDefinitionVersion;
         if (startableByUser == null) {
             this.startableByUser = true;
         } else {
@@ -109,19 +79,4 @@ public class ProcessDocumentDefinitionRequest implements Request {
         return startableByUser;
     }
 
-    public Optional<Long> getDocumentDefinitionVersion() {
-        return documentDefinitionVersion;
-    }
-
-    @Override
-    public Request withAdditionalModifications(Consumer<? super JsonSchemaDocument> function) {
-        this.additionalModifications = function;
-        return this;
-    }
-
-    public void doAdditionalModifications(JsonSchemaDocument document) {
-        if (this.additionalModifications != null) {
-            this.additionalModifications.accept(document);
-        }
-    }
 }

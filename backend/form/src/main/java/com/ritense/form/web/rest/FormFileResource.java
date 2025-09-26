@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 
 package com.ritense.form.web.rest;
 
-import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
-
-import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.resource.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,11 +25,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
-@SkipComponentScan
-@RequestMapping(value = "/api", produces = APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public interface FormFileResource {
 
-    ResponseEntity<? extends Resource> uploadFile(String documentDefinitionName, String fileName, MultipartFile file);
+    @Deprecated
+    ResponseEntity<? extends Resource> uploadFile(String fileName, MultipartFile file);
+
+    ResponseEntity<? extends Resource> uploadOpenZaakFile(String documentDefinitionName, String fileName, MultipartFile file);
 
     RedirectView getFile(String id);
 

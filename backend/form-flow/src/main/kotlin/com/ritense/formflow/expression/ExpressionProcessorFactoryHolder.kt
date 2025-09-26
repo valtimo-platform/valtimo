@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package com.ritense.formflow.expression
 
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KLogger
+import mu.KotlinLogging
 import org.springframework.context.ApplicationContext
 
 class ExpressionProcessorFactoryHolder {
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
         private var expressionProcessorFactory: ExpressionProcessorFactory? = null
 
         fun setInstance(expressionProcessorFactory: ExpressionProcessorFactory, applicationContext: ApplicationContext) {
@@ -30,18 +31,17 @@ class ExpressionProcessorFactoryHolder {
                 applicationContext.getBeansWithAnnotation(FormFlowBean::class.java)
             )
 
-            if (this.expressionProcessorFactory != null) {
+            if(this.expressionProcessorFactory != null) {
                 logger.warn { "ExpressionProcessorFactory instance was already set, this should not happen in runtime!" }
             }
             this.expressionProcessorFactory = expressionProcessorFactory
         }
 
-        fun getInstance(): ExpressionProcessorFactory {
-            if (this.expressionProcessorFactory == null) {
-                throw IllegalStateException("ExpressionProcessorFactory instance is not available")
-            } else {
-                return expressionProcessorFactory!!
+        fun getinstance(): ExpressionProcessorFactory? {
+            if(this.expressionProcessorFactory == null) {
+                logger.warn { "ExpressionProcessorFactory instance is not available. Expressions will not be executed!" }
             }
+            return expressionProcessorFactory
         }
     }
 }

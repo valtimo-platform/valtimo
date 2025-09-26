@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,23 @@
 
 package com.ritense.resource.security
 
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class LocalResourceHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
-            http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/resource/pre-signed-url/{fileName}")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/resource/{resourceId}")).authenticated()
-                    .requestMatchers(antMatcher(DELETE, "/api/v1/resource/{resourceId}")).authenticated()
-                    .requestMatchers(antMatcher(PUT, "/api/v1/resource")).authenticated()
-            }
+            http.authorizeRequests()
+                .antMatchers(GET, "/api/resource/pre-signed-url/{fileName}").hasAuthority(USER)
+                .antMatchers(GET, "/api/resource/{resourceId}").hasAuthority(USER)
+                .antMatchers(DELETE, "/api/resource/{resourceId}").hasAuthority(USER)
+                .antMatchers(PUT, "/api/resource").hasAuthority(USER);
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
         }

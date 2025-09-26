@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,21 @@
 
 package com.ritense.valtimo.emailnotificationsettings.web.rest;
 
-import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
-
-import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettings;
 import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettingsRequestImpl;
 import com.ritense.valtimo.emailnotificationsettings.service.EmailNotificationSettingsService;
-import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import javax.validation.Valid;
 
 @RestController
-@SkipComponentScan
-@RequestMapping(value = "/api/v1", produces = APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public class EmailNotificationSettingsResource {
 
     private final EmailNotificationSettingsService emailNotificationService;
@@ -42,7 +39,7 @@ public class EmailNotificationSettingsResource {
         this.emailNotificationService = emailNotificationService;
     }
 
-    @GetMapping("/email-notification-settings")
+    @GetMapping(value = "/email-notification-settings")
     public ResponseEntity<EmailNotificationSettings.JsonViewResult> getSettingsFor() {
         final String emailAddress = SecurityUtils.getCurrentUserLogin();
         return emailNotificationService.getSettingsFor(emailAddress)
@@ -50,7 +47,7 @@ public class EmailNotificationSettingsResource {
             .orElse(ResponseEntity.noContent().build());
     }
 
-    @PutMapping("/email-notification-settings")
+    @PutMapping(value = "/email-notification-settings")
     public ResponseEntity<EmailNotificationSettings.JsonViewResult> process(
         @RequestBody @Valid EmailNotificationSettingsRequestImpl request
     ) {

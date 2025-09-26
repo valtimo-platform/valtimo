@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.ritense.resource.service
 
 import com.ritense.resource.BaseIntegrationTest
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
@@ -28,21 +27,22 @@ import java.nio.file.attribute.BasicFileAttributeView
 import java.nio.file.attribute.FileTime
 import java.time.Duration
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TemporaryResourceStorageDeletionServiceIntegrationTest @Autowired constructor(
-    private val temporaryResourceStorageService: TemporaryResourceStorageService,
-    private val temporaryResourceStorageDeletionService: TemporaryResourceStorageDeletionService
-) : BaseIntegrationTest() {
+class TemporaryResourceStorageDeletionServiceIntegrationTest : BaseIntegrationTest() {
 
-    @Disabled("https://github.com/gradle/gradle/issues/27871")
+    @Autowired
+    lateinit var temporaryResourceStorageService: TemporaryResourceStorageService
+
+    @Autowired
+    lateinit var temporaryResourceStorageDeletionService: TemporaryResourceStorageDeletionService
+
     @Test
     fun `should delete files older that 60 minutes`() {
         val resourceId = temporaryResourceStorageService.store("My file data".byteInputStream())
         val resourceFile = temporaryResourceStorageService.getMetaDataFileFromResourceId(resourceId)
         val attributes = Files.getFileAttributeView(resourceFile, BasicFileAttributeView::class.java)
-        val time = FileTime.from(Instant.now().minus(Duration.ofMinutes(61).truncatedTo(ChronoUnit.MINUTES)))
+        val time = FileTime.from(Instant.now().minus(Duration.ofMinutes(60)))
         attributes.setTimes(time, time, time)
 
         temporaryResourceStorageDeletionService.deleteOldTemporaryResources()

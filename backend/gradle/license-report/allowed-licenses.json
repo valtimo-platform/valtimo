@@ -13,22 +13,10 @@
             "moduleLicense": "The 3-Clause BSD License"
         },
         {
-            "moduleLicense": "The BSD License"
-        },
-        {
-            "moduleLicense": "The GNU General Public License, v2 with Universal FOSS Exception, v1.0"
-        },
-        {
             "moduleLicense": "Go License"
         },
         {
             "moduleLicense": "MPL 2.0 or EPL 1.0"
-        },
-        {
-            "moduleLicense": "MPL 2.0"
-        },
-        {
-            "moduleLicense": "EPL 1.0"
         },
         {
             "moduleLicense": "GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1"
@@ -50,9 +38,6 @@
         },
         {
             "moduleLicense": "MIT License"
-        },
-        {
-            "moduleLicense": "MIT-0"
         },
         {
             "moduleLicense": "GNU GENERAL PUBLIC LICENSE, Version 2 + Classpath Exception"
@@ -79,16 +64,18 @@
             "moduleLicense": "The JSON License"
         },
         {
-            "moduleLicense": "Universal Permissive License, Version 1.0"
-        },
-        {
             "moduleLicense": null,
             "moduleVersion": "2.*",
             "moduleName": "com.fasterxml.jackson:jackson-bom"
         },
         {
             "moduleLicense": null,
-            "moduleVersion": "3.*",
+            "moduleVersion": "2.*",
+            "moduleName": "io.github.microutils:kotlin-logging"
+        },
+        {
+            "moduleLicense": null,
+            "moduleVersion": "2.*",
             "moduleName": "io.github.microutils:kotlin-logging"
         },
         {
@@ -120,24 +107,6 @@
             "moduleLicense": null,
             "moduleVersion": "9.*",
             "moduleName": "com.microsoft.sqlserver:mssql-jdbc"
-        },
-        {
-            "moduleLicense": null,
-            "moduleVersion": "1.*",
-            "moduleName": "org.jetbrains.kotlin:kotlin-stdlib-common"
-        },
-        {
-            "moduleLicense": null,
-            "moduleVersion": "3.*",
-            "moduleName": "org.springframework.boot:spring-boot-dependencies"
-        },
-        {
-            "moduleLicense": null,
-            "moduleVersion": "2.*",
-            "moduleName": "software.amazon.awssdk:bom"
-        },
-        {
-            "moduleLicense": "Unicode/ICU License"
         }
     ]
 }

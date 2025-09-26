@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,22 @@ package com.ritense.audit.repository;
 
 import com.ritense.audit.domain.AuditRecord;
 import com.ritense.audit.domain.AuditRecordId;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.ritense.valtimo.contract.audit.AuditEvent;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @NoRepositoryBean
-public interface AuditRecordRepository<T extends AuditRecord>
-    extends JpaRepository<T, AuditRecordId> {
+public interface AuditRecordRepository<T extends AuditRecord, ID extends AuditRecordId>
+    extends JpaRepository<T, ID> {
 
     List<AuditRecord> findAuditRecordsByEvent(String className);
 
@@ -39,7 +44,7 @@ public interface AuditRecordRepository<T extends AuditRecord>
     );
 
     Page<AuditRecord> findByEventAndDocumentId(
-        List<String> eventTypes,
+        List<Class<? extends AuditEvent>> eventTypes,
         UUID documentId,
         Pageable pageable
     );
@@ -51,12 +56,6 @@ public interface AuditRecordRepository<T extends AuditRecord>
         Pageable pageable
     );
 
-    /**
-     * Find audit records by property.
-     *
-     * @deprecated Since 12.0.0.
-     */
-    @Deprecated(since = "Since 12.0.0", forRemoval = true)
     Page<AuditRecord> findAuditRecordsByProperty(String key, Object value, Pageable pageable);
 
     void deleteAllBefore(LocalDateTime date);

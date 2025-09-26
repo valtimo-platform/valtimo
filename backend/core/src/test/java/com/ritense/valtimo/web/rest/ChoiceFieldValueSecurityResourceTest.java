@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package com.ritense.valtimo.web.rest;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
 import static org.springframework.http.HttpMethod.DELETE;
@@ -23,10 +25,7 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.OK;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 class ChoiceFieldValueSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
 
@@ -35,37 +34,37 @@ class ChoiceFieldValueSecurityResourceTest extends SecuritySpecificEndpointInteg
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = {ADMIN})
     void createChoiceFieldValueAsAdmin() throws Exception {
-        assertHttpStatus(POST, "/api/v1/choice-field-values", BAD_REQUEST);
+        assertHttpStatus(POST, "/api/choice-field-values", BAD_REQUEST);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = {USER})
     void createChoiceFieldValueAsUser() throws Exception {
-        assertHttpStatus(POST, "/api/v1/choice-field-values", FORBIDDEN);
+        assertHttpStatus(POST, "/api/choice-field-values", FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = {ADMIN})
     void updateChoiceFieldValueAsAdmin() throws Exception {
-        assertHttpStatus(PUT, "/api/v1/choice-field-values", BAD_REQUEST);
+        assertHttpStatus(PUT, "/api/choice-field-values", BAD_REQUEST);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = {USER})
     void updateChoiceFieldValueAsUser() throws Exception {
-        assertHttpStatus(PUT, "/api/v1/choice-field-values", FORBIDDEN);
+        assertHttpStatus(PUT, "/api/choice-field-values", FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = {ADMIN})
     void deleteChoiceFieldValueAsAdmin() throws Exception {
-        assertHttpStatus(DELETE, "/api/v1/choice-field-values/1", OK);
+        assertHttpStatus(DELETE, "/api/choice-field-values/1", INTERNAL_SERVER_ERROR);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = {USER})
     void deleteChoiceFieldValueAsUser() throws Exception {
-        assertHttpStatus(DELETE, "/api/v1/choice-field-values/1", FORBIDDEN);
+        assertHttpStatus(DELETE, "/api/choice-field-values/1", FORBIDDEN);
     }
 
 }

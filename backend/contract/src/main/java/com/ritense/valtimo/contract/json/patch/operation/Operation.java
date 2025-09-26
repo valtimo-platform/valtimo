@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ public enum Operation {
         throw new IllegalStateException(String.format("Cannot create Operation from string %s", text));
     }
 
-    @Override
     public String toString() {
         return this.name;
     }

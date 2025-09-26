@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,35 +17,63 @@
 package com.ritense.processdocument.service;
 
 import com.ritense.document.domain.Document;
+import com.ritense.processdocument.domain.ProcessDefinitionKey;
+import com.ritense.processdocument.domain.ProcessDocumentDefinition;
+import com.ritense.processdocument.domain.ProcessDocumentDefinitionId;
 import com.ritense.processdocument.domain.ProcessDocumentInstance;
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId;
 import com.ritense.processdocument.domain.ProcessInstanceId;
-import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto;
+import com.ritense.processdocument.domain.impl.request.ProcessDocumentDefinitionRequest;
 import com.ritense.valtimo.contract.result.FunctionResult;
 import com.ritense.valtimo.contract.result.OperationError;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface ProcessDocumentAssociationService {
 
+    Page<? extends ProcessDocumentDefinition> getAllProcessDocumentDefinitions(Pageable pageable);
+
+    Optional<? extends ProcessDocumentDefinition> findProcessDocumentDefinition(ProcessDefinitionKey processDefinitionKey);
+
+    List<? extends ProcessDocumentDefinition> findAllProcessDocumentDefinitions(ProcessDefinitionKey processDefinitionKey);
+
+    Optional<? extends ProcessDocumentDefinition> findProcessDocumentDefinition(ProcessDefinitionKey processDefinitionKey, long documentDefinitionVersion);
+
+    List<? extends ProcessDocumentDefinition> findProcessDocumentDefinitions(String documentDefinitionName);
+
+    Optional<? extends  ProcessDocumentDefinition> findByDocumentDefinitionName(String documentDefinitionName);
+
+    Optional<? extends ProcessDocumentInstance> findProcessDocumentInstance(ProcessDocumentInstanceId processDocumentInstanceId);
+
     Optional<? extends ProcessDocumentInstance> findProcessDocumentInstance(ProcessInstanceId processInstanceId);
 
     List<? extends ProcessDocumentInstance> findProcessDocumentInstances(Document.Id documentId);
 
-    List<ProcessDocumentInstanceDto> findProcessDocumentInstanceDtos(Document.Id documentId);
-
-    void deleteProcessDocumentInstance(ProcessDocumentInstanceId processDocumentInstanceId);
-
     void deleteProcessDocumentInstances(String processName);
+
+    FunctionResult<? extends ProcessDocumentDefinition, OperationError> getProcessDocumentDefinitionResult(
+        ProcessDocumentDefinitionId processDocumentDefinitionId
+    );
 
     FunctionResult<? extends ProcessDocumentInstance, OperationError> getProcessDocumentInstanceResult(
         ProcessDocumentInstanceId processDocumentInstanceId
     );
+
+    Optional<? extends ProcessDocumentDefinition> createProcessDocumentDefinition(
+        ProcessDocumentDefinitionRequest request
+    );
+
+    void deleteProcessDocumentDefinition(ProcessDocumentDefinitionRequest processDocumentDefinitionRequest);
+
+    void deleteProcessDocumentDefinition(String documentDefititionName);
 
     Optional<? extends ProcessDocumentInstance> createProcessDocumentInstance(
         String processInstanceId,
         UUID documentId,
         String processName
     );
+
 }

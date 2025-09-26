@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,22 @@
 
 package com.ritense.plugin
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
 internal class PluginFactoryTest {
     lateinit var pluginFactory: PluginFactory<*>
@@ -52,7 +53,7 @@ internal class PluginFactoryTest {
         val pluginConfiguration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode,
+            ObjectMapper().readTree("{\"name\": \"whatever\" }") as ObjectNode,
             pluginDefinition
         )
 
@@ -65,7 +66,7 @@ internal class PluginFactoryTest {
         val pluginConfiguration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode,
+            ObjectMapper().readTree("{\"name\": \"whatever\" }") as ObjectNode,
             pluginDefinition
         )
 
@@ -134,11 +135,11 @@ internal class PluginFactoryTest {
         val categoryPluginConfigurationId = PluginConfigurationId.newId()
         val pluginCategory = object : TestPluginCategory {}
         whenever(pluginService.createInstance(categoryPluginConfigurationId)).thenReturn(pluginCategory)
-        whenever((pluginService.getObjectMapper())).thenReturn(MapperSingleton.get())
+        whenever((pluginService.getObjectMapper())).thenReturn(jacksonObjectMapper())
         val pluginConfiguration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get().valueToTree(
+            ObjectMapper().valueToTree(
                     TestPluginConfiguredProperties(property1 = "whatever", property3 = 2, property4= categoryPluginConfigurationId.id.toString())
             ),
             pluginDefinition

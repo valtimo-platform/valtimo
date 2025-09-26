@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
 
 package com.ritense.valtimo.security.jwt;
 
+import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.security.jwt.authentication.TokenAuthenticationService;
-import org.operaton.bpm.engine.IdentityService;
+import org.camunda.bpm.engine.IdentityService;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.DefaultSecurityFilterChain;
@@ -28,14 +29,17 @@ public class JwtSecurityConfigurerAdapter extends SecurityConfigurerAdapter<Defa
     private final IdentityService identityService;
     private final TokenAuthenticationService tokenAuthenticationService;
 
-    public JwtSecurityConfigurerAdapter(IdentityService identityService, TokenAuthenticationService tokenAuthenticationService) {
+    private final ValtimoProperties valtimoProperties;
+
+    public JwtSecurityConfigurerAdapter(IdentityService identityService, TokenAuthenticationService tokenAuthenticationService, ValtimoProperties valtimoProperties) {
         this.identityService = identityService;
         this.tokenAuthenticationService = tokenAuthenticationService;
+        this.valtimoProperties = valtimoProperties;
     }
 
     @Override
     public void configure(HttpSecurity http) {
-        JwtFilter customFilter = new JwtFilter(identityService, tokenAuthenticationService);
+        JwtFilter customFilter = new JwtFilter(identityService, tokenAuthenticationService, valtimoProperties);
         http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
     }
 

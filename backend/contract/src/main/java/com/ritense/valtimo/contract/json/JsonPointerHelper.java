@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 
-public interface JsonPointerHelper {
+public abstract class JsonPointerHelper {
 
-    static void appendJsonPointerTo(ObjectNode node, JsonPointer pointer, JsonNode value) {
+    public static void appendJsonPointerTo(ObjectNode node, JsonPointer pointer, JsonNode value) {
         final JsonPointer parentPointer = pointer.head();
         JsonNode parentNode = node.at(parentPointer);
         final String fieldName = pointer.last().toString().substring(1);

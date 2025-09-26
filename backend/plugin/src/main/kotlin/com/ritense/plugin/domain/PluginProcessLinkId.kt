@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,16 @@
 
 package com.ritense.plugin.domain
 
+import com.fasterxml.jackson.annotation.JsonValue
 import com.ritense.valtimo.contract.domain.AbstractId
-import jakarta.persistence.Embeddable
 import java.util.UUID
+import javax.persistence.Column
+import javax.persistence.Embeddable
 
-@Deprecated("Marked for removal since 10.6.0")
 @Embeddable
 class PluginProcessLinkId(
+    @Column(name = "plugin_process_link_id")
+    @JsonValue
     val id: UUID
 ): AbstractId<PluginProcessLinkId>(){
 

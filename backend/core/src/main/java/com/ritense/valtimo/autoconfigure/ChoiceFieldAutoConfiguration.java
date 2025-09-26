@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,18 @@ import com.ritense.valtimo.service.ChoiceFieldService;
 import com.ritense.valtimo.service.ChoiceFieldValueService;
 import com.ritense.valtimo.web.rest.ChoiceFieldResource;
 import com.ritense.valtimo.web.rest.ChoiceFieldValueResource;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@AutoConfiguration
+@Configuration
 @EnableJpaRepositories(basePackageClasses = {
     ChoiceFieldRepository.class,
     ChoiceFieldValueRepository.class
 })
-@EntityScan("com.ritense.valtimo.domain.choicefield")
+@EntityScan(value = "com.ritense.valtimo.domain.choicefield")
 public class ChoiceFieldAutoConfiguration {
 
     @Bean
@@ -48,10 +48,9 @@ public class ChoiceFieldAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ChoiceFieldValueService.class)
     public ChoiceFieldValueService choiceFieldValueService(
-        final ChoiceFieldValueRepository choiceFieldValueRepository,
-        final ChoiceFieldRepository choiceFieldRepository
+        final ChoiceFieldValueRepository choiceFieldValueRepository
     ) {
-        return new ChoiceFieldValueService(choiceFieldRepository, choiceFieldValueRepository);
+        return new ChoiceFieldValueService(choiceFieldValueRepository);
     }
 
     @Bean
@@ -63,9 +62,10 @@ public class ChoiceFieldAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ChoiceFieldValueResource.class)
     public ChoiceFieldValueResource choiceFieldValueResource(
-        final ChoiceFieldValueService choiceFieldValueService
+        final ChoiceFieldValueService choiceFieldValueService,
+        final ChoiceFieldRepository choiceFieldRepository
     ) {
-        return new ChoiceFieldValueResource(choiceFieldValueService);
+        return new ChoiceFieldValueResource(choiceFieldValueService, choiceFieldRepository);
     }
 
 }

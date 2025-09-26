@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 
 package com.ritense.valtimo.contract.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.ritense.valtimo.contract.OauthConfigHolder;
-import javax.annotation.Nonnull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.ConstructorBinding;
+import org.springframework.boot.context.properties.ConstructorBinding;
 
+@ConstructorBinding
 @ConfigurationProperties(prefix = "valtimo")
 public class ValtimoProperties {
 
@@ -29,26 +27,24 @@ public class ValtimoProperties {
 
     private final Mandrill mandrill;
 
-    private final Oauth oauth;
+    private final JWT jwt;
 
     private final Portal portal;
 
     private final Process process;
 
-    @ConstructorBinding
     public ValtimoProperties(
         App app,
         Mandrill mandrill,
-        Oauth oauth,
+        JWT jwt,
         Portal portal,
         Process process
     ) {
         this.app = app != null ? app : new App();
         this.mandrill = mandrill != null ? mandrill : new Mandrill();
-        this.oauth = oauth != null ? oauth : new Oauth();
+        this.jwt = jwt != null ? jwt : new JWT();
         this.portal = portal != null ? portal : new Portal();
         this.process = process != null ? process : new Process();
-        new OauthConfigHolder(this.oauth);
     }
 
     public App getApp() {
@@ -59,8 +55,8 @@ public class ValtimoProperties {
         return mandrill;
     }
 
-    public Oauth getOauth() {
-        return oauth;
+    public JWT getJwt() {
+        return jwt;
     }
 
     public Portal getPortal() {
@@ -76,6 +72,8 @@ public class ValtimoProperties {
         private String hostname;
         private String scheme;
 
+        private Boolean multitenant = false;
+
         public String getHostname() {
             return hostname;
         }
@@ -90,6 +88,14 @@ public class ValtimoProperties {
 
         public void setScheme(String scheme) {
             this.scheme = scheme;
+        }
+
+        public Boolean getMultitenant() {
+            return multitenant;
+        }
+
+        public void setMultitenant(Boolean multitenant) {
+            this.multitenant = multitenant;
         }
 
         public String getBaselUrl() {
@@ -145,16 +151,26 @@ public class ValtimoProperties {
         }
     }
 
-    public static class Oauth {
-        private String publicKey;
+    public static class JWT {
+        private boolean base64encoding = false;
+        private String secret;
         private long tokenValidityInSeconds = 180000;
+        private long tokenValidityInSecondsForRememberMe = 2592000;
 
-        public String getPublicKey() {
-            return publicKey;
+        public boolean isBase64encoding() {
+            return base64encoding;
         }
 
-        public void setPublicKey(String publicKey) {
-            this.publicKey = publicKey;
+        public void setBase64encoding(boolean base64encoding) {
+            this.base64encoding = base64encoding;
+        }
+
+        public String getSecret() {
+            return secret;
+        }
+
+        public void setSecret(String secret) {
+            this.secret = secret;
         }
 
         public long getTokenValidityInSeconds() {
@@ -163,6 +179,14 @@ public class ValtimoProperties {
 
         public void setTokenValidityInSeconds(long tokenValidityInSeconds) {
             this.tokenValidityInSeconds = tokenValidityInSeconds;
+        }
+
+        public long getTokenValidityInSecondsForRememberMe() {
+            return tokenValidityInSecondsForRememberMe;
+        }
+
+        public void setTokenValidityInSecondsForRememberMe(long tokenValidityInSecondsForRememberMe) {
+            this.tokenValidityInSecondsForRememberMe = tokenValidityInSecondsForRememberMe;
         }
     }
 
@@ -203,4 +227,5 @@ public class ValtimoProperties {
             this.systemProcessUpdatable = systemProcessUpdatable;
         }
     }
+
 }

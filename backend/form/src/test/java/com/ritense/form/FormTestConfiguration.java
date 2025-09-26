@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,13 @@
 
 package com.ritense.form;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.mail.MailSender;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
+import static org.mockito.Mockito.mock;
 
 @SpringBootApplication
 public class FormTestConfiguration {
@@ -42,16 +39,6 @@ public class FormTestConfiguration {
     @Bean
     public MailSender mailSender() {
         return mock(MailSender.class);
-    }
-
-    @Bean
-    public TestFormFieldDataResolver testFormFieldDataResolver() {
-        return new TestFormFieldDataResolver();
-    }
-
-    @Bean
-    public TestValueResolverFactory testValueResolverFactory(ApplicationEventPublisher applicationEventPublisher) {
-        return spy(new TestValueResolverFactory(applicationEventPublisher, "test"));
     }
 
     @TestConfiguration

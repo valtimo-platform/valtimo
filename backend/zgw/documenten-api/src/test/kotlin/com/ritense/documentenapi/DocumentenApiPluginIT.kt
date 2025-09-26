@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 
 package com.ritense.documentenapi
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.doCallRealMethod
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import com.ritense.document.domain.impl.request.NewDocumentRequest
-import com.ritense.documentenapi.client.DocumentInformatieObject
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginProcessLink
@@ -28,57 +30,57 @@ import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.resource.domain.MetadataType
+import com.ritense.resource.repository.OpenZaakResourceRepository
 import com.ritense.resource.service.TemporaryResourceStorageService
-import com.ritense.temporaryresource.domain.StorageMetadataKeys
+import com.ritense.valtimo.contract.json.Mapper
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.RuntimeService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doCallRealMethod
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
+import java.net.URI
 import java.time.LocalDate
 import java.util.Optional
 import java.util.UUID
+import javax.transaction.Transactional
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @Transactional
-internal class DocumentenApiPluginIT @Autowired constructor(
-    private val repositoryService: RepositoryService,
-    private val runtimeService: RuntimeService,
-    private val processDocumentService: ProcessDocumentService,
-    private val pluginProcessLinkRepository: PluginProcessLinkRepository,
-    private val temporaryResourceStorageService: TemporaryResourceStorageService,
-    private val objectMapper: ObjectMapper
-) : BaseIntegrationTest() {
+internal class DocumentenApiPluginIT: BaseIntegrationTest(){
+
+    @Autowired
+    lateinit var repositoryService: RepositoryService
+
+    @Autowired
+    lateinit var runtimeService: RuntimeService
+
+    @Autowired
+    lateinit var processDocumentService: ProcessDocumentService
+
+    @Autowired
+    lateinit var pluginProcessLinkRepository: PluginProcessLinkRepository
+
+    @Autowired
+    lateinit var temporaryResourceStorageService: TemporaryResourceStorageService
+
+    @Autowired
+    lateinit var openZaakResourceRepository: OpenZaakResourceRepository
 
     lateinit var server: MockWebServer
 
-    lateinit var pluginConfiguration: PluginConfiguration
     lateinit var processDefinitionId: String
 
     @BeforeEach
     internal fun setUp() {
-        objectMapper.addMixIn(DocumentInformatieObject::class.java, DocumentInformatieObjectMixin::class.java)
-
         server = MockWebServer()
         setupMockDocumentenApiServer()
         server.start()
@@ -98,25 +100,14 @@ internal class DocumentenApiPluginIT @Autowired constructor(
         doReturn(TestAuthentication()).whenever(pluginService).createInstance(mockedId)
         doCallRealMethod().whenever(pluginService).createPluginConfiguration(any(), any(), any())
 
-        pluginConfiguration = pluginService.createPluginConfiguration(
+        val configuration = pluginService.createPluginConfiguration(
             "Documenten API plugin configuration",
-            objectMapper.readTree(
+            Mapper.INSTANCE.get().readTree(
                 pluginPropertiesJson
             ) as ObjectNode,
             "documentenapi"
         )
-
-        processDefinitionId = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionKey("documenten-api-plugin")
-            .latestVersion()
-            .singleResult()
-            .id
-    }
-
-    @Test
-    fun `should store temp file in documenten api`() {
-        saveProcessLink(
-            "store-temp-document", """
+        val actionProperties = """
             {
                 "fileName": "test.ext",
                 "confidentialityLevel": "zaakvertrouwelijk",
@@ -129,34 +120,50 @@ internal class DocumentenApiPluginIT @Autowired constructor(
                 "status": "in_bewerking"
             }
         """.trimIndent()
+
+        processDefinitionId = repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey("documenten-api-plugin")
+            .latestVersion()
+            .singleResult()
+            .id
+
+        pluginProcessLinkRepository.save(
+            PluginProcessLink(
+                PluginProcessLinkId(UUID.randomUUID()),
+                processDefinitionId,
+                "StoreDocument",
+                Mapper.INSTANCE.get().readTree(actionProperties) as ObjectNode,
+                configuration.id,
+                "store-temp-document"
+            )
         )
+    }
+
+    @Test
+    fun `should store temp file in documenten api`() {
         val documentId = temporaryResourceStorageService.store(
-            "test".byteInputStream(), mutableMapOf(MetadataType.FILE_SIZE.key to 4L)
+            "test".byteInputStream()
         )
 
-        val newDocumentRequest = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY,
-            "profile",
-            "1.0.0",
-            objectMapper.createObjectNode()
-        )
+        val newDocumentRequest = NewDocumentRequest(DOCUMENT_DEFINITION_KEY, Mapper.INSTANCE.get().createObjectNode())
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
             .withProcessVars(mapOf("localDocumentVariableName" to documentId))
 
-        val newDocumentAndStartProcessResult =
-            runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
+        processDocumentService.newDocumentAndStartProcess(request)
 
         val resourceId = runtimeService.createVariableInstanceQuery()
             .variableName("storedDocumentVariableName")
             .singleResult()
             .value as String
 
+        val resource = openZaakResourceRepository.findByInformatieObjectUrl(URI("http://example.com"))
+        assertNotNull(resource)
+
         val recordedRequest = server.takeRequest()
         val requestString = recordedRequest.body.readUtf8()
 
-        val parsedOutput = objectMapper.readValue(requestString, Map::class.java)
+        val parsedOutput = Mapper.INSTANCE.get().readValue(requestString, Map::class.java)
 
-        verify(consumer).consumeEvent(any())
         assertEquals("123456789", parsedOutput["bronorganisatie"])
         assertEquals(LocalDate.now().toString(), parsedOutput["creatiedatum"])
         assertEquals("zaakvertrouwelijk", parsedOutput["vertrouwelijkheidaanduiding"])
@@ -164,272 +171,23 @@ internal class DocumentenApiPluginIT @Autowired constructor(
         assertEquals("description", parsedOutput["beschrijving"])
         assertEquals("GZAC", parsedOutput["auteur"])
         assertEquals("test.ext", parsedOutput["bestandsnaam"])
-        assertEquals(4, parsedOutput["bestandsomvang"])
         assertEquals("nld", parsedOutput["taal"])
         assertEquals("dGVzdA==", parsedOutput["inhoud"])
         assertEquals("testtype", parsedOutput["informatieobjecttype"])
         assertEquals("in_bewerking", parsedOutput["status"])
         assertEquals(false, parsedOutput["indicatieGebruiksrecht"])
 
-        assertEquals(server.url("/").toString(), resourceId)
-        assertTrue(
-            temporaryResourceStorageService.getMetadataValue(documentId, StorageMetadataKeys.DOCUMENT_URL.key)
-                .contains(server.url("/").toString())
-        )
+        assertEquals("http://example.com", resourceId)
     }
 
-    @Test
-    fun `should store with meta-data-filename when process-link-filename is empty`() {
-        saveProcessLink(
-            "store-temp-document", """
-            {
-                "fileName": null,
-                "confidentialityLevel": "zaakvertrouwelijk",
-                "title": "title",
-                "description": "description",
-                "localDocumentLocation": "localDocumentVariableName",
-                "storedDocumentUrl": "storedDocumentVariableName",
-                "informatieobjecttype": "testtype",
-                "taal": "nld",
-                "status": "in_bewerking"
-            }
-        """.trimIndent()
-        )
-        val documentId = temporaryResourceStorageService.store(
-            "test".byteInputStream(),
-            mapOf(MetadataType.FILE_NAME.key to "my-document.pdf")
-        )
-
-        val newDocumentRequest = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY,
-            "profile",
-            "1.0.0",
-            objectMapper.createObjectNode()
-        )
-        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
-            .withProcessVars(mapOf("localDocumentVariableName" to documentId))
-
-        runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
-
-        val parsedOutput = objectMapper.readValue(server.takeRequest().body.readUtf8(), Map::class.java)
-        assertEquals("my-document.pdf", parsedOutput["bestandsnaam"])
-        assertTrue(
-            temporaryResourceStorageService.getMetadataValue(documentId, StorageMetadataKeys.DOCUMENT_URL.key)
-                .contains(server.url("/").toString())
-        )
-    }
-
-    @Test
-    fun `should download document`() {
-        saveProcessLink("download-document", "{}")
-        val documentUrl = "${server.url("/")}enkelvoudiginformatieobjecten/$DOCUMENT_ID"
-
-        val newDocumentRequest = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY,
-            "profile",
-            "1.0.0",
-            objectMapper.createObjectNode()
-        )
-        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
-            .withProcessVars(mapOf("documentUrl" to documentUrl))
-
-        runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
-
-        val resourceId = runtimeService.createVariableInstanceQuery()
-            .variableName("resourceId")
-            .singleResult()
-            .value as String
-        val documentInputStream = temporaryResourceStorageService.getResourceContentAsInputStream(resourceId)
-        val documentMetadata = temporaryResourceStorageService.getResourceMetadata(resourceId)
-        assertEquals("TEST_DOCUMENT_CONTENT", documentInputStream.bufferedReader().use { it.readText() })
-        assertNotNull(documentMetadata[MetadataType.DOCUMENT_ID.key])
-        assertEquals("passport.jpg", documentMetadata[MetadataType.FILE_NAME.key])
-        assertEquals("Passport", documentMetadata["title"])
-        assertEquals("My passport", documentMetadata["description"])
-    }
-
-    @Test
-    fun `should download document to given process variable`() {
-        saveProcessLink(
-            "download-document", """
-            {
-               "processVariableName": "processVariableName"
-            }
-        """.trimIndent()
-        )
-        val documentUrl = "${server.url("/")}enkelvoudiginformatieobjecten/$DOCUMENT_ID"
-
-        val newDocumentRequest = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY,
-            "profile",
-            "1.0.0",
-            objectMapper.createObjectNode()
-        )
-        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
-            .withProcessVars(mapOf("documentUrl" to documentUrl))
-
-        runWithoutAuthorization { processDocumentService.newDocumentAndStartProcess(request) }
-
-        val resourceId = runtimeService.createVariableInstanceQuery()
-            .variableName("processVariableName")
-            .singleResult()
-            .value as String
-        val documentInputStream = temporaryResourceStorageService.getResourceContentAsInputStream(resourceId)
-        val documentMetadata = temporaryResourceStorageService.getResourceMetadata(resourceId)
-        assertEquals("TEST_DOCUMENT_CONTENT", documentInputStream.bufferedReader().use { it.readText() })
-        assertNotNull(documentMetadata[MetadataType.DOCUMENT_ID.key])
-        assertEquals("passport.jpg", documentMetadata[MetadataType.FILE_NAME.key])
-        assertEquals("Passport", documentMetadata["title"])
-        assertEquals("My passport", documentMetadata["description"])
-    }
-
-    @Test
-    fun `should set documentUrl process variable on related process when processInstanceId is present`() {
-        // Start related (target) process first, without an upload link
-        val relatedDocReq = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY, "profile", "1.0.0", objectMapper.createObjectNode()
-        )
-        runWithoutAuthorization {
-            processDocumentService.newDocumentAndStartProcess(
-                NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, relatedDocReq)
-            )
-        }
-
-        val relatedPi = runtimeService.createProcessInstanceQuery()
-            .processDefinitionKey(PROCESS_DEFINITION_KEY)
-            .singleResult()
-        val processInstanceId = relatedPi?.processInstanceId
-        assertNotNull(relatedPi, "Expected a related process instance to exist")
-        assertNotNull(processInstanceId, "Expected related process to have a process instance id")
-
-        // Now link the upload action
-        saveProcessLink("store-uploaded-document", "{}")
-
-        // Create a temp resource referencing the related process instance id
-        val resourceId = temporaryResourceStorageService.store(
-            "content".byteInputStream(),
-            mutableMapOf(
-                MetadataType.FILE_NAME.key to "upload.pdf",
-                "title" to "t",
-                "status" to "in_bewerking",
-                "language" to "nld",
-                "informatieobjecttype" to "ioType",
-                StorageMetadataKeys.PROCESS_INSTANCE_ID.key to processInstanceId!!
-            )
-        )
-
-        // Start uploader process that will trigger the action
-        val uploadReq = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY, "profile", "1.0.0", objectMapper.createObjectNode()
-        )
-        runWithoutAuthorization {
-            processDocumentService.newDocumentAndStartProcess(
-                NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, uploadReq)
-                    .withProcessVars(mapOf("resourceId" to resourceId))
-            )
-        }
-
-        // Assert default variable name was set on related process
-        val varInst = runtimeService.createVariableInstanceQuery()
-            .processInstanceIdIn(relatedPi.id)
-            .variableName(DocumentenApiPlugin.DOCUMENT_URL_PROCESS_VAR)
-            .singleResult()
-
-        assertNotNull(varInst, "Expected 'documentUrl' process variable to be set on the related process")
-        val value = varInst.value as String
-        assertTrue(value.startsWith(server.url("/").toString()))
-    }
-
-    @Test
-    fun `should set custom process variable name when provided in metadata`() {
-        // Start related (target) process first
-        val relatedDocReq = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY, "profile", "1.0.0", objectMapper.createObjectNode()
-        )
-        runWithoutAuthorization {
-            processDocumentService.newDocumentAndStartProcess(
-                NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, relatedDocReq)
-            )
-        }
-
-        val relatedPi = runtimeService.createProcessInstanceQuery()
-            .processDefinitionKey(PROCESS_DEFINITION_KEY)
-            .singleResult()
-        val processInstanceId = relatedPi?.processInstanceId
-        assertNotNull(relatedPi, "Expected a related process instance to exist")
-        assertNotNull(processInstanceId, "Expected related process to have a process instance id")
-
-        // Use a custom variable name
-        val customVarName = "myCustomDocUrl"
-
-        // Link the upload action
-        saveProcessLink("store-uploaded-document", "{}")
-
-        // Create a temp resource referencing the related process + custom var name
-        val resourceId = temporaryResourceStorageService.store(
-            "content".byteInputStream(),
-            mutableMapOf(
-                MetadataType.FILE_NAME.key to "upload.pdf",
-                "title" to "t",
-                "status" to "in_bewerking",
-                "language" to "nld",
-                "informatieobjecttype" to "ioType",
-                StorageMetadataKeys.PROCESS_INSTANCE_ID.key to processInstanceId!!,
-                StorageMetadataKeys.DOCUMENT_URL_PROCESS_VARIABLE.key to customVarName
-            )
-        )
-
-        // Start uploader process
-        val uploadReq = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY, "profile", "1.0.0", objectMapper.createObjectNode()
-        )
-        runWithoutAuthorization {
-            processDocumentService.newDocumentAndStartProcess(
-                NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, uploadReq)
-                    .withProcessVars(mapOf("resourceId" to resourceId))
-            )
-        }
-
-        // Assert custom variable was set on related process
-        val varInst = runtimeService.createVariableInstanceQuery()
-            .processInstanceIdIn(relatedPi.id)
-            .variableName(customVarName)
-            .singleResult()
-
-        assertNotNull(varInst, "Expected custom process variable '$customVarName' to be set on the related process")
-        val value = varInst.value as String
-        assertTrue(value.startsWith(server.url("/").toString()))
-    }
-
-    private fun saveProcessLink(pluginActionDefinitionKey: String, generateDocumentActionProperties: String) {
-        pluginProcessLinkRepository.save(
-            PluginProcessLink(
-                PluginProcessLinkId(UUID.fromString("71997298-163c-4a67-b52a-1dcc2af72b40")),
-                processDefinitionId,
-                "serviceTask",
-                objectMapper.readTree(generateDocumentActionProperties) as ObjectNode,
-                pluginConfiguration.id,
-                pluginActionDefinitionKey,
-                ActivityTypeWithEventName.SERVICE_TASK_START
-            )
-        )
-    }
-
-    private fun setupMockDocumentenApiServer() {
+    fun setupMockDocumentenApiServer() {
         val dispatcher: Dispatcher = object : Dispatcher() {
             @Throws(InterruptedException::class)
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val path = request.path?.substringBefore('?')
                 val response = when (path) {
                     "/enkelvoudiginformatieobjecten"
-                        -> handleDocumentRequest()
-
-                    "/enkelvoudiginformatieobjecten/$DOCUMENT_ID"
-                        -> handleDocumentRequest()
-
-                    "/enkelvoudiginformatieobjecten/$DOCUMENT_ID/download"
-                        -> handleDocumentDownloadRequest()
-
+                    -> handleDocumentRequest()
                     else -> MockResponse().setResponseCode(404)
                 }
                 return response
@@ -438,26 +196,26 @@ internal class DocumentenApiPluginIT @Autowired constructor(
         server.dispatcher = dispatcher
     }
 
-    private fun handleDocumentRequest(zone: String = "Z"): MockResponse {
+    private fun handleDocumentRequest(): MockResponse {
         val body = """
             {
-              "url": "${server.url("/")}",
+              "url": "http://example.com",
               "identificatie": "string",
-              "bronorganisatie": "404797441",
+              "bronorganisatie": "string",
               "creatiedatum": "2019-08-24",
-              "titel": "Passport",
+              "titel": "string",
               "vertrouwelijkheidaanduiding": "openbaar",
               "auteur": "string",
               "status": "in_bewerking",
               "formaat": "string",
               "taal": "str",
               "versie": 0,
-              "beginRegistratie": "2019-08-24T14:15:22$zone",
-              "bestandsnaam": "passport.jpg",
+              "beginRegistratie": "2019-08-24T14:15:22Z",
+              "bestandsnaam": "string",
               "inhoud": "string",
               "bestandsomvang": 0,
               "link": "http://example.com",
-              "beschrijving": "My passport",
+              "beschrijving": "string",
               "ontvangstdatum": "2019-08-24",
               "verzenddatum": "2019-08-24",
               "indicatieGebruiksrecht": true,
@@ -471,24 +229,19 @@ internal class DocumentenApiPluginIT @Autowired constructor(
                 "datum": "2019-08-24"
               },
               "informatieobjecttype": "http://example.com",
-              "locked": true,
-              "bestandsdelen": []
+              "locked": true
             }
         """.trimIndent()
         return mockResponse(body)
     }
 
-    private fun handleDocumentDownloadRequest(): MockResponse {
+    private fun mockResponse(body: String): MockResponse {
         return MockResponse()
-            .addHeader("Content-Type", "application/octet-stream")
-            .setBody("TEST_DOCUMENT_CONTENT")
+            .addHeader("Content-Type", "application/json")
+            .setBody(body)
     }
 
-    class TestAuthentication : DocumentenApiAuthentication {
-        override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-            return builder
-        }
-
+    class TestAuthentication: DocumentenApiAuthentication {
         override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
             return next.exchange(request)
         }
@@ -497,6 +250,5 @@ internal class DocumentenApiPluginIT @Autowired constructor(
     companion object {
         private const val PROCESS_DEFINITION_KEY = "documenten-api-plugin"
         private const val DOCUMENT_DEFINITION_KEY = "profile"
-        private const val DOCUMENT_ID = "3bd88200-11cb-45cf-a742-da01261755b1"
     }
 }

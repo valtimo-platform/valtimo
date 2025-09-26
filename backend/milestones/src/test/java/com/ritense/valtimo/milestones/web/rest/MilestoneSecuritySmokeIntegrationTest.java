@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,8 @@
 
 package com.ritense.valtimo.milestones.web.rest;
 
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
-import com.ritense.valtimo.web.rest.SecuritySmokeIntegrationTest;
-import java.util.Set;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import com.ritense.valtimo.web.rest.CoreSecuritySmokeIntegrationTest;
 
-public class MilestoneSecuritySmokeIntegrationTest extends SecuritySmokeIntegrationTest {
-    @MockitoBean
-    private ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker;
+public class MilestoneSecuritySmokeIntegrationTest extends CoreSecuritySmokeIntegrationTest {
 
-    public MilestoneSecuritySmokeIntegrationTest() {
-        super("com.ritense.valtimo.milestones", Set.of());
-    }
 }

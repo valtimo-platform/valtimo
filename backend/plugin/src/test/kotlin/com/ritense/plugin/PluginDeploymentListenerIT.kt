@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package com.ritense.plugin
 
+import com.ritense.plugin.domain.ActivityType
+import com.ritense.plugin.domain.ActivityType.SERVICE_TASK
 import com.ritense.plugin.domain.PluginActionDefinition
 import com.ritense.plugin.domain.PluginCategory
 import com.ritense.plugin.domain.PluginDefinition
@@ -23,21 +25,19 @@ import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.repository.PluginActionDefinitionRepository
 import com.ritense.plugin.repository.PluginActionPropertyDefinitionRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
-import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.containsInAnyOrder
-import org.hamcrest.Matchers.greaterThanOrEqualTo
 import org.hamcrest.Matchers.hasProperty
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.not
 import org.hamcrest.core.IsIterableContaining.hasItems
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
+import javax.transaction.Transactional
+import org.hamcrest.Matchers.greaterThanOrEqualTo
+import org.junit.jupiter.api.Assertions.fail
 
 internal class PluginDeploymentListenerIT: BaseIntegrationTest() {
 
@@ -72,7 +72,7 @@ internal class PluginDeploymentListenerIT: BaseIntegrationTest() {
         assertPluginCategoryPresent(plugin.categories)
 
         val deployedActionProperties = pluginActionPropertyDefinitionRepository.findAll()
-        assertThat(deployedActionProperties.size, `is`(2))
+        assertThat(deployedActionProperties.size, `is`(1))
     }
 
     private fun assertPluginPropertiesPresent(
@@ -137,7 +137,7 @@ internal class PluginDeploymentListenerIT: BaseIntegrationTest() {
             "Test action",
             "This is an action used to verify plugin framework functionality",
             "testAction",
-            arrayOf(SERVICE_TASK_START)
+            arrayOf(SERVICE_TASK)
         )
     }
 
@@ -149,7 +149,7 @@ internal class PluginDeploymentListenerIT: BaseIntegrationTest() {
             "Test action 2",
             "This is an action used to test method overloading",
             "testAction",
-            arrayOf(SERVICE_TASK_START)
+            arrayOf(SERVICE_TASK)
         )
     }
 
@@ -161,7 +161,7 @@ internal class PluginDeploymentListenerIT: BaseIntegrationTest() {
             "Parent test action",
             "This is an action used to test method inheritance",
             "testAction",
-            arrayOf(SERVICE_TASK_START)
+            arrayOf(SERVICE_TASK)
         )
     }
 
@@ -173,7 +173,7 @@ internal class PluginDeploymentListenerIT: BaseIntegrationTest() {
             "Override test action",
             "This is an action used to test method inheritance",
             "overrideAction",
-            arrayOf(SERVICE_TASK_START)
+            arrayOf(SERVICE_TASK)
         )
     }
 
@@ -197,7 +197,7 @@ internal class PluginDeploymentListenerIT: BaseIntegrationTest() {
         title: String,
         description: String,
         methodName: String,
-        activityTypes: Array<ActivityTypeWithEventName>
+        activityTypes: Array<ActivityType>
     ) {
         assertThat(
             deployedActions,

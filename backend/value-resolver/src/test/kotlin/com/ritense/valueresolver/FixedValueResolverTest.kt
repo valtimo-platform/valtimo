@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package com.ritense.valueresolver
 
+import java.io.InvalidClassException
+import java.util.UUID
 import org.assertj.core.api.Assertions
+import org.camunda.bpm.extension.mockito.delegate.DelegateTaskFake
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.mock
-import org.operaton.bpm.engine.delegate.DelegateTask
-import java.util.UUID
 
 internal class FixedValueResolverTest {
 
@@ -30,7 +30,7 @@ internal class FixedValueResolverTest {
     @Test
     fun `should resolve boolean value from requestedValue`() {
         val processInstanceId = UUID.randomUUID().toString()
-        val variableScope = mock<DelegateTask>()
+        val variableScope = DelegateTaskFake()
 
         val resolvedValue = fixedValueResolver.createResolver(
             processInstanceId = processInstanceId,
@@ -45,63 +45,37 @@ internal class FixedValueResolverTest {
     @Test
     fun `should resolve long value from requestedValue`() {
         val processInstanceId = UUID.randomUUID().toString()
-        val variableScope = mock<DelegateTask>()
+        val variableScope = DelegateTaskFake()
 
         val resolvedValue = fixedValueResolver.createResolver(
             processInstanceId = processInstanceId,
             variableScope = variableScope
         ).apply(
-            "1234"
+            "1337"
         )
 
-        Assertions.assertThat(resolvedValue).isEqualTo(1234L)
-    }
-
-    @Test
-    fun `should not resolve long with leading 0`() {
-        val documentInstanceId = UUID.randomUUID().toString()
-
-        val resolvedValue = fixedValueResolver.createResolver(
-            documentId = documentInstanceId,
-        ).apply(
-            "01234"
-        )
-
-        Assertions.assertThat(resolvedValue).isEqualTo("01234")
+        Assertions.assertThat(resolvedValue).isEqualTo(1337L)
     }
 
     @Test
     fun `should resolve double value from requestedValue`() {
         val processInstanceId = UUID.randomUUID().toString()
-        val variableScope = mock<DelegateTask>()
+        val variableScope = DelegateTaskFake()
 
         val resolvedValue = fixedValueResolver.createResolver(
             processInstanceId = processInstanceId,
             variableScope = variableScope
         ).apply(
-            "0.1234"
+            "13.37"
         )
 
-        Assertions.assertThat(resolvedValue).isEqualTo(0.1234)
-    }
-
-    @Test
-    fun `should not resolve double with leading 0`() {
-        val documentInstanceId = UUID.randomUUID().toString()
-
-        val resolvedValue = fixedValueResolver.createResolver(
-            documentId = documentInstanceId,
-        ).apply(
-            "01.234"
-        )
-
-        Assertions.assertThat(resolvedValue).isEqualTo("01.234")
+        Assertions.assertThat(resolvedValue).isEqualTo(13.37)
     }
 
     @Test
     fun `should resolve string value from requestedValue`() {
         val processInstanceId = UUID.randomUUID().toString()
-        val variableScope = mock<DelegateTask>()
+        val variableScope = DelegateTaskFake()
 
         val resolvedValue = fixedValueResolver.createResolver(
             processInstanceId = processInstanceId,
@@ -116,7 +90,7 @@ internal class FixedValueResolverTest {
     @Test
     fun `should resolve prefixed value from requestedValue`() {
         val processInstanceId = UUID.randomUUID().toString()
-        val variableScope = mock<DelegateTask>()
+        val variableScope = DelegateTaskFake()
 
         val resolvedValue = FixedValueResolverFactory("http").createResolver(
             processInstanceId = processInstanceId,
@@ -129,22 +103,9 @@ internal class FixedValueResolverTest {
     }
 
     @Test
-    fun `should resolve boolean value from requestedValue for documentId`() {
-        val documentInstanceId = UUID.randomUUID().toString()
-
-        val resolvedValue = fixedValueResolver.createResolver(
-            documentId = documentInstanceId,
-        ).apply(
-            "true"
-        )
-
-        Assertions.assertThat(resolvedValue).isEqualTo(true)
-    }
-
-    @Test
     fun `should NOT handle value`() {
         val processInstanceId = UUID.randomUUID().toString()
-        val variableScope = mock<DelegateTask>()
+        val variableScope = DelegateTaskFake()
 
         val throwable = assertThrows<RuntimeException> {
             fixedValueResolver.handleValues(processInstanceId, variableScope, mapOf("firstName" to "John"))

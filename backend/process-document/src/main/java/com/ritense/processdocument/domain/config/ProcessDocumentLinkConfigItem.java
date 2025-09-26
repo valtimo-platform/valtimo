@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@
 
 package com.ritense.processdocument.domain.config;
 
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition;
 import com.ritense.processdocument.domain.ProcessDocumentDefinition;
 
 public class ProcessDocumentLinkConfigItem {
     private String processDefinitionKey;
     private Boolean canInitializeDocument;
     private Boolean startableByUser;
+    private Boolean processIsVisibleInMenu;
 
     public ProcessDocumentLinkConfigItem() {
-        //Default constructor
     }
 
     public String getProcessDefinitionKey() {
@@ -63,17 +62,18 @@ public class ProcessDocumentLinkConfigItem {
         this.startableByUser = startableByUser;
     }
 
+    public Boolean getProcessIsVisibleInMenu() {
+        return processIsVisibleInMenu;
+    }
+
+    public void setProcessIsVisibleInMenu(Boolean processIsVisibleInMenu) {
+        this.processIsVisibleInMenu = processIsVisibleInMenu;
+    }
+
     public boolean equalsProcessDocumentDefinition(ProcessDocumentDefinition processDocumentDefinition) {
         return processDocumentDefinition.processDocumentDefinitionId().processDefinitionKey().toString().equals(getProcessDefinitionKey())
                 && processDocumentDefinition.startableByUser() == isStartableByUser()
                 && processDocumentDefinition.canInitializeDocument() == canInitializeDocument();
-    }
-
-    public boolean equalsProcessDocumentDefinition(ProcessDefinitionCaseDefinition processDefinitionCaseDefinition) {
-        //TODO: how to get key
-        return true //processDefinitionCaseDefinition.getId().equals()
-            && processDefinitionCaseDefinition.getStartableByUser() == isStartableByUser()
-            && processDefinitionCaseDefinition.getCanInitializeDocument() == canInitializeDocument();
     }
 
     @Override
@@ -82,6 +82,7 @@ public class ProcessDocumentLinkConfigItem {
                 "processDefinitionKey='" + processDefinitionKey + '\'' +
                 ", canInitializeDocument=" + canInitializeDocument +
                 ", startableByUser=" + startableByUser +
+                ", processIsVisibleInMenu=" + processIsVisibleInMenu +
                 '}';
     }
 }

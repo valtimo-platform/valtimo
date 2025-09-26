@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,14 @@
 
 package com.ritense.processdocument;
 
-import static org.mockito.Mockito.mock;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ritense.document.service.DocumentService;
-import com.ritense.processdocument.config.DeadlockService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.contract.annotation.ProcessBean;
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation;
 import com.ritense.valtimo.contract.mail.MailSender;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import static org.mockito.Mockito.mock;
 
 @SpringBootConfiguration
 @EnableAutoConfiguration
@@ -45,30 +39,11 @@ public class ProcessDocumentTestConfiguration {
     }
 
     @Bean
-    public MailSender mailSender() {
-        return mock(MailSender.class);
-    }
+    public MailSender mailSender() { return mock(MailSender.class); }
 
     @TestConfiguration
     public static class TestConfig {
-
-        @Bean
-        public LiquibaseMasterChangeLogLocation processDocumentTestLiquibaseMasterChangeLogLocation() {
-            return new LiquibaseMasterChangeLogLocation("config/liquibase/process-document-test-only-master.xml");
-        }
-
-        @ProcessBean
-        @Bean
-        public DeadlockService deadlockService(
-            DocumentService documentService,
-            ObjectMapper objectMapper
-        ) {
-            return new DeadlockService(
-                documentService,
-                objectMapper
-            );
-        }
-
+        //Beans extra
     }
 
 }

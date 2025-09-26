@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,16 @@
 
 package com.ritense.plugin
 
-import com.ritense.plugin.autodeployment.AutoDeploymentTestPlugin
-import com.ritense.plugin.autodeployment.TestAutoDeploymentPluginFactory
-import com.ritense.plugin.service.PluginService
-import com.ritense.processlink.configuration.ProcessLinkAutoConfiguration
-import org.mockito.kotlin.spy
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.spy
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.bpm.extension.mockito.service.RuntimeServiceFluentMock
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 
-@SpringBootApplication(exclude = [ProcessLinkAutoConfiguration::class])
+@SpringBootApplication
 class TestApplication {
 
     fun main(args: Array<String>) {
@@ -36,18 +35,13 @@ class TestApplication {
     @TestConfiguration
     class TestConfig {
         @Bean
-        fun testPlugin(pluginService: PluginService): PluginFactory<TestPlugin> {
-            return spy(TestPluginFactory("someString", pluginService))
+        fun testPlugin(): PluginFactory<TestPlugin> {
+            return spy(TestPluginFactory("someString", mock()))
         }
 
         @Bean
-        fun testAutoDeploymentPlugin(pluginService: PluginService): PluginFactory<AutoDeploymentTestPlugin> {
-            return spy(TestAutoDeploymentPluginFactory("whoCares",pluginService))
-        }
-
-        @Bean
-        fun testCategoryPlugin(pluginService: PluginService): PluginFactory<TestCategoryPlugin> {
-            return spy(TestCategoryPluginFactory(pluginService))
+        fun runtimeService():RuntimeService {
+            return RuntimeServiceFluentMock().runtimeService
         }
     }
 }

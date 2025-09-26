@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,10 @@
 
 package com.ritense.valtimo.milestones.web.rest;
 
-import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
-
-import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.milestones.domain.MilestoneSet;
 import com.ritense.valtimo.milestones.repository.MilestoneSetRepository;
 import com.ritense.valtimo.milestones.service.MilestoneSetService;
-import com.ritense.valtimo.milestones.web.rest.dto.MilestoneSetSaveDTO;
 import com.ritense.valtimo.web.rest.util.HeaderUtil;
-import jakarta.validation.Valid;
-import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -38,10 +31,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@SkipComponentScan
-@RequestMapping(value = "/api", produces = APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping("/api")
 public class MilestoneSetResource {
 
     private static final String ENTITY_NAME = "milestoneSet";
@@ -55,7 +50,7 @@ public class MilestoneSetResource {
         this.milestoneSetRepository = milestoneSetRepository;
     }
 
-    @GetMapping("/v1/milestone-sets/{id}")
+    @GetMapping("/milestone-sets/{id}")
     public ResponseEntity<MilestoneSet> getMilestoneSet(@PathVariable Long id) {
         logger.debug("REST request to get Milestone set : {}", id);
         Optional<MilestoneSet> milestoneSetOptional = milestoneSetRepository.findById(id);
@@ -64,20 +59,23 @@ public class MilestoneSetResource {
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @GetMapping("/v1/milestone-sets")
+    @GetMapping("/milestone-sets")
     public ResponseEntity<List<MilestoneSet>> listMilestoneSets() {
         logger.debug("REST request to get all milestone sets");
         List<MilestoneSet> milestoneSetList = milestoneSetService.listMilestoneSets();
         return ResponseEntity.ok(milestoneSetList);
     }
 
-    @PostMapping("/v1/milestone-sets")
-    public ResponseEntity<MilestoneSet> saveMilestoneSet(@Valid @RequestBody MilestoneSetSaveDTO dto) {
-        logger.debug("REST request to save Milestone set : {}", dto);
+    @PostMapping("/milestone-sets")
+    public ResponseEntity<MilestoneSet> saveMilestoneSet(@Valid @RequestBody MilestoneSet milestoneSet) {
+        logger.debug("REST request to save Milestone set : {}", milestoneSet);
 
-        boolean newMilestoneSet = dto.getId() == null;
+        boolean newMilestoneSet = false;
+        if (milestoneSet.getId() == null) {
+            newMilestoneSet = true;
+        }
 
-        MilestoneSet savedMilestoneSet = milestoneSetService.saveMilestoneSet(dto);
+        MilestoneSet savedMilestoneSet = milestoneSetService.saveMilestoneSet(milestoneSet);
 
         if (newMilestoneSet && savedMilestoneSet.getId() != null) {
             return ResponseEntity.ok()
@@ -91,7 +89,7 @@ public class MilestoneSetResource {
 
     }
 
-    @DeleteMapping("/v1/milestone-sets/{id}")
+    @DeleteMapping("/milestone-sets/{id}")
     public ResponseEntity<Void> deleteMilestoneSet(@PathVariable Long id) {
         logger.debug("REST request to delete Milestone set : {}", id);
         milestoneSetService.delete(id);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,68 +16,58 @@
 
 package com.ritense.catalogiapi
 
-import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.service.ActiveCaseDefinitionService
-import com.ritense.catalogiapi.client.CatalogiApiClient
-import com.ritense.catalogiapi.security.CatalogiApiHttpSecurityConfigurer
-import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.catalogiapi.web.rest.CatalogiResource
-import com.ritense.document.service.DocumentService
+import com.ritense.objectenapi.security.CatalogiApiHttpSecurityConfigurer
+import com.ritense.objectenapi.service.CatalogiService
 import com.ritense.plugin.service.PluginService
-import org.springframework.boot.autoconfigure.AutoConfiguration
+import com.ritense.zakenapi.client.CatalogiApiClient
+import io.netty.handler.logging.LogLevel
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.cache.CacheManager
-import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
-import org.springframework.web.client.RestClient
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.netty.http.client.HttpClient
+import reactor.netty.transport.logging.AdvancedByteBufFormat
 
-@AutoConfiguration
-@EnableCaching
+@Configuration
 class CatalogiApiAutoConfiguration {
 
     @Bean
-    fun catalogiApiClient(
-        restClientBuilder: RestClient.Builder,
-        cacheManager: CacheManager,
-    ): CatalogiApiClient {
-        return CatalogiApiClient(restClientBuilder, cacheManager)
+    fun catalogiApiClient(webclient: WebClient): CatalogiApiClient {
+        return CatalogiApiClient(webclient)
     }
 
     @Bean
     fun catalogiApiPluginFactory(
         pluginService: PluginService,
-        client: CatalogiApiClient,
-        zaaktypeUrlProvider: ZaaktypeUrlProvider,
-        documentService: DocumentService,
+        client: CatalogiApiClient
     ): CatalogiApiPluginFactory {
-        return CatalogiApiPluginFactory(pluginService, client, zaaktypeUrlProvider, documentService)
+        return CatalogiApiPluginFactory(pluginService, client)
     }
 
     @Bean
-    @ConditionalOnMissingBean(CatalogiService::class)
-    fun catalogiService(
-        zaaktypeUrlProvider: ZaaktypeUrlProvider,
-        pluginService: PluginService
-    ) = CatalogiService(
-        zaaktypeUrlProvider,
-        pluginService
-    )
+    @ConditionalOnMissingBean(WebClient::class)
+    fun catalogiApiWebClient(): WebClient {
+        return WebClient.builder().clientConnector(
+            ReactorClientHttpConnector(
+                HttpClient.create().wiretap(
+                    "reactor.netty.http.client.HttpClient",
+                    LogLevel.DEBUG,
+                    AdvancedByteBufFormat.TEXTUAL
+                )
+            )
+        ).build()
+    }
 
     @Bean
-    @ConditionalOnMissingBean(CatalogiResource::class)
-    fun catalogiResource(
-        catalogiService: CatalogiService,
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
-        caseDefinitionService: CaseDefinitionService,
-        documentService: DocumentService
-    ) = CatalogiResource(
-        catalogiService,
-        activeCaseDefinitionService,
-        caseDefinitionService,
-        documentService
-    )
+    fun catalogiService(
+        zaaktypeUrlProvider: ZaaktypeUrlProvider,
+        pluginService : PluginService
+    ): CatalogiService {
+        return CatalogiService(zaaktypeUrlProvider, pluginService)
+    }
 
     @Order(400)
     @Bean

@@ -2,9 +2,17 @@ timezone: etc/UTC
 spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3304/core-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
     liquibase:
         enabled: false
     jpa:
+        database-platform: org.hibernate.dialect.MySQL57Dialect
+        database: mysql
         show_sql: true
         open-in-view: false
         properties:
@@ -23,11 +31,16 @@ spring:
                     provider_disables_autocommit: true
         hibernate:
             ddl-auto: none
+            naming:
+                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            use-new-id-generator-mappings: false
 
 scheduling:
     enabled: false
     job:
         cron:
+            syncAuth0LogsEvents: 0 0 3 * * ? # Every day at 3:00
             cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
             taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
 
@@ -35,14 +48,13 @@ spring-actuator:
     username: test
     password: test
 
-operaton:
+camunda:
     bpm:
         history-level: audit
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false
 
 valtimo:
+    auth0:
+        enabled: false
     mandrill:
         apiKey: some-key
         dateFormat: dd-MM-yyyy
@@ -51,9 +63,7 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    operaton:
-        scripting:
-            allowedClasses: java.lang.System
+
 aws:
     profile: ritense
     region: eu-central-1
@@ -64,15 +74,3 @@ aws:
         enabled: true
         region: eu-central-1
         projectName: Valtimo-Implementation
-
-
-management:
-    endpoints:
-        web:
-            exposure:
-                include: [ "health", "configprops" ]
-    endpoint:
-        health:
-            show-details: when_authorized
-            roles:
-                - ROLE_ACTUATOR

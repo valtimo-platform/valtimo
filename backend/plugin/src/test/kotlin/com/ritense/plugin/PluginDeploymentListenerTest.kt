@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,12 @@
 
 package com.ritense.plugin
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.doThrow
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginCategory
 import com.ritense.plugin.domain.PluginDefinition
@@ -27,12 +33,6 @@ import com.ritense.plugin.repository.PluginDefinitionRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import kotlin.test.assertFailsWith
 
 internal class PluginDeploymentListenerTest {
@@ -168,5 +168,5 @@ internal class PluginDeploymentListenerTest {
         assertEquals(expectedMessage, exception.message)
     }
 
-    private class UnitTestPlugin
+    private class UnitTestPlugin()
 }

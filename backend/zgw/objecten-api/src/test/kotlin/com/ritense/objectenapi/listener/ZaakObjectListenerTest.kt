@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,12 @@ package com.ritense.objectenapi.listener
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.IntNode
 import com.fasterxml.jackson.databind.node.TextNode
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
@@ -28,14 +34,8 @@ import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.objecttypenapi.client.Objecttype
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
-import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.json.Mapper
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
@@ -60,7 +60,7 @@ class ZaakObjectListenerTest {
         val currentZaakObjectData = mapOf("person" to
             mapOf("firstname" to TextNode("Current"),
                   "lastname" to TextNode("Value")))
-        val zaakObjectJsonData =  MapperSingleton.get().valueToTree<JsonNode>(currentZaakObjectData)
+        val zaakObjectJsonData =  Mapper.INSTANCE.get().valueToTree<JsonNode>(currentZaakObjectData)
         val objectWrapper = ObjectWrapper(
             objectUrl,
             UUID.randomUUID(),

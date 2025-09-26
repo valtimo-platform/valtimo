@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,13 @@
  * limitations under the License.
  */
 
-dockerCompose {
-    projectName = "keycloak-iam"
-
-    integrationTestingPostgresql {
-        isRequiredBy(project.tasks.integrationTestingPostgresql)
-        isRequiredBy(project.tasks.securityTesting)
-        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
-    }
-
-    integrationTestingMysql {
-        isRequiredBy(project.tasks.integrationTestingMysql)
-        useComposeFiles.addAll("../docker-resources/docker-compose-base-test-mysql.yml", "docker-compose-override-mysql.yml")
-    }
-}
-
 dependencies {
     implementation project(':contract')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
+    api "javax.inject:javax.inject:1"
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-web"
@@ -43,7 +29,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-validation"
 
-    implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
+    implementation "com.fasterxml.jackson.module:jackson-module-afterburner"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"
     implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
@@ -51,32 +37,20 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
-
-    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
+    implementation "io.github.microutils:kotlin-logging:2.0.4"
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.springframework.security:spring-security-test"
 
-    implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
-    implementation "org.springframework.boot:spring-boot-starter-oauth2-client"
-    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
-
-    implementation "org.keycloak:keycloak-admin-client:${keycloakClientVersion}"
-    implementation "org.keycloak:keycloak-server-spi-private:${keycloakClientVersion}"
-    implementation "org.keycloak:keycloak-core:${keycloakClientVersion}"
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
+    implementation group: 'org.keycloak', name: 'keycloak-spring-boot-starter', version: '19.0.1'
+    implementation group: 'org.keycloak', name: 'keycloak-admin-client', version: '19.0.1'
 
     testImplementation project(":core")
-    testImplementation project(":test-utils-common")
+    testImplementation "io.jsonwebtoken:jjwt-impl:0.11.2"
 
-    testImplementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
-    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
-
-    testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"
-    testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
 }
 
 apply from: "gradle/publishing.gradle"

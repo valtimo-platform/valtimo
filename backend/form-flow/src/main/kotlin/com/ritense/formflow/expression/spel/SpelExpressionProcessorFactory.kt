@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@ import com.ritense.formflow.expression.ExpressionProcessorFactory
 import org.springframework.context.expression.MapAccessor
 import org.springframework.expression.spel.support.StandardEvaluationContext
 
-class SpelExpressionProcessorFactory : ExpressionProcessorFactory {
+class SpelExpressionProcessorFactory(
+): ExpressionProcessorFactory {
     lateinit var formFlowBeans: Map<String, Any>
     override fun create(variables: Map<String, Any>?): ExpressionProcessor {
         val context = StandardEvaluationContext()
         context.addPropertyAccessor(MapAccessor())
-        context.addPropertyAccessor(WritableJsonPropertyAccessor())
 
         val contextMap: MutableMap<String, Any> = formFlowBeans.toMutableMap()
 

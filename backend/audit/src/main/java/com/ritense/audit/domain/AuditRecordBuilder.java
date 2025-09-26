@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.audit.domain;
 
 import com.ritense.valtimo.contract.audit.AuditEvent;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,7 +30,6 @@ public class AuditRecordBuilder {
     private UUID documentId;
 
     public AuditRecordBuilder() {
-        //Default value for empty constructor
     }
 
     public AuditRecordBuilder id(UUID id) {

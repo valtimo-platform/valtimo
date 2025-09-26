@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2024 Ritense BV, the Netherlands.
+ *  Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.ritense.formflow.expression
 
 import com.ritense.formflow.BaseIntegrationTest
-import com.ritense.formflow.common.ValtimoFormFlow
 import com.ritense.formflow.expression.spel.SpelExpressionProcessorFactory
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -37,12 +36,11 @@ class ExpressionProcessorFactoryHolderIntTest: BaseIntegrationTest() {
             .setInstance(SpelExpressionProcessorFactory(), applicationContext = applicationContext)
 
         val spelExpressionProcessorFactory =
-            ExpressionProcessorFactoryHolder.getInstance() as SpelExpressionProcessorFactory
+            ExpressionProcessorFactoryHolder.getinstance()!! as SpelExpressionProcessorFactory
 
         assertNotNull(spelExpressionProcessorFactory.formFlowBeans)
-        assertEquals(2, spelExpressionProcessorFactory.formFlowBeans.size)
-        assertTrue(spelExpressionProcessorFactory.formFlowBeans["formFlowBeanTestHelper"] is FormFlowBeanTestHelper)
-        assertTrue(spelExpressionProcessorFactory.formFlowBeans["valtimoFormFlow"] is ValtimoFormFlow)
+        assertEquals(1, spelExpressionProcessorFactory.formFlowBeans.size)
+        assertTrue(spelExpressionProcessorFactory.formFlowBeans.get("formFlowBeanTestHelper") is FormFlowBeanTestHelper)
     }
 
     @Test
@@ -50,7 +48,7 @@ class ExpressionProcessorFactoryHolderIntTest: BaseIntegrationTest() {
         ExpressionProcessorFactoryHolder
             .setInstance(SpelExpressionProcessorFactory(), applicationContext = applicationContext)
         val evaluationResult = ExpressionProcessorFactoryHolder
-            .getInstance()
+            .getinstance()!!
             .create()
             .process<Any>("\${formFlowBeanTestHelper.returnTrue()}")
 
@@ -63,12 +61,12 @@ class ExpressionProcessorFactoryHolderIntTest: BaseIntegrationTest() {
         ExpressionProcessorFactoryHolder
             .setInstance(SpelExpressionProcessorFactory(), applicationContext = applicationContext)
         val expressionProcessor = ExpressionProcessorFactoryHolder
-            .getInstance()
+            .getinstance()!!
             .create()
 
         assertThrows<ExpressionExecutionException> {
             expressionProcessor
-                .process<Any>("\${formFlowService.findByKey(\"inkomens_loket\")}")
+                .process<Any>("\${formFlowService.findLatestDefinitionByKey(\"inkomens_loket\")}")
         }
     }
 

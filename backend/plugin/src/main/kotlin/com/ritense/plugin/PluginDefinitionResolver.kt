@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,32 @@
 package com.ritense.plugin
 
 import com.ritense.plugin.annotation.Plugin
-import com.ritense.valtimo.contract.annotation.AnnotatedClassResolver
-import org.springframework.context.ApplicationContext
+import io.github.classgraph.ClassGraph
+import mu.KotlinLogging
 
-class PluginDefinitionResolver(
-    context: ApplicationContext
-): AnnotatedClassResolver(context) {
+class PluginDefinitionResolver {
     internal fun findPluginClasses() : Map<Class<*>, Plugin> {
-        return findClassesWithAnnotation()
+        val pluginClasses = ClassGraph()
+            .enableClassInfo()
+            .enableAnnotationInfo()
+            .scan()
+            .getClassesWithAnnotation(Plugin::class.java)
+
+        return pluginClasses.filter {
+                try {
+                    it.loadClass()
+                    true
+                } catch (e: Exception) {
+                    logger.warn { "Unable to load plugin ${it.name} class, skipped" }
+                    logger.debug(e) {"Unable to load plugin ${it.name} because of the following exception"}
+                    false
+                }
+            }.associate {
+                it.loadClass() to it.getAnnotationInfo(Plugin::class.java).loadClassAndInstantiate() as Plugin
+            }
+    }
+
+    companion object {
+        val logger = KotlinLogging.logger {}
     }
 }

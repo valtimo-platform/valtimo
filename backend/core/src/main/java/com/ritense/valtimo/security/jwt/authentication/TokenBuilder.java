@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class TokenBuilder {
         final List<SecretKeyProvider> secretKeyProviders,
         final SecretKeyResolver secretKeyResolver
     ) {
-        this.tokenValidityInMilliSeconds = 1000 * valtimoProperties.getOauth().getTokenValidityInSeconds();
+        this.tokenValidityInMilliSeconds = 1000 * valtimoProperties.getJwt().getTokenValidityInSeconds();
         this.secretKeyProviders = secretKeyProviders;
         this.secretKeyResolver = secretKeyResolver;
     }
@@ -67,7 +67,7 @@ public class TokenBuilder {
     }
 
     protected Claims getClaims(String token) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
             .setSigningKeyResolver(secretKeyResolver)
             .build()
             .parseClaimsJws(token)

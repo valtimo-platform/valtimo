@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,19 @@
 
 package com.ritense.plugin.service
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class EncryptionServiceTest {
-    val oldEncryptedValue = "tRAgOSv2vlAuxA4+igFVyw=="
-    val encryptedValue = "{AES/GCM/NoPadding}G5Mfnj95piqF92nudCfAQSzHi3DbTNm+XZ7+cDAIPrE="
+    val encryptedValue = "tRAgOSv2vlAuxA4+igFVyw=="
     val value = "test"
     val encryptionKey = "abcdefghijklmnop"
     val service = EncryptionService(encryptionKey)
 
     @Test
-    fun `should decrypt old value`() {
-        val result = service.decrypt(oldEncryptedValue)
-        assertEquals(value, result)
+    fun `should encrypt value`() {
+        val result = service.encrypt(value)
+        assertEquals(encryptedValue, result)
     }
 
     @Test

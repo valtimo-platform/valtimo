@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
 
 package com.ritense.zakenapi
 
+import com.ritense.openzaak.autoconfigure.OpenZaakPluginAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 
-@SpringBootApplication
+@SpringBootApplication(
+    exclude = [
+        OpenZaakPluginAutoConfiguration::class
+    ]
+)
 class TestApplication {
 
     fun main(args: Array<String>) {
@@ -28,6 +33,5 @@ class TestApplication {
     }
 
     @TestConfiguration
-    class TestConfig {
-    }
+    class TestConfig
 }

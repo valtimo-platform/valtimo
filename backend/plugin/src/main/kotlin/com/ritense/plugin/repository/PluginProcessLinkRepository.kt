@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,61 +16,10 @@
 
 package com.ritense.plugin.repository
 
-import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProcessLinkId
-import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.processlink.repository.BaseProcessLinkRepository
+import org.springframework.data.jpa.repository.JpaRepository
 
-@Deprecated("Marked for removal since 10.6.0", ReplaceWith("ProcessLinkRepository"))
-class PluginProcessLinkRepository(
-    private val pluginProcessLinkRepositoryImpl: PluginProcessLinkRepositoryImpl
-) {
-    fun getById(id: PluginProcessLinkId) = pluginProcessLinkRepositoryImpl.getReferenceById(id.id)
-    fun save(entity: PluginProcessLink) = pluginProcessLinkRepositoryImpl.save(entity)
-    fun saveAll(entities: List<PluginProcessLink>) = pluginProcessLinkRepositoryImpl.saveAll(entities)
-    fun deleteById(id: PluginProcessLinkId) = pluginProcessLinkRepositoryImpl.deleteById(id.id)
-    fun findByProcessDefinitionId(processDefinitionId: String) =
-        pluginProcessLinkRepositoryImpl.findByProcessDefinitionId(processDefinitionId)
-
-    fun findByProcessDefinitionIdAndActivityId(processDefinitionId: String, activityId: String) =
-        pluginProcessLinkRepositoryImpl.findByProcessDefinitionIdAndActivityId(processDefinitionId, activityId)
-
-    fun findByProcessDefinitionIdAndActivityIdAndActivityType(
-        processDefinitionId: String,
-        activityId: String,
-        activityType: ActivityTypeWithEventName
-    ) =
-        pluginProcessLinkRepositoryImpl.findByProcessDefinitionIdAndActivityIdAndActivityType(
-            processDefinitionId,
-            activityId,
-            activityType
-        )
-
-    fun findByPluginConfigurationIdAndActivityIdAndActivityType(
-        pluginConfigurationId: PluginConfigurationId,
-        activityId: String,
-        activityType: ActivityTypeWithEventName
-    ) =
-        pluginProcessLinkRepositoryImpl.findByPluginConfigurationIdAndActivityIdAndActivityType(
-            pluginConfigurationId,
-            activityId,
-            activityType
-        )
-
-    fun findByPluginConfigurationId(pluginConfigurationId: PluginConfigurationId) =
-        pluginProcessLinkRepositoryImpl.findByPluginConfigurationId(pluginConfigurationId)
-
-
-}
-
-@Deprecated("Marked for removal since 10.6.0", ReplaceWith("ProcessLinkRepository"))
-interface PluginProcessLinkRepositoryImpl : BaseProcessLinkRepository<PluginProcessLink> {
-    fun findByPluginConfigurationIdAndActivityIdAndActivityType(
-        pluginConfigurationId: PluginConfigurationId,
-        activityId: String,
-        activityType: ActivityTypeWithEventName
-    ): List<PluginProcessLink>
-
-    fun findByPluginConfigurationId(pluginConfigurationId: PluginConfigurationId): List<PluginProcessLink>
+interface PluginProcessLinkRepository: JpaRepository<PluginProcessLink, PluginProcessLinkId> {
+    fun findByProcessDefinitionIdAndActivityId(processDefinitionId: String, activityId: String): List<PluginProcessLink>
 }

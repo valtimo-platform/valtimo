@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,8 @@
 package com.ritense.objectenapi
 
 import com.ritense.plugin.annotation.PluginCategory
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 
 @PluginCategory("objecten-api-authentication")
-// TODO remove ExchangeFilterFunction next major version
 interface ObjectenApiAuthentication : ExchangeFilterFunction {
-
-    fun applyAuth(builder: RestClient.Builder): RestClient.Builder
 }

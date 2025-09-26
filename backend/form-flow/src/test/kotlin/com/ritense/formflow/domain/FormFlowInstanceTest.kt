@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package com.ritense.formflow.domain
 
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import com.ritense.formflow.BaseTest
 import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
@@ -26,43 +28,31 @@ import com.ritense.formflow.domain.definition.configuration.FormFlowStepType
 import com.ritense.formflow.domain.definition.configuration.step.FormStepTypeProperties
 import com.ritense.formflow.domain.instance.FormFlowInstance
 import com.ritense.formflow.domain.instance.FormFlowStepInstanceId
-import com.ritense.formflow.event.ApplicationEventPublisherHolder
 import com.ritense.formflow.expression.ExpressionProcessorFactoryHolder
 import com.ritense.formflow.expression.FormFlowBeanTestHelper
 import com.ritense.formflow.expression.spel.SpelExpressionProcessorFactory
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationContext
 
 internal class FormFlowInstanceTest : BaseTest() {
-
-    @BeforeEach
-    fun beforeEach() {
-        ApplicationEventPublisherHolder.setInstance(mock())
-    }
-
     @Test
     fun `complete should return new step`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val instance = FormFlowInstance(
             formFlowDefinition = FormFlowDefinition(
-                id = FormFlowDefinitionId("test", caseDefinitionId),
+                id = FormFlowDefinitionId("test", 1L),
                 startStep = "test",
                 steps = mutableSetOf(
                     FormFlowStep(
                         id = FormFlowStepId.create("test"),
-                        nextSteps = mutableListOf(FormFlowNextStep(null, "test2")),
+                        nextSteps = mutableListOf(FormFlowNextStep("123", "test2")),
                         type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
                     ),
                     FormFlowStep(
@@ -83,16 +73,14 @@ internal class FormFlowInstanceTest : BaseTest() {
 
     @Test
     fun `complete should return null when there are no next steps`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val instance = FormFlowInstance(
             formFlowDefinition = FormFlowDefinition(
-                id = FormFlowDefinitionId("test", caseDefinitionId),
+                id = FormFlowDefinitionId("test", 1L),
                 startStep = "test",
                 steps = mutableSetOf(
                     FormFlowStep(
                         id = FormFlowStepId.create("test"),
-                        type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition")),
-                        onComplete = listOf("\${null}")
+                        type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
                     )
                 )
             )
@@ -106,58 +94,32 @@ internal class FormFlowInstanceTest : BaseTest() {
     }
 
     @Test
-    fun `complete should throw error when no action exist on last step`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        val instance = FormFlowInstance(
-            formFlowDefinition = FormFlowDefinition(
-                id = FormFlowDefinitionId("test", caseDefinitionId),
-                startStep = "lastStep",
-                steps = mutableSetOf(
-                    FormFlowStep(
-                        id = FormFlowStepId.create("lastStep"),
-                        type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
-                    )
-                )
-            )
-        )
-
-        val error = assertThrows<IllegalStateException> {
-            instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"data\":\"data\"}"))
-        }
-
-        assertEquals(
-            "Form flow end reached but no action was taken because the 'onComplete' is empty. For form flow step: 'test:lastStep'",
-            error.message
-        )
-    }
-
-    @Test
-    fun `complete should return current step when step in not current active step`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        val definition = FormFlowDefinition(
-            id = FormFlowDefinitionId.newId("test", caseDefinitionId),
-            startStep = "step1",
-            steps = mutableSetOf(
-                FormFlowStep(
-                    id = FormFlowStepId.create("step1"),
-                    nextSteps = mutableListOf(
-                        FormFlowNextStep(null, "step2")
-                    ),
-                    type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
+    fun `complete should throw exception when step in not current active step`() {
+        val definition: FormFlowDefinition = mock()
+        val steps: Set<FormFlowStep> = mutableSetOf(
+            FormFlowStep(
+                id = FormFlowStepId.create("test"),
+                nextSteps = mutableListOf(
+                    FormFlowNextStep("123", "test2")
                 ),
-                FormFlowStep(
-                    id = FormFlowStepId.create("step2"),
-                    type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
-                )
+                type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
+            ),
+            FormFlowStep(
+                id = FormFlowStepId.create("test2"),
+                type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
             )
         )
+
+        whenever(definition.startStep).thenReturn("test")
+        whenever(definition.steps).thenReturn(steps)
+
         val instance = FormFlowInstance(
             formFlowDefinition = definition
         )
 
-        val stepInstance = instance.complete(FormFlowStepInstanceId.newId(), JSONObject("{\"data\": \"data\"}"))
-
-        assertEquals("step1", stepInstance!!.definition.id.key)
+        assertThrows<AssertionError> {
+            instance.complete(FormFlowStepInstanceId.newId(), JSONObject("{\"data\": \"data\"}"))
+        }
     }
 
     @Test
@@ -166,7 +128,7 @@ internal class FormFlowInstanceTest : BaseTest() {
         val steps: Set<FormFlowStep> = mutableSetOf(
             FormFlowStep(
                 id = FormFlowStepId.create("test"),
-                nextSteps = mutableListOf(FormFlowNextStep(null, "test2")),
+                nextSteps = mutableListOf(FormFlowNextStep("123", "test2")),
                 type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
             ),
             FormFlowStep(
@@ -192,7 +154,7 @@ internal class FormFlowInstanceTest : BaseTest() {
         val definition: FormFlowDefinition = mock()
         val step1 = FormFlowStep(
             id = FormFlowStepId.create("test"),
-            nextSteps = mutableListOf(FormFlowNextStep(null, "test2")),
+            nextSteps = mutableListOf(FormFlowNextStep("123", "test2")),
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
 
@@ -224,13 +186,13 @@ internal class FormFlowInstanceTest : BaseTest() {
         val definition: FormFlowDefinition = mock()
         val step1 = FormFlowStep(
             id = FormFlowStepId.create("test"),
-            nextSteps = mutableListOf(FormFlowNextStep(null, "test2")),
+            nextSteps = mutableListOf(FormFlowNextStep("123", "test2")),
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
 
         val step2 = FormFlowStep(
             id = FormFlowStepId.create("test2"),
-            nextSteps = mutableListOf(FormFlowNextStep(null, "test3")),
+            nextSteps = mutableListOf(FormFlowNextStep("123", "test3")),
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
 
@@ -265,13 +227,13 @@ internal class FormFlowInstanceTest : BaseTest() {
         val definition: FormFlowDefinition = mock()
         val step1 = FormFlowStep(
             id = FormFlowStepId.create("test"),
-            nextSteps = mutableListOf(FormFlowNextStep(null, "test2")),
+            nextSteps = mutableListOf(FormFlowNextStep("123", "test2")),
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
 
         val step2 = FormFlowStep(
             id = FormFlowStepId.create("test2"),
-            nextSteps = mutableListOf(FormFlowNextStep(null, "test3")),
+            nextSteps = mutableListOf(FormFlowNextStep("123", "test3")),
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
 
@@ -306,13 +268,13 @@ internal class FormFlowInstanceTest : BaseTest() {
         val definition: FormFlowDefinition = mock()
         val step1 = FormFlowStep(
             id = FormFlowStepId.create("test"),
-            nextSteps = mutableListOf(FormFlowNextStep(null, "test2")),
+            nextSteps = mutableListOf(FormFlowNextStep("123", "test2")),
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
 
         val step2 = FormFlowStep(
             id = FormFlowStepId.create("test2"),
-            nextSteps = mutableListOf(FormFlowNextStep(null, "test3")),
+            nextSteps = mutableListOf(FormFlowNextStep("123", "test3")),
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
 
@@ -356,18 +318,18 @@ internal class FormFlowInstanceTest : BaseTest() {
             Mockito.mock(ApplicationContext::class.java)
         )
         expressionProcessorFactory.setFlowProcessBeans(mapOf("formFlowBeanTestHelper" to FormFlowBeanTestHelper()))
-        val definition = getFormFlowDefinition("key", readFileAsString("/config/case/profile/1-0-0/form-flow/inkomens_loket.form-flow.json"))
+        val definition = getFormFlowDefinition("key", readFileAsString("/config/form-flow/inkomens_loket.json"))
         val instance = definition.createInstance(mutableMapOf())
 
-        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("""{"woonplaats":{"inUtrecht":true}}"""))
-        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("""{"leeftijd":{"isJongerDanAOW":true,"isOuderDan21":true}}"""))
+        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"step1\":\"A\"}"))
+        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"step2\":\"B\"}"))
         instance.back()
         instance.back()
 
-        assertEquals("""{"woonplaats":{"inUtrecht":true}}""", instance.getSubmissionDataContext())
+        assertEquals("{\"step1\":\"A\"}", instance.getSubmissionDataContext())
         assertEquals(3, instance.getHistory().size)
-        assertEquals("""{"woonplaats":{"inUtrecht":true}}""", instance.getHistory()[0].submissionData)
-        assertEquals("""{"leeftijd":{"isJongerDanAOW":true,"isOuderDan21":true}}""", instance.getHistory()[1].submissionData)
+        assertEquals("{\"step1\":\"A\"}", instance.getHistory()[0].submissionData)
+        assertEquals("{\"step2\":\"B\"}", instance.getHistory()[1].submissionData)
         assertEquals(null, instance.getHistory()[2].submissionData)
     }
 
@@ -379,57 +341,19 @@ internal class FormFlowInstanceTest : BaseTest() {
             Mockito.mock(ApplicationContext::class.java)
         )
         expressionProcessorFactory.setFlowProcessBeans(mapOf("formFlowBeanTestHelper" to FormFlowBeanTestHelper()))
-        val definition = getFormFlowDefinition("key", readFileAsString("/config/case/profile/1-0-0/form-flow/inkomens_loket.form-flow.json"))
+        val definition = getFormFlowDefinition("key", readFileAsString("/config/form-flow/inkomens_loket.json"))
         val instance = definition.createInstance(mutableMapOf())
 
-        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("""{"woonplaats":{"inUtrecht":true}}"""))
-        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("""{"leeftijd":{"isJongerDanAOW":true,"isOuderDan21":true}}"""))
+        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"step1\":\"A\"}"))
+        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"step2\":\"B\"}"))
         instance.back()
         instance.back()
-        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("""{"woonplaats":{"inUtrecht":true}}"""))
+        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("{\"step1\":\"C\"}"))
 
-        assertEquals("""{"leeftijd":{"isJongerDanAOW":true,"isOuderDan21":true},"woonplaats":{"inUtrecht":true}}""", instance.getSubmissionDataContext())
+        assertEquals("{\"step2\":\"B\",\"step1\":\"C\"}", instance.getSubmissionDataContext())
         assertEquals(3, instance.getHistory().size)
-        assertEquals("""{"woonplaats":{"inUtrecht":true}}""", instance.getHistory()[0].submissionData)
-        assertEquals("""{"leeftijd":{"isJongerDanAOW":true,"isOuderDan21":true}}""", instance.getHistory()[1].submissionData)
+        assertEquals("{\"step1\":\"C\"}", instance.getHistory()[0].submissionData)
+        assertEquals("{\"step2\":\"B\"}", instance.getHistory()[1].submissionData)
         assertEquals(null, instance.getHistory()[2].submissionData)
-    }
-
-    @Test
-    fun `should go to second step with condition 'null' when first step condition evaluates to 'false'`() {
-        val expressionProcessorFactory = SpelExpressionProcessorFactory()
-        ExpressionProcessorFactoryHolder.setInstance(
-            expressionProcessorFactory,
-            Mockito.mock(ApplicationContext::class.java)
-        )
-        expressionProcessorFactory.setFlowProcessBeans(mapOf("formFlowBeanTestHelper" to FormFlowBeanTestHelper()))
-        val definition = getFormFlowDefinition("key", readFileAsString("/config/case/profile/1-0-0/form-flow/inkomens_loket.form-flow.json"))
-        val instance = definition.createInstance(mutableMapOf())
-
-        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("""{"woonplaats":{"inUtrecht":false}}"""))
-
-        assertEquals("end", instance.getCurrentStep().stepKey)
-    }
-
-    @Test
-    fun `complete - save - back, should save submission data, but not use saved submission data for context`() {
-        val expressionProcessorFactory = SpelExpressionProcessorFactory()
-        ExpressionProcessorFactoryHolder.setInstance(
-            expressionProcessorFactory,
-            Mockito.mock(ApplicationContext::class.java)
-        )
-        expressionProcessorFactory.setFlowProcessBeans(mapOf("formFlowBeanTestHelper" to FormFlowBeanTestHelper()))
-        val definition = getFormFlowDefinition("key", readFileAsString("/config/case/profile/1-0-0/form-flow/inkomens_loket.form-flow.json"))
-        val instance = definition.createInstance(mutableMapOf())
-
-        instance.complete(instance.currentFormFlowStepInstanceId!!, JSONObject("""{"woonplaats":{"inUtrecht":true}}"""))
-        instance.saveTemporary(JSONObject("""{"leeftijd":{"isJongerDanAOW":false}}"""))
-        instance.back()
-
-        assertEquals("""{"woonplaats":{"inUtrecht":true}}""", instance.getSubmissionDataContext())
-        assertEquals(2, instance.getHistory().size)
-        assertEquals("""{"woonplaats":{"inUtrecht":true}}""", instance.getHistory()[0].submissionData)
-        assertEquals(null, instance.getHistory()[1].submissionData)
-        assertEquals("""{"leeftijd":{"isJongerDanAOW":false}}""", instance.getHistory()[1].temporarySubmissionData)
     }
 }

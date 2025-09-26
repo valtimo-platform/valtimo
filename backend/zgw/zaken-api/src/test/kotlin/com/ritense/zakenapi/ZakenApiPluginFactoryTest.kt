@@ -1,39 +1,20 @@
-/*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ritense.zakenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
-import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.zakenapi.client.ZakenApiClient
-import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
-import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import org.springframework.transaction.PlatformTransactionManager
 import kotlin.test.assertEquals
 
 internal class ZakenApiPluginFactoryTest {
@@ -43,27 +24,21 @@ internal class ZakenApiPluginFactoryTest {
         val pluginService: PluginService = mock()
         val authenticationMock = mock<ZakenApiAuthentication>()
         whenever(pluginService.createInstance(any<PluginConfigurationId>())).thenReturn(authenticationMock)
-        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+        whenever(pluginService.getObjectMapper()).thenReturn(jacksonObjectMapper())
 
         val client: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
-        val storageService: TemporaryResourceStorageService = mock()
-        val zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock()
-        val zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock()
-        val platformTransactionManager: PlatformTransactionManager = mock()
         val documentService: DocumentService = mock()
-        val processDocumentAssociationService: ProcessDocumentAssociationService = mock()
+        val resourceProvider: ResourceProvider = mock()
+        val storageService: TemporaryResourceStorageService = mock()
 
         val factory = ZakenApiPluginFactory(
             pluginService,
             client,
             zaakUrlProvider,
-            storageService,
-            zaakInstanceLinkRepository,
-            zaakHersteltermijnRepository,
-            platformTransactionManager,
+            resourceProvider,
             documentService,
-            processDocumentAssociationService
+            storageService,
         )
         val zakenApiPluginProperties: String = """
             {
@@ -76,7 +51,7 @@ internal class ZakenApiPluginFactoryTest {
         val pluginConfiguration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get().readTree(zakenApiPluginProperties) as ObjectNode,
+            ObjectMapper().readTree(zakenApiPluginProperties) as ObjectNode,
             pluginDefinition
         )
 

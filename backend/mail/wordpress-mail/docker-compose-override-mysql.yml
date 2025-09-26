@@ -1,6 +1,0 @@
-services:
-    db:
-        ports:
-            - "3316:3306"
-        environment:
-            - MYSQL_DATABASE=wordpress-mail-test

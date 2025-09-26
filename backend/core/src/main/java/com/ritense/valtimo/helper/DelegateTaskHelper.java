@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,20 @@
 
 package com.ritense.valtimo.helper;
 
-import com.ritense.valtimo.operaton.domain.OperatonTask;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.service.BpmnModelService;
+import org.camunda.bpm.engine.delegate.DelegateTask;
+import org.camunda.bpm.engine.history.HistoricTaskInstance;
+import org.camunda.bpm.engine.rest.dto.history.HistoricTaskInstanceDto;
+import org.camunda.bpm.engine.task.IdentityLink;
+import org.camunda.bpm.engine.task.IdentityLinkType;
+import org.camunda.bpm.model.bpmn.instance.Task;
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.operaton.bpm.engine.delegate.DelegateTask;
-import org.operaton.bpm.engine.history.HistoricTaskInstance;
-import org.operaton.bpm.engine.rest.dto.history.HistoricTaskInstanceDto;
-import org.operaton.bpm.engine.task.IdentityLink;
-import org.operaton.bpm.engine.task.IdentityLinkType;
-import org.operaton.bpm.model.bpmn.instance.Task;
-import org.operaton.bpm.model.bpmn.instance.operaton.OperatonProperty;
 
 public class DelegateTaskHelper {
     private static final String TASK_ASSIGNMENT_EVENT = "assignment";
@@ -51,7 +50,7 @@ public class DelegateTaskHelper {
     public Optional<ManageableUser> determineAssignedUserOf(DelegateTask delegateTask) {
         String assignee = delegateTask.getAssignee();
         if (assignee != null) {
-            return Optional.ofNullable(userManagementService.findByUsername(assignee));
+            return userManagementService.findByEmail(assignee);
         } else {
             return Optional.empty();
         }
@@ -78,33 +77,33 @@ public class DelegateTaskHelper {
     }
 
     public boolean isTaskPublic(DelegateTask delegateTask) {
-        List<OperatonProperty> operatonProperties = activityHelper.getOperatonProperties(delegateTask, PUBLIC_TASK_PROPERTY_NAME);
-        return matchPublicPropertiesTrue(operatonProperties);
+        List<CamundaProperty> camundaProperties = activityHelper.getCamundaProperties(delegateTask, PUBLIC_TASK_PROPERTY_NAME);
+        return matchPublicPropertiesTrue(camundaProperties);
     }
 
-    public boolean isTaskPublic(OperatonTask task) {
+    public boolean isTaskPublic(org.camunda.bpm.engine.task.Task task) {
         return isTaskPublic(bpmnModelService.getTask(task));
     }
 
     public boolean isTaskPublic(HistoricTaskInstanceDto historicTaskInstance) {
-        List<OperatonProperty> operatonProperties = activityHelper.getOperatonProperties(historicTaskInstance, PUBLIC_TASK_PROPERTY_NAME);
-        return matchPublicPropertiesTrue(operatonProperties);
+        List<CamundaProperty> camundaProperties = activityHelper.getCamundaProperties(historicTaskInstance, PUBLIC_TASK_PROPERTY_NAME);
+        return matchPublicPropertiesTrue(camundaProperties);
     }
 
     public boolean isTaskPublic(HistoricTaskInstance historicTaskInstance) {
-        List<OperatonProperty> operatonProperties = activityHelper.getOperatonProperties(historicTaskInstance, PUBLIC_TASK_PROPERTY_NAME);
-        return matchPublicPropertiesTrue(operatonProperties);
+        List<CamundaProperty> camundaProperties = activityHelper.getCamundaProperties(historicTaskInstance, PUBLIC_TASK_PROPERTY_NAME);
+        return matchPublicPropertiesTrue(camundaProperties);
     }
 
     public boolean isTaskPublic(Task taskInstance) {
-        List<OperatonProperty> operatonProperties = activityHelper.getOperatonProperties(taskInstance, PUBLIC_TASK_PROPERTY_NAME);
-        return matchPublicPropertiesTrue(operatonProperties);
+        List<CamundaProperty> camundaProperties = activityHelper.getCamundaProperties(taskInstance, PUBLIC_TASK_PROPERTY_NAME);
+        return matchPublicPropertiesTrue(camundaProperties);
     }
 
-    private boolean matchPublicPropertiesTrue(List<OperatonProperty> operatonProperties) {
-        return operatonProperties.stream().anyMatch(
-            operatonProperty -> operatonProperty.getOperatonValue() != null
-                && operatonProperty.getOperatonValue().equalsIgnoreCase(PUBLIC_TASK_PROPERTY_VALUE)
+    private boolean matchPublicPropertiesTrue(List<CamundaProperty> camundaProperties) {
+        return camundaProperties.stream().anyMatch(
+            camundaProperty -> camundaProperty.getCamundaValue() != null
+                && camundaProperty.getCamundaValue().equalsIgnoreCase(PUBLIC_TASK_PROPERTY_VALUE)
         );
     }
 

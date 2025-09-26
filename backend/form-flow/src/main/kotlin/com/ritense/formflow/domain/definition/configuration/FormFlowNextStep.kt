@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,8 @@
 
 package com.ritense.formflow.domain.definition.configuration
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.ritense.formflow.domain.definition.FormFlowNextStep as FormFlowNextStepEntity
 
-@JsonInclude(Include.NON_EMPTY)
 data class FormFlowNextStep(
     val condition: String? = null,
     val step: String
@@ -35,12 +32,5 @@ data class FormFlowNextStep(
 
     fun toDefinition() : FormFlowNextStepEntity {
         return FormFlowNextStepEntity(condition, step)
-    }
-
-    companion object {
-        fun fromEntity(entity: FormFlowNextStepEntity) = FormFlowNextStep(
-                condition = entity.condition,
-                step = entity.step
-            )
     }
 }

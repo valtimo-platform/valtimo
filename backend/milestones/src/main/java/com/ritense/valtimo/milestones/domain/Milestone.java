@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,22 @@
 
 package com.ritense.valtimo.milestones.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Range;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Milestone {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GenericGenerator(name = "native", strategy = "native")
     private Long id;
 
     @NotNull
@@ -51,19 +54,18 @@ public class Milestone {
     @ManyToOne
     private MilestoneSet milestoneSet;
 
-    @SuppressWarnings({"squid:S2637", "java:S2637"})
-    public Milestone() {
+    @SuppressWarnings({"squid:S2637","java:S2637"})
+    public Milestone(){
     }
 
-    @SuppressWarnings({"squid:S2637", "java:S2637"})
+    @SuppressWarnings({"squid:S2637","java:S2637"})
     public Milestone(
-        String title,
-        String processDefinitionKey,
-        String taskDefinitionKey,
-        Integer plannedIntervalInDays,
-        String color,
-        MilestoneSet milestoneSet
-    ) {
+            String title,
+            String processDefinitionKey,
+            String taskDefinitionKey,
+            Integer plannedIntervalInDays,
+            String color,
+            MilestoneSet milestoneSet) {
         this.title = title;
         this.processDefinitionKey = processDefinitionKey;
         this.taskDefinitionKey = taskDefinitionKey;

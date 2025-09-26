@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,48 +16,36 @@
 
 package com.ritense.resource.web.rest
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.atLeastOnce
+import com.nhaarman.mockitokotlin2.verify
 import com.ritense.resource.BaseIntegrationTest
 import com.ritense.resource.domain.TemporaryResourceUploadedEvent
 import com.ritense.resource.service.TemporaryResourceStorageService
-import com.ritense.temporaryresource.domain.ResourceStorageMetadata
-import com.ritense.temporaryresource.domain.ResourceStorageMetadataId
-import com.ritense.temporaryresource.domain.getEnumFromKey
-import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.atLeastOnce
-import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-import org.springframework.context.event.EventListener
+import org.springframework.context.PayloadApplicationEvent
 import org.springframework.http.MediaType
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import java.util.Optional
 
-@AutoConfigureMockMvc
-internal class TemporaryResourceStorageResourceIT @Autowired constructor(
-    private val webApplicationContext: WebApplicationContext,
-    private val temporaryResourceStorageService: TemporaryResourceStorageService,
-) : BaseIntegrationTest() {
+internal class TemporaryResourceStorageResourceIT : BaseIntegrationTest() {
 
-    @MockitoBean
-    private lateinit var resourceStorageMetadataRepository: ResourceStorageMetadataRepository
+    @Autowired
+    lateinit var webApplicationContext: WebApplicationContext
 
-    @MockitoBean
-    private lateinit var myEventListener: MyEventListener
+    @Autowired
+    lateinit var temporaryResourceStorageService: TemporaryResourceStorageService
 
     lateinit var mockMvc: MockMvc
 
@@ -79,7 +67,7 @@ internal class TemporaryResourceStorageResourceIT @Autowired constructor(
         )
 
         mockMvc.perform(
-            multipart("/api/v1/resource/temp")
+            multipart("/api/resource/temp")
                 .file(file)
                 .param("author", "Klaveren")
                 .contentType(MULTIPART_FORM_DATA_VALUE)
@@ -87,9 +75,9 @@ internal class TemporaryResourceStorageResourceIT @Autowired constructor(
             .andDo(print())
             .andExpect(status().isOk)
 
-        val captor = argumentCaptor<TemporaryResourceUploadedEvent>()
-        verify(myEventListener, atLeastOnce()).listen(captor.capture())
-        val resourceId = captor.firstValue.resourceId
+        val captor = argumentCaptor<PayloadApplicationEvent<TemporaryResourceUploadedEvent>>()
+        verify(applicationEventMulticaster, atLeastOnce()).multicastEvent(captor.capture(), any())
+        val resourceId = captor.firstValue.payload.resourceId
         val resourceContent = temporaryResourceStorageService.getResourceContentAsInputStream(resourceId)
         val resourceMetaData = temporaryResourceStorageService.getResourceMetadata(resourceId)
         assertThat(resourceContent.bufferedReader().readText()).isEqualTo("Hello World!")
@@ -97,46 +85,6 @@ internal class TemporaryResourceStorageResourceIT @Autowired constructor(
         assertThat(resourceMetaData).containsEntry("contentType", "text/plain")
         assertThat(resourceMetaData).containsEntry("filename", "hello.txt")
         assertThat(resourceMetaData).containsEntry("user", USER_EMAIL)
-    }
-
-    @Test
-    fun `should retrieve metadata value for valid key`() {
-        val resourceStorageFieldId = "12345"
-        val metadataKey = "downloadUrl"
-        val expectedMetadataValue = "http://example.com/download"
-        val enumKey = getEnumFromKey(metadataKey)
-
-        enumKey.onSuccess { key ->
-            `when`(
-                resourceStorageMetadataRepository.findById(
-                    ResourceStorageMetadataId(resourceStorageFieldId, key)
-                )
-            ).thenReturn(
-                Optional.of(
-                    ResourceStorageMetadata(
-                        ResourceStorageMetadataId(resourceStorageFieldId, key),
-                        expectedMetadataValue
-                    )
-                )
-            )
-
-            mockMvc
-                .get("/api/v1/resource-storage/$resourceStorageFieldId/metadata/$metadataKey") {
-                    contentType = MediaType.APPLICATION_JSON
-                    accept = MediaType.APPLICATION_JSON
-                }.andDo {
-                    print()
-                }.andExpect {
-                    status().isOk
-                    jsonPath("$.value") { value(expectedMetadataValue) }
-                }
-        }
-    }
-
-
-    class MyEventListener {
-        @EventListener(TemporaryResourceUploadedEvent::class)
-        fun listen(event: TemporaryResourceUploadedEvent) { }
     }
 
     companion object {

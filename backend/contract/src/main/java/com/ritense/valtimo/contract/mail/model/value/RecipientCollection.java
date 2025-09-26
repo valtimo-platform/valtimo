@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ package com.ritense.valtimo.contract.mail.model.value;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ritense.valtimo.contract.basictype.Value;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RecipientCollection extends Value<Collection<Recipient>> {
 
@@ -43,15 +45,15 @@ public class RecipientCollection extends Value<Collection<Recipient>> {
     }
 
     public Collection<Recipient> filterTo() {
-        return filterType(Recipient.Type.TO);
+        return filterType(Recipient.Type.To);
     }
 
     public Collection<Recipient> filterCc() {
-        return filterType(Recipient.Type.CC);
+        return filterType(Recipient.Type.Cc);
     }
 
     public Collection<Recipient> filterBcc() {
-        return filterType(Recipient.Type.BCC);
+        return filterType(Recipient.Type.Bcc);
     }
 
     @Override
@@ -66,7 +68,7 @@ public class RecipientCollection extends Value<Collection<Recipient>> {
      */
     @Override
     public boolean isPresent() {
-        return super.isPresent() && !super.get().isEmpty();
+        return super.isPresent() && super.get().size() > 0;
     }
 
     private Collection<Recipient> filterType(Recipient.Type typeToFilterOn) {

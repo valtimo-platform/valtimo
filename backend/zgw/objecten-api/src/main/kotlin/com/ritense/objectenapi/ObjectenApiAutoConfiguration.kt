@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +17,25 @@
 package com.ritense.objectenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationService
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.objectenapi.client.ObjectenApiClient
 import com.ritense.objectenapi.listener.ZaakObjectListener
-import com.ritense.objectenapi.management.ErrorObjectManagementInfoProvider
-import com.ritense.objectenapi.management.ObjectManagementInfoProvider
-import com.ritense.objectenapi.security.ObjectSpecificationFactory
 import com.ritense.objectenapi.security.ObjectenApiHttpSecurityConfigurer
 import com.ritense.objectenapi.service.ZaakObjectDataResolver
 import com.ritense.objectenapi.service.ZaakObjectService
-import com.ritense.objectenapi.service.ZaakObjectValueResolverFactory
-import com.ritense.objectenapi.web.rest.ObjectResource
-import com.ritense.objectenapi.web.rest.ZaakObjectResource
-import com.ritense.outbox.OutboxService
+import com.ritense.openzaak.service.ZaakInstanceLinkService
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.zakenapi.ZaakUrlProvider
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.AutoConfiguration
+import io.netty.handler.logging.LogLevel
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
-import org.springframework.web.client.RestClient
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.netty.http.client.HttpClient
+import reactor.netty.transport.logging.AdvancedByteBufFormat
 
-@AutoConfiguration
+@Configuration
 class ObjectenApiAutoConfiguration {
 
     @Bean
@@ -51,102 +43,61 @@ class ObjectenApiAutoConfiguration {
     fun formSubmissionListener(
         pluginService: PluginService,
         zaakObjectService: ZaakObjectService
-    ) = ZaakObjectListener(
-        pluginService,
-        zaakObjectService
-    )
+    ): ZaakObjectListener {
+        return ZaakObjectListener(pluginService, zaakObjectService)
+    }
 
     @Bean
     @ConditionalOnMissingBean(ObjectenApiClient::class)
-    fun objectenApiClient(
-        restClientBuilder: RestClient.Builder,
-        outboxService: OutboxService,
-        objectMapper: ObjectMapper,
-        authorizationService: AuthorizationService
-    ): ObjectenApiClient {
-        return ObjectenApiClient(
-            restClientBuilder,
-            outboxService,
-            objectMapper,
-            authorizationService
-        )
+    fun objectenApiClient(webclient: WebClient): ObjectenApiClient {
+        return ObjectenApiClient(webclient)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(WebClient::class)
+    fun objectenApiWebClient(): WebClient {
+        return WebClient.builder().clientConnector(
+            ReactorClientHttpConnector(
+                HttpClient.create().wiretap(
+                    "reactor.netty.http.client.HttpClient",
+                    LogLevel.DEBUG,
+                    AdvancedByteBufFormat.TEXTUAL
+                )
+            )
+        ).build()
     }
 
     @Bean
     fun objectenApiPluginFactory(
         pluginService: PluginService,
         objectenApiClient: ObjectenApiClient
-    ) = ObjectenApiPluginFactory(
-        pluginService,
-        objectenApiClient
-    )
+    ): ObjectenApiPluginFactory {
+        return ObjectenApiPluginFactory(
+            pluginService,
+            objectenApiClient
+        )
+    }
 
     @Bean
     fun zaakObjectService(
-        zaakUrlProvider: ZaakUrlProvider,
-        pluginService: PluginService,
-        formDefinitionService: FormDefinitionService,
-        objectManagementInfoProvider: ObjectManagementInfoProvider
-    ) = ZaakObjectService(
-        zaakUrlProvider,
-        pluginService,
-        formDefinitionService,
-        objectManagementInfoProvider
-    )
+        zaakInstanceLinkService: ZaakInstanceLinkService,
+        pluginService : PluginService,
+        formDefinitionService : FormDefinitionService
+    ): ZaakObjectService {
+        return ZaakObjectService(zaakInstanceLinkService, pluginService, formDefinitionService)
+    }
 
-    @Order(380)
+    @Order(400)
     @Bean
     fun objectenApiHttpSecurityConfigurer(): ObjectenApiHttpSecurityConfigurer {
         return ObjectenApiHttpSecurityConfigurer()
     }
 
     @Bean
-    @ConditionalOnMissingBean(ZaakObjectDataResolver::class)
     fun zaakObjectDataResolver(
         zaakObjectService: ZaakObjectService,
         objectMapper: ObjectMapper
     ): ZaakObjectDataResolver {
         return ZaakObjectDataResolver(zaakObjectService, objectMapper)
-    }
-
-    @DependsOn("valueResolverService")
-    @Bean
-    @ConditionalOnMissingBean(ZaakObjectValueResolverFactory::class)
-    fun zaakObjectValueResolverFactory(
-        zaakObjectService: ZaakObjectService,
-        objectMapper: ObjectMapper,
-        processDocumentService: ProcessDocumentService,
-    ): ZaakObjectValueResolverFactory {
-        return ZaakObjectValueResolverFactory(zaakObjectService, objectMapper, processDocumentService)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ObjectResource::class)
-    fun objectResource(zaakObjectService: ZaakObjectService): ObjectResource {
-        return ObjectResource(zaakObjectService)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ZaakObjectResource::class)
-    fun zaakObjectResource(
-        zaakObjectService: ZaakObjectService
-    ): ZaakObjectResource {
-        return ZaakObjectResource(zaakObjectService)
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ObjectManagementInfoProvider::class)
-    fun errorObjectManagementInfoProvider(): ObjectManagementInfoProvider {
-        return ErrorObjectManagementInfoProvider()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ObjectSpecificationFactory::class)
-    fun objectSpecificationFactory(): ObjectSpecificationFactory {
-        return ObjectSpecificationFactory()
-    }
-
-    companion object {
-        val logger = KotlinLogging.logger {}
     }
 }

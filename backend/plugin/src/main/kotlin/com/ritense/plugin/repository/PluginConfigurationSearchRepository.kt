@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,13 @@ import com.ritense.plugin.domain.PluginActionDefinition
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.service.PluginConfigurationSearchParameters
-import jakarta.persistence.EntityManager
-import jakarta.persistence.TypedQuery
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.CriteriaQuery
-import jakarta.persistence.criteria.Join
-import jakarta.persistence.criteria.Predicate
-import jakarta.persistence.criteria.Root
+import javax.persistence.EntityManager
+import javax.persistence.TypedQuery
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.CriteriaQuery
+import javax.persistence.criteria.Join
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
 
 class PluginConfigurationSearchRepository(
     val entityManager: EntityManager
@@ -37,11 +37,6 @@ class PluginConfigurationSearchRepository(
         val selectRoot = query.from(PluginConfiguration::class.java)
         query.select(selectRoot)
         query.where(*createWhereClause(pluginConfigurationSearchParameters, criteriaBuilder, selectRoot, query))
-        query.orderBy(
-            criteriaBuilder.asc(
-                selectRoot.get<PluginDefinition>(PLUGIN_DEFINITION).get<String>(PLUGIN_DEFINITION_TITLE)
-            )
-        )
 
         val typedQuery: TypedQuery<PluginConfiguration> = entityManager
             .createQuery(query)
@@ -56,14 +51,6 @@ class PluginConfigurationSearchRepository(
         query: CriteriaQuery<PluginConfiguration>
     ): Array<Predicate> {
         val predicates: MutableList<Predicate> = mutableListOf()
-        if (pluginConfigurationSearchParameters.pluginDefinitionKey != null) {
-            predicates.add(pluginDefinitionKeyPredicate(pluginConfigurationSearchParameters, cb, root, query))
-        }
-
-        if (pluginConfigurationSearchParameters.pluginConfigurationTitle != null) {
-            predicates.add(pluginConfigurationTitlePredicate(pluginConfigurationSearchParameters, cb, root))
-        }
-
         if (pluginConfigurationSearchParameters.activityType != null) {
             predicates.add(activityTypePredicate(pluginConfigurationSearchParameters, cb, root, query))
         }
@@ -72,32 +59,6 @@ class PluginConfigurationSearchRepository(
             predicates.add(categoryPredicate(pluginConfigurationSearchParameters, cb, root, query))
         }
         return predicates.toTypedArray()
-    }
-
-    private fun pluginDefinitionKeyPredicate(
-        pluginConfigurationSearchParameters: PluginConfigurationSearchParameters,
-        cb: CriteriaBuilder,
-        root: Root<PluginConfiguration>,
-        query: CriteriaQuery<PluginConfiguration>
-    ): Predicate {
-        val subQueryDefinitions = query.subquery(PluginDefinition::class.java)
-        val definitionsFrom = subQueryDefinitions.from(PluginDefinition::class.java)
-
-        subQueryDefinitions.select(definitionsFrom)
-        subQueryDefinitions.where(
-            cb.equal(root.get<PluginDefinition>(PLUGIN_DEFINITION), definitionsFrom),
-            cb.equal(definitionsFrom.get<String>(PLUGIN_DEFINITION_KEY), pluginConfigurationSearchParameters.pluginDefinitionKey)
-        )
-
-        return cb.exists(subQueryDefinitions)
-    }
-
-    private fun pluginConfigurationTitlePredicate(
-        pluginConfigurationSearchParameters: PluginConfigurationSearchParameters,
-        cb: CriteriaBuilder,
-        root: Root<PluginConfiguration>,
-    ): Predicate {
-        return cb.equal(root.get<String>(PLUGIN_CONFIGURATION_TITLE), pluginConfigurationSearchParameters.pluginConfigurationTitle)
     }
 
     private fun activityTypePredicate(
@@ -144,9 +105,6 @@ class PluginConfigurationSearchRepository(
 
     companion object {
         private const val PLUGIN_DEFINITION = "pluginDefinition"
-        private const val PLUGIN_DEFINITION_KEY = "key"
-        private const val PLUGIN_DEFINITION_TITLE = "title"
-        private const val PLUGIN_CONFIGURATION_TITLE = "title"
         private const val PLUGIN_CATEGORIES = "categories"
         private const val PLUGIN_ACTION_DEFINITIONS = "actions"
         private const val ACTIVITY_TYPES = "activityTypes"

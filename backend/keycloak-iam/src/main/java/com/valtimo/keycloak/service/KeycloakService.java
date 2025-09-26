@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.valtimo.keycloak.service;
 
-import org.jboss.resteasy.client.jaxrs.internal.ResteasyClientBuilderImpl;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.keycloak.admin.client.Keycloak;
@@ -25,24 +25,14 @@ import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.admin.client.resource.UsersResource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import static com.ritense.valtimo.contract.security.jwt.JwtConstants.EMAIL_KEY;
-import static com.ritense.valtimo.contract.security.jwt.JwtConstants.ROLES_SCOPE;
-import static com.valtimo.keycloak.security.jwt.authentication.KeycloakTokenAuthenticator.REALM_ACCESS;
-import static com.valtimo.keycloak.security.jwt.authentication.KeycloakTokenAuthenticator.RESOURCE_ACCESS;
-import com.valtimo.keycloak.security.config.ValtimoKeycloakPropertyResolver;
 
 public class KeycloakService {
 
-    public static final String KEYCLOAK_API_CLIENT_REGISTRATION = "keycloakapi";
-    public static final String KEYCLOAK_JWT_CLIENT_REGISTRATION = "keycloakjwt";
     private final KeycloakSpringBootProperties properties;
     private final String clientName;
 
     public KeycloakService(KeycloakSpringBootProperties properties, String keycloakClientName) {
-        this.properties = ValtimoKeycloakPropertyResolver.resolveProperties();
+        this.properties = properties;
         this.clientName = keycloakClientName;
     }
 
@@ -54,62 +44,37 @@ public class KeycloakService {
             .clientId(properties.getResource())
             .clientSecret((String) properties.getCredentials().get("secret"))
             .resteasyClient(
-                new ResteasyClientBuilderImpl()
+                new ResteasyClientBuilder()
                     .connectionPoolSize(10).build())
             .build();
     }
 
-    public UsersResource usersResource(Keycloak keycloak) {
-        return realmResource(keycloak).users();
+    public UsersResource usersResource() {
+        return realmResource().users();
     }
 
-    public RolesResource realmRolesResource(Keycloak keycloak) {
-        return realmResource(keycloak).roles();
+    public RolesResource realmRolesResource() {
+        return realmResource().roles();
     }
 
-    public RolesResource clientRolesResource(Keycloak keycloak) {
-        return clientResource(keycloak).roles();
+    public RolesResource clientRolesResource() {
+        return clientResource().roles();
     }
 
-    public String getClientId(Keycloak keycloak) {
-        if (clientName.isBlank()) {
-            throw new IllegalStateException(
-                "Error. Missing property: 'spring.security.oauth2.client.registration.keycloakjwt.client-id' or 'valtimo.keycloak.client'");
-        }
-        var clients = keycloak.realm(properties.getRealm()).clients().findByClientId(clientName);
+    private RealmResource realmResource() {
+        return keycloak().realm(properties.getRealm());
+    }
+
+    private ClientResource clientResource() {
+        var clients = keycloak().realm(properties.getRealm()).clients().findByClientId(clientName);
+
         if (clients.size() == 1) {
-            return clients.get(0).getId();
+            ClientResource clientResource = keycloak().realm(properties.getRealm()).clients().get(clients.get(0).getId());
+            return clientResource;
         } else {
             throw new IllegalStateException("Expected exactly 1 client with name " + clientName + " but found: " + clients.size());
         }
-    }
 
-    public RealmResource realmResource(Keycloak keycloak) {
-        return keycloak.realm(properties.getRealm());
-    }
-
-    public String getEmail(Map<String, Object> claims) {
-        return (String) claims.get(EMAIL_KEY);
-    }
-
-    public List<String> getRoles(Map<String, Object> claims) {
-        final var roles = new ArrayList<String>();
-
-        final var realmSettings = (Map<String, List<String>>) claims.get(REALM_ACCESS);
-        if (realmSettings != null) {
-            roles.addAll(realmSettings.getOrDefault(ROLES_SCOPE, List.of()));
-        }
-
-        final var resourceSettings = (Map<String, Map<String, List<String>>>) claims.get(RESOURCE_ACCESS);
-        if (clientName != null && !clientName.isBlank() && resourceSettings != null && resourceSettings.containsKey(clientName)) {
-            roles.addAll(resourceSettings.get(clientName).getOrDefault(ROLES_SCOPE, List.of()));
-        }
-
-        return roles;
-    }
-
-    private ClientResource clientResource(Keycloak keycloak) {
-        return keycloak.realm(properties.getRealm()).clients().get(getClientId(keycloak));
     }
 
 }

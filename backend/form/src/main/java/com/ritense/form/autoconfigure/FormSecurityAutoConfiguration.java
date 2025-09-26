@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,14 @@ package com.ritense.form.autoconfigure;
 import com.ritense.form.security.config.FormFileHttpSecurityConfigurer;
 import com.ritense.form.security.config.FormFileJwtHttpSecurityConfigurer;
 import com.ritense.form.security.config.FormHttpSecurityConfigurer;
-import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
+import com.ritense.form.security.config.FormManagementHttpSecurityConfigurer;
 import com.ritense.valtimo.security.jwt.authentication.TokenAuthenticationService;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
-@AutoConfiguration
+@Configuration
 public class FormSecurityAutoConfiguration {
 
     @Order(270)
@@ -35,6 +34,13 @@ public class FormSecurityAutoConfiguration {
     @ConditionalOnMissingBean(FormHttpSecurityConfigurer.class)
     public FormHttpSecurityConfigurer formHttpSecurityConfigurer() {
         return new FormHttpSecurityConfigurer();
+    }
+
+    @Order(270)
+    @Bean
+    @ConditionalOnMissingBean(FormManagementHttpSecurityConfigurer.class)
+    public FormManagementHttpSecurityConfigurer formManagementHttpSecurityConfigurer() {
+        return new FormManagementHttpSecurityConfigurer();
     }
 
     @Order(271)
@@ -46,7 +52,6 @@ public class FormSecurityAutoConfiguration {
 
     @Order(272)
     @Bean
-    @Conditional(NoOAuth2ClientsConfiguredCondition.class)
     @ConditionalOnMissingBean(FormFileJwtHttpSecurityConfigurer.class)
     public FormFileJwtHttpSecurityConfigurer formFileJwtHttpSecurityConfigurer(
         TokenAuthenticationService tokenAuthenticationService

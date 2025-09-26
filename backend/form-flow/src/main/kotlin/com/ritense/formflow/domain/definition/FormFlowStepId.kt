@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ package com.ritense.formflow.domain.definition
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.ritense.formflow.domain.AbstractId
-import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.JoinColumns
-import jakarta.persistence.ManyToOne
 import java.util.Objects
+import javax.persistence.Column
+import javax.persistence.Embeddable
+import javax.persistence.FetchType
+import javax.persistence.JoinColumn
+import javax.persistence.JoinColumns
+import javax.persistence.ManyToOne
 
 @Embeddable
 data class FormFlowStepId(
@@ -35,8 +35,7 @@ data class FormFlowStepId(
     @ManyToOne(targetEntity = FormFlowDefinition::class, fetch = FetchType.LAZY)
     @JoinColumns(
         JoinColumn(name = "form_flow_definition_key", referencedColumnName = "form_flow_definition_key"),
-        JoinColumn(name = "case_definition_key", referencedColumnName = "case_definition_key"),
-        JoinColumn(name = "case_definition_version_tag", referencedColumnName = "case_definition_version_tag")
+        JoinColumn(name = "form_flow_definition_version", referencedColumnName = "form_flow_definition_version")
     )
     var formFlowDefinition: FormFlowDefinition? = null
 ) : AbstractId<FormFlowStepId>() {

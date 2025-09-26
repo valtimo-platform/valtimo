@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -30,9 +30,5 @@
     <include file="changelog/20220317-add-form-flow-definition.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20220328-add-form-flow-instance.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20220824-add-form-flow-on-back.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20230823-temporary-submission-data.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20240820-add-form-flow-step-instance-submission-order.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20240823-add-form-flow-step-title.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20250307-add-form-flow-to-case-definition.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

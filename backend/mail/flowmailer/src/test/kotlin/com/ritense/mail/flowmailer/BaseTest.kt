@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.mail.flowmailer
 
+import com.nhaarman.mockitokotlin2.any
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.document.domain.impl.JsonSchemaDocument
@@ -24,7 +25,6 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.service.DocumentSequenceGeneratorService
 import com.ritense.valtimo.contract.basictype.EmailAddress
 import com.ritense.valtimo.contract.basictype.SimpleName
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.mail.model.RawMailMessage
 import com.ritense.valtimo.contract.mail.model.TemplatedMailMessage
 import com.ritense.valtimo.contract.mail.model.value.Attachment
@@ -38,7 +38,6 @@ import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.any
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import java.net.URI
@@ -93,8 +92,7 @@ abstract class BaseTest {
     }
 
     fun definition(): JsonSchemaDocumentDefinition {
-        val jsonSchemaDocumentDefinitionId =
-            JsonSchemaDocumentDefinitionId.of("house", CaseDefinitionId.of("house", "1.0.0"))
+        val jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.newId("house")
         val jsonSchema = JsonSchema.fromResourceUri(path(jsonSchemaDocumentDefinitionId.name()))
         return JsonSchemaDocumentDefinition(jsonSchemaDocumentDefinitionId, jsonSchema)
     }

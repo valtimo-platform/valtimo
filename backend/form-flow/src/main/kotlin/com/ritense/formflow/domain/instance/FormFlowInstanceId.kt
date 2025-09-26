@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,14 @@ package com.ritense.formflow.domain.instance
 
 import com.ritense.formflow.domain.AbstractId
 import java.util.UUID
-import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
+import javax.persistence.Column
+import javax.persistence.Embeddable
 
 @Embeddable
 class FormFlowInstanceId(
     @Column(name = "form_flow_instance_id")
     val id: UUID
 ) : AbstractId<FormFlowInstanceId>() {
-
-    override fun toString(): String = id.toString()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

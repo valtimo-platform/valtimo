@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.Objects;
 /**
  * Inspired by MandrillMessage.
  */
-public class RawMailMessage implements HasRecipients {
+public class RawMailMessage {
     public final Subject subject;
     public final MailBody mailBody;
     public final Sender sender;
@@ -51,11 +51,6 @@ public class RawMailMessage implements HasRecipients {
 
     public static Builder with(Recipient recipient, MailBody mailBody) {
         return new Builder(RecipientCollection.fromSingle(recipient), mailBody);
-    }
-
-    @Override
-    public RecipientCollection getRecipients() {
-        return recipients;
     }
 
     public static class Builder {

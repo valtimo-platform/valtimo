@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,21 @@ package com.ritense.plugin
 
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
+import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
-import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
+import com.ritense.plugin.domain.ActivityType.SERVICE_TASK
 
 @Plugin(
     key = "test-category-plugin",
     title = "Test category plugin",
     description = "This is a test plugin used to verify category plugin framework functionality"
 )
-class TestCategoryPlugin : TestPluginCategory {
-
-    @PluginProperty(key = "property1", secret = true, required = false)
-    var property1: String? = null
-
+class TestCategoryPlugin(): TestPluginCategory {
     @PluginAction(
         key = "test-category action",
         title = "Test category action",
         description = "This is an action used to verify category plugin framework functionality",
-        activityTypes = [SERVICE_TASK_START]
+        activityTypes = [SERVICE_TASK]
     )
     fun testAction() {
         //do nothing

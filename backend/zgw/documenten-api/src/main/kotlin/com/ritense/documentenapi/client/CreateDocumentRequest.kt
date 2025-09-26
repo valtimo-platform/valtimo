@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,20 @@
 package com.ritense.documentenapi.client
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.ritense.zgw.domain.Vertrouwelijkheid
 import java.io.InputStream
 import java.time.LocalDate
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 class CreateDocumentRequest(
     val bronorganisatie: String,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val creatiedatum: LocalDate,
     val titel: String,
-    val vertrouwelijkheidaanduiding: Vertrouwelijkheid? = null,
+    val vertrouwelijkheidaanduiding: String? = null,
     val auteur: String,
     val status: DocumentStatusType? = null,
     val taal: String,
     val bestandsnaam: String? = null,
-    val bestandsomvang: Long? = null,
     @JsonSerialize(using = Base64StreamSerializer::class)
     val inhoud: InputStream,
     val beschrijving: String? = null,
@@ -43,7 +39,5 @@ class CreateDocumentRequest(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val verzenddatum: LocalDate? = null,
     val indicatieGebruiksrecht: Boolean? = false,
-    val informatieobjecttype: String? = null,
-    val formaat: String? = null,
-    val trefwoorden: List<String>? = null
+    val informatieobjecttype: String,
 )

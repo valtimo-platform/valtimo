@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,68 +16,34 @@
 
 package com.ritense.valtimo.service;
 
-import com.ritense.valtimo.choicefield.repository.ChoiceFieldRepository;
 import com.ritense.valtimo.choicefield.repository.ChoiceFieldValueRepository;
-import com.ritense.valtimo.domain.choicefield.ChoiceField;
 import com.ritense.valtimo.domain.choicefield.ChoiceFieldValue;
-import com.ritense.valtimo.web.rest.dto.ChoiceFieldValueCreateRequestDTO;
-import com.ritense.valtimo.web.rest.dto.ChoiceFieldValueUpdateRequestDTO;
-import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Optional;
 
 @Transactional
 public class ChoiceFieldValueService {
 
     private static final Logger logger = LoggerFactory.getLogger(ChoiceFieldValueService.class);
-    private final ChoiceFieldRepository choiceFieldRepository;
-
     private final ChoiceFieldValueRepository choiceFieldValueRepository;
 
-    public ChoiceFieldValueService(
-        ChoiceFieldRepository choiceFieldRepository,
-        ChoiceFieldValueRepository choiceFieldValueRepository
-    ) {
-        this.choiceFieldRepository = choiceFieldRepository;
+    public ChoiceFieldValueService(ChoiceFieldValueRepository choiceFieldValueRepository) {
         this.choiceFieldValueRepository = choiceFieldValueRepository;
     }
 
     /**
      * Save a choiceFieldValue.
      *
-     * @param requestDTO the entity to save
+     * @param choiceFieldValue the entity to save
      * @return the persisted entity
      */
-    public ChoiceFieldValue create(ChoiceFieldValueCreateRequestDTO requestDTO, String choiceFieldName) {
-        logger.debug("Request to create ChoiceFieldValue : {}", requestDTO);
-
-        ChoiceField choiceField = choiceFieldRepository.findByKeyName(choiceFieldName);
-        ChoiceFieldValue choiceFieldValue = new ChoiceFieldValue();
-        choiceFieldValue.setName(requestDTO.getName());
-        choiceFieldValue.setDeprecated(requestDTO.getDeprecated());
-        choiceFieldValue.setSortOrder(requestDTO.getSortOrder());
-        choiceFieldValue.setValue(requestDTO.getValue());
-        choiceFieldValue.setChoiceField(choiceField);
-
-        return choiceFieldValueRepository.save(choiceFieldValue);
-    }
-
-    public ChoiceFieldValue update(ChoiceFieldValueUpdateRequestDTO requestDTO, String choiceFieldName) {
-        logger.debug("Request to update ChoiceFieldValue : {}", requestDTO);
-
-        ChoiceField choiceField = choiceFieldRepository.findByKeyName(choiceFieldName);
-
-        ChoiceFieldValue choiceFieldValue = choiceFieldValueRepository.findById(requestDTO.getId()).orElseThrow();
-        choiceFieldValue.setName(requestDTO.getName());
-        choiceFieldValue.setDeprecated(requestDTO.getDeprecated());
-        choiceFieldValue.setSortOrder(requestDTO.getSortOrder());
-        choiceFieldValue.setValue(requestDTO.getValue());
-        choiceFieldValue.setChoiceField(choiceField);
-
+    public ChoiceFieldValue save(ChoiceFieldValue choiceFieldValue) {
+        logger.debug("Request to save ChoiceFieldValue : {}", choiceFieldValue);
         return choiceFieldValueRepository.save(choiceFieldValue);
     }
 
@@ -101,7 +67,7 @@ public class ChoiceFieldValueService {
      */
     @Transactional(readOnly = true)
     public Page<ChoiceFieldValue> findAllByChoiceFieldId(Pageable pageable, Long choicefieldId) {
-        logger.debug("Request to get all ChoiceFieldValues for choiceField with id {}", choicefieldId);
+        logger.debug("Request to get all ChoiceFieldValues for choiceField {}", choicefieldId);
         return choiceFieldValueRepository.findByChoiceField_Id(pageable, choicefieldId);
     }
 
@@ -113,7 +79,7 @@ public class ChoiceFieldValueService {
      */
     @Transactional(readOnly = true)
     public List<ChoiceFieldValue> findAllByChoiceFieldIdAndDeprecatedIsFalse(Long choicefieldId) {
-        logger.debug("Request to get not-deprecated ChoiceFieldValues for choiceField witd id {}", choicefieldId);
+        logger.debug("Request to get all ChoiceFieldValues for choiceField {}", choicefieldId);
         return choiceFieldValueRepository.findByChoiceField_IdAndDeprecatedIsFalse(choicefieldId);
     }
 
@@ -147,7 +113,7 @@ public class ChoiceFieldValueService {
      */
     @Transactional(readOnly = true)
     public Page<ChoiceFieldValue> findAllByChoiceFieldKeyName(Pageable pageable, String choiceFieldName) {
-        logger.debug("Request to get all ChoiceFieldValues for choiceField witd name {}", choiceFieldName);
+        logger.debug("Request to get all ChoiceFieldValues for choiceField {}", choiceFieldName);
         return choiceFieldValueRepository.findByChoiceField_KeyName(pageable, choiceFieldName);
     }
 

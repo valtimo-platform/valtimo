@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,11 @@
 
 package com.ritense.formflow.service
 
+import com.nhaarman.mockitokotlin2.isNull
+import com.nhaarman.mockitokotlin2.spy
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import com.ritense.formflow.BaseTest
 import com.ritense.formflow.domain.definition.FormFlowDefinition
 import com.ritense.formflow.domain.definition.FormFlowDefinitionId
@@ -24,26 +29,18 @@ import com.ritense.formflow.domain.definition.FormFlowStepId
 import com.ritense.formflow.domain.definition.configuration.FormFlowStepType
 import com.ritense.formflow.domain.definition.configuration.step.FormStepTypeProperties
 import com.ritense.formflow.domain.instance.FormFlowInstance
-import com.ritense.formflow.event.ApplicationEventPublisherHolder
+import com.ritense.formflow.expression.ExpressionProcessor
+import com.ritense.formflow.expression.ExpressionProcessorFactory
 import com.ritense.formflow.expression.ExpressionProcessorFactoryHolder
 import com.ritense.formflow.expression.spel.SpelExpressionProcessor
-import com.ritense.formflow.expression.spel.SpelExpressionProcessorFactory
 import com.ritense.formflow.repository.FormFlowAdditionalPropertiesSearchRepository
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.repository.FormFlowInstanceRepository
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.any
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.isNull
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.spy
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationContext
 
 internal class FormFlowServiceTest : BaseTest() {
@@ -51,7 +48,7 @@ internal class FormFlowServiceTest : BaseTest() {
     lateinit var formFlowService: FormFlowService
     lateinit var formFlowInstanceRepository: FormFlowInstanceRepository
     lateinit var formFlowAdditionalPropertiesSearchRepository: FormFlowAdditionalPropertiesSearchRepository
-    lateinit var expressionProcessor: SpelExpressionProcessor
+    lateinit var expressionProcessor: ExpressionProcessor
 
     @BeforeEach
     fun beforeAll() {
@@ -62,18 +59,13 @@ internal class FormFlowServiceTest : BaseTest() {
             formFlowDefinitionRepository,
             formFlowInstanceRepository,
             formFlowAdditionalPropertiesSearchRepository,
-            emptyList(),
-            mock(),
+            emptyList()
         )
 
-        val expressionProcessorFactory = spy(SpelExpressionProcessorFactory())
-        expressionProcessorFactory.setFlowProcessBeans(mapOf())
-        whenever(expressionProcessorFactory.create(any())).thenAnswer {
-            expressionProcessor = spy(it.callRealMethod() as SpelExpressionProcessor)
-            expressionProcessor
-        }
+        val expressionProcessorFactory = mock(ExpressionProcessorFactory::class.java)
+        expressionProcessor = spy(SpelExpressionProcessor())
+        whenever(expressionProcessorFactory.create(any())).thenReturn(expressionProcessor)
         ExpressionProcessorFactoryHolder.setInstance(expressionProcessorFactory, mock(ApplicationContext::class.java))
-        ApplicationEventPublisherHolder.setInstance(mock())
     }
 
     @Test
@@ -113,28 +105,11 @@ internal class FormFlowServiceTest : BaseTest() {
 
     }
 
-    @Test
-    fun `should pass variables to expression context`() {
-        val instance = createAndOpenFormFlowInstance(
-            onOpen = listOf(
-                "\${'Hello '+'World!'}", "\${3 / 1}"
-            )
-        )
-
-        instance.getCurrentStep().open()
-
-        val contextMap = getContextMap(expressionProcessor)
-        assertThat((contextMap["step"] as Map<String, Any>)["id"]).isEqualTo(instance.getCurrentStep().id)
-        assertThat((contextMap["step"] as Map<String, Any>)["key"]).isEqualTo(instance.getCurrentStep().stepKey)
-        assertThat((contextMap["instance"] as Map<String, Any>)["id"]).isEqualTo(instance.id)
-    }
-
     private fun createAndOpenFormFlowInstance(
         onBack: List<String>? = null,
         onOpen: List<String>? = null,
         onComplete: List<String>? = null
     ): FormFlowInstance {
-        val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
         val step = FormFlowStep(
             FormFlowStepId("start-step"),
             listOf(),
@@ -144,24 +119,14 @@ internal class FormFlowServiceTest : BaseTest() {
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
         val definition = FormFlowDefinition(
-            FormFlowDefinitionId("test", caseDefinitionId), "start-step", setOf(step)
+            FormFlowDefinitionId("test", 1L), "start-step", setOf(step)
         )
         val formFlowInstance = FormFlowInstance(
             formFlowDefinition = definition
         )
 
-        whenever(formFlowInstanceRepository.getReferenceById(formFlowInstance.id)).thenReturn(formFlowInstance)
+        whenever(formFlowInstanceRepository.getById(formFlowInstance.id)).thenReturn(formFlowInstance)
 
         return formFlowInstance
-    }
-
-    private fun getContextMap(expressionProcessor: SpelExpressionProcessor): Map<String, Any> {
-        try {
-            val contextMapField = SpelExpressionProcessor::class.java.getDeclaredField("contextMap")
-            contextMapField.isAccessible = true
-            return contextMapField.get(expressionProcessor) as Map<String, Any>
-        } catch (e: NoSuchMethodException) {
-            throw IllegalStateException(e)
-        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 package com.ritense.resource.service
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
+import com.ritense.resource.service.TemporaryResourceStorageService.Companion.TEMP_DIR
+import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
 import java.time.Duration
@@ -28,20 +27,17 @@ import java.util.concurrent.TimeUnit
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.listDirectoryEntries
 
-@Service
-@SkipComponentScan
-class TemporaryResourceStorageDeletionService(
+open class TemporaryResourceStorageDeletionService(
     private val retentionInMinutes: Long,
-    private val temporaryResourceStorageService: TemporaryResourceStorageService,
 ) {
 
     @Scheduled(
         fixedRateString = "\${valtimo.temporaryResourceStorage.retentionInMinutes:60}",
         timeUnit = TimeUnit.MINUTES
     )
-    fun deleteOldTemporaryResources() {
+    open fun deleteOldTemporaryResources() {
 
-        temporaryResourceStorageService.tempDir.listDirectoryEntries().forEach { file ->
+        TEMP_DIR.listDirectoryEntries().forEach { file ->
             try {
                 val fileCreationTime = Files.readAttributes(file, BasicFileAttributes::class.java).creationTime()
 

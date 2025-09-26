@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package com.ritense.valtimo.security;
 
 import com.ritense.valtimo.contract.Constants;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
-import java.util.Optional;
 import org.springframework.data.domain.AuditorAware;
+import java.util.Optional;
 
 public class SpringSecurityAuditorAware implements AuditorAware<String> {
 

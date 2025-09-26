@@ -1,5 +1,4 @@
 .gradle
-.kotlin
 /build/
 /classes/
 !gradle/wrapper/gradle-wrapper.jar
@@ -21,7 +20,6 @@
 ### NetBeans ###
 nbproject/private/
 build/
-out/
 nbbuild/
 dist/
 nbdist/
@@ -35,10 +33,13 @@ nbdist/
 /external-connector/out/
 /milestones/out/
 /milestones/target/h2db/db/
+/plugin-ae-auth0/out/
 /plugin-mail-filters/out/
 /plugin-mail-mandrill/out/
 /process-document/out/
 /process-document/target/h2db/db/
+/view-configurator/out/
+/view-configurator/target/h2db/db/
 /openzaak/target/
 /openzaak/out/
 /app/openformulieren/private_media/*/

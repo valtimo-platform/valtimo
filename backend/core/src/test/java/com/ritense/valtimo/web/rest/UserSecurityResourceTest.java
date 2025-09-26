@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package com.ritense.valtimo.web.rest;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
+import java.util.UUID;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN;
 import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
 import static org.springframework.http.HttpMethod.DELETE;
@@ -27,10 +30,6 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
-import java.util.UUID;
-import org.junit.jupiter.api.Test;
-import org.springframework.security.test.context.support.WithMockUser;
-
 class UserSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
 
     private static final String USER_ID = UUID.randomUUID().toString();
@@ -39,133 +38,133 @@ class UserSecurityResourceTest extends SecuritySpecificEndpointIntegrationTest {
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void createUserAsAdmin() throws Exception {
-        assertHttpStatus(POST, "/api/v1/users", BAD_REQUEST);
+        assertHttpStatus(POST, "/api/users", BAD_REQUEST);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void createUserAsUser() throws Exception {
-        assertHttpStatus(POST, "/api/v1/users", FORBIDDEN);
+        assertHttpStatus(POST, "/api/users", FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void updateUserAsAdmin() throws Exception {
-        assertHttpStatus(PUT, "/api/v1/users", BAD_REQUEST);
+        assertHttpStatus(PUT, "/api/users", BAD_REQUEST);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void updateUserAsUser() throws Exception {
-        assertHttpStatus(PUT, "/api/v1/users", FORBIDDEN);
+        assertHttpStatus(PUT, "/api/users", FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void activateUserAsAdmin() throws Exception {
-        assertHttpStatus(PUT, String.format("/api/v1/users/%s/activate", USER_ID), OK);
+        assertHttpStatus(PUT, String.format("/api/users/%s/activate", USER_ID), OK);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void activateUserAsUser() throws Exception {
-        assertHttpStatus(PUT, String.format("/api/v1/users/%s/activate", USER_ID), FORBIDDEN);
+        assertHttpStatus(PUT, String.format("/api/users/%s/activate", USER_ID), FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void deactivateUserAsAdmin() throws Exception {
-        assertHttpStatus(PUT, String.format("/api/v1/users/%s/deactivate", USER_ID), OK);
+        assertHttpStatus(PUT, String.format("/api/users/%s/deactivate", USER_ID), OK);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void deactivateUserAsUser() throws Exception {
-        assertHttpStatus(PUT, String.format("/api/v1/users/%s/deactivate", USER_ID), FORBIDDEN);
+        assertHttpStatus(PUT, String.format("/api/users/%s/deactivate", USER_ID), FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void getAllUsersAsAdmin() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users", OK);
+        assertHttpStatus(GET, "/api/users", OK);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getAllUsersAsUser() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users", FORBIDDEN);
+        assertHttpStatus(GET, "/api/users", FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void queryUsersAsAdmin() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users", OK);
+        assertHttpStatus(GET, "/api/users", OK);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void queryUsersAsUser() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users", FORBIDDEN);
+        assertHttpStatus(GET, "/api/users", FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void getUserByEmailAsAdmin() throws Exception {
-        assertHttpStatus(GET, String.format("/api/v1/users/email/%s/", USER_EMAIL), NOT_FOUND);
+        assertHttpStatus(GET, String.format("/api/users/email/%s/", USER_EMAIL), NOT_FOUND);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getUserByEmailAsUser() throws Exception {
-        assertHttpStatus(GET, String.format("/api/v1/users/email/%s/", USER_EMAIL), FORBIDDEN);
+        assertHttpStatus(GET, String.format("/api/users/email/%s/", USER_EMAIL), FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void getUserAsAdmin() throws Exception {
-        assertHttpStatus(GET, String.format("/api/v1/users/%s", USER_ID), OK);
+        assertHttpStatus(GET, String.format("/api/users/%s", USER_ID), OK);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getUserAsUser() throws Exception {
-        assertHttpStatus(GET, String.format("/api/v1/users/%s", USER_ID), FORBIDDEN);
+        assertHttpStatus(GET, String.format("/api/users/%s", USER_ID), FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void getAllUsersByRoleAsAdmin() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users/authority/USER", OK);
+        assertHttpStatus(GET, "/api/users/authority/USER", OK);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void getAllUsersByRoleAsUser() throws Exception {
-        assertHttpStatus(GET, "/api/v1/users/authority/USER", FORBIDDEN);
+        assertHttpStatus(GET, "/api/users/authority/USER", FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void deleteUserAsAdmin() throws Exception {
-        assertHttpStatus(DELETE, String.format("/api/v1/users/%s", USER_ID), OK);
+        assertHttpStatus(DELETE, String.format("/api/users/%s", USER_ID), OK);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void deleteUserAsUser() throws Exception {
-        assertHttpStatus(DELETE, String.format("/api/v1/users/%s", USER_ID), FORBIDDEN);
+        assertHttpStatus(DELETE, String.format("/api/users/%s", USER_ID), FORBIDDEN);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = ADMIN)
     void resendVerificationEmailAsAdmin() throws Exception {
-        assertHttpStatus(POST, String.format("/api/v1/users/send-verification-email/%s", USER_ID), BAD_REQUEST);
+        assertHttpStatus(POST, String.format("/api/users/send-verification-email/%s", USER_ID), BAD_REQUEST);
     }
 
     @Test
     @WithMockUser(username = USER_EMAIL, authorities = USER)
     void resendVerificationEmailAsUser() throws Exception {
-        assertHttpStatus(POST, String.format("/api/v1/users/send-verification-email/%s", USER_ID), FORBIDDEN);
+        assertHttpStatus(POST, String.format("/api/users/send-verification-email/%s", USER_ID), FORBIDDEN);
     }
 
 }

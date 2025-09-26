@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,54 +16,46 @@
 
 package com.ritense.processdocument.domain.impl.listener;
 
-import com.ritense.authorization.annotation.RunWithoutAuthorization;
-import com.ritense.document.domain.Document;
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.domain.listener.StartEventFromCallActivityListener;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
-import com.ritense.processdocument.service.ProcessDocumentService;
-import org.operaton.bpm.engine.delegate.DelegateExecution;
-import org.operaton.bpm.model.bpmn.impl.instance.ProcessImpl;
-import org.springframework.context.event.EventListener;
+import org.camunda.bpm.engine.ActivityTypes;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.delegate.ExecutionListener;
+import org.camunda.bpm.extension.reactor.bus.CamundaSelector;
+import org.camunda.bpm.extension.reactor.spring.listener.ReactorExecutionListener;
+import org.camunda.bpm.model.bpmn.impl.instance.ProcessImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.UUID;
 
-public class StartEventFromCallActivityListenerImpl implements StartEventFromCallActivityListener {
+@CamundaSelector(type = ActivityTypes.START_EVENT, event = ExecutionListener.EVENTNAME_START)
+public class StartEventFromCallActivityListenerImpl extends ReactorExecutionListener implements StartEventFromCallActivityListener {
 
+    private static final Logger logger = LoggerFactory.getLogger(StartEventFromCallActivityListenerImpl.class);
     private final ProcessDocumentAssociationService processDocumentAssociationService;
-    private final ProcessDocumentService processDocumentService;
 
-    public StartEventFromCallActivityListenerImpl(
-        ProcessDocumentAssociationService processDocumentAssociationService,
-        ProcessDocumentService processDocumentService
-    ) {
+    public StartEventFromCallActivityListenerImpl(ProcessDocumentAssociationService processDocumentAssociationService) {
         this.processDocumentAssociationService = processDocumentAssociationService;
-        this.processDocumentService = processDocumentService;
     }
 
-    @RunWithoutAuthorization
-    @EventListener(condition = "#execution.bpmnModelElementInstance != null " +
-        "&& #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).START_EVENT " +
-        "&& #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START")
+    @Override
     public void notify(DelegateExecution execution) {
-        Document.Id documentId = getDocumentId(execution);
-        if (documentId != null) {
-            processDocumentAssociationService.createProcessDocumentInstance(
-                execution.getProcessInstanceId(), //processInstance from new process
-                documentId.getId(),
-                getProcessNameFrom(execution)
-            );
+        if (isExecutedFromCallActivity(execution)) {
+            logger.info("Handling process started from CallActivity for process-definition-id - {}", execution.getProcessDefinitionId());
+            final var parentProcessInstanceId = new CamundaProcessInstanceId(execution.getSuperExecution().getProcessInstanceId());
+            processDocumentAssociationService
+                .findProcessDocumentInstance(parentProcessInstanceId)
+                .ifPresent(instance -> processDocumentAssociationService.createProcessDocumentInstance(
+                    execution.getProcessInstanceId(), //processInstance from new process
+                    UUID.fromString(instance.processDocumentInstanceId().documentId().toString()),
+                    getProcessNameFrom(execution)
+                ));
         }
     }
 
-    private Document.Id getDocumentId(DelegateExecution execution) {
-        if (execution.getSuperExecution() != null) {
-            var processId = new OperatonProcessInstanceId(execution.getSuperExecution().getProcessInstanceId());
-            var documentId = processDocumentService.getDocumentId(processId, execution);
-            if (documentId != null) {
-                return documentId;
-            }
-        }
-        var processId = new OperatonProcessInstanceId(execution.getProcessInstanceId());
-        return processDocumentService.getDocumentId(processId, execution);
+    private boolean isExecutedFromCallActivity(DelegateExecution execution) {
+        return execution.getSuperExecution() != null;
     }
 
     private String getProcessNameFrom(DelegateExecution execution) {

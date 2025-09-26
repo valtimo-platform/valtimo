@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@
 
 package com.ritense.documentenapi.client
 
-import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.zgw.domain.Vertrouwelijkheid
+import com.ritense.valtimo.contract.json.Mapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -29,7 +28,7 @@ internal class CreateDocumentRequestTest {
             bronorganisatie = "123",
             creatiedatum = LocalDate.of(2020, 5, 3),
             titel = "titel",
-            vertrouwelijkheidaanduiding = Vertrouwelijkheid.ZAAKVERTROUWELIJK,
+            vertrouwelijkheidaanduiding = ConfidentialityLevel.ZAAKVERTROUWELIJK.key,
             auteur = "GZAC",
             status = DocumentStatusType.DEFINITIEF,
             taal = "taal",
@@ -38,9 +37,9 @@ internal class CreateDocumentRequestTest {
             beschrijving = "beschrijving",
             informatieobjecttype = "type",
         )
-        val output = MapperSingleton.get().writeValueAsString(requestToSerialize)
+        val output = Mapper.INSTANCE.get().writeValueAsString(requestToSerialize)
 
-        val parsedOutput = MapperSingleton.get().readValue(output, Map::class.java)
+        val parsedOutput = Mapper.INSTANCE.get().readValue(output, Map::class.java)
 
         assertEquals("dGVzdA==", parsedOutput["inhoud"])
         assertEquals("2020-05-03", parsedOutput["creatiedatum"])

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2022 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,21 @@
 
 package com.ritense.formflow.domain.definition.configuration
 
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.ritense.formflow.domain.definition.FormFlowStepId
 import com.ritense.formflow.domain.definition.FormFlowStep as FormFlowStepEntity
 
-@JsonInclude(Include.NON_EMPTY)
 data class FormFlowStep(
     val key: String,
-    val title: String? = null,
-    val nextStep: String? = null,
     val nextSteps: List<FormFlowNextStep> = listOf(),
     val onBack: List<String> = listOf(),
     val onOpen: List<String> = listOf(),
     val onComplete: List<String> = listOf(),
     val type: FormFlowStepType
 ) {
-    constructor(
-        key: String,
-        nextStep: String? = null,
-        nextSteps: List<FormFlowNextStep> = listOf(),
-        onBack: List<String> = listOf(),
-        onOpen: List<String> = listOf(),
-        onComplete: List<String> = listOf(),
-        type: FormFlowStepType
-    ) : this(key, null, nextStep, nextSteps, onBack, onOpen, onComplete, type)
 
     fun contentEquals(other: FormFlowStepEntity): Boolean {
         if (key != other.id.key) return false
-        if (title != other.title) return false
 
-        val nextSteps = getAllNextSteps()
         if (nextSteps.size != other.nextSteps.size) return false
         if (nextSteps.any { nextStep ->
             other.nextSteps.none { otherNextStep ->
@@ -63,38 +47,16 @@ data class FormFlowStep(
     }
 
     fun toDefinition(): FormFlowStepEntity {
-        val nextSteps = getAllNextSteps().map(FormFlowNextStep::toDefinition)
+        val nextSteps = this.nextSteps
+            .map(FormFlowNextStep::toDefinition)
 
         return FormFlowStepEntity(
             FormFlowStepId.create(key),
-            title,
             nextSteps,
             onBack,
             onOpen,
             onComplete,
             type
         )
-    }
-
-    private fun getAllNextSteps(): List<FormFlowNextStep> {
-        return if (this.nextStep != null)
-            listOf(FormFlowNextStep(step = this.nextStep))
-        else
-            this.nextSteps
-    }
-
-    companion object {
-        fun fromEntity(entity: FormFlowStepEntity): FormFlowStep {
-            return FormFlowStep(
-                key = entity.id.key,
-                title = entity.title,
-                nextStep = null,
-                nextSteps = entity.nextSteps.map { FormFlowNextStep.fromEntity(it) },
-                onBack = entity.onBack,
-                onComplete = entity.onComplete,
-                onOpen = entity.onOpen,
-                type = entity.type
-            )
-        }
     }
 }

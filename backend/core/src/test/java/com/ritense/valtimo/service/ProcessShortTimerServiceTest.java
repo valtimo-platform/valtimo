@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,24 @@
 
 package com.ritense.valtimo.service;
 
-import static com.ritense.valtimo.service.ProcessShortTimerService.NAMESPACE_URL_BPMN;
-import static com.ritense.valtimo.service.ProcessShortTimerService.NAMESPACE_URL_BPMNDI;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.ritense.valtimo.contract.exception.DocumentParserException;
 import com.ritense.valtimo.contract.exception.ProcessNotFoundException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import org.operaton.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.RepositoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import static com.ritense.valtimo.service.ProcessShortTimerService.NAMESPACE_URL_BPMN;
+import static com.ritense.valtimo.service.ProcessShortTimerService.NAMESPACE_URL_BPMNDI;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ProcessShortTimerServiceTest {
 
@@ -51,7 +50,7 @@ class ProcessShortTimerServiceTest {
     void processModelChangeTimersToOneMinuteTestWithCorrectId() throws ProcessNotFoundException, DocumentParserException {
 
         //Given
-        FileInputStream fileInputStream = getFileInputStream("operatonProcessModelTest.xml");
+        FileInputStream fileInputStream = getFileInputStream("camundaProcessModelTest.xml");
 
         String processDefinitionId = "notUsedSinceMocked";
 
