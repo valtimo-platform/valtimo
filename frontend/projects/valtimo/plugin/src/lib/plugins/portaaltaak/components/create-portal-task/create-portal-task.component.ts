@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} fro
 import {TranslateService} from '@ngx-translate/core';
 import {PluginTranslationService} from '../../../../services';
 import {CreatePortalTaskConfig, FormType, OtherReceiver, Receiver} from '../../models';
-import {SelectItem, ValuePathSelectorPrefix} from '@valtimo/components';
+import {SelectItem} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-create-portal-task',
   templateUrl: './create-portal-task.component.html',
   styleUrls: ['./create-portal-task.component.scss'],
@@ -56,8 +55,6 @@ export class CreatePortalTaskComponent
     map(value => !!(value?.receiver === 'other'))
   );
   private readonly valid$ = new BehaviorSubject<boolean>(false);
-
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   constructor(
     private readonly translateService: TranslateService,

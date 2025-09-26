@@ -1,0 +1,19 @@
+@if (isItemSelected$ | async) {
+  <button
+    class="valtimo-dossier-management-details-menu__back-button"
+    cdsButton="secondary"
+    (click)="onMenuItemSelected(null)"
+  >
+    Back
+  </button>
+} @else {
+  <div class="valtimo-dossier-management-details-menu">
+    @for (menuItem of MENU_ITEMS; track menuItem.urlPath) {
+      <valtimo-dossier-management-details-menu-item
+        [menuItem]="menuItem"
+        (itemSelected)="onMenuItemSelected(menuItem.urlPath)"
+      >
+      </valtimo-dossier-management-details-menu-item>
+    }
+  </div>
+}

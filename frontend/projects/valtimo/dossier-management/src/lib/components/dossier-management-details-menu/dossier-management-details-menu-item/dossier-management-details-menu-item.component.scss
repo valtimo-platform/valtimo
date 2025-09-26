@@ -1,0 +1,9 @@
+.valtimo-dossier-management-details-menu-item {
+  ::ng-deep.cds--tile {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    height: 280px;
+  }
+}

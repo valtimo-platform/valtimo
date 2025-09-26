@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import Muuri from 'muuri';
 import {Router} from '@angular/router';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-widget-dashboard-content',
   templateUrl: './widget-dashboard-content.component.html',
   styleUrls: ['./widget-dashboard-content.component.scss'],
@@ -109,13 +108,10 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
     this._subscriptions?.unsubscribe();
   }
 
-  public navigateToRoute(
-    widgetConfiguration: DashboardWidgetConfiguration,
-    event: MouseEvent
-  ): void {
+  public navigateToRoute(widgetConfiguration: DashboardWidgetConfiguration, event: MouseEvent): void {
     if (widgetConfiguration.url) {
       event.preventDefault();
-      this.router.navigateByUrl(widgetConfiguration.url);
+      this.router.navigateByUrl(widgetConfiguration.url)
     }
   }
 

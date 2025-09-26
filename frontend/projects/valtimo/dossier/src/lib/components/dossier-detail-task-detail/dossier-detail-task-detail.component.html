@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  *ngIf="{
+    canAssignUserToTask: canAssignUserToTask$ | async,
+    intermediateSaveValue: intermediateSaveValue$ | async,
+    task: task$ | async,
+  } as obs"
+  class="valtimo-dossier-detail-task-detail"
+>
+  <section class="valtimo-dossier-detail-task-detail__header">
+    <valtimo-task-detail-intermediate-save
+      *ngIf="enableIntermediateSave"
+      [task]="obs.task"
+      (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+    ></valtimo-task-detail-intermediate-save>
+
+    <button cdsButton="ghost" [iconOnly]="true" (click)="onClose()">
+      <svg class="cds--btn__icon" cdsIcon="close" size="16"></svg>
+    </button>
+  </section>
+
+  <section
+    class="valtimo-dossier-detail-task-detail__body"
+    [class.valtimo-dossier-detail-task-detail__body--compact]="compactMode$ | async"
+  >
+    <div class="title-container">
+      <p class="valtimo-dossier-detail-task-detail__title">{{ pageValue()?.title }}</p>
+
+      <p class="cds--modal-header__label cds--type-delta">{{ pageValue()?.subtitle }}</p>
+
+      <p *ngIf="obs.intermediateSaveValue" class="cds--modal-header__label">
+        {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}:
+
+        {{
+          obs.intermediateSaveValue.editedBy
+            ? obs.intermediateSaveValue.editedBy
+            : obs.intermediateSaveValue.createdBy
+        }}
+
+        {{ 'formManagement.intermediateSave.on' | translate }}:
+
+        {{
+          obs.intermediateSaveValue.editedOn
+            ? obs.intermediateSaveValue.editedOn
+            : obs.intermediateSaveValue.createdOn
+        }}
+      </p>
+
+      <valtimo-assign-user-to-task
+        *ngIf="obs.task && obs.canAssignUserToTask"
+        [taskId]="obs.task.id"
+        [assigneeId]="obs.task.assignee"
+      ></valtimo-assign-user-to-task>
+    </div>
+
+    <valtimo-task-detail-content
+      [task]="task$ | async"
+      (activeChange)="onActiveChangeEvent($event)"
+      (formSubmit)="onFormSubmitEvent()"
+    ></valtimo-task-detail-content>
+  </section>
+</div>

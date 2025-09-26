@@ -1,30 +1,13 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
+import {ConfigService} from '@valtimo/config';
 import {ListItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {FormDefinitionListItem, FormDisplayType, FormSize} from '../../models';
 import {ProcessLinkButtonService, ProcessLinkStateService} from '../../services';
-import {MultiInputValues} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-form-display-configuration',
   templateUrl: './form-display-configuration.component.html',
 })
@@ -33,16 +16,12 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
 
   @Output() public formDisplayValue = new EventEmitter<string>();
   @Output() public formSizeValue = new EventEmitter<string>();
-  @Output() public subtitlesValue = new EventEmitter<string[]>();
 
   public readonly formDisplayValue$ = new BehaviorSubject<FormDisplayType | null>(null);
   public readonly formSizeValue$ = new BehaviorSubject<FormSize | null>(null);
-  private readonly _subtitles$ = new BehaviorSubject<string[]>([]);
-  public subtitles$: Observable<MultiInputValues> = this._subtitles$.pipe(
-    map(subtitles => subtitles.map(subtitle => ({value: subtitle})))
-  );
   public readonly disableFormSizeInput$ = new BehaviorSubject<boolean>(true);
   public readonly saving$ = this.stateService.saving$;
+  public readonly taskPanelEnabled$ = new BehaviorSubject<boolean>(false);
   public readonly isUserTask$ = new BehaviorSubject<boolean>(false);
 
   private readonly _DISPLAY_TYPE_OPTIONS: FormDisplayType[] = ['modal', 'panel'];
@@ -77,9 +56,12 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly buttonService: ProcessLinkButtonService,
+    private readonly configService: ConfigService,
     private readonly stateService: ProcessLinkStateService,
     private readonly translateService: TranslateService
-  ) {}
+  ) {
+    this.taskPanelEnabled$.next(!!this.configService.featureToggles?.enableTaskPanel);
+  }
 
   public ngOnInit(): void {
     this._subscriptions.add(
@@ -95,7 +77,6 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
             this.isUserTask$.next(true);
           this.formDisplayValue$.next(selectedProcessLink.formDisplayType ?? null);
           this.formSizeValue$.next(selectedProcessLink.formSize ?? null);
-          this._subtitles$.next(selectedProcessLink.subtitles ?? []);
         }
       })
     );
@@ -113,10 +94,6 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
   public selectFormSize(event: ListItem): void {
     this.updateFormSize(event?.key);
     this.enableSaveButtonWhenValid();
-  }
-
-  public onSubtitlesChange(subtitles: string[]): void {
-    this.subtitlesValue.emit(subtitles);
   }
 
   private updateFormDisplayType(formDisplayType): void {
@@ -140,8 +117,10 @@ export class FormDisplayConfigurationComponent implements OnInit, OnDestroy {
       this.selectedFormDefinition &&
       this.formDisplayValue$.getValue() &&
       this.formSizeValue$.getValue()
-    )
+    ) {
       this.buttonService.enableSaveButton();
-    else this.buttonService.disableSaveButton();
+    } else {
+      this.buttonService.disableSaveButton();
+    }
   }
 }

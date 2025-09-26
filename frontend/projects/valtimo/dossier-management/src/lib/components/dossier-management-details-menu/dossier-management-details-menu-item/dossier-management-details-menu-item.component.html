@@ -1,0 +1,15 @@
+<cds-clickable-tile
+  [href]="null"
+  class="valtimo-dossier-management-details-menu-item"
+  (click)="onMenuItemClick()"
+>
+  <img [src]="menuItem.iconUrl" [alt]="menuItem.title" />
+
+  <h2>
+    {{ menuItem.title }}
+  </h2>
+
+  <span>
+    {{ (isDraftVersion$ | async) ? menuItem.description : menuItem.readonlyDescription }}
+  </span>
+</cds-clickable-tile>

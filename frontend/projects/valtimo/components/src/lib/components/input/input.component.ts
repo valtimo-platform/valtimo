@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,11 @@ import {
 } from '@angular/core';
 import {InputType} from '../../models';
 import {BehaviorSubject, Observable, Subscription, take} from 'rxjs';
-import {IconService} from 'carbon-components-angular';
-import {View16, ViewOff16} from '@carbon/icons';
 
 @Component({
   selector: 'v-input',
   templateUrl: './input.component.html',
   styleUrls: ['./input.component.scss'],
-  standalone: false,
 })
 export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @HostBinding('class.full-width') fullWidthClass = false;
@@ -63,9 +60,6 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public carbonTheme = 'g10';
   @Input() public placeholder = '';
   @Input() public dataTestId?: string;
-  @Input() public trim: boolean = false;
-  @Input() public presetsTitle: string = 'Presets';
-  @Input() public presetOptions: string[] = [];
 
   @Output() public valueChange: EventEmitter<any> = new EventEmitter();
 
@@ -83,20 +77,14 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   private valueSubscription!: Subscription;
   private clearSubscription!: Subscription;
 
-  constructor(private readonly iconService: IconService) { }
-
   public ngOnInit(): void {
     this.setInputType();
     this.setDefaultValue(this.defaultValue);
     this.openValueSubscription();
     this.openClearSubscription();
-    this.iconService.registerAll([View16, ViewOff16]);
   }
 
   public onValueChange(value: any): void {
-    if (this.trim) {
-      value = value?.trim();
-    }
     this.inputValue$.next(value);
   }
 
@@ -121,10 +109,6 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
 
   public stopCheckboxEventPropagation(event: MouseEvent): void {
     event.stopPropagation();
-  }
-
-  public presetWithValue(value: string): void {
-    this.inputValue$.next(value);
   }
 
   private setDefaultValue(value: any): void {

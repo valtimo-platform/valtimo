@@ -1,0 +1,11 @@
+<valtimo-carbon-list
+  hideToolbar="true"
+  [items]="collaborators$ | async"
+  [fields]="collaboratorsFields$ | async"
+  [loading]="(collaborators$ | async) === null"
+  (rowClicked)="onRowClicked($event)"
+></valtimo-carbon-list>
+
+<ng-template #goToLogs let-data="data">
+  <button cdsButton="ghost" (click)="onRowClicked(data.item)">Go to Changelogs</button>
+</ng-template>

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -28,13 +28,11 @@
   <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
     <ng-container *ngFor="let config of widgetConfigurations">
       <div #widgetConfiguration [id]="config.key" class="widget-configuration">
-        <div
-          (click)="navigateToRoute(config, $event)"
-          [ngClass]="{
-            'widget-configuration-content-clickable': config.url,
-          }"
-          class="widget-configuration-content"
-        >
+        <div (click)="navigateToRoute(config, $event)"
+             [ngClass]="{
+               'widget-configuration-content-clickable': (config.url),
+             }"
+             class="widget-configuration-content">
           <ng-container #widgetConfigurationContent></ng-container>
         </div>
       </div>

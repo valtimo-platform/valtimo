@@ -1,0 +1,15 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .valtimo-dossier-management-details-menu {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    
+    &__back-button {
+      margin-bottom: 16px;
+    }
+  }
+}

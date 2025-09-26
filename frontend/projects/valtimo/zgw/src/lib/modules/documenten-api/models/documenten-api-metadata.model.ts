@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,45 +24,23 @@ type ConfidentialityLevel =
   | 'geheim'
   | 'zeer_geheim';
 
-const CONFIDENTIALITY_LEVELS: Array<ConfidentialityLevel> = [
-  'openbaar',
-  'beperkt_openbaar',
-  'intern',
-  'zaakvertrouwelijk',
-  'vertrouwelijk',
-  'confidentieel',
-  'geheim',
-  'zeer_geheim',
-];
-
 type DocumentStatus = 'in_bewerking' | 'ter_vaststelling' | 'definitief' | 'gearchiveerd';
-
-const STATUS_ITEMS: Array<DocumentStatus> = [
-  'in_bewerking',
-  'ter_vaststelling',
-  'definitief',
-  'gearchiveerd',
-];
 
 type DocumentLanguage = 'nld' | 'eng' | 'deu';
 
-const LANGUAGE_ITEMS: Array<DocumentLanguage> = ['nld', 'eng', 'deu'];
-
 interface DocumentenApiMetadata {
   titel: string;
-  beschrijving?: string;
-  bestandsnaam?: string;
-  vertrouwelijkheidaanduiding?: ConfidentialityLevel;
+  bescvhrijving: string;
+  bestandsnaam: string;
+  vertrouwelijkheidaanduiding: ConfidentialityLevel;
   auteur: string;
-  status?: DocumentStatus;
+  status: DocumentStatus;
   creatiedatum: string;
-  ontvangstdatum?: string;
-  verzenddatum?: string;
+  ontvangstdatum: string;
+  verzenddatum: string;
   taal: DocumentLanguage;
   informatieobjecttype: string;
-  trefwoorden?: string[];
-  processInstanceId?: string;
-  documentUrlProcessVariable: string | null;
+  trefwoorden: string[];
 }
 
 type AdditionalDocumentDate = 'sent' | 'received' | 'neither';
@@ -70,10 +48,7 @@ type AdditionalDocumentDate = 'sent' | 'received' | 'neither';
 export {
   DocumentenApiMetadata,
   ConfidentialityLevel,
-  CONFIDENTIALITY_LEVELS,
   DocumentStatus,
-  STATUS_ITEMS,
   DocumentLanguage,
-  LANGUAGE_ITEMS,
   AdditionalDocumentDate,
 };
