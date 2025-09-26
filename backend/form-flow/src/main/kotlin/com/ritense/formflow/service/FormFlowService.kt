@@ -29,21 +29,20 @@ import com.ritense.formflow.handler.TypeProperties
 import com.ritense.formflow.repository.FormFlowAdditionalPropertiesSearchRepository
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.repository.FormFlowInstanceRepository
-import com.ritense.logging.withLoggingContext
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import mu.withLoggingContext
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.transaction.annotation.Transactional
+import kotlin.jvm.optionals.getOrNull
 
 @Transactional
 class FormFlowService(
     private val formFlowDefinitionRepository: FormFlowDefinitionRepository,
     private val formFlowInstanceRepository: FormFlowInstanceRepository,
     private val formFlowAdditionalPropertiesSearchRepository: FormFlowAdditionalPropertiesSearchRepository,
-    private val formFlowStepTypeHandlers: List<FormFlowStepTypeHandler>,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val formFlowStepTypeHandlers: List<FormFlowStepTypeHandler>
 ) {
 
     fun getFormFlowDefinitions(): List<FormFlowDefinition> {
@@ -76,7 +75,6 @@ class FormFlowService(
 
     fun save(formFlowDefinition: FormFlowDefinition): FormFlowDefinition {
         return withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowDefinition.id.toString()) {
-            caseDefinitionChecker.assertCanUpdateCaseDefinition(formFlowDefinition.id.caseDefinitionId)
             formFlowDefinitionRepository.save(formFlowDefinition)
         }
     }
@@ -115,12 +113,10 @@ class FormFlowService(
     }
 
     fun deleteByKeyAndsCaseDefinition(definitionKey: String, caseDefinitionId: CaseDefinitionId) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
         formFlowDefinitionRepository.deleteById(FormFlowDefinitionId.existingId(definitionKey, caseDefinitionId))
     }
 
     fun deleteAllByCaseDefinitionId(caseDefinitionId: CaseDefinitionId) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
         formFlowDefinitionRepository.deleteAllByIdCaseDefinitionId(caseDefinitionId)
     }
 

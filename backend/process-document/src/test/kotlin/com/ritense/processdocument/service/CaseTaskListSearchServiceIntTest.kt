@@ -35,7 +35,7 @@ import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.valtimo.contract.Constants
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.CamundaTaskService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -74,8 +74,6 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
             val result: CreateDocumentResult = documentService.createDocument(
                 NewDocumentRequest(
                     definition!!.id().name(),
-                    definition!!.id.caseDefinitionId().key,
-                    definition!!.id.caseDefinitionId().versionTag.version,
                     content.asJson()
                 )
             )
@@ -88,8 +86,6 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
             val result: CreateDocumentResult = documentService.createDocument(
                 NewDocumentRequest(
                     definition!!.id().name(),
-                    definition!!.id.caseDefinitionId().key,
-                    definition!!.id.caseDefinitionId().versionTag.version,
                     content2.asJson()
                 )
             )
@@ -157,7 +153,7 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
         )
 
         runWithoutAuthorization {
-            operatonProcessJsonSchemaDocumentService.startProcessForDocument(
+            camundaProcessJsonSchemaDocumentService.startProcessForDocument(
                 StartProcessForDocumentRequest(
                     originalDocument!!.resultingDocument().orElseThrow().id(),
                     "loan-process-demo",
@@ -270,82 +266,6 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
     }
 
     @Test
-    @Throws(JsonProcessingException::class)
-    @WithMockUser(username = "user@ritense.com", authorities = [AuthoritiesConstants.USER, "ROLE_HOUSE_OWNER"])
-    fun shouldNotFindInaccessibleTasks() {
-        val museumDefinition = definition("museum")
-        val content = JsonDocumentContent("{\"street\": \"Funenpark\", \"houseNumber\": 1, \"isEnrolled\": \"yes\"}")
-
-        val museumDocument = runWithoutAuthorization<CreateDocumentResult> {
-            val result: CreateDocumentResult = documentService.createDocument(
-                NewDocumentRequest(
-                    museumDefinition!!.id().name(),
-                    museumDefinition!!.id.caseDefinitionId().key,
-                    museumDefinition!!.id.caseDefinitionId().versionTag.version,
-                    content.asJson()
-                )
-            )
-            result
-        }
-
-        runWithoutAuthorization {
-            operatonProcessJsonSchemaDocumentService.startProcessForDocument(
-                StartProcessForDocumentRequest(
-                    museumDocument.resultingDocument().orElseThrow().id(),
-                    "conditional-candidate-group",
-                    mapOf("candidateGroup" to "ROLE_HOUSE_OWNER")
-                )
-            )
-        }
-
-        runWithoutAuthorization {
-            operatonProcessJsonSchemaDocumentService.startProcessForDocument(
-                StartProcessForDocumentRequest(
-                    museumDocument.resultingDocument().orElseThrow().id(),
-                    "conditional-candidate-group",
-                    mapOf("candidateGroup" to "ROLE_HOUSE_OWNER")
-                )
-            )
-        }
-
-        runWithoutAuthorization {
-            operatonProcessJsonSchemaDocumentService.startProcessForDocument(
-                StartProcessForDocumentRequest(
-                    museumDocument.resultingDocument().orElseThrow().id(),
-                    "conditional-candidate-group",
-                    mapOf("candidateGroup" to "ROLE_ADMIN")
-                )
-            )
-        }
-
-        searchFieldV2Service.create(
-            TaskListSearchFieldV2Dto(
-                id = UUID.randomUUID(),
-                ownerId = museumDefinition.id!!.name(),
-                key = "hideInaccessibleTasks",
-                title = "Hide inaccessible tasks",
-                path = "task:hideInaccessibleTasks",
-                order = 1,
-                dataType = DataType.BOOLEAN,
-                fieldType = FieldType.SINGLE,
-                matchType = SearchFieldMatchType.EXACT,
-                dropdownDataProvider = null
-            )
-        )
-
-        val filter = SearchWithConfigRequest.SearchWithConfigFilter()
-        filter.key = "hideInaccessibleTasks"
-        filter.setValues(listOf(true))
-
-        val searchWithConfigRequest = SearchWithConfigRequest()
-        searchWithConfigRequest.otherFilters = listOf(filter)
-
-        val searchResult = caseTaskListSearchService.search("museum", searchWithConfigRequest, PageRequest.of(0, 50))
-
-        assertThat(searchResult).hasSize(2)
-    }
-
-    @Test
     @WithMockUser(username = "user@ritense.com", authorities = [AuthoritiesConstants.USER])
     fun shouldReturnMoreThan10Results() {
         val definition2 = definition("task")
@@ -362,7 +282,7 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
         createDocumentAndTwoProcesses("Funenpark11", definition2.id().name())
         createDocumentAndTwoProcesses("Funenpark12", definition2.id().name())
 
-        val filter = OperatonTaskService.TaskFilter.ALL
+        val filter = CamundaTaskService.TaskFilter.ALL
         val searchResult = caseTaskListSearchService.getTasksByCaseDefinition(
             definition2.id().name(),
             filter,
@@ -379,8 +299,6 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
             val result: CreateDocumentResult = documentService.createDocument(
                 NewDocumentRequest(
                     documentName,
-                    documentName,
-                    "1.0.0",
                     content2.asJson()
                 )
             )
@@ -388,7 +306,7 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
         }
 
         runWithoutAuthorization {
-            operatonProcessJsonSchemaDocumentService.startProcessForDocument(
+            camundaProcessJsonSchemaDocumentService.startProcessForDocument(
                 StartProcessForDocumentRequest(
                     document.resultingDocument().orElseThrow().id(),
                     "loan-process-demo-3",
@@ -398,7 +316,7 @@ class CaseTaskListSearchServiceIntTest : BaseIntegrationTest() {
         }
 
         runWithoutAuthorization {
-            operatonProcessJsonSchemaDocumentService.startProcessForDocument(
+            camundaProcessJsonSchemaDocumentService.startProcessForDocument(
                 StartProcessForDocumentRequest(
                     document.resultingDocument().orElseThrow().id(),
                     "loan-process-demo-3",

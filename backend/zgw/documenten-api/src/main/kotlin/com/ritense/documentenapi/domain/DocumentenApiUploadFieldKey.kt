@@ -17,7 +17,6 @@
 package com.ritense.documentenapi.domain
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonValue
 
 enum class DocumentenApiUploadFieldKey(val property: String) {
     BESTANDSNAAM("bestandsnaam"),
@@ -31,11 +30,6 @@ enum class DocumentenApiUploadFieldKey(val property: String) {
     STATUS("status"),
     AANVULLENDE_DATUM("aanvullendeDatum"),
     TREFWOORDEN("trefwoorden");
-
-    @JsonValue
-    fun toValue(): String {
-        return property
-    }
 
     companion object {
         @JvmStatic

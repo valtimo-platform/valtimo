@@ -21,17 +21,14 @@ import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.BaseTest
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
-import com.ritense.case.web.rest.dto.CaseDefinitionUpdateRequest
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.utils.TestUtil
-import org.hamcrest.Matchers.nullValue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -54,9 +51,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
-//TODO: use the constants in every test for URL and json paths
 class CaseDefinitionResourceTest : BaseTest() {
-
     lateinit var mockMvc: MockMvc
     lateinit var resource: CaseDefinitionResource
     lateinit var service: CaseDefinitionService
@@ -64,7 +59,6 @@ class CaseDefinitionResourceTest : BaseTest() {
     lateinit var exportService: ExportService
     lateinit var importService: ImportService
     lateinit var caseDefinitionRepository: CaseDefinitionRepository
-    lateinit var caseDefinitionChecker: CaseDefinitionChecker
     lateinit var mapper: ObjectMapper
 
     @BeforeEach
@@ -74,14 +68,12 @@ class CaseDefinitionResourceTest : BaseTest() {
         exportService = mock()
         importService = mock()
         caseDefinitionRepository = mock()
-        caseDefinitionChecker = mock()
         resource = CaseDefinitionResource(
             service,
             activeCaseDefinitionService,
             exportService,
             importService,
-            caseDefinitionRepository,
-            caseDefinitionChecker,
+            caseDefinitionRepository
         )
 
         mapper = MapperSingleton.get()
@@ -97,108 +89,56 @@ class CaseDefinitionResourceTest : BaseTest() {
 
     @Test
     fun `should get case settings`() {
-        val caseDefinition = caseDefinition(
-            canHaveAssignee = true,
-            autoAssignTasks = false
-        )
+        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
+        val caseDefinition = caseDefinition(caseDefinitionId, canHaveAssignee = true)
 
-        whenever(activeCaseDefinitionService.getActiveCaseDefinition("key"))
-            .thenReturn(caseDefinition)
+        whenever(activeCaseDefinitionService.getActiveCaseDefinition("key")).thenReturn(caseDefinition)
 
         mockMvc
             .perform(
                 get(
                     "/api/v1/case-definition/{caseDefinitionName}/settings",
-                    caseDefinition.id.key,
+                    caseDefinitionId.key,
                 )
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
             )
-            .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath(ROOT).isNotEmpty)
-            .andExpect(jsonPath("$.caseDefinitionKey").value(caseDefinition.id.key))
-            .andExpect(jsonPath("$.caseDefinitionVersionTag").value(caseDefinition.id.versionTag.version))
+            .andExpect(jsonPath("$").isNotEmpty)
+            .andExpect(jsonPath("$.caseDefinitionKey").value(caseDefinitionId.key))
+            .andExpect(jsonPath("$.caseDefinitionVersionTag").value(caseDefinitionId.versionTag.version))
             .andExpect(jsonPath("$.canHaveAssignee").value(true))
-            .andExpect(jsonPath(AUTO_ASSIGN_TASKS).value(false))
-            .andExpect(jsonPath(HAS_EXTERNAL_CREATE_FORM).value(false))
-            .andExpect(jsonPath(EXTERNAL_START_FORM_URL, nullValue()))
+            .andExpect(jsonPath("$.autoAssignTasks").value(false))
 
         verify(activeCaseDefinitionService).getActiveCaseDefinition("key")
     }
 
     @Test
     fun `should update case settings`() {
-        val caseDefinition = caseDefinition(
-            canHaveAssignee = true,
-            autoAssignTasks = false
-        )
-        val caseSettingsDto = CaseSettingsDto(
-            canHaveAssignee = false,
-            autoAssignTasks = false
-        )
+        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
+        val caseDefinition = caseDefinition(caseDefinitionId, canHaveAssignee = true, active = false)
+        val caseSettingsDto = CaseSettingsDto(false, false)
 
-        whenever(service.updateCaseSettings(caseDefinition.id, caseSettingsDto))
-            .thenReturn(caseDefinition)
+        whenever(service.updateCaseSettings(caseDefinitionId, caseSettingsDto)).thenReturn(caseDefinition)
 
         mockMvc
             .perform(
                 patch(
                     "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings",
-                    caseDefinition.id.key,
-                    caseDefinition.id.versionTag
+                    caseDefinitionId.key,
+                    caseDefinitionId.versionTag
                 )
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
                     .content(TestUtil.convertObjectToJsonBytes(caseSettingsDto))
             )
-            .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$").isNotEmpty)
-            .andExpect(jsonPath("$.caseDefinitionKey").value(caseDefinition.id.key))
-            .andExpect(jsonPath("$.caseDefinitionVersionTag").value(caseDefinition.id.versionTag.version))
-            .andExpect(jsonPath(CAN_HAVE_ASSIGNEE).value(true))
-            .andExpect(jsonPath(AUTO_ASSIGN_TASKS).value(false))
-            .andExpect(jsonPath(HAS_EXTERNAL_CREATE_FORM).value(false))
-            .andExpect(jsonPath(EXTERNAL_START_FORM_URL, nullValue()))
+            .andExpect(jsonPath("$.caseDefinitionKey").value(caseDefinitionId.key))
+            .andExpect(jsonPath("$.caseDefinitionVersionTag").value(caseDefinitionId.versionTag.version))
+            .andExpect(jsonPath("$.canHaveAssignee").value(true))
+            .andExpect(jsonPath("$.autoAssignTasks").value(false))
 
-        verify(service).updateCaseSettings(caseDefinition.id, caseSettingsDto)
+        verify(service).updateCaseSettings(caseDefinitionId, caseSettingsDto)
     }
-
-    @Test
-    fun `should update case settings for 'has external case start form'`() {
-        val externalFormUrl = "https://www.example.com/start-case-form"
-        val caseDefinition = caseDefinition(
-            hasExternalStartForm = true,
-            externalStartFormUrl = externalFormUrl
-        )
-        val caseSettingsDto = CaseSettingsDto(
-            hasExternalStartForm = true,
-            externalStartFormUrl = externalFormUrl
-        )
-
-        whenever(service.updateCaseSettings(caseDefinition.id, caseSettingsDto))
-            .thenReturn(caseDefinition)
-
-        mockMvc
-            .perform(
-                patch(
-                    "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings",
-                    caseDefinition.id.key,
-                    caseDefinition.id.versionTag
-                )
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(TestUtil.convertObjectToJsonBytes(caseSettingsDto))
-            )
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath(ROOT).isNotEmpty)
-            .andExpect(jsonPath(CAN_HAVE_ASSIGNEE).value(false))
-            .andExpect(jsonPath(AUTO_ASSIGN_TASKS).value(false))
-            .andExpect(jsonPath(HAS_EXTERNAL_CREATE_FORM).value(true))
-            .andExpect(jsonPath(EXTERNAL_START_FORM_URL).value(externalFormUrl))
-
-        verify(service).updateCaseSettings(caseDefinition.id, caseSettingsDto)
-    }
-
 
     @Test
     fun `should accept null case settings`() {
@@ -306,32 +246,10 @@ class CaseDefinitionResourceTest : BaseTest() {
         verify(service).deleteCaseDefinition(caseDefinitionId)
     }
 
-    @Test
     fun `should get case definitions`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(caseDefinitionId)
-        whenever(service.getCaseDefinitions()).thenReturn(listOf(caseDefinition))
-
-        mockMvc.perform(
-            get("/api/v1/case-definition")
-        )
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].caseDefinitionKey").value(caseDefinition.id.key))
-            .andExpect(jsonPath("$[0].caseDefinitionVersionTag").value(caseDefinition.id.versionTag.version))
-            .andExpect(jsonPath("$[0].name").value(caseDefinition.name))
-            .andExpect(jsonPath("$[0].canHaveAssignee").value(caseDefinition.canHaveAssignee))
-            .andExpect(jsonPath("$[0].autoAssignTasks").value(caseDefinition.autoAssignTasks))
-            .andExpect(jsonPath("$[0].active").value(caseDefinition.active))
-
-    }
-
-    @Test
-    fun `should get case definitions for management`() {
-        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(caseDefinitionId)
-        whenever(service.getCaseDefinitions(isNull(), isNull(), isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
+        val caseDefinition = caseDefinition(caseDefinitionId, "name", true, false)
+        whenever(service.getCaseDefinitions(isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
 
         mockMvc.perform(
             get("/api/management/v1/case-definition")
@@ -345,20 +263,13 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andExpect(jsonPath("$.content[0].canHaveAssignee").value(caseDefinition.canHaveAssignee))
             .andExpect(jsonPath("$.content[0].autoAssignTasks").value(caseDefinition.autoAssignTasks))
             .andExpect(jsonPath("$.content[0].active").value(caseDefinition.active))
-
     }
 
     @Test
     fun `should get case definition versions`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
         val caseDefinition = caseDefinition(caseDefinitionId, "name", true, false)
-        whenever(service.getCaseDefinitions(eq(caseDefinitionId.key), isNull(), isNull(), isNull(), any())).thenReturn(
-            PageImpl(
-                listOf(
-                    caseDefinition
-                )
-            )
-        )
+        whenever(service.getCaseDefinitions(eq(caseDefinitionId.key), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
 
         mockMvc.perform(
             get(
@@ -371,73 +282,6 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andExpect(jsonPath("$.length()").value(1))
             .andExpect(jsonPath("$[0].versionTag").value(caseDefinition.id.versionTag.version))
             .andExpect(jsonPath("$[0].active").value(caseDefinition.active))
-            .andExpect(jsonPath("$[0].final").value(caseDefinition.final))
     }
 
-    @Test
-    fun `should finalize case definition`() {
-        val caseDefinition = caseDefinition()
-        whenever(service.finalizeCaseDefinition(caseDefinition.id)).thenReturn(caseDefinition)
-
-        mockMvc.perform(
-            post(
-                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/finalize",
-                caseDefinition.id.key,
-                caseDefinition.id.versionTag,
-            )
-        )
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.final").value(true))
-    }
-
-    @Test
-    fun `should update case definition`() {
-        val request = CaseDefinitionUpdateRequest(
-            name = "name",
-            description = "description",
-        )
-        val caseDefinition = caseDefinition()
-        whenever(service.updateCaseDefinition(caseDefinition.id, request.name, request.description))
-            .thenReturn(caseDefinition)
-
-        mockMvc.perform(
-            patch(
-                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}",
-                caseDefinition.id.key,
-                caseDefinition.id.versionTag,
-            )
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(MapperSingleton.get().writeValueAsString(request))
-        )
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.name").value(caseDefinition.name))
-            .andExpect(jsonPath("$.description").value(caseDefinition.description))
-    }
-
-    @Test
-    fun `should check case definition`() {
-        whenever(caseDefinitionChecker.canUpdateGlobalConfiguration()).thenReturn(true)
-
-        mockMvc.perform(
-            get("/api/management/v1/case-definition/check")
-        )
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.canUpdateGlobalConfiguration").value(true))
-    }
-
-    companion object {
-        private const val CASE_SETTINGS_PATH =
-            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings"
-        private const val MANAGEMENT_CASE_SETTINGS_PATH = "/api/management/v1/case/{caseDefinitionName}/settings"
-
-        private const val ROOT = "$"
-        private const val NAME = "$.name"
-        private const val CAN_HAVE_ASSIGNEE = "$.canHaveAssignee"
-        private const val AUTO_ASSIGN_TASKS = "$.autoAssignTasks"
-        private const val HAS_EXTERNAL_CREATE_FORM = "$.hasExternalStartForm"
-        private const val EXTERNAL_START_FORM_URL = "$.externalStartFormUrl"
-    }
 }

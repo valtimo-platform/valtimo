@@ -37,7 +37,7 @@ import com.ritense.zaakdetails.service.ZaakdetailsObjectService
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -157,14 +157,12 @@ class DocumentObjectenApiSyncService(
             ObjectSearchParameter("caseId", EQUAL_TO, document.id().toString())
         )
 
-        val results = objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
+        return objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
             objecttypesApiUrl = objecttypenApiPlugin.url,
             objecttypeId = objectManagementConfiguration.objecttypeId,
             searchString = searchString,
             pageable = PageRequest.of(0, 2)
-        ).results
-        require(results.size <= 1) { "Failed to Sync document to Objecten API: Found multiple sync targets" }
-        return results.firstOrNull()
+        ).results.firstOrNull()
     }
 
     private fun createZaakObjectIfNotExisting(

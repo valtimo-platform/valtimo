@@ -19,5 +19,6 @@ package com.ritense.documentenapi.client
 import java.io.InputStream
 
 data class BestandsdelenRequest(
-    val inhoud: InputStream
+    val inhoud: InputStream,
+    val lock: String
 )

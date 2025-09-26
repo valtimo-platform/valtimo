@@ -28,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
 @ExtendWith(MockitoExtension::class)
@@ -40,7 +39,7 @@ class CaseDefinitionImporterTest(
 
     @BeforeEach
     fun before() {
-        importer = CaseDefinitionImporter(objectMapper, caseDefinitionRepository, mock())
+        importer = CaseDefinitionImporter(objectMapper, caseDefinitionRepository)
     }
 
     @Test
@@ -60,11 +59,11 @@ class CaseDefinitionImporterTest(
 
     @Test
     fun `should not support non-caselist fileName`() {
-        assertThat(importer.supports("/case/definition/x/test.case-definition.json")).isFalse()
-        assertThat(importer.supports("/case/definition/test.case-definition-json")).isFalse()
+        assertThat(importer.supports("config/case/definition/x/test.json")).isFalse()
+        assertThat(importer.supports("config/case/definition/test-json")).isFalse()
     }
 
     private companion object {
-        const val FILENAME = "/case/definition/my-case-list.case-definition.json"
+        const val FILENAME = "/case/definition/my-case-list.json"
     }
 }

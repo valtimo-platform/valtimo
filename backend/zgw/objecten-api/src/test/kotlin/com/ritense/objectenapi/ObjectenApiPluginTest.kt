@@ -16,7 +16,6 @@
 
 package com.ritense.objectenapi
 
-import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.client.ObjectenApiClient
@@ -24,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -54,19 +52,6 @@ internal class ObjectenApiPluginTest{
 
         assertEquals(objectMock, result)
         verify(client).getObject(any(), any())
-    }
-
-    @Test
-    fun `should call client on getObjectRecord`() {
-        val objectUrl = URI("http://example.com/1")
-        val index = 1
-        val recordMock = mock<ObjectRecord>()
-        whenever(client.getObjectRecord(plugin.authenticationPluginConfiguration, objectUrl, index)).thenReturn(recordMock)
-
-        val result = plugin.getObjectRecord(objectUrl, index)
-
-        assertEquals(recordMock, result)
-        verify(client).getObjectRecord(any(), any(), eq(index))
     }
 
     @Test

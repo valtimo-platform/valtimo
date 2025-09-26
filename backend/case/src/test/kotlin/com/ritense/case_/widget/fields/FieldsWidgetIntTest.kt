@@ -63,14 +63,7 @@ class FieldsWidgetIntTest @Autowired constructor(
         val tabKey = "my-tab"
         val widgetKey = "my-widget"
         val documentId = runWithoutAuthorization {
-            val document = documentService.createDocument(
-                NewDocumentRequest(
-                    caseDefinitionName,
-                    caseDefinitionName,
-                    "1.2.3",
-                    MapperSingleton.get().createObjectNode()
-                )
-            ).resultingDocument().get()
+            val document = documentService.createDocument(NewDocumentRequest(caseDefinitionName, MapperSingleton.get().createObjectNode())).resultingDocument().get()
             createCaseWidgetTab(document.definitionId().caseDefinitionId(), tabKey, widgetKey)
             document.id
         }
@@ -100,14 +93,7 @@ class FieldsWidgetIntTest @Autowired constructor(
         val tabKey = "my-tab"
         val widgetKey = "my-widget"
         val documentId = runWithoutAuthorization {
-            val document = documentService.createDocument(
-                NewDocumentRequest(
-                    caseDefinitionName,
-                    caseDefinitionName,
-                    "1.2.3",
-                    MapperSingleton.get().createObjectNode()
-                )
-            ).resultingDocument().get()
+            val document = documentService.createDocument(NewDocumentRequest(caseDefinitionName, MapperSingleton.get().createObjectNode())).resultingDocument().get()
             createCaseWidgetTab(document.definitionId().caseDefinitionId(), tabKey, widgetKey)
             document.id
         }
@@ -126,43 +112,39 @@ class FieldsWidgetIntTest @Autowired constructor(
         tabKey: String,
         widgetKey: String
     ): CaseWidgetTabDto {
-        tabService.createCaseTab(
-            caseDefinitionId,
-            CaseTabDto(key = tabKey, type = CaseTabType.WIDGETS, contentKey = "-")
-        )
+        tabService.createCaseTab(caseDefinitionId, CaseTabDto(key = tabKey, type = CaseTabType.WIDGETS, contentKey = "-"))
         return widgetTabService.updateWidgetTab(
             CaseWidgetTabDto(
                 caseDefinitionKey = caseDefinitionId.key,
                 caseDefinitionVersionTag = caseDefinitionId.versionTag.version,
                 key = tabKey,
                 widgets = listOf(
-                    FieldsCaseWidgetDto(
-                        widgetKey, "My widget", 1, true, null, FieldsWidgetProperties(
-                            columns = listOf(
-                                listOf(
-                                    FieldsWidgetProperties.Field(
-                                        "someKey", "Some key", "test:/myKey"
-                                    )
+                    FieldsCaseWidgetDto(widgetKey, "My widget", 1, true, null, FieldsWidgetProperties(
+                        columns = listOf(
+                            listOf(
+                                FieldsWidgetProperties.Field(
+                                    "someKey", "Some key", "test:/myKey"
+                                )
+                            ),
+                            listOf(
+                                FieldsWidgetProperties.Field(
+                                    "someOtherKey",
+                                    "Some other key",
+                                    "test:/myOtherKey",
+                                    displayProperties = BooleanFieldDisplayProperties()
                                 ),
-                                listOf(
-                                    FieldsWidgetProperties.Field(
-                                        "someOtherKey",
-                                        "Some other key",
-                                        "test:/myOtherKey",
-                                        displayProperties = BooleanFieldDisplayProperties()
-                                    ),
-                                    FieldsWidgetProperties.Field(
-                                        "nullValue",
-                                        "nullValue",
-                                        "test:null",
-                                        displayProperties = BooleanFieldDisplayProperties()
-                                    )
+                                FieldsWidgetProperties.Field(
+                                    "nullValue",
+                                    "nullValue",
+                                    "test:null",
+                                    displayProperties = BooleanFieldDisplayProperties()
                                 )
                             )
                         )
                     )
                 )
             )
+        )
         )
     }
 }

@@ -46,16 +46,18 @@ class ZaakTypeLinkImporter(
 
     @Throws(JsonProcessingException::class)
     fun deploy(caseDefinitionId: CaseDefinitionId, content: String) {
-        val zaakTypeLinkConfig: CreateZaakTypeLinkRequest = getJson(content)
+        val zaakTypeLinkConfigItems: List<CreateZaakTypeLinkRequest> = getJson(content)
 
-        zaakTypeLinkService.createZaakTypeLink(caseDefinitionId, zaakTypeLinkConfig)
+        zaakTypeLinkConfigItems.forEach {
+            zaakTypeLinkService.createZaakTypeLink(caseDefinitionId, it)
+        }
     }
 
-    private fun getJson(rawJson: String): CreateZaakTypeLinkRequest {
-        return objectMapper.readValue<CreateZaakTypeLinkRequest>(rawJson)
+    private fun getJson(rawJson: String): List<CreateZaakTypeLinkRequest> {
+        return objectMapper.readValue<List<CreateZaakTypeLinkRequest>>(rawJson)
     }
 
     companion object {
-        private val FILENAME_REGEX = """/zgw/zaak-type-link/([^/]+)\.zaak-type-link\.json""".toRegex()
+        private val FILENAME_REGEX = """/zaak-type-link/([^/]+)\.json""".toRegex()
     }
 }

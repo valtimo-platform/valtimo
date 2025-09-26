@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.domain.Document
 import com.ritense.resource.domain.TemporaryResourceSubmittedEvent
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileSubmittedEvent
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import java.util.UUID
 
@@ -130,7 +130,7 @@ data class UploadField(
                     && (jsonNode["type"].textValue().equals("file", ignoreCase = true) ||
                     jsonNode["type"].textValue().equals("valtimo-file", ignoreCase = true) ||
                     jsonNode["type"].textValue().equals("documenten-api-file", ignoreCase = true))
-                    && jsonNode.has("input") && jsonNode["input"].booleanValue()
+                    && jsonNode["input"].booleanValue()
                     && jsonNode.has(PROPERTY_KEY)
         }
     }

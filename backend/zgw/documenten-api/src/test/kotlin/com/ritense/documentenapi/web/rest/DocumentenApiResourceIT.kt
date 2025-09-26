@@ -187,7 +187,6 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
             .andExpect(jsonPath("$.supportsFilterableColumns").value(true))
             .andExpect(jsonPath("$.supportsSortableColumns").value(true))
             .andExpect(jsonPath("$.supportsTrefwoorden").value(true))
-            .andExpect(jsonPath("$.supportsUpdatingDefinitiveDocument").value(true))
     }
 
     @Test
@@ -196,12 +195,7 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
         val documentId = runWithoutAuthorization {
             val content = """{"description":"Test description"}"""
             documentService.createDocument(
-                NewDocumentRequest(
-                    "profile",
-                    "profile",
-                    "1.0.0",
-                    JsonDocumentContent(content).asJson()
-                )
+                NewDocumentRequest("profile", JsonDocumentContent(content).asJson())
             ).resultingDocument().get().id().id
         }
 

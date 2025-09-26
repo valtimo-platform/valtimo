@@ -23,9 +23,8 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.form.BaseIntegrationTest
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.TaskService
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.TaskService
 import org.hamcrest.CoreMatchers.hasItem
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Test
@@ -36,7 +35,7 @@ import java.time.LocalDate
 class PrefillFormServiceIntTest @Autowired constructor(
     private val prefillFormService: PrefillFormService,
     private val documentService: DocumentService,
-    private val processService: OperatonProcessService,
+    private val processService: CamundaProcessService,
     private val taskService: TaskService,
     private val objectMapper: ObjectMapper,
 ): BaseIntegrationTest() {
@@ -44,8 +43,7 @@ class PrefillFormServiceIntTest @Autowired constructor(
     @Test
     @Transactional
     fun `should prefill a form`() {
-        val caseDefinitionId = CaseDefinitionId("person", "1.0.0")
-        val formDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId("form-example-various-prefill-fields", caseDefinitionId).get()
+        val formDefinition = formDefinitionRepository.findByName("form-example-various-prefill-fields").get()
         val document = createDocument("person", """
             {
                 "person": {
@@ -95,8 +93,7 @@ class PrefillFormServiceIntTest @Autowired constructor(
     @Test
     @Transactional
     fun `should only overwrite defaultValue when value can be resolved`() {
-        val caseDefinitionId = CaseDefinitionId("person", "1.0.0")
-        val formDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId("form-example-various-prefill-fields", caseDefinitionId).get()
+        val formDefinition = formDefinitionRepository.findByName("form-example-various-prefill-fields").get()
         val document = createDocument("person", "{}")
 
         val instance = runWithoutAuthorization {
@@ -134,8 +131,6 @@ class PrefillFormServiceIntTest @Autowired constructor(
     private fun createDocument(definitionName: String, content: String): Document {
         return runWithoutAuthorization { documentService.createDocument(NewDocumentRequest(
             definitionName,
-            "person",
-            "1.0.0",
             objectMapper.readTree(
                 content.trimIndent()
             )

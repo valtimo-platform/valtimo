@@ -16,20 +16,15 @@
 
 package com.ritense.zakenapi.uploadprocess
 
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider.Companion.CREATE
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.domain.TemporaryResourceUploadedEvent
 import com.ritense.resource.service.TemporaryResourceStorageService
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.context.event.EventListener
 
 class ResourceUploadedToDocumentEventListener(
     private val resourceService: TemporaryResourceStorageService,
     private val uploadProcessService: UploadProcessService,
-    private val authorizationService: AuthorizationService,
 ) {
 
     @EventListener(TemporaryResourceUploadedEvent::class)
@@ -40,14 +35,6 @@ class ResourceUploadedToDocumentEventListener(
         val caseId = metadata[MetadataType.DOCUMENT_ID.key] as String?
 
         if (caseId != null) {
-            authorizationService.requirePermission(
-                EntityAuthorizationRequest(
-                    ResourcePermission::class.java,
-                    CREATE,
-                    ResourcePermission()
-                )
-            )
-
             logger.debug { "Uploading resource to document: ${event.resourceId}" }
             uploadProcessService.startUploadResourceProcess(caseId, event.resourceId)
         }

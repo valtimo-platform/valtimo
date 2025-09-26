@@ -25,9 +25,9 @@ import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.FORM
 import com.ritense.importer.ValtimoImportTypes.Companion.FORM_FLOW
-import com.ritense.logging.withLoggingContext
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
+import mu.withLoggingContext
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -110,9 +110,8 @@ class FormFlowDefinitionImporter(
 
     private companion object {
         private const val FORM_FLOW_SCHEMA_PATH = "classpath:config/form-flow/schema/formflow.schema.json"
-        private const val FORM_FLOW_DEFINITIONS_PATH =
-            "classpath:config/case/*/*/form-flow/{formFlowKey}.form-flow.json"
-        val FILENAME_REGEX = """/form-flow/([^/]+)\.form-flow\.json""".toRegex()
+        private const val FORM_FLOW_DEFINITIONS_PATH = "classpath:config/case/*/*/form-flow/{formFlowKey}.json"
+        val FILENAME_REGEX = """/form-flow/([^/]+)\.json""".toRegex()
         val logger = KotlinLogging.logger {}
     }
 }

@@ -21,12 +21,8 @@ import com.ritense.case_.domain.definition.CaseDefinition
 data class CaseDefinitionSettingsResponseDto(
     val caseDefinitionKey: String,
     val caseDefinitionVersionTag: String,
-
     val canHaveAssignee: Boolean,
     val autoAssignTasks: Boolean,
-    val hasExternalStartForm: Boolean? = null,
-    val externalStartFormUrl: String? = null,
-    val externalStartFormDescription: String? = null,
 ) {
     companion object {
         fun of(caseDefinition: CaseDefinition) =
@@ -34,10 +30,7 @@ data class CaseDefinitionSettingsResponseDto(
                 caseDefinition.id.key,
                 caseDefinition.id.versionTag.version,
                 caseDefinition.canHaveAssignee,
-                caseDefinition.autoAssignTasks,
-                caseDefinition.hasExternalStartForm,
-                caseDefinition.externalStartFormUrl,
-                caseDefinition.externalStartFormDescription
+                caseDefinition.autoAssignTasks
             )
     }
 }

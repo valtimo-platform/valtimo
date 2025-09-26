@@ -54,8 +54,10 @@ open class TaskListColumnValidationUtils(
 
     @Throws(InvalidListColumnException::class)
     internal fun assertDocumentDefinitionExists(documentDefinitionName: String) {
-        if (!documentDefinitionService.existsByName(documentDefinitionName)) {
-            throw UnknownCaseDefinitionException(documentDefinitionName)
+        try {
+            documentDefinitionService.findIdByName(documentDefinitionName)
+        } catch (ex: UnknownDocumentDefinitionException) {
+            throw UnknownCaseDefinitionException(ex.message)
         }
     }
 

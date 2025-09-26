@@ -17,14 +17,17 @@
 package com.ritense.form.service
 
 import com.ritense.form.autodeployment.FormDefinitionDeploymentService
+import com.ritense.importer.ImportRequest
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
-import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
 
 @ExtendWith(MockitoExtension::class)
 class FormDefinitionImporterTest(
@@ -44,7 +47,7 @@ class FormDefinitionImporterTest(
 
     @Test
     fun `should depend on case definition`() {
-        assertThat(importer.dependsOn().toString()).isEqualTo(listOf(CASE_DEFINITION, PROCESS_DEFINITION).toString())
+        assertThat(importer.dependsOn().toString()).isEqualTo(listOf(CASE_DEFINITION).toString())
     }
 
 
@@ -55,12 +58,12 @@ class FormDefinitionImporterTest(
 
     @Test
     fun `should not support non-form fileName`() {
-        assertThat(importer.supports("config/case/person/1-0-0/form/not/test.form.json")).isFalse()
-        assertThat(importer.supports("config/form/test.form.json")).isFalse()
-        assertThat(importer.supports("config/case/person/1-0-0/form/test.form-json")).isFalse()
+        assertThat(importer.supports("config/case/person/1-0-0/form/not/test.json")).isFalse()
+        assertThat(importer.supports("config/form/test.json")).isFalse()
+        assertThat(importer.supports("config/case/person/1-0-0/form/test-json")).isFalse()
     }
 
     private companion object {
-        const val FILENAME = "/form/my-form.form.json"
+        const val FILENAME = "/form/my-form.json"
     }
 }

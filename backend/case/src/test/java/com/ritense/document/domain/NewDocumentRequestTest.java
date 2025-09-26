@@ -29,16 +29,10 @@ public class NewDocumentRequestTest {
     @Test
     public void shouldHaveEqualGetters() throws Exception {
         final ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
-        final JsonNode jsonData = objectMapper.readTree(
-            "{\"key\":123,\"somethingelse\":\"henk\",\"nested\":{\"henk\":\"jan\"}}");
+        final JsonNode jsonData = objectMapper.readTree("{\"key\":123,\"somethingelse\":\"henk\",\"nested\":{\"henk\":\"jan\"}}");
         final String definitionName = "some-name";
 
-        var newDocRequest = new NewDocumentRequest(
-            definitionName,
-            definitionName,
-            "1.0.0",
-            jsonData
-        );
+        var newDocRequest = new NewDocumentRequest(definitionName, jsonData);
 
         assertThat(jsonData).isEqualTo(newDocRequest.content());
         assertThat(definitionName).isEqualTo(newDocRequest.documentDefinitionName());

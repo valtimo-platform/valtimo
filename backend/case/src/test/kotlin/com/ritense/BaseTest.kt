@@ -58,8 +58,8 @@ class BaseTest(
         return JsonSchemaDocumentDefinition(jsonSchemaDocumentDefinitionId, schema)
     }
 
-    protected fun definitionOf(name: String = "house", versionTag: String = "1.0.0"): JsonSchemaDocumentDefinition {
-        val documentDefinitionName = JsonSchemaDocumentDefinitionId.of(name, of(name, versionTag))
+    protected fun definitionOf(name: String?): JsonSchemaDocumentDefinition {
+        val documentDefinitionName = JsonSchemaDocumentDefinitionId.of(name, caseDefinitionId())
         val schema = JsonSchema.fromResourceUri(
             path(
                 documentDefinitionName.caseDefinitionId(),
@@ -90,7 +90,7 @@ class BaseTest(
     }
 
     protected fun caseDefinitionId(): CaseDefinitionId {
-        return of("house", "1.1.0")
+        return of("house", "1.0.0")
     }
 
     protected fun createDocument(): JsonSchemaDocument {
@@ -130,38 +130,32 @@ class BaseTest(
             "-" + caseDefinitionVersion.patch
         return URI.create(
             String.format(
-                "config/case/%s/%s/document/definition/%s.schema.document-definition.json",
+                "config/case/%s/%s/document/definition/%s.json",
                 caseDefinitionId.key,
                 formattedCaseDefinitionVersion,
-                name
+                "$name.schema"
             )
         )
     }
 
     fun caseDefinition(
-        id: CaseDefinitionId = CaseDefinitionId("key", "1.0.0"),
+        caseDefinitionId: CaseDefinitionId = CaseDefinitionId("key", "1.0.0"),
         name: String = "name",
-        active: Boolean = true,
         canHaveAssignee: Boolean = false,
         autoAssignTasks: Boolean = false,
-        hasExternalStartForm: Boolean = false,
-        externalStartFormUrl: String? = null,
-        final: Boolean = true,
+        active: Boolean = true,
     ): CaseDefinition {
         return CaseDefinition(
-            id = id,
+            id = caseDefinitionId,
             name = name,
             description = "description",
             createdBy = "system",
             createdDate = LocalDateTime.now(),
             basedOnVersionTag = Semver.parse("1.0.0-SNAPSHOT"),
-            final = final,
-            active = active,
-
+            final = true,
             canHaveAssignee = canHaveAssignee,
             autoAssignTasks = autoAssignTasks,
-            hasExternalStartForm = hasExternalStartForm,
-            externalStartFormUrl = externalStartFormUrl,
+            active = active,
         )
     }
 

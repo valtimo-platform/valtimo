@@ -19,8 +19,6 @@ package com.ritense.formviewmodel
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.apache.commons.io.IOUtils
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.junit.jupiter.MockitoExtension
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.UUID
@@ -32,7 +30,7 @@ abstract class BaseTest {
     @Throws(IOException::class)
     protected fun formDefinitionOf(formDefinitionId: String): FormIoFormDefinition {
         val s = IOUtils.toString(
-            Thread.currentThread().contextClassLoader.getResourceAsStream("config/case/fvm/1-0-0/form/$formDefinitionId.form.json"),
+            Thread.currentThread().contextClassLoader.getResourceAsStream("config/case/fvm/1-0-0/form/$formDefinitionId.json"),
             StandardCharsets.UTF_8
         )
         return FormIoFormDefinition(UUID.randomUUID(), "form-example", s, CaseDefinitionId.of("fvm", "1.0.0"), false)

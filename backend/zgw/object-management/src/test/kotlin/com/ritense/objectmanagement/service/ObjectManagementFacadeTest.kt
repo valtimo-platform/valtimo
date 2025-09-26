@@ -72,7 +72,7 @@ internal class ObjectManagementFacadeTest {
         val objecttypenApiPlugin = mock<ObjecttypenApiPlugin>()
         prepareAccessObject(objectName, objectenApiPlugin, objecttypenApiPlugin)
 
-        whenever(objectenApiPlugin.url).thenReturn(URI.create("www.ritense.com"))
+        whenever(objectenApiPlugin.url).thenReturn(URI.create("www.ritense.com/"))
         val expectedUrl = URI.create("www.ritense.com/objects/$objectUuid")
         val expectedResult = createObjectWrapper(url = expectedUrl, uuid = objectUuid)
         whenever(objectenApiPlugin.getObject(expectedUrl)).thenReturn(expectedResult)
@@ -90,33 +90,6 @@ internal class ObjectManagementFacadeTest {
     }
 
     @Test
-    fun shouldGetObjectByUuidAtIndex() {
-        val objectName = "myObject"
-        val objectUuid = UUID.randomUUID()
-        val objectIndex = 2
-
-        val objectenApiPlugin = mock<ObjectenApiPlugin>()
-        val objecttypenApiPlugin = mock<ObjecttypenApiPlugin>()
-        prepareAccessObject(objectName, objectenApiPlugin, objecttypenApiPlugin)
-
-        whenever(objectenApiPlugin.url).thenReturn(URI.create("www.ritense.com"))
-        val objectUrl = URI.create("www.ritense.com/objects/$objectUuid")
-        val expectedResult = createObjectRecord(objectUrl, objectUuid)
-        whenever(objectenApiPlugin.getObjectRecord(objectUrl, objectIndex)).thenReturn(expectedResult)
-        whenever(objectenApiPlugin.getObjectUrl(any())).thenCallRealMethod()
-
-        val result = objectManagementFacade.getObjectByUuidAndIndex(objectName, objectUuid, objectIndex)
-
-        verify(objectManagementRepository).findByTitle(objectName)
-        verify(pluginService).createInstance<ObjectenApiPlugin>(objectenApiPluginConfigurationId)
-        verify(pluginService).createInstance<ObjecttypenApiPlugin>(objecttypenApiPluginConfigurationId)
-        verifyNoMoreInteractions(objectManagementRepository, pluginService)
-
-        verify(objectenApiPlugin).getObjectRecord(objectUrl, objectIndex)
-        assertThat(result).isEqualTo(expectedResult)
-    }
-
-    @Test
     fun shouldGetObjectsByUuids() {
         val objectName = "myObject"
         val objectUuid1 = UUID.randomUUID()
@@ -126,7 +99,7 @@ internal class ObjectManagementFacadeTest {
         val objecttypenApiPlugin = mock<ObjecttypenApiPlugin>()
         prepareAccessObject(objectName, objectenApiPlugin, objecttypenApiPlugin)
 
-        whenever(objectenApiPlugin.url).thenReturn(URI.create("www.ritense.com"))
+        whenever(objectenApiPlugin.url).thenReturn(URI.create("www.ritense.com/"))
         val expectedUrl1 = URI.create("www.ritense.com/objects/$objectUuid1")
         val expectedUrl2 = URI.create("www.ritense.com/objects/$objectUuid2")
         val expectedResult1 = createObjectWrapper(url = expectedUrl1, uuid = objectUuid1)
@@ -519,10 +492,5 @@ internal class ObjectManagementFacadeTest {
         type = URI.create("myURL"),
         url = url,
         uuid = uuid
-    )
-
-    private fun createObjectRecord(url: URI, uuid: UUID): ObjectRecord = ObjectRecord(
-        startAt = LocalDate.now(),
-        typeVersion = 1,
     )
 }

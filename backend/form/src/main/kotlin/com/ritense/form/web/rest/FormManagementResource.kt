@@ -133,7 +133,7 @@ class FormManagementResource(
         )
     }
 
-    @GetMapping("/management/v1/form")
+    @GetMapping("/v1/form-management")
     fun getFormDefinitions(
         @RequestParam(required = false) searchTerm: String?,
         @PageableDefault(sort = ["name"], direction = ASC) pageable: Pageable?
@@ -145,7 +145,7 @@ class FormManagementResource(
         }
     }
 
-    @GetMapping("/management/v1/form/exists/{name}")
+    @GetMapping("/v1/form-management/exists/{name}")
     fun formDefinitionExists(
         @PathVariable("name") formName: String,
     ): ResponseEntity<Boolean> {
@@ -156,7 +156,7 @@ class FormManagementResource(
         )
     }
 
-    @PostMapping("/management/v1/form")
+    @PostMapping("/v1/form-management")
     fun createFormDefinition(
         @RequestBody formDefinition: CreateFormDefinitionRequest,
     ): ResponseEntity<FormDefinition> {
@@ -167,7 +167,7 @@ class FormManagementResource(
         )
     }
 
-    @GetMapping("/management/v1/form/{formDefinitionId}")
+    @GetMapping("/v1/form-management/{formDefinitionId}")
     fun getFormDefinition(
         @PathVariable("formDefinitionId") formDefinitionId: String,
     ): ResponseEntity<
@@ -179,7 +179,7 @@ class FormManagementResource(
         )
     }
 
-    @PutMapping("/management/v1/form")
+    @PutMapping("/v1/form-management")
     fun updateFormDefinition(
         @RequestBody formDefinition: ModifyFormDefinitionRequest,
     ): ResponseEntity<FormDefinition> {
@@ -190,7 +190,7 @@ class FormManagementResource(
         )
     }
 
-    @DeleteMapping("/management/v1/form/{formDefinitionId}")
+    @DeleteMapping("/v1/form-management/{formDefinitionId}")
     fun deleteFormDefinition(
         @PathVariable("formDefinitionId") formDefinitionId: String,
     ): ResponseEntity<Any> {

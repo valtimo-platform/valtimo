@@ -104,8 +104,6 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""{"lastname":"Doe"}""")
                 )
             )
@@ -159,8 +157,6 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""{"lastname":"Doe"}""")
                 )
             )
@@ -196,8 +192,6 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""{"lastname":"Doe"}""")
                 )
             )
@@ -234,8 +228,6 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""{"lastname":"Doe"}""")
                 )
             )

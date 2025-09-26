@@ -23,7 +23,6 @@ data class DocumentenApiVersionDto(
     val supportsFilterableColumns: Boolean,
     val supportsSortableColumns: Boolean,
     val supportsTrefwoorden: Boolean,
-    val supportsUpdatingDefinitiveDocument: Boolean,
 ) {
     companion object {
         fun of(version: DocumentenApiVersion?) = DocumentenApiVersionDto(
@@ -31,7 +30,6 @@ data class DocumentenApiVersionDto(
             supportsFilterableColumns = version?.supportsFilterableColumns() ?: false,
             supportsSortableColumns = version?.supportsSortableColumns() ?: false,
             supportsTrefwoorden = version?.supportsTrefwoorden ?: false,
-            supportsUpdatingDefinitiveDocument = version?.supportsUpdatingDefinitiveDocument ?: false,
         )
     }
 }

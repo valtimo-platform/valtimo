@@ -29,13 +29,7 @@
     </changeSet>
 
     <changeSet id="2" author="Ritense">
-        <preConditions onFail="MARK_RAN">
-            <columnExists tableName="process_link" columnName="form_flow_definition_id"/>
-        </preConditions>
-        <renameColumn tableName="process_link"
-                      oldColumnName="form_flow_definition_id"
-                      newColumnName="form_flow_definition_key"
-                      columnDataType="VARCHAR(512)"/>
+        <renameColumn tableName="process_link" oldColumnName="form_flow_definition_id" newColumnName="form_flow_definition_key"/>
     </changeSet>
 
 </databaseChangeLog>
