@@ -23,6 +23,7 @@ import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.data.repository.findByIdOrNull
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 
 class CaseDefinitionImporter(
@@ -51,7 +52,7 @@ class CaseDefinitionImporter(
         val caseDefinitionDto = toCaseDefinitionDto(fileContent)
         val caseDefinitionId = caseDefinitionDto.getCaseDefinitionId()
 
-        caseDefinitionChecker.assertCanCreateOrUpdateCaseDefinition(caseDefinitionId, caseDefinitionDto.final)
+        caseDefinitionChecker.assertCanCreateOrUpdateCaseDefinition(caseDefinitionId)
 
         val caseDefinition = caseDefinitionDto.toEntity().copy(final = false)
 

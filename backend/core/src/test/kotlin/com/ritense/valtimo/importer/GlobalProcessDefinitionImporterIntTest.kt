@@ -20,7 +20,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.importer.ImportRequest
 import com.ritense.valtimo.BaseIntegrationTest
 import com.ritense.valtimo.exception.FileExtensionNotSupportedException
-import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.CamundaProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -30,7 +30,7 @@ import org.springframework.core.io.Resource
 
 class GlobalProcessDefinitionImporterIntTest @Autowired constructor(
     private val processDefinitionImporter: GlobalProcessDefinitionImporter,
-    private val operatonProcessService: OperatonProcessService,
+    private val camundaProcessService: CamundaProcessService,
     @Value("classpath:examples/bpmn/shouldDeploy.bpmn")
     private val processDefinition: Resource,
     @Value("classpath:examples/bpmn/shouldDeploy.bpmn")
@@ -47,7 +47,7 @@ class GlobalProcessDefinitionImporterIntTest @Autowired constructor(
             processDefinitionImporter.import(request)
         }
         val storedDefinition = runWithoutAuthorization {
-            operatonProcessService.getProcessDefinition("deployedProcess")
+            camundaProcessService.getProcessDefinition("deployedProcess")
         }
         assertThat(storedDefinition).isNotNull
     }

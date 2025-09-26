@@ -1,12 +1,9 @@
 package com.ritense.document.service
 
 import com.ritense.authorization.Action
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.authorization.CaseDefinitionActionProvider
-import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.domain.CaseTag
 import com.ritense.document.domain.CaseTagId
 import com.ritense.document.exception.CaseTagAlreadyExistsException
@@ -38,19 +35,6 @@ class CaseTagService(
     }
 
     fun getCaseTags(caseDefinitionKey: String): List<CaseTag> {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW,
-                runWithoutAuthorization {
-                    caseDefinitionService.getCaseDefinitions(
-                        caseDefinitionKey = caseDefinitionKey,
-                        active = true
-                    )
-                }
-            )
-        )
-
         return caseTagRepository.findDistinctByIdKeyWhereIdCaseDefinitionIdKeyOrderByOrder(caseDefinitionKey)
     }
 
@@ -149,10 +133,9 @@ class CaseTagService(
             ) ?: throw CaseTagNotFoundException(caseTagKey, caseDefinitionId)
 
         if (caseTagRepository.isCaseTagInUse(
-                caseTagKey,
-                caseDefinitionId.key,
-                SemverConverter.convertToDatabaseColumn(caseDefinitionId.versionTag)!!
-            )
+            caseTagKey,
+            caseDefinitionId.key,
+            SemverConverter.convertToDatabaseColumn(caseDefinitionId.versionTag)!!)
         ) {
             throw CaseTagInUseException(caseTagKey, caseDefinitionId)
         }

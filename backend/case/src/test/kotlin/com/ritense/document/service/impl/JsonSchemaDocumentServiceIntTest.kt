@@ -101,7 +101,7 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
         admin.username = USERNAME
         admin.roles = listOf(USER, ADMIN)
         whenever(userManagementService.currentUser).thenReturn(admin)
-        whenever(userManagementService.findByUsername(USERNAME)).thenReturn(admin)
+        whenever(userManagementService.findByUserIdentifier(USERNAME)).thenReturn(admin)
         whenever(userManagementService.findById(USERNAME)).thenReturn(admin)
     }
 
@@ -114,14 +114,14 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
             Permission(
                 UUID.randomUUID(),
                 JsonSchemaDocument::class.java,
-                mutableListOf(JsonSchemaDocumentActionProvider.ASSIGN),
+                JsonSchemaDocumentActionProvider.ASSIGN,
                 ConditionContainer(),
                 adminRole
             ),
             Permission(
                 UUID.randomUUID(),
                 JsonSchemaDocument::class.java,
-                mutableListOf(JsonSchemaDocumentActionProvider.ASSIGNABLE),
+                JsonSchemaDocumentActionProvider.ASSIGNABLE,
                 ConditionContainer(),
                 userRole
             )

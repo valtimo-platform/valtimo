@@ -24,11 +24,10 @@ import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
 import com.ritense.processlink.domain.TestProcessLinkMapper
 import com.ritense.processlink.domain.TestProcessLinkUpdateRequestDto
 import com.ritense.processlink.mapper.ProcessLinkMapper
-import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.RepositoryService
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.RepositoryService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -56,10 +55,9 @@ internal class ProcessLinkResourceTest {
     lateinit var processLinkMappers: List<ProcessLinkMapper>
     lateinit var processLinkResource: ProcessLinkResource
     lateinit var objectMapper: ObjectMapper
-    lateinit var camdunaProcessService: OperatonProcessService
+    lateinit var camdunaProcessService: CamundaProcessService
     lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
     lateinit var repositoryService: RepositoryService
-    lateinit var processDeploymentService: ProcessDeploymentService
 
     @BeforeEach
     fun init() {
@@ -68,15 +66,13 @@ internal class ProcessLinkResourceTest {
         camdunaProcessService = mock()
         processDefinitionCaseDefinitionService = mock()
         repositoryService = mock()
-        processDeploymentService = mock()
         processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
         processLinkResource = ProcessLinkResource(
             processLinkService,
             processLinkMappers,
             camdunaProcessService,
             processDefinitionCaseDefinitionService,
-            repositoryService,
-            processDeploymentService
+            repositoryService
         )
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()

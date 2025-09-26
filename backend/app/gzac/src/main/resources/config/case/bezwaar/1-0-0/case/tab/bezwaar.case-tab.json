@@ -9,15 +9,13 @@
         "name": "Progress",
         "key": "progress",
         "type": "standard",
-        "contentKey": "progress",
-        "showTasks": false
+        "contentKey": "progress"
     },
     {
         "name": "Audit",
         "key": "audit",
         "type": "standard",
-        "contentKey": "audit",
-        "showTasks": true
+        "contentKey": "audit"
     },
     {
         "name": "Documents",

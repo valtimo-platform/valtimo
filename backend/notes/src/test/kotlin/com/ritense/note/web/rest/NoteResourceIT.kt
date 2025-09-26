@@ -95,14 +95,7 @@ internal class NoteResourceIT : BaseIntegrationTest() {
             ).resultingDocument().get().id()!!.id
         }
         whenever(userManagementService.currentUser)
-            .thenReturn(
-                ValtimoUserBuilder()
-                    .id("anId")
-                    .username("aUsername")
-                    .firstName("aFirstName")
-                    .lastName("aLastName")
-                    .build()
-            )
+            .thenReturn(ValtimoUserBuilder().id("anId").firstName("aFirstName").lastName("aLastName").build())
     }
 
     @Test
@@ -118,7 +111,7 @@ internal class NoteResourceIT : BaseIntegrationTest() {
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.id").isNotEmpty)
-            .andExpect(jsonPath("$.createdByUserId").value("aUsername"))
+            .andExpect(jsonPath("$.createdByUserId").value("anId"))
             .andExpect(jsonPath("$.createdByUserFullName").value("aFirstName aLastName"))
             .andExpect(jsonPath("$.createdDate").isNotEmpty)
             .andExpect(jsonPath("$.content").value("Test note"))
@@ -177,7 +170,7 @@ internal class NoteResourceIT : BaseIntegrationTest() {
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[0].id").isNotEmpty)
-            .andExpect(jsonPath("$.content[0].createdByUserId").value("aUsername"))
+            .andExpect(jsonPath("$.content[0].createdByUserId").value("anId"))
             .andExpect(jsonPath("$.content[0].createdByUserFullName").value("aFirstName aLastName"))
             .andExpect(jsonPath("$.content[0].createdDate").isNotEmpty)
             .andExpect(jsonPath("$.content[0].content").value(testContent))

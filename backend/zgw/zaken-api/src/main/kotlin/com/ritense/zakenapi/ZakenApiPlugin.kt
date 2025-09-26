@@ -17,7 +17,6 @@
 package com.ritense.zakenapi
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.catalogiapi.CatalogiApiPlugin
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
@@ -33,17 +32,12 @@ import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
-import com.ritense.zakenapi.domain.AardRelatie
-import com.ritense.zakenapi.domain.Betalingsindicatie
 import com.ritense.zakenapi.domain.CreateZaakRequest
 import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
-import com.ritense.zakenapi.domain.Geometry
-import com.ritense.zakenapi.domain.GeometryType
 import com.ritense.zakenapi.domain.Opschorting
 import com.ritense.zakenapi.domain.PatchZaakRequest
-import com.ritense.zakenapi.domain.RelevanteZaak
 import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.Verlenging
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
@@ -58,12 +52,9 @@ import com.ritense.zakenapi.domain.ZaakStatus
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
 import com.ritense.zakenapi.domain.rol.BetrokkeneType
 import com.ritense.zakenapi.domain.rol.Rol
-import com.ritense.zakenapi.domain.rol.RolMedewerker
 import com.ritense.zakenapi.domain.rol.RolNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
-import com.ritense.zakenapi.domain.rol.RolOrganisatorischeEenheid
-import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
-import com.ritense.zakenapi.domain.rol.RolVestiging
+import com.ritense.zakenapi.domain.rol.RolType
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import com.ritense.zgw.LoggingConstants
@@ -72,7 +63,7 @@ import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
 import com.ritense.zgw.Page
 import com.ritense.zgw.Rsin
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import java.net.URI
@@ -135,7 +126,9 @@ class ZakenApiPlugin(
                 titel,
                 beschrijving
             )
+
             client.linkDocument(authenticationPluginConfiguration, url, request)
+
             logger.info { "Document with URL '$documentUrl' linked successfully to zaak with URL '$zaakUrl'" }
         }
     }
@@ -257,110 +250,6 @@ class ZakenApiPlugin(
     }
 
     @PluginAction(
-        key = "patch-zaak",
-        title = "Patch zaak",
-        description = "Patches a zaak in the Zaken API",
-        activityTypes = [SERVICE_TASK_START]
-    )
-    fun patchZaak(
-        execution: DelegateExecution,
-        @PluginActionProperty description: String? = null,
-        @PluginActionProperty explanation: String? = null,
-        @PluginActionProperty plannedEndDate: String? = null,
-        @PluginActionProperty finalDeliveryDate: String? = null,
-        @PluginActionProperty publicationDate: String? = null,
-        @PluginActionProperty communicationChannel: String? = null,
-        @PluginActionProperty communicationChannelName: String? = null,
-        @PluginActionProperty paymentIndication: String? = null,
-        @PluginActionProperty lastPaymentDate: String? = null,
-        @PluginActionProperty caseGeometryType: String? = null,
-        @PluginActionProperty caseGeometryCoordinates: String? = null,
-        @PluginActionProperty mainCase: String? = null,
-        @PluginActionProperty archiveActionDate: String? = null,
-        @PluginActionProperty startDateRetentionPeriod: String? = null
-    ) {
-        val documentId = UUID.fromString(execution.businessKey)
-        val caseGeometry: Geometry? = if (caseGeometryType != null && caseGeometryCoordinates != null) {
-            Geometry(
-                type = GeometryType.entries.find { it.key.uppercase() == caseGeometryType.uppercase() }!!,
-                coordinates = pluginService.getObjectMapper().readValue(caseGeometryCoordinates)
-            )
-        } else {
-            null
-        }
-
-        patchZaak(
-            documentId = documentId,
-            description = description,
-            explanation = explanation,
-            plannedEndDate = plannedEndDate?.let { LocalDate.parse(it) },
-            finalDeliveryDate = finalDeliveryDate?.let { LocalDate.parse(it) },
-            publicationDate = publicationDate?.let { LocalDate.parse(it) },
-            communicationChannel = communicationChannel?.let { URI.create(it) },
-            communicationChannelName = communicationChannelName,
-            paymentIndication = paymentIndication?.let { Betalingsindicatie.create(it) },
-            lastPaymentDate = lastPaymentDate?.let { LocalDate.parse(it) },
-            caseGeometry = caseGeometry,
-            mainCase = mainCase?.let { URI.create(it) },
-            archiveActionDate = archiveActionDate?.let { LocalDate.parse(it) },
-            startDateRetentionPeriod = startDateRetentionPeriod?.let { LocalDate.parse(it) }
-        )
-    }
-
-    fun patchZaak(
-        documentId: UUID,
-        description: String? = null,
-        explanation: String? = null,
-        plannedEndDate: LocalDate? = null,
-        finalDeliveryDate: LocalDate? = null,
-        publicationDate: LocalDate? = null,
-        communicationChannel: URI? = null,
-        communicationChannelName: String? = null,
-        paymentIndication: Betalingsindicatie? = null,
-        lastPaymentDate: LocalDate? = null,
-        caseGeometry: Geometry? = null,
-        mainCase: URI? = null,
-        relevantOtherCases: List<RelevanteZaak>? = null,
-        archiveActionDate: LocalDate? = null,
-        startDateRetentionPeriod: LocalDate? = null
-    ) {
-        withLoggingContext(
-            "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString(),
-        ) {
-            logger.debug { "Starting patch of zaak for document with id '$documentId'" }
-            val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
-            if (zaakInstanceLink == null) {
-                logger.warn { "Skipping patch zaak. Zaak does not exist for document with id '$documentId'." }
-                return
-            }
-
-            val zaak = client.patchZaak(
-                authentication = authenticationPluginConfiguration,
-                baseUrl = url,
-                zaakUrl = zaakInstanceLink.zaakInstanceUrl,
-                request = PatchZaakRequest(
-                    omschrijving = description,
-                    toelichting = explanation,
-                    einddatumGepland = plannedEndDate,
-                    uiterlijkeEinddatumAfdoening = finalDeliveryDate,
-                    publicatiedatum = publicationDate,
-                    communicatiekanaal = communicationChannel,
-                    communicatiekanaalNaam = communicationChannelName,
-                    betalingsindicatie = paymentIndication,
-                    laatsteBetaaldatum = lastPaymentDate,
-                    zaakgeometrie = caseGeometry,
-                    hoofdzaak = mainCase,
-                    relevanteAndereZaken = relevantOtherCases,
-                    archiefactiedatum = archiveActionDate,
-                    startdatumBewaartermijn = startDateRetentionPeriod
-                )
-            )
-
-            logger.info { "Zaak with URL '${zaak.url}' patched successfully for document with id '$documentId''" }
-        }
-    }
-
-    @PluginAction(
         key = "create-natuurlijk-persoon-zaak-rol",
         title = "Create natuurlijk persoon zaakrol",
         description = "Adds a zaakrol to the zaak in the Zaken API",
@@ -372,17 +261,12 @@ class ZakenApiPlugin(
         @PluginActionProperty rolToelichting: String,
         @PluginActionProperty inpBsn: String?,
         @PluginActionProperty anpIdentificatie: String?,
-        @PluginActionProperty inpA_nummer: String?,
-        @PluginActionProperty beginGeldigheid: LocalDate? = null,
-        @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty inpA_nummer: String?
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
         ) {
-            logger.debug {
-                "Creating natuurlijk persoon zaakrol with roltype URL '$roltypeUrl' for " +
-                    "document with id '${execution.businessKey}'"
-            }
+            logger.debug { "Creating natuurlijk persoon zaakrol with roltype URL '$roltypeUrl' for document with id '${execution.businessKey}'" }
 
             val documentId = UUID.fromString(execution.businessKey)
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
@@ -399,16 +283,11 @@ class ZakenApiPlugin(
                         inpBsn = inpBsn,
                         anpIdentificatie = anpIdentificatie,
                         inpA_nummer = inpA_nummer
-                    ),
-                    beginGeldigheid = beginGeldigheid,
-                    eindeGeldigheid = eindeGeldigheid
+                    )
                 )
             )
 
-            logger.info {
-                "Natuurlijk persoon zaakrol with URL '${rol.url}' created for " +
-                    "document with id '$documentId' and zaak with URL '$zaakUrl'."
-            }
+            logger.info { "Natuurlijk persoon zaakrol with URL '${rol.url}' created for document with id '$documentId' and zaak with URL '$zaakUrl'." }
         }
     }
 
@@ -423,19 +302,12 @@ class ZakenApiPlugin(
         @PluginActionProperty roltypeUrl: String,
         @PluginActionProperty rolToelichting: String,
         @PluginActionProperty innNnpId: String?,
-        @PluginActionProperty annIdentificatie: String?,
-        @PluginActionProperty kvkNummer: String? = null,
-        @PluginActionProperty vestigingsNummer: String? = null,
-        @PluginActionProperty beginGeldigheid: LocalDate? = null,
-        @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty annIdentificatie: String?
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
         ) {
-            logger.debug {
-                "Creating niet-natuurlijk persoon zaakrol with roltype URL '$roltypeUrl' for " +
-                    "document with id '${execution.businessKey}'"
-            }
+            logger.debug { "Creating niet-natuurlijk persoon zaakrol with roltype URL '$roltypeUrl' for document with id '${execution.businessKey}'" }
 
             val documentId = UUID.fromString(execution.businessKey)
             val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
@@ -450,187 +322,12 @@ class ZakenApiPlugin(
                     betrokkeneType = BetrokkeneType.NIET_NATUURLIJK_PERSOON,
                     betrokkeneIdentificatie = RolNietNatuurlijkPersoon(
                         annIdentificatie = annIdentificatie,
-                        innNnpId = innNnpId,
-                        kvkNummer = kvkNummer,
-                        vestigingsNummer = vestigingsNummer
-                    ),
-                    beginGeldigheid = beginGeldigheid,
-                    eindeGeldigheid = eindeGeldigheid
+                        innNnpId = innNnpId
+                    )
                 )
             )
 
-            logger.info {
-                "Niet-natuurlijk persoon zaakrol with URL '${rol.url}' created for " +
-                    "document with id '$documentId' and " +
-                    "zaak with URL '$zaakUrl'."
-            }
-        }
-    }
-
-    @PluginAction(
-        key = "create-medewerker-zaak-rol",
-        title = "Create medewerker zaakrol",
-        description = "Adds a zaakrol of type medewerker to the zaak in the Zaken API",
-        activityTypes = [SERVICE_TASK_START]
-    )
-    fun createMedewerkerZaakRol(
-        execution: DelegateExecution,
-        @PluginActionProperty roltypeUrl: String,
-        @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty identificatie: String,
-        @PluginActionProperty achternaam: String,
-        @PluginActionProperty voorletters: String,
-        @PluginActionProperty voorvoegselAchternaam: String? = null,
-        @PluginActionProperty afwijkendeNaamBetrokkene: String? = null,
-        @PluginActionProperty indicatieMachtiging: String? = null,
-        @PluginActionProperty beginGeldigheid: LocalDate? = null,
-        @PluginActionProperty eindeGeldigheid: LocalDate? = null
-    ) {
-        withLoggingContext(
-            CATALOGI_API.ROLTYPE to roltypeUrl,
-        ) {
-            logger.debug {
-                "Creating medewerker zaakrol with roltype URL '$roltypeUrl' for " +
-                    "document with id '${execution.businessKey}'"
-            }
-
-            val documentId = UUID.fromString(execution.businessKey)
-            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-
-            val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
-                    zaak = zaakUrl,
-                    roltype = URI(roltypeUrl),
-                    roltoelichting = rolToelichting,
-                    betrokkeneType = BetrokkeneType.MEDEWERKER,
-                    betrokkeneIdentificatie = RolMedewerker(
-                        identificatie = identificatie,
-                        achternaam = achternaam,
-                        voorletters = voorletters,
-                        voorvoegselAchternaam = voorvoegselAchternaam ?: ""
-                    ),
-                    afwijkendeNaamBetrokkene = afwijkendeNaamBetrokkene,
-                    indicatieMachtigingString = indicatieMachtiging,
-                    beginGeldigheid = beginGeldigheid,
-                    eindeGeldigheid = eindeGeldigheid
-                )
-            )
-
-            logger.info {
-                "Medewerker zaakrol with URL '${rol.url}' created for " +
-                    "document with id '$documentId' and " +
-                    "zaak with URL '$zaakUrl'."
-            }
-        }
-    }
-
-    @PluginAction(
-        key = "create-organisatorische-eenheid-zaak-rol",
-        title = "Create organisatorische eenheid zaakrol",
-        description = "Adds a zaakrol of type organisatorische eenheid to the zaak in the Zaken API",
-        activityTypes = [SERVICE_TASK_START]
-    )
-    fun createOrganisatorischeEenheidZaakRol(
-        execution: DelegateExecution,
-        @PluginActionProperty roltypeUrl: String,
-        @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty identificatie: String,
-        @PluginActionProperty naam: String,
-        @PluginActionProperty isGehuisvestIn: String,
-        @PluginActionProperty afwijkendeNaamBetrokkene: String? = null,
-        @PluginActionProperty indicatieMachtiging: String? = null,
-        @PluginActionProperty beginGeldigheid: LocalDate? = null,
-        @PluginActionProperty eindeGeldigheid: LocalDate? = null
-    ) {
-        withLoggingContext(
-            CATALOGI_API.ROLTYPE to roltypeUrl,
-        ) {
-            logger.debug {
-                "Creating organisatorische eenheid zaakrol with roltype URL '$roltypeUrl' for " +
-                    "document with id '${execution.businessKey}'"
-            }
-
-            val documentId = UUID.fromString(execution.businessKey)
-            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-
-            val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
-                    zaak = zaakUrl,
-                    roltype = URI(roltypeUrl),
-                    roltoelichting = rolToelichting,
-                    betrokkeneType = BetrokkeneType.ORGANISATORISCHE_EENHEID,
-                    betrokkeneIdentificatie = RolOrganisatorischeEenheid(
-                        identificatie = identificatie,
-                        naam = naam,
-                        isGehuisvestIn = isGehuisvestIn
-                    ),
-                    afwijkendeNaamBetrokkene = afwijkendeNaamBetrokkene,
-                    indicatieMachtigingString = indicatieMachtiging,
-                    beginGeldigheid = beginGeldigheid,
-                    eindeGeldigheid = eindeGeldigheid
-                )
-            )
-
-            logger.info {
-                "Organisatorische eenheid zaakrol with URL '${rol.url}' created for " +
-                    "document with id '$documentId' and " +
-                    "zaak with URL '$zaakUrl'."
-            }
-        }
-    }
-
-    @PluginAction(
-        key = "create-vestiging-zaak-rol",
-        title = "Create vestiging zaakrol",
-        description = "Adds a zaakrol of type vestiging to the zaak in the Zaken API",
-        activityTypes = [SERVICE_TASK_START]
-    )
-    fun createVestigingZaakRol(
-        execution: DelegateExecution,
-        @PluginActionProperty roltypeUrl: String,
-        @PluginActionProperty rolToelichting: String,
-        @PluginActionProperty kvkNummer: String,
-        @PluginActionProperty vestigingsNummer: String,
-        @PluginActionProperty handelsnaam: String? = null,
-        @PluginActionProperty beginGeldigheid: LocalDate? = null,
-        @PluginActionProperty eindeGeldigheid: LocalDate? = null
-    ) {
-        withLoggingContext(
-            CATALOGI_API.ROLTYPE to roltypeUrl,
-        ) {
-            logger.debug { "Creating vestiging zaakrol with roltype URL '$roltypeUrl' for " +
-                "document with id '${execution.businessKey}'" }
-
-            val documentId = UUID.fromString(execution.businessKey)
-            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-
-            val rol = client.createZaakRol(
-                authenticationPluginConfiguration,
-                url,
-                Rol(
-                    zaak = zaakUrl,
-                    roltype = URI(roltypeUrl),
-                    roltoelichting = rolToelichting,
-                    betrokkeneType = BetrokkeneType.VESTIGING,
-                    betrokkeneIdentificatie = RolVestiging(
-                        handelsnaam = handelsnaam?.let { listOf(handelsnaam) },
-                        kvkNummer = kvkNummer,
-                        vestigingsNummer = vestigingsNummer
-                    ),
-                    beginGeldigheid = beginGeldigheid,
-                    eindeGeldigheid = eindeGeldigheid
-                )
-            )
-
-            logger.info {
-                "Vestiging zaakrol with URL '${rol.url}' created for " +
-                    "document with id '$documentId' and " +
-                    "zaak with URL '$zaakUrl'."
-            }
+            logger.info { "Niet-natuurlijk persoon zaakrol with URL '${rol.url}' created for document with id '$documentId' and zaak with URL '$zaakUrl'." }
         }
     }
 
@@ -895,44 +592,6 @@ class ZakenApiPlugin(
         }
     }
 
-    @PluginAction(
-        key = "relateer-zaken",
-        title = "Add a zaak to relevanteAndereZaken",
-        description = "This adds the provided (via the action property) zaak to the relevanteAndereZaken of the current zaak",
-        activityTypes = [SERVICE_TASK_START]
-    )
-    fun relateerZaken(
-        execution: DelegateExecution,
-        @PluginActionProperty teRelaterenZaakUri: URI,
-        @PluginActionProperty aardRelatie: String,
-    ) {
-        logger.debug { "Making relation between the current zaak and the zaak with URL '$teRelaterenZaakUri'" }
-        val documentId = UUID.fromString(execution.businessKey)
-        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-
-        addZaakToRelevanteAndereZaken(zaakUrl, teRelaterenZaakUri, aardRelatie)
-
-        logger.info { "Created a relation between the current zaak '$zaakUrl' and the provided zaak '$teRelaterenZaakUri'" }
-    }
-
-    private fun addZaakToRelevanteAndereZaken(zaakUrl: URI, teRelaterenZaakUri: URI, aardRelatie: String) {
-        logger.trace { "Fetching zaak with URL '$zaakUrl' to determine existing relevanteAndereZaken" }
-
-        val currentZaak = client.getZaak(authenticationPluginConfiguration, zaakUrl)
-        val currentRelevanteAndereZaken = currentZaak.relevanteAndereZaken?.toMutableList() ?: mutableListOf()
-
-        if (currentRelevanteAndereZaken.none { relevanteZaak -> relevanteZaak.url == currentZaak.url }) {
-            currentRelevanteAndereZaken.add(RelevanteZaak(teRelaterenZaakUri, AardRelatie.entries.find { it.key == aardRelatie }!!))
-
-            logger.trace { "Sending patch request add the zaak with URL '$teRelaterenZaakUri' to the relevanteAndereZaken of zaak with URL '$zaakUrl'" }
-            client.patchZaak(
-                authenticationPluginConfiguration, url, zaakUrl, PatchZaakRequest(
-                    relevanteAndereZaken = currentRelevanteAndereZaken
-                )
-            )
-        }
-    }
-
     fun createZaakObject(
         zaakUrl: URI,
         objectUrl: URI,
@@ -1039,12 +698,12 @@ class ZakenApiPlugin(
         return result
     }
 
-    fun getZaakRollen(zaakUrl: URI, omschrijvingGeneriek: RolTypeGeneriekeBeschrijving? = null): List<Rol> {
+    fun getZaakRollen(zaakUrl: URI, roleType: RolType? = null): List<Rol> {
         logger.debug { "Fetching zaak rollen for zaak with URL '$zaakUrl'" }
         return Page.getAll(100) { page ->
             client.getZaakRollen(
                 authenticationPluginConfiguration,
-                url, zaakUrl, page, omschrijvingGeneriek
+                url, zaakUrl, page, roleType
             )
         }
     }

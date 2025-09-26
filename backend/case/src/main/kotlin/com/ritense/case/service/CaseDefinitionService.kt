@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byActive
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
-import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionVersionTag
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byFinal
+import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.query
 import com.ritense.case.service.validations.CreateCaseListColumnValidator
 import com.ritense.case.service.validations.ListColumnValidator
 import com.ritense.case.service.validations.Operation
@@ -35,9 +35,9 @@ import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case.web.rest.mapper.CaseListColumnMapper
-import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.exception.UnknownDocumentDefinitionException
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -52,11 +52,11 @@ import org.semver4j.Semver
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import kotlin.jvm.optionals.getOrNull
 
 @Transactional
 @Service
@@ -68,7 +68,7 @@ class CaseDefinitionService(
     valueResolverService: ValueResolverService,
     private val authorizationService: AuthorizationService,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val caseDefinitionChecker: CaseDefinitionChecker
+    private val caseDefinitionChecker: CaseDefinitionChecker,
 ) {
     var validators: Map<Operation, ListColumnValidator<CaseListColumnDto>> = mapOf(
         Operation.CREATE to CreateCaseListColumnValidator(
@@ -124,8 +124,7 @@ class CaseDefinitionService(
                 caseDefinitionId = newSavedCaseDefinition.id,
                 caseDefinitionName = newSavedCaseDefinition.name,
                 basedOnCaseDefinitionId = basedOnCaseDefinitionId,
-                duplicate = basedOnCaseDefinitionId != null,
-                copyFormDefinitionsAfterProcessLinks = true
+                duplicate = basedOnCaseDefinitionId != null
             )
         )
         return newSavedCaseDefinition
@@ -134,11 +133,7 @@ class CaseDefinitionService(
     fun deleteCaseDefinition(caseDefinitionId: CaseDefinitionId) {
         denyManagementOperation()
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-        val isLastCaseDefinition = getCaseDefinitions(
-            caseDefinitionKey = caseDefinitionId.key,
-            pageable = Pageable.ofSize(2)
-        ).count() == 1
-        require(isLastCaseDefinition || !getCaseDefinition(caseDefinitionId).active) {
+        require(!getCaseDefinition(caseDefinitionId).active) {
             "Failed to delete case-definition. Case-definition with id: '$caseDefinitionId' is the global active version."
         }
         require(!getCaseDefinition(caseDefinitionId).final) {
@@ -156,7 +151,6 @@ class CaseDefinitionService(
 
     fun getCaseDefinitions(
         caseDefinitionKey: String? = null,
-        caseDefinitionVersionTag: Semver? = null,
         active: Boolean? = null,
         final: Boolean? = null,
         pageable: Pageable,
@@ -164,33 +158,18 @@ class CaseDefinitionService(
         if (active == null || !active) {
             denyManagementOperation()
         }
-        val spec = getCaseDefinitionsQuery(
-            caseDefinitionKey = caseDefinitionKey,
-            caseDefinitionVersionTag = caseDefinitionVersionTag,
-            active = active,
-            final = final,
-        )
-        return caseDefinitionRepository.findAll(spec, pageable)
-    }
 
-    fun getCaseDefinitions(
-        caseDefinitionKey: String? = null,
-        caseDefinitionVersionTag: Semver? = null,
-        active: Boolean? = null,
-        final: Boolean? = null,
-    ): List<CaseDefinition> {
-        if (active == null || !active) {
-            denyManagementOperation()
+        var spec = query()
+        if (caseDefinitionKey != null) {
+            spec = spec.and(byCaseDefinitionKey(caseDefinitionKey))
         }
-
-        val spec =
-            getCaseDefinitionsQuery(
-                caseDefinitionKey = caseDefinitionKey,
-                caseDefinitionVersionTag = caseDefinitionVersionTag,
-                active = active,
-                final = final,
-            )
-        return caseDefinitionRepository.findAll(spec)
+        if (active != null) {
+            spec = spec.and(byActive(active))
+        }
+        if (final != null) {
+            spec = spec.and(byFinal(final))
+        }
+        return caseDefinitionRepository.findAll(spec, pageable)
     }
 
     fun getCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {
@@ -267,18 +246,10 @@ class CaseDefinitionService(
             validators[Operation.CREATE]!!.validate(caseDefinitionKey, caseListColumnDto)
         }
         caseListColumnDto.order = caseDefinitionListColumnRepository.countByIdCaseDefinitionKey(caseDefinitionKey)
-
-        if (caseListColumnDto.exportable) {
-            validateExportPath(caseListColumnDto.path, caseListColumnDto.key)
-        }
-
         caseDefinitionListColumnRepository
             .save(CaseListColumnMapper.toEntity(caseDefinitionKey, caseListColumnDto))
-
-        logger.info { "User '${getCurrentUser()}' created a case list column configuration: '$caseListColumnDto' for case definition: '$caseDefinitionKey'"}
     }
 
-    @Transactional
     fun updateListColumns(
         caseDefinitionName: String,
         caseListColumnDtoList: List<CaseListColumnDto>
@@ -288,47 +259,21 @@ class CaseDefinitionService(
         runWithoutAuthorization {
             validators[Operation.UPDATE]!!.validate(caseDefinitionName, caseListColumnDtoList)
         }
-
-        caseListColumnDtoList.forEachIndexed { index, dto ->
-            dto.order = index
+        var order = 0
+        caseListColumnDtoList.forEach { caseListColumnDto ->
+            caseListColumnDto.order = order++
         }
-
-        caseListColumnDtoList
-            .filter { it.exportable }
-            .forEach { dto ->
-                validateExportPath(dto.path, dto.key)
-            }
-
-        val entities = CaseListColumnMapper.toEntityList(caseDefinitionName, caseListColumnDtoList)
-
-        val incomingKeys = entities.map { it.id.key }
-
-        caseDefinitionListColumnRepository.deleteByIdCaseDefinitionKey(caseDefinitionName)
-
-        caseDefinitionListColumnRepository.saveAll(entities)
-
-        val currentUser = getCurrentUser()
-
-        if(currentUser != null) {
-            logger.info { "User '${currentUser}' " +
-                "updated case list column configuration: '$entities' for case definition: '$caseDefinitionName'"}
-        }
+        caseDefinitionListColumnRepository
+            .saveAll(CaseListColumnMapper.toEntityList(caseDefinitionName, caseListColumnDtoList))
     }
+
 
     @Throws(UnknownDocumentDefinitionException::class)
     fun getListColumns(caseDefinitionKey: String): List<CaseListColumnDto> {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW,
-                runWithoutAuthorization {
-                    getCaseDefinitions(
-                        caseDefinitionKey = caseDefinitionKey,
-                        active = true
-                    )
-                }
-            )
-        )
+        // TODO: Implement PBAC:
+        // It currently relies on the VIEW check in findLatestByName via assertDocumentDefinitionExists.
+        // Doing a check here forces this class to be a JsonSchemaDocument implementation, which is undesirable.
+        assertDocumentDefinitionExists(caseDefinitionKey)
 
         return CaseListColumnMapper
             .toDtoList(
@@ -351,44 +296,6 @@ class CaseDefinitionService(
         }
     }
 
-    fun setLatestToActiveIfNoneIsActive() {
-        caseDefinitionRepository.findAll()
-            .groupBy { it.id.key }
-            .map { it.value }
-            .filter { caseDefinitions -> caseDefinitions.none { caseDefinition -> caseDefinition.active } }
-            .map { caseDefinitions -> caseDefinitions.maxBy { it.id.versionTag } }
-            .map { caseDefinition -> caseDefinition.copy(active = true) }
-            .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
-    }
-
-    private fun getCaseDefinitionsQuery(
-        caseDefinitionKey: String? = null,
-        caseDefinitionVersionTag: Semver? = null,
-        active: Boolean? = null,
-        final: Boolean? = null,
-    ): Specification<CaseDefinition> {
-        var spec: Specification<CaseDefinition> = authorizationService.getAuthorizationSpecification(
-            EntityAuthorizationRequest(
-                CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW_LIST
-            )
-        )
-
-        if (caseDefinitionKey != null) {
-            spec = spec.and(byCaseDefinitionKey(caseDefinitionKey))
-        }
-        if (caseDefinitionVersionTag != null) {
-            spec = spec.and(byCaseDefinitionVersionTag(caseDefinitionVersionTag))
-        }
-        if (active != null) {
-            spec = spec.and(byActive(active))
-        }
-        if (final != null) {
-            spec = spec.and(byFinal(final))
-        }
-        return spec
-    }
-
     private fun denyManagementOperation() {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
@@ -399,24 +306,12 @@ class CaseDefinitionService(
     }
 
     @Throws(UnknownDocumentDefinitionException::class)
-    private fun assertDocumentDefinitionExists(caseDefinitionKey: String) {
-        if (!documentDefinitionService.existsByName(caseDefinitionKey)) {
-            throw UnknownCaseDefinitionException(caseDefinitionKey)
-        }
-    }
-
-    private fun validateExportPath(path: String, key: String) {
-        require(PATH_REGEX_EXPORTABLE.containsMatchIn(path)) {
-            "Failed to save the case list column configuration for key '$key'. Only document or case properties can be exported."
-        }
-    }
-
-    private fun getCurrentUser(): String? {
-        return SecurityUtils.getCurrentUserLogin()
+    private fun assertDocumentDefinitionExists(caseDefinitionKey: String): DocumentDefinition {
+        return documentDefinitionService.findLatestByName(caseDefinitionKey)
+            .getOrNull() ?: throw UnknownCaseDefinitionException(caseDefinitionKey)
     }
 
     companion object {
         val logger = KotlinLogging.logger {}
-        val PATH_REGEX_EXPORTABLE = Regex("^(case:|doc:)")
     }
 }

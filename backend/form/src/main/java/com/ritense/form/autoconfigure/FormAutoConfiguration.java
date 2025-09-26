@@ -37,8 +37,8 @@ import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.form.FormFieldDataResolver;
-import com.ritense.valtimo.service.OperatonProcessService;
-import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.CamundaProcessService;
+import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valueresolver.ValueResolverService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -134,8 +134,8 @@ public class FormAutoConfiguration {
     public PrefillFormService prefillFormService(
         DocumentService documentService,
         FormIoFormDefinitionService formDefinitionService,
-        OperatonProcessService operatonProcessService,
-        OperatonTaskService taskService,
+        CamundaProcessService camundaProcessService,
+        CamundaTaskService taskService,
         List<FormFieldDataResolver> formFieldDataResolvers,
         ProcessDocumentAssociationService processDocumentAssociationService,
         ValueResolverService valueResolverService,
@@ -145,7 +145,7 @@ public class FormAutoConfiguration {
         return new PrefillFormService(
             documentService,
             formDefinitionService,
-            operatonProcessService,
+            camundaProcessService,
             taskService,
             formFieldDataResolvers,
             processDocumentAssociationService,

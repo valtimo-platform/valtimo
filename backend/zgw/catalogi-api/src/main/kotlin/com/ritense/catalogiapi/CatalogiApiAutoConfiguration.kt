@@ -16,7 +16,6 @@
 
 package com.ritense.catalogiapi
 
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.security.CatalogiApiHttpSecurityConfigurer
@@ -69,14 +68,10 @@ class CatalogiApiAutoConfiguration {
     @ConditionalOnMissingBean(CatalogiResource::class)
     fun catalogiResource(
         catalogiService: CatalogiService,
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
-        caseDefinitionService: CaseDefinitionService,
-        documentService: DocumentService
+        activeCaseDefinitionService: ActiveCaseDefinitionService
     ) = CatalogiResource(
         catalogiService,
-        activeCaseDefinitionService,
-        caseDefinitionService,
-        documentService
+        activeCaseDefinitionService
     )
 
     @Order(400)

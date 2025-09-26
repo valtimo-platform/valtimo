@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.semver4j.Semver
@@ -32,7 +31,6 @@ data class CaseDefinitionDto(
     val canHaveAssignee: Boolean = false,
     val autoAssignTasks: Boolean = false,
 ) {
-    @JsonIgnore
     fun getCaseDefinitionId(): CaseDefinitionId = CaseDefinitionId(key, versionTag)
 
     fun toEntity(): CaseDefinition {

@@ -20,9 +20,12 @@ import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_J
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -30,12 +33,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.BaseTest;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.assignee.UnassignedDocumentCountDto;
 import com.ritense.document.domain.impl.template.DocumentDefinitionTemplateRequestDto;
 import com.ritense.document.service.DocumentStatisticService;
+import com.ritense.document.service.UndeployDocumentDefinitionService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService;
+import com.ritense.document.service.impl.UndeployJsonSchemaDocumentDefinitionService;
+import com.ritense.document.service.result.UndeployDocumentDefinitionResultFailed;
+import com.ritense.document.service.result.UndeployDocumentDefinitionResultSucceeded;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentDefinitionResource;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import java.nio.charset.StandardCharsets;
@@ -59,6 +67,7 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
     public static final String SOME_ROLE = "SOME_ROLE";
     private JsonSchemaDocumentDefinitionService documentDefinitionService;
     private DocumentDefinitionResource documentDefinitionResource;
+    private UndeployDocumentDefinitionService undeployDocumentDefinitionService;
     private DocumentStatisticService documentStatisticService;
     private MockMvc mockMvc;
     private Page<JsonSchemaDocumentDefinition> definitionPage;
@@ -67,10 +76,12 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
     @BeforeEach
     public void setUp() {
         documentDefinitionService = mock(JsonSchemaDocumentDefinitionService.class);
+        undeployDocumentDefinitionService = mock(UndeployJsonSchemaDocumentDefinitionService.class);
         documentStatisticService = mock(DocumentStatisticService.class);
 
         documentDefinitionResource = new JsonSchemaDocumentDefinitionResource(
             documentDefinitionService,
+            undeployDocumentDefinitionService,
             documentStatisticService
         );
 
@@ -199,7 +210,7 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
     @Test
     void shouldReturnSingleDefinitionRecordByName() throws Exception {
         String definitionName = definition.getId().name();
-        when(documentDefinitionService.findActiveByName(anyString())).thenReturn(Optional.of(definition));
+        when(documentDefinitionService.findLatestByName(anyString())).thenReturn(Optional.of(definition));
         mockMvc.perform(get("/api/v1/document-definition/{name}", definitionName))
             .andDo(print())
             .andExpect(status().isOk())
@@ -210,14 +221,48 @@ class JsonSchemaDocumentDefinitionResourceTest extends BaseTest {
     @Test
     void shouldReturnSingleDefinitionRecordByNameForManagement() throws Exception {
         String definitionName = definition.getId().name();
-        when(documentDefinitionService.findActiveByName(anyString())).thenReturn(Optional.of(definition));
+        when(documentDefinitionService.findLatestByName(anyString())).thenReturn(Optional.of(definition));
         mockMvc.perform(get("/api/management/v1/document-definition/{name}", definitionName))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$").isNotEmpty());
 
-        verify(documentDefinitionService).findActiveByName(definitionName);
+        verify(documentDefinitionService).findLatestByName(definitionName);
+    }
+
+    @Test
+    void shouldReturnUndeployDocumentDefinitionSucceeded() throws Exception {
+        String definitionName = "documentDefinitionName";
+
+        when(undeployDocumentDefinitionService.undeploy(eq(definitionName))).thenReturn(
+            new UndeployDocumentDefinitionResultSucceeded(definitionName)
+        );
+
+        mockMvc.perform(delete("/api/v1/document-definition/{name}", definitionName)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        verify(undeployDocumentDefinitionService, times(1)).undeploy(eq(definitionName));
+    }
+
+    @Test
+    void shouldReturnUndeployDocumentDefinitionFailed() throws Exception {
+        String definitionName = "documentDefinitionName";
+
+        when(undeployDocumentDefinitionService.undeploy(eq(definitionName))).thenReturn(
+            new UndeployDocumentDefinitionResultFailed(List.of())
+        );
+
+        mockMvc.perform(delete("/api/v1/document-definition/{name}", definitionName)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest());
+
+        verify(undeployDocumentDefinitionService, times(1)).undeploy(eq(definitionName));
     }
 
     @Test

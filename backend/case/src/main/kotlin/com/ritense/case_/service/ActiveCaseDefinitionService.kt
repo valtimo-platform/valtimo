@@ -16,12 +16,8 @@
 
 package com.ritense.case_.service
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.authorization.CaseDefinitionActionProvider
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -32,24 +28,12 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @SkipComponentScan
 class ActiveCaseDefinitionService(
-    private val caseDefinitionService: CaseDefinitionService,
-    private val authorizationService: AuthorizationService,
+    private val caseDefinitionService: CaseDefinitionService
 ) {
 
     fun getActiveCaseDefinition(caseDefinitionKey: String): CaseDefinition {
-        val activeCaseDefinition = runWithoutAuthorization {
-            caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
-        }
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW,
-                activeCaseDefinition
-            )
-        )
-
-        return activeCaseDefinition ?: throw UnknownCaseDefinitionException(caseDefinitionKey)
+        return caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
+            ?: throw UnknownCaseDefinitionException(caseDefinitionKey)
     }
 
     fun setGlobalActiveCaseDefinition(caseDefinitionId: CaseDefinitionId): CaseDefinition {

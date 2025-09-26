@@ -21,7 +21,7 @@ import com.ritense.audit.service.AuditService;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
-import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAuditService;
+import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentAuditService;
 import com.ritense.processdocument.web.rest.ProcessDocumentAuditResource;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -34,12 +34,12 @@ public class ProcessDocumentAuditAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ProcessDocumentAuditService.class)
-    public OperatonProcessJsonSchemaDocumentAuditService processDocumentAuditService(
+    public CamundaProcessJsonSchemaDocumentAuditService processDocumentAuditService(
         AuditService auditService,
         JsonSchemaDocumentService documentService,
         AuthorizationService authorizationService
     ) {
-        return new OperatonProcessJsonSchemaDocumentAuditService(
+        return new CamundaProcessJsonSchemaDocumentAuditService(
             auditService,
             documentService,
             authorizationService

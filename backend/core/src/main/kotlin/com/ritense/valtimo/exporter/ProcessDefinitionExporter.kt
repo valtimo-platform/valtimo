@@ -21,29 +21,24 @@ import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.DecisionDefinitionExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
-import com.ritense.valtimo.operaton.repository.OperatonDecisionDefinitionSpecificationHelper
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersion
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byVersionTag
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.model.bpmn.Bpmn
-import org.operaton.bpm.model.bpmn.BpmnModelInstance
-import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask
-import org.operaton.bpm.model.bpmn.instance.CallActivity
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.model.bpmn.Bpmn
+import org.camunda.bpm.model.bpmn.BpmnModelInstance
+import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask
+import org.camunda.bpm.model.bpmn.instance.CallActivity
 import java.io.ByteArrayOutputStream
 
 class ProcessDefinitionExporter(
-    private val operatonRepositoryService: OperatonRepositoryService,
+    private val camundaRepositoryService: CamundaRepositoryService,
     private val repositoryService: RepositoryService,
 ) : Exporter<ProcessDefinitionExportRequest> {
     override fun supports(): Class<ProcessDefinitionExportRequest> = ProcessDefinitionExportRequest::class.java
 
     override fun export(request: ProcessDefinitionExportRequest): ExportResult {
         val processDefinition = requireNotNull(
-            operatonRepositoryService.findProcessDefinitionById(request.processDefinitionId)
+            camundaRepositoryService.findProcessDefinitionById(request.processDefinitionId)
         )
 
         val bpmnModelInstance = repositoryService.getProcessModel(processDefinition.id).use { inputStream ->
@@ -71,45 +66,28 @@ class ProcessDefinitionExporter(
     }
 
     private fun getCallActivityProcessDefinitionExportRequests(bpmnModelInstance: BpmnModelInstance, caseDefinitionId: CaseDefinitionId): Set<ProcessDefinitionExportRequest> {
-        return bpmnModelInstance.getModelElementsByType(CallActivity::class.java).mapNotNull {
-            if (it.calledElement != null) {
-                val spec = byKey(it.calledElement)
-                val processDefinitionId = checkNotNull(
-                    when (it.operatonCalledElementBinding) {
-                        "version" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersion(it.operatonCalledElementVersion.toInt())))
-                        "versionTag" -> operatonRepositoryService.findProcessDefinition(spec.and(byVersionTag(it.operatonCalledElementVersionTag)))
-                        "deployment" -> null
-                        else -> operatonRepositoryService.findProcessDefinition(spec.and(byLatestVersion()))
-                    }
-                ) {
-                    "Process definition with key '${it.calledElement}' could not be found!"
+        return bpmnModelInstance.getModelElementsByType(CallActivity::class.java)
+            .mapNotNull { it.calledElement }
+            .distinct()
+            .map { key ->
+                val processDefinitionId = checkNotNull(camundaRepositoryService.findLatestProcessDefinition(key)) {
+                    "Process definition with key '$key' could not be found!"
                 }.id
                 ProcessDefinitionExportRequest(processDefinitionId, caseDefinitionId)
-            } else {
-                null
-            }
-        }.toSet()
+            }.toSet()
     }
 
     private fun getDecisionExportRequests(caseDefinitionId: CaseDefinitionId, bpmnModelInstance: BpmnModelInstance): Set<DecisionDefinitionExportRequest> {
-        return bpmnModelInstance.getModelElementsByType(BusinessRuleTask::class.java).mapNotNull {
-            if (it.operatonDecisionRef != null) {
-                val spec = OperatonDecisionDefinitionSpecificationHelper.byKey(it.operatonDecisionRef)
-                val decisionDefinitionId = checkNotNull(
-                    when (it.operatonDecisionRefBinding) {
-                        "version" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersion(it.operatonDecisionRefVersion.toInt())))
-                        "versionTag" -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byVersionTag(it.operatonDecisionRefVersionTag)))
-                        "deployment" -> null
-                        else -> operatonRepositoryService.findDecisionDefinition(spec.and(OperatonDecisionDefinitionSpecificationHelper.byLatestVersion()))
-                    }
-                ) {
-                    "Decision definition with reference '${it.operatonDecisionRef}' could not be found!"
-                }.id
-                DecisionDefinitionExportRequest(decisionDefinitionId, caseDefinitionId)
-            } else {
-                null
-            }
-        }.toSet()
+        return bpmnModelInstance.getModelElementsByType(BusinessRuleTask::class.java)
+            .mapNotNull { it.camundaDecisionRef }
+            .distinct()
+            .map { ref ->
+                val decisionDefinition = checkNotNull(repositoryService.createDecisionDefinitionQuery()
+                    .decisionDefinitionKey(ref)
+                    .latestVersion()
+                    .singleResult()) { "Decision definition with reference '$ref' could not be found!" }
+                DecisionDefinitionExportRequest(decisionDefinition.id, caseDefinitionId)
+            }.toSet()
     }
 
     companion object {

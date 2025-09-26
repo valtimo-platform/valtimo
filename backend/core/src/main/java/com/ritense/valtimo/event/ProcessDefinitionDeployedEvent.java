@@ -16,42 +16,49 @@
 
 package com.ritense.valtimo.event;
 
-import com.ritense.valtimo.operaton.domain.OperatonDeploymentSource;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
+import com.ritense.valtimo.camunda.domain.CamundaDeploymentSource;
 import jakarta.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import org.operaton.bpm.engine.impl.persistence.entity.DeploymentEntity;
-import org.operaton.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.operaton.bpm.model.bpmn.Bpmn;
-import org.operaton.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.engine.impl.persistence.entity.DeploymentEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
+import org.camunda.bpm.model.bpmn.Bpmn;
+import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 
 public class ProcessDefinitionDeployedEvent {
     private final String previousProcessDefinitionId;
     private final String processDefinitionId;
     private final String processDefinitionKey;
-    @Nullable
-    private final CaseDefinitionId caseDefinitionId;
     private final BpmnModelInstance processDefinitionModelInstance;
-    private final OperatonDeploymentSource source;
+    private final String source;
 
-    public ProcessDefinitionDeployedEvent(
-        DeploymentEntity deployment,
-        ProcessDefinitionEntity processDefinition,
-        OperatonDeploymentSource source) {
-
+    public ProcessDefinitionDeployedEvent(DeploymentEntity deployment, ProcessDefinitionEntity processDefinition) {
         this.previousProcessDefinitionId = processDefinition.getPreviousProcessDefinitionId();
         this.processDefinitionId = processDefinition.getId();
         this.processDefinitionKey = processDefinition.getKey();
-        this.caseDefinitionId = CaseDefinitionId.fromProcessVersionTag(processDefinition.getVersionTag());
-        this.source = source;
+        String deploymentSource = deployment.getSource();
+
+        if (deploymentSource != null) {
+            this.source = resolveSource(deploymentSource);
+        } else {
+            this.source = "";
+        }
 
         var processDefinitionResource = deployment.getResource(processDefinition.getResourceName());
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(processDefinitionResource.getBytes())) {
             this.processDefinitionModelInstance = Bpmn.readModelFromStream(inputStream);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to parse BPMN model from deployment", e);
+            throw new RuntimeException(e);
         }
+    }
+
+    private String resolveSource(String source) {
+        for (CamundaDeploymentSource deploymentSource : CamundaDeploymentSource.getEntries()) {
+            if (deploymentSource.getValue().equals(source)) {
+                return source;
+            }
+        }
+        return "";
     }
 
     @Nullable
@@ -67,17 +74,7 @@ public class ProcessDefinitionDeployedEvent {
         return processDefinitionKey;
     }
 
-    @Nullable
-    public CaseDefinitionId getCaseDefinitionId() {
-        return caseDefinitionId;
-    }
-
-    @Nullable
-    public CaseDefinitionId getPreviousCaseDefinitionId() {
-        return CaseDefinitionId.fromProcessVersionTag(this.getSource().getOriginalVersionTag());
-    }
-
-    public OperatonDeploymentSource getSource() {
+    public String getSource() {
         return source;
     }
 

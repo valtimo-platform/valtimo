@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeType.NUMBER
 import com.fasterxml.jackson.databind.node.JsonNodeType.OBJECT
 import com.fasterxml.jackson.databind.node.JsonNodeType.POJO
 import com.fasterxml.jackson.databind.node.JsonNodeType.STRING
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.objectenapi.service.ZaakObjectConstants.Companion.ZAAKOBJECT_PREFIX
 import com.ritense.valtimo.contract.form.DataResolvingContext
 import com.ritense.valtimo.contract.form.FormFieldDataResolver
@@ -56,14 +55,11 @@ class ZaakObjectDataResolver(
         }.groupBy {
             it.objectType
         }.forEach{ objectTypeGroup ->
-            runWithoutAuthorization {
-                val zaakObject = zaakObjectService.getZaakObjectOfTypeByName(
-                    dataResolvingContext.documentId, objectTypeGroup.key
-                )
-                val dataAsJsonNode = objectMapper.valueToTree<JsonNode>(zaakObject.record.data)
-                objectTypeGroup.value.forEach {
-                    results[it.variableName] = extractValue(dataAsJsonNode.at(it.path))
-                }
+            val zaakObject = zaakObjectService.getZaakObjectOfTypeByName(
+                dataResolvingContext.documentId, objectTypeGroup.key)
+            val dataAsJsonNode = objectMapper.valueToTree<JsonNode>(zaakObject.record.data)
+            objectTypeGroup.value.forEach {
+                results[it.variableName] = extractValue(dataAsJsonNode.at(it.path))
             }
         }
 

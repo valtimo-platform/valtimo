@@ -110,7 +110,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
     public Optional<FormIoFormDefinition> getFormDefinitionByName(
         @LoggableResource("formDefinitionName") String name
     ) {
-        return formDefinitionRepository.findByNameAndCaseDefinitionIdIsNull(name);
+        return formDefinitionRepository.findByName(name);
     }
 
     public Optional<FormIoFormDefinition> getFormDefinitionByName(
@@ -124,7 +124,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
     public Optional<FormIoFormDefinition> getFormDefinitionByNameIgnoringCase(
         @LoggableResource("formDefinitionName") String name
     ) {
-        return formDefinitionRepository.findByNameIgnoreCaseAndCaseDefinitionIdIsNull(name);
+        return formDefinitionRepository.findByNameIgnoreCase(name);
     }
 
     @Override
@@ -134,7 +134,7 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
     ) {
         return withLoggingContext("formDefinitionName", request.getName(), () -> {
             caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
-            if (formDefinitionRepository.findByNameAndCaseDefinitionId(request.getName(), null)
+            if (formDefinitionRepository.findByName(request.getName())
                 .isPresent()) {
                 throw new IllegalArgumentException("Duplicate name for new form: " + request.getName());
             }

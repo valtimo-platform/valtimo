@@ -29,10 +29,6 @@ interface ProcessDefinitionCaseDefinitionRepository:
     JpaRepository<ProcessDefinitionCaseDefinition, ProcessDefinitionCaseDefinitionId> {
     fun findByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<ProcessDefinitionCaseDefinition>
     fun findByIdProcessDefinitionId(processDefinitionId: ProcessDefinitionId): ProcessDefinitionCaseDefinition
-    fun findAllByIdCaseDefinitionIdAndIdProcessDefinitionIdId(
-        caseDefinitionId: CaseDefinitionId,
-        processDefinitionId: String
-    ): List<ProcessDefinitionCaseDefinition>
 
     @Query(
         ("SELECT  pdcd " +
@@ -46,5 +42,4 @@ interface ProcessDefinitionCaseDefinitionRepository:
         @Nullable @Param("startableByUser") startableByUser: Boolean?,
         @Nullable @Param("canInitializeDocument") canInitializeDocument: Boolean?
     ): List<ProcessDefinitionCaseDefinition>
-
 }
