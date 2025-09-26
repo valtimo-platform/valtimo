@@ -1,0 +1,41 @@
+spring:
+    datasource:
+        type: com.zaxxer.hikari.HikariDataSource
+    liquibase:
+        enabled: false
+
+scheduling:
+    enabled: false
+    job:
+        cron:
+            cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
+            taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
+
+spring-actuator:
+    username: test
+    password: test
+
+camunda:
+    bpm:
+        history-level: audit
+
+valtimo:
+    mandrill:
+        apiKey: some-key
+        dateFormat: dd-MM-yyyy
+        notificationTemplate: bpc-task-notification
+        completionTemplate: bpc-task-completion
+        reminderTemplate: bpc-task-reminder
+    plugin:
+        encryption-secret: "abcdefghijklmnop"
+
+aws:
+    profile: ritense
+    region: eu-central-1
+    s3:
+        bucketName: test-name
+        bucketRegion: eu-central-1
+    ssm:
+        enabled: true
+        region: eu-central-1
+        projectName: Valtimo-Implementation
