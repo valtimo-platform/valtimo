@@ -71,7 +71,7 @@
         },
         "required": ["key", "type"]
       },
-      "minItems": 0,
+      "minItems": 1,
       "uniqueItems": true
     }
   },

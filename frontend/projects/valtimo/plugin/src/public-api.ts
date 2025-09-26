@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,24 +48,10 @@ export * from './lib/plugins/documenten-api/components/documenten-api-configurat
 export * from './lib/plugins/documenten-api/components/store-uploaded-document/store-uploaded-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/download-document/download-document-configuration.component';
 export * from './lib/plugins/documenten-api/components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
-/* iko plugin */
-export * from './lib/plugins/iko/iko-plugin.module';
-export * from './lib/plugins/iko/iko-plugin.specification';
-export * from './lib/plugins/iko/models/config';
-export * from './lib/plugins/iko/components/iko-configuration/iko-configuration.component';
-/* klantinteracties api plugin */
-export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin-module';
-export * from './lib/plugins/klantinteracties-api/klantinteracties-api-plugin.specification';
-export * from './lib/plugins/klantinteracties-api/components/klantinteracties-api-configuration/klantinteracties-api-configuration.component';
-export * from './lib/plugins/klantinteracties-api/components/create-persoon/create-persoon.component';
 /* objecttypen api plugin */
 export * from './lib/plugins/objecttypen-api/objecttypen-api-plugin-module';
 export * from './lib/plugins/objecttypen-api/objecttypen-api-plugin.specification';
 export * from './lib/plugins/objecttypen-api/components/objecttypen-api-configuration/objecttypen-api-configuration.component';
-/* open-klant plugin */
-export * from './lib/plugins/open-klant-token-authentication/open-klant-token-authentication-plugin.module';
-export * from './lib/plugins/open-klant-token-authentication/open-klant-token-authentication-plugin.specification';
-export * from './lib/plugins/open-klant-token-authentication/components/open-klant-token-authentication-configuration/open-klant-token-authentication-configuration.component';
 /* zaken api plugin */
 export * from './lib/plugins/zaken-api/zaken-api-plugin.module';
 export * from './lib/plugins/zaken-api/zaken-api-plugin.specification';
@@ -76,9 +62,6 @@ export * from './lib/plugins/zaken-api/components/create-zaak-resultaat/create-z
 export * from './lib/plugins/zaken-api/components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
-export * from './lib/plugins/zaken-api/components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
-export * from './lib/plugins/zaken-api/components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
-export * from './lib/plugins/zaken-api/components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 export * from './lib/plugins/zaken-api/components/create-zaak/create-zaak-configuration.component';
 export * from './lib/plugins/zaken-api/components/set-zaakopschorting/set-zaakopschorting.component';
 export * from './lib/plugins/zaken-api/components/start-hersteltermijn/start-hersteltermijn-configuration.component';
@@ -127,3 +110,14 @@ export * from './lib/plugins/besluiten-api/components/link-document-to-besluit/l
 /* exact */
 export * from './lib/plugins/exact/exact.plugin.specification';
 export * from './lib/plugins/exact/exact-plugin.module';
+/* open product plugin*/
+export * from './lib/plugins/open-product/open-product-plugin.specification';
+export * from './lib/plugins/open-product/open-product-plugin.module';
+export * from './lib/plugins/open-product/components/create-product/create-product-configuration.component';
+export * from './lib/plugins/open-product/components/delete-product/delete-product-configuration.component';
+export * from './lib/plugins/open-product/components/update-product/update-product-configuration.component';
+export * from './lib/plugins/open-product/components/open-product-configuration/open-product-configuration.component';
+/* token authentication*/
+export * from './lib/plugins/token-authentication/token-authentication-plugin.specification';
+export * from './lib/plugins/token-authentication/token-authentication-plugin.module';
+export * from './lib/plugins/token-authentication/components/token-authentication-configuration/token-authentication-configuration.component';

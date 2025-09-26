@@ -1,0 +1,28 @@
+b8ebd00 - Updated version to 5.15.0
+36ee151 - Try to upgrade @angular-devkit/build-angular again.
+6a2766a - Reverted new version of @angular-devkit/build-angular.
+e06e6b9 - Reverted new version of @angular-devkit/build-angular.
+ca3f43b - potential fix
+a5f397e - potential fix
+1c6b10f - hopefull fix
+4a161b5 - fix
+5e5cab0 - fix lint
+3a9f91f - feat: cherrypick assignee changes (#304)
+a4845ca - Updated version to 5.15.0-124.RC-SNAPSHOT
+50f4322 - build(deps): bump decode-uri-component from 0.2.0 to 0.2.2 (#292)
+2b9b45c - Merge branch 'main' into development
+77982b7 - Added property to set a formio to readonly (#289)
+3d33c69 - fix
+1e4ccf7 - feat: [FE] - case definition setting (#281)
+9541326 - build(deps): bump engine.io from 6.2.0 to 6.2.1 (#277)
+4c77f82 - build(deps): bump loader-utils from 2.0.3 to 2.0.4 (#272)
+ae61620 - Update dossier-list.component.html (#286)
+81d90f0 - SharingIsCaring: Fixed a bug in JSON file upload field for case definitions and form definitions, added user-friendly error message (#287)
+4be82d2 - fix: just a number, not a badge. Also fix linting issues (#285)
+8480cbb - feat: 37539 show number of unassigned cases (#284)
+65d640a - changed tabs order (#283)
+adead58 - removed console.log (#282)
+98517b5 - feat: filter cases assignee (#280)
+93c4e67 - #42785 Saving optional plugin link properties should be null instead of empty string (#279)
+f85cca4 - add event to action callback (#266)
+9297e28 - feat: fix query params on keycloak redirect case tabs (#275)

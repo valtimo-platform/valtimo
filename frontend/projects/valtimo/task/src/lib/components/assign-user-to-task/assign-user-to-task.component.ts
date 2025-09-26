@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import {
 } from '@valtimo/components';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, take, tap} from 'rxjs';
 import {TaskService} from '../../services';
-import {NamedUser} from '@valtimo/shared';
+import {NamedUser} from '@valtimo/config';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {
@@ -67,13 +67,7 @@ import {filter, map} from 'rxjs/operators';
   ],
 })
 export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
-  private _taskId;
-  @Input() public set taskId(value: string) {
-    if (this._taskId === value) return;
-    this._taskId = value;
-    this.fetchCandidateUsers(value);
-  }
-
+  @Input() public readonly taskId: string;
   @Input() public readonly assigneeId: string;
   @Output() public readonly assignmentOfTaskChanged = new EventEmitter();
 
@@ -122,6 +116,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   public ngOnInit(): void {
+    this.fetchCandidateUsers();
     this.openHideElementSubscription();
   }
 
@@ -145,7 +140,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
 
     combineLatest([
       this._candidateUsersForTask$,
-      this.taskService.assignTask(this._taskId, {assignee: userId}),
+      this.taskService.assignTask(this.taskId, {assignee: userId}),
     ])
       .pipe(take(1))
       .subscribe({
@@ -166,7 +161,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   public unassignTask(): void {
     this.disable();
     this.taskService
-      .unassignTask(this._taskId)
+      .unassignTask(this.taskId)
       .pipe(
         tap(() => {
           this.emitChange();
@@ -235,16 +230,14 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
     setTimeout(() => this.open$.next(false));
   }
 
-  private fetchCandidateUsers(taskId: string): void {
-    this.disable();
-
+  private fetchCandidateUsers(): void {
     this.canAssignUserToTask$
       .pipe(
         filter(allowed => !!allowed),
         take(1)
       )
       .subscribe(() => {
-        this.taskService.getCandidateUsers(taskId).subscribe(candidateUsers => {
+        this.taskService.getCandidateUsers(this.taskId).subscribe(candidateUsers => {
           this._candidateUsersForTask$.next(candidateUsers);
           if (this.assigneeId) {
             this.assignedIdOnServer$.next(this.assigneeId);

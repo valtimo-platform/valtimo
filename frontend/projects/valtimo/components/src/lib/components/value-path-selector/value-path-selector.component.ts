@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import {DocumentService} from '@valtimo/document';
 import {
   DropdownModule,
   InputModule,
-  LayerModule,
   ListItem,
   LoadingModule,
   ToggleModule,
@@ -55,18 +54,15 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {distinctUntilChanged, take} from 'rxjs/operators';
+import {distinctUntilChanged} from 'rxjs/operators';
+import {ValuePathItem, ValuePathType} from '../../models';
 import {
-  ValuePathItem,
-  ValuePathType,
   ValuePathSelectorInputMode,
   ValuePathSelectorNotation,
   ValuePathSelectorPrefix,
-} from '../../models';
+} from '../../models/value-path-selector.model';
 import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
-import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-value-path-selector',
@@ -83,7 +79,6 @@ import {ActivatedRoute} from '@angular/router';
     InputLabelModule,
     InputLabelModule,
     TranslateModule,
-    LayerModule,
   ],
   providers: [
     {
@@ -147,40 +142,13 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       this.formGroup.enable();
     }
   }
-
-  private readonly _params$ = getCaseManagementRouteParams(this.route);
-
-  public readonly caseDefinitionKey$ = this._params$.pipe(map(params => params?.caseDefinitionKey ?? null));
-
-  public readonly caseDefinitionVersionTag$ = this._params$.pipe(
-    map(params => params?.caseDefinitionVersionTag ?? null)
-  );
-
-  @Input() set caseDefinitionKey(value: string | null) {
-    if (value) {
-      this._caseDefinitionKeySubject$.next(value);
-    } else {
-      this.caseDefinitionKey$.pipe(take(1)).subscribe(paramValue => {
-        if (paramValue) {
-          this._caseDefinitionKeySubject$.next(paramValue);
-        } else {
-          return;
-        }
-      });
-    }
+  @Input() public set documentDefinitionName(value: string) {
+    if (!value) return;
+    this._documentDefinitionNameSubject$.next(value);
   }
-  @Input() set caseDefinitionVersionTag(value: string | null) {
-    if (value) {
-      this._caseDefinitionVersionTag$.next(value);
-    } else {
-      this.caseDefinitionVersionTag$.pipe(take(1)).subscribe(paramValue => {
-        if (paramValue) {
-          this._caseDefinitionVersionTag$.next(paramValue);
-        } else {
-          return;
-        }
-      });
-    }
+  @Input() public set version(value: number) {
+    if (!value) return;
+    this._version$.next(value);
   }
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
     this._prefixes$.next(value ?? []);
@@ -188,13 +156,14 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   @Input() public label = '';
   @Input() public tooltip = '';
   @Input() public required = false;
-  @Input() public showCaseDefinitionSelector = false;
+  @Input() public showDocumentDefinitionSelector = false;
   @Input() public notation: ValuePathSelectorNotation = 'dots';
 
   @Input() public set defaultValue(value: string) {
     if (!value) return;
     this.selectedPath.setValue(value);
-    if (this.showCaseDefinitionSelector) this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
+    if (this.showDocumentDefinitionSelector)
+      this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
   }
   private readonly _type$ = new BehaviorSubject<ValuePathType>(ValuePathType.FIELD);
   @Input() public set type(value: ValuePathType) {
@@ -207,17 +176,11 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
   @Output() collectionSelected: EventEmitter<ValuePathItem> = new EventEmitter();
 
-  private readonly _caseDefinitionKeySubject$ = new BehaviorSubject<string| null>(null);
-  private get _caseDefinitionKey$(): Observable<string> {
-    return this._caseDefinitionKeySubject$.pipe(filter(value => !!value));
+  private readonly _documentDefinitionNameSubject$ = new BehaviorSubject<string>('');
+  private get _documentDefinitionName$(): Observable<string> {
+    return this._documentDefinitionNameSubject$.pipe(filter(value => !!value));
   }
-  private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
-
-  public readonly showToggle$ = this._caseDefinitionKey$
-    .pipe(
-      map(caseDefinitionKey => !!caseDefinitionKey),
-    );
-
+  private readonly _version$ = new BehaviorSubject<number | null>(null);
   private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
 
   private readonly _inputMode$ = new BehaviorSubject<ValuePathSelectorInputMode>(
@@ -240,22 +203,26 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       parentItem
         ? of(parentItem.children?.map((child: string) => ({path: child})) ?? [])
         : combineLatest([
-          this._caseDefinitionKey$,
-          this._prefixes$,
-          this._type$,
-          this._caseDefinitionVersionTag$,
-          this.showToggle$
-        ]).pipe(
-          filter(([, , , , showToggle]) => showToggle),
-          switchMap(([caseDefinitionKey, prefixes, type, caseDefinitionVersionTag]) =>
-            this.valuePathSelectorService.getResolvableKeys(
-              prefixes,
-              caseDefinitionKey,
-              type,
-              caseDefinitionVersionTag
+            this._documentDefinitionName$,
+            this._prefixes$,
+            this._type$,
+            this._version$,
+          ]).pipe(
+            switchMap(([documentDefinitionName, prefixes, type, version]) =>
+              typeof version === 'number'
+                ? this.valuePathSelectorService.getResolvableKeys(
+                    prefixes,
+                    documentDefinitionName,
+                    type,
+                    version
+                  )
+                : this.valuePathSelectorService.getResolvableKeys(
+                    prefixes,
+                    documentDefinitionName,
+                    type
+                  )
             )
           )
-        )
     ),
     map((results: ValuePathItem[]) =>
       results
@@ -292,13 +259,36 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     tap(() => this.loadingValuePathItems$.next(false))
   );
 
+  public readonly loadingDocumentDefinitionItems$ = new BehaviorSubject<boolean>(true);
+
+  public readonly documentDefinitionListItems$: Observable<ListItem[]> =
+    this.valuePathSelectorService.getDocumentDefinitionCache().pipe(
+      switchMap(cache =>
+        combineLatest([
+          cache ? of(cache) : this.documentService.getAllDefinitions(),
+          this._documentDefinitionName$.pipe(startWith(null)),
+        ]).pipe(
+          tap(([definitions]) => {
+            this.loadingDocumentDefinitionItems$.next(false);
+            this.valuePathSelectorService.setDocumentDefinitionCache(definitions);
+          }),
+          map(([definitions, documentDefinitionName]) =>
+            definitions.content.map(definition => ({
+              content: definition.id.name,
+              id: definition.id.name,
+              selected: definition.id.name === documentDefinitionName,
+            }))
+          )
+        )
+      )
+    );
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly valuePathSelectorService: ValuePathSelectorService,
     private readonly formBuilder: FormBuilder,
-    private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute,
+    private readonly documentService: DocumentService
   ) {}
 
   public ngOnInit(): void {
@@ -346,11 +336,11 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     this.selectedPath.setValue(selectedPath);
   }
 
-  public onCaseDefinitionSelected(event: {item: {id: string}}): void {
+  public onDocumentDefinitionSelected(event: {item: {id: string}}): void {
     const selectedDef = event?.item?.id;
     if (!selectedDef) return;
     this.selectedPath.setValue('');
-    this._caseDefinitionKeySubject$.next(selectedDef);
+    this._documentDefinitionNameSubject$.next(selectedDef);
   }
 
   public onInputModeChange(toDropdownMode: boolean): void {

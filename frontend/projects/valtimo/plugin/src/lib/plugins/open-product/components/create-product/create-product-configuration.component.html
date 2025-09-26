@@ -1,0 +1,93 @@
+<v-form
+        (valueChange)="formValueChange($event)"
+        *ngIf="{
+        disabled: disabled$ | async,
+        prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+    } as obs"
+>
+    <v-input
+            name="productNaam"
+            [title]="'productNaam' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.productNaam"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+    <v-input
+            name="productTypeUUID"
+            [title]="'productTypeUUID' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.productTypeUUID"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+    <v-input
+            name="eigenaarBSN"
+            [title]="'eigenaarBSN' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.eigenaarBSN"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+
+    <valtimo-carbon-multi-input
+            name="eigenaarData"
+            [title]="'eigenaarData' | pluginTranslate: pluginId | async"
+            type="keyValue"
+            [disabled]="obs.disabled"
+            [defaultValues]="[{key: 'uuid', value: '48a84c3d-efd2-4d86-929f-a57ae64718a4'}, {key: 'bsn', value: '12345678'}, {key: 'klantnummer', value: '1'}]"
+            [margin]="true"
+            [required]="false"
+            [tooltip]="'eigenaarDataTooltip' | pluginTranslate: pluginId | async"
+            [minimumAmountOfRows]="1"
+    ></valtimo-carbon-multi-input>
+
+    <v-input
+            name="productPrijs"
+            [title]="'productPrijs' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.productPrijs"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+    <v-input
+            name="frequentie"
+            [title]="'frequentie' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.frequentie"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+    <v-input
+            name="status"
+            [title]="'status' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.status"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+    <v-input
+            name="gepubliceerd"
+            [title]="'gepubliceerd' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.gepubliceerd.toString()"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+    <v-input
+            name="resultaatPV"
+            [title]="'resultaatPV' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.resultaatPV"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+</v-form>

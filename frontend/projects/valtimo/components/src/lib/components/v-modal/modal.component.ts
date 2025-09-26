@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,12 @@ import {delay} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
 import {ModalService} from '../../services/modal.service';
 import {IconService} from 'carbon-components-angular';
-import {Close16} from '@carbon/icons';
+import {Close24} from '@carbon/icons';
 
 @Component({
   selector: 'v-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
-  standalone: false,
 })
 export class VModalComponent implements OnInit {
   @Input() appearingDelayMs = 140;
@@ -48,7 +47,7 @@ export class VModalComponent implements OnInit {
     private readonly modalService: ModalService,
     private readonly iconService: IconService
   ) {
-    this.iconService.register(Close16);
+    this.iconService.register(Close24);
   }
 
   ngOnInit(): void {

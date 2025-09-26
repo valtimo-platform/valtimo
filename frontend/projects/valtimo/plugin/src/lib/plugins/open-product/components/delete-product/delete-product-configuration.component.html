@@ -1,0 +1,26 @@
+<v-form
+        (valueChange)="formValueChange($event)"
+        *ngIf="{
+        disabled: disabled$ | async,
+        prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+    } as obs"
+>
+    <v-input
+            name="productUUID"
+            [title]="'productUUID' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.productUUID"
+            [disabled]="obs.disabled"
+            [required]="true"
+    >
+    </v-input>
+    <v-input
+            name="resultaatPV"
+            [title]="'resultaatPV' | pluginTranslate: pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.resultaatPV"
+            [disabled]="obs.disabled"
+            [required]="false"
+    >
+    </v-input>
+</v-form>
