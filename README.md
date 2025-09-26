@@ -20,10 +20,6 @@ More information about the backend and frontend can be found in their respective
 ### Contributing
 Contributions are welcome! To get you in the right direction, please consult the [Valtimo documentation](https://docs.valtimo.nl/contributing-to-valtimo/contributing-to-valtimo) for guidelines on how to contribute.
 
-#### Code guidelines
-<!--- TODO: write the coding guidelines--->
-For contributing code, please refer to the [coding guidelines](CODING-GUIDELINES.md).
-
 #### Branching strategy
 For more information on what branches to create while working in this project, please refer
 to [this page](https://docs.valtimo.nl/contributing-to-valtimo/branching-and-release-strategy).
