@@ -113,7 +113,7 @@ class ObjectenApiClient(
         objecttypesApiUrl: URI,
         objectsApiUrl: URI,
         objectypeId: String,
-        ordering: String? = "",
+        ordering: String? = null,
         pageable: Pageable
     ): ObjectsList {
         val objectTypeUrl = UriComponentsBuilder.newInstance()
@@ -123,15 +123,34 @@ class ObjectenApiClient(
             .pathSegment(objectypeId)
             .toUriString()
 
+        val ordering2 = if (ordering.isNullOrEmpty()) {
+            pageable.sort.joinToString(",") { sort ->
+                val sortProperty = sort.property
+                    .substringAfter(':')
+                    .replace("/", "__")
+                    .trim('_')
+                if (sort.isAscending) {
+                    sortProperty
+                } else {
+                    "-$sortProperty"
+                }
+            }
+        } else {
+            ordering
+        }
+
         val result = buildRestClient(authentication, objectsApiUrl.toASCIIString())
             .get()
             .uri { builder ->
-                builder.path("objects")
+                var builder = builder.path("objects")
                     .queryParam("type", objectTypeUrl)
-                    .queryParam("pageSize", pageable.pageSize)
-                    .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
-                    .queryParam("ordering", ordering)
-                    .build()
+                    .queryParam("ordering", ordering2)
+                if (!pageable.isUnpaged) {
+                    builder = builder
+                        .queryParam("pageSize", pageable.pageSize)
+                        .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
+                }
+                builder.build()
             }
             .header(ACCEPT_CRS, EPSG_4326)
             .retrieve()
@@ -159,7 +178,7 @@ class ObjectenApiClient(
         objectsApiUrl: URI,
         objectypeId: String,
         searchString: String,
-        ordering: String? = "",
+        ordering: String? = null,
         pageable: Pageable
     ): ObjectsList {
         val objectTypeUrl = UriComponentsBuilder.newInstance()
@@ -169,16 +188,35 @@ class ObjectenApiClient(
             .pathSegment(objectypeId)
             .toUriString()
 
+        val ordering2 = if (ordering.isNullOrEmpty()) {
+            pageable.sort.joinToString(",") { sort ->
+                val sortProperty = sort.property
+                    .substringAfter(':')
+                    .replace("/", "__")
+                    .trim('_')
+                if (sort.isAscending) {
+                    sortProperty
+                } else {
+                    "-$sortProperty"
+                }
+            }
+        } else {
+            ordering
+        }
+
         val result = buildRestClient(authentication, objectsApiUrl.toASCIIString())
             .get()
             .uri { builder ->
-                builder.path("objects")
+                var builder = builder.path("objects")
                     .queryParam("type", objectTypeUrl)
-                    .queryParam("pageSize", pageable.pageSize)
-                    .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
                     .queryParam("data_attrs", searchString)
-                    .queryParam("ordering", ordering)
-                    .build()
+                    .queryParam("ordering", ordering2)
+                if (!pageable.isUnpaged) {
+                    builder = builder
+                        .queryParam("pageSize", pageable.pageSize)
+                        .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
+                }
+                builder.build()
             }
             .header(ACCEPT_CRS, EPSG_4326)
             .retrieve()

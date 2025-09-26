@@ -51,7 +51,7 @@ class TaskSearchFieldImporter(
             val mappedField = searchField.toSearchFieldDto(ownerId, OWNER_TYPE_KEY, index)
             repository.findByOwnerTypeAndOwnerIdAndKeyOrderByOrder(OWNER_TYPE_KEY, ownerId, mappedField.key)
                 ?.let { _ ->
-                    searchFieldService.update(ownerId, searchField.key, mappedField)
+                    searchFieldService.update( mappedField)
                 } ?: searchFieldService.create(mappedField)
         }
     }

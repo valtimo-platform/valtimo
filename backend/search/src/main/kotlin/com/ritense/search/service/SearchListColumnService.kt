@@ -19,9 +19,7 @@ package com.ritense.search.service
 import com.ritense.search.domain.SearchListColumn
 import com.ritense.search.repository.SearchListColumnRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import java.util.Optional
 import java.util.UUID
 
@@ -31,34 +29,17 @@ class SearchListColumnService(
     private val searchListColumnRepository: SearchListColumnRepository
 ) {
 
-    fun create(searchListColumn: SearchListColumn): SearchListColumn = searchListColumnRepository.save(searchListColumn)
+    fun create(column: SearchListColumn): SearchListColumn {
+        require(findById(column.id).isEmpty)
+        require(findByOwnerIdAndKey(column.ownerId, column.key) == null)
+        return searchListColumnRepository.save(column)
+    }
 
-    fun update(ownerId: String, key: String, searchListColumn: SearchListColumn): SearchListColumn {
-        return findByOwnerIdAndKey(ownerId, key)?.let {
-            if (searchListColumn.ownerId != ownerId) {
-                throw ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "This ownerId already exists. Please choose another ownerId"
-                )
-            } else if (searchListColumn.key != key) {
-                throw ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "This key already exists. Please choose another key"
-                )
-            }
-
-            searchListColumnRepository.save(
-                it.copy(
-                    ownerId = searchListColumn.ownerId,
-                    key = searchListColumn.key,
-                    title = searchListColumn.title,
-                    path = searchListColumn.path,
-                    order = searchListColumn.order,
-                    displayType = searchListColumn.displayType,
-                    sortable = searchListColumn.sortable
-                )
-            )
-        } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Search list column not found")
+    fun update(column: SearchListColumn): SearchListColumn {
+        val existingColumn = findById(column.id).orElseThrow()
+            ?: findByOwnerIdAndKey(column.ownerId, column.key)
+            ?: throw IllegalStateException("Search list column not found")
+        return searchListColumnRepository.save(column.copy(id = existingColumn.id))
     }
 
     fun findByOwnerId(ownerId: String) = searchListColumnRepository.findAllByOwnerIdOrderByOrder(ownerId)
