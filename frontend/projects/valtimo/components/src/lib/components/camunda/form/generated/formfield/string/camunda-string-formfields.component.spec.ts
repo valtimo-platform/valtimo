@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {
-  FormsModule,
-  ReactiveFormsModule,
   UntypedFormBuilder,
   UntypedFormControl,
   UntypedFormGroup,
+  FormsModule,
+  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import {FormField} from '../formfield.model';
@@ -33,17 +33,13 @@ describe('CamundaStringFormfieldComponent', () => {
 
   let formGroup: UntypedFormGroup;
 
-  @Component({
-    selector: 'valtimo-camunda-formfield-validation',
-    template: '',
-    standalone: false,
-  })
+  @Component({selector: 'valtimo-camunda-formfield-validation', template: ''})
   class CamundaFormFieldValidationComponent {
     @Input() formField: FormField;
     @Input() formGroup: UntypedFormGroup;
   }
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [CamundaFormFieldValidationComponent, CamundaStringFormfieldComponent],
       imports: [ReactiveFormsModule, FormsModule],

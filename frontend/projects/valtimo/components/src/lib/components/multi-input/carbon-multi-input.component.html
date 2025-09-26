@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@
           <valtimo-single-value
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
+            [disabled]="disabled"
             (valueChange)="onValueChange($event.value, $event.inputValue, 'value')"
           ></valtimo-single-value>
         }
@@ -63,9 +63,7 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
-            [keyColumnFlex]="keyColumnFlex"
-            [valueColumnFlex]="valueColumnFlex"
+            [disabled]="disabled"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-key-value>
         }
@@ -79,10 +77,7 @@
             [dropdownItems$]="getDropdownItemsForRow(i)"
             [dropdownWidth]="dropdownWidth"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
-            [keyColumnFlex]="keyColumnFlex"
-            [dropdownColumnFlex]="dropdownColumnFlex"
-            [valueColumnFlex]="valueColumnFlex"
+            [disabled]="disabled"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-key-dropdown-value>
         }
@@ -91,7 +86,7 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
+            [disabled]="disabled"
             [arbitraryAmountTitles]="arbitraryAmountTitles"
             [amountOfArbitraryValuesArray$]="amountOfArbitraryValuesArray$"
             (valueChange)="
@@ -106,13 +101,11 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
-            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
             [prefixes]="valuePathSelectorPrefixes"
-            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
-            [keyColumnFlex]="keyColumnFlex"
-            [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-key-value-path-selector>
         }
@@ -123,13 +116,11 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
-            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
             [prefixes]="valuePathSelectorPrefixes"
-            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
-            [keyColumnFlex]="keyColumnFlex"
-            [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-value-path-selector-value>
         }
@@ -141,16 +132,13 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
-            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
             [prefixes]="valuePathSelectorPrefixes"
             [dropdownItems$]="getDropdownItemsForRow(i)"
             [dropdownWidth]="dropdownWidth"
-            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
-            [keyColumnFlex]="keyColumnFlex"
-            [dropdownColumnFlex]="dropdownColumnFlex"
-            [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
           ></valtimo-value-path-selector-dropdown-value>
         }
@@ -159,13 +147,13 @@
       <button
         *ngIf="!hideDeleteButton"
         cdsButton="danger"
-        [disabled]="values?.length <= this.minimumAmountOfRows || $disabled()"
+        [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
         [iconOnly]="true"
         size="md"
         (click)="deleteRow(value.uuid)"
         [title]="vars.deleteRowText"
       >
-        <svg cdsIcon="trash-can" size="16"></svg>
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
       </button>
     </div>
 
@@ -174,7 +162,7 @@
         *ngIf="!hideAddButton"
         cdsButton="primary"
         size="md"
-        [disabled]="(addRowEnabled$ | async) === false || $disabled()"
+        [disabled]="(addRowEnabled$ | async) === false || disabled"
         (click)="addRow()"
       >
         {{ vars.addRowText }}

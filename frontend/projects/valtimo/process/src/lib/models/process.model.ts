@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ interface ProcessDefinitionStartForm {
   genericForm: boolean;
 }
 
-type StartProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
+type StartProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
 
 interface ProcessDefinitionStartProcessLink {
   processLinkId: string;
@@ -72,7 +72,6 @@ interface ProcessDefinitionStartProcessLink {
     formName?: string;
     formDefinition?: object;
     url?: string;
-    componentKey?: string;
   };
 }
 
@@ -123,7 +122,6 @@ interface ProcessInstanceTask {
   tenantId: string;
   identityLinks: IdentityLink[];
   isLocked: boolean;
-  subtitles?: string[];
 }
 
 interface IdentityLink {

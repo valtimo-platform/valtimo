@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -107,37 +107,6 @@ export const documentenApiUploaderEditForm = () => ({
       inputType: 'checkbox',
       key: 'customOptions.camera',
       label: 'Allow camera uploads',
-      validate: {
-        required: false,
-      },
-    },
-    {
-      type: 'checkbox',
-      input: true,
-      inputType: 'checkbox',
-      key: 'disabled',
-      label: 'Disabled',
-      tooltip: 'Disable the upload field',
-      validate: {
-        required: false,
-      },
-    },
-    {
-      label: 'HTML',
-      tag: 'div',
-      content: '<h3>Process variables</h3>',
-      refreshOnChange: false,
-      type: 'htmlelement',
-      input: false,
-      tableView: false,
-    },
-    {
-      type: 'textfield',
-      input: true,
-      key: 'customOptions.documentUrlProcessVariable',
-      label: 'Document URL',
-      tooltip:
-        "Specify the process variable name where the Documenten API document URL will be stored. Defaults to 'documentUrl' if left empty.",
       validate: {
         required: false,
       },

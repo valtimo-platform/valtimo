@@ -1,0 +1,13 @@
+<ng-container *ngIf="{processKey: processKey$ | async} as vars">
+  <valtimo-process-management-list
+    *ngIf="!vars.processKey"
+    (addProcess)="onAddProcess()"
+    (editProcess)="onEditProcess($event)"
+  ></valtimo-process-management-list>
+
+  <valtimo-process-management-builder
+    *ngIf="!!vars.processKey"
+    [processKey]="vars.processKey"
+    [isFromCase]="true"
+  ></valtimo-process-management-builder>
+</ng-container>

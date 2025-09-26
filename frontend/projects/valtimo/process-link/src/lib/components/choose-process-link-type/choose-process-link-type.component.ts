@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-import {Component, Inject, OnDestroy, Optional} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {ProcessLinkStateService} from '../../services';
-import {FormCustomComponentConfig, ProcessLinkType} from '../../models';
-import {FORM_CUSTOM_COMPONENT_TOKEN} from '../../constants';
-import {map, Subscription} from 'rxjs';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-choose-process-link-type',
   templateUrl: './choose-process-link-type.component.html',
   styleUrls: ['./choose-process-link-type.component.scss'],
 })
 export class ChooseProcessLinkTypeComponent {
+  private readonly _isFromCase$ = new BehaviorSubject<boolean>(false);
+  @Input() public set isFromCase(value: boolean) {
+    this._isFromCase$.next(value);
+  }
+  public get isFromCase$(): Observable<boolean> {
+    return this._isFromCase$.asObservable();
+  }
   public readonly availableProcessLinkTypes$ =
     this.processLinkStateService.availableProcessLinkTypes$;
 
@@ -34,5 +38,9 @@ export class ChooseProcessLinkTypeComponent {
 
   selectProcessLinkType(processLinkTypeId: string): void {
     this.processLinkStateService.selectProcessLinkType(processLinkTypeId);
+  }
+
+  onBlockSelect(): void {
+    console.log('block selected');
   }
 }

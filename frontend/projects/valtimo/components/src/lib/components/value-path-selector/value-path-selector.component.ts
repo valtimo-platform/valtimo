@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import {DocumentService} from '@valtimo/document';
 import {
   DropdownModule,
   InputModule,
-  LayerModule,
   ListItem,
   LoadingModule,
   ToggleModule,
@@ -55,18 +54,16 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {distinctUntilChanged, take} from 'rxjs/operators';
+import {distinctUntilChanged} from 'rxjs/operators';
 import {
-  ValuePathItem,
-  ValuePathType,
+  ValueCollectionPath,
   ValuePathSelectorInputMode,
   ValuePathSelectorNotation,
   ValuePathSelectorPrefix,
+  ValueResolverOptionType,
 } from '../../models';
 import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
-import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-value-path-selector',
@@ -83,7 +80,6 @@ import {ActivatedRoute} from '@angular/router';
     InputLabelModule,
     InputLabelModule,
     TranslateModule,
-    LayerModule,
   ],
   providers: [
     {
@@ -147,158 +143,163 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       this.formGroup.enable();
     }
   }
-
-  private readonly _params$ = getCaseManagementRouteParams(this.route);
-
-  public readonly caseDefinitionKey$ = this._params$.pipe(map(params => params?.caseDefinitionKey ?? null));
-
-  public readonly caseDefinitionVersionTag$ = this._params$.pipe(
-    map(params => params?.caseDefinitionVersionTag ?? null)
-  );
-
-  @Input() set caseDefinitionKey(value: string | null) {
-    if (value) {
-      this._caseDefinitionKeySubject$.next(value);
-    } else {
-      this.caseDefinitionKey$.pipe(take(1)).subscribe(paramValue => {
-        if (paramValue) {
-          this._caseDefinitionKeySubject$.next(paramValue);
-        } else {
-          return;
-        }
-      });
-    }
+  @Input() public set documentDefinitionName(value: string) {
+    if (!value) return;
+    this._documentDefinitionNameSubject$.next(value);
   }
-  @Input() set caseDefinitionVersionTag(value: string | null) {
-    if (value) {
-      this._caseDefinitionVersionTag$.next(value);
-    } else {
-      this.caseDefinitionVersionTag$.pipe(take(1)).subscribe(paramValue => {
-        if (paramValue) {
-          this._caseDefinitionVersionTag$.next(paramValue);
-        } else {
-          return;
-        }
-      });
-    }
+  @Input() public set version(value: number) {
+    if (!value) return;
+    this._version$.next(value);
   }
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
-    this._prefixes$.next(value ?? []);
+    if (!value) return;
+    this._prefixesSubject$.next(value);
+  }
+  private readonly _valueType$ = new BehaviorSubject<ValueResolverOptionType>(
+    ValueResolverOptionType.FIELD
+  );
+  @Input() public set valueType(value: ValueResolverOptionType) {
+    this._valueType$.next(value);
   }
   @Input() public label = '';
   @Input() public tooltip = '';
   @Input() public required = false;
-  @Input() public showCaseDefinitionSelector = false;
+  @Input() public showDocumentDefinitionSelector = false;
   @Input() public notation: ValuePathSelectorNotation = 'dots';
+
+  private readonly _selectedCollectionPath$ = new BehaviorSubject<ValueCollectionPath | null>(null);
+  @Input() public set selectedCollectionPath(value: ValueCollectionPath | null) {
+    this._selectedCollectionPath$.next(value);
+
+    if (!value) return;
+    this._inputMode$.next(ValuePathSelectorInputMode.DROPDOWN);
+  }
 
   @Input() public set defaultValue(value: string) {
     if (!value) return;
     this.selectedPath.setValue(value);
-    if (this.showCaseDefinitionSelector) this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
-  }
-  private readonly _type$ = new BehaviorSubject<ValuePathType>(ValuePathType.FIELD);
-  @Input() public set type(value: ValuePathType) {
-    this._type$.next(value);
-  }
-  private readonly _parentItem$ = new BehaviorSubject<ValuePathItem | null>(null);
-  @Input() public set parentItem(value: ValuePathItem | null) {
-    this._parentItem$.next(value);
+    if (this.showDocumentDefinitionSelector)
+      this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
   }
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
-  @Output() collectionSelected: EventEmitter<ValuePathItem> = new EventEmitter();
+  @Output() collectionPathSelected: EventEmitter<ValueCollectionPath | {content: string} | null> =
+    new EventEmitter();
 
-  private readonly _caseDefinitionKeySubject$ = new BehaviorSubject<string| null>(null);
-  private get _caseDefinitionKey$(): Observable<string> {
-    return this._caseDefinitionKeySubject$.pipe(filter(value => !!value));
+  private readonly _documentDefinitionNameSubject$ = new BehaviorSubject<string>('');
+  private get _documentDefinitionName$(): Observable<string> {
+    return this._documentDefinitionNameSubject$.pipe(filter(value => !!value));
   }
-  private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
-
-  public readonly showToggle$ = this._caseDefinitionKey$
-    .pipe(
-      map(caseDefinitionKey => !!caseDefinitionKey),
-    );
-
-  private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
+  private readonly _version$ = new BehaviorSubject<number | null>(null);
+  private readonly _prefixesSubject$ = new BehaviorSubject<ValuePathSelectorPrefix[] | null>(null);
+  private get _prefixes$(): Observable<ValuePathSelectorPrefix[]> {
+    return this._prefixesSubject$.pipe(filter(value => !!value));
+  }
 
   private readonly _inputMode$ = new BehaviorSubject<ValuePathSelectorInputMode>(
     ValuePathSelectorInputMode.DROPDOWN
   );
-  public inputModeIsDropdown$: Observable<boolean> = this._inputMode$.pipe(
-    map(mode => {
-      return mode === ValuePathSelectorInputMode.DROPDOWN;
-    })
-  );
+  public get inputModeIsDropdown$(): Observable<boolean> {
+    return this._inputMode$.pipe(map(mode => mode === ValuePathSelectorInputMode.DROPDOWN));
+  }
 
   public readonly loadingValuePathItems$ = new BehaviorSubject<boolean>(true);
   public readonly disabled$ = new BehaviorSubject<boolean>(false);
 
-  private _cachedOptions: (ValuePathItem & {formattedPath: string})[] = [];
+  private _cachedOptions: string[] = [];
 
-  public valuePathListItems$: Observable<ListItem[]> = this._parentItem$.pipe(
+  public valuePathListItems$: Observable<ListItem[]> = combineLatest([
+    this._documentDefinitionName$,
+    this._prefixes$,
+    this._version$,
+    this._valueType$,
+    this._selectedCollectionPath$,
+  ]).pipe(
     tap(() => this.loadingValuePathItems$.next(true)),
-    switchMap((parentItem: ValuePathItem | null) =>
-      parentItem
-        ? of(parentItem.children?.map((child: string) => ({path: child})) ?? [])
-        : combineLatest([
-          this._caseDefinitionKey$,
-          this._prefixes$,
-          this._type$,
-          this._caseDefinitionVersionTag$,
-          this.showToggle$
-        ]).pipe(
-          filter(([, , , , showToggle]) => showToggle),
-          switchMap(([caseDefinitionKey, prefixes, type, caseDefinitionVersionTag]) =>
-            this.valuePathSelectorService.getResolvableKeys(
+    switchMap(([documentDefinitionName, prefixes, version, valueType, selectedCollection]) =>
+      !selectedCollection
+        ? typeof version === 'number'
+          ? this.valuePathSelectorService.getResolvableKeysPerPrefix(
               prefixes,
-              caseDefinitionKey,
-              type,
-              caseDefinitionVersionTag
+              documentDefinitionName,
+              valueType,
+              version
+            )
+          : this.valuePathSelectorService.getResolvableKeysPerPrefix(
+              prefixes,
+              documentDefinitionName,
+              valueType
+            )
+        : of(
+            this.valuePathSelectorService.getCollectionPathCacheResult(
+              selectedCollection.prefix,
+              documentDefinitionName,
+              version ?? 'latest',
+              selectedCollection.unformattedPath
             )
           )
-        )
     ),
-    map((results: ValuePathItem[]) =>
+    map((results: string[]) =>
       results
-        .map((result: ValuePathItem) => ({
-          ...result,
-          formattedPath: !this._parentItem$.getValue()
-            ? this.getFormattedPath(result.path)
-            : result.path,
-        }))
-        .sort((a, b) => a.formattedPath.localeCompare(b.formattedPath))
+        .map(result => this.getFormattedPath(result))
+        .sort((a, b) => a.content.localeCompare(b.content))
     ),
-    tap(options => (this._cachedOptions = options)),
+    tap(options => (this._cachedOptions = options.map(option => option.content))),
     switchMap(options =>
       combineLatest([of(options), this._selectedPath$, this.inputModeIsDropdown$])
     ),
     tap(([options, selectedPath, inputModeIsDropdown]) => {
-      const formattedOptions = options.map(option => option.formattedPath);
-      if (!formattedOptions.includes(selectedPath) && !!selectedPath && inputModeIsDropdown)
+      if (
+        !options.map(option => option.content).includes(selectedPath) &&
+        !!selectedPath &&
+        inputModeIsDropdown
+      )
         this._inputMode$.next(ValuePathSelectorInputMode.MANUAL);
     }),
     map(([options, selectedPath]) =>
-      options.map(option => {
-        const mappedOption = {
-          content: option.formattedPath,
-          selected: option.formattedPath === selectedPath,
-          path: option.path,
-          ...(!!option.children && {children: option.children}),
-        };
-
-        if (mappedOption.selected) this.onPathSelected({item: mappedOption});
-        return mappedOption;
-      })
+      options.map(option => ({
+        content: option.content,
+        selected: option.content === selectedPath,
+        prefix: option.prefix,
+        unformattedPath: option.unformattedPath,
+      }))
     ),
-    tap(() => this.loadingValuePathItems$.next(false))
+    tap((options: ListItem[]) => {
+      const option = options.find((option: ListItem) => option.selected);
+      if (!!option) this.onPathSelected({item: option});
+      this.loadingValuePathItems$.next(false);
+    })
   );
+
+  public readonly loadingDocumentDefinitionItems$ = new BehaviorSubject<boolean>(true);
+
+  public readonly documentDefinitionListItems$: Observable<ListItem[]> =
+    this.valuePathSelectorService.getDocumentDefinitionCache().pipe(
+      switchMap(cache =>
+        combineLatest([
+          cache ? of(cache) : this.documentService.getAllDefinitions(),
+          this._documentDefinitionName$.pipe(startWith(null)),
+        ]).pipe(
+          tap(([definitions]) => {
+            this.loadingDocumentDefinitionItems$.next(false);
+            this.valuePathSelectorService.setDocumentDefinitionCache(definitions);
+          }),
+          map(([definitions, documentDefinitionName]) =>
+            definitions.content.map(definition => ({
+              content: definition.id.name,
+              id: definition.id.name,
+              selected: definition.id.name === documentDefinitionName,
+            }))
+          )
+        )
+      )
+    );
 
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly valuePathSelectorService: ValuePathSelectorService,
     private readonly formBuilder: FormBuilder,
-    private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute,
+    private readonly documentService: DocumentService
   ) {}
 
   public ngOnInit(): void {
@@ -337,29 +338,28 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
-  public onPathSelected(event: {item: {content: string} & ValuePathItem}): void {
+  public onPathSelected(event: {item: ValueCollectionPath | {content: string}}): void {
     const selectedPath = event?.item?.content;
-    if (!selectedPath) return;
 
-    if (this.collectionSelected.observed) this.collectionSelected.emit(event.item);
+    if (this.collectionPathSelected.observed)
+      this.collectionPathSelected.emit(!!selectedPath ? event.item : null);
+
+    if (!selectedPath) return;
 
     this.selectedPath.setValue(selectedPath);
   }
 
-  public onCaseDefinitionSelected(event: {item: {id: string}}): void {
+  public onDocumentDefinitionSelected(event: {item: {id: string}}): void {
     const selectedDef = event?.item?.id;
     if (!selectedDef) return;
     this.selectedPath.setValue('');
-    this._caseDefinitionKeySubject$.next(selectedDef);
+    this._documentDefinitionNameSubject$.next(selectedDef);
   }
 
   public onInputModeChange(toDropdownMode: boolean): void {
     const currentPathValue = this.selectedPath.value;
 
-    if (
-      toDropdownMode &&
-      !this._cachedOptions.map(option => option.formattedPath).includes(currentPathValue)
-    ) {
+    if (toDropdownMode && !this._cachedOptions.includes(currentPathValue)) {
       this.selectedPath.setValue('');
     }
 
@@ -368,10 +368,18 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     );
   }
 
-  private getFormattedPath(unformattedPath: string): string {
+  private getFormattedPath(unformattedPath: string): ValueCollectionPath {
     const splitPathPrefix = unformattedPath.split(':');
     const prefix = splitPathPrefix[0];
     const remainingPath = splitPathPrefix[1];
+
+    if (!remainingPath)
+      return {
+        prefix,
+        unformattedPath,
+        content: unformattedPath,
+      };
+
     const requiredNotation = this.notation;
     const pathNotation: ValuePathSelectorNotation = remainingPath.includes('/')
       ? 'slashes'
@@ -386,6 +394,10 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       ''
     );
 
-    return `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`;
+    return {
+      prefix,
+      unformattedPath,
+      content: `${prefix}:${requiredNotation === 'dots' ? formattedPath.substring(1) : formattedPath}`,
+    };
   }
 }

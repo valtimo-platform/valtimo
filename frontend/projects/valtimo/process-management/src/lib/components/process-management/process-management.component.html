@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,18 +14,6 @@
   ~ limitations under the License.
   -->
 
-<ng-container
-  *ngIf="{
-    paramsAreSet: paramsAreSet$ | async,
-  } as obs"
->
-  @if (obs.paramsAreSet) {
-    <valtimo-process-management-list
-      (processSelected)="onProcessSelected($event)"
-    ></valtimo-process-management-list>
+<valtimo-process-management-list #processManagementList></valtimo-process-management-list>
 
-    <valtimo-process-management-upload></valtimo-process-management-upload>
-  } @else {
-    <cds-loading></cds-loading>
-  }
-</ng-container>
+<valtimo-process-management-upload></valtimo-process-management-upload>

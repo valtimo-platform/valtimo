@@ -3,5 +3,6 @@
   "dest": "../../../dist/valtimo/logging",
   "lib": {
     "entryFile": "src/public_api.ts"
-  }
+  },
+  "allowedNonPeerDependencies": ["ngx-json-viewer"]
 }

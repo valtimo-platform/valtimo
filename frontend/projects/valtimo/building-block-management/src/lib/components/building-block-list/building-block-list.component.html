@@ -1,0 +1,8 @@
+<valtimo-carbon-list
+  [items]="buildingBlocks$ | async"
+  [fields]="FIELDS"
+  [hideToolbar]="true"
+  [header]="false"
+  [loading]="loading$ | async"
+  (rowClicked)="onRowClicked($event)"
+></valtimo-carbon-list>

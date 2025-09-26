@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import {PageHeaderService} from '../../services';
 import {combineLatest, Subscription} from 'rxjs';
 import {DOCUMENT} from '@angular/common';
 
-@Directive({selector: '[fitPage]', standalone: true})
+@Directive({selector: '[fitPage]'})
 export class FitPageDirective implements AfterViewInit, OnDestroy {
   @Input() extraSpace: number = 0;
   @Input() disabled = false;

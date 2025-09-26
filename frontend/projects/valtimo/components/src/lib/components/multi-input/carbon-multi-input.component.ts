@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@
 import {
   Component,
   EventEmitter,
-  forwardRef,
   Input,
   OnDestroy,
   OnInit,
   Output,
-  signal,
   ViewEncapsulation,
 } from '@angular/core';
 import {
@@ -39,21 +37,12 @@ import {
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
-import {NG_VALUE_ACCESSOR} from '@angular/forms';
 
 @Component({
   selector: 'valtimo-carbon-multi-input',
   templateUrl: './carbon-multi-input.component.html',
   styleUrls: ['./carbon-multi-input.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CarbonMultiInputComponent),
-      multi: true,
-    },
-  ],
 })
 export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public addRowText = '';
@@ -63,20 +52,10 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
     this._amountOfArbitraryValues = value;
     this.amountOfArbitraryValuesArray$.next(this.getArrayOfXLength(value));
   }
-
-  private readonly _defaultValues$ = new BehaviorSubject<MultiInputValues>([]);
-
-  @Input() public set defaultValues(value: MultiInputValues) {
-    if (!Array.isArray(value)) return;
-    this._defaultValues$.next(value);
-  }
-
+  @Input() public defaultValues!: MultiInputValues;
   @Input() public deleteRowText = '';
   @Input() public deleteRowTranslationKey = '';
-  public readonly $disabled = signal<boolean>(false);
-  @Input() public set disabled(value: boolean) {
-    this.$disabled.set(value);
-  }
+  @Input() public disabled = false;
   @Input() public dropdownColumnTitle = '';
   @Input() public set dropdownItems(value: Array<ListItemWithId>) {
     this.dropdownItems$.next(value);
@@ -98,14 +77,10 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public type: MultiInputType = 'value';
   @Input() public valueColumnTitle = '';
 
-  @Input() public readonly valuePathSelectorCaseDefinitionKey = '';
+  @Input() public readonly valuePathSelectorDocumentDefinitionName = '';
   @Input() public readonly valuePathSelectorPrefixes: ValuePathSelectorPrefix[] = [];
-  @Input() public readonly valuePathSelectorShowCaseDefinitionSelector = false;
+  @Input() public readonly valuePathSelectorShowDocumentDefinitionSelector = false;
   @Input() public readonly valuePathSelectorNotation: ValuePathSelectorNotation = 'dots';
-
-  @Input() public readonly keyColumnFlex = 1;
-  @Input() public readonly dropdownColumnFlex = 1;
-  @Input() public readonly valueColumnFlex = 1;
 
   @Output() public valueChange: EventEmitter<MultiInputOutput> = new EventEmitter();
   @Output() public allValuesValidEvent: EventEmitter<boolean> = new EventEmitter();
@@ -125,32 +100,9 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
 
   private readonly _subscriptions = new Subscription();
 
-  private _onChange: (value: MultiInputOutput) => void = () => {};
-  private _onTouched: () => void = () => {};
-
-  public writeValue(value: MultiInputValues): void {
-    if (Array.isArray(value)) {
-      const withUuids = value.map(item => ({...item, uuid: uuidv4()}));
-      this.values$.next(withUuids);
-    }
-  }
-
-  public registerOnChange(fn: (value: MultiInputValues) => void): void {
-    this._onChange = fn;
-  }
-
-  public registerOnTouched(fn: () => void): void {
-    this._onTouched = fn;
-  }
-
-  public setDisabledState(isDisabled: boolean): void {
-    this.disabled = isDisabled;
-  }
-
   public ngOnInit(): void {
     this.values$.next(this.getInitialRows());
     this.openValuesSubscription();
-    this.openDefaultValuesSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -199,22 +151,22 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
     arbitraryIndex?: number
   ): void {
     this.values$.pipe(take(1)).subscribe(values => {
-      const updatedValues = values.map(stateValue => {
-        if (stateValue.uuid === templateValue.uuid) {
-          if (change === 'value') {
-            return {...stateValue, value: inputValue};
-          } else if (change === 'key') {
-            return {...stateValue, key: inputValue};
-          } else if (change === 'dropdown') {
-            return {...stateValue, dropdown: inputValue};
-          } else if (change === 'arbitrary') {
-            return {...stateValue, [arbitraryIndex]: inputValue};
+      this.values$.next(
+        values.map(stateValue => {
+          if (stateValue.uuid === templateValue.uuid) {
+            if (change === 'value') {
+              return {...stateValue, value: inputValue};
+            } else if (change === 'key') {
+              return {...stateValue, key: inputValue};
+            } else if (change === 'dropdown') {
+              return {...stateValue, dropdown: inputValue};
+            } else if (change === 'arbitrary') {
+              return {...stateValue, [arbitraryIndex]: inputValue};
+            }
           }
-        }
-        return stateValue;
-      });
-
-      this.values$.next(updatedValues);
+          return stateValue;
+        })
+      );
     });
   }
 
@@ -223,7 +175,11 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
     const initialRows = this.initialAmountOfRows;
     const amountOfInitialRows = Math.max(minimumRows, initialRows);
 
-    return new Array(amountOfInitialRows).fill(this.getEmptyValue());
+    if (!this.defaultValues) {
+      return new Array(amountOfInitialRows).fill(this.getEmptyValue());
+    }
+
+    return this.defaultValues.map(defaultValue => ({...defaultValue, uuid: uuidv4()}));
   }
 
   private getEmptyValue(): MultiInputKeyValue {
@@ -248,11 +204,7 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   }
 
   private getMappedValue(valueToMap: MultiInputKeyValue): MultiInputKeyValue | string {
-    if (
-      this.type === 'keyValue' ||
-      this.type === 'keyValuePathSelector' ||
-      this.type === 'valuePathSelectorValue'
-    ) {
+    if (this.type === 'keyValue' || this.type === 'keyValuePathSelector') {
       return {key: valueToMap.key, value: valueToMap.value};
     } else if (this.type === 'keyDropdownValue' || this.type === 'valuePathSelectorDropdownValue') {
       return {key: valueToMap.key, value: valueToMap.value, dropdown: valueToMap.dropdown};
@@ -270,8 +222,6 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
       combineLatest([this.values$, this.mappedValues$]).subscribe(([values, mappedValues]) => {
         this.valueChange.emit(mappedValues);
         this.allValuesValidEvent.emit(values.length === mappedValues.length);
-        this._onChange(mappedValues);
-        this._onTouched();
       })
     );
   }
@@ -292,7 +242,6 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
         return !!value;
       case 'keyValue':
       case 'keyValuePathSelector':
-      case 'valuePathSelectorValue':
         return !!((value as MultiInputKeyValue).value || (value as MultiInputKeyValue).key);
       case 'keyDropdownValue':
       case 'valuePathSelectorDropdownValue':
@@ -308,14 +257,5 @@ export class CarbonMultiInputComponent implements OnInit, OnDestroy {
       default:
         return false;
     }
-  }
-
-  private openDefaultValuesSubscription(): void {
-    this._subscriptions.add(
-      this._defaultValues$.subscribe(defaultValues => {
-        if (defaultValues.length < this.minimumAmountOfRows) return;
-        this.values$.next(defaultValues.map(defaultValue => ({...defaultValue, uuid: uuidv4()})));
-      })
-    );
   }
 }

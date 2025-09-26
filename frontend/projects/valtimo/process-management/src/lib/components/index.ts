@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,5 +14,7 @@
  * limitations under the License.
  */
 
-export * from './process-management-builder/process-management-builder.component';
-export * from './process-management/process-management.component';
+export * from './process-management';
+export * from './process-management-builder';
+export * from './process-management-list';
+export * from './process-management-upload';

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,43 +14,45 @@
  * limitations under the License.
  */
 
-import {Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ActivatedRoute, RouterModule} from '@angular/router';
-import {DecisionService} from '../services/decision.service';
-import {DecisionXml} from '../models';
+import {Component, Input, OnInit, ViewEncapsulation} from '@angular/core';
+import {DecisionService} from '../decision.service';
 import DmnViewer from 'dmn-js';
+import {DecisionXml} from '../models';
+import {ActivatedRoute} from '@angular/router';
+import {ToastrService} from 'ngx-toastr';
 import {migrateDiagram} from '@bpmn-io/dmn-migrate';
-import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-decision-display',
-  standalone: true,
   templateUrl: './decision-display.component.html',
   styleUrls: ['./decision-display.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  imports: [CommonModule, RouterModule, TranslateModule],
 })
 export class DecisionDisplayComponent implements OnInit {
   public viewer: DmnViewer;
-  private decisionId: string;
+  private _decisionId: string;
   public decisionXml: string;
+  @Input() public set decisionId(value: string | null) {
+    if (!value) return;
+    this._decisionId = value;
+  }
 
   constructor(
     private readonly decisionService: DecisionService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly toasterService: ToastrService
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.viewer = new DmnViewer({
       container: '#canvas',
     });
-    this.decisionId = this.route.snapshot.paramMap.get('id')!;
+    // this._decisionId = this.route.snapshot.paramMap.get('id');
     this.loadDecisionXml();
   }
 
   loadDecisionXml(): void {
-    this.decisionService.getDecisionXml(this.decisionId).subscribe((decision: DecisionXml) => {
+    this.decisionService.getDecisionXml(this._decisionId).subscribe((decision: DecisionXml) => {
       this.viewer.importXML(decision.dmnXml, error => {
         if (error) {
           this.migrateAndLoadDecisionXml(decision);
@@ -60,13 +62,13 @@ export class DecisionDisplayComponent implements OnInit {
     });
   }
 
-  async migrateAndLoadDecisionXml(decision: DecisionXml): Promise<void> {
+  async migrateAndLoadDecisionXml(decision: DecisionXml) {
     const decisionXml = await migrateDiagram(decision.dmnXml);
 
     if (decisionXml) {
       this.viewer.importXML(decisionXml, error => {
         if (error) {
-          console.error('Error importing migrated XML', error);
+          console.log('error');
         }
       });
       this.decisionXml = decisionXml;
@@ -76,7 +78,7 @@ export class DecisionDisplayComponent implements OnInit {
   download(): void {
     const file = new Blob([this.decisionXml], {type: 'text/xml'});
     const link = document.createElement('a');
-    link.download = `decision_table_${this.decisionId}.dmn`;
+    link.download = `decision_table_${this._decisionId}.dmn`;
     link.href = window.URL.createObjectURL(file);
     link.click();
     window.URL.revokeObjectURL(link.href);

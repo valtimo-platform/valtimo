@@ -1,0 +1,5 @@
+9b365b1 - Updated version to 4.21.0
+d653951 - Updated version to 4.21.0-23.RC-SNAPSHOT
+de12530 - Merge branch 'main' into development
+9733f9c - Feature/save jwt token to localstorage (#80)
+a1d4aa6 - Modified setToken() in form-io.component.ts so the jwt token is being updated in localStorage (#79)

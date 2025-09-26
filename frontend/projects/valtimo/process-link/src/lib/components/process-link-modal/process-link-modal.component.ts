@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {
   PluginStateService,
   ProcessLinkButtonService,
@@ -23,16 +23,25 @@ import {
   ProcessLinkStepService,
 } from '../../services';
 import {take} from 'rxjs/operators';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {ProcessLinkEditMode} from '../../models';
+import {BehaviorSubject, Observable} from 'rxjs';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-process-link-modal',
   templateUrl: './process-link-modal.component.html',
   styleUrls: ['./process-link-modal.component.scss'],
 })
 export class ProcessLinkModalComponent {
+  private readonly _isFromCase$ = new BehaviorSubject<boolean>(false);
+  @Input() public set isFromCase(value: boolean) {
+    console.log('processLinkModal', value);
+    this._isFromCase$.next(value);
+  }
+  public get isFromCase$(): Observable<boolean> {
+    return this._isFromCase$.asObservable();
+  }
+
   public readonly showModal$ = this.stateService.showModal$;
   public readonly processStepName$ = this.stateService.elementName$;
   public readonly steps$ = this.stepService.steps$;
@@ -80,16 +89,13 @@ export class ProcessLinkModalComponent {
   }
 
   unlinkButtonClick(): void {
-    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      if (this.processLinkStateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.processLinkStateService.sendProcessLinkDeleteEvent({
-          activityId: selectedProcessLink.activityId,
-        });
+    this.stateService.startSaving();
 
+    this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
+      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
+        this.stateService.sendProcessLinkDeleteEvent({activityId: selectedProcessLink.activityId});
         return;
       }
-
-      this.stateService.startSaving();
 
       this.processLinkService.deleteProcessLink(selectedProcessLink.id).subscribe(
         () => {

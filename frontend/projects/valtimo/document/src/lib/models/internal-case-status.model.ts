@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,30 @@
  */
 
 import {TagType} from 'carbon-components-angular';
-import {TagColor} from '@valtimo/shared';
+
+enum InternalCaseStatusColor {
+  WarmGray = 'WARMGRAY',
+  Red = 'RED',
+  Magenta = 'MAGENTA',
+  Purple = 'PURPLE',
+  Blue = 'BLUE',
+  Cyan = 'CYAN',
+  Teal = 'TEAL',
+  Green = 'GREEN',
+  Gray = 'GRAY',
+  CoolGray = 'COOLGRAY',
+  HighContrast = 'HIGHCONTRAST',
+  Outline = 'OUTLINE',
+}
 
 interface InternalCaseStatus {
   key: string;
   title: string;
   visibleInCaseListByDefault: boolean;
-  color: TagColor;
+  color: InternalCaseStatusColor;
   documentDefinitionName?: string;
   order?: number;
   tagType?: TagType;
 }
 
-export {InternalCaseStatus};
+export {InternalCaseStatus, InternalCaseStatusColor};

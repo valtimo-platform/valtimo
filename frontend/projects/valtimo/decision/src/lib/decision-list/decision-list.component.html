@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,19 +15,15 @@
   -->
 
 <valtimo-carbon-list
-  [items]="(decisionsLatestVersions$ | async) || []"
-  [loading]="loading$ | async"
+  [items]="decisionsLatestVersions$ | async"
   [fields]="fields"
+  [loading]="loading$ | async"
   (rowClicked)="viewDecisionTable($event)"
   [header]="false"
   [isSearchable]="true"
 >
   <ng-container carbonToolbarContent>
-    <button
-      *ngIf="hasEditPermissions$ | async"
-      cdsButton="primary"
-      (click)="this.deploy.openModal()"
-    >
+    <button cdsButton="primary" (click)="this.deploy.openModal()">
       {{ 'Upload' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>

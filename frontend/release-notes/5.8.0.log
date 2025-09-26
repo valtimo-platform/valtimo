@@ -1,0 +1,13 @@
+44a4696 - Updated version to 5.8.0
+a5cca97 - Merge branch 'main' into rc/5.8.0-81.RC
+98e9b48 - Updated version to 5.8.0-81.RC-SNAPSHOT
+3050379 - Added release notes file
+ff2e22b - Updated version to 5.6.0
+0f85f0f - lint fix
+9ad1a3c - Feature/36873 new design components (#179)
+f625456 - fix typo
+1a659d9 - Removed FormIO key field validation to allow for expressions in keys (#180)
+866c5d0 - feat: add logout expiration prompt (#178)
+26c2b92 - Feature/36693 additional tooltips (#177)
+186dc73 - feature 36775 - Process links now only include plugin configurations with actions (#172)
+523f342 - Updated version to 5.6.0-66.RC-SNAPSHOT

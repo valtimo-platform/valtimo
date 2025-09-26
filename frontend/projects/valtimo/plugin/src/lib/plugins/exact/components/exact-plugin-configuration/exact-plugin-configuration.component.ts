@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,8 @@ import {PluginConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {ExactPluginService} from '../../exact-plugin.service';
 import {ExactPluginConfig} from '../../exact-plugin';
-import {Checkmark16} from '@carbon/icons';
-import {IconService} from 'carbon-components-angular';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-exact-plugin-configuration',
   templateUrl: './exact-plugin-configuration.component.html',
 })
@@ -43,12 +40,7 @@ export class ExactPluginConfigurationComponent
   private readonly valid$ = new BehaviorSubject<boolean>(false);
   private storageCallbackFun!: (any) => void;
 
-  constructor(
-    private readonly exactPluginService: ExactPluginService,
-    private readonly iconService: IconService
-  ) {
-    this.iconService.registerAll([Checkmark16]);
-  }
+  constructor(private exactPluginService: ExactPluginService) {}
 
   ngOnInit(): void {
     this.openSaveSubscription();

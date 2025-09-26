@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,48 +15,21 @@
   -->
 
 <valtimo-carbon-list
-  [actionItems]="ACTION_ITEMS"
-  [showActionItems]="hasEditPermissions$ | async"
-  [fields]="FIELDS"
-  [header]="false"
-  [items]="processDefinitions$ | async"
+  [items]="(processDefinitions$ | async) || []"
   [loading]="loading$ | async"
+  [fields]="FIELDS"
   (rowClicked)="editProcessDefinition($event)"
+  [isSearchable]="true"
 >
   <ng-container carbonToolbarContent>
-    <button
-      *ngIf="hasEditPermissions$ | async"
-      cdsButton="ghost"
-      iconOnly="true"
-      (click)="openModal()"
-    >
-      <svg cdsIcon="upload" size="16"></svg>
+    <button cdsButton="ghost" [iconOnly]="true" (click)="openModal()">
+      <svg class="cds--btn__icon" cdsIcon="upload" size="16"></svg>
     </button>
+    <!-- [routerLink]="'create'" -->
+    <button cdsButton="primary" (click)="onCreateClick()">
+      {{ 'Create new Process' | translate }}
 
-    <ng-container [ngTemplateOutlet]="createProcess"></ng-container>
+      <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+    </button>
   </ng-container>
-
-  <valtimo-no-results
-    [action]="createProcess"
-    [title]="'processManagement.noResults.title' | translate"
-    [description]="'processManagement.noResults.' + $context() + 'Description' | translate"
-  ></valtimo-no-results>
 </valtimo-carbon-list>
-
-<valtimo-confirmation-modal
-  confirmButtonTextTranslationKey="interface.delete"
-  confirmButtonType="danger"
-  contentTranslationKey="processManagement.deleteModal.content"
-  [outputOnConfirm]="processToDelete$ | async"
-  [showModalSubject$]="showDeleteModal$"
-  titleTranslationKey="processManagement.deleteModal.title"
-  (confirmEvent)="onDeleteConfirm($event)"
-></valtimo-confirmation-modal>
-
-<ng-template #createProcess>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="onCreateProcess()">
-    {{ 'processManagement.createProcess' | translate }}
-
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-  </button>
-</ng-template>
