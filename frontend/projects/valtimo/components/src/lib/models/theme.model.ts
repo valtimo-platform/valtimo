@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ enum SelectableCarbonTheme {
 enum CurrentCarbonTheme {
   G10 = 'g10',
   G90 = 'g90',
-  G100 = 'g100',
-  WHITE = 'white',
 }
 
 export {SelectableCarbonTheme, CurrentCarbonTheme};

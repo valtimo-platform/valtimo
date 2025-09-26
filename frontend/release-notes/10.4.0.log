@@ -1,0 +1,17 @@
+87f66114 - Updated version to 10.4.0
+817609b1 - Updated version to 10.4.0-130.RC-SNAPSHOT
+917b5a37 - Merge branch 'main' into development
+a9425316 - adjust plugin (#390)
+6b3e0954 - feat: ibm blue to ritense blue (#389)
+fb436fc0 - address feedback (#387)
+f0e2147b - add action (#386)
+b180c211 - feat: 47740 Complete Portal task (#388)
+bc590c21 - feat: 47863 new plugin action create zaak (#385)
+441a2030 - feat: add verzoeken plugin configuration component (#384)
+d73f1cef - Feature/object management list fields tab (#382)
+3aa2f2d6 - fix: lint (#381)
+58e069be - fixes: create-portaaltaak (#380)
+dc0197cc - #47348 fix: dropdown (#375)
+5689aa05 - 49149: objectmanagement - added objecttypeVersion (#379)
+18f1ea51 - feat: add create portal task plugin (#376)
+26beb89c - fix (#378)

@@ -1,5 +1,5 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,36 +20,36 @@ import {GetEigenschapConfig} from '../../models';
 import {FunctionConfigurationComponent} from '../../../../models';
 
 @Component({
-  standalone: false,
-  selector: 'valtimo-get-eigenschap-configuration',
+  selector: 'get-eigenschap',
   templateUrl: './get-eigenschap-configuration.component.html',
-  styleUrls: ['./get-eigenschap-configuration.component.scss'],
+  styleUrls: ['./get-eigenschap-configuration.component.scss']
 })
+
 export class GetEigenschapConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() public save$: Observable<void>;
-  @Input() public disabled$: Observable<boolean>;
-  @Input() public pluginId: string;
-  @Input() public prefillConfiguration$: Observable<GetEigenschapConfig>;
-  @Output() public valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() public configuration: EventEmitter<GetEigenschapConfig> =
+  @Input() save$: Observable<void>;
+  @Input() disabled$: Observable<boolean>;
+  @Input() pluginId: string;
+  @Input() prefillConfiguration$: Observable<GetEigenschapConfig>;
+  @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() configuration: EventEmitter<GetEigenschapConfig> =
     new EventEmitter<GetEigenschapConfig>();
 
-  private _saveSubscription!: Subscription;
+  private saveSubscription!: Subscription;
 
   private readonly formValue$ = new BehaviorSubject<GetEigenschapConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
+  private readonly  valid$ = new BehaviorSubject<boolean>(false);
 
-  public ngOnInit(): void {
+  ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  public ngOnDestroy() {
-    this._saveSubscription?.unsubscribe();
+  ngOnDestroy() {
+    this.saveSubscription?.unsubscribe();
   }
 
-  public formValueChange(formValue: GetEigenschapConfig): void {
+  formValueChange(formValue: GetEigenschapConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
@@ -62,7 +62,7 @@ export class GetEigenschapConfigurationComponent
   }
 
   private openSaveSubscription(): void {
-    this._saveSubscription = this.save$?.subscribe(save => {
+    this.saveSubscription = this.save$?.subscribe(save => {
       combineLatest([this.formValue$, this.valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {

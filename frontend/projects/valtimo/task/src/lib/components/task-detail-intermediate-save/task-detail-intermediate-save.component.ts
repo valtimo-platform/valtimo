@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,18 @@ import {
 import {RecentlyViewed16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ConfirmationModalModule, TooltipModule} from '@valtimo/components';
-import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
-import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link';
+import {ConfigService} from '@valtimo/config';
 import {ButtonModule, IconModule, IconService, ModalModule} from 'carbon-components-angular';
 import moment from 'moment';
+import {ToastrService} from 'ngx-toastr';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
 import {IntermediateSaveRequest, IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
+import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link';
 
 @Component({
   selector: 'valtimo-task-detail-intermediate-save',
   templateUrl: './task-detail-intermediate-save.component.html',
-  styleUrls: ['./task-detail-intermediate-save.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -95,11 +95,11 @@ export class TaskDetailIntermediateSaveComponent {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
+    private readonly translateService: TranslateService,
     private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
     private readonly taskService: TaskService,
-    private readonly translateService: TranslateService
+    private readonly toastr: ToastrService
   ) {
     this.intermediateSaveEnabled = !!this.configService.featureToggles?.enableIntermediateSave;
     this.iconService.registerAll([RecentlyViewed16]);
@@ -122,18 +122,14 @@ export class TaskDetailIntermediateSaveComponent {
       )
       .subscribe({
         next: intermediateSubmission => {
-          this.globalNotificationService.showToast({
-            title: this.translateService.instant('formManagement.intermediateSave.success'),
-            type: 'success',
-          });
+          this.toastr.success(
+            this.translateService.instant('formManagement.intermediateSave.success')
+          );
           this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSubmission);
           this.currentIntermediateSaveEvent.emit(this.currentIntermediateSave);
         },
         error: () => {
-          this.globalNotificationService.showToast({
-            title: this.translateService.instant('formManagement.intermediateSave.error'),
-            type: 'error',
-          });
+          this.toastr.error(this.translateService.instant('formManagement.intermediateSave.error'));
         },
       });
   }

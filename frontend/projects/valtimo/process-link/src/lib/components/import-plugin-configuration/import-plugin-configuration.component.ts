@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,20 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, EventEmitter, Input, Output} from '@angular/core';
 import {AbstractControl, FormBuilder, FormControl, Validators} from '@angular/forms';
 import {BehaviorSubject, combineLatest, map, Observable, startWith, Subject} from 'rxjs';
 import {CompatiblePluginProcessLinks, ProcessLink} from '../../models';
 import {ProcessLinkService} from '../../services';
 import {IconService, ListItem} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
-import {CdsThemeService} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-import-plugin-configuration',
   templateUrl: './import-plugin-configuration.component.html',
   styleUrls: ['./import-plugin-configuration.component.scss'],
 })
-export class ImportPluginConfigurationComponent {
+export class ImportPluginConfigurationComponent implements AfterViewInit {
   @Input() public set pluginActionKey(value: string) {
     this.importPluginForm.reset();
     this.fetchCompatiblePluginProcessLinks(value);
@@ -116,15 +114,19 @@ export class ImportPluginConfigurationComponent {
     )
   );
 
-  public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
-
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly processLinkService: ProcessLinkService,
     private readonly iconService: IconService,
-    private readonly cdsThemeService: CdsThemeService
+    private readonly elementRef: ElementRef<HTMLElement>
   ) {
     this.iconService.register(Upload16);
+  }
+
+  public ngAfterViewInit(): void {
+    const button = this.elementRef.nativeElement.querySelector('button.cds--toggletip-button');
+    if (!button) return;
+    button.classList.remove('cds--toggletip-button');
   }
 
   public onSubmit(): void {

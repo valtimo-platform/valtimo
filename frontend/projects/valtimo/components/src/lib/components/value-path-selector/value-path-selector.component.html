@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,21 +20,19 @@
     valuePathListItems: valuePathListItems$ | async,
     loadingValuePathItems: loadingValuePathItems$ | async,
     disabled: disabled$ | async,
-    showToggle: showToggle$ | async
   } as obs"
 >
   <v-input-label [required]="required" [title]="label" [tooltip]="tooltip"> </v-input-label>
 
   <form
     [formGroup]="formGroup"
-    [ngClass]="{
-    'value-path-selector__form--case-def-input':
-       showCaseDefinitionSelector && obs.inputModeIsDropdown  && !obs.showToggle
-    }"
     class="value-path-selector__form"
+    [ngClass]="{
+      'value-path-selector__form--doc-def-selection':
+        showDocumentDefinitionSelector && obs.inputModeIsDropdown,
+    }"
   >
     <cds-toggle
-      *ngIf="obs.showToggle"
       data-testid="value-path-selector-toggle"
       size="sm"
       [disabled]="obs.disabled"
@@ -44,7 +42,31 @@
       (checkedChange)="onInputModeChange($event)"
     ></cds-toggle>
 
-    @if (obs.inputModeIsDropdown && obs.showToggle) {
+    @if (obs.inputModeIsDropdown) {
+      <ng-container
+        *ngIf="
+          showDocumentDefinitionSelector && {
+            loadingDocumentDefinitionItems: loadingDocumentDefinitionItems$ | async,
+            documentDefinitionListItems: documentDefinitionListItems$ | async,
+          } as docObs
+        "
+      >
+        <cds-dropdown
+          data-testid="value-path-selector-documentDefinition"
+          [appendInline]="appendInline"
+          [disabled]="
+            obs.disabled ||
+            docObs.loadingDocumentDefinitionItems ||
+            !docObs.documentDefinitionListItems ||
+            (docObs.documentDefinitionListItems || []).length === 0
+          "
+          (selected)="onDocumentDefinitionSelected($event)"
+          [placeholder]="'valuePathSelector.selectDocDefPlaceholder' | translate"
+        >
+          <cds-dropdown-list [items]="docObs.documentDefinitionListItems || []"></cds-dropdown-list>
+        </cds-dropdown>
+      </ng-container>
+
       <cds-dropdown
         data-testid="value-path-selector-valuePath"
         [appendInline]="appendInline"
@@ -55,7 +77,6 @@
           (obs.valuePathListItems || []).length === 0
         "
         (selected)="onPathSelected($event)"
-        cdsLayer
         [placeholder]="'valuePathSelector.placeholder' | translate"
       >
         <cds-dropdown-list [items]="obs.valuePathListItems || []"></cds-dropdown-list>
@@ -66,7 +87,6 @@
         cdsText
         type="text"
         formControlName="selectedPath"
-        cdsLayer
       />
     }
   </form>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,134 +16,59 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {
-  CreateFormDefinitionRequest,
-  FormDefinition,
-  ModifyFormDefinitionRequest,
-  QueryFormsResponse,
-} from '../models';
-import {Observable, of} from 'rxjs';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {CreateFormDefinitionRequest, FormDefinition, ModifyFormDefinitionRequest} from '../models';
+import {Observable} from 'rxjs';
+import {ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
 })
-export class FormManagementService extends BaseApiService {
+export class FormManagementService {
+  private valtimoApiConfig: any;
+
   constructor(
-    protected readonly httpClient: HttpClient,
-    protected readonly configService: ConfigService
+    private http: HttpClient,
+    private configService: ConfigService
   ) {
-    super(httpClient, configService);
+    this.valtimoApiConfig = configService.config.valtimoApi;
   }
 
-  public getFormDefinition(formDefinitionId: string): Observable<FormDefinition> {
-    return this.httpClient.get<FormDefinition>(
-      this.getApiUrl(`/management/v1/form/${formDefinitionId}`)
+  getFormDefinition(formDefinitionId: string): Observable<FormDefinition> {
+    return this.http.get<FormDefinition>(
+      `${this.valtimoApiConfig.endpointUri}v1/form-management/${formDefinitionId}`
     );
   }
 
-  public getFormDefinitionCase(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    formDefinitionId: string
-  ): Observable<FormDefinition> {
-    return this.httpClient.get<FormDefinition>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form/${formDefinitionId}`
-      )
+  existsFormDefinition(formDefinitionName: string): Observable<boolean> {
+    return this.http.get<boolean>(
+      `${this.valtimoApiConfig.endpointUri}v1/form-management/exists/${formDefinitionName}`
     );
   }
 
-  public existsFormDefinition(formDefinitionName: string): Observable<boolean> {
-    if (!formDefinitionName) return of(false);
-
-    return this.httpClient.get<boolean>(
-      this.getApiUrl(`/management/v1/form/exists/${formDefinitionName}`)
-    );
-  }
-
-  public existsFormDefinitionCase(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    formDefinitionName: string
-  ): Observable<boolean> {
-    if (!formDefinitionName || !caseDefinitionKey || !caseDefinitionVersionTag) return of(false);
-
-    return this.httpClient.get<boolean>(
-      this.getApiUrl(
-        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form/${formDefinitionName}/exists`
-      )
-    );
-  }
-
-  public queryFormDefinitions(params?: any): Observable<QueryFormsResponse> {
-    return this.httpClient.get<QueryFormsResponse>(this.getApiUrl(`/management/v1/form`), {
+  queryFormDefinitions(params?: any): Observable<any> {
+    return this.http.get(`${this.valtimoApiConfig.endpointUri}v1/form-management`, {
+      observe: 'response',
       params,
     });
   }
 
-  public queryFormDefinitionsCase(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    params?: any
-  ): Observable<QueryFormsResponse> {
-    return this.httpClient.get<QueryFormsResponse>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form`
-      ),
-      {
-        params,
-      }
-    );
-  }
-
-  public createFormDefinition(request: CreateFormDefinitionRequest): Observable<FormDefinition> {
-    return this.httpClient.post<FormDefinition>(this.getApiUrl(`/management/v1/form`), request);
-  }
-
-  public createFormDefinitionsCase(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    request: CreateFormDefinitionRequest
-  ): Observable<FormDefinition> {
-    return this.httpClient.post<FormDefinition>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form`
-      ),
+  createFormDefinition(request: CreateFormDefinitionRequest): Observable<FormDefinition> {
+    return this.http.post<FormDefinition>(
+      `${this.valtimoApiConfig.endpointUri}v1/form-management`,
       request
     );
   }
 
-  public modifyFormDefinition(request: ModifyFormDefinitionRequest): Observable<FormDefinition> {
-    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/management/v1/form`), request);
-  }
-
-  public modifyFormDefinitionCase(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    request: ModifyFormDefinitionRequest
-  ): Observable<FormDefinition> {
-    return this.httpClient.put<FormDefinition>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form`
-      ),
+  modifyFormDefinition(request: ModifyFormDefinitionRequest): Observable<FormDefinition> {
+    return this.http.put<FormDefinition>(
+      `${this.valtimoApiConfig.endpointUri}v1/form-management`,
       request
     );
   }
 
-  public deleteFormDefinition(formDefinitionId: string): Observable<void> {
-    return this.httpClient.delete<void>(this.getApiUrl(`/management/v1/form/${formDefinitionId}`));
-  }
-
-  public deleteFormDefinitionCase(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    formDefinitionId: string
-  ): Observable<void> {
-    return this.httpClient.delete<void>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/form/${formDefinitionId}`
-      )
+  deleteFormDefinition(formDefinitionId: string): Observable<void> {
+    return this.http.delete<void>(
+      `${this.valtimoApiConfig.endpointUri}v1/form-management/${formDefinitionId}`
     );
   }
 }
