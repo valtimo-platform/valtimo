@@ -19,7 +19,7 @@ package com.ritense.processdocument.repository;
 import com.ritense.document.domain.Document;
 import com.ritense.processdocument.domain.ProcessDocumentInstanceId;
 import com.ritense.processdocument.domain.ProcessInstanceId;
-import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstance;
+import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentInstance;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,20 +29,20 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ProcessDocumentInstanceRepository extends JpaRepository<OperatonProcessJsonSchemaDocumentInstance, ProcessDocumentInstanceId> {
+public interface ProcessDocumentInstanceRepository extends JpaRepository<CamundaProcessJsonSchemaDocumentInstance, ProcessDocumentInstanceId> {
 
-    List<OperatonProcessJsonSchemaDocumentInstance> findAllByProcessDocumentInstanceIdDocumentId(Document.Id documentId);
+    List<CamundaProcessJsonSchemaDocumentInstance> findAllByProcessDocumentInstanceIdDocumentId(Document.Id documentId);
 
     @Modifying
     @Query(" DELETE " +
-        "    FROM    OperatonProcessJsonSchemaDocumentInstance pdi " +
+        "    FROM    CamundaProcessJsonSchemaDocumentInstance pdi " +
         "    WHERE   pdi.processName = :processName ")
     void deleteAllByProcessName(@Param("processName") String processName);
 
 
     @Query(" SELECT  pdi " +
-        "    FROM    OperatonProcessJsonSchemaDocumentInstance pdi " +
+        "    FROM    CamundaProcessJsonSchemaDocumentInstance pdi " +
         "    WHERE   pdi.processDocumentInstanceId.processInstanceId = :processInstanceId ")
-    Optional<OperatonProcessJsonSchemaDocumentInstance> findByProcessInstanceId(@Param("processInstanceId") ProcessInstanceId processInstanceId);
+    Optional<CamundaProcessJsonSchemaDocumentInstance> findByProcessInstanceId(@Param("processInstanceId") ProcessInstanceId processInstanceId);
 
 }
