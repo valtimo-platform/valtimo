@@ -17,14 +17,10 @@
 package com.ritense.valtimo.autoconfigure;
 
 import com.ritense.valtimo.OperatonWhitelistedBeansPlugin;
-import com.ritense.valtimo.ScriptingWhitelistPlugin;
 import com.ritense.valtimo.contract.annotation.ProcessBean;
 import java.util.Map;
-import java.util.Set;
 import org.operaton.bpm.spring.boot.starter.configuration.Ordering;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -32,25 +28,16 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 
 @AutoConfiguration
+@ConditionalOnProperty(prefix = "valtimo.operaton", name = "bean-whitelisting", havingValue = "true", matchIfMissing = true)
 public class OperatonContextConfiguration {
 
     @Bean
     @Order(Ordering.DEFAULT_ORDER - 1)
-    @ConditionalOnProperty(prefix = "valtimo.operaton", name = "bean-whitelisting", havingValue = "true", matchIfMissing = true)
     public OperatonWhitelistedBeansPlugin operatonWhitelistedBeansPlugin(
         @Lazy @ProcessBean Map<String, Object> processBeans,
         ApplicationContext applicationContext
     ) {
         return new OperatonWhitelistedBeansPlugin(processBeans, applicationContext);
-    }
-
-    @ConditionalOnMissingBean(ScriptingWhitelistPlugin.class)
-    @Bean
-    @Order(Ordering.DEFAULT_ORDER - 1)
-    public ScriptingWhitelistPlugin scriptingWhitelistPlugin(
-        @Value("${valtimo.operaton.scripting.allowedClasses:}") Set<String> allowedScriptingClasses
-    ) {
-        return new ScriptingWhitelistPlugin(allowedScriptingClasses);
     }
 
 }

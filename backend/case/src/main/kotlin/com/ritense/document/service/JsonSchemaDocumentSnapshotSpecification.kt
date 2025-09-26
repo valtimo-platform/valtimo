@@ -43,9 +43,7 @@ class JsonSchemaDocumentSnapshotSpecification(
     ): Predicate {
         val predicates = permissions
             .filter { permission: Permission ->
-                JsonSchemaDocumentSnapshot::class.java == permission.resourceType && permission.actions.contains(
-                    authRequest.action
-                )
+                JsonSchemaDocumentSnapshot::class.java == permission.resourceType && authRequest.action == permission.action
             }
             .map { permission: Permission ->
                 permission.toPredicate(

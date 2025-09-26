@@ -51,9 +51,7 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    operaton:
-        scripting:
-            allowedClasses: java.lang.System
+
 aws:
     profile: ritense
     region: eu-central-1
