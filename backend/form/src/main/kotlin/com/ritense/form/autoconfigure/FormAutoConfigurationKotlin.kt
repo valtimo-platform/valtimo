@@ -45,9 +45,9 @@ import com.ritense.form.web.rest.IntermediateSubmissionResource
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.CamundaTaskService
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.ApplicationEventPublisher
@@ -101,8 +101,8 @@ class FormAutoConfigurationKotlin {
         documentDefinitionService: JsonSchemaDocumentDefinitionService,
         processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
         processDocumentService: ProcessDocumentService,
-        operatonTaskService: OperatonTaskService,
-        repositoryService: OperatonRepositoryService,
+        camundaTaskService: CamundaTaskService,
+        repositoryService: CamundaRepositoryService,
         applicationEventPublisher: ApplicationEventPublisher,
         prefillFormService: PrefillFormService,
         authorizationService: AuthorizationService,
@@ -116,7 +116,7 @@ class FormAutoConfigurationKotlin {
         documentDefinitionService,
         processDefinitionCaseDefinitionService,
         processDocumentService,
-        operatonTaskService,
+        camundaTaskService,
         repositoryService,
         applicationEventPublisher,
         prefillFormService,
@@ -149,8 +149,7 @@ class FormAutoConfigurationKotlin {
 
     @ConditionalOnMissingBean(FormDefinitionExistsValidator::class)
     @Bean
-    fun formDefinitionExistsValidator(formDefinitionService: FormDefinitionService) =
-        FormDefinitionExistsValidator(formDefinitionService)
+    fun formDefinitionExistsValidator(formDefinitionService: FormDefinitionService) = FormDefinitionExistsValidator(formDefinitionService)
 
     @Bean
     @ConditionalOnMissingBean(IntermediateSubmissionService::class)
@@ -158,12 +157,12 @@ class FormAutoConfigurationKotlin {
         intermediateSubmissionRepository: IntermediateSubmissionRepository,
         userManagementService: UserManagementService,
         authorizationService: AuthorizationService,
-        operatonTaskService: OperatonTaskService
+        camundaTaskService: CamundaTaskService
     ) = IntermediateSubmissionService(
         intermediateSubmissionRepository = intermediateSubmissionRepository,
         userManagementService = userManagementService,
         authorizationService = authorizationService,
-        operatonTaskService = operatonTaskService
+        camundaTaskService = camundaTaskService
     )
 
     @Bean
@@ -184,9 +183,6 @@ class FormAutoConfigurationKotlin {
 
     @Bean
     @ConditionalOnMissingBean(FormCaseEventListener::class)
-    fun formCaseEventListener(
-        formDefinitionService: FormDefinitionService,
-        processLinkService: ProcessLinkService
-    ) =
-        FormCaseEventListener(formDefinitionService, processLinkService)
+    fun formCaseEventListener(formDefinitionService: FormDefinitionService) =
+        FormCaseEventListener(formDefinitionService)
 }

@@ -20,5 +20,5 @@ import java.net.URI
 
 data class RelevanteZaak(
     val url: URI,
-    val aardRelatie: AardRelatie
+    val aardRelatie: String,
 )

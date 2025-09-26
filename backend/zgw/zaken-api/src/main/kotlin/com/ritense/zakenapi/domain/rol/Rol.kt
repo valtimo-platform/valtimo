@@ -44,14 +44,11 @@ data class Rol(
         property = "betrokkeneType",
         visible = true
     )
-    val betrokkeneIdentificatie: BetrokkeneIdentificatie? = null,
+    val betrokkeneIdentificatie: BetrokkeneIdentificatie?,
     val beginGeldigheid: LocalDate? = null,
     val eindeGeldigheid: LocalDate? = null,
-    val afwijkendeNaamBetrokkene: String? = null,
-    val contactpersoonRol: ContactpersoonRol? = null,
-    val statussen: List<URI>? = null,
 ) {
-    val indicatieMachtiging = indicatieMachtigingString?.let { indicatieMachtiging ->
-        IndicatieMachtiging.entries.find { it.key == indicatieMachtiging }
+    val indicatieMachtiging = indicatieMachtigingString?.let {indicatieMachtiging ->
+        IndicatieMachtiging.values().find {it.key == indicatieMachtiging}
     }
 }

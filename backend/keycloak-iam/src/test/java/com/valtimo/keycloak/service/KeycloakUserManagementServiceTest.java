@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
+import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
 import jakarta.ws.rs.NotFoundException;
 import java.util.List;
@@ -199,12 +200,12 @@ class KeycloakUserManagementServiceTest {
 
     @Test
     void findByUsernameShouldReturnUserWhenSearchingOnUsername() {
-        when(keycloakService.usersResource(any()).searchByUsername(eq(johnDoe.getUsername()), eq(true)))
+        when(keycloakService.usersResource(any()).searchByUsername(johnDoe.getUsername(), true))
             .thenReturn(List.of(johnDoe));
 
         var user = userManagementService.findByUsername(johnDoe.getUsername());
 
-        verify(keycloakService.usersResource(any())).searchByUsername(eq(johnDoe.getUsername()), eq(true));
+        verify(keycloakService.usersResource(any())).searchByUsername(johnDoe.getUsername(), true);
         assertThat(user).isNotNull();
     }
 
@@ -215,18 +216,17 @@ class KeycloakUserManagementServiceTest {
         userManagementService.findByEmail(email);
         userManagementService.findByEmail(email);
 
-        verify(keycloakService.usersResource(any()), times(1))
-            .searchByEmail(email, true);
+        verify(keycloakService.usersResource(any()), times(1)).search(null, null, null, email, 0, 1, true, true);
     }
 
     @Test
     void findByUsernameShouldNotThrowAnExceptionWhenSearchingOnUsernameAndNoUserIsNotFound() {
-        when(keycloakService.usersResource(any()).searchByUsername(eq(johnDoe.getUsername()), eq(true)))
+        when(keycloakService.usersResource(any()).searchByUsername(johnDoe.getUsername(), true))
             .thenReturn(List.of());
 
         var user = userManagementService.findByUsername(johnDoe.getUsername());
 
-        verify(keycloakService.usersResource(any())).searchByUsername(eq(johnDoe.getUsername()), eq(true));
+        verify(keycloakService.usersResource(any())).searchByUsername(johnDoe.getUsername(), true);
         assertThat(user).isNull();
     }
 

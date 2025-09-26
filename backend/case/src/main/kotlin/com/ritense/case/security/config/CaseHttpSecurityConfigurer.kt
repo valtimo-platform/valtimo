@@ -52,10 +52,6 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     ).authenticated() // Deprecated
                     .requestMatchers(antMatcher(GET, "/api/v1/document/{documentId}/tab")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/case/{caseDefinitionName}/search")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/case/{caseDefinitionKey}/stored-quick-search")).authenticated()
-                    .requestMatchers(antMatcher(DELETE, "/api/v1/case/{caseDefinitionKey}/stored-quick-search/{title}")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/case/{caseDefinitionKey}/stored-quick-search")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/case/{caseDefinitionName}/export")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PATCH, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}")).hasAuthority(ADMIN)
@@ -67,14 +63,12 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(POST, "/api/management/v1/case-definition/{key}/version/{version}/finalize")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, MANAGEMENT_CASE_LIST_COLUMN_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_CASE_LIST_COLUMN_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, MANAGEMENT_CASE_LIST_COLUMN_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, MANAGEMENT_CASE_LIST_COLUMN_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_CASE_LIST_COLUMN_URL/{columnKey}"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, CASE_COLUMN_URL)).authenticated()
                     .requestMatchers(antMatcher(GET, MANAGEMENT_TASK_LIST_COLUMN_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_TASK_LIST_COLUMN_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, MANAGEMENT_TASK_LIST_COLUMN_V2_URL)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_TASK_LIST_COLUMN_URL/{columnKey}"))
                     .hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_TASK_LIST_COLUMN_URL/{columnKey}"))
@@ -111,8 +105,6 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
         private const val MANAGEMENT_CASE_LIST_COLUMN_URL = "/api/management/v1/case/{caseDefinitionName}/list-column"
         private const val MANAGEMENT_TASK_LIST_COLUMN_URL =
             "/api/management/v1/case/{caseDefinitionName}/task-list-column"
-        private const val MANAGEMENT_TASK_LIST_COLUMN_V2_URL =
-            "/api/management/v2/case/{caseDefinitionName}/task-list-column"
         private const val MANAGEMENT_TAB_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/tab"
         private const val MANAGEMENT_WIDGET_TAB_URL =

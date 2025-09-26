@@ -269,7 +269,7 @@ public class KeycloakUserManagementService implements UserManagementService {
         try (Keycloak keycloak = keycloakService.keycloak()) {
             userList = keycloakService
                 .usersResource(keycloak)
-                .searchByEmail(email, true);
+                .search(null, null, null, email, 0, 1, true, true);
         }
         if (userList.isEmpty() || !Objects.equals(userList.get(0).getEmail(), email)) {
             return Optional.empty();

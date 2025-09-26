@@ -193,14 +193,12 @@ class PluginAutoConfiguration {
     fun pluginAutoDeploymentEventListener(
         objectMapper: ObjectMapper,
         pluginService: PluginService,
-        resourceLoader: ResourceLoader,
-        eventPublisher: ApplicationEventPublisher
+        resourceLoader: ResourceLoader
     ): PluginAutoDeploymentEventListener{
         return PluginAutoDeploymentEventListener(
             pluginService = pluginService,
             objectMapper = objectMapper,
-            resourceLoader = resourceLoader,
-            eventPublisher =  eventPublisher
+            resourceLoader = resourceLoader
         )
     }
 

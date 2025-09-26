@@ -25,7 +25,6 @@ import com.ritense.dashboard.domain.WidgetConfiguration
 import com.ritense.dashboard.repository.DashboardRepository
 import com.ritense.dashboard.repository.WidgetConfigurationRepository
 import com.ritense.dashboard.service.DashboardService
-import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import org.hamcrest.collection.IsCollectionWithSize.hasSize
 import org.junit.jupiter.api.AfterEach
@@ -33,7 +32,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -77,7 +75,6 @@ class DashboardResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser(username = "user@ritense.com", authorities = [USER])
     fun `should get dashboards`() {
         val dashboard = runWithoutAuthorization {
             dashboardService.createDashboard("Test dashboard", "Test description")
@@ -111,7 +108,6 @@ class DashboardResourceIT @Autowired constructor(
 
     @Test
     @Transactional
-    @WithMockUser(username = "user@ritense.com", authorities = [USER])
     fun `should get dashboards widget data`() {
         val dashboard = runWithoutAuthorization {
             dashboardService.createDashboard("Widget dashboard", "Test description")

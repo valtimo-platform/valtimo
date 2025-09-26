@@ -23,7 +23,7 @@ import com.ritense.valtimo.contract.repository.ExpressionOperator
 import com.ritense.valtimo.dashboard.TaskCountDataSourceProperties
 import com.ritense.valtimo.dashboard.TaskWidgetDataSource
 import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.task.Task
+import org.camunda.bpm.engine.task.Task
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -187,11 +187,11 @@ class TaskWidgetDataSourceIntTest @Autowired constructor(
         name: String? = "Test",
         assignee: String = defaultAssignee,
     ) {
-        val task: Task = operatonTaskService.newTask()
+        val task: Task = camundaTaskService.newTask()
         task.setName(name)
         task.setAssignee(assignee)
 
-        operatonTaskService.saveTask(task)
+        camundaTaskService.saveTask(task)
     }
 
     companion object {

@@ -19,7 +19,7 @@ package com.ritense.processlink.web.rest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.service.ProcessLinkActivityService
-import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.CamundaProcessService
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,7 +40,7 @@ import java.util.UUID
 @Import(ProcessLinkActivityService::class)
 internal class ProcessLinkTaskResourceIT @Autowired constructor(
     private val webApplicationContext: WebApplicationContext,
-    private val operatonProcessService: OperatonProcessService,
+    private val camundaProcessService: CamundaProcessService,
 ) : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
@@ -56,8 +56,8 @@ internal class ProcessLinkTaskResourceIT @Autowired constructor(
     fun `should list tasks with process links`() {
         val processInstanceWithDefinition =
             runWithoutAuthorization {
-                operatonProcessService.startProcess(
-                    PROCESS_DEF_KEY,
+                camundaProcessService.startProcess(
+                    PROCESS_DEF_ID,
                     UUID.randomUUID().toString(),
                     emptyMap()
                 )
@@ -81,6 +81,6 @@ internal class ProcessLinkTaskResourceIT @Autowired constructor(
 
 
     companion object {
-        const val PROCESS_DEF_KEY = "test-process-link-task"
+        const val PROCESS_DEF_ID = "test-process"
     }
 }
