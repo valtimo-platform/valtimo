@@ -32,7 +32,6 @@ import {
   SpinnerModule,
   ValtimoCdsModalDirective,
   WidgetModule,
-  TooltipModule as ValtimoTooltipModule
 } from '@valtimo/components';
 import {HttpLoaderFactory} from '@valtimo/shared';
 import {ProcessLinkModule} from '@valtimo/process-link';
@@ -86,7 +85,6 @@ import {TaskRoutingModule} from './task-routing.module';
     ButtonModule,
     IconModule,
     TooltipModule,
-    ValtimoTooltipModule,
     ConfirmationModalModule,
     SearchFieldsModule,
     AssignUserToTaskComponent,

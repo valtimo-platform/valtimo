@@ -19,4 +19,5 @@ export * from './case-tab-token';
 export * from './case-list.constants';
 export * from './case-status.constants';
 export * from './case-widget.constants';
+export * from './custom-case-widget-token';
 export * from './case-detail-layout.constants';

@@ -27,7 +27,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {ValtimoFormioOptions} from '../../../../models';
-import {ValtimoModalService} from '../../../../services';
+import {ValtimoModalService} from '../../../../services/valtimo-modal.service';
 import {UserProviderService} from '@valtimo/security';
 import {
   FormioComponent as FormIoSourceComponent,
@@ -40,18 +40,15 @@ import {jwtDecode} from 'jwt-decode';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, Observable, Subject, Subscription, timer} from 'rxjs';
 import {distinctUntilChanged, filter, map, switchMap, take, tap} from 'rxjs/operators';
+import {FormIoStateService} from '../../services/form-io-state.service';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
+import {FormIoLocalStorageService} from '../../services/form-io-local-storage.service';
 import {deepmerge} from 'deepmerge-ts';
 import {ConfigService, ValtimoConfig} from '@valtimo/shared';
 import {isEqual} from 'lodash';
 import {Formio} from 'formiojs';
-import {
-  FormIoLocalStorageService,
-  FormIoStateService,
-  FormIoTagsService,
-  FormioTranslationService,
-} from '../../services';
+import {FormIoTagsService} from '../../services/form-io.tags.service';
 
 @Component({
   selector: 'valtimo-form-io',
@@ -91,10 +88,8 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
   public readonly submission$ = new BehaviorSubject<FormioSubmission>({});
 
   private readonly _form$ = new BehaviorSubject<FormioForm>(undefined);
-
-  public readonly form$ = combineLatest([this._form$, this.translateService.stream('key')]).pipe(
-    filter(([form]) => !!form),
-    map(([form]) => this.formioTranslationService.translateFormDefinition(form)),
+  public readonly form$ = this._form$.pipe(
+    filter(form => !!form),
     distinctUntilChanged((prev, curr) => isEqual(prev, curr))
   );
 
@@ -153,10 +148,9 @@ export class FormioComponent implements OnInit, OnChanges, OnDestroy {
     private readonly modalService: ValtimoModalService,
     private readonly configService: ConfigService,
     private readonly tagsService: FormIoTagsService,
-    private readonly injector: Injector,
-    private readonly formioTranslationService: FormioTranslationService
+    private readonly injector: Injector
   ) {
-    this.setOverrideOptions(this.configService.config);
+    this.setOverrideOptions(configService.config);
     this.tagsService.reregisterTags(this.injector);
   }
 

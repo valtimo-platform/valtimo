@@ -160,10 +160,10 @@ export class CaseDetailTaskListComponent {
     this.iconService.registerAll([UserFilled20]);
   }
 
-  public rowTaskClick(tasWithProcessLink: TaskWithProcessLink): void {
-    if (tasWithProcessLink.task.isLocked) return;
+  public rowTaskClick(tasWithProcessLinkk: TaskWithProcessLink): void {
+    if (tasWithProcessLinkk.task.isLocked) return;
 
-    this.taskClickEvent.emit(tasWithProcessLink);
+    this.taskClickEvent.emit(tasWithProcessLinkk);
   }
 
   public onFormSubmit(): void {

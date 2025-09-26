@@ -40,8 +40,8 @@
   gap: 16px;
   justify-content: space-between;
 
-  ::ng-deep &--case-def-input {
-    display: flex !important;
+  &--case-def-selection {
+    grid-template-columns: 110px 1fr 1fr;
   }
 
   ::ng-deep cds-dropdown {

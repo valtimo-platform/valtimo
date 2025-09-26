@@ -270,8 +270,7 @@ export class CaseDetailComponent
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly $tabHorizontalOverflowDisabled =
-    this.caseTabService.$tabHorizontalOverflowDisabled;
+  public readonly tabHorizontalOverflowDisabled = this.caseTabService.tabHorizontalOverflowDisabled;
   public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
 
   public readonly showTaskList$ = this.caseTabService.showTaskList$;
