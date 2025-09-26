@@ -38,7 +38,6 @@ import {
   tap,
 } from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
-import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
@@ -99,15 +98,6 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
     })
   );
 
-  public readonly isDraftVersion$: Observable<boolean> = combineLatest([
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$,
-  ]).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
-    )
-  );
-
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -132,8 +122,7 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   constructor(
     private readonly caseTagService: CaseTagService,
     private readonly route: ActivatedRoute,
-    private readonly editPermissionsService: EditPermissionsService,
-    private readonly caseManagementService: CaseManagementService
+    private readonly editPermissionsService: EditPermissionsService
   ) {}
 
   public ngAfterViewInit(): void {

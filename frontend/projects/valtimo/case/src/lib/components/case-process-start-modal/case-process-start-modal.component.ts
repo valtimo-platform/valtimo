@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
   Component,
   ComponentRef,
@@ -28,25 +27,24 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {PermissionService} from '@valtimo/access-control';
-import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {
-  FORM_CUSTOM_COMPONENT_TOKEN,
-  FormCustomComponent,
-  FormCustomComponentConfig,
-  FormFlowService,
-  FormSubmissionResult,
-  ProcessLinkService,
-  UrlResolverService,
-} from '@valtimo/process-link';
-import {ProcessService} from '@valtimo/process';
 import {
   FormioComponent,
   FormioOptionsImpl,
   FormioSubmission,
   ValtimoFormioOptions,
 } from '@valtimo/components';
-import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
+import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {ProcessService} from '@valtimo/process';
+import {
+  FORM_CUSTOM_COMPONENT_TOKEN,
+  FormCustomComponent,
+  FormCustomComponentConfig,
+  FormSubmissionResult,
+  ProcessLinkService,
+  UrlResolverService,
+} from '@valtimo/process-link';
 import {UserProviderService} from '@valtimo/security';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
@@ -91,7 +89,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
   >({});
-  public readonly closeModalEvent = new EventEmitter();
 
   constructor(
     private route: ActivatedRoute,
@@ -99,7 +96,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     private processService: ProcessService,
     private documentService: DocumentService,
     private processLinkService: ProcessLinkService,
-    private formFlowService: FormFlowService,
     private userProviderService: UserProviderService,
     private permissionService: PermissionService,
     private listService: CaseListService,
@@ -139,7 +135,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(startProcessResult => {
         if (startProcessResult) {
-          this.isUIComponent = false;
           switch (startProcessResult.type) {
             case 'form':
               this.formDefinition = startProcessResult.properties.prefilledForm;
@@ -203,9 +198,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   }
 
   openModal(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition) {
-    this.processDefinitionKey = processDefinitionCaseDefinition.processDefinitionKey;
-    this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
     this.processDefinitionId = processDefinitionCaseDefinition.id.processDefinitionId;
+    this.caseDefinitionKey = processDefinitionCaseDefinition.id.caseDefinitionId.key;
+    this.processDefinitionKey = processDefinitionCaseDefinition.processDefinitionKey;
     this.processName = processDefinitionCaseDefinition.processDefinitionName;
     this.options = new FormioOptionsImpl();
     this.options.disableAlerts = true;
@@ -287,12 +282,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
         this.closeCdsModal();
       })
     );
-
-    this._subscriptions.add(
-      this.closeModalEvent.subscribe(() => {
-        formViewModelComponent.destroy();
-      })
-    );
   }
 
   private setFormCustomComponent(formCustomComponentKey: string): void {
@@ -310,12 +299,6 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
       renderedComponent.instance.submittedEvent.subscribe(() => {
         this.closeCdsModal();
       });
-
-      this._subscriptions.add(
-        this.closeModalEvent.subscribe(() => {
-          renderedComponent.destroy();
-        })
-      );
     });
   }
 
@@ -327,6 +310,5 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   private closeCdsModal(): void {
     this.modalOpen$.next(true);
     setTimeout(() => this.modalOpen$.next(false));
-    this.closeModalEvent.emit();
   }
 }

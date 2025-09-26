@@ -55,7 +55,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {distinctUntilChanged, take} from 'rxjs/operators';
+import {distinctUntilChanged} from 'rxjs/operators';
 import {
   ValuePathItem,
   ValuePathType,
@@ -65,8 +65,6 @@ import {
 } from '../../models';
 import {ValuePathSelectorService} from '../../services';
 import {InputLabelModule} from '../input-label/input-label.module';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
-import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-value-path-selector',
@@ -83,7 +81,7 @@ import {ActivatedRoute} from '@angular/router';
     InputLabelModule,
     InputLabelModule,
     TranslateModule,
-    LayerModule,
+    LayerModule
   ],
   providers: [
     {
@@ -147,40 +145,13 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       this.formGroup.enable();
     }
   }
-
-  private readonly _params$ = getCaseManagementRouteParams(this.route);
-
-  public readonly caseDefinitionKey$ = this._params$.pipe(map(params => params?.caseDefinitionKey ?? null));
-
-  public readonly caseDefinitionVersionTag$ = this._params$.pipe(
-    map(params => params?.caseDefinitionVersionTag ?? null)
-  );
-
-  @Input() set caseDefinitionKey(value: string | null) {
-    if (value) {
-      this._caseDefinitionKeySubject$.next(value);
-    } else {
-      this.caseDefinitionKey$.pipe(take(1)).subscribe(paramValue => {
-        if (paramValue) {
-          this._caseDefinitionKeySubject$.next(paramValue);
-        } else {
-          return;
-        }
-      });
-    }
+  @Input() public set caseDefinitionKey(value: string) {
+    if (!value) return;
+    this._caseDefinitionKeySubject$.next(value);
   }
-  @Input() set caseDefinitionVersionTag(value: string | null) {
-    if (value) {
-      this._caseDefinitionVersionTag$.next(value);
-    } else {
-      this.caseDefinitionVersionTag$.pipe(take(1)).subscribe(paramValue => {
-        if (paramValue) {
-          this._caseDefinitionVersionTag$.next(paramValue);
-        } else {
-          return;
-        }
-      });
-    }
+  @Input() public set caseDefinitionVersionTag(value: string) {
+    if (!value) return;
+    this._caseDefinitionVersionTag$.next(value);
   }
   @Input() public set prefixes(value: ValuePathSelectorPrefix[]) {
     this._prefixes$.next(value ?? []);
@@ -207,17 +178,11 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
   @Output() valueChangeEvent: EventEmitter<string> = new EventEmitter();
   @Output() collectionSelected: EventEmitter<ValuePathItem> = new EventEmitter();
 
-  private readonly _caseDefinitionKeySubject$ = new BehaviorSubject<string| null>(null);
+  private readonly _caseDefinitionKeySubject$ = new BehaviorSubject<string>('');
   private get _caseDefinitionKey$(): Observable<string> {
     return this._caseDefinitionKeySubject$.pipe(filter(value => !!value));
   }
   private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
-
-  public readonly showToggle$ = this._caseDefinitionKey$
-    .pipe(
-      map(caseDefinitionKey => !!caseDefinitionKey),
-    );
-
   private readonly _prefixes$ = new BehaviorSubject<ValuePathSelectorPrefix[]>([]);
 
   private readonly _inputMode$ = new BehaviorSubject<ValuePathSelectorInputMode>(
@@ -240,22 +205,20 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
       parentItem
         ? of(parentItem.children?.map((child: string) => ({path: child})) ?? [])
         : combineLatest([
-          this._caseDefinitionKey$,
-          this._prefixes$,
-          this._type$,
-          this._caseDefinitionVersionTag$,
-          this.showToggle$
-        ]).pipe(
-          filter(([, , , , showToggle]) => showToggle),
-          switchMap(([caseDefinitionKey, prefixes, type, caseDefinitionVersionTag]) =>
-            this.valuePathSelectorService.getResolvableKeys(
-              prefixes,
-              caseDefinitionKey,
-              type,
-              caseDefinitionVersionTag
+            this._caseDefinitionKey$,
+            this._prefixes$,
+            this._type$,
+            this._caseDefinitionVersionTag$,
+          ]).pipe(
+            switchMap(([caseDefinitionKey, prefixes, type, caseDefinitionVersionTag]) =>
+              this.valuePathSelectorService.getResolvableKeys(
+                prefixes,
+                caseDefinitionKey,
+                type,
+                caseDefinitionVersionTag
+              )
             )
           )
-        )
     ),
     map((results: ValuePathItem[]) =>
       results
@@ -292,13 +255,37 @@ export class ValuePathSelectorComponent implements OnInit, OnDestroy, ControlVal
     tap(() => this.loadingValuePathItems$.next(false))
   );
 
+  public readonly loadingCaseDefinitionItems$ = new BehaviorSubject<boolean>(true);
+
+  public readonly caseDefinitionListItems$: Observable<ListItem[]> = this.valuePathSelectorService
+    .getCaseDefinitionCache()
+    .pipe(
+      switchMap(cache =>
+        combineLatest([
+          cache ? of(cache) : this.documentService.getCaseDefinitions({active: true}),
+          this._caseDefinitionKey$.pipe(startWith(null)),
+        ]).pipe(
+          tap(([definitions]) => {
+            this.loadingCaseDefinitionItems$.next(false);
+            this.valuePathSelectorService.setCaseDefinitionCache(definitions);
+          }),
+          map(([definitions, caseDefinitionKey]) =>
+            definitions.map(definition => ({
+              content: definition.caseDefinitionKey,
+              id: definition.caseDefinitionKey,
+              selected: definition.caseDefinitionKey === caseDefinitionKey,
+            }))
+          )
+        )
+      )
+    );
+
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly valuePathSelectorService: ValuePathSelectorService,
     private readonly formBuilder: FormBuilder,
-    private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute,
+    private readonly documentService: DocumentService
   ) {}
 
   public ngOnInit(): void {

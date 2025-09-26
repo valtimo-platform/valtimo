@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm" [minContentHeight]="480">
+<cds-modal [open]="modalOpen$ | async" valtimoCdsModal size="sm">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()" [cdsLayer]="1"
     ><h3 cdsModalHeaderHeading>
       {{
@@ -29,17 +29,7 @@
     <ng-template #formViewModelComponent></ng-template>
     <ng-template #formCustomComponent></ng-template>
 
-    @if (isLoading$ | async) {
-      <div class="loading-container">
-        <cds-loading size="sm"></cds-loading>
-      </div>
-    }
-
-    @if (
-      !(isLoading$ | async) &&
-      (startProcessLinkType$ | async) === 'form' &&
-      (formDefinition$ | async)
-    ) {
+    @if (!isFormViewModel && (formDefinition$ | async)) {
       <valtimo-form-io
         #form
         [submission]="submission$ | async"
@@ -49,11 +39,7 @@
       ></valtimo-form-io>
     }
 
-    @if (
-      !(isLoading$ | async) &&
-      (startProcessLinkType$ | async) === 'form-flow' &&
-      (formFlowInstanceId$ | async)
-    ) {
+    @if (formFlowInstanceId$ | async) {
       <valtimo-form-flow
         #formFlow
         [formFlowInstanceId]="formFlowInstanceId$ | async"
@@ -65,7 +51,7 @@
       !(isLoading$ | async) &&
       !(formDefinition$ | async) &&
       !(formFlowInstanceId$ | async) &&
-      (startProcessLinkType$ | async) !== 'ui-component'
+      !isUIComponent
     ) {
       <div class="bg-warning text-black mb-0 p-3 text-center">
         {{
@@ -74,7 +60,6 @@
             : ('formManagement.noFormDefinitionFoundUser' | translate)
         }}
       </div>
-
       <div class="mb-0 mt-4 p-3 text-center">
         <button
           class="btn btn-secondary btn-space"

@@ -33,18 +33,18 @@ export class ProcessManagementService extends BaseApiService {
   private readonly _definitionKey$ = new BehaviorSubject<string | null>(null);
   private readonly _caseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
 
-  private _$context = signal<ManagementContext>('independent');
+  private _context = signal<ManagementContext>('independent');
   public set context(value: ManagementContext) {
-    this._$context.set(value);
+    this._context.set(value);
   }
-  public get $context(): Signal<ManagementContext> {
-    return this._$context.asReadonly();
+  public get context(): Signal<ManagementContext> {
+    return this._context.asReadonly();
   }
 
   public processes$: Observable<ProcessDefinitionResult[]> = combineLatest([
     this._definitionKey$,
     this._caseDefinitionVersionTag$,
-    toObservable(this._$context),
+    toObservable(this._context),
   ]).pipe(
     switchMap(([definitionKey, caseDefinitionVersionTag, context]) => {
       if (context === 'independent') {
@@ -72,16 +72,14 @@ export class ProcessManagementService extends BaseApiService {
   public deleteProcess(processDefinitionKey: string): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(
-        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${this._definitionKey$.getValue()}/version/${this._caseDefinitionVersionTag$.getValue()}/process-definition/key/${processDefinitionKey}`
+        `${PROCESS_MANAGEMENT_ENDPOINTS[this._context()]}/${this._definitionKey$.getValue()}/version/${this._caseDefinitionVersionTag$.getValue()}/process-definition/key/${processDefinitionKey}`
       )
     );
   }
 
   public deleteUnlinkedProcess(processDefinitionKey: string): Observable<void> {
     return this.httpClient.delete<void>(
-      this.getApiUrl(
-        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/key/${processDefinitionKey}`
-      )
+      this.getApiUrl(`${PROCESS_MANAGEMENT_ENDPOINTS[this._context()]}/key/${processDefinitionKey}`)
     );
   }
 
@@ -96,11 +94,11 @@ export class ProcessManagementService extends BaseApiService {
     );
 
     return this.httpClient.post<any>(
-      this._$context() === 'case'
+      this._context() === 'case'
         ? this.getApiUrl(
-            `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${this._definitionKey$.getValue()}/version/${this._caseDefinitionVersionTag$.getValue()}/process-definition`
+            `${PROCESS_MANAGEMENT_ENDPOINTS[this._context()]}/${this._definitionKey$.getValue()}/version/${this._caseDefinitionVersionTag$.getValue()}/process-definition`
           )
-        : this.getApiUrl(`${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}`),
+        : this.getApiUrl(`${PROCESS_MANAGEMENT_ENDPOINTS[this._context()]}`),
       formData
     );
   }
@@ -112,7 +110,7 @@ export class ProcessManagementService extends BaseApiService {
   ): Observable<ProcessDefinitionResult> {
     return this.httpClient.get<ProcessDefinitionResult>(
       this.getApiUrl(
-        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition/key/${processDefinitionKey}`
+        `${PROCESS_MANAGEMENT_ENDPOINTS[this._context()]}/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition/key/${processDefinitionKey}`
       )
     );
   }
@@ -121,9 +119,7 @@ export class ProcessManagementService extends BaseApiService {
     processDefinitionKey: string
   ): Observable<ProcessDefinitionResult[]> {
     return this.httpClient.get<ProcessDefinitionResult[]>(
-      this.getApiUrl(
-        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/key/${processDefinitionKey}`
-      )
+      this.getApiUrl(`${PROCESS_MANAGEMENT_ENDPOINTS[this._context()]}/key/${processDefinitionKey}`)
     );
   }
 
@@ -147,14 +143,14 @@ export class ProcessManagementService extends BaseApiService {
   ): Observable<ProcessDefinitionResult[]> {
     return this.httpClient.get<ProcessDefinitionResult[]>(
       this.getApiUrl(
-        `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${definitionName}/version/${caseDefinitionVersionTag}/process-definition`
+        `${PROCESS_MANAGEMENT_ENDPOINTS[this._context()]}/${definitionName}/version/${caseDefinitionVersionTag}/process-definition`
       )
     );
   }
 
   private getUnlinkedProcesses(): Observable<ProcessDefinitionResult[]> {
     return this.httpClient.get<ProcessDefinitionResult[]>(
-      this.getApiUrl(`${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}`)
+      this.getApiUrl(`${PROCESS_MANAGEMENT_ENDPOINTS[this._context()]}`)
     );
   }
 

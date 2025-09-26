@@ -56,7 +56,6 @@
 
   <valtimo-task-detail-modal
     #taskDetail
-    [openFromCaseManagement]="true"
     [modalSize]="formSize$ | async"
     (formSubmit)="onFormSubmit()"
     (assignmentOfTaskChanged)="refresh()"
@@ -96,7 +95,7 @@
 
       <div class="task__subtitles">
         @for (
-          subtitle of taskWithProcessLink.task?.subtitles || [];
+          subtitle of taskWithProcessLink?.processLinkActivityResult?.properties?.subtitles || [];
           track subtitle
         ) {
           <p class="task__subtitle">{{ subtitle }}</p>

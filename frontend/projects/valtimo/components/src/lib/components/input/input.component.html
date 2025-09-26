@@ -22,7 +22,6 @@
   <ng-container *ngTemplateOutlet="numberInput"></ng-container>
   <ng-container *ngTemplateOutlet="digitOnlyInput"></ng-container>
   <ng-container *ngTemplateOutlet="checkboxInput"></ng-container>
-  <ng-container *ngTemplateOutlet="presets"></ng-container>
 </div>
 
 <ng-template #inputTitle>
@@ -43,8 +42,8 @@
     *ngIf="isText"
     [ngClass]="{
       'v-input--full-width': fullWidthClass,
-      'v-input--margin': margin && presetOptions.length === 0,
-      'v-input--small-margin': smallMargin && presetOptions.length === 0,
+      'v-input--margin': margin,
+      'v-input--small-margin': smallMargin,
     }"
     [ngModel]="inputValue$ | async"
     cdsText
@@ -173,21 +172,5 @@
       (ngModelChange)="onValueChange($event)"
     >
     </cds-checkbox>
-  </div>
-</ng-template>
-
-<ng-template #presets>
-  <div
-    *ngIf="isText && presetOptions.length > 0"
-    [ngClass]="{
-      'v-input--margin': margin,
-      'v-input--small-margin': smallMargin,
-    }"
-    class="v-input--preset-options">
-    <span>{{ presetsTitle }}:</span>
-    @for (preset of presetOptions; track $index; let isFirst = $first) {
-      @if (!isFirst) { | }
-      <a (click)="presetWithValue(preset)" class="v-input--preset-option">{{ preset }}</a>
-    }
   </div>
 </ng-template>

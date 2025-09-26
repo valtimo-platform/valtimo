@@ -17,66 +17,62 @@
 <ng-container
   *ngIf="{
     caseListColumn: translatedCaseListColumns$ | async,
-    disableInput: disableInput$ | async,
-    downloadName: downloadName$ | async,
-    downloadUrl: downloadUrl$ | async,
-    hasEditPermissions: hasEditPermissions$ | async,
-    jsonEditorModel: jsonEditorModel$ | async,
-    loadingCaseListColumns: loadingCaseListColumns$ | async,
     params: params$ | async,
+    downloadUrl: downloadUrl$ | async,
+    downloadName: downloadName$ | async,
+    loadingCaseListColumns: loadingCaseListColumns$ | async,
+    disableInput: disableInput$ | async,
+    hasEditPermissions: hasEditPermissions$ | async,
   } as obs"
 >
-  <ng-container *ngTemplateOutlet="content; context: {obs: obs}"></ng-container>
+  <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
 
   <ng-container *ngTemplateOutlet="createEditModal"></ng-container>
 
   <ng-container *ngTemplateOutlet="deleteModal"></ng-container>
 </ng-container>
 
-<ng-template #content let-obs="obs">
-  @if (!jsonEditorActive()) {
-    <valtimo-carbon-list
-      [actionItems]="actionItems"
-      [loading]="obs.loadingCaseListColumns"
-      [items]="obs?.caseListColumn || []"
-      [fields]="fields"
-      [viewMode]="false"
-      [header]="false"
-      (rowClicked)="columnRowClicked($event)"
-      [dragAndDrop]="true"
-      [dragAndDropDisabled]="obs.disableInput"
-      (itemsReordered)="onItemsReordered(obs.params.caseDefinitionKey, $event)"
-    >
-      <ng-container
-        carbonToolbarContent
-        *ngTemplateOutlet="buttons; context: {obs: obs}"
-      ></ng-container>
+<ng-template #list let-obs="obs">
+  <valtimo-carbon-list
+    [actionItems]="actionItems"
+    [loading]="obs.loadingCaseListColumns"
+    [items]="obs?.caseListColumn || []"
+    [fields]="fields"
+    [viewMode]="false"
+    [header]="false"
+    (rowClicked)="columnRowClicked($event)"
+    [dragAndDrop]="true"
+    [dragAndDropDisabled]="obs.disableInput"
+    (itemsReordered)="onItemsReordered(obs.params.caseDefinitionKey, $event)"
+  >
+    <ng-container
+      carbonToolbarContent
+      *ngTemplateOutlet="buttons; context: {obs: obs}"
+    ></ng-container>
 
-      <valtimo-no-results
-        [title]="'listColumn.noConfigWarningTitle' | translate"
-        [description]="'listColumn.noConfigWarning' | translate"
-        illustration="valtimo-layout/img/emptystate-empty.svg"
-      ></valtimo-no-results>
-    </valtimo-carbon-list>
-  } @else {
-    <valtimo-json-editor
-      [model]="obs.jsonEditorModel"
-      [fitPage]="true"
-      [fitPageExtraSpace]="248"
-      [showEditButton]="obs.hasEditPermissions"
-      (saveEvent)="updateCaseListColumns(obs.params.caseDefinitionKey, $event)"
-    >
-      <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
-
-      <ng-container *ngTemplateOutlet="downloadButton; context: {obs: obs}"></ng-container>
-    </valtimo-json-editor>
-  }
+    <valtimo-no-results
+      [title]="'listColumn.noConfigWarningTitle' | translate"
+      [description]="'listColumn.noConfigWarning' | translate"
+      illustration="valtimo-layout/img/emptystate-empty.svg"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
 </ng-template>
 
 <ng-template #buttons let-obs="obs">
-  <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
-
-  <ng-container *ngTemplateOutlet="downloadButton; context: {obs: obs}"></ng-container>
+  <button
+    cdsButton="ghost"
+    iconOnly="true"
+    (click)="onDownloadClick()"
+    [disabled]="
+      !obs.downloadUrl ||
+      !obs.downloadName ||
+      obs.caseListColumn?.length < 1 ||
+      obs.disableInput ||
+      obs.loadingCaseListColumns
+    "
+  >
+    <svg cdsIcon="download" size="16"></svg>
+  </button>
 
   <button
     *ngIf="obs.hasEditPermissions"
@@ -288,28 +284,6 @@
         <cds-dropdown-list [items]="(sortItems$ | async) || []"></cds-dropdown-list>
       </cds-dropdown>
     </cds-label>
-
-    <cds-label *ngIf="displayExportButton">
-      <span class="label-with-tooltip select-label">
-        {{ 'listColumn.exportField' | translate }}
-
-        <v-tooltip-icon
-          [tooltip]="'listColumn.exportTooltip' | translate"
-          [disabled]="modalObs.disableInput"
-        ></v-tooltip-icon>
-      </span>
-
-      <cds-toggle
-        formControlName="exportable"
-        data-testid="export-selector-toggle"
-        [onText]="'listColumn.sortableYes' | translate"
-        [offText]="'listColumn.sortableNo' | translate"
-        [keyColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.Yes' | translate)"
-        [valueColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.No' | translate)"
-        [required]="false"
-        [size]="'sm'"
-      ></cds-toggle>
-    </cds-label>
   </form>
 </ng-template>
 
@@ -349,34 +323,4 @@
     titleTranslationKey="listColumn.deleteColumn"
     contentTranslationKey="listColumn.deleteColumnConfirmation"
   ></valtimo-confirmation-modal>
-</ng-template>
-
-<ng-template #viewToggle>
-  <cds-tooltip [description]="'JSON editor'">
-    <button
-      [cdsButton]="buttonTheme()"
-      data-testid="case-management-list-columns-switch-view"
-      iconOnly="true"
-      (click)="switchView()"
-    >
-      <svg cdsIcon="code" size="16"></svg>
-    </button>
-  </cds-tooltip>
-</ng-template>
-
-<ng-template #downloadButton let-obs="obs">
-  <button
-    cdsButton="ghost"
-    iconOnly="true"
-    (click)="onDownloadClick()"
-    [disabled]="
-      !obs.downloadUrl ||
-      !obs.downloadName ||
-      obs.caseListColumn?.length < 1 ||
-      obs.disableInput ||
-      obs.loadingCaseListColumns
-    "
-  >
-    <svg cdsIcon="download" size="16"></svg>
-  </button>
 </ng-template>
