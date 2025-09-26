@@ -32,12 +32,4 @@ interface Roltype {
   url: string;
 }
 
-interface CaseListItem {
-  autoAssignTasks: boolean;
-  canHaveAssignee: boolean;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  name: string;
-}
-
-export {Objecttype, ObjecttypeKeys, Roltype, CaseListItem};
+export {Objecttype, ObjecttypeKeys, Roltype};

@@ -17,8 +17,8 @@
 import {Injectable} from '@angular/core';
 import {catchError, Observable, of} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService, Page} from '@valtimo/shared';
-import {CaseListItem, Objecttype, Roltype} from '../models';
+import {ConfigService} from '@valtimo/shared';
+import {Objecttype, Roltype} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -39,28 +39,11 @@ export class VerzoekPluginService {
     );
   }
 
-  getRoltypesByCaseDefinition(
-    caseDefinitionKey: string,
-    params: {caseDefinitionVersionTag?: string}
-  ): Observable<Array<Roltype>> {
-    Object.keys(params).forEach(paramKey => {
-      const paramValue = params[paramKey];
-      if (paramValue == null) {
-        params[paramKey] = '';
-      }
-    });
-
+  getRoltypesByDocumentDefinitionName(caseDefinitionKey: string): Observable<Array<Roltype>> {
     return this.http
       .get<
         Array<Roltype>
-      >(`${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/roltype`, {params})
+      >(`${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/roltype`)
       .pipe(catchError(() => of([])));
-  }
-
-  public getCaseDefinitions(params: any): Observable<Page<CaseListItem>> {
-    return this.http.get<Page<CaseListItem>>(
-      `${this.valtimoEndpointUri}management/v1/case-definition`,
-      {params}
-    );
   }
 }

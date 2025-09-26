@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {TimelineItem} from '../../models';
-import {BehaviorSubject} from 'rxjs';
 
 @Component({
   selector: 'valtimo-timeline',
@@ -24,13 +23,21 @@ import {BehaviorSubject} from 'rxjs';
   standalone: false,
 })
 export class TimelineComponent {
-  public readonly items$ = new BehaviorSubject<Array<TimelineItem>>([]);
-  @Input() public set items(value: Array<TimelineItem>) {
-    this.items$.next(value);
-  }
+  @Input() items: Array<TimelineItem>;
+  @Input() actions?: any[];
 
-  public readonly actions$ = new BehaviorSubject<{[id: string]: object}>({});
-  @Input() public set actions(value: any[]) {
-    this.actions$.next(value.reduce((acc, curr) => ({...acc, [curr.id]: curr}), {}));
+  public getSupportedActions(item: TimelineItem, actions: Array<any>): Array<any> {
+    return (
+      actions?.filter(action => {
+        const actionId = action?.id;
+        const itemSupportedActions = Array.isArray(item.supportedActionIds);
+
+        if (actionId && itemSupportedActions) {
+          return item.supportedActionIds.includes(actionId);
+        }
+
+        return true;
+      }) || []
+    );
   }
 }

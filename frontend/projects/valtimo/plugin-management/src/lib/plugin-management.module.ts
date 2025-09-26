@@ -31,7 +31,7 @@ import {
   ParagraphModule,
   StepperModule,
   TableModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
   VModalModule,
 } from '@valtimo/components';
 import {
@@ -67,7 +67,7 @@ import {
     CarbonListModule,
     CarbonModalModule,
     IconModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     LayerModule,
     TilesModule,
     LoadingModule,

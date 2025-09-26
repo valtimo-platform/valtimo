@@ -1,0 +1,105 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    widgetConfiguration: widgetConfiguration$ | async,
+    collectionWidgetCards: collectionWidgetCards$ | async,
+    noVisibleFields: noVisibleFields$ | async,
+  } as obs"
+>
+  <section class="valtimo-widget-collection__header">
+    <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
+
+    @if (obs.widgetConfiguration?.actions?.length === 1) {
+      <button
+        *ngIf="canCreateCamundaExecution$ | async"
+        cdsButton="ghost"
+        (click)="onProcessStartClick(obs.widgetConfiguration?.actions[0])"
+      >
+        {{ obs.widgetConfiguration?.actions[0].name }}
+      </button>
+    }
+  </section>
+
+  <div
+    #widgetCollection
+    [ngClass]="{
+      'valtimo-widget-collection__render-vertically': amountOfColumns() === 1,
+      'valtimo-widget-collection__render-two-columns': amountOfColumns() === 2,
+      'valtimo-widget-collection__render-three-columns': amountOfColumns() === 3,
+      'valtimo-widget-collection__container': amountOfColumns() === 4,
+    }"
+  >
+    @for (card of obs?.collectionWidgetCards; track card.key) {
+      <div
+        *ngIf="!obs.noVisibleFields"
+        class="valtimo-widget-collection__card"
+        [ngClass]="{'valtimo-widget-collection__card--hidden': card.hidden}"
+      >
+        <span class="valtimo-widget-collection__card-title">{{ card.title }}</span>
+
+        @for (field of card.fields; track field.key) {
+          <div
+            *ngIf="
+              (field?.value !== null && field?.value !== '-' && field?.hideWhenEmpty) ||
+              !field?.hideWhenEmpty
+            "
+            [ngClass]="{
+              'valtimo-widget-collection__full-width-input': field?.width === 'full',
+              'valtimo-widget-collection__half-width-input': field?.width === 'half',
+            }"
+          >
+            <cds-label class="valtimo-widget-collection__label" [attr.title]="field?.title">
+              {{ field?.title }}
+
+              <input
+                [value]="field?.value"
+                [readonly]="true"
+                class="valtimo-widget-collection__card-input"
+                cdsText
+              />
+            </cds-label>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (obs.noVisibleFields) {
+    <valtimo-no-results
+      [collapseVertically]="true"
+      [description]="'case.widgets.emptyFields' | translate"
+      [smallPadding]="true"
+    ></valtimo-no-results>
+  }
+
+  @if (!obs?.collectionWidgetCards?.length) {
+    <valtimo-no-results
+      [collapseVertically]="true"
+      [description]="'case.widgets.noData' | translate"
+      [smallPadding]="true"
+    ></valtimo-no-results>
+  }
+
+  <cds-pagination-nav
+    *ngIf="paginationModel() && (showPagination$ | async)"
+    class="valtimo-widget-collection__pagination"
+    [model]="paginationModel()"
+    (selectPage)="onSelectPage($event)"
+  >
+  </cds-pagination-nav>
+</ng-container>

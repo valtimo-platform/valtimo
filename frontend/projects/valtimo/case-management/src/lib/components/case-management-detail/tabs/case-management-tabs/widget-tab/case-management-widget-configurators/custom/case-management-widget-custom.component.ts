@@ -27,7 +27,7 @@ import {
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {CustomCaseWidgetConfig, WidgetCustomContent} from '@valtimo/case';
+import {CUSTOM_CASE_WIDGET_TOKEN, CustomCaseWidgetConfig, WidgetCustomContent} from '@valtimo/case';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
@@ -35,7 +35,6 @@ import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} f
 import {WidgetContentComponent} from '../../../../../../../models';
 import {WidgetWizardService} from '../../../../../../../services';
 import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
-import {CUSTOM_WIDGET_TOKEN} from '@valtimo/layout';
 
 @Component({
   templateUrl: './case-management-widget-custom.component.html',
@@ -58,7 +57,7 @@ export class CaseManagementWidgetCustomComponent
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public readonly form = this.fb.group({
-    widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
+    widgetTitle: this.fb.control(this.widgetWizardService.widgetTitle(), Validators.required),
   });
 
   public get widgetTitle(): AbstractControl<string | null, string | null> | null {
@@ -93,7 +92,7 @@ export class CaseManagementWidgetCustomComponent
 
   constructor(
     @Optional()
-    @Inject(CUSTOM_WIDGET_TOKEN)
+    @Inject(CUSTOM_CASE_WIDGET_TOKEN)
     private readonly customCaseWidgetConfig: CustomCaseWidgetConfig,
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
@@ -112,7 +111,7 @@ export class CaseManagementWidgetCustomComponent
     if (!componentKey) return;
 
     this._selectedCustomComponentKey$.next(componentKey);
-    this.widgetWizardService.$widgetContent.set({componentKey});
+    this.widgetWizardService.widgetContent.set({componentKey});
     this.changeValidEvent.emit(true);
   }
 
@@ -128,13 +127,13 @@ export class CaseManagementWidgetCustomComponent
   private openTitleSubscription(): void {
     this._subscriptions.add(
       this.widgetTitle?.valueChanges.subscribe(title => {
-        this.widgetWizardService.$widgetTitle.set(title);
+        this.widgetWizardService.widgetTitle.set(title);
       })
     );
   }
 
   private prefill(): void {
-    const componentKey = (this.widgetWizardService.$widgetContent() as WidgetCustomContent)
+    const componentKey = (this.widgetWizardService.widgetContent() as WidgetCustomContent)
       ?.componentKey;
 
     if (!componentKey || Object.keys(this.customCaseWidgetConfig || {}).length === 0) return;

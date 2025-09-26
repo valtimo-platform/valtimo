@@ -31,48 +31,38 @@ export class TaskManagementApiService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getTaskListColumns(caseDefinitionKey: string): Observable<TaskListColumn[]> {
+  public getTaskListColumns(caseDefinitionName: string): Observable<TaskListColumn[]> {
     return this.httpClient.get<TaskListColumn[]>(
-      this.getApiUrl(`/management/v1/case/${caseDefinitionKey}/task-list-column`)
+      this.getApiUrl(`/management/v1/case/${caseDefinitionName}/task-list-column`)
     );
   }
 
   public updateTaskListColumn(
-    caseDefinitionKey: string,
+    caseDefinitionName: string,
     column: TaskListColumn
   ): Observable<TaskListColumn> {
     return this.httpClient.put<TaskListColumn>(
-      this.getApiUrl(`/management/v1/case/${caseDefinitionKey}/task-list-column/${column.key}`),
+      this.getApiUrl(`/management/v1/case/${caseDefinitionName}/task-list-column/${column.key}`),
       column
     );
   }
 
   public deleteTaskListColumn(
-    caseDefinitionKey: string,
+    caseDefinitionName: string,
     columnKey: string
   ): Observable<TaskListColumn> {
     return this.httpClient.delete<TaskListColumn>(
-      this.getApiUrl(`/management/v1/case/${caseDefinitionKey}/task-list-column/${columnKey}`)
-    );
-  }
-
-  public updateTaskListColumnOrder(
-    caseDefinitionKey: string,
-    columnKeys: string[]
-  ): Observable<TaskListColumn[]> {
-    return this.httpClient.post<TaskListColumn[]>(
-      this.getApiUrl(`/management/v2/case/${caseDefinitionKey}/task-list-column`),
-      columnKeys
+      this.getApiUrl(`/management/v1/case/${caseDefinitionName}/task-list-column/${columnKey}`)
     );
   }
 
   public swapTaskListColumns(
-    caseDefinitionKey: string,
+    caseDefinitionName: string,
     firstColumn: TaskListColumn,
     secondColumn: TaskListColumn
   ): Observable<TaskListColumn[]> {
     return this.httpClient.post<TaskListColumn[]>(
-      this.getApiUrl(`/management/v1/case/${caseDefinitionKey}/task-list-column`),
+      this.getApiUrl(`/management/v1/case/${caseDefinitionName}/task-list-column`),
       {first: firstColumn.key, second: secondColumn.key}
     );
   }

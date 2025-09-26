@@ -34,7 +34,7 @@ import {
   RadioModule,
   SelectModule,
   TooltipIconModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
   VModalModule,
 } from '@valtimo/components';
 
@@ -55,7 +55,7 @@ import {
     TooltipIconModule,
     CarbonMultiInputModule,
     CarbonButtonModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     VModalModule,
     IconModule,
   ],

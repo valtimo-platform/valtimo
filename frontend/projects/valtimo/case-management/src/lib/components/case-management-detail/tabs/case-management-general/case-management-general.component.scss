@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+.case-management-general-tab {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+}
+
 .read-only-notification {
   margin-bottom: 16px;
   max-inline-size: 100%;

@@ -15,12 +15,11 @@
  */
 import {CaseManagementParams, ManagementContext} from '../models';
 import {ActivatedRoute} from '@angular/router';
-import {combineLatest, distinctUntilChanged, filter, map, Observable, of, switchMap} from 'rxjs';
+import {combineLatest, distinctUntilChanged, filter, map, Observable, of} from 'rxjs';
 import {isEqual} from 'lodash';
 
 const getCaseManagementRouteParams = (
-  route: ActivatedRoute,
-  doFilter = false
+  route: ActivatedRoute
 ): Observable<CaseManagementParams | undefined> => {
   const rootParams$ = route.params ? route.params : of({});
   const parentParams$ = route.parent?.params ? route.parent.params : of({});
@@ -35,7 +34,7 @@ const getCaseManagementRouteParams = (
       }
       return null;
     }),
-    filter((params): params is CaseManagementParams => (doFilter ? params !== null : true)),
+    filter((params): params is CaseManagementParams => params !== null),
     distinctUntilChanged((previous, current) => isEqual(previous, current))
   );
 };
@@ -47,27 +46,4 @@ function getContextObservable(route: ActivatedRoute): Observable<ManagementConte
   );
 }
 
-function getCaseManagementRouteParamsAndContext(
-  route: ActivatedRoute
-): Observable<[ManagementContext, CaseManagementParams]> {
-  const params$ = getCaseManagementRouteParams(route, true);
-  const context$ = getContextObservable(route);
-
-  return context$.pipe(
-    switchMap(context => {
-      if (context === 'case') {
-        return combineLatest([of(context), params$]) as Observable<
-          [ManagementContext, CaseManagementParams]
-        >;
-      }
-
-      const fallbackParams: CaseManagementParams = {
-        caseDefinitionKey: '',
-        caseDefinitionVersionTag: '',
-      };
-      return of([context, fallbackParams] as [ManagementContext, CaseManagementParams]);
-    })
-  );
-}
-
-export {getCaseManagementRouteParams, getContextObservable, getCaseManagementRouteParamsAndContext};
+export {getCaseManagementRouteParams, getContextObservable};

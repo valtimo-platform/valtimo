@@ -33,20 +33,15 @@
     </cds-notification>
   }
 
-  <div class="case-management-general-tab" muuri [columnMinWidth]="350">
+  <div class="case-management-general-tab">
     <ng-template #extensions></ng-template>
 
-    <valtimo-muuri-item>
-      <valtimo-case-management-case-handler
-        muuriItem
-        [isReadOnly]="obs.isReadOnly"
-        *ngIf="documentDefinition$ | async"
-      ></valtimo-case-management-case-handler>
-    </valtimo-muuri-item>
+    <valtimo-case-management-case-handler
+      [isReadOnly]="obs.isReadOnly"
+      *ngIf="documentDefinition$ | async"
+    ></valtimo-case-management-case-handler>
 
-    <valtimo-muuri-item>
-      <valtimo-case-management-external-start-form [isReadOnly]="obs.isReadOnly">
-      </valtimo-case-management-external-start-form>
-    </valtimo-muuri-item>
+    <valtimo-case-management-external-start-form [isReadOnly]="obs.isReadOnly">
+    </valtimo-case-management-external-start-form>
   </div>
 </ng-container>

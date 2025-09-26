@@ -15,7 +15,7 @@
  */
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {CaseManagementParams, getCaseManagementRouteParams, Page} from '@valtimo/shared';
+import {CaseManagementParams, Page, getCaseManagementRouteParams} from '@valtimo/shared';
 import {FormFlowService, ListFormFlowDefinition} from '@valtimo/form-flow-management';
 import {BehaviorSubject, combineLatest, map, Observable, Subscription, tap} from 'rxjs';
 import {switchMap, take} from 'rxjs/operators';
@@ -64,7 +64,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           content: definition.key,
           id: definition.key,
           selected: selectedProcessLink
-            ? selectedProcessLink.formFlowDefinitionKey === definition.key
+            ? selectedProcessLink.formFlowDefinitionId === definition.key
             : false,
         }))
       ),
@@ -208,6 +208,7 @@ export class SelectFormFlowComponent implements OnInit, OnDestroy {
           ...(isUserTask && {formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE}),
           ...(isUserTask && {subtitles: this.subtitlesValue}),
         } as FormFlowProcessLinkCreateRequestDto;
+
 
         if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
           this.stateService.sendProcessLinkCreateEvent(createRequest);

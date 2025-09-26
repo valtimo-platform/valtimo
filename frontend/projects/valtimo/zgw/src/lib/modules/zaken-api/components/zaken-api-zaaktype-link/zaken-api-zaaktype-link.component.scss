@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-cds-tile {
-  background: var(--cds-layer-02);
-  width: 100%;
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
-
 .valtimo-zaak-type-link {
-  &__title {
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: 600;
-    margin-bottom: 16px;
-  }
-
   &__link-button {
     align-self: flex-end;
   }

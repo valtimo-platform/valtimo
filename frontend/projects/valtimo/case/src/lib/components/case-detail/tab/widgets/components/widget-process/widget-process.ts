@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
+import {BasicCaseWidget} from '../../../../../../models';
 import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
 import {PermissionService} from '@valtimo/access-control';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {
-  CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION,
-  WIDGET_PERMISSION_RESOURCE,
-} from '../../widgets.permissions';
-import {BasicWidget} from '@valtimo/layout';
+import {CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION, WIDGET_PERMISSION_RESOURCE} from '../../widgets.permissions';
 
 export class WidgetProcess {
   private readonly _baseDocumentId$ = new BehaviorSubject<string | null>(null);
-  private readonly _baseWidgetConfiguration$ = new BehaviorSubject<BasicWidget | null>(null);
+  private readonly _baseWidgetConfiguration$ = new BehaviorSubject<BasicCaseWidget | null>(null);
   protected set baseDocumentId(value: string) {
     this._baseDocumentId$.next(value);
   }
-  protected set baseWidgetConfiguration(value: BasicWidget) {
+  protected set baseWidgetConfiguration(value: BasicCaseWidget) {
     this._baseWidgetConfiguration$.next(value);
   }
   protected get baseDocumentId(): string {
@@ -38,44 +35,34 @@ export class WidgetProcess {
 
   private readonly _processDefinitionCaseDefinition$ = combineLatest([
     this._baseDocumentId$,
-    this._baseWidgetConfiguration$,
+    this._baseWidgetConfiguration$
   ]).pipe(
-    switchMap(([documentId, widgetConfiguration]: [string | null, BasicWidget | null]) => {
+    switchMap(([documentId, widgetConfiguration]: [string | null, BasicCaseWidget | null]) => {
       // if no action is set we don't need to check for permissions
-      if (
-        !documentId ||
-        !widgetConfiguration ||
-        !widgetConfiguration.actions?.[0]?.processDefinitionKey
-      ) {
+      if (!documentId || !widgetConfiguration || !widgetConfiguration.actions?.[0]?.processDefinitionKey) {
         return of(null);
       }
       return this.documentService.findProcessDefinitionCaseDefinitionsForDocument(documentId, {
-        startableByUser: true,
+        startableByUser: true
       });
     })
-  );
+  )
 
-  public readonly canCreateCamundaExecution$: Observable<boolean> = combineLatest([
-    this._processDefinitionCaseDefinition$,
-    this._baseWidgetConfiguration$,
-  ]).pipe(
-    switchMap(
-      ([processDefinitionCaseDefinition, widgetConfiguration]: [
-        ProcessDefinitionCaseDefinition[] | null,
-        BasicWidget | null,
-      ]) => {
-        let requiredProcess = processDefinitionCaseDefinition.find(
-          (processDefinition: ProcessDefinitionCaseDefinition) =>
-            widgetConfiguration.actions[0].processDefinitionKey ===
-            processDefinition.processDefinitionKey
+  public readonly canCreateCamundaExecution$: Observable<boolean> =
+    combineLatest([
+      this._processDefinitionCaseDefinition$,
+      this._baseWidgetConfiguration$
+    ]).pipe(
+      switchMap(([processDefinitionCaseDefinition, widgetConfiguration]: [ProcessDefinitionCaseDefinition[] | null, BasicCaseWidget | null]) => {
+        let requiredProcess = processDefinitionCaseDefinition.find((processDefinition: ProcessDefinitionCaseDefinition) =>
+          widgetConfiguration.actions[0].processDefinitionKey === processDefinition.processDefinitionKey
         );
         return this.permissionService.requestPermission(CAN_CREATE_CAMUNDA_EXECUTION_PERMISSION, {
           resource: WIDGET_PERMISSION_RESOURCE.camundaProcessDefinition,
-          identifier: requiredProcess.id.processDefinitionId,
-        });
-      }
+          identifier: requiredProcess.id.processDefinitionId
+        })
+      }),
     )
-  );
 
   constructor(
     protected readonly documentService: DocumentService,

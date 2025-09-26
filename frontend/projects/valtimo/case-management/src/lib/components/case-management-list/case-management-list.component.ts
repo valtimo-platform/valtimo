@@ -17,13 +17,13 @@ import {Component} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination} from '@valtimo/components';
-import {Page, TemplatePayload} from '@valtimo/document';
-import {EnvironmentService} from '@valtimo/shared';
+import {DocumentService, Page, TemplatePayload} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
 import {BehaviorSubject, combineLatest, map, Observable, switchMap, take} from 'rxjs';
 import {CaseListItem} from '../../models';
 import {CaseManagementService} from '../../services';
+import {EnvironmentService} from '@valtimo/shared';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -34,7 +34,6 @@ moment.locale(localStorage.getItem('langKey') || '');
   styleUrls: ['./case-management-list.component.scss'],
 })
 export class CaseManagementListComponent {
-  private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 
   public readonly canUpdateGlobalConfiguration$ =
@@ -43,7 +42,6 @@ export class CaseManagementListComponent {
   public readonly caseListItems$: Observable<CaseListItem[]> = combineLatest([
     this.route.queryParams,
     this.canUpdateGlobalConfiguration$,
-    this._refresh$,
   ]).pipe(
     switchMap(([params, canUpdate]) =>
       this.caseManagementService.getCaseDefinitions({
@@ -80,6 +78,7 @@ export class CaseManagementListComponent {
   private _paginationInitialized = false;
   constructor(
     private readonly caseManagementService: CaseManagementService,
+    private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly menuService: MenuService,
     private readonly route: ActivatedRoute,
@@ -95,7 +94,6 @@ export class CaseManagementListComponent {
     if (!definitionUploaded) {
       return;
     }
-    this._refresh$.next(null);
     this.menuService.reload();
   }
 
@@ -115,8 +113,6 @@ export class CaseManagementListComponent {
           'version',
           response.caseDefinitionVersionTag,
         ]);
-        this._refresh$.next(null);
-        this.menuService.reload();
       });
   }
 

@@ -37,11 +37,6 @@ import {v4 as uuidv4} from 'uuid';
 export class PluginManagementComponent {
   public readonly fields: ColumnConfig[] = [
     {
-      key: 'title',
-      label: 'pluginManagement.labels.configurationName',
-      viewType: ViewType.TEXT,
-    },
-    {
       key: 'pluginName',
       label: 'pluginManagement.labels.pluginName',
       viewType: ViewType.TEXT,
@@ -49,6 +44,11 @@ export class PluginManagementComponent {
     {
       key: 'definitionKey',
       label: 'pluginManagement.labels.identifier',
+      viewType: ViewType.TEXT,
+    },
+    {
+      key: 'title',
+      label: 'pluginManagement.labels.configurationName',
       viewType: ViewType.TEXT,
     },
   ];

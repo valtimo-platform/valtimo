@@ -66,7 +66,7 @@
       (selected)="navigateToTab(TabEnum.FORMS)"
     >
     </cds-tab>
-
+    
     <cds-tab
       class="no-padding-left-right no-padding-top-bottom"
       [id]="TabEnum.FORM_FLOWS"
@@ -77,29 +77,49 @@
     </cds-tab>
 
     <cds-tab
+      class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.SEARCH"
+      [active]="obs.currentTab === TabEnum.SEARCH"
+      [heading]="'caseManagement.tabs.searchFields' | translate"
+      (selected)="navigateToTab(TabEnum.SEARCH)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      *ngIf="caseListColumn"
       class="no-padding-left-right no-padding-top-bottom"
-      [id]="TabEnum.TASKS"
-      [active]="obs.currentTab === TabEnum.TASKS"
-      [heading]="'caseManagement.tabs.tasks' | translate"
-      (selected)="navigateToTab(TabEnum.TASKS)"
+      [id]="TabEnum.LIST"
+      [active]="obs.currentTab === TabEnum.LIST"
+      [heading]="'caseManagement.tabs.listColumns' | translate"
+      (selected)="navigateToTab(TabEnum.LIST)"
     >
     </cds-tab>
 
     <cds-tab
-      class="main-content no-padding-left-right no-padding-bottom"
-      [id]="TabEnum.CASE_LIST"
-      [active]="obs.currentTab === TabEnum.CASE_LIST"
-      [heading]="'caseManagement.tabs.caseListTab.title' | translate"
-      (selected)="navigateToTab(TabEnum.CASE_LIST)"
+      *ngIf="tabManagementEnabled"
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TABS"
+      [active]="obs.currentTab === TabEnum.TABS"
+      [heading]="'caseManagement.tabs.tabManagement' | translate"
+      (selected)="navigateToTab(TabEnum.TABS)"
     >
     </cds-tab>
 
     <cds-tab
-      class="main-content no-padding-left-right no-padding-bottom"
-      [id]="TabEnum.CASE_DETAILS"
-      [active]="obs.currentTab === TabEnum.CASE_DETAILS"
-      [heading]="'caseManagement.tabs.caseDetailsTab.title' | translate"
-      (selected)="navigateToTab(TabEnum.CASE_DETAILS)"
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.STATUSES"
+      [active]="obs.currentTab === TabEnum.STATUSES"
+      [heading]="'caseManagement.tabs.statuses' | translate"
+      (selected)="navigateToTab(TabEnum.STATUSES)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TAGS"
+      [active]="obs.currentTab === TabEnum.TAGS"
+      [heading]="'caseManagement.tabs.tags' | translate"
+      (selected)="navigateToTab(TabEnum.TAGS)"
     >
     </cds-tab>
 

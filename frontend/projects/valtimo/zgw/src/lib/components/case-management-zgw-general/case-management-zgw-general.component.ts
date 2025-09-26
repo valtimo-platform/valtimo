@@ -13,26 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {MuuriDirectiveModule} from '@valtimo/components';
-import {
-  DocumentenApiVersionComponent,
-  DocumentObjectenApiSyncComponent,
-  ZakenApiZaaktypeLinkComponent,
-} from '../../modules';
+import {DocumentObjectenApiSyncComponent, ZakenApiZaaktypeLinkComponent} from '../../modules';
 
 @Component({
   templateUrl: './case-management-zgw-general.component.html',
   styleUrl: './case-management-zgw-general.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    CommonModule,
-    ZakenApiZaaktypeLinkComponent,
-    DocumentObjectenApiSyncComponent,
-    MuuriDirectiveModule,
-    DocumentenApiVersionComponent,
-  ],
+  imports: [CommonModule, ZakenApiZaaktypeLinkComponent, DocumentObjectenApiSyncComponent],
 })
 export class CaseManagementZgwGeneralComponent {}

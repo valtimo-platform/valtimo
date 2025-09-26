@@ -27,8 +27,6 @@ import {
   ProcessLinkUpdateEvent,
 } from '@valtimo/process-link';
 import {OpenProcessLinkModalEvent} from '../models';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
-import {FormDefinitionOption, FormService} from '@valtimo/form';
 
 @Injectable()
 export class ProcessManagementEditorService implements OnDestroy {
@@ -46,6 +44,7 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._selectionProcessDefinitionSubject$.getValue();
   }
 
+  private _processLinkActivityIdCache: {[key: string]: string} = {};
   private readonly _processLinksForSelectedDefinition$ = new BehaviorSubject<ProcessLink[]>([]);
 
   public get processLinksForSelectedDefinition$(): Observable<ProcessLink[]> {
@@ -70,39 +69,14 @@ export class ProcessManagementEditorService implements OnDestroy {
     this._selectionProcessDefinitionSubject$.next(definition);
   }
 
-  private readonly _caseManagementRouteParams$ = new BehaviorSubject<
-    [ManagementContext, CaseManagementParams] | null
-  >(null);
-
-  private readonly _formDefinitionOptions$ = new BehaviorSubject<FormDefinitionOption[]>([]);
-
-  public get formDefinitionOptions(): FormDefinitionOption[] {
-    return this._formDefinitionOptions$.getValue();
-  }
-
   private _updateBpmnViewFunction!: () => void;
 
-  private _updatingBpmnView = false;
-
-  private _activityIdBusinessIdMap: Record<string, string> = {};
-
-  constructor(
-    private readonly processLinkService: ProcessLinkService,
-    private readonly formService: FormService
-  ) {
+  constructor(private readonly processLinkService: ProcessLinkService) {
     this.openSelectedProcessDefinitionSubscription();
-    this.openFormDefinitionOptionsSubscription();
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-  }
-
-  public setCaseManagementRouteParams(
-    context: ManagementContext,
-    params: CaseManagementParams
-  ): void {
-    this._caseManagementRouteParams$.next([context, params]);
   }
 
   public sendOpenProcessLinkModalEvent(
@@ -154,25 +128,18 @@ export class ProcessManagementEditorService implements OnDestroy {
   }
 
   public setProcessLinksForSelectedDefinition(processLinks: ProcessLink[]): void {
+    this._processLinkActivityIdCache = {};
     this._processLinksForSelectedDefinition$.next(processLinks);
   }
 
-  public setActivityIdBusinessIdMap(activityIdBusinessIdMap: Record<string, string>): void {
-    this._activityIdBusinessIdMap = activityIdBusinessIdMap;
+  public updateCacheForProcessLink(processLink: ProcessLink, elementId: string): void {
+    if (this.getCacheActivityId(elementId)) return;
+
+    this._processLinkActivityIdCache[elementId] = processLink.activityId;
   }
 
-  public updateProcessLinksOnIdChange(activityId: string, newBusinessId: string): void {
-    const newBusinessIdWithoutLabelString = newBusinessId.replace('_label', '');
-
-    if (
-      !this._activityIdBusinessIdMap[activityId] ||
-      this._activityIdBusinessIdMap[activityId] === newBusinessIdWithoutLabelString
-    ) {
-      return;
-    }
-
-    this.updateProcessLinkId(this._activityIdBusinessIdMap[activityId], newBusinessId);
-    this._activityIdBusinessIdMap = {...this._activityIdBusinessIdMap, [activityId]: newBusinessId};
+  public getCacheActivityId(elementId: string): string | undefined {
+    return this._processLinkActivityIdCache[elementId];
   }
 
   private openSelectedProcessDefinitionSubscription(): void {
@@ -190,46 +157,7 @@ export class ProcessManagementEditorService implements OnDestroy {
   }
 
   private updateBpmnView(): void {
-    if (!this._updateBpmnViewFunction || this._updatingBpmnView) return;
-    this._updatingBpmnView = true;
+    if (!this._updateBpmnViewFunction) return;
     this._updateBpmnViewFunction();
-    this._updatingBpmnView = false;
-  }
-
-  private updateProcessLinkId(oldBusinessId: string, newBusinessId: string): void {
-    this.setProcessLinksForSelectedDefinition(
-      this.processLinksForSelectedDefinition.map(processLink => {
-        if (processLink.activityId === oldBusinessId) {
-          return {...processLink, activityId: newBusinessId};
-        }
-
-        return processLink;
-      })
-    );
-
-    this.updateBpmnView();
-  }
-
-  private openFormDefinitionOptionsSubscription(): void {
-    this._subscriptions.add(
-      this._caseManagementRouteParams$
-        .pipe(
-          filter((params): params is [ManagementContext, CaseManagementParams] => params !== null)
-        )
-        .subscribe(([context, params]) => {
-          if (context === 'independent') {
-            this.formService
-              .getAllUnlinkedFormDefinitions()
-              .subscribe(options => this._formDefinitionOptions$.next(options));
-          } else {
-            this.formService
-              .getAllFormDefinitionsForCaseDefinition(
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag
-              )
-              .subscribe(options => this._formDefinitionOptions$.next(options));
-          }
-        })
-    );
   }
 }

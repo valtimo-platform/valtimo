@@ -34,11 +34,10 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   @Input() public set searchFields(fields: Array<SearchField>) {
     this.searchFields$.next(fields);
   }
-  private readonly _caseDefinitionKey$ = new BehaviorSubject<string>('');
-  @Input() public set caseDefinitionKey(value: string) {
-    this._caseDefinitionKey$.pipe(take(1)).subscribe(currentCaseDefinitionKey => {
-      if (currentCaseDefinitionKey !== value) {
-        this._caseDefinitionKey$.next(value);
+  @Input() public set documentDefinitionName(documentDefinitionName: string) {
+    this._documentDefinitionName$.pipe(take(1)).subscribe(currentDocumentDefinitionName => {
+      if (currentDocumentDefinitionName !== documentDefinitionName) {
+        this._documentDefinitionName$.next(documentDefinitionName);
       }
     });
   }
@@ -67,6 +66,8 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   );
   public readonly expanded$ = new BehaviorSubject<boolean>(false);
   public readonly clear$ = new Subject<null>();
+
+  private readonly _documentDefinitionName$ = new BehaviorSubject<string>('');
 
   private readonly _subscriptions = new Subscription();
 
@@ -99,7 +100,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this.openCaseDefinitionKeySubscription();
+    this.openDocumentDefinitionNameSubscription();
     this.openValuesSubjectSubscription();
     this.openClearSubscription();
     this.openDropdownSubscription();
@@ -190,9 +191,9 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     return value;
   }
 
-  private openCaseDefinitionKeySubscription(): void {
+  private openDocumentDefinitionNameSubscription(): void {
     this._subscriptions.add(
-      this._caseDefinitionKey$.subscribe(() => {
+      this._documentDefinitionName$.subscribe(() => {
         this.collapse();
         this.clear();
       })
@@ -226,16 +227,16 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
 
   private openDropdownSubscription(): void {
     this._subscriptions.add(
-      combineLatest([this._caseDefinitionKey$, this.searchFields$])
+      combineLatest([this._documentDefinitionName$, this.searchFields$])
         .pipe(
-          map(([caseDefinitionKey, searchFields]) =>
+          map(([documentDefinitionName, searchFields]) =>
             searchFields
               ?.filter(searchField => searchField.dropdownDataProvider)
               .map(searchField =>
                 this.documentService
                   .getDropdownData(
                     searchField.dropdownDataProvider,
-                    caseDefinitionKey,
+                    documentDefinitionName,
                     searchField.key
                   )
                   .subscribe(dropdownData => {

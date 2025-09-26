@@ -32,7 +32,7 @@ import {
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
@@ -59,7 +59,7 @@ import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-manag
     CaseManagementWidgetsEditorComponent,
     CaseManagementWidgetTabEditModalComponent,
     CaseManagementWidgetsJsonEditorComponent,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     ButtonModule,
     IconModule,
     TabsModule,
@@ -217,9 +217,9 @@ export class CaseManagementWidgetTabComponent
       });
 
       this.breadcrumbService.setFourthBreadcrumb({
-        route: [`${route}/case-detail`],
-        content: this.translateService.instant('caseManagement.tabs.caseDetailsTab.title'),
-        href: `${route}/case-detail`,
+        route: [`${route}/tabs`],
+        content: this.translateService.instant('caseManagement.tabs.tabManagement'),
+        href: `${route}/tabs`,
       });
     });
   }

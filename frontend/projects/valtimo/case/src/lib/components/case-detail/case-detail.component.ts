@@ -270,8 +270,7 @@ export class CaseDetailComponent
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly $tabHorizontalOverflowDisabled =
-    this.caseTabService.$tabHorizontalOverflowDisabled;
+  public readonly tabHorizontalOverflowDisabled = this.caseTabService.tabHorizontalOverflowDisabled;
   public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
 
   public readonly showTaskList$ = this.caseTabService.showTaskList$;
@@ -515,8 +514,9 @@ export class CaseDetailComponent
 
   public onFormSubmitEvent(): void {
     this.caseDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
-    this.caseDetailLayoutService.refreshTasks();
-    this.tabLoader?.refreshView();
+
+    if (!this.tabLoader) return;
+    this.tabLoader.refreshView();
   }
 
   protected onConfirmRedirect(): void {
