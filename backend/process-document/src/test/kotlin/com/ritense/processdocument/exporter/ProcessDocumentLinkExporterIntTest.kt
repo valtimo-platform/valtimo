@@ -20,8 +20,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
 import com.ritense.processdocument.BaseIntegrationTest
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
@@ -35,15 +34,14 @@ import org.springframework.util.StreamUtils
 @Transactional(readOnly = true)
 class ProcessDocumentLinkExporterIntTest @Autowired constructor(
     private val resourceLoader: ResourceLoader,
-    private val operatonRepositoryService: OperatonRepositoryService,
+    private val camundaRepositoryService: CamundaRepositoryService,
     private val processDocumentLinkExporter: ProcessDocumentLinkExporter
 ) : BaseIntegrationTest() {
 
     @Test
     fun `should export process document links`(): Unit = runWithoutAuthorization {
-        val caseDefinitionId = CaseDefinitionId("house", "1.0.0")
         val documentDefinitionName = "house"
-        val result = processDocumentLinkExporter.export(DocumentDefinitionExportRequest(documentDefinitionName, caseDefinitionId))
+        val result = processDocumentLinkExporter.export(DocumentDefinitionExportRequest(documentDefinitionName, 1))
 
         val exportFile = result.exportFiles.single {
             it.path == PATH.format(documentDefinitionName)
@@ -62,13 +60,13 @@ class ProcessDocumentLinkExporterIntTest @Autowired constructor(
             JSONCompareMode.NON_EXTENSIBLE
         )
 
-        val processDefinitionId = operatonRepositoryService.findLatestProcessDefinition("loan-process-demo")!!.id
+        val processDefinitionId = camundaRepositoryService.findLatestProcessDefinition("loan-process-demo")!!.id
         assertThat(result.relatedRequests).contains(
-            ProcessDefinitionExportRequest(processDefinitionId, caseDefinitionId)
+            ProcessDefinitionExportRequest(processDefinitionId)
         )
     }
 
     companion object {
-        private const val PATH = "config/case/house/1-0-0/process-document-link/%s.process-document-link.json";
+        private const val PATH = "config/process-document-link/%s.json";
     }
 }
