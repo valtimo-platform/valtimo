@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,13 @@ package com.ritense.authorization.permission.operation
 
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.BaseIntegrationTest
-import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.testimpl.TestChildEntity
-import com.ritense.authorization.testimpl.TestDocument
 import com.ritense.authorization.testimpl.TestEntity
 import com.ritense.authorization.testimpl.TestEntityActionProvider.Companion.view
 import com.ritense.authorization.testimpl.TestEntityActionProvider.Companion.view_list
 import com.ritense.authorization.testimpl.TestEntityRepository
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
-import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -37,6 +34,7 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.annotation.Transactional
+import kotlin.test.assertEquals
 
 @Transactional
 class ContainsIntTest : BaseIntegrationTest() {
@@ -116,54 +114,6 @@ class ContainsIntTest : BaseIntegrationTest() {
         )
 
         assertTrue(hasPermission)
-    }
-
-    @Test
-    @WithMockUser(authorities = ["EXPRESSION_CONTAINS_ROLE_FOR_CONTEXT"])
-    fun `should have contextual permissions for entity where json array contains value in permission`() {
-        val testEntity = TestEntity(
-            TestChildEntity(listOf("one", "two", "three")),
-            "henk"
-        )
-
-        val hasPermission = authorizationService.hasPermission(
-            EntityAuthorizationRequest(
-                TestEntity::class.java,
-                view,
-                testEntity
-            ).withContext(
-                AuthorizationResourceContext(
-                    TestDocument::class.java,
-                    TestDocument("loan")
-                )
-            )
-        )
-
-        assertTrue(hasPermission)
-    }
-
-    @Test
-    @WithMockUser(authorities = ["EXPRESSION_CONTAINS_ROLE_FOR_CONTEXT"])
-    fun `should not have contextual permissions for entity where json array contains value in permission`() {
-        val testEntity = TestEntity(
-            TestChildEntity(listOf("one", "two", "three")),
-            "henk"
-        )
-
-        val hasPermission = authorizationService.hasPermission(
-            EntityAuthorizationRequest(
-                TestEntity::class.java,
-                view,
-                testEntity
-            ).withContext(
-                AuthorizationResourceContext(
-                    TestDocument::class.java,
-                    TestDocument("not-loan")
-                )
-            )
-        )
-
-        assertFalse(hasPermission)
     }
 
     @Test

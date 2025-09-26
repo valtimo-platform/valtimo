@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package com.ritense.case.service
 
-import com.ritense.BaseIntegrationTest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.case.BaseIntegrationTest
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.service.exception.TabAlreadyExistsException
 import com.ritense.case.web.rest.dto.CaseTabDto
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.document.service.DocumentDefinitionService
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -30,35 +30,34 @@ import org.springframework.transaction.annotation.Transactional
 
 class CaseTabServiceIntTest @Autowired constructor(
     private val caseTabService: CaseTabService,
-) : BaseIntegrationTest() {
+    private val documentDefinitionService: DocumentDefinitionService
+): BaseIntegrationTest() {
 
     @Test
     @Transactional
     fun `should create new tab`() {
 
         val caseTab = runWithoutAuthorization {
-            val caseDefinitionId = CaseDefinitionId.of("some-case-type", "1.2.3")
+            val caseDefinitionName = "some-case-type"
 
             documentDefinitionService.deploy(
                 """
                 {
-                    "${'$'}id": "${caseDefinitionId.key}.schema",
+                    "${'$'}id": "$caseDefinitionName.schema",
                     "${'$'}schema": "http://json-schema.org/draft-07/schema#"
                 }
-                """.trimIndent(),
-                caseDefinitionId
+            """.trimIndent()
             )
 
             val dto = CaseTabDto(
                 key = "some-key",
                 name = "Some name",
                 type = CaseTabType.STANDARD,
-                contentKey = "some-content-key",
-                showTasks = true
+                contentKey = "some-content-key"
             )
 
             caseTabService.createCaseTab(
-                caseDefinitionId,
+                caseDefinitionName,
                 dto
             )
         }
@@ -69,35 +68,34 @@ class CaseTabServiceIntTest @Autowired constructor(
     @Test
     @Transactional
     fun `should fail creating new tab with existing key`() {
+
         val caseTab = runWithoutAuthorization {
-            val caseDefinitionId = CaseDefinitionId.of("some-case-type", "1.2.3")
+            val caseDefinitionName = "some-case-type"
 
             documentDefinitionService.deploy(
                 """
                 {
-                    "${'$'}id": "${caseDefinitionId.key}.schema",
+                    "${'$'}id": "$caseDefinitionName.schema",
                     "${'$'}schema": "http://json-schema.org/draft-07/schema#"
                 }
-                """.trimIndent(),
-                caseDefinitionId
+            """.trimIndent()
             )
 
             val dto = CaseTabDto(
                 key = "some-key",
                 name = "Some name",
                 type = CaseTabType.STANDARD,
-                contentKey = "some-content-key",
-                showTasks = true
+                contentKey = "some-content-key"
             )
 
             caseTabService.createCaseTab(
-                caseDefinitionId,
+                caseDefinitionName,
                 dto
             )
 
             assertThrows<TabAlreadyExistsException> {
                 caseTabService.createCaseTab(
-                    caseDefinitionId,
+                    caseDefinitionName,
                     dto
                 )
             }
@@ -112,28 +110,26 @@ class CaseTabServiceIntTest @Autowired constructor(
 
         val exception = assertThrows<IllegalArgumentException> {
             runWithoutAuthorization {
-                val caseDefinitionId = CaseDefinitionId.of("some-case-type", "1.2.3")
+                val caseDefinitionName = "some-case-type"
 
                 documentDefinitionService.deploy(
                     """
-                    {
-                        "${'$'}id": "${caseDefinitionId.key}.schema",
-                        "${'$'}schema": "http://json-schema.org/draft-07/schema#"
-                    }
-                    """.trimIndent(),
-                    caseDefinitionId
+                {
+                    "${'$'}id": "$caseDefinitionName.schema",
+                    "${'$'}schema": "http://json-schema.org/draft-07/schema#"
+                }
+            """.trimIndent()
                 )
 
                 val dto = CaseTabDto(
                     key = "",
                     name = "",
                     type = CaseTabType.STANDARD,
-                    contentKey = "",
-                    showTasks = true
+                    contentKey = ""
                 )
 
                 caseTabService.createCaseTab(
-                    caseDefinitionId,
+                    caseDefinitionName,
                     dto
                 )
             }
@@ -146,26 +142,24 @@ class CaseTabServiceIntTest @Autowired constructor(
     @Transactional
     fun `should not create new tab when case definition does not exist`() {
 
-        val caseDefinitionId = CaseDefinitionId.of("some-case-type-that-does-not-exist", "1.0.0")
+        val caseDefinitionName = "some-case-type-that-does-not-exist"
 
         val dto = CaseTabDto(
             key = "some-key",
             name = "Some name",
             type = CaseTabType.STANDARD,
-            contentKey = "some-content-key",
-            showTasks = true
+            contentKey = "some-content-key"
         )
 
-        val exception = assertThrows<IllegalStateException> {
+        val exception = assertThrows<NoSuchElementException> {
             runWithoutAuthorization {
                 caseTabService.createCaseTab(
-                    caseDefinitionId,
+                    caseDefinitionName,
                     dto
                 )
             }
         }
 
-        Assertions.assertThat(exception.message)
-            .isEqualTo("CaseDefinition some-case-type-that-does-not-exist:1.0.0 does not exist.")
+        Assertions.assertThat(exception.message).isEqualTo("Case definition with name $caseDefinitionName does not exist!")
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,26 @@
 
 package com.ritense.valtimo.web.rest;
 
-import static com.ritense.valtimo.contract.utils.TestUtil.convertObjectToJsonBytes;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.mail.MailSender;
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import static com.ritense.valtimo.contract.utils.TestUtil.convertObjectToJsonBytes;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -44,17 +43,14 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 @Tag("security")
 public abstract class SecuritySpecificEndpointIntegrationTest {
 
-    @MockitoBean
+    @MockBean
     private UserManagementService userManagementService;
 
-    @MockitoBean
-    public ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker;
-
-    @MockitoBean
+    @MockBean
     public MailSender mailSender;
 
     @Autowired
-    protected MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     protected void assertHttpStatus(
         HttpMethod method,

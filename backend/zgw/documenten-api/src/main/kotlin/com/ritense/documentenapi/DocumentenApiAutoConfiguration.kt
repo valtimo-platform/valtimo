@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,183 +17,70 @@
 package com.ritense.documentenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationService
-import com.ritense.case_.service.ActiveCaseDefinitionService
-import com.ritense.catalogiapi.service.CatalogiService
-import com.ritense.document.service.DocumentDefinitionService
-import com.ritense.document.service.DocumentService
-import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.documentenapi.client.DocumentenApiClient
-import com.ritense.documentenapi.domain.DocumentenApiVersion
-import com.ritense.documentenapi.exporter.DocumentenApiUploadFieldExporter
-import com.ritense.documentenapi.exporter.ZgwDocumentListColumnExporter
-import com.ritense.documentenapi.importer.DocumentenApiUploadFieldImporter
-import com.ritense.documentenapi.importer.ZgwDocumentListColumnImporter
-import com.ritense.documentenapi.repository.DocumentenApiColumnRepository
-import com.ritense.documentenapi.repository.DocumentenApiUploadFieldRepository
 import com.ritense.documentenapi.security.DocumentenApiHttpSecurityConfigurer
-import com.ritense.documentenapi.service.DocumentDeleteHandler
-import com.ritense.documentenapi.service.DocumentenApiColumnDeploymentService
 import com.ritense.documentenapi.service.DocumentenApiService
-import com.ritense.documentenapi.service.DocumentenApiVersionService
-import com.ritense.documentenapi.web.rest.DocumentenApiManagementResource
 import com.ritense.documentenapi.web.rest.DocumentenApiResource
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService
-import com.ritense.valtimo.processlink.service.PluginProcessLinkService
-import com.ritense.valueresolver.ValueResolverService
-import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
-import org.springframework.core.io.ResourceLoader
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.web.client.RestClient
-import javax.sql.DataSource
+import org.springframework.web.reactive.function.client.WebClient
 
-@AutoConfiguration
-@EnableJpaRepositories(basePackages = ["com.ritense.documentenapi.repository"])
-@EntityScan("com.ritense.documentenapi.domain")
+@Configuration
 class DocumentenApiAutoConfiguration {
 
     @Bean
     fun documentenApiClient(
-        restClientBuilder: RestClient.Builder,
+        webclientBuilder: WebClient.Builder,
         outboxService: OutboxService,
         objectMapper: ObjectMapper,
-        platformTransactionManager: PlatformTransactionManager,
-        authorizationService: AuthorizationService,
-    ) = DocumentenApiClient(
-        restClientBuilder,
-        outboxService,
-        objectMapper,
-        platformTransactionManager,
-        authorizationService,
-    )
+        platformTransactionManager: PlatformTransactionManager
+    ): DocumentenApiClient {
+        return DocumentenApiClient(
+            webclientBuilder,
+            outboxService,
+            objectMapper,
+            platformTransactionManager
+        )
+    }
 
     @Bean
-    @ConditionalOnMissingBean(DocumentenApiPluginFactory::class)
     fun documentenApiPluginFactory(
         pluginService: PluginService,
         client: DocumentenApiClient,
         storageService: TemporaryResourceStorageService,
         applicationEventPublisher: ApplicationEventPublisher,
         objectMapper: ObjectMapper,
-        documentDeleteHandlers: List<DocumentDeleteHandler>,
-        documentenApiVersionService: DocumentenApiVersionService,
-        processDocumentAssociationService: ProcessDocumentAssociationService,
-        runtimeService: OperatonRuntimeService,
     ): DocumentenApiPluginFactory {
         return DocumentenApiPluginFactory(
             pluginService,
             client,
             storageService,
             applicationEventPublisher,
-            objectMapper,
-            documentDeleteHandlers,
-            documentenApiVersionService,
-            runtimeService
+            objectMapper
         )
     }
 
     @Bean
     @ConditionalOnMissingBean(DocumentenApiService::class)
     fun documentenApiService(
-        pluginService: PluginService,
-        catalogiService: CatalogiService,
-        documentenApiColumnRepository: DocumentenApiColumnRepository,
-        documentenApiUploadFieldRepository: DocumentenApiUploadFieldRepository,
-        authorizationService: AuthorizationService,
-        valtimoDocumentService: DocumentService,
-        documentDefinitionService: JsonSchemaDocumentDefinitionService,
-        documentenApiVersionService: DocumentenApiVersionService,
-        valueResolverService: ValueResolverService,
+        pluginService: PluginService
     ): DocumentenApiService {
-        return DocumentenApiService(
-            pluginService,
-            catalogiService,
-            documentenApiColumnRepository,
-            documentenApiUploadFieldRepository,
-            authorizationService,
-            valtimoDocumentService,
-            documentDefinitionService,
-            documentenApiVersionService,
-            valueResolverService
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(DocumentenApiVersionService::class)
-    fun documentenApiVersionService(
-        resourceLoader: ResourceLoader,
-        objectMapper: ObjectMapper,
-        documentenApiVersions: List<DocumentenApiVersion>,
-        pluginService: PluginService,
-        authorizationService: AuthorizationService,
-        documentService: DocumentService,
-        documentDefinitionService: DocumentDefinitionService,
-        caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
-        pluginProcessLinkService: PluginProcessLinkService,
-        operatonRepositoryService: OperatonRepositoryService,
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
-    ): DocumentenApiVersionService {
-        return DocumentenApiVersionService(
-            resourceLoader,
-            objectMapper,
-            documentenApiVersions.associateBy { it.version },
-            pluginService,
-            authorizationService,
-            documentService,
-            documentDefinitionService,
-            caseDefinitionProcessLinkService,
-            pluginProcessLinkService,
-            operatonRepositoryService,
-            activeCaseDefinitionService,
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(DocumentenApiColumnDeploymentService::class)
-    fun documentenApiColumnDeploymentService(
-        documentenApiService: DocumentenApiService,
-        documentenApiColumnRepository: DocumentenApiColumnRepository,
-    ): DocumentenApiColumnDeploymentService {
-        return DocumentenApiColumnDeploymentService(documentenApiService, documentenApiColumnRepository)
+        return DocumentenApiService(pluginService)
     }
 
     @Bean
     @ConditionalOnMissingBean(DocumentenApiResource::class)
     fun documentenApiResource(
-        documentenApiService: DocumentenApiService,
-        documentenApiVersionService: DocumentenApiVersionService,
+        documentenApiService: DocumentenApiService
     ): DocumentenApiResource {
-        return DocumentenApiResource(
-            documentenApiService,
-            documentenApiVersionService
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(DocumentenApiManagementResource::class)
-    fun documentenApiManagementResource(
-        documentenApiService: DocumentenApiService,
-        documentenApiVersionService: DocumentenApiVersionService,
-    ): DocumentenApiManagementResource {
-        return DocumentenApiManagementResource(
-            documentenApiService,
-            documentenApiVersionService
-        )
+        return DocumentenApiResource(documentenApiService)
     }
 
     @Order(380)
@@ -202,46 +89,4 @@ class DocumentenApiAutoConfiguration {
         return DocumentenApiHttpSecurityConfigurer()
     }
 
-    @ConditionalOnClass(DataSource::class)
-    @Order(HIGHEST_PRECEDENCE + 32)
-    @Bean
-    fun documentenApiLiquibaseChangeLogLocation(): LiquibaseMasterChangeLogLocation {
-        return LiquibaseMasterChangeLogLocation("config/liquibase/documenten-api-master.xml")
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ZgwDocumentListColumnImporter::class)
-    fun zgwDocumentListColumnImporter(
-        objectMapper: ObjectMapper,
-        documentenApiColumnRepository: DocumentenApiColumnRepository,
-        documentenApiService: DocumentenApiService,
-    ): ZgwDocumentListColumnImporter =
-        ZgwDocumentListColumnImporter(objectMapper, documentenApiColumnRepository, documentenApiService)
-
-    @Bean
-    @ConditionalOnMissingBean(ZgwDocumentListColumnExporter::class)
-    fun zgwDocumentListColumnExporter(
-        documentenApiColumnRepository: DocumentenApiColumnRepository,
-        objectMapper: ObjectMapper
-    ): ZgwDocumentListColumnExporter = ZgwDocumentListColumnExporter(documentenApiColumnRepository, objectMapper)
-
-    @Bean
-    @ConditionalOnMissingBean(DocumentenApiUploadFieldImporter::class)
-    fun documentenApiUploadFieldImporter(
-        objectMapper: ObjectMapper,
-        documentenApiService: DocumentenApiService,
-    ): DocumentenApiUploadFieldImporter = DocumentenApiUploadFieldImporter(
-        objectMapper,
-        documentenApiService
-    )
-
-    @Bean
-    @ConditionalOnMissingBean(DocumentenApiUploadFieldExporter::class)
-    fun documentenApiUploadFieldExporter(
-        documentenApiUploadFieldRepository: DocumentenApiUploadFieldRepository,
-        objectMapper: ObjectMapper
-    ): DocumentenApiUploadFieldExporter = DocumentenApiUploadFieldExporter(
-        documentenApiUploadFieldRepository,
-        objectMapper
-    )
 }

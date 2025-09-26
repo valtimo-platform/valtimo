@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,10 +100,10 @@ internal class PluginConfigurationEncryptionTest {
             PluginConfigurationId.newId(),
             "title",
             MapperSingleton.get().readTree(input) as ObjectNode,
-            pluginDefinition,
-            encryptionService,
-            MapperSingleton.get()
+            pluginDefinition
         )
+
+        listener.encryptPropertiesOnSave(configuration)
 
         assertEquals("output", configuration.rawProperties?.get("property1")?.textValue())
         assertEquals("test2", configuration.rawProperties?.get("property2")?.textValue())
@@ -123,10 +123,10 @@ internal class PluginConfigurationEncryptionTest {
             PluginConfigurationId.newId(),
             "title",
             MapperSingleton.get().readTree(input) as ObjectNode,
-            pluginDefinition,
-            encryptionService,
-            MapperSingleton.get()
+            pluginDefinition
         )
+
+        listener.encryptPropertiesOnSave(configuration)
 
         assertTrue(configuration.rawProperties?.get("property1")!!.isNull)
         assertEquals("test2", configuration.rawProperties?.get("property2")?.textValue())
@@ -145,10 +145,10 @@ internal class PluginConfigurationEncryptionTest {
             PluginConfigurationId.newId(),
             "title",
             MapperSingleton.get().readTree(input) as ObjectNode,
-            pluginDefinition,
-            encryptionService,
-            MapperSingleton.get()
+            pluginDefinition
         )
+
+        listener.encryptPropertiesOnSave(configuration)
 
         assertNull(configuration.rawProperties?.get("property1"))
         assertEquals("test2", configuration.rawProperties?.get("property2")?.textValue())
@@ -168,13 +168,8 @@ internal class PluginConfigurationEncryptionTest {
             PluginConfigurationId.newId(),
             "title",
             MapperSingleton.get().readTree(input) as ObjectNode,
-            pluginDefinition,
-            encryptionService,
-            MapperSingleton.get()
+            pluginDefinition
         )
-
-        // empty properties to emulate a configuration that was loaded from the database
-        configuration.properties?.properties()?.clear()
 
         listener.setBeans(configuration)
         configuration.decryptProperties()
@@ -197,13 +192,8 @@ internal class PluginConfigurationEncryptionTest {
             PluginConfigurationId.newId(),
             "title",
             MapperSingleton.get().readTree(input) as ObjectNode,
-            pluginDefinition,
-            encryptionService,
-            MapperSingleton.get()
+            pluginDefinition
         )
-
-        // empty properties to emulate a configuration that was loaded from the database
-        configuration.properties?.properties()?.clear()
 
         listener.setBeans(configuration)
         configuration.decryptProperties()
@@ -225,13 +215,8 @@ internal class PluginConfigurationEncryptionTest {
             PluginConfigurationId.newId(),
             "title",
             MapperSingleton.get().readTree(input) as ObjectNode,
-            pluginDefinition,
-            encryptionService,
-            MapperSingleton.get()
+            pluginDefinition
         )
-
-        // empty properties to emulate a configuration that was loaded from the database
-        configuration.properties?.properties()?.clear()
 
         listener.setBeans(configuration)
         configuration.decryptProperties()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,15 @@ import org.springframework.http.MediaType
 class LocalPdfDocumentGenerator : PdfDocumentGenerator {
 
     override fun getTemplatePlaceholders(templateName: String?): TemplatePlaceholders {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun generateDocument(templateName: String?, templateData: TemplateData?): GeneratedDocument {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun getDocumentMediaType(): MediaType {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     companion object {

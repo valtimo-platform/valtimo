@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,19 @@
 
 package com.ritense.case.domain
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.AbstractId
-import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
-import jakarta.persistence.Embedded
+import javax.persistence.Column
+import javax.persistence.Embeddable
 
 @Embeddable
 data class CaseTabId(
-    @Embedded
-    val caseDefinitionId: CaseDefinitionId,
+    @Column(name = "case_definition_name")
+    val caseDefinitionName: String,
     @Column(name = "tab_key")
     val key: String
 ) : AbstractId<CaseTabId>() {
     init {
-        require(key.isNotBlank()) { "key was blank!" }
-        require(key.matches(Regex("^[a-zA-Z0-9\\-]+$"))) { "key contains characters that are not allowed (only alphanumeric characters and dashes)" }
-    }
-
-    override fun toString(): String {
-        return "$caseDefinitionId:$key)"
-    }
-
-    companion object {
-        @JvmStatic
-        fun of(idAsString: String): CaseTabId? {
-            val strings = idAsString.split(':')
-            return if (strings.size != 3) {
-                null
-            } else {
-                CaseTabId(CaseDefinitionId.of(strings[0], strings[1]), strings[2])
-            }
-        }
+        require(caseDefinitionName.isNotBlank()) { "caseDefinitionName was blank!" }
+        require(key.isNotBlank()) { "key was blank!"}
     }
 }

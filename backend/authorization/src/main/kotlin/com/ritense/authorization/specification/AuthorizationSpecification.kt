@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,21 @@
 package com.ritense.authorization.specification
 
 import com.ritense.authorization.Action
-import com.ritense.authorization.AuthorizationServiceHolder
-import com.ritense.authorization.permission.ConditionContainer
-import com.ritense.authorization.permission.Permission
-import com.ritense.authorization.permission.condition.ContainerPermissionCondition
-import com.ritense.authorization.permission.condition.PermissionCondition
 import com.ritense.authorization.request.AuthorizationRequest
+import com.ritense.authorization.AuthorizationServiceHolder
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.authorization.role.Role
-import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.persistence.criteria.AbstractQuery
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.CriteriaQuery
-import jakarta.persistence.criteria.Predicate
-import jakarta.persistence.criteria.Root
+import com.ritense.authorization.permission.ConditionContainer
+import com.ritense.authorization.permission.condition.ContainerPermissionCondition
+import com.ritense.authorization.permission.Permission
+import com.ritense.authorization.permission.condition.PermissionCondition
 import org.springframework.data.jpa.domain.Specification
+import javax.persistence.criteria.AbstractQuery
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.CriteriaQuery
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
 
 abstract class AuthorizationSpecification<T : Any>(
     protected val authRequest: AuthorizationRequest<T>,
@@ -47,20 +46,14 @@ abstract class AuthorizationSpecification<T : Any>(
     }
 
     private fun isAuthorizedForEntity(entityAuthorizationRequest: EntityAuthorizationRequest<T>): Boolean {
-        val entities = entityAuthorizationRequest.entities.ifEmpty { listOf(null) }
-        val permissions = permissions.filter { permission ->
-            entityAuthorizationRequest.resourceType == permission.resourceType && permission.actions.contains(entityAuthorizationRequest.action)
+        if (entityAuthorizationRequest.entities.isEmpty()) {
+            return false
         }
-        return entities.all { entity ->
-            permissions.any { permission ->
-                permission
-                    .appliesTo(
-                        entityAuthorizationRequest.resourceType,
-                        entity,
-                        entityAuthorizationRequest.context?.resourceType,
-                        entityAuthorizationRequest.context?.entity
-                    )
-            }
+        val permissions = permissions.filter { permission ->
+            entityAuthorizationRequest.resourceType == permission.resourceType && entityAuthorizationRequest.action == permission.action
+        }
+        return entityAuthorizationRequest.entities.all { entity ->
+            permissions.any { permission -> permission.appliesTo(entityAuthorizationRequest.resourceType, entity) }
         }
     }
 
@@ -69,40 +62,28 @@ abstract class AuthorizationSpecification<T : Any>(
     ): Boolean {
 
         if (relatedEntityAuthorizationRequest.resourceType == relatedEntityAuthorizationRequest.relatedResourceType) {
-            val entity = try {
-                identifierToEntity(relatedEntityAuthorizationRequest.relatedResourceId)
-            } catch (e: NotImplementedError) {
-                null
-            } catch (e: Throwable) {
-                logger.error { e }
-                null
-            }
+
             return isAuthorizedForEntity(
                 EntityAuthorizationRequest(
                     relatedEntityAuthorizationRequest.resourceType,
                     relatedEntityAuthorizationRequest.action,
-                    entity
-                ).apply {
-                    relatedEntityAuthorizationRequest.context?.let { context -> this.withContext(context) }
-                }
+                    identifierToEntity(relatedEntityAuthorizationRequest.relatedResourceId)
+                )
             )
         }
 
         return permissions
             .filter { permission ->
                 relatedEntityAuthorizationRequest.resourceType == permission.resourceType
-                    && permission.actions.contains(relatedEntityAuthorizationRequest.action)
+                    && relatedEntityAuthorizationRequest.action == permission.action
             }
             .firstOrNull { permission ->
-                permission.appliesInContext(
-                    relatedEntityAuthorizationRequest.context?.resourceType,
-                    relatedEntityAuthorizationRequest.context?.entity
-                ) && permission.conditionContainer.conditions.all { permissionCondition ->
-                        isAuthorizedForRelatedEntityRecursive(
-                            relatedEntityAuthorizationRequest,
-                            permissionCondition
-                        )
-                    }
+                permission.conditionContainer.conditions.all { permissionCondition ->
+                    isAuthorizedForRelatedEntityRecursive(
+                        relatedEntityAuthorizationRequest,
+                        permissionCondition
+                    )
+                }
             } != null
     }
 
@@ -141,7 +122,7 @@ abstract class AuthorizationSpecification<T : Any>(
             listOf(
                 Permission(
                     resourceType = container.resourceType,
-                    actions = mutableListOf(Action<Any>(Action.IGNORE)),
+                    action = Action<Any>(Action.IGNORE),
                     conditionContainer = ConditionContainer(container.conditions),
                     role = Role(key = "")
                 )
@@ -164,13 +145,9 @@ abstract class AuthorizationSpecification<T : Any>(
      */
     override fun toPredicate(
         root: Root<T>,
-        query: CriteriaQuery<*>?,
+        query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder
-    ): Predicate? {
-        return query?.let {
-            toPredicate(root, it as AbstractQuery<*>, criteriaBuilder)
-        }
-    }
+    ): Predicate { return toPredicate(root, query as AbstractQuery<*>, criteriaBuilder) }
 
     /**
      * Creates a WHERE clause for a query of the referenced entity in form of a Predicate for the given Root and
@@ -187,8 +164,4 @@ abstract class AuthorizationSpecification<T : Any>(
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
-    }
 }

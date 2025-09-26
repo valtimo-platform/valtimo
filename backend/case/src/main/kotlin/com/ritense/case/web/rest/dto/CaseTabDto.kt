@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,16 @@ import com.ritense.case.domain.CaseTabType
 
 data class CaseTabDto(
     val key: String,
-    val name: String? = null,
+    val name: String?,
     val type: CaseTabType,
     val contentKey: String,
-    val showTasks: Boolean = false
 ) {
     companion object {
         fun of(caseTab: CaseTab) = CaseTabDto(
             caseTab.id.key,
             caseTab.name,
             caseTab.type,
-            caseTab.contentKey,
-            caseTab.showTasks
+            caseTab.contentKey
         )
     }
 }

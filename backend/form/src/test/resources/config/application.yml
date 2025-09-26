@@ -22,6 +22,10 @@ spring:
                     provider_disables_autocommit: true
         hibernate:
             ddl-auto: none
+            naming:
+                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            use-new-id-generator-mappings: false
 
 scheduling:
     enabled: false
@@ -34,12 +38,9 @@ spring-actuator:
     username: test
     password: test
 
-operaton:
+camunda:
     bpm:
         history-level: audit
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false
 aws:
     profile: ritense
     region: eu-central-1
@@ -48,8 +49,6 @@ aws:
         bucketRegion: eu-central-1
 
 valtimo:
-    outbox:
-        enabled: true
     mandrill:
         apiKey: some-key
         dateFormat: dd-MM-yyyy
@@ -58,5 +57,3 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    form:
-        ignoreDisabledFields: true

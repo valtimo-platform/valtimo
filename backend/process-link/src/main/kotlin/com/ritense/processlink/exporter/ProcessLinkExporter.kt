@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,16 @@ package com.ritense.processlink.exporter
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.ExportFile
-import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 
 class ProcessLinkExporter(
     private val objectMapper: ObjectMapper,
-    private val processLinkService: ProcessLinkService,
-    private val repositoryService: OperatonRepositoryService
+    private val processLinkService: ProcessLinkService
 ) : Exporter<ProcessDefinitionExportRequest> {
 
     override fun supports(): Class<ProcessDefinitionExportRequest> = ProcessDefinitionExportRequest::class.java
@@ -46,35 +43,17 @@ class ProcessLinkExporter(
         val createDtos = processLinks.map { processLink ->
             val mapper = processLinkService.getProcessLinkMapper(processLink.processLinkType)
 
-            relatedRequests.addAll(mapper.createRelatedExportRequests(processLink, request.caseDefinitionId))
+            relatedRequests.addAll(mapper.createRelatedExportRequests(processLink))
 
             mapper.toProcessLinkExportResponseDto(processLink)
         }
 
-        val processDefinitionKey = getProcessDefinitionKey(request.processDefinitionId)
-
-        val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
-            "${it.major}-${it.minor}-${it.patch}"
-        }
-
         return ExportResult(
             ExportFile(
-                PATH.format(request.caseDefinitionId.key, formattedCaseDefinitionVersion, processDefinitionKey),
+                "config/processlink/${request.processDefinitionId.substringBefore(":")}.processlink.json",
                 objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(createDtos)
             ),
             relatedRequests
         )
-    }
-
-    private fun getProcessDefinitionKey(processDefinitionId: String): String {
-        return requireNotNull(
-            repositoryService.findProcessDefinition(
-                OperatonProcessDefinitionSpecificationHelper.byId(processDefinitionId)
-            )
-        ).key
-    }
-
-    companion object {
-        private const val PATH = "config/case/%s/%s/process-link/%s.process-link.json"
     }
 }

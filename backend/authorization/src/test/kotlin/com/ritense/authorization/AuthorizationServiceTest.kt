@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ class AuthorizationServiceTest {
             listOf(
                 Permission(
                     resourceType = String::class.java,
-                    actions = mutableListOf(Action<String>(Action.VIEW)),
+                    action = Action<String>(Action.VIEW),
                     conditionContainer = ConditionContainer(),
                     role = Role(key = "")
                 )
@@ -153,7 +153,7 @@ class AuthorizationServiceTest {
             listOf(
                 Permission(
                     resourceType = String::class.java,
-                    actions = mutableListOf(Action<String>(Action.VIEW)),
+                    action = Action<String>(Action.VIEW),
                     conditionContainer = ConditionContainer(),
                     role = Role(key = "")
                 )
@@ -186,7 +186,7 @@ class AuthorizationServiceTest {
             listOf(
                 Permission(
                     resourceType = String::class.java,
-                    actions = mutableListOf(Action<String>(Action.VIEW)),
+                    action = Action<String>(Action.VIEW),
                     conditionContainer = ConditionContainer(),
                     role = Role(key = "")
                 )
@@ -236,7 +236,7 @@ class AuthorizationServiceTest {
                 listOf(
                     Permission(
                         resourceType = String::class.java,
-                        actions = mutableListOf(Action<String>(Action.VIEW)),
+                        action = Action<String>(Action.VIEW),
                         conditionContainer = ConditionContainer(),
                         role = Role(key = "")
                     )

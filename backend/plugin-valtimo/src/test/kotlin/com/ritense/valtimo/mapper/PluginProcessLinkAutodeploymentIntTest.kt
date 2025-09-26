@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@ import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUG
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.BaseIntegrationTest
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 
 internal class PluginProcessLinkAutodeploymentIntTest : BaseIntegrationTest() {
 
@@ -50,6 +50,6 @@ internal class PluginProcessLinkAutodeploymentIntTest : BaseIntegrationTest() {
         assertEquals(PROCESS_LINK_TYPE_PLUGIN, pluginProcessLink.processLinkType)
         assertEquals("0a750334-a065-48fa-bb02-293d21df2213", pluginProcessLink.pluginConfigurationId.id.toString())
         assertEquals("test-action", pluginProcessLink.pluginActionDefinitionKey)
-        assertEquals("""{"attachmentIds":"pv:attachmentIds"}""", objectMapper.writeValueAsString(pluginProcessLink.actionProperties))
+        assertEquals("""{"testActionProperty":"test-value"}""", objectMapper.writeValueAsString(pluginProcessLink.actionProperties))
     }
 }

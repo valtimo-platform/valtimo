@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
+import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.time.LocalDate
@@ -55,8 +55,8 @@ class BesluitenApiClientTest {
 
     @Test
     fun `should send create besluit request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = BesluitenApiClient(restClientBuilder)
+        val webclientBuilder = WebClient.builder()
+        val client = BesluitenApiClient(webclientBuilder)
 
         val responseBody = """
             {
@@ -138,8 +138,8 @@ class BesluitenApiClientTest {
 
     @Test
     fun `should send create besluit request and parse response when vervalreden is null`() {
-        val restClientBuilder = RestClient.builder()
-        val client = BesluitenApiClient(restClientBuilder)
+        val webclientBuilder = WebClient.builder()
+        val client = BesluitenApiClient(webclientBuilder)
 
         val responseBody = """
             {
@@ -186,19 +186,19 @@ class BesluitenApiClientTest {
         val body = recordedRequest.body.readUtf8()
 
         //validate request
-        assertThat(body, jsonPathMissingOrNull("$.identificatie"))
-        assertThat(body, hasJsonPath("$.verantwoordelijkeOrganisatie", equalTo("633182801")))
-        assertThat(body, hasJsonPath("$.besluittype", equalTo("http://catalogus.api/besluittype")))
-        assertThat(body, hasJsonPath("$.zaak", equalTo("http://zaken.api/zaak")))
-        assertThat(body, hasJsonPath("$.datum", equalTo("2024-04-20")))
-        assertThat(body, hasJsonPath("$.toelichting", equalTo("toelichting")))
-        assertThat(body, hasJsonPath("$.bestuursorgaan", equalTo("680572442")))
-        assertThat(body, hasJsonPath("$.ingangsdatum", equalTo("2024-04-21")))
-        assertThat(body, hasJsonPath("$.vervaldatum", equalTo("2024-04-22")))
-        assertThat(body, jsonPathMissingOrNull("$.vervalreden"))
-        assertThat(body, hasJsonPath("$.publicatiedatum", equalTo("2024-04-23")))
-        assertThat(body, hasJsonPath("$.verzenddatum", equalTo("2024-04-24")))
-        assertThat(body, hasJsonPath("$.uiterlijkeReactiedatum", equalTo("2024-04-25")))
+       assertThat(body, jsonPathMissingOrNull("$.identificatie"))
+       assertThat(body, hasJsonPath("$.verantwoordelijkeOrganisatie", equalTo("633182801")))
+       assertThat(body, hasJsonPath("$.besluittype", equalTo("http://catalogus.api/besluittype")))
+       assertThat(body, hasJsonPath("$.zaak", equalTo("http://zaken.api/zaak")))
+       assertThat(body, hasJsonPath("$.datum", equalTo("2024-04-20")))
+       assertThat(body, hasJsonPath("$.toelichting", equalTo("toelichting")))
+       assertThat(body, hasJsonPath("$.bestuursorgaan", equalTo("680572442")))
+       assertThat(body, hasJsonPath("$.ingangsdatum", equalTo("2024-04-21")))
+       assertThat(body, hasJsonPath("$.vervaldatum", equalTo("2024-04-22")))
+       assertThat(body, jsonPathMissingOrNull("$.vervalreden"))
+       assertThat(body, hasJsonPath("$.publicatiedatum", equalTo("2024-04-23")))
+       assertThat(body, hasJsonPath("$.verzenddatum", equalTo("2024-04-24")))
+       assertThat(body, hasJsonPath("$.uiterlijkeReactiedatum", equalTo("2024-04-25")))
 
         //validate response
         assertEquals(URI("http://besluit.api/besluit"), besluit.url)
@@ -232,13 +232,6 @@ class BesluitenApiClientTest {
     }
 
     class TestAuthentication : BesluitenApiAuthentication {
-
-        override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-            return builder.defaultHeaders { headers ->
-                headers.setBearerAuth("test")
-            }
-        }
-
         override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
             val filteredRequest = ClientRequest.from(request).headers { headers ->
                 headers.setBearerAuth("test")

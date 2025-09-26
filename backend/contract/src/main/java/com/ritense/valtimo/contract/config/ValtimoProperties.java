@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 
 package com.ritense.valtimo.contract.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.ritense.valtimo.contract.OauthConfigHolder;
-import javax.annotation.Nonnull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.ConstructorBinding;
+import org.springframework.boot.context.properties.ConstructorBinding;
 
+@ConstructorBinding
 @ConfigurationProperties(prefix = "valtimo")
 public class ValtimoProperties {
 
@@ -35,7 +33,6 @@ public class ValtimoProperties {
 
     private final Process process;
 
-    @ConstructorBinding
     public ValtimoProperties(
         App app,
         Mandrill mandrill,
@@ -48,7 +45,6 @@ public class ValtimoProperties {
         this.oauth = oauth != null ? oauth : new Oauth();
         this.portal = portal != null ? portal : new Portal();
         this.process = process != null ? process : new Process();
-        new OauthConfigHolder(this.oauth);
     }
 
     public App getApp() {
@@ -203,4 +199,5 @@ public class ValtimoProperties {
             this.systemProcessUpdatable = systemProcessUpdatable;
         }
     }
+
 }

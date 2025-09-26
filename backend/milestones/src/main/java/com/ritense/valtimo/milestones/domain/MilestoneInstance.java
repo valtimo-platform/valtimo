@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,26 @@
 
 package com.ritense.valtimo.milestones.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.validator.constraints.Range;
 import org.jvnet.hk2.annotations.Optional;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 @Entity
 public class MilestoneInstance {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GenericGenerator(name = "native", strategy = "native")
     private Long id;
 
     @NotNull
@@ -76,7 +79,7 @@ public class MilestoneInstance {
     @Optional
     private ZonedDateTime reachedDate;
 
-    public MilestoneInstance() {
+    public MilestoneInstance(){
         // Empty constructor that is used by JPA
     }
 
@@ -86,21 +89,20 @@ public class MilestoneInstance {
         LocalDate referenceDate,
         boolean reached,
         Boolean reachedInTime,
-        ZonedDateTime reachedDate
-    ) {
+        ZonedDateTime reachedDate) {
         MilestoneInstance newMilestone = new MilestoneInstance();
 
         newMilestone.milestoneSet = milestone.getMilestoneSet();
         newMilestone.title = milestone.getTitle();
-        newMilestone.processDefinitionKey = milestone.getProcessDefinitionKey();
-        newMilestone.taskDefinitionKey = milestone.getTaskDefinitionKey();
-        newMilestone.plannedIntervalInDays = milestone.getPlannedIntervalInDays();
+        newMilestone.processDefinitionKey =  milestone.getProcessDefinitionKey();
+        newMilestone.taskDefinitionKey =  milestone.getTaskDefinitionKey();
+        newMilestone.plannedIntervalInDays =  milestone.getPlannedIntervalInDays();
         newMilestone.setColor(milestone.getColor());
         newMilestone.processInstanceId = processInstanceId;
         newMilestone.referenceDate = referenceDate;
-        newMilestone.reached = reached;
-        newMilestone.reachedInTime = reachedInTime;
-        newMilestone.reachedDate = reachedDate;
+        newMilestone.reached =  reached;
+        newMilestone.reachedInTime =  reachedInTime;
+        newMilestone.reachedDate =  reachedDate;
 
         return newMilestone;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should have access to delete dashboard method with role_admin`() {
-        assertHttpStatus(DELETE, "/api/management/v1/dashboard/1", NO_CONTENT)
+        assertHttpStatus(DELETE, "/api/management/v1/dashboard/1", INTERNAL_SERVER_ERROR)
     }
 
     @Test
@@ -198,7 +198,6 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
             objectMapper.readTree("""{}""") as ObjectNode,
             objectMapper.readTree("""{}""") as ObjectNode,
             "displayType",
-            null,
             1
         )
         widgets.add(widget)

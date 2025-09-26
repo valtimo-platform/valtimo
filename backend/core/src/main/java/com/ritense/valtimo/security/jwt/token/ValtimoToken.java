@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,11 @@
 
 package com.ritense.valtimo.security.jwt.token;
 
-import static com.ritense.valtimo.contract.security.jwt.JwtConstants.NAME_KEY;
-import static com.ritense.valtimo.contract.security.jwt.JwtConstants.ROLES_SCOPE;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.impl.DefaultClaims;
-import java.util.HashMap;
 import java.util.Set;
+import static com.ritense.valtimo.contract.security.jwt.JwtConstants.NAME_KEY;
+import static com.ritense.valtimo.contract.security.jwt.JwtConstants.ROLES_SCOPE;
 
 public class ValtimoToken implements TokenClaims {
 
@@ -36,10 +34,9 @@ public class ValtimoToken implements TokenClaims {
 
     @Override
     public Claims getClaims() {
-        var claims = new HashMap<String, Object>();
+        final Claims claims = new DefaultClaims();
         claims.put(NAME_KEY, this.username);
         claims.put(ROLES_SCOPE, this.authorities);
-
-        return new DefaultClaims(claims);
+        return claims;
     }
 }

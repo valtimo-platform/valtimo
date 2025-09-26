@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 
 package com.ritense.smartdocuments.plugin
 
-import com.ritense.processdocument.service.DocumentDelegateService
+import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.smartdocuments.client.SmartDocumentsClient
 import com.ritense.smartdocuments.domain.DocumentsStructure
 import com.ritense.smartdocuments.domain.SmartDocumentsTemplateData
-import com.ritense.smartdocuments.domain.Template
 import com.ritense.smartdocuments.domain.TemplateGroup
 import com.ritense.smartdocuments.domain.TemplatesStructure
+import com.ritense.smartdocuments.domain.Template
 import com.ritense.valueresolver.ValueResolverService
+import org.camunda.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.extension.mockito.delegate.DelegateExecutionFake
 import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -34,7 +35,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
 
@@ -46,7 +46,7 @@ const val TEMPLATE_NAME = "Template 1"
 internal class SmartDocumentsPluginTest {
 
     @Mock
-    lateinit var documentDelegateService: DocumentDelegateService
+    lateinit var processDocumentService: ProcessDocumentService
 
     @Mock
     lateinit var applicationEventPublisher: ApplicationEventPublisher
@@ -93,9 +93,7 @@ internal class SmartDocumentsPluginTest {
         assertThat(result.size).isEqualTo(3)
         assertThat(result.first()).isEqualTo(TEMPLATE_NAME)
 
-    }
-
-    @Test
+    }@Test
     fun `list should be empty`() {
         // given
         whenever(smartDocumentsClient.getSmartDocumentsTemplateData(any())).thenReturn(smartDocumentsTemplateData())
@@ -159,14 +157,8 @@ internal class SmartDocumentsPluginTest {
     )
 
     private fun delegateExecution(): DelegateExecution {
-        val variables = mutableMapOf<String, Any?>()
-        val execution = mock<DelegateExecution>()
-        whenever(execution.setVariable(any(), any())).thenAnswer { invocation ->
-            variables[invocation.arguments[0] as String] = invocation.arguments[1]
-        }
-        whenever (execution.getVariable(any())).thenAnswer { invocation ->
-            variables[invocation.arguments[0] as String]
-        }
-        return execution
+        return DelegateExecutionFake()
+            .withBusinessKey("business_key")
+            .withProcessInstanceId("process_instance_id")
     }
 }

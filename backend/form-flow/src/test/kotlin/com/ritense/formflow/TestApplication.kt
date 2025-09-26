@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,14 @@ package com.ritense.formflow
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.formflow.json.MapperSingleton
-import com.ritense.resource.service.ResourceService
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.test.context.bean.override.mockito.MockitoBean
+import java.util.function.Supplier
 
 @SpringBootApplication
 class TestApplication {
@@ -36,19 +37,34 @@ class TestApplication {
     @TestConfiguration
     class TestConfig {
 
-        @MockitoBean
-        lateinit var resourceService: ResourceService
-
         @Bean
         @ConditionalOnMissingBean(ObjectMapper::class)
         fun objectMapper(): ObjectMapper {
             return MapperSingleton.get()
         }
 
+        @Bean
+        fun hibernateDependencyProcessor(): BeanFactoryPostProcessor? {
+            return BeanFactoryPostProcessor { factory: ConfigurableListableBeanFactory ->
+                val entityManagerDefinition = factory.getBeanDefinition("entityManagerFactory")
+                var entityManagerDependencies = entityManagerDefinition.dependsOn
+                entityManagerDependencies = entityManagerDependencies ?: arrayOf()
+                val newDependencies = arrayOfNulls<String>(entityManagerDependencies.size + 1)
+                System.arraycopy(entityManagerDependencies, 0, newDependencies, 1, entityManagerDependencies.size)
+                newDependencies[0] = "hibernateObjectMapperSupplier"
+                entityManagerDefinition.setDependsOn(*newDependencies)
+            }
+        }
+
+        @Bean
+        fun hibernateObjectMapperSupplier(): Supplier<ObjectMapper> {
+            return HibernateObjectMapperSupplier()
+        }
+
         companion object {
             init {
                 System.setProperty(
-                    "hypersistence.utils.jackson.object.mapper",
+                    "hibernate.types.jackson.object.mapper",
                     HibernateObjectMapperSupplier::class.java.name
                 )
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.resource.BaseIntegrationTest
 import com.ritense.resource.domain.MetadataType
 import com.ritense.valtimo.contract.upload.MimeTypeDeniedException
-import com.ritense.valtimo.contract.upload.ValtimoUploadProperties
-import org.apache.tika.Tika
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-import java.util.UUID
 import kotlin.io.path.Path
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -45,12 +36,6 @@ class TemporaryResourceStorageServiceIntegrationTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
-
-    @Mock
-    lateinit var tika: Tika
-
-    @Mock
-    lateinit var uploadProperties: ValtimoUploadProperties
 
     @Test
     fun `should store and get resource as inputStream`() {
@@ -80,20 +65,6 @@ class TemporaryResourceStorageServiceIntegrationTest : BaseIntegrationTest() {
             }
         }
         assertThat(exception.message).contains("application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-    }
-
-    @Test
-    fun `store method should only use the core MIME type without parameters`() {
-        `when`(uploadProperties.acceptedMimeTypes).thenReturn(setOf("image/png", "image/jpeg"))
-        val inputStream: InputStream = ByteArrayInputStream("Test content".toByteArray())
-
-        // Mock Tika's detection to return a MIME type with additional parameters
-        `when`(tika.detect(Mockito.any(InputStream::class.java))).thenReturn("image/png; charset=UTF-8")
-
-        val result = temporaryResourceStorageService.store(inputStream)
-
-        // Validate that the method returned a result, indicating the file was accepted
-        assertNotNull(result)
     }
 
     @Test
@@ -131,51 +102,6 @@ class TemporaryResourceStorageServiceIntegrationTest : BaseIntegrationTest() {
         val traversedMetaData = temporaryResourceStorageService.getResourceMetadata("../$resourceId")
         assertThat(traversedMetaData).containsEntry(MetadataType.FILE_NAME.key, fileName)
         assertThat(traversedMetaData).doesNotContainKey("traversed")
-    }
-
-    @Test
-    fun `should patch metadata`() {
-        val fileData = "My file data"
-        val fileName = "test.txt"
-        val changeKey = "changeKey"
-        val removeKey = "removeKey"
-
-        val resourceId = temporaryResourceStorageService.store(
-            fileData.byteInputStream(),
-            mapOf(
-                MetadataType.FILE_NAME.key to fileName,
-                changeKey to "x",
-                removeKey to "exists"
-            )
-        )
-
-        temporaryResourceStorageService.patchResourceMetaData(
-            resourceId, mapOf(
-                changeKey to "y",
-                removeKey to null
-            )
-        )
-
-        val patchedMetaData = temporaryResourceStorageService.getResourceMetadata(resourceId, false)
-
-        assertThat(patchedMetaData[MetadataType.FILE_NAME.key]).isEqualTo(fileName)
-        assertThat(patchedMetaData[MetadataType.FILE_PATH.key]).asString().hasSizeGreaterThan(0)
-        assertThat(patchedMetaData[MetadataType.FILE_SIZE.key]).isEqualTo(fileData.length.toString())
-        assertThat(patchedMetaData[changeKey]).isEqualTo("y")
-        assertThat(patchedMetaData).doesNotContainKey(removeKey)
-    }
-
-    @Test
-    fun `should not patch filePath in metadata`() {
-        val exception = assertThrows<IllegalArgumentException> {
-            temporaryResourceStorageService.patchResourceMetaData(
-                UUID.randomUUID().toString(), mapOf(
-                    MetadataType.FILE_PATH.key to "",
-                )
-            )
-        }
-
-        assertThat(exception.message).isEqualTo("${MetadataType.FILE_PATH.key} cannot be patched!")
     }
 
     @Test

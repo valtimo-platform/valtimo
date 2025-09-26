@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,11 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.valtimo.contract.database.QueryDialectHelper
-import jakarta.persistence.criteria.AbstractQuery
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.Predicate
-import jakarta.persistence.criteria.Root
-import jakarta.persistence.criteria.Subquery
+import javax.persistence.criteria.AbstractQuery
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
+import javax.persistence.criteria.Subquery
 
 @JsonTypeName(CONTAINER)
 data class ContainerPermissionCondition<TO : Any>(
@@ -86,7 +86,7 @@ data class ContainerPermissionCondition<TO : Any>(
             listOf(
                 Permission(
                     resourceType = resourceType,
-                    actions = mutableListOf(Action<Any>(Action.IGNORE)),
+                    action = Action<Any>(Action.IGNORE),
                     conditionContainer = ConditionContainer(conditions),
                     role = Role(key = "")
                 )

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.ritense.zakenapi.mock
 
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.ZaakUrlProvider
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -25,12 +24,15 @@ import java.util.UUID
 
 @Service
 class ZaakMockUrlProvider : ZaakUrlProvider, ZaaktypeUrlProvider {
-
-    override fun getZaakUrl(documentId: UUID): URI {
-        return URI("http://localhost:56273/zaken/api/v1/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609")
+    override fun getZaak(documentId: UUID): String {
+        return "http://localhost:56273/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609"
     }
 
-    override fun getZaaktypeUrl(caseDefinitionId: CaseDefinitionId): URI {
-        return URI("http://localhost:56273/catalogi/api/v1/zaaktypen/21c0946a-9058-11ee-b9d1-0242ac120002")
+    override fun getZaaktypeUrl(documentDefinitionName: String): URI {
+        return URI("http://localhost:56273/catalogi/21c0946a-9058-11ee-b9d1-0242ac120002")
+    }
+
+    override fun getZaaktypeUrlByCaseDefinitionName(caseDefinitionName: String): URI {
+        return URI("http://localhost:56273/catalogi/251040e8-9058-11ee-b9d1-0242ac120002")
     }
 }

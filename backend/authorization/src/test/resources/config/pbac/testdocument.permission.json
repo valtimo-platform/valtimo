@@ -9,8 +9,8 @@
                 {
                     "type": "field",
                     "field": "document.name",
-                    "operator": "in",
-                    "value": ["loan", "gift"]
+                    "operator": "==",
+                    "value": "loan"
                 }
             ]
         },

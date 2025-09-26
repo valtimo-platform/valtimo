@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import com.ritense.plugin.autodeployment.AutoDeploymentTestPlugin
 import com.ritense.plugin.autodeployment.TestAutoDeploymentPluginFactory
 import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.configuration.ProcessLinkAutoConfiguration
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.community.mockito.service.RuntimeServiceFluentMock
 import org.mockito.kotlin.spy
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -48,6 +50,11 @@ class TestApplication {
         @Bean
         fun testCategoryPlugin(pluginService: PluginService): PluginFactory<TestCategoryPlugin> {
             return spy(TestCategoryPluginFactory(pluginService))
+        }
+
+        @Bean
+        fun runtimeService():RuntimeService {
+            return RuntimeServiceFluentMock().runtimeService
         }
     }
 }

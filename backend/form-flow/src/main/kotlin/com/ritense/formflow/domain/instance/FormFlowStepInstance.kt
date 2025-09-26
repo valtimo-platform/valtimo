@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package com.ritense.formflow.domain.instance
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.ValueNode
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.formflow.domain.definition.FormFlowNextStep
 import com.ritense.formflow.domain.definition.FormFlowStep
@@ -26,16 +24,15 @@ import com.ritense.formflow.event.ApplicationEventPublisherHolder
 import com.ritense.formflow.event.FormFlowStepCompletedEvent
 import com.ritense.formflow.expression.ExpressionProcessorFactoryHolder
 import com.ritense.formflow.json.MapperSingleton
-import io.hypersistence.utils.hibernate.type.json.JsonType
-import jakarta.persistence.Column
-import jakarta.persistence.EmbeddedId
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import java.util.Objects
+import javax.persistence.Column
+import javax.persistence.EmbeddedId
+import javax.persistence.Entity
+import javax.persistence.FetchType
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.Table
 
 @Entity
 @Table(name = "form_flow_step_instance")
@@ -49,26 +46,15 @@ data class FormFlowStepInstance(
     val stepKey: String,
     @Column(name = "form_flow_step_instance_order", updatable = false, nullable = false)
     val order: Int,
-    @Column(name = "form_flow_step_instance_submission_order", nullable = false)
-    var submissionOrder: Int,
-    @Type(value = JsonType::class)
+    @Type(type = "com.vladmihalcea.hibernate.type.json.JsonType")
     @Column(name = "submission_data")
     var submissionData: String? = null,
-    @Type(value = JsonType::class)
+    @Type(type = "com.vladmihalcea.hibernate.type.json.JsonType")
     @Column(name = "temporary_submission_data")
     var temporarySubmissionData: String? = null
     // On complete, clear temporary submission from the current step
     // We only use temporarySubmissionData of the current step when determining context
 ) {
-
-    constructor(
-        id: FormFlowStepInstanceId = FormFlowStepInstanceId.newId(),
-        instance: FormFlowInstance,
-        stepKey: String,
-        order: Int,
-        submissionData: String? = null,
-        temporarySubmissionData: String? = null
-    ) : this(id, instance, stepKey, order, -1, submissionData, temporarySubmissionData)
 
     val definition: FormFlowStep
         get() = instance.formFlowDefinition.getStepByKey(stepKey)
@@ -79,7 +65,6 @@ data class FormFlowStepInstance(
 
     fun saveTemporary(incompleteSubmissionData: String) {
         this.temporarySubmissionData = incompleteSubmissionData
-        this.submissionOrder = nextSubmissionOrder(instance)
     }
 
     fun open() {
@@ -87,11 +72,6 @@ data class FormFlowStepInstance(
     }
 
     fun complete(submissionData: String) {
-        val previousStep = instance.getHistory().firstOrNull { it.order == order - 1 }
-        val previousStepSubmissionDataChanged = previousStep?.submissionOrder ?: -1 >= submissionOrder
-        if (this.submissionData != submissionData || previousStepSubmissionDataChanged) {
-            this.submissionOrder = nextSubmissionOrder(instance)
-        }
         this.submissionData = submissionData
         this.temporarySubmissionData = null
 
@@ -122,64 +102,14 @@ data class FormFlowStepInstance(
     }
 
     private fun <T> processExpressions(expressions: List<String?>): List<T?> {
-        return ExpressionProcessorFactoryHolder.getInstance().let { factory ->
+        return ExpressionProcessorFactoryHolder.getInstance().let {
             val variables = createVarMap()
-            val expressionProcessor = factory.create(variables)
+            val expressionProcessor = it.create(variables)
 
-            val oldCompleteSubmissionData = MapperSingleton.get().valueToTree<JsonNode>(variables)
-                .at("/step/submissionData")
-            val results = expressions.map { expression ->
+            expressions.map { expression ->
                 expression?.let { expressionProcessor.process<T>(expression) }
             }
-            val newCompleteSubmissionData = MapperSingleton.get().valueToTree<JsonNode>(variables)
-                .at("/step/submissionData")
-            val spelChangedSubmissionData = keepDiff(newCompleteSubmissionData, oldCompleteSubmissionData)
-
-            updateSubmissionData(spelChangedSubmissionData)
-            results
         }
-    }
-
-    private fun updateSubmissionData(spelChangedSubmissionData: JsonNode) {
-        val mapper = MapperSingleton.get()
-        if (spelChangedSubmissionData !is ObjectNode || !spelChangedSubmissionData.isEmpty) {
-            val submissionJsonObject = merge(
-                mapper.readValue<JsonNode>(getCurrentSubmissionData().toString()),
-                spelChangedSubmissionData
-            )
-            val newSubmissionData = if (submissionJsonObject is ValueNode) null else submissionJsonObject.toString()
-            if (temporarySubmissionData != null) {
-                temporarySubmissionData = newSubmissionData
-            } else {
-                submissionData = newSubmissionData
-            }
-            submissionOrder = nextSubmissionOrder(instance)
-        }
-    }
-
-    private fun merge(target: JsonNode?, source: JsonNode?): JsonNode? {
-        return if (target is ObjectNode && source is ObjectNode) {
-            source.properties().forEach { (key, sourceValue) ->
-                target.set<JsonNode>(key, merge(target[key], sourceValue))
-            }
-            target
-        } else {
-            source
-        }
-    }
-
-    private fun keepDiff(target: JsonNode, toRemove: JsonNode): JsonNode {
-        if (target is ObjectNode && toRemove is ObjectNode) {
-            target.properties().toList().forEach { (key, value) ->
-                val removeValue = toRemove.get(key)
-                if (value == removeValue) {
-                    target.remove(key)
-                } else if (removeValue != null){
-                    keepDiff(value, removeValue)
-                }
-            }
-        }
-        return target
     }
 
     private fun createVarMap(): Map<String, Any> {
@@ -216,11 +146,5 @@ data class FormFlowStepInstance(
 
     fun getCurrentSubmissionData(): String? {
         return temporarySubmissionData ?: submissionData
-    }
-
-    companion object {
-        private fun nextSubmissionOrder(instance: FormFlowInstance): Int {
-            return (instance.getHistory().maxOfOrNull { it.submissionOrder } ?: 0) + 1
-        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import com.ritense.objectenapi.ObjectenApiAuthentication
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.objecttypenapi.ObjecttypenApiAuthentication
+import com.ritense.plugin.domain.ActivityType
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginProcessLink
@@ -34,18 +35,16 @@ import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byActive
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.camunda.domain.CamundaTask
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byActive
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byProcessInstanceId
+import com.ritense.valtimo.service.CamundaTaskService
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.delegate.VariableScope
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.containsInAnyOrder
 import org.junit.jupiter.api.BeforeEach
@@ -61,7 +60,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
@@ -72,7 +70,6 @@ import java.util.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-// TODO: Fix all portaal taak related things
 @Transactional
 internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
 
@@ -92,7 +89,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
     lateinit var processDocumentService: ProcessDocumentService
 
     @Autowired
-    lateinit var taskService: OperatonTaskService
+    lateinit var taskService: CamundaTaskService
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
@@ -105,7 +102,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
     lateinit var server: MockWebServer
     lateinit var notificatiesApiPluginConfiguration: PluginConfiguration
     lateinit var objectenApiPluginConfiguration: PluginConfiguration
-    var task: OperatonTask? = null
+    var task: CamundaTask? = null
     var documentId: UUID? = null
 
     @BeforeEach
@@ -165,7 +162,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
         val processInstanceIdCaptor = argumentCaptor<String>()
         val variableScopeCaptor = argumentCaptor<VariableScope>()
         val mapCaptor = argumentCaptor<Map<String, Any>>()
-        doReturn(null).whenever(operatonProcessService).startProcess(any(), any(), any())
+        doReturn(null).whenever(camundaProcessService).startProcess(any(), any(), any())
 
         val event = getEvent()
         portaalTaakEventListener.processCompletePortaalTaakEvent(event)
@@ -178,17 +175,9 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
 
         val processDefinitionKeyCaptor = argumentCaptor<String>()
         val businessKeyCaptor = argumentCaptor<String>()
-        val caseDefinitionIdCaptor = argumentCaptor<CaseDefinitionId>()
         val processVariableCaptor = argumentCaptor<Map<String, Any>>()
 
-        verify(operatonProcessService, times(1)).startProcess(
-            processDefinitionKeyCaptor.capture(),
-            businessKeyCaptor.capture(),
-            caseDefinitionIdCaptor.capture(),
-            processVariableCaptor.capture()
-        )
-
-        verify(operatonProcessService, times(1)).startProcess(
+        verify(camundaProcessService, times(2)).startProcess(
             processDefinitionKeyCaptor.capture(),
             businessKeyCaptor.capture(),
             processVariableCaptor.capture()
@@ -201,23 +190,18 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
         assertEquals(1, mapOfValuesToUpdate.size)
         assertEquals("Luis", mapOfValuesToUpdate["doc:/name"])
 
-        // assert second call to operatonProcessService.startProcess() where handling process is started
+        // assert second call to camundaProcessService.startProcess() where handling process is started
         assertEquals("process-completed-portaaltaak-mock", processDefinitionKeyCaptor.secondValue)
         assertEquals(documentId!!.toString(), businessKeyCaptor.secondValue)
         val processVariables = processVariableCaptor.secondValue
         assertEquals(event.resourceUrl, processVariables["portaalTaakObjectUrl"])
-        assertEquals(
-            objectenApiPluginConfiguration.id.id.toString(),
-            processVariables["objectenApiPluginConfigurationId"]
-        )
+        assertEquals(objectenApiPluginConfiguration.id.id.toString(), processVariables["objectenApiPluginConfigurationId"])
         assertEquals(task!!.id, processVariables["verwerkerTaakId"])
-        assertThat(
-            processVariables["documentUrls"] as List<*>, containsInAnyOrder(
-                "http://documenten-api.com/api/v1/documenten/393ba68f-0bd6-43d7-9c1c-cb33d4d2aa6e",
-                "http://documenten-api.com/api/v1/documenten/205107b1-261f-4042-925a-e300cdc6d2ab",
-                "http://documenten-api.com/api/v1/documenten/8c9dc2e4-db3b-4314-8e2e-76f38943d8fc"
-            )
-        )
+        assertThat(processVariables["documentUrls"] as List<*>, containsInAnyOrder(
+            "http://documenten-api.com/api/v1/documenten/393ba68f-0bd6-43d7-9c1c-cb33d4d2aa6e",
+            "http://documenten-api.com/api/v1/documenten/205107b1-261f-4042-925a-e300cdc6d2ab",
+            "http://documenten-api.com/api/v1/documenten/8c9dc2e4-db3b-4314-8e2e-76f38943d8fc"
+        ))
         verify(outboxService, atLeast(1)).send(any())
     }
 
@@ -412,15 +396,10 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
         )
     }
 
-    private fun startPortaalTaakProcess(content: String): OperatonTask {
+    private fun startPortaalTaakProcess(content: String): CamundaTask {
         return runWithoutAuthorization {
             val newDocumentRequest =
-                NewDocumentRequest(
-                    DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
-                    objectMapper.readTree(content)
-                )
+                NewDocumentRequest(DOCUMENT_DEFINITION_KEY, objectMapper.readTree(content))
             val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
             val processResult = processDocumentService.newDocumentAndStartProcess(request)
             documentId = processResult.resultingDocument().get().id().id
@@ -446,7 +425,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
                 objectMapper.readTree(propertiesConfig) as ObjectNode,
                 portaalTaakPluginConfiguration.id,
                 "create-portaaltaak",
-                activityType = ActivityTypeWithEventName.USER_TASK_CREATE
+                activityType = ActivityType.USER_TASK_CREATE
             )
         )
     }
@@ -461,15 +440,7 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
             .setBody(body)
     }
 
-    class TestAuthentication() : ObjectenApiAuthentication, ObjecttypenApiAuthentication,
-        NotificatiesApiAuthentication {
-        override val configurationId: PluginConfigurationId
-            get() = PluginConfigurationId.newId()
-
-        override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-            return builder
-        }
-
+    class TestAuthentication : ObjectenApiAuthentication, ObjecttypenApiAuthentication, NotificatiesApiAuthentication {
         override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
             return next.exchange(request)
         }

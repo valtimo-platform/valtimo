@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,11 @@
 package com.ritense.zakenapi
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.document.service.DocumentService
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.zakenapi.client.ZakenApiClient
@@ -51,8 +49,6 @@ internal class ZakenApiPluginFactoryTest {
         val zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock()
         val zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock()
         val platformTransactionManager: PlatformTransactionManager = mock()
-        val documentService: DocumentService = mock()
-        val processDocumentAssociationService: ProcessDocumentAssociationService = mock()
 
         val factory = ZakenApiPluginFactory(
             pluginService,
@@ -61,9 +57,7 @@ internal class ZakenApiPluginFactoryTest {
             storageService,
             zaakInstanceLinkRepository,
             zaakHersteltermijnRepository,
-            platformTransactionManager,
-            documentService,
-            processDocumentAssociationService
+            platformTransactionManager
         )
         val zakenApiPluginProperties: String = """
             {

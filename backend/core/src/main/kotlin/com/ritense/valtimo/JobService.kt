@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,18 +17,14 @@
 
 package com.ritense.valtimo
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.ManagementService
-import org.operaton.bpm.engine.ProcessEngineException
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.operaton.bpm.engine.runtime.Job
-import org.springframework.stereotype.Service
 import java.time.ZonedDateTime
 import java.util.Date
+import mu.KotlinLogging
+import org.camunda.bpm.engine.ManagementService
+import org.camunda.bpm.engine.ProcessEngineException
+import org.camunda.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.engine.runtime.Job
 
-@Service
-@SkipComponentScan
 class JobService(private val managementService: ManagementService) {
 
     fun addOffsetInMillisToTimerDueDateByActivityId(

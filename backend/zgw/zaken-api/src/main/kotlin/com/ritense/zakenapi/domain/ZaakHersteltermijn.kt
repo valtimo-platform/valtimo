@@ -17,11 +17,11 @@
 package com.ritense.zakenapi.domain
 
 import com.ritense.valtimo.contract.repository.UriAttributeConverter
-import jakarta.persistence.Column
-import jakarta.persistence.Convert
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.Table
+import javax.persistence.Column
+import javax.persistence.Convert
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.Table
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID

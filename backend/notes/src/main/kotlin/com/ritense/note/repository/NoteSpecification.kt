@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,18 @@ import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.note.domain.Note
+import com.ritense.note.service.NoteService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
-import jakarta.persistence.criteria.AbstractQuery
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.Predicate
-import jakarta.persistence.criteria.Root
 import java.util.UUID
+import javax.persistence.criteria.AbstractQuery
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
 
 class NoteSpecification(
         authRequest: AuthorizationRequest<Note>,
         permissions: List<Permission>,
-        private val noteRepository: NoteRepository,
+        private val noteService: NoteService,
         private val queryDialectHelper: QueryDialectHelper
 ) : AuthorizationSpecification<Note>(authRequest, permissions) {
     override fun toPredicate(
@@ -39,17 +40,23 @@ class NoteSpecification(
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
+        // Filter the permissions for the relevant ones and use those to  find the filters that are required
+        // Turn those filters into predicates
+        val groupList = query.groupList.toMutableList()
+        groupList.add(root.get<UUID>("id"))
+        query.groupBy(groupList)
+
         val predicates = permissions.stream()
             .filter { permission: Permission ->
-                Note::class.java == permission.resourceType
-                    && permission.actions.contains(authRequest.action)
+                Note::class.java == permission.resourceType &&
+                    authRequest.action == permission.action
             }
             .map { permission: Permission ->
                 permission.toPredicate(
                     root,
                     query,
                     criteriaBuilder,
-                    authRequest,
+                    authRequest.resourceType,
                     queryDialectHelper
                 )
             }.toList()
@@ -58,7 +65,7 @@ class NoteSpecification(
 
     override fun identifierToEntity(identifier: String): Note {
         return runWithoutAuthorization {
-            noteRepository.getReferenceById(UUID.fromString(identifier))
+            noteService.getNoteById(UUID.fromString(identifier))
         }
     }
 }

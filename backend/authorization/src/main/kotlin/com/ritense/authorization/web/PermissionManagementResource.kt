@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,15 @@
 
 package com.ritense.authorization.web
 
-import com.ritense.authorization.deployment.PermissionDto
 import com.ritense.authorization.permission.PermissionRepository
+import com.ritense.authorization.deployment.PermissionDto
 import com.ritense.authorization.web.request.SearchPermissionsRequest
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 
-@Controller
-@SkipComponentScan
 @RequestMapping("/api/management", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class PermissionManagementResource(
     val permissionRepository: PermissionRepository
@@ -37,14 +33,7 @@ class PermissionManagementResource(
     fun searchPermissions(@RequestBody searchRequest: SearchPermissionsRequest): ResponseEntity<List<PermissionDto>> {
         val rolePermissions = permissionRepository
             .findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(searchRequest.roles)
-            .map {
-                PermissionDto(
-                    it.resourceType,
-                    it.actions.map { it.key },
-                    it.conditionContainer.conditions,
-                    it.role.key
-                )
-            }
+            .map { PermissionDto(it.resourceType, it.action.key, it.conditionContainer.conditions, it.role.key) }
         return ResponseEntity.ok(rolePermissions)
     }
 

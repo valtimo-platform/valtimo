@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@
 
 package com.ritense.note.repository
 
-import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
+import com.ritense.authorization.permission.Permission
 import com.ritense.note.domain.Note
+import com.ritense.note.service.NoteService
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 
 class NoteSpecificationFactory(
-    private val noteRepository: NoteRepository,
+    private val noteService: NoteService,
     private var queryDialectHelper: QueryDialectHelper
 ) : AuthorizationSpecificationFactory<Note> {
 
@@ -35,7 +36,7 @@ class NoteSpecificationFactory(
         return NoteSpecification(
             request,
             permissions,
-            noteRepository,
+            noteService,
             queryDialectHelper
         )
     }

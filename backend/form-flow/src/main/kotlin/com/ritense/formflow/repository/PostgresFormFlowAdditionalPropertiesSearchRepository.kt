@@ -2,10 +2,10 @@ package com.ritense.formflow.repository
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.formflow.domain.instance.FormFlowInstance
-import jakarta.persistence.EntityManager
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.Predicate
-import jakarta.persistence.criteria.Root
+import javax.persistence.EntityManager
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
 
 class PostgresFormFlowAdditionalPropertiesSearchRepository(
     private val entityManager: EntityManager,
@@ -43,7 +43,7 @@ class PostgresFormFlowAdditionalPropertiesSearchRepository(
         return criteriaBuilder.equal(
             criteriaBuilder.function(
                 "json_extract_path_text",
-                String::class.java,
+                FormFlowInstance::class.java,
                 root.get<Any>("additionalProperties"),
                 criteriaBuilder.literal(key)
             ),

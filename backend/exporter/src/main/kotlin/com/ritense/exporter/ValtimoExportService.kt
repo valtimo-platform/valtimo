@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.ritense.exporter
 
 import com.ritense.exporter.request.ExportRequest
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -71,6 +70,6 @@ class ValtimoExportService (
     }
 
     companion object {
-        val logger = KotlinLogging.logger {}
+        private val logger: mu.KLogger = mu.KotlinLogging.logger {}
     }
 }

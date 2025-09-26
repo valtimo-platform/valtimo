@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,13 @@ package com.ritense.authorization.web
 
 import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
+import com.ritense.authorization.ResourceNotSupportedException
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.authorization.web.request.PermissionAvailableRequest
 import com.ritense.authorization.web.result.PermissionAvailableResult
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -34,47 +32,38 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class PermissionResource(
     private var authorizationService: AuthorizationService
 ) {
 
-    private val logger: Logger = LoggerFactory.getLogger(PermissionResource::class.java)
-
-    @Transactional(readOnly = true)
+    @Transactional
     @PostMapping("/v1/permissions")
     fun userHasPermission(@RequestBody permissionsPresentRequest: List<PermissionAvailableRequest>)
         : ResponseEntity<List<PermissionAvailableResult>> {
 
-        val permissionResponse: List<PermissionAvailableResult> = permissionsPresentRequest.map {
-            val hasPermission =
-                try {
-                    val authorizationRequest = if (it.context == null) {
-                        EntityAuthorizationRequest(
-                            it.getResourceAsClass(),
-                            Action(it.action),
-                        )
-                    } else {
+        val permissionResponse: List<PermissionAvailableResult>
+
+        try {
+            permissionResponse = permissionsPresentRequest.map {
+                PermissionAvailableResult(
+                    it.resource,
+                    it.action,
+                    it.context,
+                    authorizationService.hasPermission(
                         RelatedEntityAuthorizationRequest(
                             it.getResourceAsClass(),
                             Action(it.action),
                             it.context.getResourceAsClass(),
                             it.context.identifier
                         )
-                    }
-                    authorizationService.hasPermission(authorizationRequest)
-                } catch (ex: Exception) {
-                    logger.error("Failed to determine permissions for $it", ex)
-                    false
-                }
-
-            PermissionAvailableResult(
-                it.resource,
-                it.action,
-                it.context,
-                hasPermission
-            )
+                    )
+                )
+            }
+        } catch (ex: ClassNotFoundException) {
+            throw AccessDeniedException("Unauthorized", ex)
+        } catch (ex: ResourceNotSupportedException) {
+            throw AccessDeniedException("Unauthorized", ex)
         }
 
         return ResponseEntity.ok(permissionResponse)

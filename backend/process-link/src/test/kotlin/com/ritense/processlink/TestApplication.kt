@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,11 @@
 package com.ritense.processlink
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.processlink.domain.AnotherTestImporter
-import com.ritense.processlink.domain.AnotherTestProcessLinkMapper
-import com.ritense.processlink.domain.AnotherTestSupportedProcessLinksHandler
-import com.ritense.processlink.domain.TestImporter
-import com.ritense.processlink.domain.TestProcessLinkMapper
-import com.ritense.processlink.domain.TestSupportedProcessLinksHandler
+import com.ritense.processlink.domain.CustomProcessLinkMapper
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 
 @SpringBootApplication
 class TestApplication {
@@ -41,25 +34,9 @@ class TestApplication {
     class TestConfig {
 
         @Bean
-        fun testProcessLinkMapper(objectMapper: ObjectMapper) = TestProcessLinkMapper(objectMapper)
-
-        @Bean
-        fun anotherTestProcessLinkMapper(objectMapper: ObjectMapper) = AnotherTestProcessLinkMapper(objectMapper)
-
-        @Bean
-        fun testImporter() = TestImporter()
-
-        @Bean
-        fun anotherTestImporter() = AnotherTestImporter()
-
-
-        @Bean
-        @Order(Ordered.HIGHEST_PRECEDENCE)
-        fun testSupportedProcessLinksHandler() = TestSupportedProcessLinksHandler()
-
-        @Bean
-        @Order(Ordered.LOWEST_PRECEDENCE)
-        fun anotherTestSupportedProcessLinksHandler() = AnotherTestSupportedProcessLinksHandler()
+        fun customProcessLinkMapper(objectMapper: ObjectMapper) : CustomProcessLinkMapper {
+            return CustomProcessLinkMapper(objectMapper)
+        }
 
     }
 }

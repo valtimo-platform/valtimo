@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package com.ritense.form.web.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.ritense.form.domain.FormDisplayType
-import com.ritense.form.domain.FormSizes
 import com.ritense.form.mapper.FormProcessLinkMapper.Companion.PROCESS_LINK_TYPE_FORM
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
@@ -28,10 +26,6 @@ data class FormProcessLinkExportResponseDto(
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
     val formDefinitionName: String,
-    val viewModelEnabled: Boolean,
-    val formDisplayType: FormDisplayType,
-    val formSize: FormSizes,
-    val subtitles: List<String>? = null
 ) : ProcessLinkExportResponseDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM

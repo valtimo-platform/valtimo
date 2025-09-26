@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ package com.ritense.mail.service
 import com.ritense.mail.BaseIntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import javax.inject.Inject
 
 @Transactional
 internal class BlacklistServiceIntTest : BaseIntegrationTest() {
 
-    @Autowired
+    @Inject
     lateinit var blacklistService: BlacklistService
 
     @Test
