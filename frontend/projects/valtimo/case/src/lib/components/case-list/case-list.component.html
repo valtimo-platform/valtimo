@@ -16,9 +16,11 @@
 
 <ng-container
   *ngIf="{
+    availableFields: availableFields$ | async,
     fields: fields$ | async,
     documentItems: documentItems$ | async,
     noResultsMessage: noResultsMessage$ | async,
+    hasApiColumnConfig: hasApiColumnConfig$ | async,
     searchFields: searchFields$ | async,
     schema: schema$ | async,
     showAssignModal: showAssignModal$ | async,
@@ -106,6 +108,13 @@
     </ng-container>
 
     <div carbonToolbarContent>
+      <valtimo-list-column-view
+        [availableFields]="availableFields$ | async"
+        [disabled]="!obs.hasApiColumnConfig"
+        [hiddenColumns]="hiddenColumns$ | async"
+        (viewUpdateEvent)="onViewUpdateEvent($event)"
+      ></valtimo-list-column-view>
+
       <ng-container *ngTemplateOutlet="caseListActions"></ng-container>
     </div>
 

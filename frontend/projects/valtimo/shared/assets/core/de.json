@@ -1923,5 +1923,11 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "listViewColumns": {
+    "label": "Sichtbare Spalten auswählen",
+    "tooltip": "Spalten in der Liste anzeigen oder ausblenden",
+    "disabledTooltip": "Spalten ausblenden/anzeigen ist nicht verfügbar, solange keine Listenspalten definiert sind",
+    "warning": "Es muss mindestens eine Option ausgewählt sein"
   }
 }
