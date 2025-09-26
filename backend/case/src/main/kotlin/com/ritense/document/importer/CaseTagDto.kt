@@ -21,6 +21,7 @@ import com.ritense.document.domain.CaseTagColor
 
 data class CaseTagDto(
     val key: String,
+    val caseDefinitionName: String,
     val title: String,
     val color: CaseTagColor,
     val order: Int
@@ -28,6 +29,7 @@ data class CaseTagDto(
     companion object {
         fun of(caseTag: CaseTag) = CaseTagDto(
             caseTag.id.key,
+            caseTag.id.caseDefinitionName,
             caseTag.title,
             caseTag.color,
             caseTag.order

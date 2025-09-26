@@ -19,7 +19,6 @@ package com.ritense.objectenapi.listener
 import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.ValueNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
@@ -27,11 +26,13 @@ import com.ritense.objectenapi.service.ZaakObjectConstants
 import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KLogger
+import mu.KotlinLogging
 import org.springframework.context.event.EventListener
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
+import kotlin.math.log
 
 class ZaakObjectListener(
     private val pluginService: PluginService,
@@ -39,28 +40,26 @@ class ZaakObjectListener(
 ) {
     @EventListener(ExternalDataSubmittedEvent::class)
     fun handle(event: ExternalDataSubmittedEvent) {
-        runWithoutAuthorization {
-            event.data[ZaakObjectConstants.ZAAKOBJECT_PREFIX]?.let { zaakObjectMap ->
-                logger.debug { "Received external data for zaak object, updating the following properties: ${zaakObjectMap.keys.joinToString()}" }
-                zaakObjectMap.entries.map { entry ->
-                    RequestedField(
-                        entry.key, entry.value
-                    )
-                }.groupBy { requestedField ->
-                    requestedField.objectType
-                }.forEach { objectTypeGroup ->
-                    val zaakObject = zaakObjectService.getZaakObjectOfTypeByName(event.documentId, objectTypeGroup.key)
-                    objectTypeGroup.value.forEach { requestedField ->
-                        logger.trace { "Updating field ${requestedField.path} with value ${requestedField.value} in object '${zaakObject.url}' of type '${objectTypeGroup.key}'" }
-                        // For each requestedField update the value in the zaakObject record data
-                        val startPath = requestedField.path.substring(1)
-                        val newValueNode = getValueNode(requestedField.value)
-                        findAndReplaceJsonPath(zaakObject.record.data!! as ObjectNode, startPath, newValueNode)
-                    }
-
-                    // The zaakObject.record.data has now been updated with the new values, update the object in the objecten api
-                    updateObject(zaakObject.url, event.documentId, objectTypeGroup.key, zaakObject.record)
+        event.data[ZaakObjectConstants.ZAAKOBJECT_PREFIX]?.let { zaakObjectMap ->
+            logger.debug { "Received external data for zaak object, updating the following properties: ${zaakObjectMap.keys.joinToString() }" }
+            zaakObjectMap.entries.map { entry ->
+                RequestedField(
+                    entry.key, entry.value
+                )
+            }.groupBy { requestedField ->
+                requestedField.objectType
+            }.forEach { objectTypeGroup ->
+                val zaakObject = zaakObjectService.getZaakObjectOfTypeByName(event.documentId, objectTypeGroup.key)
+                objectTypeGroup.value.forEach { requestedField ->
+                    logger.trace { "Updating field ${requestedField.path} with value ${requestedField.value} in object '${zaakObject.url}' of type '${objectTypeGroup.key}'" }
+                    // For each requestedField update the value in the zaakObject record data
+                    val startPath = requestedField.path.substring(1)
+                    val newValueNode = getValueNode(requestedField.value)
+                    findAndReplaceJsonPath(zaakObject.record.data!! as ObjectNode, startPath, newValueNode)
                 }
+
+                // The zaakObject.record.data has now been updated with the new values, update the object in the objecten api
+                updateObject(zaakObject.url, event.documentId, objectTypeGroup.key, zaakObject.record)
             }
         }
     }
@@ -129,6 +128,6 @@ class ZaakObjectListener(
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
     }
 }

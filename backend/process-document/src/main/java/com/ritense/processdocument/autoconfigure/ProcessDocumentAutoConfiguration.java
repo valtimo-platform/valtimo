@@ -38,17 +38,18 @@ import com.ritense.processdocument.service.CaseDefinitionProcessLinkService;
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.processdocument.service.ProcessDocumentService;
-import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
-import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
+import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentAssociationService;
+import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentService;
 import com.ritense.processdocument.web.rest.ProcessDocumentResource;
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
-import com.ritense.valtimo.service.OperatonProcessService;
-import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.CamundaProcessService;
+import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valueresolver.ValueResolverFactory;
-import org.operaton.bpm.engine.HistoryService;
-import org.operaton.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.extension.reactor.spring.EnableCamundaEventBus;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -59,21 +60,22 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = "com.ritense.processdocument.repository")
 @EntityScan("com.ritense.processdocument.domain")
+@EnableCamundaEventBus
 public class ProcessDocumentAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ProcessDocumentService.class)
-    public OperatonProcessJsonSchemaDocumentService processDocumentService(
+    public CamundaProcessJsonSchemaDocumentService processDocumentService(
         JsonSchemaDocumentService documentService,
-        OperatonTaskService operatonTaskService,
-        OperatonProcessService operatonProcessService,
+        CamundaTaskService camundaTaskService,
+        CamundaProcessService camundaProcessService,
         ProcessDocumentAssociationService processDocumentAssociationService,
         AuthorizationService authorizationService
     ) {
-        return new OperatonProcessJsonSchemaDocumentService(
+        return new CamundaProcessJsonSchemaDocumentService(
             documentService,
-            operatonTaskService,
-            operatonProcessService,
+            camundaTaskService,
+            camundaProcessService,
             processDocumentAssociationService,
             authorizationService
         );
@@ -81,16 +83,16 @@ public class ProcessDocumentAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ProcessDocumentAssociationService.class)
-    public OperatonProcessJsonSchemaDocumentAssociationService processDocumentAssociationService(
+    public CamundaProcessJsonSchemaDocumentAssociationService processDocumentAssociationService(
         ProcessDocumentInstanceRepository processDocumentInstanceRepository,
-        OperatonRepositoryService repositoryService,
+        CamundaRepositoryService repositoryService,
         RuntimeService runtimeService,
         HistoryService historyService,
         AuthorizationService authorizationService,
         DocumentService documentService,
         UserManagementService userManagementService
     ) {
-        return new OperatonProcessJsonSchemaDocumentAssociationService(
+        return new CamundaProcessJsonSchemaDocumentAssociationService(
             processDocumentInstanceRepository,
             repositoryService,
             runtimeService,
@@ -152,12 +154,12 @@ public class ProcessDocumentAutoConfiguration {
     public UndeployDocumentDefinitionEventListener undeployDocumentDefinitionEventListener(
         ProcessDocumentAssociationService processDocumentAssociationService,
         ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService,
-        OperatonProcessService operatonProcessService
+        CamundaProcessService camundaProcessService
     ) {
         return new UndeployDocumentDefinitionEventListener(
             processDocumentAssociationService,
             processDefinitionCaseDefinitionService,
-            operatonProcessService
+            camundaProcessService
         );
     }
 
@@ -206,7 +208,7 @@ public class ProcessDocumentAutoConfiguration {
     @ConditionalOnMissingBean(CaseDefinitionProcessLinkService.class)
     public CaseDefinitionProcessLinkService documentDefinitionProcessLinkService(
         CaseDefinitionProcessLinkRepository caseDefinitionProcessLinkRepository,
-        OperatonRepositoryService repositoryService,
+        CamundaRepositoryService repositoryService,
         CaseDefinitionChecker caseDefinitionChecker
     ) {
         return new CaseDefinitionProcessLinkService(

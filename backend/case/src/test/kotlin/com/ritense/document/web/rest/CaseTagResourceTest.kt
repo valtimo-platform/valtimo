@@ -25,7 +25,6 @@ import com.ritense.document.domain.CaseTagId
 import com.ritense.document.service.CaseTagService
 import com.ritense.document.web.rest.dto.CaseTagCreateRequestDto
 import com.ritense.document.web.rest.dto.CaseTagUpdateRequestDto
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.hamcrest.Matchers.hasSize
@@ -50,8 +49,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
 class CaseTagResourceTest : BaseTest() {
-    private val caseDefinitionId = CaseDefinitionId.of("test", "1.0.0")
 
+    private val caseDefinitionName = "test"
     private val caseTags = IntRange(0, 4).map { i ->
         createCaseTags("key-$i", i)
     }
@@ -68,17 +67,13 @@ class CaseTagResourceTest : BaseTest() {
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
             .build()
 
-        whenever(caseTagService.getCaseTags(caseDefinitionId)).thenReturn(caseTags)
+        whenever(caseTagService.getCaseTags(caseDefinitionName)).thenReturn(caseTags)
     }
 
     @Test
     fun `should get caseTags`() {
         mockMvc.perform(
-            get(
-                "/api/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag",
-                caseDefinitionId.key,
-                caseDefinitionId.versionTag.version
-            )
+            get("/api/v1/case-definition/{caseDefinitionName}/case-tag", caseDefinitionName)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         )
@@ -89,8 +84,7 @@ class CaseTagResourceTest : BaseTest() {
             .let {
                 val status = caseTags[0]
                 it.andExpect(jsonPath("$[0].key").value(status.id.key))
-                    .andExpect(jsonPath("$[0].caseDefinitionKey").value(status.id.caseDefinitionId.key))
-                    .andExpect(jsonPath("$[0].caseDefinitionVersionTag").value(status.id.caseDefinitionId.versionTag.version))
+                    .andExpect(jsonPath("$[0].caseDefinitionName").value(status.id.caseDefinitionName))
                     .andExpect(jsonPath("$[0].title").value(status.title))
                     .andExpect(jsonPath("$[0].order").value(status.order))
                     .andExpect(jsonPath("$[0].color").value(status.color.name))
@@ -100,11 +94,7 @@ class CaseTagResourceTest : BaseTest() {
     @Test
     fun `should get caseTags for management`() {
         mockMvc.perform(
-            get(
-                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag",
-                caseDefinitionId.key,
-                caseDefinitionId.versionTag.version
-            )
+            get("/api/management/v1/case-definition/{caseDefinitionName}/case-tag", caseDefinitionName)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         )
@@ -115,8 +105,7 @@ class CaseTagResourceTest : BaseTest() {
             .let {
                 val status = caseTags[1]
                 it.andExpect(jsonPath("$[1].key").value(status.id.key))
-                    .andExpect(jsonPath("$[1].caseDefinitionKey").value(status.id.caseDefinitionId.key))
-                    .andExpect(jsonPath("$[1].caseDefinitionVersionTag").value(status.id.caseDefinitionId.versionTag.version))
+                    .andExpect(jsonPath("$[1].caseDefinitionName").value(status.id.caseDefinitionName))
                     .andExpect(jsonPath("$[1].title").value(status.title))
                     .andExpect(jsonPath("$[1].order").value(status.order))
                     .andExpect(jsonPath("$[1].color").value(status.color.name))
@@ -133,13 +122,9 @@ class CaseTagResourceTest : BaseTest() {
                     }
                 """.trimIndent()
         val requestDto = jacksonObjectMapper().readValue<CaseTagCreateRequestDto>(json)
-        whenever(caseTagService.create(eq(caseDefinitionId), eq(requestDto))).thenReturn(requestDto.toCaseTag())
+        whenever(caseTagService.create(eq(caseDefinitionName), eq(requestDto))).thenReturn(requestDto.toCaseTag())
         mockMvc.perform(
-            post(
-                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag",
-                caseDefinitionId.key,
-                caseDefinitionId.versionTag.version
-            )
+            post("/api/management/v1/case-definition/{caseDefinitionName}/case-tag", caseDefinitionName)
                 .content(json)
                 .characterEncoding(Charsets.UTF_8)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -149,8 +134,7 @@ class CaseTagResourceTest : BaseTest() {
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.key").value("test"))
-            .andExpect(jsonPath("$.caseDefinitionKey").value(caseDefinitionId.key))
-            .andExpect(jsonPath("$.caseDefinitionVersionTag").value(caseDefinitionId.versionTag.version))
+            .andExpect(jsonPath("$.caseDefinitionName").value(caseDefinitionName))
             .andExpect(jsonPath("$.title").value("Test"))
             .andExpect(jsonPath("$.order").value(0))
             .andExpect(jsonPath("$.color").value("RED"))
@@ -159,15 +143,11 @@ class CaseTagResourceTest : BaseTest() {
     @Test
     fun `should reorder a list of caseTags`() {
         val requests = caseTags.map { it.toUpdateRequestDto() }.shuffled()
-        whenever(caseTagService.update(eq(caseDefinitionId), eq(requests))).thenReturn(
+        whenever(caseTagService.update(eq(caseDefinitionName), eq(requests))).thenReturn(
             requests.mapIndexed { index, dto -> dto.toCaseTag(index) }
         )
         mockMvc.perform(
-            put(
-                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag",
-                caseDefinitionId.key,
-                caseDefinitionId.versionTag.version
-            )
+            put("/api/management/v1/case-definition/{caseDefinitionName}/case-tag", caseDefinitionName)
                 .content(jacksonObjectMapper().writeValueAsString(requests))
                 .characterEncoding(Charsets.UTF_8)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -179,8 +159,7 @@ class CaseTagResourceTest : BaseTest() {
             .let {
                 requests.forEachIndexed { i, dto ->
                     it.andExpect(jsonPath("$[$i].key").value(dto.key))
-                        .andExpect(jsonPath("$[$i].caseDefinitionKey").value(caseDefinitionId.key))
-                        .andExpect(jsonPath("$[$i].caseDefinitionVersionTag").value(caseDefinitionId.versionTag.version))
+                        .andExpect(jsonPath("$[$i].caseDefinitionName").value(caseDefinitionName))
                         .andExpect(jsonPath("$[$i].title").value(dto.title))
                         .andExpect(jsonPath("$[$i].order").value(i))
                         .andExpect(jsonPath("$[$i].color").value(dto.color.name))
@@ -194,12 +173,7 @@ class CaseTagResourceTest : BaseTest() {
         val updateDto = CaseTagUpdateRequestDto("test", "Test", CaseTagColor.GRAY)
 
         mockMvc.perform(
-            put(
-                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag/{key}",
-                caseDefinitionId.key,
-                caseDefinitionId.versionTag.version,
-                updateDto.key
-            )
+            put("/api/management/v1/case-definition/{caseDefinitionName}/case-tag/{key}", caseDefinitionName, updateDto.key)
                 .content(jacksonObjectMapper().writeValueAsString(updateDto))
                 .characterEncoding(Charsets.UTF_8)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
@@ -208,30 +182,25 @@ class CaseTagResourceTest : BaseTest() {
             .andDo(print())
             .andExpect(status().isNoContent())
 
-        verify(caseTagService).update(eq(caseDefinitionId), eq(updateDto.key), eq(updateDto))
+        verify(caseTagService).update(eq(caseDefinitionName), eq(updateDto.key), eq(updateDto))
     }
 
     @Test
     fun `should delete a caseTag`() {
         mockMvc.perform(
-            delete(
-                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/case-tag/{key}",
-                caseDefinitionId.key,
-                caseDefinitionId.versionTag,
-                "test"
-            )
+            delete("/api/management/v1/case-definition/{caseDefinitionName}/case-tag/{key}", caseDefinitionName, "test")
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(print())
             .andExpect(status().isOk())
 
-        verify(caseTagService).delete(eq(caseDefinitionId), eq("test"))
+        verify(caseTagService).delete(eq(caseDefinitionName), eq("test"))
     }
 
     private fun createCaseTags(statusKey: String, order: Int): CaseTag {
         return CaseTag(
-            CaseTagId(caseDefinitionId, statusKey),
+            CaseTagId(caseDefinitionName, statusKey),
             statusKey.replaceFirstChar { it.uppercase() },
             CaseTagColor.entries[order],
             order
@@ -246,9 +215,9 @@ class CaseTagResourceTest : BaseTest() {
         )
     }
 
-    private fun CaseTagCreateRequestDto.toCaseTag(): CaseTag {
+    private fun CaseTagCreateRequestDto.toCaseTag() : CaseTag {
         return CaseTag(
-            CaseTagId(caseDefinitionId, this.key),
+            CaseTagId(caseDefinitionName, this.key),
             this.title,
             this.color,
             0
@@ -257,7 +226,7 @@ class CaseTagResourceTest : BaseTest() {
 
     private fun CaseTagUpdateRequestDto.toCaseTag(order: Int): CaseTag {
         return CaseTag(
-            CaseTagId(caseDefinitionId, this.key),
+            CaseTagId(caseDefinitionName, this.key),
             this.title,
             this.color,
             order

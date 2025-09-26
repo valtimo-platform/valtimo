@@ -22,8 +22,8 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
-import io.github.oshai.kotlinlogging.KotlinLogging
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import mu.KotlinLogging
 
 class CaseDefinitionImporter(
     private val objectMapper: ObjectMapper,
@@ -51,7 +51,7 @@ class CaseDefinitionImporter(
         val caseDefinitionDto = toCaseDefinitionDto(fileContent)
         val caseDefinitionId = caseDefinitionDto.getCaseDefinitionId()
 
-        caseDefinitionChecker.assertCanCreateOrUpdateCaseDefinition(caseDefinitionId, caseDefinitionDto.final)
+        caseDefinitionChecker.assertCaseIsNewOrUpdatable(caseDefinitionId)
 
         val caseDefinition = caseDefinitionDto.toEntity().copy(final = false)
 
@@ -71,6 +71,6 @@ class CaseDefinitionImporter(
 
     private companion object {
         val logger = KotlinLogging.logger {}
-        val FILENAME_REGEX = """/case/definition/([^/]+)\.case-definition\.json""".toRegex()
+        val FILENAME_REGEX = """/case/definition/([^/]+)\.json""".toRegex()
     }
 }

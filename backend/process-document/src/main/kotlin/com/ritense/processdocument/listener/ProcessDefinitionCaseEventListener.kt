@@ -23,8 +23,8 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.event.CaseDefinitionCreatedEvent
 import com.ritense.valtimo.contract.event.CaseDefinitionPreDeleteEvent
-import com.ritense.valtimo.service.OperatonProcessService
-import io.github.oshai.kotlinlogging.KotlinLogging
+import com.ritense.valtimo.service.CamundaProcessService
+import mu.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 @SkipComponentScan
 class ProcessDefinitionCaseEventListener(
-    private val processService: OperatonProcessService,
+    private val processService: CamundaProcessService,
     private val associationService: ProcessDefinitionCaseDefinitionService,
 ) {
 
@@ -51,13 +51,8 @@ class ProcessDefinitionCaseEventListener(
                     val deploymentId = processService.deploy(
                         event.caseDefinitionId,
                         oldProcessDefinition.resourceName,
-                        processService.getBpmnModel(oldProcessDefinition).inputStream(),
-                        false,
-                        false,
-                        oldProcessDefinition.versionTag,
-                        oldProcessDefinition.id
+                        processService.getBpmnModel(oldProcessDefinition).inputStream()
                     )
-                        ?.id
                         ?: error { "Failed to duplicate process definition ${oldProcessDefinition.key} for ${event.caseDefinitionId}" }
 
                     val processDefinition = processService.getProcessDefinitionByDeploymentId(deploymentId)
@@ -78,7 +73,7 @@ class ProcessDefinitionCaseEventListener(
     @EventListener(CaseDefinitionPreDeleteEvent::class)
     fun handleCaseDefinitionPreDeleteEvent(event: CaseDefinitionPreDeleteEvent) {
         associationService.findProcessDefinitionCaseDefinitions(event.caseDefinitionId).forEach { association ->
-            associationService.deleteProcessDefinitionCaseDefinition(
+            associationService.deleteProcessDocumentDefinition(
                 processDefinitionId = association.id.processDefinitionId,
                 caseDefinitionId = event.caseDefinitionId,
             )

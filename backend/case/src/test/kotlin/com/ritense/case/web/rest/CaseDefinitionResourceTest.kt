@@ -27,7 +27,6 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.exporter.ExportService
 import com.ritense.importer.ImportService
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.utils.TestUtil
@@ -64,7 +63,6 @@ class CaseDefinitionResourceTest : BaseTest() {
     lateinit var exportService: ExportService
     lateinit var importService: ImportService
     lateinit var caseDefinitionRepository: CaseDefinitionRepository
-    lateinit var caseDefinitionChecker: CaseDefinitionChecker
     lateinit var mapper: ObjectMapper
 
     @BeforeEach
@@ -74,14 +72,12 @@ class CaseDefinitionResourceTest : BaseTest() {
         exportService = mock()
         importService = mock()
         caseDefinitionRepository = mock()
-        caseDefinitionChecker = mock()
         resource = CaseDefinitionResource(
             service,
             activeCaseDefinitionService,
             exportService,
             importService,
-            caseDefinitionRepository,
-            caseDefinitionChecker,
+            caseDefinitionRepository
         )
 
         mapper = MapperSingleton.get()
@@ -310,28 +306,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     fun `should get case definitions`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
         val caseDefinition = caseDefinition(caseDefinitionId)
-        whenever(service.getCaseDefinitions()).thenReturn(listOf(caseDefinition))
-
-        mockMvc.perform(
-            get("/api/v1/case-definition")
-        )
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.length()").value(1))
-            .andExpect(jsonPath("$[0].caseDefinitionKey").value(caseDefinition.id.key))
-            .andExpect(jsonPath("$[0].caseDefinitionVersionTag").value(caseDefinition.id.versionTag.version))
-            .andExpect(jsonPath("$[0].name").value(caseDefinition.name))
-            .andExpect(jsonPath("$[0].canHaveAssignee").value(caseDefinition.canHaveAssignee))
-            .andExpect(jsonPath("$[0].autoAssignTasks").value(caseDefinition.autoAssignTasks))
-            .andExpect(jsonPath("$[0].active").value(caseDefinition.active))
-
-    }
-
-    @Test
-    fun `should get case definitions for management`() {
-        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(caseDefinitionId)
-        whenever(service.getCaseDefinitions(isNull(), isNull(), isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
+        whenever(service.getCaseDefinitions(isNull(), isNull(), any())).thenReturn(PageImpl(listOf(caseDefinition)))
 
         mockMvc.perform(
             get("/api/management/v1/case-definition")
@@ -352,7 +327,7 @@ class CaseDefinitionResourceTest : BaseTest() {
     fun `should get case definition versions`() {
         val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
         val caseDefinition = caseDefinition(caseDefinitionId, "name", true, false)
-        whenever(service.getCaseDefinitions(eq(caseDefinitionId.key), isNull(), isNull(), isNull(), any())).thenReturn(
+        whenever(service.getCaseDefinitions(eq(caseDefinitionId.key), isNull(), any())).thenReturn(
             PageImpl(
                 listOf(
                     caseDefinition
@@ -371,7 +346,6 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andExpect(jsonPath("$.length()").value(1))
             .andExpect(jsonPath("$[0].versionTag").value(caseDefinition.id.versionTag.version))
             .andExpect(jsonPath("$[0].active").value(caseDefinition.active))
-            .andExpect(jsonPath("$[0].final").value(caseDefinition.final))
     }
 
     @Test
@@ -414,18 +388,6 @@ class CaseDefinitionResourceTest : BaseTest() {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.name").value(caseDefinition.name))
             .andExpect(jsonPath("$.description").value(caseDefinition.description))
-    }
-
-    @Test
-    fun `should check case definition`() {
-        whenever(caseDefinitionChecker.canUpdateGlobalConfiguration()).thenReturn(true)
-
-        mockMvc.perform(
-            get("/api/management/v1/case-definition/check")
-        )
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.canUpdateGlobalConfiguration").value(true))
     }
 
     companion object {

@@ -42,15 +42,44 @@ class ValueResolverResource(
         return ResponseEntity.ok(valueResolverService.getValueResolvers())
     }
 
-    @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/keys")
+    @PostMapping("/management/v1/value-resolver/document-definition/{documentDefinitionName}/keys")
     fun getResolvableKeys(
-        @PathVariable caseDefinitionKey: String,
-        @RequestBody request: ValueResolverOptionRequest
-    ): ResponseEntity<List<ValueResolverOption>> {
-        return ResponseEntity.ok(valueResolverService.getResolvableKeys(request, caseDefinitionKey))
+        @PathVariable documentDefinitionName: String,
+        @RequestBody prefixes: List<String>,
+    ): ResponseEntity<List<String>> {
+        val options = valueResolverService.getResolvableKeys(
+            ValueResolverOptionRequest(prefixes, ValueResolverOptionType.FIELD),
+            documentDefinitionName
+        )
+        return ResponseEntity.ok(options.map { it.path })
     }
 
-    @PostMapping("/management/v1/value-resolver/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/keys")
+    @PostMapping("/management/v2/value-resolver/document-definition/{documentDefinitionName}/keys")
+    fun getResolvableKeys(
+        @PathVariable documentDefinitionName: String,
+        @RequestBody request: ValueResolverOptionRequest
+    ): ResponseEntity<List<ValueResolverOption>> {
+        return ResponseEntity.ok(valueResolverService.getResolvableKeys(request, documentDefinitionName))
+    }
+
+    @PostMapping("/management/v1/value-resolver/document-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/keys")
+    fun getResolvableKeys(
+        @PathVariable caseDefinitionKey: String,
+        @PathVariable caseDefinitionVersionTag: String,
+        @RequestBody prefixes: List<String>,
+    ): ResponseEntity<List<String>> {
+        val options = valueResolverService.getResolvableKeys(
+            ValueResolverOptionRequest(prefixes, ValueResolverOptionType.FIELD),
+            caseDefinitionKey,
+            CaseDefinitionId.of(
+                caseDefinitionKey, caseDefinitionVersionTag
+            )
+        )
+        return ResponseEntity.ok(options.map { it.path })
+    }
+
+    //TODO: we need to somehow deal with the document definition name
+    @PostMapping("/management/v2/value-resolver/document-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/keys")
     fun getResolvableKeys(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
@@ -59,7 +88,10 @@ class ValueResolverResource(
         return ResponseEntity.ok(
             valueResolverService.getResolvableKeys(
                 request,
-                CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag)
+                caseDefinitionKey,
+                CaseDefinitionId.of(
+                    caseDefinitionKey, caseDefinitionVersionTag
+                )
             )
         )
     }

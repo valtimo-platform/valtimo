@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.config.DocumentSpringContextHelper;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
+import com.ritense.document.domain.impl.listener.ApplicationReadyEventListenerImpl;
 import com.ritense.document.domain.impl.listener.DocumentRelatedFileSubmittedEventListenerImpl;
 import com.ritense.document.domain.impl.listener.RelatedJsonSchemaDocumentAvailableEventListenerImpl;
 import com.ritense.document.domain.impl.sequence.JsonSchemaDocumentDefinitionSequenceRecord;
@@ -37,10 +38,12 @@ import com.ritense.document.service.DocumentService;
 import com.ritense.document.service.DocumentStatisticService;
 import com.ritense.document.service.InternalCaseStatusService;
 import com.ritense.document.service.SearchFieldService;
+import com.ritense.document.service.UndeployDocumentDefinitionService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionSequenceGeneratorService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService;
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
+import com.ritense.document.service.impl.UndeployJsonSchemaDocumentDefinitionService;
 import com.ritense.document.web.rest.DocumentDefinitionManagementResource;
 import com.ritense.document.web.rest.DocumentDefinitionResource;
 import com.ritense.document.web.rest.DocumentResource;
@@ -136,7 +139,7 @@ public class DocumentAutoConfiguration {
         JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService
     ) {
         return new JsonSchemaDocumentDefinitionImporter(
-            jsonSchemaDocumentDefinitionService
+          jsonSchemaDocumentDefinitionService
         );
     }
 
@@ -149,6 +152,22 @@ public class DocumentAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(UndeployDocumentDefinitionService.class)
+    public UndeployJsonSchemaDocumentDefinitionService undeployDocumentDefinitionService(
+        final JsonSchemaDocumentDefinitionService documentDefinitionService,
+        final DocumentService documentService,
+        final ApplicationEventPublisher applicationEventPublisher,
+        final AuthorizationService authorizationService
+    ) {
+        return new UndeployJsonSchemaDocumentDefinitionService(
+            documentDefinitionService,
+            documentService,
+            applicationEventPublisher,
+            authorizationService
+        );
+    }
+
+    @Bean
     @ConditionalOnMissingBean(DocumentSearchService.class)
     public JsonSchemaDocumentSearchService documentSearchService(
         final EntityManager entityManager,
@@ -157,7 +176,6 @@ public class DocumentAutoConfiguration {
         final UserManagementService userManagementService,
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
-        final JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
         final ObjectMapper objectMapper
     ) {
         return new JsonSchemaDocumentSearchService(
@@ -167,9 +185,16 @@ public class DocumentAutoConfiguration {
             userManagementService,
             authorizationService,
             outboxService,
-            jsonSchemaDocumentDefinitionService,
             objectMapper
         );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ApplicationReadyEventListenerImpl.class)
+    public ApplicationReadyEventListenerImpl applicationReadyEventListenerImpl(
+        final DocumentDefinitionService documentDefinitionService
+    ) {
+        return new ApplicationReadyEventListenerImpl(documentDefinitionService);
     }
 
     @Bean
@@ -194,10 +219,12 @@ public class DocumentAutoConfiguration {
     @ConditionalOnMissingBean(DocumentDefinitionResource.class)
     public JsonSchemaDocumentDefinitionResource documentDefinitionResource(
         final DocumentDefinitionService documentDefinitionService,
+        final UndeployDocumentDefinitionService undeployDocumentDefinitionService,
         final DocumentStatisticService documentStatisticService
     ) {
         return new JsonSchemaDocumentDefinitionResource(
             documentDefinitionService,
+            undeployDocumentDefinitionService,
             documentStatisticService
         );
     }

@@ -18,32 +18,14 @@ package com.ritense.document.repository
 
 import com.ritense.document.domain.CaseTag
 import com.ritense.document.domain.CaseTagId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 
 interface CaseTagRepository : JpaRepository<CaseTag, CaseTagId> {
-    fun findByIdCaseDefinitionIdOrderByOrder(caseDefinitionId: CaseDefinitionId): List<CaseTag>
-    @Query(
-        value = """
-            SELECT c.*
-                FROM (
-                    SELECT
-                        *,
-                        row_number() over (partition by case_tag_key) as rownr
-                    FROM
-                        case_tag
-                    WHERE
-                        case_definition_key = :caseDefinitionKey
-                ) as c
-                WHERE c.rownr = 1
-                ORDER BY c.case_tag_order
-        """, nativeQuery = true
-    )
-    fun findDistinctByIdKeyWhereIdCaseDefinitionIdKeyOrderByOrder(@Param("caseDefinitionKey") caseDefinitionKey: String): List<CaseTag>
-    fun findDistinctByIdCaseDefinitionIdAndIdKey(caseDefinitionId: CaseDefinitionId, key: String): CaseTag?
-    fun existsByIdCaseDefinitionIdAndIdKey(caseDefinitionId: CaseDefinitionId, key: String): Boolean
+    fun findByIdCaseDefinitionNameOrderByOrder(caseDefinitionName: String): List<CaseTag>
+    fun findDistinctByIdCaseDefinitionNameAndIdKey(caseDefinitionName: String, key: String): CaseTag?
+    fun existsByIdCaseDefinitionNameAndIdKey(caseDefinitionName: String, key: String): Boolean
     @Query(
         value = """
             SELECT CASE
@@ -51,8 +33,7 @@ interface CaseTagRepository : JpaRepository<CaseTag, CaseTagId> {
                     SELECT 1
                     FROM case_tag_link
                     WHERE case_tag_key = :caseTagKey
-                    AND case_definition_key = :caseDefinitionKey
-                    AND case_definition_version_tag = :caseDefinitionVersionTag
+                    AND case_definition_name = :caseDefinitionName
                 ) THEN 'true'
                 ELSE 'false'
             END
@@ -60,7 +41,6 @@ interface CaseTagRepository : JpaRepository<CaseTag, CaseTagId> {
     )
     fun isCaseTagInUse(
         @Param("caseTagKey") caseTagKey: String,
-        @Param("caseDefinitionKey") caseDefinitionKey: String,
-        @Param("caseDefinitionVersionTag") caseDefinitionVersionTag: String
+        @Param("caseDefinitionName") caseDefinitionName: String
     ): Boolean
 }

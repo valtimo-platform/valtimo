@@ -19,7 +19,6 @@ package com.ritense.case.service
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byActive
 import com.ritense.case.repository.CaseDefinitionSpecificationHelper.Companion.byCaseDefinitionKey
 import com.ritense.case_.repository.CaseDefinitionRepository
-import com.ritense.importer.ImportContext
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -56,10 +55,9 @@ class CaseDefinitionCheckerImpl(
     }
 
     override fun canUpdateGlobalConfiguration(): Boolean {
-        if (ImportContext.isImporting()) {
-            return true
+        return draftEnvironments.split(',').any { draftEnvironment ->
+            environment.activeProfiles.any { it == draftEnvironment }
         }
-        return isDraftEnvironment()
     }
 
     override fun assertCaseDefinitionExists(caseDefinitionId: CaseDefinitionId) {
@@ -79,26 +77,13 @@ class CaseDefinitionCheckerImpl(
         }
     }
 
-    override fun assertCanCreateOrUpdateCaseDefinition(caseDefinitionId: CaseDefinitionId, final: Boolean) {
-        val isDraftEnvironment = isDraftEnvironment()
-        if (!final && !isDraftEnvironment) {
-            error("Failed to create/update CaseDefinition $caseDefinitionId. This Valtimo environment does not support drafts. Missing one of the following Spring profiles: [$draftEnvironments]")
+    override fun assertCaseIsNewOrUpdatable(caseDefinitionId: CaseDefinitionId?) {
+        assertCanUpdateGlobalConfiguration()
+        val caseDefinition = caseDefinitionId?.let{
+            caseDefinitionRepository.findById(caseDefinitionId).orElse(null)
         }
-        val existingCaseDefinition = caseDefinitionRepository.findById(caseDefinitionId).orElse(null)
-        if (existingCaseDefinition != null && existingCaseDefinition.final) {
-            error("Failed to update CaseDefinition $caseDefinitionId. This case definition is final.")
-        }
-    }
-
-    override fun assertCanUpdateGlobalConfiguration() {
-        require(canUpdateGlobalConfiguration()) {
-            "Failed to update configuration. This Valtimo environment does not support drafts. Missing one of the following Spring profiles: [$draftEnvironments]"
-        }
-    }
-
-    private fun isDraftEnvironment(): Boolean {
-        return draftEnvironments.split(',').any { draftEnvironment ->
-            environment.activeProfiles.any { it == draftEnvironment }
+        require(caseDefinition == null || !caseDefinition.final) {
+            "Failed to update CaseDefinition $caseDefinitionId. This case definition is final."
         }
     }
 }

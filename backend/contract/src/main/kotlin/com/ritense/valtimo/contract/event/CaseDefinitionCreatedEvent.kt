@@ -20,8 +20,6 @@ import com.ritense.valtimo.contract.case_.CaseDefinitionId
 
 data class CaseDefinitionCreatedEvent(
     val caseDefinitionId: CaseDefinitionId,
-    val caseDefinitionName: String,
     val basedOnCaseDefinitionId: CaseDefinitionId? = null,
     val duplicate: Boolean = false,
-    val copyFormDefinitionsAfterProcessLinks: Boolean? = false,
 )

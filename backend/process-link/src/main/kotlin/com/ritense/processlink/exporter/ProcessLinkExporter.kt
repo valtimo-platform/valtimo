@@ -24,13 +24,13 @@ import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.ExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 
 class ProcessLinkExporter(
     private val objectMapper: ObjectMapper,
     private val processLinkService: ProcessLinkService,
-    private val repositoryService: OperatonRepositoryService
+    private val repositoryService: CamundaRepositoryService
 ) : Exporter<ProcessDefinitionExportRequest> {
 
     override fun supports(): Class<ProcessDefinitionExportRequest> = ProcessDefinitionExportRequest::class.java
@@ -53,28 +53,21 @@ class ProcessLinkExporter(
 
         val processDefinitionKey = getProcessDefinitionKey(request.processDefinitionId)
 
-        val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
-            "${it.major}-${it.minor}-${it.patch}"
-        }
-
         return ExportResult(
             ExportFile(
-                PATH.format(request.caseDefinitionId.key, formattedCaseDefinitionVersion, processDefinitionKey),
+                "config/processlink/${processDefinitionKey}.processlink.json",
                 objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(createDtos)
             ),
             relatedRequests
         )
     }
 
-    private fun getProcessDefinitionKey(processDefinitionId: String): String {
+    fun getProcessDefinitionKey(processDefinitionId: String): String {
         return requireNotNull(
             repositoryService.findProcessDefinition(
-                OperatonProcessDefinitionSpecificationHelper.byId(processDefinitionId)
+                CamundaProcessDefinitionSpecificationHelper.byId(processDefinitionId)
+                    .and(CamundaProcessDefinitionSpecificationHelper.byLatestVersion())
             )
         ).key
-    }
-
-    companion object {
-        private const val PATH = "config/case/%s/%s/process-link/%s.process-link.json"
     }
 }

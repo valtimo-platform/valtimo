@@ -16,27 +16,26 @@
 
 package com.ritense.document.domain
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.AbstractId
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
-import jakarta.persistence.Embedded
 
 
 @Embeddable
 data class CaseTagId(
-    @Embedded
-    val caseDefinitionId: CaseDefinitionId,
+    @Column(name = "case_definition_name", length = 50, columnDefinition = "VARCHAR(50)")
+    val caseDefinitionName: String,
     @Column(name = "case_tag_key")
     val key: String
 ) : AbstractId<CaseTagId>() {
     init {
+        require(caseDefinitionName.isNotBlank()) { "caseDefinitionName was blank!" }
         require(key.isNotBlank()) { "key was blank!" }
     }
 
     companion object {
         @JvmStatic
-        fun of(caseDefinitionId: CaseDefinitionId, key: String): CaseTagId =
-            CaseTagId(caseDefinitionId, key)
+        fun of(caseDefinitionName: String, key: String): CaseTagId =
+            CaseTagId(caseDefinitionName, key)
     }
 }

@@ -21,20 +21,20 @@ import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.event.DocumentAssigneeChangedEvent
 import com.ritense.document.event.DocumentUnassignedEvent
 import com.ritense.document.service.DocumentService
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byAssigned
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byCandidateGroups
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceBusinessKey
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byAssigned
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byCandidateGroups
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byProcessInstanceBusinessKey
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.service.OperatonTaskService
-import io.github.oshai.kotlinlogging.KotlinLogging
+import com.ritense.valtimo.service.CamundaTaskService
+import mu.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
 @Component
 @SkipComponentScan
 class CaseAssigneeListener(
-    private val operatonTaskService: OperatonTaskService,
+    private val camundaTaskService: CamundaTaskService,
     private val documentService: DocumentService,
     private val caseDefinitionService: CaseDefinitionService,
     private val userManagementService: UserManagementService
@@ -49,14 +49,14 @@ class CaseAssigneeListener(
         )
 
         if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
-            val assignee = userManagementService.findByUsername(document.assigneeId())
-            val tasks = operatonTaskService.findTasks(
+            val assignee = userManagementService.findByUserIdentifier(document.assigneeId())
+            val tasks = camundaTaskService.findTasks(
                 byProcessInstanceBusinessKey(document.id().toString())
                     .and(byCandidateGroups(assignee.roles))
             )
             logger.debug { "Updating assignee on ${tasks.size} task(s)" }
             tasks.forEach { task ->
-                operatonTaskService.assign(task.id, assignee.id)
+                camundaTaskService.assign(task.id, assignee.id)
             }
         }
     }
@@ -69,13 +69,13 @@ class CaseAssigneeListener(
             document.definitionId().caseDefinitionId()
         )
         if (caseDefinition.canHaveAssignee && caseDefinition.autoAssignTasks) {
-            val tasks = operatonTaskService.findTasks(
+            val tasks = camundaTaskService.findTasks(
                 byProcessInstanceBusinessKey(document.id().toString())
                     .and(byAssigned())
             )
             logger.debug { "Removing assignee from ${tasks.size} task(s)" }
             tasks.forEach { task ->
-                operatonTaskService.unassign(task.id)
+                camundaTaskService.unassign(task.id)
             }
         }
     }

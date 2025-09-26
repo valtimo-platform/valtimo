@@ -38,43 +38,25 @@ class JsonSchemaDocumentDefinitionExporter(
         DocumentDefinitionExportRequest::class.java
 
     override fun export(request: DocumentDefinitionExportRequest): ExportResult {
-        val documentDefinition = if (request.name != "") {
-            val documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(request.name, request.caseDefinitionId)
-            documentDefinitionService.findBy(documentDefinitionId).orElseThrow()
-        } else {
-            documentDefinitionService.findByCaseDefinitionId(request.caseDefinitionId).orElseThrow()
-        }
-
-        val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
-            "${it.major}-${it.minor}-${it.patch}"
-        }
+        val documentDefinitionId = JsonSchemaDocumentDefinitionId.existingId(request.name, request.caseDefinitionId)
+        val documentDefinition = documentDefinitionService.findBy(documentDefinitionId).orElseThrow()
 
         val exportFile = ByteArrayOutputStream().use {
             objectMapper.writer(ExportPrettyPrinter()).writeValue(it, documentDefinition.schema.asJson())
 
             ExportFile(
-                PATH.format(
-                    request.caseDefinitionId.key,
-                    formattedCaseDefinitionVersion,
-                    documentDefinition.id!!.name()
-                ),
+                PATH.format(documentDefinition.id!!.name()),
                 it.toByteArray()
             )
         }
 
         return ExportResult(
             exportFile,
-            setOf(
-                FormDefinitionExportRequest(
-                    documentDefinition.id.name() + ".summary",
-                    request.caseDefinitionId,
-                    false
-                )
-            )
+            setOf(FormDefinitionExportRequest(request.name + ".summary", request.caseDefinitionId, false))
         )
     }
 
     companion object {
-        private const val PATH = "config/case/%s/%s/document/definition/%s.schema.document-definition.json"
+        private const val PATH = "config/document/definition/%s.schema.json"
     }
 }

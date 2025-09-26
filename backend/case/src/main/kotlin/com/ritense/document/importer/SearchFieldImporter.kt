@@ -26,7 +26,7 @@ import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.SEARCH
 import com.ritense.logging.withLoggingContext
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.everit.json.schema.loader.SchemaLoader
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -100,7 +100,7 @@ class SearchFieldImporter(
     }
 
     private companion object {
-        val FILENAME_REGEX = """/case/search-field/([^/]*)\.case-search-field\.json""".toRegex()
+        val FILENAME_REGEX = """/search/([^/]*)\.json""".toRegex()
         const val SEARCH_SCHEMA_PATH = "classpath:config/search/schema/search.schema.json"
         val logger = KotlinLogging.logger {}
     }

@@ -129,8 +129,7 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
         joinColumns = @JoinColumn(name = "json_schema_document_id", referencedColumnName="json_schema_document_id"),
         inverseJoinColumns = {
             @JoinColumn(name = "case_tag_key", referencedColumnName = "case_tag_key"),
-            @JoinColumn(name = "case_definition_key", referencedColumnName = "case_definition_key"),
-            @JoinColumn(name = "case_definition_version_tag", referencedColumnName = "case_definition_version_tag")
+            @JoinColumn(name = "case_definition_name", referencedColumnName = "case_definition_name")
         }
     )
     private Set<CaseTag> caseTags;

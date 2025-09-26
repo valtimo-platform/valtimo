@@ -59,7 +59,7 @@ class CaseTabImporter(
                 tabOrder = index,
                 type = tab.type,
                 contentKey = tab.contentKey,
-                showTasks = tab.showTasks
+                showTasks = true // TODO: expand import DTO to allow showTasks to be configured
             )
         }
 
@@ -67,6 +67,14 @@ class CaseTabImporter(
     }
 
     private companion object {
-        private val FILENAME_REGEX = """/case/tab/([^/]+)\.case-tab\.json""".toRegex()
+        private val FILENAME_REGEX = """/case/tab/([^/]+)\.case-tabs\.json""".toRegex()
+
+        private val STANDARD_CASE_TABS = listOf(
+            CaseTabDto("summary", null, CaseTabType.STANDARD, "summary"),
+            CaseTabDto("progress", null, CaseTabType.STANDARD, "progress"),
+            CaseTabDto("audit", null, CaseTabType.STANDARD, "audit"),
+            CaseTabDto("documents", null, CaseTabType.STANDARD, "documents"),
+            CaseTabDto("notes", null, CaseTabType.STANDARD, "notes")
+        )
     }
 }

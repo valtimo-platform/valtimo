@@ -46,13 +46,10 @@ class FormDefinitionImporter(
     }
 
     private fun fileNameWithoutPathAndExtension(fileName: String): String {
-        return fileName
-            .substringAfterLast('/')
-            .substringBeforeLast('.')
-            .substringBeforeLast('.')
+        return fileName.substringAfterLast('/').substringBeforeLast('.')
     }
 
     companion object {
-        val FILENAME_REGEX = """/form/(?:.*/)?(.+)\.form\.json""".toRegex()
+        val FILENAME_REGEX = """/form/([^/]+)\.json""".toRegex()
     }
 }

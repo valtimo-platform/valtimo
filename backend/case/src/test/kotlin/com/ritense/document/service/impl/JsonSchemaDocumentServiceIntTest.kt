@@ -101,7 +101,7 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
         admin.username = USERNAME
         admin.roles = listOf(USER, ADMIN)
         whenever(userManagementService.currentUser).thenReturn(admin)
-        whenever(userManagementService.findByUsername(USERNAME)).thenReturn(admin)
+        whenever(userManagementService.findByUserIdentifier(USERNAME)).thenReturn(admin)
         whenever(userManagementService.findById(USERNAME)).thenReturn(admin)
     }
 
@@ -114,14 +114,14 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
             Permission(
                 UUID.randomUUID(),
                 JsonSchemaDocument::class.java,
-                mutableListOf(JsonSchemaDocumentActionProvider.ASSIGN),
+                JsonSchemaDocumentActionProvider.ASSIGN,
                 ConditionContainer(),
                 adminRole
             ),
             Permission(
                 UUID.randomUUID(),
                 JsonSchemaDocument::class.java,
-                mutableListOf(JsonSchemaDocumentActionProvider.ASSIGNABLE),
+                JsonSchemaDocumentActionProvider.ASSIGNABLE,
                 ConditionContainer(),
                 userRole
             )
@@ -207,14 +207,14 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
 
         // Adding tags to the database in preparation for the integration test
         val tag1 = CaseTag(
-            CaseTagId(caseDefinitionId(), "new"),
+            CaseTagId("house", "new"),
             "New",
             CaseTagColor.GREEN,
             order = 0
 
         )
         val tag2 = CaseTag(
-            CaseTagId(caseDefinitionId(), "priority-request"),
+            CaseTagId("house", "priority-request"),
             "Priority request",
             CaseTagColor.MAGENTA,
             order = 1
@@ -251,14 +251,14 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
         // Adding tags to the database in preparation for the integration test
         val caseTagKey1 = "new"
         val tag1 = CaseTag(
-            CaseTagId(caseDefinitionId(), caseTagKey1),
+            CaseTagId("house", caseTagKey1),
             "New",
             CaseTagColor.GREEN,
             order = 0
         )
         val caseTagKey2 = "priority-request"
         val tag2 = CaseTag(
-            CaseTagId(caseDefinitionId(), caseTagKey2),
+            CaseTagId("house", caseTagKey2),
             "Priority request",
             CaseTagColor.MAGENTA,
             1
@@ -515,8 +515,6 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     definition().id().name(),
-                    definition().id().caseDefinitionId().key,
-                    definition().id().caseDefinitionId().versionTag.version,
                     JsonDocumentContent(content).asJson()
                 )
             )

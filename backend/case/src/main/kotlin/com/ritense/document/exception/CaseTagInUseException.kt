@@ -16,11 +16,9 @@
 
 package com.ritense.document.exception
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-
 class CaseTagInUseException(
     caseTagKey: String,
-    caseDefinitionId: CaseDefinitionId
+    caseDefinitionName: String
 ) : RuntimeException(
-    "The case tag with key $caseTagKey for case defintion ${caseDefinitionId} is in use and cannot be deleted"
+    "The case tag with key $caseTagKey for case defintion $caseDefinitionName is in use and cannot be deleted"
 )

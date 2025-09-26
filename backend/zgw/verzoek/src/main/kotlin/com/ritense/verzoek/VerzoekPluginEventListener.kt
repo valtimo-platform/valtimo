@@ -23,13 +23,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.authorization.annotation.RunWithoutAuthorization
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.domain.patch.JsonPatchService
-import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
@@ -43,11 +41,10 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.verzoek.domain.CopyStrategy
 import com.ritense.verzoek.domain.VerzoekProperties
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -62,8 +59,6 @@ class VerzoekPluginEventListener(
     private val pluginService: PluginService,
     private val objectManagementService: ObjectManagementService,
     private val documentService: DocumentService,
-    private val documentDefinitionService: DocumentDefinitionService,
-    private val caseDefinitionService: CaseDefinitionService,
     private val zaaktypeUrlProvider: ZaaktypeUrlProvider,
     private val processDocumentService: ProcessDocumentService,
     private val objectMapper: ObjectMapper,
@@ -100,22 +95,20 @@ class VerzoekPluginEventListener(
             return
         }
 
-        val verzoekObjectWrapper = getVerzoekObject(objectManagement, event)
-        val verzoekObject = objectMapper.valueToTree<ObjectNode>(verzoekObjectWrapper)
-        val verzoekObjectData = verzoekObjectWrapper.record.data as ObjectNode?
-            ?: throw NotificatiesNotificationEventException("VerzoekObject /record/data cannot be found!")
-        val caseDefinitionIdAndVerzoekProperties =
-            getCaseDefinitionIdAndVerzoekProperties(verzoekPlugin, verzoekObjectData, event)
-        if (caseDefinitionIdAndVerzoekProperties == null) {
-            val verzoekType = verzoekObjectData["type"]?.textValue()
-            logger.debug { "VerzoekPlugin is ignoring Notificaties API event: No verzoek plugin found for type '${verzoekType}'" }
-            return
-        }
-
-        caseDefinitionIdAndVerzoekProperties.let { (caseDefinitionId, verzoekProperty) ->
+        verzoekPlugin.run {
+            val verzoekObjectWrapper = getVerzoekObject(objectManagement, event)
+            val verzoekObject = objectMapper.valueToTree<ObjectNode>(verzoekObjectWrapper)
+            val verzoekObjectData = verzoekObjectWrapper.record.data as ObjectNode?
+                ?: throw NotificatiesNotificationEventException("VerzoekObject /record/data cannot be found!")
+            val verzoekTypeProperties = getVerzoekTypeProperties(verzoekObjectData, event)
+            if (verzoekTypeProperties == null) {
+                val verzoekType = verzoekObjectData["type"]?.textValue()
+                logger.debug { "VerzoekPlugin is ignoring Notificaties API event: No verzoek plugin found for type '${verzoekType}'" }
+                return
+            }
 
             logger.info { "Received verzoek notification. Verzoek objectUrl: ${event.resourceUrl}" }
-            val document = createDocument(caseDefinitionId, verzoekProperty, verzoekObject)
+            val document = createDocument(verzoekTypeProperties, verzoekObject)
             withLoggingContext(JsonSchemaDocument::class, document.id()) {
                 val zaakTypeUrl = zaaktypeUrlProvider.getZaaktypeUrl(document.definitionId().caseDefinitionId())
                 val initiatorType = if (verzoekObjectData.has("kvk")) {
@@ -129,24 +122,24 @@ class VerzoekPluginEventListener(
                 val verzoekVariables = objectMapper.treeToValue<MutableMap<String, Any?>>(verzoekObjectData)
                 verzoekVariables.remove("data")
                 verzoekVariables += mutableMapOf(
-                    "RSIN" to verzoekPlugin.rsin.toString(),
+                    "RSIN" to rsin.toString(),
                     "zaakTypeUrl" to zaakTypeUrl.toString(),
-                    "rolTypeUrl" to verzoekProperty.initiatorRoltypeUrl.toString(),
-                    "rolDescription" to verzoekProperty.initiatorRolDescription,
+                    "rolTypeUrl" to verzoekTypeProperties.initiatorRoltypeUrl.toString(),
+                    "rolDescription" to verzoekTypeProperties.initiatorRolDescription,
                     "verzoekObjectUrl" to event.resourceUrl,
                     "initiatorType" to initiatorType,
-                    "processDefinitionKey" to verzoekProperty.processDefinitionKey,
+                    "processDefinitionKey" to verzoekTypeProperties.processDefinitionKey,
                     "documentUrls" to getDocumentUrls(verzoekObjectData)
                 )
                 initiatorType?.let { verzoekVariables["initiatorValue"] = verzoekObjectData[it].textValue() }
 
-                addVerzoekVariablesToProcessVariable(verzoekProperty, verzoekObject, verzoekVariables)
+                addVerzoekVariablesToProcessVariable(verzoekTypeProperties, verzoekObject, verzoekVariables)
 
                 val startProcessRequest = StartProcessForDocumentRequest(
-                    document.id(), verzoekPlugin.processToStart, verzoekVariables
+                    document.id(), processToStart, verzoekVariables
                 )
 
-                startProcess(startProcessRequest)
+                return@withLoggingContext startProcess(startProcessRequest)
             }
         }
     }
@@ -192,22 +185,12 @@ class VerzoekPluginEventListener(
         return verzoekObjectData
     }
 
-    private fun getCaseDefinitionIdAndVerzoekProperties(
-        verzoekPlugin: VerzoekPlugin,
+    private fun VerzoekPlugin.getVerzoekTypeProperties(
         verzoekObjectData: JsonNode,
         event: NotificatiesApiNotificationReceivedEvent
-    ): Pair<CaseDefinitionId, VerzoekProperties>? {
+    ): VerzoekProperties? {
         val verzoekType = verzoekObjectData["type"]?.textValue()
-        val verzoekTypeProperties = verzoekPlugin.verzoekProperties
-            .filter { props -> props.type.equals(verzoekType, true) }
-            .groupBy { props -> props.caseDefinitionKey to props.caseDefinitionVersionTag?.toString() }
-            .mapNotNull { (caseDefinitionIdAsPair, props) ->
-                getCaseDefinitionIdAndVerzoekProperty(
-                    caseDefinitionIdAsPair.first,
-                    caseDefinitionIdAsPair.second,
-                    props
-                )
-            }.firstOrNull()
+        val verzoekTypeProperties = verzoekProperties.firstOrNull { props -> props.type.equals(verzoekType, true) }
         if (verzoekTypeProperties == null && verzoekType != null) {
             throw NotificatiesNotificationEventException(
                 "Failed to find verzoek configuration of type $verzoekType. For object ${event.resourceUrl}"
@@ -217,50 +200,22 @@ class VerzoekPluginEventListener(
         return verzoekTypeProperties
     }
 
-    private fun getCaseDefinitionIdAndVerzoekProperty(
-        caseDefinitionKey: String,
-        caseDefinitionVersionTag: String?,
-        verzoekProperties: List<VerzoekProperties>
-    ): Pair<CaseDefinitionId, VerzoekProperties>? {
-        val caseDefinition = if (caseDefinitionVersionTag != null) {
-            caseDefinitionService.findCaseDefinition(CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag))
-        } else {
-            caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
-        }
-
-        requireNotNull(caseDefinition) {
-            "Verzoek plugin failed to create case: No case found with key $caseDefinitionKey"
-        }
-
-        val verzoekProperty = verzoekProperties.firstOrNull()
-
-        if (verzoekProperty != null) {
-            return caseDefinition.id to verzoekProperty
-        }
-
-        return null
-    }
-
     private fun createDocument(
-        caseDefinitionId: CaseDefinitionId,
         verzoekTypeProperties: VerzoekProperties,
         verzoekObject: ObjectNode
     ): Document {
         logger.debug { "Creating document for verzoek of type '${verzoekTypeProperties.type}'" }
-        val documentDefinition = documentDefinitionService.findByCaseDefinitionId(caseDefinitionId).get()
         return AuthorizationContext.runWithoutAuthorization {
             documentService.createDocument(
                 NewDocumentRequest(
-                    documentDefinition.id().name(),
-                    caseDefinitionId.key,
-                    caseDefinitionId.versionTag.toString(),
+                    verzoekTypeProperties.caseDefinitionName,
                     getDocumentContent(verzoekTypeProperties, verzoekObject)
                 )
             )
         }.also { result ->
             if (result.errors().isNotEmpty()) {
                 throw NotificatiesNotificationEventException(
-                    "Could not create document for case ${verzoekTypeProperties.caseDefinitionKey}\n" +
+                    "Could not create document for case ${verzoekTypeProperties.caseDefinitionName}\n" +
                         "Reason:\n" +
                         result.errors().joinToString(separator = "\n - ")
                 )

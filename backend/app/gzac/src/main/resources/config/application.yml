@@ -46,6 +46,7 @@ spring:
                 elideSetAutoCommits: true
                 maintainTimeStats: false
                 serverTimezone: UTC
+                stringtype: unspecified
                 allowPublicKeyRetrieval: true
     security:
         oauth2:
@@ -99,7 +100,7 @@ spring:
             max-file-size: 10MB
             max-request-size: 10MB
     jersey:
-        application-path: /api/operaton-rest
+        application-path: /api/camunda-rest
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
@@ -173,6 +174,7 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     oauth:
         tokenValidityInSeconds: 3600 # Token is valid 1 hour
+        identifier-field: username
 
     hardening:
         allowStacktraceOnIps:
@@ -207,6 +209,10 @@ valtimo:
                     - "*"
             paths:
                 - "/**"
+    openklant:
+        url: "http://localhost:8006"
+        clientId: "valtimo_client"
+        rsin: "051845623"
 
     genericTemplateName: "template-name"
     besluitDocumentRequired: true
@@ -221,6 +227,16 @@ valtimo:
     changelog:
         pbac:
             clear-tables: false
+        case-tabs:
+            clear-tables: false
+        case-tag:
+            clear-tables: false
+        internal-case-status:
+            clear-tables: false
+        zgw-document-list-column:
+            clear-tables: false
+        task-search-fields:
+            clear-tables: false
 
     outbox:
         enabled: true
@@ -231,6 +247,11 @@ valtimo:
                 delivery-timeout: "PT0.5S"
             polling.rate: "PT15M"
 
+    authorization:
+        dashboard:
+            enabled: true
+        zgwDocuments:
+            enabled:true
     logging:
         retentionInMinutes: 1440
     docker:
@@ -254,7 +275,7 @@ scheduling:
         cron:
             cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
             taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
-operaton:
+camunda:
     bpm:
         history-level: AUDIT
         history-level-default: AUDIT

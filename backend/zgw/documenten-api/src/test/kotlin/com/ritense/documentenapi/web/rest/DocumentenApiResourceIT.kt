@@ -196,12 +196,7 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
         val documentId = runWithoutAuthorization {
             val content = """{"description":"Test description"}"""
             documentService.createDocument(
-                NewDocumentRequest(
-                    "profile",
-                    "profile",
-                    "1.0.0",
-                    JsonDocumentContent(content).asJson()
-                )
+                NewDocumentRequest("profile", JsonDocumentContent(content).asJson())
             ).resultingDocument().get().id().id
         }
 
