@@ -1,0 +1,15 @@
+{
+    "changesetId": "document-definitions-v1",
+    "permissions": [
+        {
+            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocumentDefinition",
+            "action": "view",
+            "roleKey": "ROLE_USER"
+        },
+        {
+            "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
+            "action": "view",
+            "roleKey": "ROLE_USER"
+        }
+    ]
+}
