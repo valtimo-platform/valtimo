@@ -19,21 +19,23 @@ import {
   OnDestroy,
   OnInit,
   QueryList,
+  ViewChild,
   ViewChildren,
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 import {PageTitleService} from '@valtimo/components';
-import {DocumentDefinition} from '@valtimo/document';
 import {
   CaseManagementParams,
   CaseManagementTabConfig,
   ConfigService,
   getCaseManagementRouteParams,
 } from '@valtimo/shared';
+import {DocumentDefinition} from '@valtimo/document';
 import {Tab} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, startWith, Subscription} from 'rxjs';
 import {TabEnum} from '../../models';
 import {CaseDetailService, TabService} from '../../services';
+import {CaseManagementDocumentDefinitionComponent} from './tabs/case-management-document-definition/case-management-document-definition.component';
 
 @Component({
   standalone: false,
@@ -43,6 +45,8 @@ import {CaseDetailService, TabService} from '../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementDetailComponent implements OnInit, OnDestroy {
+  @ViewChild(CaseManagementDocumentDefinitionComponent)
+  private _documentDefinitionTab: CaseManagementDocumentDefinitionComponent;
   @ViewChildren(Tab) private _tabs: QueryList<Tab>;
 
   private _params: CaseManagementParams | undefined;
@@ -170,7 +174,6 @@ export class CaseManagementDetailComponent implements OnInit, OnDestroy {
   }
 
   protected onCanDeactivate(): void {
-    //TODO: Fix pending changes with new routing
-    // this._documentDefinitionTab?.onCanDeactivate();
+    this._documentDefinitionTab?.onCanDeactivate();
   }
 }

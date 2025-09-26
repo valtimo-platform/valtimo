@@ -9,7 +9,10 @@ const rootDir = path.resolve(__dirname, '../../');
 
 function removeRoutes(content, routesToRemove) {
   routesToRemove.forEach(route => {
-    const routeRegex = new RegExp(`\\{[^{}]*?path\\s*:\\s*['"]${route}['"][^{}]*?\\}[,]?\\s*`, 'g');
+    const routeRegex = new RegExp(
+      `\\{[^{}]*?path\\s*:\\s*['"]${route}['"][^{}]*?\\}[,]?\\s*`,
+      'g'
+    );
     content = content.replace(routeRegex, '');
   });
   return content;
@@ -29,7 +32,7 @@ function cleanEnvironmentFile(filePath) {
     'definitions: { cases: [] }'
   );
 
-  content = removeRoutes(content, ['process-link', 'process-links', 'form-flow']);
+  content = removeRoutes(content, ['process-link', 'form-flow']);
 
   content = content.replace(/,(\s*[}\]])/g, '$1');
 
@@ -52,7 +55,7 @@ function runMigration() {
     cleanEnvironmentFile(fullPath);
   });
 
-  console.log('Migration step completed.');
+  console.log('Migration step 07 completed.');
 }
 
 function npmInstall() {
@@ -61,12 +64,12 @@ function npmInstall() {
 }
 
 try {
-  console.log('Starting migration step: Remove deprecated env properties and routes');
+  console.log('Starting migration step 07: Remove deprecated env properties and routes');
   runMigration();
   npmInstall();
   process.exit(0);
 } catch (err) {
-  console.error('Migration step failed');
+  console.error('Migration step 07 failed');
   console.error(err);
   process.exit(1);
 }

@@ -39,9 +39,9 @@
   <cds-label *ngIf="index === 0 && valueColumnTitle">{{ valueColumnTitle }}</cds-label>
 
   <valtimo-value-path-selector
-    [caseDefinitionKey]="caseDefinitionKey"
+    [documentDefinitionName]="documentDefinitionName"
     [prefixes]="prefixes"
-    [showCaseDefinitionSelector]="showCaseDefinitionSelector"
+    [showDocumentDefinitionSelector]="showDocumentDefinitionSelector"
     [disabled]="disabled"
     [defaultValue]="value?.value"
     [notation]="notation"

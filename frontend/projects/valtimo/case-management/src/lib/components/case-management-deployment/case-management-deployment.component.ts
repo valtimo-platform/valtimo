@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DatePipe, Location as AngularLocation} from '@angular/common';
+import {DatePipe} from '@angular/common';
 import {AfterViewInit, Component, OnInit, TemplateRef, ViewChild} from '@angular/core';
+import {FormBuilder} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Return16, Save16, TrashCan16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
@@ -43,11 +44,11 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   private readonly _deleteDraftMessageTemplateRef: TemplateRef<HTMLDivElement>;
 
   public caseDefinitionVersions: string[] = [];
+  public readonly isDraftVersion$ = new BehaviorSubject<boolean>(false);
   public readonly hasConflictingVersions$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly showFinalizeDraftConfirmationModal$ = new BehaviorSubject<boolean>(false);
   public readonly showCreateDraftVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
-  private readonly refreshDraftVersion$ = new BehaviorSubject<null>(null);
 
   public readonly params$: Observable<{
     caseDefinitionKey: string;
@@ -71,13 +72,12 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
     this.environmentService.canUpdateGlobalConfiguration();
 
   private getDraftDescription$(translationKey: string): Observable<string> {
-    return combineLatest([
-      this.caseDefinitionKey$,
-      this.caseDefinitionVersionTag$,
-      this.translateService.stream('key'),
-    ]).pipe(
+    return combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$]).pipe(
       switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-        this.translateService.get(translationKey, {caseDefinitionKey, caseDefinitionVersionTag})
+        this.translateService.get(translationKey, {
+          caseDefinitionKey,
+          caseDefinitionVersionTag,
+        })
       )
     );
   }
@@ -117,18 +117,9 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
       this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
     ),
     tap(caseDefinition => {
+      this.isDraftVersion$.next(!caseDefinition.final);
       this.hasConflictingVersions$.next(!!caseDefinition.conflictingVersions);
     })
-  );
-
-  public readonly isDraftVersion$: Observable<boolean> = combineLatest([
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$,
-    this.refreshDraftVersion$,
-  ]).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
-    )
   );
 
   public readonly caseDefinitionPayload$ = combineLatest([
@@ -193,16 +184,16 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
   private _currentNotification!: Notification;
 
   constructor(
-    private readonly breadcrumbService: BreadcrumbService,
     private readonly caseManagementService: CaseManagementService,
-    private readonly datePipe: DatePipe,
-    private readonly environmentService: EnvironmentService,
     private readonly iconService: IconService,
-    private readonly location: AngularLocation,
-    private readonly notificationService: GlobalNotificationService,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly translateService: TranslateService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly translateService: TranslateService
+    private readonly datePipe: DatePipe,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly fb: FormBuilder,
+    private readonly environmentService: EnvironmentService
   ) {
     this.iconService.register(Return16);
     this.iconService.register(TrashCan16);
@@ -227,14 +218,18 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
 
   public goBack(): void {
     this.breadcrumbService.clearThirdBreadcrumb();
-
     combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
-      .pipe(take(1))
-      .subscribe(([caseDefinitionKey, caseDefinitionVersionTag]) => {
-        this.router.navigate([
-          `/case-management/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/general`,
-        ]);
-      });
+      .pipe(
+        tap(([caseDefinitionKey, caseDefinitionVersionTag]) => {
+          this.router.navigate([
+            '/case-management/case',
+            caseDefinitionKey,
+            'version',
+            caseDefinitionVersionTag,
+          ]);
+        })
+      )
+      .subscribe();
   }
 
   public openDeleteDraftModal(): void {
@@ -334,6 +329,7 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
       .subscribe({
         next: response => {
           this.closeCurrentNotification();
+          this.isDraftVersion$.next(false);
           this._currentNotification = this.notificationService.showNotification({
             type: 'success',
             title: this.translateService.instant(
@@ -341,8 +337,6 @@ export class CaseManagementDeploymentComponent implements OnInit, AfterViewInit 
             ),
             duration: 5000,
           });
-
-          this.refreshDraftVersion$.next(null);
         },
         error: () => {
           this.closeCurrentNotification();

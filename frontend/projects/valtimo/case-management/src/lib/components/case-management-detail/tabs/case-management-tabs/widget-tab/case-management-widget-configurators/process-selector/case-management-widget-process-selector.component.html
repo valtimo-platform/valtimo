@@ -19,15 +19,14 @@
   [formGroup]="formGroup"
   class="valtimo-case-management-widget-process-selector"
 >
-  <cds-combo-box
+  <cds-dropdown
     [label]="'widgetTabManagement.processes.buttonTextLabel' | translate"
-    [items]="processDefinitionItems$ | async"
     [placeholder]="'widgetTabManagement.processes.selectorPlaceholder' | translate"
     formControlName="processDefinitionKey"
-    (selected)="onProcessSelected($event)"
+    (selected)="onProcessSelected()"
   >
-    <cds-dropdown-list></cds-dropdown-list>
-  </cds-combo-box>
+    <cds-dropdown-list [items]="processDefinitionItems$ | async"></cds-dropdown-list>
+  </cds-dropdown>
 
   <cds-text-label>
     {{ 'widgetTabManagement.processes.buttonTextLabel' | translate }}

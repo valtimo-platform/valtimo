@@ -15,10 +15,7 @@
   -->
 
 <form
-  *ngIf="{
-    theme: theme$ | async,
-    params: params$ | async,
-  } as obs"
+  *ngIf="{theme: theme$ | async} as obs"
   [formGroup]="form"
   class="valtimo-case-management-widget-table__form"
 >
@@ -62,8 +59,8 @@
     <valtimo-value-path-selector
       formControlName="collection"
       [attr.data-carbon-theme]="obs.theme"
-      [caseDefinitionKey]="obs.params?.caseDefinitionKey"
-      [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+      [documentDefinitionName]="(params$ | async)?.caseDefinitionKey"
+      [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
       [type]="ValuePathType.COLLECTION"
       (collectionSelected)="onCollectionSelected($event)"
     ></valtimo-value-path-selector>
@@ -80,7 +77,7 @@
 
 <valtimo-case-management-widget-fields-column
   [addTranslateKey]="'widgetTabManagement.content.table.addColumn'"
-  [columnData]="$content()?.columns"
+  [columnData]="content()?.columns"
   [params]="params$ | async"
   [selectedCollection]="selectedCollection$ | async"
   (columnUpdateEvent)="onColumnUpdateEvent($event)"
@@ -92,7 +89,7 @@
   </span>
 
   <cds-toggle
-    [checked]="$checked()"
+    [checked]="checked()"
     [label]="'widgetTabManagement.content.table.firstColumnAsTitle' | translate"
     [onText]="'interface.yes' | translate"
     [offText]="'interface.no' | translate"

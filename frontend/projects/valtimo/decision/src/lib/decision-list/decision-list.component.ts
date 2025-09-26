@@ -17,15 +17,10 @@
 import {ChangeDetectorRef, Component, ViewChild} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, map, switchMap, take, tap} from 'rxjs';
 import {Decision} from '../models';
 import {DecisionService} from '../services/decision.service';
-import {
-  ConfigService,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-  getContextObservable,
-} from '@valtimo/shared';
+import {ConfigService, getCaseManagementRouteParams, getContextObservable} from '@valtimo/shared';
 import {DecisionStateService} from '../services';
 import {DecisionDeployComponent} from '../decision-deploy/decision-deploy.component';
 import {CarbonListModule, WidgetModule} from '@valtimo/components';
@@ -93,19 +88,6 @@ export class DecisionListComponent {
     })
   );
 
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.caseManagementRouteParams$,
-    this.context$,
-  ]).pipe(
-    switchMap(([params, context]) => {
-      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      );
-    })
-  );
-
   constructor(
     private readonly decisionService: DecisionService,
     private readonly iconService: IconService,
@@ -113,8 +95,7 @@ export class DecisionListComponent {
     private readonly configService: ConfigService,
     private readonly stateService: DecisionStateService,
     private readonly route: ActivatedRoute,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.iconService.registerAll([Upload16]);
     this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;

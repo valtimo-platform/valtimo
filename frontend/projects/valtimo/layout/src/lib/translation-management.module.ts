@@ -23,7 +23,7 @@ import {
   CarbonMultiInputModule,
   ConfirmationModalModule,
   MultiInputFormModule,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
 import {ButtonModule, IconModule, LoadingModule} from 'carbon-components-angular';
 
@@ -36,7 +36,7 @@ import {ButtonModule, IconModule, LoadingModule} from 'carbon-components-angular
     MultiInputFormModule,
     CarbonMultiInputModule,
     LoadingModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     ButtonModule,
     IconModule,
     ConfirmationModalModule,

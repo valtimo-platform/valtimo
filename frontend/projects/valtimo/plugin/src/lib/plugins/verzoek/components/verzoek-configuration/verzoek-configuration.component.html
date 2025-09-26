@@ -136,9 +136,7 @@
           [smallMargin]="true"
           name="caseDefinitionVersionTag"
           [title]="'caseDefinitionVersionTag' | pluginTranslate: pluginId | async"
-          [disabled]="
-            obs.disabled || !caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey
-          "
+          [disabled]="obs.disabled || !caseVersionTagSelectItemsObservables[uuid]?.caseDefinitionKey"
           [defaultSelectionId]="prefill?.caseDefinitionVersionTag"
           [required]="true"
           [tooltip]="'caseDefinitionVersionTagTooltip' | pluginTranslate: pluginId | async"
@@ -246,8 +244,8 @@
             [keyColumnTitle]="'source' | pluginTranslate: pluginId | async"
             [fullWidth]="true"
             valuePathSelectorNotation="slashes"
-            [valuePathSelectorCaseDefinitionKey]="
-              getSelectedCaseDefinitionKeyForIndex(index) | async
+            [valuePathSelectorDocumentDefinitionName]="
+              getSelectedDocumentDefinitionNameForIndex(index) | async
             "
             [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC]"
             [keyColumnFlex]="1"

@@ -32,11 +32,7 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {
-  FormCustomComponentConfig,
-  ProcessLinkEditMode,
-  UIComponentProcessLinkUpdateRequestDto,
-} from '../../models';
+import {FormCustomComponentConfig, UIComponentProcessLinkUpdateRequestDto} from '../../models';
 import {ListItem} from 'carbon-components-angular';
 import {
   ProcessLinkButtonService,
@@ -69,6 +65,7 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
     ),
     tap(formCustomComponentListItems => {
       const selectedItem = formCustomComponentListItems.find(item => item.selected);
+
       if (selectedItem) {
         this.selectCustomComponent(selectedItem);
       }
@@ -101,9 +98,9 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
 
   public selectCustomComponent(selectedCustomComponent: ListItem): void {
     this._selectedCustomComponent = selectedCustomComponent;
-    this._selectedCustomComponent?.content
-      ? this.buttonService.enableSaveButton()
-      : this.buttonService.disableSaveButton();
+
+    if (this._selectedCustomComponent.content) this.buttonService.enableSaveButton();
+    else this.buttonService.disableSaveButton();
   }
 
   private openBackButtonSubscription(): void {
@@ -125,26 +122,28 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
 
   private saveProcessLink(): void {
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      selectedProcessLink ? this.updateProcessLink() : this.saveNewProcessLink();
+      if (selectedProcessLink) {
+        this.updateProcessLink();
+      } else {
+        this.saveNewProcessLink();
+      }
     });
   }
 
   private updateProcessLink(): void {
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      const updateRequest: UIComponentProcessLinkUpdateRequestDto = {
+      const updateProcessLinkRequest: UIComponentProcessLinkUpdateRequestDto = {
         id: selectedProcessLink.id,
         componentKey: this._selectedCustomComponent.content,
-        activityId: selectedProcessLink.activityId,
       };
 
-      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkUpdateEvent(updateRequest);
-        return;
-      }
-
-      this.processLinkService.updateProcessLink(updateRequest).subscribe({
-        next: () => this.stateService.closeModal(),
-        error: () => this.stateService.stopSaving(),
+      this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
+        next: () => {
+          this.stateService.closeModal();
+        },
+        error: () => {
+          this.stateService.stopSaving();
+        },
       });
     });
   }
@@ -153,26 +152,23 @@ export class SelectUIComponentComponent implements OnInit, OnDestroy {
     combineLatest([this.stateService.modalParams$, this.stateService.selectedProcessLinkTypeId$])
       .pipe(
         take(1),
-        switchMap(([modalParams, processLinkTypeId]) => {
-          const createRequest = {
+        switchMap(([modalParams, processLinkTypeId]) =>
+          this.processLinkService.saveProcessLink({
             componentKey: this._selectedCustomComponent.content,
             activityType: modalParams.element.activityListenerType || '',
             processDefinitionId: modalParams.processDefinitionId,
             processLinkType: processLinkTypeId,
             activityId: modalParams.element.id,
-          };
-
-          if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-            this.stateService.sendProcessLinkCreateEvent(createRequest);
-            return [];
-          }
-
-          return this.processLinkService.saveProcessLink(createRequest);
-        })
+          })
+        )
       )
       .subscribe({
-        next: () => this.stateService.closeModal(),
-        error: () => this.stateService.stopSaving(),
+        next: () => {
+          this.stateService.closeModal();
+        },
+        error: () => {
+          this.stateService.stopSaving();
+        },
       });
   }
 }

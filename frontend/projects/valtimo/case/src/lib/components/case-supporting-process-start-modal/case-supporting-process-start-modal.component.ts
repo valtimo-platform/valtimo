@@ -19,7 +19,6 @@ import {
   EventEmitter,
   Inject,
   Input,
-  OnDestroy,
   Optional,
   Output,
   ViewChild,
@@ -35,11 +34,12 @@ import {
   ValtimoFormioOptions,
 } from '@valtimo/components';
 import {ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {ProcessService, StartProcessLinkType} from '@valtimo/process';
+import {ProcessService} from '@valtimo/process';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
   FormCustomComponent,
   FormCustomComponentConfig,
+  FormSubmissionResult,
   ProcessLinkService,
 } from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, Subscription, switchMap} from 'rxjs';
@@ -53,7 +53,7 @@ import {FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
   styleUrls: ['./case-supporting-process-start-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class CaseSupportingProcessStartModalComponent implements OnDestroy {
+export class CaseSupportingProcessStartModalComponent {
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;
@@ -63,7 +63,9 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   @Input() isAdmin: boolean;
   @Output() formSubmit = new EventEmitter();
 
-  public readonly startProcessLinkType$ = new BehaviorSubject<StartProcessLinkType | null>(null);
+  protected isFormViewModel = false;
+  public isUIComponent = false;
+
   public readonly processDefinitionKey$ = new BehaviorSubject<string>('');
   public readonly caseDefinitionKey$ = new BehaviorSubject<string>('');
   public readonly processName$ = new BehaviorSubject<string>('');
@@ -76,15 +78,13 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   public readonly formFlowInstanceId$ = new BehaviorSubject<string>(undefined);
   public readonly documentId$ = new BehaviorSubject<string>(undefined);
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly isLoading$ = new BehaviorSubject<boolean>(true);
   private readonly _formCustomComponentConfig$ = new BehaviorSubject<
     FormCustomComponentConfig | {}
   >({});
-  private _caseDefinitionVersionTag: string;
 
   public readonly closeModalEvent = new EventEmitter();
 
-  private _formViewModelSubscription!: Subscription;
+  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly router: Router,
@@ -98,13 +98,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     this._formCustomComponentConfig$.next(formCustomComponentConfig);
   }
 
-  public ngOnDestroy(): void {
-    this._formViewModelSubscription?.unsubscribe();
-  }
-
   private loadProcessLink(): void {
-    this.startProcessLinkType$.next(null);
-
     combineLatest([this.processDefinitionId$, this.documentId$])
       .pipe(
         take(1),
@@ -117,11 +111,9 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
         )
       )
       .subscribe(startProcessResult => {
-        this.isLoading$.next(false);
-
         if (startProcessResult) {
-          this.startProcessLinkType$.next(startProcessResult.type);
-
+          this.isUIComponent = false;
+          this.isFormViewModel = false;
           switch (startProcessResult.type) {
             case 'form':
               this.formDefinition$.next(startProcessResult.properties.prefilledForm);
@@ -137,6 +129,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
               break;
             case 'ui-component':
               this.setFormCustomComponent(startProcessResult.properties.componentKey);
+              this.isUIComponent = true;
               this.openCdsModal();
               break;
           }
@@ -149,10 +142,8 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
     processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition,
     documentId: string
   ): void {
-    this.isLoading$.next(true);
     this.documentId$.next(documentId);
     this.caseDefinitionKey$.next(processDefinitionCaseDefinition.id.caseDefinitionId.key);
-    this._caseDefinitionVersionTag = processDefinitionCaseDefinition.id.caseDefinitionId.versionTag;
     this.processDefinitionKey$.next(processDefinitionCaseDefinition.processDefinitionKey);
     this.processDefinitionId$.next(processDefinitionCaseDefinition.id.processDefinitionId);
     this.processName$.next(processDefinitionCaseDefinition.processDefinitionName);
@@ -183,7 +174,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
           )
         )
         .subscribe({
-          next: () => {
+          next: (formSubmissionResult: FormSubmissionResult) => {
             this.formSubmitted();
           },
           error: errors => {
@@ -196,15 +187,14 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
   public formSubmitted(): void {
     this.closeCdsModal();
     this.formSubmit.emit();
-    this.isLoading$.next(true);
     this.formDefinition$.next(null);
   }
 
   public gotoFormLinkScreen(): void {
     this.closeCdsModal();
-    this.router.navigate([
-      `/case-management/case/${this.caseDefinitionKey$.getValue()}/version/${this._caseDefinitionVersionTag}/processes/${this.processDefinitionKey$.getValue()}`,
-    ]);
+    this.router.navigate(['process-links'], {
+      queryParams: {process: this.processDefinitionKey$.getValue()},
+    });
   }
 
   public onCloseSelect(): void {
@@ -213,9 +203,7 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
 
   private setFormViewModelComponent(formName: string): void {
     if (!this.formViewModel.component) return;
-
     this.formViewModelDynamicContainer.clear();
-
     const formViewModelComponent = this.formViewModelDynamicContainer.createComponent(
       this.formViewModel.component
     );
@@ -242,12 +230,13 @@ export class CaseSupportingProcessStartModalComponent implements OnDestroy {
       this.formSubmitted();
     });
 
-    this._formViewModelSubscription?.unsubscribe();
-    this._formViewModelSubscription = this.closeModalEvent.subscribe(() => {
-      formViewModelComponent.destroy();
-    });
+    this._subscriptions.add(
+      this.closeModalEvent.subscribe(() => {
+        formViewModelComponent.destroy();
+      })
+    );
 
-    this.isLoading$.next(true);
+    this.isFormViewModel = true;
   }
 
   private setFormCustomComponent(formCustomComponentKey: string): void {

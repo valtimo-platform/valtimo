@@ -17,12 +17,10 @@
 import {ValtimoWindow} from '@valtimo/shared';
 import {ProcessManagementEditorService} from '../services';
 import {TranslateService} from '@ngx-translate/core';
-import {PluginTranslationService} from '@valtimo/plugin';
 
 interface ProcessManagementWindow extends ValtimoWindow {
   processManagementEditorService: ProcessManagementEditorService;
   translateService: TranslateService;
-  pluginTranslationService: PluginTranslationService;
 }
 
 export {ProcessManagementWindow};

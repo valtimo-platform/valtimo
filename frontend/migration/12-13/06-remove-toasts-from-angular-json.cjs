@@ -9,7 +9,9 @@ try {
 
   function removeToastrCss(config) {
     if (config && Array.isArray(config.styles)) {
-      config.styles = config.styles.filter(style => style !== 'node_modules/ngx-toastr/toastr.css');
+      config.styles = config.styles.filter(
+        style => style !== 'node_modules/ngx-toastr/toastr.css'
+      );
     }
   }
 

@@ -19,7 +19,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {ValtimoCdsModalDirective, WidgetModule} from '@valtimo/components';
+import {ValtimoCdsModalDirectiveModule, WidgetModule} from '@valtimo/components';
 import {
   getCaseManagementRouteParams,
   getCaseManagementRouteParamsAndContext,
@@ -31,7 +31,7 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {switchMap, tap} from 'rxjs';
+import {combineLatest, of, switchMap, tap} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
 import {CreateFormDefinitionRequest} from '../../models';
 import {FormManagementService} from '../../services';
@@ -54,7 +54,7 @@ import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.valid
     TilesModule,
     LayerModule,
     ModalModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     ButtonModule,
   ],
 })
@@ -126,8 +126,13 @@ export class FormManagementCreateComponent implements OnInit {
       formDefinition: JSON.stringify(emptyForm),
     };
 
-    getCaseManagementRouteParamsAndContext(this.route)
+    this.context$
       .pipe(
+        switchMap(context =>
+          context === 'case'
+            ? combineLatest([of(context), this.caseManagementRouteParams$])
+            : combineLatest([of(context), null])
+        ),
         take(1),
         switchMap(([context, caseManagementParams]) =>
           context === 'case'

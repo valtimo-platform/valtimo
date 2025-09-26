@@ -35,6 +35,7 @@ import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} fro
 import {take} from 'rxjs/operators';
 import {lt, valid} from 'semver';
 import {CaseDetailService, CaseManagementService} from '../../services';
+import {CaseManagementRemoveModalComponent} from '../case-management-remove-modal/case-management-remove-modal.component';
 
 @Component({
   standalone: false,
@@ -46,6 +47,8 @@ import {CaseDetailService, CaseManagementService} from '../../services';
 export class CaseManagementDetailActionsComponent {
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
+  @ViewChild('caseRemoveModal')
+  private readonly _caseRemoveModal: CaseManagementRemoveModalComponent;
 
   @Input() public documentDefinitionTitle = '';
   @Input() public set caseDefinitionKey(value: string) {
@@ -246,6 +249,14 @@ export class CaseManagementDetailActionsComponent {
 
   public selectVersionFromModal(version: string): void {
     this.setVersion(version);
+  }
+
+  public openCaseRemoveModal(): void {
+    this.selectedDocumentDefinition$.pipe(take(1)).subscribe(definition => {
+      if (!definition) return;
+
+      this._caseRemoveModal.openModal(definition);
+    });
   }
 
   public openGlobalActiveVersionModal(): void {

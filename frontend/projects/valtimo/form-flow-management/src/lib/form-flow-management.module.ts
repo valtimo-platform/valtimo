@@ -21,7 +21,7 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   EditorModule,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
 import {FormFlowOverviewComponent} from './components/overview/form-flow-overview.component';
 import {NewFormFlowModalComponent} from './components/new-form-flow-modal/new-form-flow-modal.component';
@@ -57,7 +57,7 @@ import {DeleteFormFlowModalComponent} from './components/delete-form-flow-modal/
     IconModule,
     ConfirmationModalModule,
     EditorModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     LoadingModule,
     IconModule,
     DialogModule,

@@ -22,9 +22,9 @@
   <cds-label *ngIf="index === 0 && keyColumnTitle">{{ keyColumnTitle }}</cds-label>
 
   <valtimo-value-path-selector
-    [caseDefinitionKey]="caseDefinitionKey"
+    [documentDefinitionName]="documentDefinitionName"
     [prefixes]="prefixes"
-    [showCaseDefinitionSelector]="showCaseDefinitionSelector"
+    [showDocumentDefinitionSelector]="showDocumentDefinitionSelector"
     [disabled]="disabled"
     [defaultValue]="value?.key"
     [notation]="notation"
