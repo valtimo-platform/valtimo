@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   HttpErrorResponse,
   HttpEvent,
@@ -20,22 +21,27 @@ import {
   HttpInterceptor,
   HttpRequest,
 } from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {GlobalNotificationService, InterceptorSkip} from '@valtimo/shared';
 import {Observable, throwError} from 'rxjs';
 import {catchError} from 'rxjs/operators';
+import {Injectable} from '@angular/core';
+import {ToastrService} from 'ngx-toastr';
+import {InterceptorSkip} from './error';
+import {NGXLogger} from 'ngx-logger';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(private readonly globalNotificationService: GlobalNotificationService) {}
+  constructor(
+    private toastr: ToastrService,
+    private logger: NGXLogger
+  ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     let skipStatusCodes: string[] = [];
     let response$: Observable<HttpEvent<any>>;
     if (request.headers && request.headers.has(InterceptorSkip)) {
-      skipStatusCodes = request.headers.get(InterceptorSkip)?.split(',') ?? [];
+      skipStatusCodes = request.headers.get(InterceptorSkip).split(',');
       const headers = request.headers.delete(InterceptorSkip);
       response$ = next.handle(request.clone({headers}));
     } else {
@@ -49,7 +55,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             skipStatusCode => skipStatusCode === 'all' || skipStatusCode === error.status.toString()
           )
         ) {
-          return throwError(() => error);
+          return response$;
         }
         let errorMessage = '';
         if (error?.error instanceof ErrorEvent) {
@@ -69,12 +75,11 @@ export class HttpErrorInterceptor implements HttpInterceptor {
             errorMessage = `Error Code: ${error?.status} </br>Message: ${error?.message}`;
           }
         }
-        this.globalNotificationService.showToast({
-          title: 'An unexpected error occurred',
-          caption: errorMessage,
-          type: 'error',
+        this.toastr.warning(`${errorMessage}`, `An unexpected error occurred`, {
+          enableHtml: true,
+          tapToDismiss: false,
         });
-        return throwError(() => error);
+        return throwError(errorMessage);
       })
     );
   }

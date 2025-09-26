@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,9 @@ import {
   IconModule,
   InputModule as CarbonInputModule,
 } from 'carbon-components-angular';
+import {ButtonModule} from '../button/button.module';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {InputModule} from '../input/input.module';
-import {
-  ArbitraryAmountValueComponent,
-  KeyDropdownValueComponent,
-  KeyValueComponent,
-  KeyValuePathSelectorComponent,
-  SingleValueComponent,
-  ValuePathSelectorDropdownValueComponent,
-  ValuePathSelectorValueComponent,
-} from './components';
 
 @NgModule({
   declarations: [CarbonMultiInputComponent],
@@ -42,18 +34,12 @@ import {
     CommonModule,
     InputLabelModule,
     InputModule,
+    ButtonModule,
     TranslateModule,
     CarbonButtonModule,
     IconModule,
     CarbonInputModule,
     DropdownModule,
-    KeyValueComponent,
-    SingleValueComponent,
-    KeyDropdownValueComponent,
-    ArbitraryAmountValueComponent,
-    KeyValuePathSelectorComponent,
-    ValuePathSelectorValueComponent,
-    ValuePathSelectorDropdownValueComponent,
   ],
   exports: [CarbonMultiInputComponent],
 })

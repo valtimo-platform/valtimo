@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +15,10 @@
  */
 
 import {Injectable, Injector} from '@angular/core';
-import {
-  ActivatedRouteSnapshot,
-  CanActivate,
-  GuardResult,
-  MaybeAsync,
-  RouterStateSnapshot,
-} from '@angular/router';
+import {ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot, UrlTree} from '@angular/router';
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/shared';
+import {Observable} from 'rxjs';
+import {ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -42,7 +37,10 @@ export class AuthGuardService implements CanActivate {
     this.logger.debug('Loading AuthGuardServiceProvider service', this.authGuardServiceProvider);
   }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): MaybeAsync<GuardResult> {
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     this.logger.debug('Delegating AuthGuard canActivate');
     return this.authGuardServiceProvider.canActivate(route, state);
   }

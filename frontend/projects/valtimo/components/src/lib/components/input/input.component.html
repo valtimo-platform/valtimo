@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
   <ng-container *ngTemplateOutlet="numberInput"></ng-container>
   <ng-container *ngTemplateOutlet="digitOnlyInput"></ng-container>
   <ng-container *ngTemplateOutlet="checkboxInput"></ng-container>
-  <ng-container *ngTemplateOutlet="presets"></ng-container>
 </div>
 
 <ng-template #inputTitle>
@@ -43,8 +42,8 @@
     *ngIf="isText"
     [ngClass]="{
       'v-input--full-width': fullWidthClass,
-      'v-input--margin': margin && presetOptions.length === 0,
-      'v-input--small-margin': smallMargin && presetOptions.length === 0,
+      'v-input--margin': margin,
+      'v-input--small-margin': smallMargin,
     }"
     [ngModel]="inputValue$ | async"
     cdsText
@@ -55,6 +54,7 @@
     [name]="name"
     [step]="step"
     (ngModelChange)="onValueChange($event)"
+    (keydown)="onKeydown($event)"
     [style.width.px]="widthPx"
     [placeholder]="placeholder"
     type="text"
@@ -75,6 +75,7 @@
     [name]="name"
     [ngModel]="inputValue$ | async"
     [rows]="rows"
+    (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
     [style.width.px]="widthPx"
   ></textarea>
@@ -103,15 +104,17 @@
         [name]="name"
         [ngModel]="inputValue$ | async"
         [step]="step"
+        (keydown)="onKeydown($event)"
         (ngModelChange)="onValueChange($event)"
         [style.width.px]="widthPx"
         [type]="obs.showPassword ? 'text' : 'password'"
       />
-
       <div class="v-input__password-icon">
-        <cds-icon-button align="top" (click)="toggleShowPassword()">
-          <svg cdsIcon="{{ obs.showPassword ? 'view-off' : 'view' }}" size="16"></svg>
-        </cds-icon-button>
+        <v-button
+          [mdiIcon]="obs.showPassword ? 'eye-off' : 'eye'"
+          type="icon-grey-small"
+          (clickEvent)="toggleShowPassword()"
+        ></v-button>
       </div>
     </div>
   </ng-container>
@@ -134,6 +137,7 @@
     [name]="name"
     [ngModel]="inputValue$ | async"
     [step]="step"
+    (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
     [style.width.px]="widthPx"
     type="number"
@@ -157,6 +161,7 @@
     [name]="name"
     [ngModel]="inputValue$ | async"
     [step]="step"
+    (keydown)="onKeydown($event)"
     (ngModelChange)="onValueChange($event)"
     [style.width.px]="widthPx"
     type="text"
@@ -173,21 +178,5 @@
       (ngModelChange)="onValueChange($event)"
     >
     </cds-checkbox>
-  </div>
-</ng-template>
-
-<ng-template #presets>
-  <div
-    *ngIf="isText && presetOptions.length > 0"
-    [ngClass]="{
-      'v-input--margin': margin,
-      'v-input--small-margin': smallMargin,
-    }"
-    class="v-input--preset-options">
-    <span>{{ presetsTitle }}:</span>
-    @for (preset of presetOptions; track $index; let isFirst = $first) {
-      @if (!isFirst) { | }
-      <a (click)="presetWithValue(preset)" class="v-input--preset-option">{{ preset }}</a>
-    }
   </div>
 </ng-template>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,12 @@ import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/c
 import {StoreTempDocumentConfigurationComponent} from './components/store-temp-document/store-temp-document-configuration.component';
 import {StoreUploadedDocumentConfigurationComponent} from './components/store-uploaded-document/store-uploaded-document-configuration.component';
 import {DownloadDocumentConfigurationComponent} from './components/download-document/download-document-configuration.component';
-import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/store-uploaded-document-in-parts/store-uploaded-document-in-parts-configuration.component';
 
 @NgModule({
   declarations: [
     DocumentenApiConfigurationComponent,
     StoreTempDocumentConfigurationComponent,
     StoreUploadedDocumentConfigurationComponent,
-    StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
   ],
   imports: [
@@ -44,7 +42,6 @@ import {StoreUploadedDocumentInPartsConfigurationComponent} from './components/s
     DocumentenApiConfigurationComponent,
     StoreTempDocumentConfigurationComponent,
     StoreUploadedDocumentConfigurationComponent,
-    StoreUploadedDocumentInPartsConfigurationComponent,
     DownloadDocumentConfigurationComponent,
   ],
 })

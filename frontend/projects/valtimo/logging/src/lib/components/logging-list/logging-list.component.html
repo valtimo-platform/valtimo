@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,21 +15,18 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="{logItems: logItems$ | async, isSearchActive: isSearchActive$ | async} as obs"
-  [items]="obs.logItems"
+  [items]="logItems$ | async"
   [fields]="FIELDS"
   [loading]="loading$ | async"
   [pagination]="pagination$ | async"
   paginationIdentifier="logging"
-  (paginationClicked)="onPaginationClicked($event, obs.logItems)"
+  (paginationClicked)="onPaginationClicked($event)"
   (paginationSet)="onPaginationSet($event)"
   (rowClicked)="onRowClickedEvent($event)"
 >
   <valtimo-no-results
-    [action]="obs.isSearchActive ? clearSearchButton : null"
-    [description]="
-      'logging.noResults.' + (obs.isSearchActive ? 'searchDescription' : 'description') | translate
-    "
+    [action]="clearSearchButton"
+    [description]="'logging.noResults.description' | translate"
     [title]="'logging.noResults.title' | translate"
   ></valtimo-no-results>
 
@@ -43,19 +40,18 @@
     cdsButton="ghost"
     placement="bottom"
   >
-    <svg cdsIcon="filter" size="16"></svg>
+    <svg class="cds--btn__icon" cdsIcon="filter" size="16"></svg>
   </button>
 </valtimo-carbon-list>
 
 <valtimo-log-details
-  [open]="logDetailsOpen$ | async"
   [logEvent]="selectedLogEvent$ | async"
   (closeModalEvent)="onCloseModalEvent()"
 ></valtimo-log-details>
 
 <ng-template #logSearch>
   <valtimo-log-search
-    [initSearchRequest]="searchRequest$ | async"
+    [initSearchRequest]="initSearchRequest$ | async"
     (searchSubmitEvent)="onSearchSubmitEvent($event)"
   ></valtimo-log-search>
 </ng-template>

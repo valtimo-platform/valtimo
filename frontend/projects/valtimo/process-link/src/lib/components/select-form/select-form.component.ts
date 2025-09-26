@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,54 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
-import {FormDefinitionOption, FormService} from '@valtimo/form';
-import {BehaviorSubject, combineLatest, map, mergeMap, Observable, Subscription, tap} from 'rxjs';
-import {take} from 'rxjs/operators';
-import {
-  FormDefinitionListItem,
-  FormDisplayType,
-  FormProcessLinkUpdateRequestDto,
-  FormSize,
-  ProcessLinkEditMode,
-} from '../../models';
+import {FormService} from '@valtimo/form';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
 import {
   ProcessLinkButtonService,
   ProcessLinkService,
   ProcessLinkStateService,
 } from '../../services';
+import {FormDefinitionListItem, FormProcessLinkUpdateRequestDto} from '../../models';
+import {take} from 'rxjs/operators';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-select-form',
   templateUrl: './select-form.component.html',
   styleUrls: ['./select-form.component.scss'],
 })
 export class SelectFormComponent implements OnInit, OnDestroy {
-  public formDisplayValue!: FormDisplayType;
-  public formSizeValue!: FormSize;
-  public subtitlesValue: string[] = [];
+  public formDisplayValue: string = '';
+  public formSizeValue: string = '';
   public selectedFormDefinition!: FormDefinitionListItem;
 
   public readonly saving$ = this.stateService.saving$;
-  public readonly caseDefinitionId$: Observable<CaseManagementParams | undefined> =
-    getCaseManagementRouteParams(this.route);
-
-  private readonly formDefinitions$: Observable<Array<FormDefinitionOption>> =
-    this.caseDefinitionId$.pipe(
-      mergeMap(caseDefinitionId => {
-        if (!!caseDefinitionId) {
-          return this.formService.getAllFormDefinitionsForCaseDefinition(
-            caseDefinitionId?.caseDefinitionKey ?? '',
-            caseDefinitionId?.caseDefinitionVersionTag ?? ''
-          );
-        }
-        return this.formService.getAllUnlinkedFormDefinitions();
-      })
-    );
-
+  private readonly formDefinitions$ = this.formService.getAllFormDefinitions();
   public readonly formDefinitionListItems$: Observable<Array<FormDefinitionListItem>> =
     combineLatest([this.stateService.selectedProcessLink$, this.formDefinitions$]).pipe(
       map(([selectedProcessLink, formDefinitions]) =>
@@ -83,16 +60,14 @@ export class SelectFormComponent implements OnInit, OnDestroy {
 
   private _subscriptions = new Subscription();
   private isUserTask$ = new BehaviorSubject<boolean>(false);
-
-  private readonly _DEFAULT_FORM_DISPLAY_TYPE: FormDisplayType = 'panel';
-  private readonly _DEFAULT_FORM_DISPLAY_SIZE: FormSize = 'medium';
+  private readonly taskPanelToggle = this.configService.featureToggles?.enableTaskPanel;
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly formService: FormService,
     private readonly stateService: ProcessLinkStateService,
     private readonly processLinkService: ProcessLinkService,
-    private readonly buttonService: ProcessLinkButtonService,
-    private readonly route: ActivatedRoute
+    private readonly buttonService: ProcessLinkButtonService
   ) {}
 
   public ngOnInit(): void {
@@ -120,20 +95,17 @@ export class SelectFormComponent implements OnInit, OnDestroy {
   public selectFormDefinition(formDefinition: FormDefinitionListItem): void {
     this.selectedFormDefinition = formDefinition?.id ? formDefinition : null;
 
-    if (this.selectedFormDefinition) this.buttonService.enableSaveButton();
-    else this.buttonService.disableSaveButton();
+    this.selectedFormDefinition
+      ? this.buttonService.enableSaveButton()
+      : this.buttonService.disableSaveButton();
   }
 
-  public selectedFormDisplayValue(formDisplay: FormDisplayType): void {
+  public selectedFormDisplayValue(formDisplay: string): void {
     this.formDisplayValue = formDisplay;
   }
 
-  public selectedFormSizeValue(formSize: FormSize): void {
+  public selectedFormSizeValue(formSize: string): void {
     this.formSizeValue = formSize;
-  }
-
-  public selectedSubtitlesValue(subtitles: string[]): void {
-    this.subtitlesValue = subtitles;
   }
 
   private openBackButtonSubscription(): void {
@@ -174,28 +146,22 @@ export class SelectFormComponent implements OnInit, OnDestroy {
         const updateProcessLinkRequest: FormProcessLinkUpdateRequestDto = {
           id: selectedProcessLink.id,
           formDefinitionId: this.selectedFormDefinition.id,
-          activityId: selectedProcessLink.activityId,
           viewModelEnabled,
-          ...(isUserTask && {
-            formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
-          }),
-          ...(isUserTask && {formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_TYPE}),
-          ...(isUserTask && {subtitles: this.subtitlesValue}),
+          ...(this.taskPanelToggle &&
+            isUserTask && {
+              formDisplayType: this.formDisplayValue,
+            }),
+          ...(this.taskPanelToggle && isUserTask && {formSize: this.formSizeValue}),
         };
 
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
-          return;
-        }
-
-        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe({
-          next: () => {
+        this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
+          () => {
             this.stateService.closeModal();
           },
-          error: () => {
+          () => {
             this.stateService.stopSaving();
-          },
-        });
+          }
+        );
       });
   }
 
@@ -206,39 +172,34 @@ export class SelectFormComponent implements OnInit, OnDestroy {
       this.stateService.viewModelEnabled$,
       this.isUserTask$,
     ])
-      .pipe(take(1))
-      .subscribe(([modalParams, processLinkTypeId, viewModelEnabled, isUserTask]) => {
-        const createRequest = {
-          formDefinitionId: this.selectedFormDefinition.id,
-          activityType: modalParams.element.activityListenerType,
-          processDefinitionId: modalParams.processDefinitionId,
-          processLinkType: processLinkTypeId,
-          activityId: modalParams.element.id,
-          viewModelEnabled,
-          ...(isUserTask && {
-            formDisplayType: this.formDisplayValue || this._DEFAULT_FORM_DISPLAY_TYPE,
-          }),
-          ...(isUserTask && {
-            formSize: this.formSizeValue || this._DEFAULT_FORM_DISPLAY_SIZE,
-          }),
-          ...(isUserTask && {
-            subtitles: this.subtitlesValue,
-          }),
-        };
-
-        if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-          this.stateService.sendProcessLinkCreateEvent(createRequest);
-          return;
+      .pipe(
+        take(1),
+        switchMap(([modalParams, processLinkTypeId, viewModelEnabled, isUserTask]) =>
+          this.processLinkService.saveProcessLink({
+            formDefinitionId: this.selectedFormDefinition.id,
+            activityType: modalParams.element.activityListenerType,
+            processDefinitionId: modalParams.processDefinitionId,
+            processLinkType: processLinkTypeId,
+            activityId: modalParams.element.id,
+            viewModelEnabled,
+            ...(this.taskPanelToggle &&
+              isUserTask && {
+                formDisplayType: this.formDisplayValue,
+              }),
+            ...(this.taskPanelToggle &&
+              isUserTask && {
+                formSize: this.formSizeValue,
+              }),
+          })
+        )
+      )
+      .subscribe(
+        () => {
+          this.stateService.closeModal();
+        },
+        () => {
+          this.stateService.stopSaving();
         }
-
-        this.processLinkService.saveProcessLink(createRequest).subscribe({
-          next: () => {
-            this.stateService.closeModal();
-          },
-          error: () => {
-            this.stateService.stopSaving();
-          },
-        });
-      });
+      );
   }
 }

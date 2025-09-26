@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Component} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
-import {ListField, PageTitleService, Pagination} from '@valtimo/components';
-import {
-  GlobalNotificationService,
-  SearchField,
-  SearchFieldValues,
-  SearchFilter,
-  SearchFilterRange,
-} from '@valtimo/shared';
-import {ObjectManagementService, SearchColumn} from '@valtimo/object-management';
 import {
   BehaviorSubject,
   combineLatest,
@@ -37,12 +27,17 @@ import {
   throwError,
 } from 'rxjs';
 import {catchError, finalize, switchMap, take, tap} from 'rxjs/operators';
-import {ColumnType, FormType} from '../../models/object.model';
-import {ObjectColumnService} from '../../services/object-column.service';
+import {TranslateService} from '@ngx-translate/core';
+import {ActivatedRoute, Router} from '@angular/router';
 import {ObjectService} from '../../services/object.service';
+import {ListField, PageTitleService, Pagination} from '@valtimo/components';
+import {ColumnType, FormType} from '../../models/object.model';
+import {ToastrService} from 'ngx-toastr';
+import {ObjectColumnService} from '../../services/object-column.service';
+import {ObjectManagementService, SearchColumn} from '@valtimo/object-management';
+import {SearchField, SearchFieldValues, SearchFilter, SearchFilterRange} from '@valtimo/config';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-object-list',
   templateUrl: './object-list.component.html',
   styleUrls: ['./object-list.component.scss'],
@@ -239,15 +234,15 @@ export class ObjectListComponent {
   );
 
   constructor(
-    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly objectService: ObjectService,
     private readonly objectColumnService: ObjectColumnService,
     private readonly objectManagementService: ObjectManagementService,
-    private readonly objectService: ObjectService,
-    private readonly pageTitleService: PageTitleService,
-    private readonly route: ActivatedRoute,
+    private readonly translateService: TranslateService,
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly toastr: ToastrService,
     private readonly translate: TranslateService,
-    private readonly translateService: TranslateService
+    private readonly pageTitleService: PageTitleService
   ) {}
 
   openModal(): void {
@@ -295,10 +290,7 @@ export class ObjectListComponent {
           this.closeModal();
           this.refreshObjectList();
           this.clearForm$.next(true);
-          this.globalNotificationService.showToast({
-            title: this.translate.instant('object.messages.objectCreated'),
-            type: 'success',
-          });
+          this.toastr.success(this.translate.instant('object.messages.objectCreated'));
         },
       });
   }
@@ -337,18 +329,12 @@ export class ObjectListComponent {
   }
 
   private handleRetrievingFormError(error: any) {
-    this.globalNotificationService.showToast({
-      title: this.translate.instant('object.messages.objectRetrievingFormError'),
-      type: 'error',
-    });
+    this.toastr.error(this.translate.instant('object.messages.objectRetrievingFormError'));
     return throwError(error);
   }
 
   private handleCreateObjectError(error: any) {
-    this.globalNotificationService.showToast({
-      title: this.translate.instant('object.messages.objectCreationError'),
-      type: 'error',
-    });
+    this.toastr.error(this.translate.instant('object.messages.objectCreationError'));
     return throwError(error);
   }
 

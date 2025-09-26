@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
  */
 
 import {Component} from '@angular/core';
-import {CaseDefinition, DocumentService} from '@valtimo/document';
+import {DocumentDefinitionId, DocumentService} from '@valtimo/document';
 import {MultiInputValues} from '@valtimo/components';
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   map,
   Observable,
   shareReplay,
@@ -32,54 +33,45 @@ import {DocumentMigrationConflictRequest, DocumentMigrationPatch, LoadedValue} f
 import {CaseMigrationService} from '../../services';
 import {WatsonHealthStackedMove16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
-import {GlobalNotificationService} from '@valtimo/shared';
-import {TranslateService} from '@ngx-translate/core';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-case-migration',
   templateUrl: './case-migration.component.html',
 })
 export class CaseMigrationComponent {
-  public readonly sourceCaseDefinitionKeySelected$ = new BehaviorSubject<string | null>(null);
-  public readonly sourceCaseDefinitionVersionTagSelected$ = new BehaviorSubject<string | null>(
+  public readonly sourceDocumentDefinitionNameSelected$ = new BehaviorSubject<string | null>(null);
+  public readonly sourceDocumentDefinitionVersionSelected$ = new BehaviorSubject<number | null>(
     null
   );
-  public readonly targetCaseDefinitionKeySelected$ = new BehaviorSubject<string | null>(null);
-  public readonly targetCaseDefinitionVersionTagSelected$ = new BehaviorSubject<string | null>(
+  public readonly targetDocumentDefinitionNameSelected$ = new BehaviorSubject<string | null>(null);
+  public readonly targetDocumentDefinitionVersionSelected$ = new BehaviorSubject<number | null>(
     null
   );
   public readonly patchItems$ = new BehaviorSubject<MultiInputValues>([]);
-  public readonly errors$ = new BehaviorSubject<Array<string> | null>(null);
+  public readonly errors$ = new BehaviorSubject<Array<string>>([]);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private readonly documentService: DocumentService,
     private readonly caseMigrationService: CaseMigrationService,
-    private readonly iconService: IconService,
-    private readonly globalNotificationService: GlobalNotificationService,
-    private readonly translateService: TranslateService
+    private readonly iconService: IconService
   ) {
     this.iconService.registerAll([WatsonHealthStackedMove16]);
   }
 
-  public readonly caseDefinitions$: Observable<Array<CaseDefinition>> = this.documentService
-    .getCaseDefinitionsManagement({sort: 'name,id.versionTag'})
-    .pipe(
-      map(caseDefinitionsPage => caseDefinitionsPage.content),
+  public readonly documentDefinitionIds$: Observable<Array<DocumentDefinitionId>> =
+    this.documentService.getAllDefinitions().pipe(
+      map(definitions => definitions.content.map(definition => definition.id)),
       shareReplay(1)
     );
-  public readonly sourceCaseDefinitionKeyItems$: Observable<LoadedValue<Array<ListItem>>> =
-    this.caseDefinitions$.pipe(
-      map(caseDefinitions => [
-        ...new Map(caseDefinitions.map(item => [item.caseDefinitionKey, item])).values(),
-      ]),
-      map(caseDefinitions =>
-        caseDefinitions.map(
-          caseDefinition =>
+  public readonly sourceDocumentDefinitionNameItems$: Observable<LoadedValue<Array<ListItem>>> =
+    this.documentDefinitionIds$.pipe(
+      map(documentDefinitionIds =>
+        documentDefinitionIds.map(
+          documentDefinitionId =>
             ({
-              caseDefinitionKey: caseDefinition.caseDefinitionKey,
-              content: caseDefinition.name,
+              documentDefinitionName: documentDefinitionId.name,
+              content: documentDefinitionId.name,
               selected: false,
             }) as ListItem
         )
@@ -90,39 +82,32 @@ export class CaseMigrationComponent {
       })),
       startWith({isLoading: true})
     );
-  public readonly sourceCaseDefinitionVersionTagItems$: Observable<Array<ListItem>> = combineLatest(
-    [this.sourceCaseDefinitionKeySelected$, this.caseDefinitions$]
-  ).pipe(
-    map(([sourceCaseDefinitionKeySelected, caseDefinitions]) =>
-      caseDefinitions.filter(
-        caseDefinition => caseDefinition.caseDefinitionKey === sourceCaseDefinitionKeySelected
-      )
-    ),
-    map(caseDefinitions =>
-      caseDefinitions.map(caseDefinition => caseDefinition.caseDefinitionVersionTag)
-    ),
-    map(versions =>
-      versions.map(
-        version =>
-          ({
-            caseDefinitionVersionTag: version,
-            content: version.toString(),
-            selected: false,
-          }) as ListItem
-      )
-    )
-  );
-  public readonly targetCaseDefinitionKeyItems$: Observable<LoadedValue<Array<ListItem>>> =
-    this.caseDefinitions$.pipe(
-      map(caseDefinitions => [
-        ...new Map(caseDefinitions.map(item => [item.caseDefinitionKey, item])).values(),
-      ]),
-      map(caseDefinitions =>
-        caseDefinitions.map(
-          caseDefinition =>
+  public readonly sourceDocumentDefinitionVersionItems$: Observable<Array<ListItem>> =
+    combineLatest([this.sourceDocumentDefinitionNameSelected$, this.documentDefinitionIds$]).pipe(
+      map(([sourceDocumentDefinitionNameSelected, documentDefinitionIds]) =>
+        documentDefinitionIds.find(id => id.name === sourceDocumentDefinitionNameSelected)
+      ),
+      filter(documentDefinitionId => !!documentDefinitionId),
+      map(documentDefinitionId => [...Array(documentDefinitionId.version).keys()].map(v => v + 1)),
+      map(versions =>
+        versions.map(
+          version =>
             ({
-              caseDefinitionKey: caseDefinition.caseDefinitionKey,
-              content: caseDefinition.name,
+              documentDefinitionVersion: version,
+              content: version.toString(),
+              selected: false,
+            }) as ListItem
+        )
+      )
+    );
+  public readonly targetDocumentDefinitionNameItems$: Observable<LoadedValue<Array<ListItem>>> =
+    this.documentDefinitionIds$.pipe(
+      map(documentDefinitionIds =>
+        documentDefinitionIds.map(
+          documentDefinitionId =>
+            ({
+              documentDefinitionName: documentDefinitionId.name,
+              content: documentDefinitionId.name,
               selected: false,
             }) as ListItem
         )
@@ -133,28 +118,24 @@ export class CaseMigrationComponent {
       })),
       startWith({isLoading: true})
     );
-  public readonly targetCaseDefinitionVersionTagItems$: Observable<Array<ListItem>> = combineLatest(
-    [this.targetCaseDefinitionKeySelected$, this.caseDefinitions$]
-  ).pipe(
-    map(([targetCaseDefinitionKeySelected, caseDefinitions]) =>
-      caseDefinitions.filter(
-        caseDefinition => caseDefinition.caseDefinitionKey === targetCaseDefinitionKeySelected
+  public readonly targetDocumentDefinitionVersionItems$: Observable<Array<ListItem>> =
+    combineLatest([this.targetDocumentDefinitionNameSelected$, this.documentDefinitionIds$]).pipe(
+      map(([targetDocumentDefinitionNameSelected, documentDefinitionIds]) =>
+        documentDefinitionIds.find(id => id.name === targetDocumentDefinitionNameSelected)
+      ),
+      filter(documentDefinitionId => !!documentDefinitionId),
+      map(documentDefinitionId => [...Array(documentDefinitionId.version).keys()].map(v => v + 1)),
+      map(versions =>
+        versions.map(
+          version =>
+            ({
+              documentDefinitionVersion: version,
+              content: version.toString(),
+              selected: false,
+            }) as ListItem
+        )
       )
-    ),
-    map(caseDefinitions =>
-      caseDefinitions.map(caseDefinition => caseDefinition.caseDefinitionVersionTag)
-    ),
-    map(versions =>
-      versions.map(
-        version =>
-          ({
-            caseDefinitionVersionTag: version,
-            content: version.toString(),
-            selected: false,
-          }) as ListItem
-      )
-    )
-  );
+    );
   public readonly patches$: Observable<Array<DocumentMigrationPatch>> = this.patchItems$.pipe(
     map(patchItems =>
       patchItems.map(
@@ -172,35 +153,28 @@ export class CaseMigrationComponent {
   }
 
   checkPatches() {
-    this.errors$.next(null);
     combineLatest([
-      this.sourceCaseDefinitionKeySelected$,
-      this.sourceCaseDefinitionVersionTagSelected$,
-      this.targetCaseDefinitionKeySelected$,
-      this.targetCaseDefinitionVersionTagSelected$,
+      this.sourceDocumentDefinitionNameSelected$,
+      this.sourceDocumentDefinitionVersionSelected$,
+      this.targetDocumentDefinitionNameSelected$,
+      this.targetDocumentDefinitionVersionSelected$,
       this.patches$,
     ])
       .pipe(
         take(1),
         map(
           ([
-            caseDefinitionKeySource,
-            caseDefinitionVersionTagSource,
-            caseDefinitionKeyTarget,
-            caseDefinitionVersionTagTarget,
+            documentDefinitionNameSource,
+            documentDefinitionVersionSource,
+            documentDefinitionNameTarget,
+            documentDefinitionVersionTarget,
             patches,
           ]) =>
             ({
-              documentDefinitionNameSource: caseDefinitionKeySource,
-              caseDefinitionIdSource: {
-                key: caseDefinitionKeySource,
-                versionTag: caseDefinitionVersionTagSource,
-              },
-              documentDefinitionNameTarget: caseDefinitionKeyTarget,
-              caseDefinitionIdTarget: {
-                key: caseDefinitionKeyTarget,
-                versionTag: caseDefinitionVersionTagTarget,
-              },
+              documentDefinitionNameSource,
+              documentDefinitionVersionSource,
+              documentDefinitionNameTarget,
+              documentDefinitionVersionTarget,
               patches,
             }) as DocumentMigrationConflictRequest
         ),
@@ -218,35 +192,28 @@ export class CaseMigrationComponent {
   }
 
   migrate() {
-    this.errors$.next(null);
     combineLatest([
-      this.sourceCaseDefinitionKeySelected$,
-      this.sourceCaseDefinitionVersionTagSelected$,
-      this.targetCaseDefinitionKeySelected$,
-      this.targetCaseDefinitionVersionTagSelected$,
+      this.sourceDocumentDefinitionNameSelected$,
+      this.sourceDocumentDefinitionVersionSelected$,
+      this.targetDocumentDefinitionNameSelected$,
+      this.targetDocumentDefinitionVersionSelected$,
       this.patches$,
     ])
       .pipe(
         take(1),
         map(
           ([
-            caseDefinitionKeySource,
-            caseDefinitionVersionTagSource,
-            caseDefinitionKeyTarget,
-            caseDefinitionVersionTagTarget,
+            documentDefinitionNameSource,
+            documentDefinitionVersionSource,
+            documentDefinitionNameTarget,
+            documentDefinitionVersionTarget,
             patches,
           ]) =>
             ({
-              documentDefinitionNameSource: caseDefinitionKeySource,
-              caseDefinitionIdSource: {
-                key: caseDefinitionKeySource,
-                versionTag: caseDefinitionVersionTagSource,
-              },
-              documentDefinitionNameTarget: caseDefinitionKeyTarget,
-              caseDefinitionIdTarget: {
-                key: caseDefinitionKeyTarget,
-                versionTag: caseDefinitionVersionTagTarget,
-              },
+              documentDefinitionNameSource,
+              documentDefinitionVersionSource,
+              documentDefinitionNameTarget,
+              documentDefinitionVersionTarget,
               patches,
             }) as DocumentMigrationConflictRequest
         ),
@@ -254,16 +221,7 @@ export class CaseMigrationComponent {
           this.caseMigrationService.migrate(request as DocumentMigrationConflictRequest)
         )
       )
-      .subscribe({
-        next: () => {
-          this.errors$.next([]);
-          this.globalNotificationService.showToast({
-            title: this.translateService.instant('caseMigration.noErrors'),
-            type: 'success',
-          });
-        },
-        error: error => this.errors$.next([error.message]),
-      });
+      .subscribe();
   }
 
   protected readonly CARBON_THEME = 'g10';

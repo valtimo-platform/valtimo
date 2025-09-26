@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,14 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-modal
-  id="taskDetailModal"
-  [size]="size$ | async"
-  [open]="modalOpen$ | async"
-  (close)="closeModal()"
-  valtimoCdsModal
-  [minContentHeight]="480"
->
+<cds-modal #taskDetailModal id="taskDetailModal" [size]="size$ | async">
   <cds-modal-header (closeSelect)="closeModal()">
     <div class="title-container">
       <p class="cds--modal-header__heading cds--type-beta">{{ (page$ | async)?.title }}</p>
@@ -52,48 +45,20 @@
       <ng-container *ngTemplateOutlet="assignUserToTask"></ng-container>
     </div>
 
-    <div class="save-buttons-margin">
-      <button
-        *ngIf="!(openFromCaseManagement$ | async)"
-        cdsButton="ghost"
-        iconOnly="true"
-        cdsIcon="folder--details--reference"
-        [vTooltip]="'formManagement.navigateToRelatedCase' | translate"
-        (click)="openRelatedCase()"
-      ></button>
-
-      @if (processLinkPreloaded$ | async) {
-        <valtimo-task-detail-intermediate-save
-          [taskAndProcessLink]="taskAndProcessLink$ | async"
-          (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
-          (showModalEvent)="onShowModalEvent()"
-        ></valtimo-task-detail-intermediate-save>
-      } @else {
-        <valtimo-task-detail-intermediate-save
-          [task]="task$ | async"
-          (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
-          (showModalEvent)="onShowModalEvent()"
-        ></valtimo-task-detail-intermediate-save>
-      }
-    </div>
+    <valtimo-task-detail-intermediate-save
+      class="save-buttons-margin"
+      [task]="task$ | async"
+      (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+      (showModalEvent)="onShowModalEvent()"
+    ></valtimo-task-detail-intermediate-save>
   </cds-modal-header>
 
   <div body class="cds--modal-content pb-1">
-    @if (processLinkPreloaded$ | async) {
-      <valtimo-task-detail-content
-        [taskAndProcessLink]="taskAndProcessLink$ | async"
-        [modalClosed]="modalCloseEvent$ | async"
-        (formSubmit)="onFormSubmit()"
-        (closeModalEvent)="closeModal()"
-      ></valtimo-task-detail-content>
-    } @else {
-      <valtimo-task-detail-content
-        [task]="task$ | async"
-        [modalClosed]="modalCloseEvent$ | async"
-        (formSubmit)="onFormSubmit()"
-        (closeModalEvent)="closeModal()"
-      ></valtimo-task-detail-content>
-    }
+    <valtimo-task-detail-content
+      [task]="task$ | async"
+      (formSubmit)="onFormSubmit()"
+      (closeModalEvent)="closeModal()"
+    ></valtimo-task-detail-content>
   </div>
 </cds-modal>
 
@@ -108,25 +73,17 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #assignUserToTask>
-  <div
+  <ng-container
     *ngIf="{
       task: task$ | async,
       canAssignUserToTask: canAssignUserToTask$ | async,
-      canModifyTask: canModifyTask$ | async,
     } as obs"
-    class="task-actions"
   >
     <valtimo-assign-user-to-task
-      *ngIf="obs.task && assignmentOfTaskChanged"
+      *ngIf="obs.task && obs.canAssignUserToTask && assignmentOfTaskChanged"
       [taskId]="obs.task.id"
       [assigneeId]="obs.task.assignee"
-      [canAssignUserToTask]="obs.canAssignUserToTask"
       (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
     ></valtimo-assign-user-to-task>
-
-    <valtimo-set-task-due-date
-      [task]="obs.task"
-      [canModifyTask]="obs.canModifyTask"
-    ></valtimo-set-task-due-date>
-  </div>
+  </ng-container>
 </ng-template>

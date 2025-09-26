@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,21 @@ import {ObjectManagementRoutingModule} from './object-management-routing.module'
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {
-  CarbonListModule,
   CarbonMultiInputModule,
   ConfirmationModalModule,
   DropzoneModule,
+  ListModule,
+  ModalModule,
+  SpinnerModule,
+  ValtimoCdsModalDirectiveModule,
+  WidgetModule,
+  ButtonModule,
   FormModule,
   InputModule,
-  ModalModule,
-  SelectModule,
-  SpinnerModule,
-  TooltipIconModule,
-  ValtimoCdsModalDirective,
   VModalModule,
-  WidgetModule,
+  SelectModule,
+  TitleModule,
+  TooltipIconModule,
 } from '@valtimo/components';
 import {ObjectManagementDetailContainerComponent} from './components/object-management-detail-container/object-management-detail-container.component';
 import {ObjectManagementDetailComponent} from './components/object-management-detail-container/tabs/object-management-detail/object-management-detail.component';
@@ -67,9 +69,12 @@ import {ObjectManagementListSearchFieldsComponent} from './components/object-man
     CommonModule,
     DropzoneModule,
     WidgetModule,
+    ListModule,
     TranslateModule,
     ObjectManagementRoutingModule,
     VModalModule,
+    TitleModule,
+    ButtonModule,
     FormModule,
     InputModule,
     SelectModule,
@@ -88,8 +93,7 @@ import {ObjectManagementListSearchFieldsComponent} from './components/object-man
     ConfirmationModalModule,
     SpinnerModule,
     ModalModule,
-    ValtimoCdsModalDirective,
-    CarbonListModule,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [],
 })

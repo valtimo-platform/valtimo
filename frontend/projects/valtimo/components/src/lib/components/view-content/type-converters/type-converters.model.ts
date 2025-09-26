@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import {PercentTypeConverter} from './percentTypeConverter';
 import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
 import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
 import {StringTypeConverter} from './stringTypeConverter';
-import {LinkTypeConverter} from './linkTypeConverter';
+import {CodeListTypeConverter} from './codeListTypeConverter';
 
 export const TYPE_CONVERTER_TOKEN = new InjectionToken<TypeConverter[]>('Type Converter');
 
@@ -82,17 +82,13 @@ export const TYPE_PROVIDERS = [
   },
   {
     provide: TYPE_CONVERTER_TOKEN,
-    useClass: LinkTypeConverter,
+    useClass: CodeListTypeConverter,
     multi: true,
   },
 ];
 
 export interface TypeConverter {
   getTypeString(): string;
-  /*
-   * Returns true if the converter returns a raw value, meaning it should be treated as HTML.
-   */
-  isRawValue(): boolean;
 
   convert(value: any, definition: any): string;
 }

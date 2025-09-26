@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@
     [defaultValue]="obs.prefill?.templateGroup"
     [disabled]="obs.disabled"
     [required]="true"
-    [trim]="true"
     placeholder=""
   >
   </v-input>
@@ -42,7 +41,6 @@
     [defaultValue]="obs.prefill?.templateName"
     [disabled]="obs.disabled"
     [required]="true"
-    [trim]="true"
     placeholder=""
   >
   </v-input>
@@ -54,7 +52,6 @@
     [disabled]="obs.disabled"
     [tooltip]="'resultingDocumentProcessVariableNameTooltip' | pluginTranslate: pluginId | async"
     [required]="true"
-    [trim]="true"
     placeholder=""
   >
   </v-input>
@@ -68,27 +65,14 @@
     [defaultSelectionId]="obs.prefill?.format"
     [required]="true"
   ></v-select>
-
   <valtimo-carbon-multi-input
     name="templateData"
     [title]="'templateData' | pluginTranslate: pluginId | async"
-    type="keyValuePathSelector"
+    type="keyValue"
     [disabled]="obs.disabled"
     [defaultValues]="obs.prefill?.templateData"
     [margin]="true"
     [required]="true"
     [tooltip]="'templateDataTooltip' | pluginTranslate: pluginId | async"
-    valuePathSelectorNotation="slashes"
-    [fullWidth]="true"
-    [valuePathSelectorPrefixes]="[
-      ValuePathSelectorPrefix.DOC,
-      ValuePathSelectorPrefix.CASE,
-      ValuePathSelectorPrefix.ZAAK,
-    ]"
-    [valuePathSelectorShowCaseDefinitionSelector]="true"
-    [keyColumnFlex]="1"
-    [valueColumnFlex]="2"
-    [keyColumnTitle]="'key' | pluginTranslate: pluginId | async"
-    [valueColumnTitle]="'value' | pluginTranslate: pluginId | async"
   ></valtimo-carbon-multi-input>
 </v-form>
