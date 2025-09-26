@@ -51,13 +51,16 @@ bootRun {
     }
 }
 
+dockerCompose {
+    composeAdditionalArgs = ['--profile', 'zgw']
+}
+
 tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
     group = "application"
     description = "Starts docker containers and then runs this project as a Spring Boot application"
     classpath = sourceSets.main.runtimeClasspath
     mainClass = "com.ritense.gzac.GzacApplicationKt"
 
-    dependsOn("composeUpGzac")
     doFirst {
         File f = file(".env.properties")
         if (f.isFile()) {
@@ -70,4 +73,4 @@ tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
     }
 }
 
-apply from: "$rootProject.projectDir/gradle/dockerComposeGzac.gradle"
+dockerCompose.isRequiredBy(bootRunWithDocker)
