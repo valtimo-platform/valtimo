@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'cicd/*']
   push:
-    branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'feature/*']
+    branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*']
   workflow_dispatch:
 
 jobs:
@@ -67,9 +67,9 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
         run: |
           # replace special characters with -
-          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
+          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;_]/-/g' | tr '[:upper:]' '[:lower:]')
 
-          PROJECT_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
+          PROJECT_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)
           if [[ "$BRANCH_NAME" == rc-* ]]; then
               PROJECT_VERSION="${PROJECT_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
           elif [[ "$BRANCH_NAME" == "next-minor" ]]; then
@@ -138,7 +138,7 @@ jobs:
 
   # 'publish' only runs on push events from certain branches
   publish:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs:
       - install_packages

@@ -15,7 +15,6 @@
     "TaskDueDateSetEvent": "Aufgabefrist gesetzt > {{taskName}}"
   },
   "case": {
-    "exportButtonTooltip": "Aktuelle Aktenliste exportieren",
     "summaryFormNotFound": "Zusammenfassungsformular für '{{caseDefinitionKey}}' wurde nicht gefunden. Es muss ein Formular mit dem Namen '{{caseDefinitionKey}}.summary' existieren, das den Falldefinitionsschlüssel verwendet.",
     "bulkAssign": {
       "assign": "Zuweisen",
@@ -159,7 +158,15 @@
       "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
       "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
     },
-    "rowLocked": "Kein Zugriff zu dieser Fall!"
+    "rowLocked": "Kein Zugriff zu dieser Fall!",
+    "widgets": {
+      "noData": "Keine Data gefunden",
+      "emptyFields": "Niets hier",
+      "noWidgets": "Keine Widgets",
+      "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
+      "noCustomComponent": "Widget nicht verfügbar",
+      "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
+    }
   },
   "document": {
     "title": {"single": "Dokument", "plural": "Dokumente"},
@@ -795,7 +802,9 @@
         "title": "Keine Tags konfiguriert",
         "description": "Klicken Sie hier, um einen Tag für diesen Casetyp zu konfigurieren"
       },
-      "noResultsFinalVersion": {"description": "Für diesen Vorgangstyp wurden keine Tags erstellt."}
+      "noResultsFinalVersion": {
+        "description": "Für diesen Vorgangstyp wurden keine Tags erstellt."
+      }
     },
     "draftWarning": {
       "title": "Nicht mit einer Version des Case verknüpft",
@@ -1267,8 +1276,6 @@
       "valtimo-backend-libraries": "Valtimo back-end",
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
-    "details": "Details",
-    "results": "Ergebnisse",
     "email": "Email",
     "username": "Nutzername",
     "name": "Name",
@@ -1583,8 +1590,6 @@
     "selectDefaultSort": "Wählen Sie eine Standardsortierung aus",
     "sortableYes": "Ja",
     "sortableNo": "Nein",
-    "exportField": "Exportierbar",
-    "exportTooltip": "Es können nur Felder des Dokuments oder des Dossiers exportiert werden. Wenn ein anderer Feldtyp ausgewählt wird, wird die Export-Schaltfläche auf ‚deaktiviert‘ gesetzt.",
     "sortableAsc": "Aufsteigend",
     "sortableDesc": "Absteigend",
     "hasEnvConfigWarningTitle": "Dieser Dossiertyp hat bereits eine Spaltenkonfiguration",
@@ -1616,8 +1621,7 @@
     "enum": "Aufzählung",
     "arrayCount": "Quantität",
     "underscoresToSpaces": "Unterstriche zu Leerzeichen",
-    "tags": "Tags",
-    "hidden": "Versteckt"
+    "tags": "Tags"
   },
   "object": {
     "title": "Objekte",
@@ -1858,70 +1862,5 @@
     "dueDateText": "Fälligkeitsdatum:",
     "removeButtonText": "Fälligkeitsdatum entfernen"
   },
-  "processStartSuccessful": "{{processName}} wurde erfolgreich gestartet.",
-  "widgets": {
-    "noData": "Keine Data gefunden",
-    "emptyFields": "Niets hier",
-    "noWidgets": "Keine Widgets",
-    "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
-    "noCustomComponent": "Widget nicht verfügbar",
-    "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
-  },
-  "iko": {
-    "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
-  },
-  "ikoManagement": {
-    "ikoServer": "IKO Server",
-    "view": "Bild",
-    "title": "Konfiguration",
-    "list": "Liste",
-    "tabs": {"title": "Tabs"},
-    "widgets": {"title": "Widgets"},
-    "searchActions": {
-      "addActionTitle": "Suchaktion hinzufügen",
-      "editActionTitle": "Suchaktion bearbeiten",
-      "deleteModalTitle": "Suchaktion löschen",
-      "deleteModalText": "Bist du sicher, dass du diese Suchaktion löschen möchtest?",
-      "title": "Suchaktionen",
-      "numberOfFields": "Anzahl der Suchfelder",
-      "noResultsTitle": "Es gibt keine Suchaktionen.",
-      "noResultsDescription": "Klicke hier, um eine Suchaktion zu konfigurieren."
-    },
-    "searchFields": {
-      "pageTitle": "Suchaktion: {{searchActionTitle}}",
-      "title": "Suchfelder",
-      "deleteModalText": "Bist du sicher, dass du dieses Suchfeld löschen möchtest?",
-      "noResultsTitle": "Es gibt keine Suchfelder.",
-      "noResultsDescription": "Klicke hier, um ein Suchfeld zu konfigurieren."
-    },
-    "addApiConfig": "IKO Server konfigurieren",
-    "titleTitle": "Titel",
-    "titlePlaceholder": "Geben Sie einen Titel für die API-Konfiguration ein",
-    "keyTitle": "Schlüssel",
-    "keyPlaceholder": "Geben Sie einen Schlüssel für die API-Konfiguration ein",
-    "pluginIdTitle": "Plugin-Konfiguration",
-    "typeTitle": "Typ",
-    "addColumn": "Spalte hinzufügen",
-    "editColumn": "Spalte bearbeiten",
-    "columnTitlePlaceholder": "Spaltentitel eingeben",
-    "columnKeyPlaceholder": "Spaltenschlüssel eingeben",
-    "pathTitle": "Pfad",
-    "columnPathPlaceholder": "Spaltenpfad eingeben",
-    "sortableTitle": "Sortierbar",
-    "sortingDisabled": "Sortierung deaktiviert",
-    "defaultSortTitle": "Standardsortierung",
-    "displayType": "Anzeigetyp",
-    "sortingEnabled": "Sortierung aktiviert",
-    "tabKey": "Schlüssel",
-    "tabTitle": "Tabtitel",
-    "tabTitlePlaceholder": "Tabtitel eingeben",
-    "tabType": "Tabtyp",
-    "tabTypeTitle": "Tabtyp",
-    "tabTypePlaceholder": "Tabtyp eingeben",
-    "addTab": "Tab hinzufügen",
-    "editTab": "Tab bearbeiten",
-    "tabTypes": {
-      "widgets": "Widgets"
-    }
-  }
+  "processStartSuccessful": "{{processName}} wurde erfolgreich gestartet."
 }

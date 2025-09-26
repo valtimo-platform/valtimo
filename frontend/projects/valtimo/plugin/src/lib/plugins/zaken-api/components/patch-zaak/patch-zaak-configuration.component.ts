@@ -21,6 +21,8 @@ import {PatchZaakConfig} from '../../models';
 import {IconService} from 'carbon-components-angular';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {PatchZaakProperties, PatchZaakPropertyOptions} from '../../models/patch-zaak-properties';
+import {GEOMETRY_TYPES} from '../../models/geometry-types';
+import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
 
 @Component({
   standalone: false,
@@ -38,14 +40,14 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
 
   public readonly propertyOptions: string[] = Object.values(PatchZaakPropertyOptions);
   public readonly propertyList: Array<PatchZaakProperties> = [];
-  public readonly geometryTypes: string[] =
-    ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'GeometryCollection', 'MultiPolygon'];
-  public readonly paymentIndicationTypes: string[] = ['nvt', 'nog_niet', 'gedeeltelijk', 'geheel'];
+  public readonly geometryTypes: string[] = GEOMETRY_TYPES;
+  public readonly paymentIndicationTypes: string[] = PAYMENT_INDICATION_TYPES;
 
   protected readonly CASE_GEOMETRY_TYPE: string = 'caseGeometryType';
   protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';
   protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
 
+  private readonly DATA_TEST_ID_PREFIX: string = 'patch-zaak-property_';
   private readonly _formValue$ = new BehaviorSubject<PatchZaakConfig>({});
   private readonly _properties = new Map<PatchZaakProperties, string>();
   private _saveSubscription!: Subscription;
@@ -80,8 +82,8 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   public onPropertyChanged(property: PatchZaakProperties, value: any): void {
     this._properties.set(property, value);
     const formValue = this._formValue$.value;
-    this._properties.forEach((pValue, pKey) => {
-        formValue[pKey] = pValue;
+    this._properties.forEach((value, key) => {
+        formValue[key] = value;
     });
     this.onFormValueChanged(formValue);
   }
@@ -99,24 +101,14 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   }
 
   public addProperty(property: PatchZaakProperties): void {
-    // only add the property to the list if it is not in the list
-    if (this.propertyList.indexOf(property) == -1) {
-      this.propertyList.push(property);
-      this.onPropertyChanged(property, undefined);
-    }
-    // add linked field coordinates
-    if (property === this.CASE_GEOMETRY_TYPE) {
-      this.addProperty(this.CASE_GEOMETRY_COORDINATES as PatchZaakProperties);
-    }
+    this.propertyList.push(property);
   }
 
   public removeProperty(property: PatchZaakProperties): void {
-    // only remove the property from the list if it is in the list
-    if (this.propertyList.indexOf(property) != -1) {
-      this.propertyList.splice(this.propertyList.indexOf(property), 1);
-      this.onPropertyChanged(property, undefined);
-    }
-    // remove linked field coordinates
+    this.propertyList.splice(this.propertyList.indexOf(property), 1);
+    this._properties.delete(property);
+    this.onPropertyChanged(property, undefined);
+
     if (property === this.CASE_GEOMETRY_TYPE) {
       this.removeProperty(this.CASE_GEOMETRY_COORDINATES as PatchZaakProperties);
     }
@@ -124,6 +116,19 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
 
   public hasPropertyBeenAdded(property: PatchZaakProperties): boolean {
     return this.propertyList.indexOf(property) !== -1;
+  }
+
+  public dataTestIdFor(property: PatchZaakProperties): string {
+    return this.DATA_TEST_ID_PREFIX + property
+  }
+
+  public presetPropertyWithValue(property: PatchZaakProperties, value: string): void {
+    const input =
+      document.querySelector<HTMLInputElement>(`[data-testid="${this.DATA_TEST_ID_PREFIX + property}"]`);
+    if (input) {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    }
   }
 
   private handleValid(formValue: PatchZaakConfig): void {

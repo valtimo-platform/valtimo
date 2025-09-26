@@ -63,7 +63,7 @@ interface CreateMedewerkerZaakRolConfig {
   identificatie: string;
   achternaam: string;
   voorletters: string;
-  voorvoegselAchternaam?: string;
+  voorvoegselAchternaam: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
 }
@@ -81,7 +81,6 @@ interface CreateOrganisatorischeEenheidZaakRolConfig {
 interface CreateVestigingZaakRolConfig {
   roltypeUrl: string;
   rolToelichting: string;
-  handelsnaam?: string;
   kvkNummer: string;
   vestigingsNummer: string;
 }
@@ -92,8 +91,14 @@ interface CreateZaakConfig {
   zaaktypeUrl: string;
   inputTypeZaakTypeToggle?: InputOption;
   description?: string;
+  explanation?: string;
   plannedEndDate?: string;
   finalDeliveryDate?: string;
+  communicationChannel?: string;
+  paymentIndication?: string;
+  caseGeometryType?: string;
+  caseGeometryCoordinates?: string,
+  mainCase?: string;
 }
 
 interface SetZaakopschortingConfig {

@@ -15,7 +15,6 @@
     "TaskDueDateSetEvent": "Taak einddatum ingesteld > {{taskName}}"
   },
   "case": {
-    "exportButtonTooltip": "Exporteer huidige dossier lijst",
     "summaryFormNotFound": "Formulier niet gevonden voor '{{caseDefinitionKey}}'. Er moet een formulier bestaan met de naam '{{caseDefinitionKey}}.summary'.",
     "bulkAssign": {
       "assign": "Toewijzen",
@@ -787,7 +786,9 @@
         "title": "Er zijn geen statussen geconfigureerd",
         "description": "Klik hier om een status voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen status aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen status aangemaakt voor dit zaaktype."
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -808,7 +809,9 @@
         "title": "Er zijn geen tags geconfigureerd",
         "description": "Klik hier om een tag voor dit dossiertype te configureren"
       },
-      "noResultsFinalVersion": {"description": "Er zijn geen tags aangemaakt voor dit zaaktype."}
+      "noResultsFinalVersion": {
+        "description": "Er zijn geen tags aangemaakt voor dit zaaktype."
+      }
     },
     "draftWarning": {
       "title": "Niet gekoppeld aan een versie van het dossiertype",
@@ -1280,8 +1283,6 @@
       "valtimo-backend-libraries": "Valtimo back-end",
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
-    "results": "Resultaten",
-    "details": "Details",
     "email": "E-mail",
     "username": "Gebruikersnaam",
     "name": "Naam",
@@ -1595,8 +1596,6 @@
     "selectDefaultSort": "Selecteer een standaard sortering",
     "sortableYes": "Ja",
     "sortableNo": "Nee",
-    "exportField": "Exporteerbaar",
-    "exportTooltip": "Alleen velden van het document of het dossier kunnen geëxporteerd worden. Als er een ander type veld wordt gekozen, dan wordt de export knop op 'disabled' staat gezet.",
     "sortableAsc": "Oplopend",
     "sortableDesc": "Aflopend",
     "hasEnvConfigWarningTitle": "Dit dossiertype heeft al een kolom-configuratie",
@@ -1628,8 +1627,7 @@
     "enum": "Opsomming",
     "arrayCount": "Hoeveelheid",
     "underscoresToSpaces": "Lage strepen naar spaties",
-    "tags": "Tags",
-    "hidden": "Verborgen"
+    "tags": "Tags"
   },
   "object": {
     "title": "Objects",
@@ -1873,70 +1871,5 @@
     "dueDateText": "Einddatum:",
     "removeButtonText": "Einddatum verwijderen"
   },
-  "processStartSuccessful": "{{processName}} is succesvol gestart",
-  "widgets": {
-    "noData": "Geen data gevonden",
-    "emptyFields": "Nichts hier",
-    "noWidgets": "Geen widgets",
-    "noWidgetsDescription": "Er zijn geen widgets geconfigureerd voor dit tabblad, of je hebt niet de juiste rechten om deze te zien.",
-    "noWidget": "Widget niet beschikbaar",
-    "noCustomComponentDescription": "De component die geconfigureerd is voor deze widget kon niet gevonden worden."
-  },
-  "iko": {
-    "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
-  },
-  "ikoManagement": {
-    "title": "Configuratie",
-    "ikoServer": "IKO Server",
-    "view": "Beeld",
-    "list": "Lijst",
-    "tabs": {"title": "Tabbladen"},
-    "widgets": {"title": "Widgets"},
-    "searchActions": {
-      "addActionTitle": "Zoekactie toevoegen",
-      "editActionTitle": "Zoekactie bewerken",
-      "deleteModalTitle": "Zoekactie verwijderen",
-      "deleteModalText": "Weet je zeker dat je deze zoekactie wilt verwijderen?",
-      "title": "Zoekacties",
-      "numberOfFields": "Aantal zoekvelden",
-      "noResultsTitle": "Er zijn geen zoekacties.",
-      "noResultsDescription": "Klik hier om een zoekactie te configureren."
-    },
-    "searchFields": {
-      "pageTitle": "Zoekactie: {{searchActionTitle}}",
-      "title": "Zoekvelden",
-      "deleteModalText": "Weet je zeker dat je dit zoekveld wilt verwijderen?",
-      "noResultsTitle": "Er zijn geen zoekvelden.",
-      "noResultsDescription": "Klik hier om een zoekveld te configureren."
-    },
-    "addApiConfig": "IKO Server configureren",
-    "titleTitle": "Titel",
-    "titlePlaceholder": "Voer een titel in voor de API-configuratie",
-    "keyTitle": "Sleutel",
-    "keyPlaceholder": "Voer een sleutel in voor de API-configuratie",
-    "pluginIdTitle": "Pluginconfiguratie",
-    "typeTitle": "Type",
-    "addColumn": "Kolom toevoegen",
-    "editColumn": "Kolom bewerken",
-    "columnTitlePlaceholder": "Voer kolomtitel in",
-    "columnKeyPlaceholder": "Voer kolomsleutel in",
-    "pathTitle": "Pad",
-    "columnPathPlaceholder": "Voer kolompad in",
-    "sortableTitle": "Sorteerbaar",
-    "sortingDisabled": "Sorteren uitgeschakeld",
-    "defaultSortTitle": "Standaard sortering",
-    "displayType": "Weergavetype",
-    "sortingEnabled": "Sorteren ingeschakeld",
-    "tabKey": "Sleutel",
-    "tabTitle": "Tabtitel",
-    "tabTitlePlaceholder": "Voer tabtitel in",
-    "tabType": "Tabtype",
-    "tabTypeTitle": "Tabtype",
-    "tabTypePlaceholder": "Voer tabtype in",
-    "addTab": "Tab toevoegen",
-    "editTab": "Tab bewerken",
-    "tabTypes": {
-      "widgets": "Widgets"
-    }
-  }
+  "processStartSuccessful": "{{processName}} is succesvol gestart"
 }

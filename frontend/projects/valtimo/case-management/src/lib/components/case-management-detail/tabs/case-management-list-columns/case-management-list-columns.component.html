@@ -288,28 +288,6 @@
         <cds-dropdown-list [items]="(sortItems$ | async) || []"></cds-dropdown-list>
       </cds-dropdown>
     </cds-label>
-
-    <cds-label *ngIf="displayExportButton">
-      <span class="label-with-tooltip select-label">
-        {{ 'listColumn.exportField' | translate }}
-
-        <v-tooltip-icon
-          [tooltip]="'listColumn.exportTooltip' | translate"
-          [disabled]="modalObs.disableInput"
-        ></v-tooltip-icon>
-      </span>
-
-      <cds-toggle
-        formControlName="exportable"
-        data-testid="export-selector-toggle"
-        [onText]="'listColumn.sortableYes' | translate"
-        [offText]="'listColumn.sortableNo' | translate"
-        [keyColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.Yes' | translate)"
-        [valueColumnTitle]="modalObs.isYesNo && ('viewTypeConverter.No' | translate)"
-        [required]="false"
-        [size]="'sm'"
-      ></cds-toggle>
-    </cds-label>
   </form>
 </ng-template>
 

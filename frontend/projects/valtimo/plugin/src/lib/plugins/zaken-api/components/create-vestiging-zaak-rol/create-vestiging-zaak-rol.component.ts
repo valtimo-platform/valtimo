@@ -56,7 +56,6 @@ export class CreateVestigingZaakRolComponent implements FunctionConfigurationCom
     const valid = !!(
       formValue.rolToelichting &&
       formValue.roltypeUrl &&
-      formValue.handelsnaam &&
       formValue.kvkNummer &&
       formValue.vestigingsNummer
     );
