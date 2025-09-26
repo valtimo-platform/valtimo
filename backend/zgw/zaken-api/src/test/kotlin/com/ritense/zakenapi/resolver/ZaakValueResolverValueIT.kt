@@ -23,7 +23,6 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.repository.FormDefinitionRepository
 import com.ritense.form.service.PrefillFormService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.BaseIntegrationTest
 import com.ritense.zakenapi.ZakenApiAuthentication
 import okhttp3.mockwebserver.Dispatcher
@@ -36,12 +35,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
-import java.net.URI
 
 @Transactional
 class ZaakValueResolverValueIT @Autowired constructor(
@@ -69,37 +66,27 @@ class ZaakValueResolverValueIT @Autowired constructor(
 
     @Test
     fun `should prefill form with data from the Zaken API`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        runWithoutAuthorization {
-            val documentId = documentService.createDocument(
-                NewDocumentRequest(
-                    "profile",
-                    "profile",
-                    "1.0.0",
-                    objectMapper.createObjectNode()
-                )
+        val documentId = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest("profile", objectMapper.createObjectNode())
             ).resultingDocument().get().id.id
-
-            val formDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId("form-with-zaak-fields", caseDefinitionId).get()
-            val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(
-                formDefinition.id!!,
-                documentId
-            )
-            assertThat(
-                JsonPath.read<List<String>>(
-                    prefilledFormDefinition.asJson().toString(),
-                    "$.components[?(@.properties.sourceKey=='zaak:identificatie')].defaultValue"
-                ).toString()
-            ).isEqualTo("""["ZK2023-00001"]""")
         }
+        val formDefinition = formDefinitionRepository.findByName("form-with-zaak-fields").get()
+        val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(
+            formDefinition.id!!,
+            documentId
+        )
+
+        assertThat(JsonPath.read<List<String>>(prefilledFormDefinition.asJson().toString(), "$.components[?(@.properties.sourceKey=='zaak:identificatie')].defaultValue").toString())
+            .isEqualTo("""["ZK2023-00001"]""")
     }
 
     private fun setupMockZakenApiServer() {
-        server.dispatcher = object : Dispatcher() {
+        server.dispatcher = object: Dispatcher() {
             @Throws(InterruptedException::class)
             override fun dispatch(request: RecordedRequest): MockResponse {
-                val response = when (request.requestLine) {
-                    "GET $ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609 HTTP/1.1" -> getZaakRequest()
+                val response = when(request.requestLine) {
+                    "GET /zaken/57f66ff6-db7f-43bc-84ef-6847640d3609 HTTP/1.1" -> getZaakRequest()
                     else -> MockResponse().setResponseCode(404)
                 }
                 return response
@@ -159,7 +146,22 @@ class ZaakValueResolverValueIT @Autowired constructor(
         return mockResponse(body)
     }
 
-    companion object {
-        private const val ZAKEN_API_PATH = "/zaken/api/v1"
+    private fun mockResponse(body: String): MockResponse {
+        return MockResponse()
+            .addHeader("Content-Type", "application/json")
+            .setBody(body)
     }
+
+    class TestAuthentication: ZakenApiAuthentication {
+        override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
+            return next.exchange(request)
+        }
+    }
+
+    companion object {
+        private const val PROCESS_DEFINITION_KEY = "zaken-api-plugin"
+        private const val DOCUMENT_DEFINITION_KEY = "profile"
+        private const val INFORMATIE_OBJECT_URL = "http://informatie.object.url"
+    }
+
 }

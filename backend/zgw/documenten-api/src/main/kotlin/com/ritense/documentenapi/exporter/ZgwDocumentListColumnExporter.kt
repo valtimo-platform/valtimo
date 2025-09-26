@@ -17,14 +17,15 @@
 package com.ritense.documentenapi.exporter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.documentenapi.deployment.ZgwDocumentListColumn
+import com.ritense.documentenapi.deployment.ZgwDocumentListColumnChangeset
+import com.ritense.documentenapi.deployment.ZgwDocumentListColumnCollection
 import com.ritense.documentenapi.repository.DocumentenApiColumnRepository
 import com.ritense.exporter.ExportFile
 import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
-import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Instant
 
 class ZgwDocumentListColumnExporter(
     private val documentenApiColumnRepository: DocumentenApiColumnRepository,
@@ -33,28 +34,26 @@ class ZgwDocumentListColumnExporter(
     override fun supports(): Class<DocumentDefinitionExportRequest> = DocumentDefinitionExportRequest::class.java
 
     override fun export(request: DocumentDefinitionExportRequest): ExportResult {
-        logger.info { "Exporting ZGW document list columns for case definition ${request.name}" }
+
         val columns = documentenApiColumnRepository.findAllByIdCaseDefinitionNameOrderByOrder(request.name)
-            .map { ZgwDocumentListColumn(it.id.key, it.defaultSort) }
+            .map {
+                it.id.key
+            }
 
         if (columns.isEmpty()) {
-            return ExportResult()
+            return ExportResult(null)
         }
 
-        val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
-            "${it.major}-${it.minor}-${it.patch}"
-        }
+        val changeset = ZgwDocumentListColumnChangeset(
+            "${request.name}.zgw-document-list-column.${Instant.now().toEpochMilli()}",
+            caseDefinitions = listOf(ZgwDocumentListColumnCollection(key = request.name, columns = columns))
+        )
 
         return ExportResult(
             ExportFile(
-                PATH.format(request.caseDefinitionId.key, formattedCaseDefinitionVersion, request.name),
-                objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(columns)
+                "config/case/zgw-document-list-columns/${request.name}.zgw-document-list-column.json",
+                objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(changeset)
             )
         )
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
-        private const val PATH = "config/case/%s/%s/zgw/document-list-column/%s.zgw-document-list-column.json"
     }
 }

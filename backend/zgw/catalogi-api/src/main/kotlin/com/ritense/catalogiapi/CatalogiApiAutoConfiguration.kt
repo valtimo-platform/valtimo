@@ -16,8 +16,6 @@
 
 package com.ritense.catalogiapi
 
-import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.security.CatalogiApiHttpSecurityConfigurer
 import com.ritense.catalogiapi.service.CatalogiService
@@ -31,7 +29,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
-import org.springframework.web.client.RestClient
+import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
 @EnableCaching
@@ -39,10 +37,10 @@ class CatalogiApiAutoConfiguration {
 
     @Bean
     fun catalogiApiClient(
-        restClientBuilder: RestClient.Builder,
+        webclientBuilder: WebClient.Builder,
         cacheManager: CacheManager,
     ): CatalogiApiClient {
-        return CatalogiApiClient(restClientBuilder, cacheManager)
+        return CatalogiApiClient(webclientBuilder, cacheManager)
     }
 
     @Bean
@@ -59,25 +57,18 @@ class CatalogiApiAutoConfiguration {
     @ConditionalOnMissingBean(CatalogiService::class)
     fun catalogiService(
         zaaktypeUrlProvider: ZaaktypeUrlProvider,
-        pluginService: PluginService
-    ) = CatalogiService(
-        zaaktypeUrlProvider,
-        pluginService
-    )
+        pluginService : PluginService
+    ): CatalogiService {
+        return CatalogiService(zaaktypeUrlProvider, pluginService)
+    }
 
     @Bean
     @ConditionalOnMissingBean(CatalogiResource::class)
     fun catalogiResource(
-        catalogiService: CatalogiService,
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
-        caseDefinitionService: CaseDefinitionService,
-        documentService: DocumentService
-    ) = CatalogiResource(
-        catalogiService,
-        activeCaseDefinitionService,
-        caseDefinitionService,
-        documentService
-    )
+        catalogiService: CatalogiService
+    ): CatalogiResource {
+        return CatalogiResource(catalogiService)
+    }
 
     @Order(400)
     @Bean

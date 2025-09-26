@@ -16,33 +16,21 @@
 
 package com.ritense.documentenapi.domain
 
-import com.fasterxml.jackson.annotation.JsonCreator
-
-enum class DocumentenApiColumnKey(val property: String) {
-    IDENTIFICATIE("identificatie"),
-    BRONORGANISATIE("bronorganisatie"),
-    CREATIEDATUM("creatiedatum"),
-    TITEL("titel"),
-    VERTROUWELIJKHEIDAANDUIDING("vertrouwelijkheidaanduiding"),
-    AUTEUR("auteur"),
-    STATUS("status"),
-    FORMAAT("formaat"),
-    TAAL("taal"),
-    VERSIE("versie"),
-    BESTANDSNAAM("bestandsnaam"),
-    BESTANDSOMVANG("bestandsomvang"),
-    BESCHRIJVING("beschrijving"),
-    INFORMATIEOBJECTTYPE_OMSCHRIJVING("informatieobjecttypeOmschrijving"),
-    LOCKED("locked"),
-    TREFWOORDEN("trefwoorden");
-
-    companion object {
-        @JvmStatic
-        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-        fun fromEnumName(name: String) = entries.firstOrNull { it.name == name }
-
-        @JvmStatic
-        fun fromProperty(property: String) = entries.firstOrNull { it.property == property }
-    }
+enum class DocumentenApiColumnKey {
+    IDENTIFICATIE,
+    BRONORGANISATIE,
+    CREATIEDATUM,
+    TITEL,
+    VERTROUWELIJKHEIDAANDUIDING,
+    AUTEUR,
+    STATUS,
+    FORMAAT,
+    TAAL,
+    VERSIE,
+    BESTANDSNAAM,
+    BESTANDSOMVANG,
+    BESCHRIJVING,
+    INFORMATIEOBJECTTYPE,
+    LOCKED
 }
 

@@ -17,13 +17,7 @@
 package com.ritense.catalogiapi
 
 import com.ritense.plugin.annotation.PluginCategory
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 
 @PluginCategory("catalogi-api-authentication")
-// TODO remove ExchangeFilterFunction next major version
-interface CatalogiApiAuthentication : ExchangeFilterFunction {
-
-    fun applyAuth(builder: RestClient.Builder): RestClient.Builder
-
-}
+interface CatalogiApiAuthentication : ExchangeFilterFunction

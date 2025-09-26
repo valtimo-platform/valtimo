@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-public class TemplatedMailMessage implements HasRecipients {
+public class TemplatedMailMessage {
     public final Subject subject;
     public final Sender sender;
     public final RecipientCollection recipients;
@@ -63,11 +63,6 @@ public class TemplatedMailMessage implements HasRecipients {
 
     public static Builder with(Recipient recipient, MailTemplateIdentifier mailTemplateIdentifier) {
         return new Builder(RecipientCollection.fromSingle(recipient), mailTemplateIdentifier);
-    }
-
-    @Override
-    public RecipientCollection getRecipients() {
-        return recipients;
     }
 
     public static class Builder {

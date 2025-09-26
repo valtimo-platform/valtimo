@@ -32,12 +32,9 @@ dockerCompose {
 dependencies {
     implementation project(":contract")
     implementation project(':plugin')
-    implementation project(':logging')
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
-
-    testImplementation project(':test-utils-common')
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -46,6 +43,7 @@ dependencies {
     testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation("com.mysql:mysql-connector-j")
 
     jar {
         enabled = true

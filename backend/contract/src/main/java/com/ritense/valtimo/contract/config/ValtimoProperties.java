@@ -16,9 +16,6 @@
 
 package com.ritense.valtimo.contract.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.ritense.valtimo.contract.OauthConfigHolder;
-import javax.annotation.Nonnull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
 
@@ -48,7 +45,6 @@ public class ValtimoProperties {
         this.oauth = oauth != null ? oauth : new Oauth();
         this.portal = portal != null ? portal : new Portal();
         this.process = process != null ? process : new Process();
-        new OauthConfigHolder(this.oauth);
     }
 
     public App getApp() {
@@ -203,4 +199,5 @@ public class ValtimoProperties {
             this.systemProcessUpdatable = systemProcessUpdatable;
         }
     }
+
 }

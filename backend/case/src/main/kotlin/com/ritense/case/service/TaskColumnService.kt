@@ -32,23 +32,17 @@ import com.ritense.case.web.rest.mapper.TaskListColumnMapper
 import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.exception.UnknownDocumentDefinitionException
 import com.ritense.document.service.DocumentDefinitionService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valueresolver.ValueResolverService
-import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrNull
 import org.springframework.transaction.annotation.Transactional
 import org.zalando.problem.Status
-import kotlin.jvm.optionals.getOrNull
 
 @Transactional
-@Service
-@SkipComponentScan
 class TaskColumnService(
     private val taskListColumnRepository: TaskListColumnRepository,
     private val documentDefinitionService: DocumentDefinitionService,
     valueResolverService: ValueResolverService,
-    private val authorizationService: AuthorizationService,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val authorizationService: AuthorizationService
 ) {
     var validators: Map<Operation, ListColumnValidator<TaskListColumnDto>> = mapOf(
         Operation.CREATE to SaveTaskListColumnValidator(
@@ -64,21 +58,15 @@ class TaskColumnService(
         taskListColumnDto: TaskListColumnDto
     ) {
         denyManagementOperation()
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
 
         runWithoutAuthorization {
             validators[Operation.CREATE]!!.validate(caseDefinitionName, taskListColumnDto)
         }
-
-        val originalColumn = taskListColumnRepository.findByIdCaseDefinitionNameAndIdKey(caseDefinitionName, taskListColumnDto.key)
-
-        taskListColumnDto.order = originalColumn?.order ?: ((taskListColumnRepository.findMaxOrderByIdCaseDefinitionName(caseDefinitionName) ?: 0) + 1)
-
+        taskListColumnDto.order = taskListColumnRepository.countByIdCaseDefinitionName(caseDefinitionName)
         taskListColumnRepository
             .save(TaskListColumnMapper.toEntity(caseDefinitionName, taskListColumnDto))
     }
 
-    @Deprecated("Since 13.0.0")
     @Throws(InvalidListColumnException::class)
     fun swapColumnOrder(
         caseDefinitionName: String,
@@ -86,7 +74,6 @@ class TaskColumnService(
         taskColumnKey2: String
     ) {
         denyManagementOperation()
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
 
         assertDocumentDefinitionExists(caseDefinitionName)
 
@@ -111,28 +98,6 @@ class TaskColumnService(
         taskListColumnRepository.saveAll(columnsToSwap)
     }
 
-    @Throws(InvalidListColumnException::class)
-    fun reorderColumns(
-        caseDefinitionName: String,
-        columns: List<String>
-    ) {
-        denyManagementOperation()
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
-
-        assertDocumentDefinitionExists(caseDefinitionName)
-
-        val existingColumns =
-            taskListColumnRepository.findByIdCaseDefinitionNameOrderByOrderAsc(caseDefinitionName)
-
-        val orderedColumns = columns.mapIndexed { index, columnKey ->
-            existingColumns.first {
-                it.id.key == columnKey
-            }.copy(order = index)
-        }
-
-        taskListColumnRepository.saveAll(orderedColumns)
-    }
-
     @Throws(UnknownDocumentDefinitionException::class)
     fun getListColumns(caseDefinitionName: String): List<TaskListColumnDto> {
         // TODO: Implement PBAC:
@@ -151,15 +116,13 @@ class TaskColumnService(
     @Throws(UnknownDocumentDefinitionException::class)
     fun deleteTaskListColumn(caseDefinitionName: String, columnKey: String) {
         denyManagementOperation()
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
 
         runWithoutAuthorization { assertDocumentDefinitionExists(caseDefinitionName) }
 
-        val taskListColumn = taskListColumnRepository.findByIdCaseDefinitionNameAndIdKey(caseDefinitionName, columnKey)
-        if (taskListColumn != null) {
-            taskListColumnRepository.decrementOrderDueToColumnDeletion(taskListColumn.id.caseDefinitionName, taskListColumn.order)
-
-            taskListColumnRepository.delete(taskListColumn)
+        if (taskListColumnRepository
+                .existsByIdCaseDefinitionNameAndIdKey(caseDefinitionName, columnKey)
+        ) {
+            taskListColumnRepository.deleteByIdCaseDefinitionNameAndIdKey(caseDefinitionName, columnKey)
         }
     }
 
@@ -174,7 +137,7 @@ class TaskColumnService(
 
     @Throws(UnknownDocumentDefinitionException::class)
     private fun assertDocumentDefinitionExists(caseDefinitionName: String): DocumentDefinition {
-        return documentDefinitionService.findActiveByName(caseDefinitionName)
+        return documentDefinitionService.findLatestByName(caseDefinitionName)
             .getOrNull() ?: throw UnknownCaseDefinitionException(caseDefinitionName)
     }
 }

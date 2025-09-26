@@ -16,7 +16,6 @@
 
 package com.ritense.valtimo.contract.web.rest.error;
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.hardening.service.HardeningService;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +34,6 @@ import org.zalando.problem.violations.ConstraintViolationProblem;
  * Controller advice to translate the server side exceptions to client-friendly json structures.
  * The error response follows RFC7807 - Problem Details for HTTP APIs (<a href="https://tools.ietf.org/html/rfc7807">...</a>)
  */
-@SkipComponentScan
 @ControllerAdvice
 public class ExceptionTranslator implements ProblemHandling {
 
@@ -67,11 +65,9 @@ public class ExceptionTranslator implements ProblemHandling {
         }
 
         final String msg = "message";
-        if (problem instanceof ConstraintViolationProblem constraintViolationProblem) {
+        if (problem instanceof ConstraintViolationProblem) {
             builder
-                .with("errors", constraintViolationProblem.getViolations().stream()
-                    .map(v -> v.getField() + ": " + v.getMessage())
-                    .toList())
+                .with("violations", ((ConstraintViolationProblem) problem).getViolations())
                 .with(msg, ErrorConstants.ERR_VALIDATION);
         } else {
             builder
@@ -83,8 +79,8 @@ public class ExceptionTranslator implements ProblemHandling {
             }
         }
 
-        builder.withCause(((ThrowableProblem) problem).getCause());
-        hardeningServiceOptional.ifPresent(hardeningService -> hardeningService.harden(
+        builder.withCause(((DefaultProblem) problem).getCause());
+        hardeningServiceOptional.ifPresent((hardeningService) -> hardeningService.harden(
             (ThrowableProblem) problem,
             builder,
             (HttpServletRequest) request.getNativeRequest()

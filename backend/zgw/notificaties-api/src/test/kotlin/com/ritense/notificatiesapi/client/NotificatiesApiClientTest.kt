@@ -20,18 +20,18 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.notificatiesapi.NotificatiesApiAuthentication
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
-import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.valtimo.contract.json.MapperSingleton
+import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
+import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.util.UUID
 import kotlin.test.assertEquals
@@ -40,15 +40,15 @@ import kotlin.test.assertNull
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NotificatiesApiClientTest {
     lateinit var mockNotificatiesApi: MockWebServer
-    lateinit var restClientBuilder: RestClient.Builder
+    lateinit var webclientBuilder: WebClient.Builder
     lateinit var client: NotificatiesApiClient
 
     @BeforeEach
     fun setup() {
         mockNotificatiesApi = MockWebServer()
         mockNotificatiesApi.start()
-        restClientBuilder = RestClient.builder()
-        client = NotificatiesApiClient(restClientBuilder)
+        webclientBuilder = WebClient.builder()
+        client = NotificatiesApiClient(webclientBuilder)
     }
 
     @AfterEach
@@ -75,11 +75,13 @@ class NotificatiesApiClientTest {
             )
         )
 
-        val result = client.createKanaal(
-            authentication = TestAuthentication(),
-            baseUrl = mockNotificatiesApi.url("/").toUri(),
-            kanaal = Kanaal(naam = "Test Kanaal")
-        )
+        val result = runBlocking {
+            client.createKanaal(
+                authentication = TestAuthentication(),
+                baseUrl = mockNotificatiesApi.url("/").toUri(),
+                kanaal = Kanaal(naam = "Test Kanaal")
+            )
+        }
         val recordedRequest = mockNotificatiesApi.takeRequest()
         val requestBody = MapperSingleton.get().readValue<Map<String, Any>>(
             recordedRequest.body.readUtf8()
@@ -106,32 +108,34 @@ class NotificatiesApiClientTest {
         mockNotificatiesApi.enqueue(
             mockResponse(
                 """
-                 [
-                  {
-                    "url": "http://example.com",
-                    "naam": "string",
-                    "documentatieLink": "http://example.com",
-                    "filters": [
-                      "string"
-                    ]
-                  },
-                  {
-                    "url": "http://example.com",
-                    "naam": "objecten",
-                    "documentatieLink": "http://example.com",
-                    "filters": [
-                      "objecten"
-                    ]
-                  }
-                ]
-                """.trimIndent()
+            [
+  {
+    "url": "http://example.com",
+    "naam": "string",
+    "documentatieLink": "http://example.com",
+    "filters": [
+      "string"
+    ]
+  },
+  {
+    "url": "http://example.com",
+    "naam": "objecten",
+    "documentatieLink": "http://example.com",
+    "filters": [
+      "objecten"
+    ]
+  }
+]
+        """.trimIndent()
             )
         )
 
-        val result = client.getKanalen(
-            authentication = TestAuthentication(),
-            baseUrl = mockNotificatiesApi.url("/").toUri(),
-        )
+        val result = runBlocking {
+            client.getKanalen(
+                authentication = TestAuthentication(),
+                baseUrl = mockNotificatiesApi.url("/").toUri(),
+            )
+        }
         val recordedRequest = mockNotificatiesApi.takeRequest()
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
@@ -173,24 +177,26 @@ class NotificatiesApiClientTest {
             )
         )
 
-        val result = client.createAbonnement(
-            authentication = TestAuthentication(),
-            baseUrl = mockNotificatiesApi.url("/").toUri(),
-            abonnement = Abonnement(
-                url = "http://example.com",
-                callbackUrl = "http://example.com/callback",
-                auth = "Bearer token",
-                kanalen = listOf(
-                    Abonnement.Kanaal(
-                        filters = mapOf(
-                            "url" to "http://example.com",
-                            "someid" to "1234"
-                        ),
-                        naam = "Test Kanaal"
+        val result = runBlocking {
+            client.createAbonnement(
+                authentication = TestAuthentication(),
+                baseUrl = mockNotificatiesApi.url("/").toUri(),
+                abonnement = Abonnement(
+                    url = "http://example.com",
+                    callbackUrl = "http://example.com/callback",
+                    auth = "Bearer token",
+                    kanalen = listOf(
+                        Abonnement.Kanaal(
+                            filters = mapOf(
+                                "url" to "http://example.com",
+                                "someid" to "1234"
+                            ),
+                            naam = "Test Kanaal"
+                        )
                     )
                 )
             )
-        )
+        }
         val recordedRequest = mockNotificatiesApi.takeRequest()
         val requestBody = MapperSingleton.get().readValue<Map<String, Any>>(
             recordedRequest.body.readUtf8()
@@ -235,11 +241,13 @@ class NotificatiesApiClientTest {
             response = MockResponse().setResponseCode(204)
         )
 
-        client.deleteAbonnement(
-            authentication = TestAuthentication(),
-            baseUrl = mockNotificatiesApi.url("/").toUri(),
-            abonnementId = abonnementId
-        )
+        runBlocking {
+            client.deleteAbonnement(
+                authentication = TestAuthentication(),
+                baseUrl = mockNotificatiesApi.url("/").toUri(),
+                abonnementId = abonnementId
+            )
+        }
         val recordedRequest = mockNotificatiesApi.takeRequest()
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
@@ -252,16 +260,7 @@ class NotificatiesApiClientTest {
             .setBody(body)
     }
 
-    class TestAuthentication() : NotificatiesApiAuthentication {
-        override val configurationId: PluginConfigurationId
-            get() = PluginConfigurationId.newId()
-
-        override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-            return builder.defaultHeaders { headers ->
-                headers.setBearerAuth("test")
-            }
-        }
-
+    class TestAuthentication : NotificatiesApiAuthentication {
         override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
             val filteredRequest = ClientRequest.from(request).headers { headers ->
                 headers.setBearerAuth("test")

@@ -19,11 +19,9 @@ package com.ritense.valtimo;
 import static org.mockito.Mockito.mock;
 
 import com.ritense.authorization.AuthorizationService;
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation;
-import com.ritense.valtimo.operaton.authorization.UnauthorizedProcessBean;
+import com.ritense.valtimo.camunda.authorization.UnauthorizedProcessBean;
 import com.ritense.valtimo.contract.annotation.ProcessBean;
 import com.ritense.valtimo.contract.mail.MailSender;
-import com.ritense.valtimo.logging.impl.LoggingTestBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -38,11 +36,6 @@ public class CoreTestConfiguration {
 
     @TestConfiguration
     public static class TestConfig {
-
-        @Bean
-        public LiquibaseMasterChangeLogLocation coreTestLiquibaseMasterChangeLogLocation() {
-            return new LiquibaseMasterChangeLogLocation("config/liquibase/core-test-only-master.xml");
-        }
 
         @Bean
         public FakeUserRepository fakeUserRepository() {
@@ -60,12 +53,6 @@ public class CoreTestConfiguration {
             AuthorizationService authorizationService
         ) {
             return new UnauthorizedProcessBean(authorizationService);
-        }
-
-        @Bean
-        @ProcessBean
-        public LoggingTestBean loggingTestBean() {
-            return new LoggingTestBean();
         }
     }
 

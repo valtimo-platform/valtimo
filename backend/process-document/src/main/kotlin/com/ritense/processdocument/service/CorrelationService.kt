@@ -16,27 +16,16 @@
 
 package com.ritense.processdocument.service
 
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.operaton.bpm.engine.runtime.MessageCorrelationResult
+import org.camunda.bpm.engine.runtime.MessageCorrelationResult
 
 interface CorrelationService {
 
-    fun sendStartMessage(message: String, businessKey: String): MessageCorrelationResult
-    fun sendStartMessage(message: String, businessKey: String, vararg variables: Any?): MessageCorrelationResult
-    fun sendStartMessage(message: String, businessKey: String, variables: Map<String, Any?>?): MessageCorrelationResult
-
-    fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String)
-    fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String, vararg variables: Any?)
-    fun sendStartMessageWithProcessDefinitionKey(message: String, targetProcessDefinitionKey: String, businessKey: String, variables: Map<String, Any?>?)
-
+    fun sendStartMessage(message: String,businessKey: String): MessageCorrelationResult
+    fun sendStartMessage(message: String,businessKey: String, variables: Map<String, Any>?): MessageCorrelationResult
+    fun sendStartMessageWithProcessDefinitionKey(message: String,targetProcessDefinitionKey: String,businessKey: String, variables: Map<String, Any>?)
     fun sendCatchEventMessage(message: String, businessKey: String): MessageCorrelationResult
-    fun sendCatchEventMessage(message: String, businessKey: String, vararg variables: Any?): MessageCorrelationResult
-    fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any?>?): MessageCorrelationResult
-
+    fun sendCatchEventMessage(message: String, businessKey: String, variables: Map<String, Any>?): MessageCorrelationResult
     fun sendCatchEventMessageToAll(message: String, businessKey: String): List<MessageCorrelationResult>
-    fun sendCatchEventMessageToAll(message: String, businessKey: String, vararg variables: Any?): List<MessageCorrelationResult>
-    fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String, Any?>?): List<MessageCorrelationResult>
+    fun sendCatchEventMessageToAll(message: String, businessKey: String, variables: Map<String,Any>?): List<MessageCorrelationResult>
 
-    fun sendMessage(message: String, execution: DelegateExecution): MessageCorrelationResult
-    fun sendMessageToAll(message: String, execution: DelegateExecution): List<MessageCorrelationResult>
 }

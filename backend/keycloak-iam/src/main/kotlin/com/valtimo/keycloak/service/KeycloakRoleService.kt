@@ -16,11 +16,6 @@
 
 package com.valtimo.keycloak.service
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.springframework.stereotype.Service
-
-@Service
-@SkipComponentScan
 class KeycloakRoleService(
     private val keycloakService: KeycloakService,
 ): ExternalRoleService {

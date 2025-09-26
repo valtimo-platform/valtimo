@@ -24,7 +24,7 @@ import com.ritense.besluitenapi.client.CreateBesluitRequest
 import com.ritense.besluitenapi.client.Vervalreden
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zgw.Rsin
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -35,6 +35,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.springframework.http.ResponseEntity
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
@@ -196,7 +197,7 @@ class BesluitenApiPluginTest {
         val besluitInformatieObjectUrl =
             "https://some-host.nl/besluiten/api/v1/besluiteninformatieobjecten/${UUID.randomUUID()}"
         whenever(besluitenApiClient.createBesluitInformatieObject(any(), any(), any())).thenReturn(
-            BesluitInformatieObject(besluitInformatieObjectUrl, documentUrl, besluitUrl)
+            ResponseEntity.ok().body(BesluitInformatieObject(besluitInformatieObjectUrl, documentUrl, besluitUrl))
         )
         besluitenApiPlugin.linkDocumentToBesluit(
             documentUrl,

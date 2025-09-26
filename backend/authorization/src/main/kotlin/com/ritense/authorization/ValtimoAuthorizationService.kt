@@ -19,21 +19,15 @@ package com.ritense.authorization
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.permission.PermissionRepository
 import com.ritense.authorization.request.AuthorizationRequest
-import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.authorization.specification.AuthorizationSpecificationFactory
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.utils.SecurityUtils
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.security.access.AccessDeniedException
-import org.springframework.stereotype.Service
 import java.lang.reflect.ParameterizedType
+import mu.KotlinLogging
+import org.springframework.security.access.AccessDeniedException
 
-@Service
-@SkipComponentScan
 class ValtimoAuthorizationService(
     private val authorizationSpecificationFactories: List<AuthorizationSpecificationFactory<*>>,
     private val mappers: List<AuthorizationEntityMapper<*, *>>,
@@ -75,13 +69,13 @@ class ValtimoAuthorizationService(
         request: AuthorizationRequest<T>,
         permissions: List<Permission>?
     ): AuthorizationSpecification<T> {
-        val userPermissions = permissions ?: getPermissions(request)
+        val usedPermissions = permissions ?: getPermissions(request)
 
-        return getAuthorizationSpecification(request, userPermissions, enablePermissionLogging = true)
+        return getAuthorizationSpecification(request, usedPermissions, enablePermissionLogging = true)
     }
 
     override fun getPermissions(resourceType: Class<*>, action: Action<*>): List<Permission> {
-        return permissionRepository.findAllByResourceTypeAndActions_Key(resourceType, action.key)
+        return permissionRepository.findAllByResourceTypeAndAction(resourceType, action)
     }
 
     override fun <FROM, TO> getMapper(
@@ -119,31 +113,20 @@ class ValtimoAuthorizationService(
     }
 
     private fun getPermissions(context: AuthorizationRequest<*>): List<Permission> {
-        val userRoles = if (context.user == null) {
+        val userRoles = if (context.user == null || context.user == SecurityUtils.getCurrentUserLogin()) {
             SecurityUtils.getCurrentUserRoles()
         } else {
-            userManagementService.findByUsername(context.user)
+            userManagementService.findById(context.user)
                 ?.roles
                 ?: return emptyList()
         }
         return permissionRepository.findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(userRoles)
             .filter { permission ->
-                context.resourceType == permission.resourceType
-                    && permission.actions.contains(context.action)
-                    && if (context is EntityAuthorizationRequest) {
-                        permission.appliesInContext(context.context?.resourceType, context.context?.entity)
-                    } else if (context is RelatedEntityAuthorizationRequest)
-                    {
-                        permission.appliesInContext(context.context?.resourceType, context.context?.entity)
-                    } else {
-                        val requestContextResourceType: Class<*>? = null
-                        permission.appliesInContext(requestContextResourceType, null)
-                    }
+                context.resourceType == permission.resourceType && context.action == permission.action
             }
     }
 
     private fun logPermissions(request: AuthorizationRequest<*>, permissions: List<Permission>) {
-        val forUserLogLine = if (request.user.isNullOrEmpty()) "" else " for user '${request.user}'"
         if (!AuthorizationContext.ignoreAuthorization) {
             if (request.action.key == Action.DENY) {
                 logger.error {
@@ -153,13 +136,13 @@ class ValtimoAuthorizationService(
             } else {
                 val permissionsLogLine = permissions.joinToString(", ") { "${it.id}:${it.role.key}" }
                 val logLine =
-                    "Requesting permissions '${request.action.key}:${request.resourceType.simpleName}'$forUserLogLine and found matching permissions: [$permissionsLogLine]"
+                    "Requesting permissions '${request.action.key}:${request.resourceType.simpleName}' for user '${request.user}' and found matching permissions: [$permissionsLogLine]"
                 logger.debug { logLine }
             }
         } else {
             if (request.action.key != Action.DENY) {
                 val logLine =
-                    "Ignoring authorization request for '${request.action.key}:${request.resourceType.simpleName}'$forUserLogLine. "
+                    "Ignoring authorization request for '${request.action.key}:${request.resourceType.simpleName}' for user '${request.user}'. "
                 logger.debug { logLine }
             }
         }

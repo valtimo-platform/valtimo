@@ -50,7 +50,7 @@ data class Note(
 ) {
     constructor(documentId: JsonSchemaDocumentId, user: ManageableUser, content: String) : this(
         UUID.randomUUID(),
-        user.username,
+        user.id,
         user.fullName,
         LocalDateTime.now(),
         content,

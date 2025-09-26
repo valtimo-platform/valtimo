@@ -46,14 +46,4 @@ public interface ManageableUser extends AuthorizedUser {
 
     boolean isBlocked();
 
-    /**
-     * Get username
-     *
-     * @deprecated Since 13.0.0.
-     */
-    @Deprecated(since = "Since 13.0.0", forRemoval = true)
-    default String getUserIdentifier() {
-        return getUsername();
-    }
-
 }

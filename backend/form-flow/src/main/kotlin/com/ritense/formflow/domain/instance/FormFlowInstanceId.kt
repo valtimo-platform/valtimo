@@ -27,8 +27,6 @@ class FormFlowInstanceId(
     val id: UUID
 ) : AbstractId<FormFlowInstanceId>() {
 
-    override fun toString(): String = id.toString()
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

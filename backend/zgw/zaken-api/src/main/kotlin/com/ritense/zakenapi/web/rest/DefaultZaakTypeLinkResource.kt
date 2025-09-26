@@ -16,8 +16,6 @@
 
 package com.ritense.zakenapi.web.rest
 
-import com.ritense.logging.LoggableResource
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.service.ZaakTypeLinkService
 import com.ritense.zakenapi.web.rest.request.CreateZaakTypeLinkRequest
@@ -25,40 +23,28 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.noContent
 import org.springframework.http.ResponseEntity.ok
 
-class DefaultZaakTypeLinkResource(
+open class DefaultZaakTypeLinkResource(
     private val zaakTypeLinkService: ZaakTypeLinkService
 ) : ZaakTypeLinkResource {
 
-    override fun get(
-        @LoggableResource("caseDefinitionKey") caseDefinitionKey: String,
-        @LoggableResource("versionTag") versionTag: String,
-    ): ResponseEntity<ZaakTypeLink?> {
-        return when (val zaakTypeLink = zaakTypeLinkService.get(CaseDefinitionId(caseDefinitionKey, versionTag))) {
+    override fun get(documentDefinitionName: String): ResponseEntity<ZaakTypeLink?> {
+        return when (val zaakTypeLink = zaakTypeLinkService.get(documentDefinitionName)) {
             null -> noContent().build()
             else -> ok(zaakTypeLink)
         }
     }
 
-    override fun getByProcess(
-        @LoggableResource("processDefinitionKey") processDefinitionKey: String
-    ): ResponseEntity<ZaakTypeLink?> {
+    override fun getByProcess(processDefinitionKey: String): ResponseEntity<List<ZaakTypeLink>> {
         return ok(zaakTypeLinkService.getByProcess(processDefinitionKey))
     }
 
-    override fun create(
-        @LoggableResource("caseDefinitionKey") caseDefinitionKey: String,
-        @LoggableResource("versionTag") versionTag: String,
-        request: CreateZaakTypeLinkRequest
-    ): ResponseEntity<ZaakTypeLink> {
-        val result = zaakTypeLinkService.createZaakTypeLink(CaseDefinitionId(caseDefinitionKey, versionTag), request)
+    override fun create(request: CreateZaakTypeLinkRequest): ResponseEntity<ZaakTypeLink> {
+        val result = zaakTypeLinkService.createZaakTypeLink(request)
         return ok(result)
     }
 
-    override fun remove(
-        @LoggableResource("caseDefinitionKey") caseDefinitionKey: String,
-        @LoggableResource("versionTag") versionTag: String,
-    ): ResponseEntity<Void> {
-        zaakTypeLinkService.deleteZaakTypeLinkBy(CaseDefinitionId(caseDefinitionKey, versionTag))
+    override fun remove(documentDefinitionName: String): ResponseEntity<Void> {
+        zaakTypeLinkService.deleteZaakTypeLinkBy(documentDefinitionName)
         return noContent().build()
     }
 }

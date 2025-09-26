@@ -44,7 +44,7 @@ class AuthorizationSpecificationTest {
             listOf(
                 Permission(
                     resourceType = TestEntity::class.java,
-                    actions = mutableListOf(TestEntityActionProvider.complete),
+                    action = TestEntityActionProvider.complete,
                     conditionContainer = ConditionContainer(listOf()),
                     role = Role(key = "")
                 )
@@ -64,7 +64,7 @@ class AuthorizationSpecificationTest {
             listOf(
                 Permission(
                     resourceType = String::class.java,
-                    actions = mutableListOf(TestEntityActionProvider.complete),
+                    action = TestEntityActionProvider.complete,
                     conditionContainer = ConditionContainer(listOf()),
                     role = Role(key = "")
                 )
@@ -84,7 +84,7 @@ class AuthorizationSpecificationTest {
             listOf(
                 Permission(
                     resourceType = TestEntity::class.java,
-                    actions = mutableListOf(TestEntityActionProvider.complete),
+                    action = TestEntityActionProvider.complete,
                     conditionContainer = ConditionContainer(listOf()),
                     role = Role(key = "")
                 )
@@ -99,7 +99,7 @@ class AuthorizationSpecificationTest {
     fun `isAuthorized should return false when Permission_appliesTo() returns false`() {
         val permission: Permission = spy(Permission(
             resourceType = TestEntity::class.java,
-            actions = mutableListOf(TestEntityActionProvider.complete),
+            action = TestEntityActionProvider.complete,
             conditionContainer = ConditionContainer(listOf()),
             role = Role(key = ""))
         )
@@ -113,11 +113,11 @@ class AuthorizationSpecificationTest {
             mock()
         )
 
-        whenever(permission.appliesTo(eq(TestEntity::class.java), any(), eq(null), eq(null))).thenReturn(false)
+        whenever(permission.appliesTo(eq(TestEntity::class.java), any())).thenReturn(false)
 
         val authorized = spec.isAuthorized()
         assertEquals(false, authorized)
 
-        verify(permission).appliesTo(eq(TestEntity::class.java), any(), eq(null), eq(null))
+        verify(permission).appliesTo(eq(TestEntity::class.java), any())
     }
 }

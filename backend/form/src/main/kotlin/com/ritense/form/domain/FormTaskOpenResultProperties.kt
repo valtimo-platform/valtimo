@@ -16,15 +16,10 @@
 
 package com.ritense.form.domain
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.JsonNode
 import java.util.UUID
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class FormTaskOpenResultProperties(
     val formDefinitionId: UUID,
-    val prefilledForm: JsonNode,
-    val formDisplayType: FormDisplayType? = null,
-    val formSize: FormSizes? = null,
-    val subtitles: List<String>? = null
+    val prefilledForm: JsonNode
 )

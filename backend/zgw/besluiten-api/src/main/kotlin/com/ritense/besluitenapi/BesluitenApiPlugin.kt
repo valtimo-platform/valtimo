@@ -22,7 +22,6 @@ import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.besluitenapi.client.CreateBesluitInformatieObject
 import com.ritense.besluitenapi.client.CreateBesluitRequest
 import com.ritense.besluitenapi.client.Vervalreden
-import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
@@ -30,11 +29,10 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.validation.Url
 import com.ritense.zakenapi.ZaakUrlProvider
-import com.ritense.zgw.LoggingConstants.BESLUITEN_API
-import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
 import com.ritense.zgw.Rsin
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import mu.KLogger
+import mu.KotlinLogging
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
@@ -67,16 +65,14 @@ class BesluitenApiPlugin(
     fun linkDocumentToBesluit(
         @PluginActionProperty documentUrl: String,
         @PluginActionProperty besluitUrl: String
-    ) = linkDocumentToBesluit(URI(documentUrl), URI(besluitUrl))
+    ) {
+        linkDocumentToBesluit(URI(documentUrl), URI(besluitUrl))
+    }
 
     fun linkDocumentToBesluit(
         documentUrl: URI,
         besluitUrl: URI
-    ) = withLoggingContext(
-        DOCUMENTEN_API.ENKELVOUDIG_INFORMATIE_OBJECT to documentUrl.toString(),
-        BESLUITEN_API.BESLUIT to besluitUrl.toString()
     ) {
-        logger.info { "Linking ZGW document $documentUrl to besluit $besluitUrl" }
         besluitenApiClient.createBesluitInformatieObject(
             authenticationPluginConfiguration,
             url,
@@ -103,27 +99,28 @@ class BesluitenApiPlugin(
         @PluginActionProperty uiterlijkeReactieDatum: LocalDate?,
         @PluginActionProperty createdBesluitUrl: String?,
     ) {
+
         val documentId = UUID.fromString(execution.businessKey)
         val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-        withLoggingContext(
-            "com.ritense.document.domain.impl.JsonSchemaDocument" to documentId.toString()
-        ) {
-            val besluit = createBesluit(
-                zaakUrl = zaakUrl,
-                besluittypeUrl = URI(besluittypeUrl),
-                ingangsdatum = ingangsdatum ?: LocalDate.now(),
-                toelichting = toelichting,
-                bestuursorgaan = bestuursorgaan,
-                vervaldatum = vervaldatum,
-                vervalreden = vervalreden,
-                publicatiedatum = publicatiedatum,
-                verzenddatum = verzenddatum,
-                uiterlijkeReactieDatum = uiterlijkeReactieDatum
-            )
-            createdBesluitUrl?.let {
-                logger.info { "Storing reference to newly created besluit ${besluit.url} in process variable $it" }
-                execution.setVariable(it, besluit.url)
-            }
+
+        logger.debug { "Creating besluit for zaak $zaakUrl of type $besluittypeUrl" }
+
+        val besluit = createBesluit(
+            zaakUrl = zaakUrl,
+            besluittypeUrl = URI(besluittypeUrl),
+            ingangsdatum = ingangsdatum ?: LocalDate.now(),
+            toelichting = toelichting,
+            bestuursorgaan = bestuursorgaan,
+            vervaldatum = vervaldatum,
+            vervalreden = vervalreden,
+            publicatiedatum = publicatiedatum,
+            verzenddatum = verzenddatum,
+            uiterlijkeReactieDatum = uiterlijkeReactieDatum
+        )
+
+        createdBesluitUrl?.let {
+            logger.debug { "Settings resulting variable $it to ${besluit.url}" }
+            execution.setVariable(it, besluit.url)
         }
     }
 
@@ -139,31 +136,30 @@ class BesluitenApiPlugin(
         verzenddatum: LocalDate? = null,
         uiterlijkeReactieDatum: LocalDate? = null,
     ): Besluit {
-        withLoggingContext("zaakUrl" to zaakUrl.toString()) {
-            logger.info { "Creating besluit for zaak $zaakUrl of type $besluittypeUrl" }
-            return besluitenApiClient.createBesluit(
-                authentication = authenticationPluginConfiguration,
-                baseUrl = url,
-                request = CreateBesluitRequest(
-                    zaak = zaakUrl,
-                    besluittype = besluittypeUrl,
-                    verantwoordelijkeOrganisatie = rsin.toString(),
-                    datum = LocalDate.now(),
-                    ingangsdatum = ingangsdatum ?: LocalDate.now(),
-                    toelichting = toelichting,
-                    bestuursorgaan = bestuursorgaan,
-                    vervaldatum = vervaldatum,
-                    vervalreden = vervalreden,
-                    publicatiedatum = publicatiedatum,
-                    verzenddatum = verzenddatum,
-                    uiterlijkeReactiedatum = uiterlijkeReactieDatum
-                )
+
+        val besluit = besluitenApiClient.createBesluit(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            request = CreateBesluitRequest(
+                zaak = zaakUrl,
+                besluittype = besluittypeUrl,
+                verantwoordelijkeOrganisatie = rsin.toString(),
+                datum = LocalDate.now(),
+                ingangsdatum = ingangsdatum ?: LocalDate.now(),
+                toelichting = toelichting,
+                bestuursorgaan = bestuursorgaan,
+                vervaldatum = vervaldatum,
+                vervalreden = vervalreden,
+                publicatiedatum = publicatiedatum,
+                verzenddatum = verzenddatum,
+                uiterlijkeReactiedatum = uiterlijkeReactieDatum
             )
-        }
+        )
+        return besluit
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
         const val PLUGIN_KEY = "besluitenapi"
         const val URL_PROPERTY = "url"
 

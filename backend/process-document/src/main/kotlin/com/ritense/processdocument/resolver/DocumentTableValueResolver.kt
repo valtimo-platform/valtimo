@@ -19,13 +19,11 @@ package com.ritense.processdocument.resolver
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.domain.Document
 import com.ritense.document.service.DocumentService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverFactory
-import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.exception.ValueResolverValidationException
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.function.Function
 
 /**
@@ -46,7 +44,7 @@ class DocumentTableValueResolver(
         processInstanceId: String,
         variableScope: VariableScope
     ): Function<String, Any?> {
-        val document = processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+        val document = processDocumentService.getDocument(CamundaProcessInstanceId(processInstanceId), variableScope)
         return createResolver(document)
     }
 
@@ -67,14 +65,6 @@ class DocumentTableValueResolver(
         throw NotImplementedError("Unable to handle value: {${firstValue.key} to ${firstValue.value}}")
     }
 
-    override fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
-        return createFieldList(TABLE_COLUMN_LIST)
-    }
-
-    override fun getResolvableKeyOptions(caseDefinitionKey: String): List<ValueResolverOption> {
-        return createFieldList(TABLE_COLUMN_LIST)
-    }
-
     private fun createResolver(document: Document): Function<String, Any?> {
         return Function { requestedValue ->
             when (requestedValue) {
@@ -82,13 +72,11 @@ class DocumentTableValueResolver(
                 "assigneeId" -> document.assigneeId()
                 "createdBy" -> document.createdBy()
                 "createdOn" -> document.createdOn()
-                "documentDefinitionId" -> document.definitionId()
-                "documentDefinitionId.name" -> document.definitionId().name()
-                "definitionId.key" -> document.definitionId().caseDefinitionId().key
-                "definitionId.versionTag" -> document.definitionId().caseDefinitionId().versionTag.version
+                "definitionId" -> document.definitionId()
+                "definitionId.name" -> document.definitionId().name()
+                "definitionId.version" -> document.definitionId().version()
                 "id" -> document.id().id
                 "internalStatus" -> document.internalStatus()
-                "caseTags" -> document.caseTags()
                 "modifiedOn" -> document.modifiedOn().orElse(null)
                 "sequence" -> document.sequence()
                 "version" -> document.version()
@@ -105,11 +93,8 @@ class DocumentTableValueResolver(
             "createdOn",
             "definitionId.name",
             "definitionId.version",
-            "documentDefinitionId",
-            "documentDefinitionId.name",
             "id",
             "internalStatus",
-            "caseTags",
             "modifiedOn",
             "sequence",
             "version",

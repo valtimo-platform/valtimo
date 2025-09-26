@@ -37,18 +37,18 @@ dependencies {
     api project(":authorization")
 
     implementation project(":contract")
-    implementation project(":exporter")
-    implementation project(":importer")
-    implementation project(":logging")
     implementation project(":outbox")
     implementation project(":resource")
     implementation project(":web")
+    implementation project(":exporter")
+    implementation project(":importer")
 
     testImplementation project(':test-utils-common')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
+    api "jakarta.inject:jakarta.inject-api:${jakartaInjectVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-web"
@@ -65,7 +65,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.graalvm.js:js-scriptengine:${graalvmJsVersion}"
     implementation "org.graalvm.js:js:${graalvmJsVersion}"
 
@@ -74,17 +74,18 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 
-    // Operaton
-    api ("org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter-rest:${operatonVersion}") {
+    // Camunda
+    api ("org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-rest:${camundaVersion}") {
         exclude group: "com.sun.xml.bind"
     }
-    api ("org.operaton.bpm.springboot:operaton-bpm-spring-boot-starter-webapp:${operatonVersion}") {
+    api ("org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-webapp:${camundaVersion}") {
         exclude group: "com.sun.xml.bind"
     }
 
-    // Operaton plugins
-    implementation "org.operaton.bpm:operaton-engine-plugin-spin:${operatonVersion}"
-    implementation "org.operaton.bpm:operaton-engine-plugin-connect:${operatonVersion}"
+    // Camunda plugins
+    implementation "org.camunda.bpm:camunda-engine-plugin-spin:${camundaVersion}"
+    implementation "org.camunda.bpm:camunda-engine-plugin-connect:${camundaVersion}"
+    api "org.camunda.bpm.extension.reactor:camunda-bpm-reactor-spring-starter:${camundaReactorSpringVersion}"
 
     // spring boot admin client
     implementation "de.codecentric:spring-boot-admin-starter-client:${springBootAdminStarterClientVersion}"
@@ -105,7 +106,7 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"
 
-    // MyBatis (for operaton and our custom queries)
+    // MyBatis (for camunda and our custom queries)
     implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${mybatisSpringBootStarterVersion}"
 
     implementation "org.apache.commons:commons-lang3:${commonsLangVersion}"
@@ -127,23 +128,18 @@ dependencies {
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
 
+    implementation "io.dropwizard.metrics:metrics-core"
+    implementation "io.dropwizard.metrics:metrics-annotation"
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
     implementation "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     implementation "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
-    testImplementation (project(":case")) {
-        exclude(group: "com.ritense.valtimo", module: "core")
-    }
-
-    // Operaton test
-    testImplementation project(":test-utils-common")
+    // Camunda test
+    testImplementation "org.camunda.community.mockito:camunda-platform-7-mockito:${camundaMockitoVersion}"
     testImplementation "org.springframework.security:spring-security-test"
     testImplementation "org.junit.jupiter:junit-jupiter-engine"
+    testImplementation("com.mysql:mysql-connector-j")
     testImplementation "org.apache.groovy:groovy-all:${groovyVersion}"
-
-    configurations.all {
-        exclude group: 'org.graalvm.truffle', module: 'truffle-enterprise'
-    }
 }
 
 apply from: "gradle/publishing.gradle"

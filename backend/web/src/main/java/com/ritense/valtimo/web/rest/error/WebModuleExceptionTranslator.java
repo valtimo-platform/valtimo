@@ -16,7 +16,6 @@
 
 package com.ritense.valtimo.web.rest.error;
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.exception.DocumentParserException;
 import com.ritense.valtimo.contract.exception.ProcessNotFoundException;
 import com.ritense.valtimo.contract.exception.ValtimoRuntimeException;
@@ -30,7 +29,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindingResult;
@@ -41,16 +39,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
-
-import static com.ritense.logging.LoggingContextKt.withErrorLoggingContext;
+import org.zalando.problem.spring.web.advice.ProblemHandling;
 
 /**
  * Controller advice to translate the server side exceptions to client-friendly json structures.
  * The error response follows RFC7807 - Problem Details for HTTP APIs (<a href="https://tools.ietf.org/html/rfc7807">...</a>)
  */
-@SkipComponentScan
 @ControllerAdvice
-public class WebModuleExceptionTranslator extends ExceptionTranslator {
+public class WebModuleExceptionTranslator extends ExceptionTranslator implements ProblemHandling {
     private static final String MESSAGE = "message";
 
     public WebModuleExceptionTranslator(Optional<HardeningService> hardeningServiceOptional) {
@@ -140,19 +136,6 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
     @ExceptionHandler
     public ResponseEntity<Problem> handleValtimoRuntimeException(ValtimoRuntimeException ex, NativeWebRequest request) {
         return create(Status.BAD_REQUEST, ex, request, HeaderUtil.createFailureAlert(ex.getMessage(), ex.getCategory(), ex.getErrorDescription()));
-    }
-
-    @Override
-    public void log(
-        final Throwable throwable,
-        final Problem problem,
-        final NativeWebRequest request,
-        final HttpStatus status
-    ) {
-        withErrorLoggingContext(() -> {
-            super.log(throwable, problem, request, status);
-            return null;
-        });
     }
 
 }

@@ -17,8 +17,8 @@
 package com.ritense.form.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.service.DocumentService;
+import com.ritense.form.autodeployment.FormDefinitionDeployEventListener;
 import com.ritense.form.autodeployment.FormDefinitionDeploymentService;
 import com.ritense.form.domain.FormSpringContextHelper;
 import com.ritense.form.mapper.FormProcessLinkMapper;
@@ -29,16 +29,17 @@ import com.ritense.form.service.FormLoaderService;
 import com.ritense.form.service.PrefillFormService;
 import com.ritense.form.service.impl.FormIoFormDefinitionService;
 import com.ritense.form.service.impl.FormIoFormLoaderService;
+import com.ritense.form.web.rest.FormDefinitionResource;
 import com.ritense.form.web.rest.FormFileResource;
 import com.ritense.form.web.rest.FormManagementResource;
+import com.ritense.form.web.rest.impl.FormIoFormDefinitionResource;
 import com.ritense.form.web.rest.impl.FormIoFormFileResource;
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
+import com.ritense.form.web.rest.impl.FormIoFormManagementResource;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.form.FormFieldDataResolver;
-import com.ritense.valtimo.service.OperatonProcessService;
-import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.CamundaProcessService;
+import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valueresolver.ValueResolverService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +54,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = "com.ritense.form.repository")
-@EntityScan({"com.ritense.form"})
+@EntityScan("com.ritense.form.domain")
 public class FormAutoConfiguration {
     private static boolean ignoreDisabledFields = false;
 
@@ -76,10 +77,8 @@ public class FormAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(FormDefinitionService.class)
-    public FormIoFormDefinitionService formDefinitionService(
-        final FormDefinitionRepository formDefinitionRepository,
-        final CaseDefinitionChecker caseDefinitionChecker) {
-        return new FormIoFormDefinitionService(formDefinitionRepository, caseDefinitionChecker);
+    public FormIoFormDefinitionService formDefinitionService(final FormDefinitionRepository formDefinitionRepository) {
+        return new FormIoFormDefinitionService(formDefinitionRepository);
     }
 
     @Bean
@@ -101,6 +100,12 @@ public class FormAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(FormDefinitionDeployEventListener.class)
+    public FormDefinitionDeployEventListener formApplicationReadyEventListener(FormDefinitionDeploymentService formDefinitionDeploymentService) {
+        return new FormDefinitionDeployEventListener(formDefinitionDeploymentService);
+    }
+
+    @Bean
     @ConditionalOnBean(ResourceService.class)
     @ConditionalOnMissingBean(FormFileResource.class)
     public FormIoFormFileResource formFileResource(ResourceService resourceService) {
@@ -109,8 +114,14 @@ public class FormAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(FormManagementResource.class)
-    public FormManagementResource formManagementResource(FormDefinitionService formDefinitionService) {
-        return new FormManagementResource(formDefinitionService);
+    public FormIoFormManagementResource formManagementResource(FormDefinitionService formDefinitionService) {
+        return new FormIoFormManagementResource(formDefinitionService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(FormDefinitionResource.class)
+    public FormDefinitionResource formDefinitionResource(FormDefinitionService formDefinitionService) {
+        return new FormIoFormDefinitionResource(formDefinitionService);
     }
 
     @Bean("formSpringContextHelper")
@@ -123,10 +134,9 @@ public class FormAutoConfiguration {
     @ConditionalOnMissingBean(FormProcessLinkMapper.class)
     public FormProcessLinkMapper formProcessLinkMapper(
         final ObjectMapper objectMapper,
-        final FormDefinitionService formDefinitionService,
-        final ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService
+        final FormDefinitionService formDefinitionService
     ) {
-        return new FormProcessLinkMapper(objectMapper, formDefinitionService, processDefinitionCaseDefinitionService);
+        return new FormProcessLinkMapper(objectMapper, formDefinitionService);
     }
 
     @Bean
@@ -134,32 +144,31 @@ public class FormAutoConfiguration {
     public PrefillFormService prefillFormService(
         DocumentService documentService,
         FormIoFormDefinitionService formDefinitionService,
-        OperatonProcessService operatonProcessService,
-        OperatonTaskService taskService,
+        CamundaProcessService camundaProcessService,
+        CamundaTaskService taskService,
         List<FormFieldDataResolver> formFieldDataResolvers,
         ProcessDocumentAssociationService processDocumentAssociationService,
         ValueResolverService valueResolverService,
-        ObjectMapper objectMapper,
-        AuthorizationService authorizationService
+        ObjectMapper objectMapper
     ) {
         return new PrefillFormService(
             documentService,
             formDefinitionService,
-            operatonProcessService,
+            camundaProcessService,
             taskService,
             formFieldDataResolvers,
             processDocumentAssociationService,
             valueResolverService,
-            objectMapper,
-            authorizationService
+            objectMapper
         );
     }
 
     @Bean
     @ConditionalOnMissingBean(FormProcessLinkActivityHandler.class)
     public FormProcessLinkActivityHandler formProcessLinkTaskProvider(
+        FormIoFormDefinitionService formDefinitionService,
         PrefillFormService prefillFormService
     ) {
-        return new FormProcessLinkActivityHandler(prefillFormService);
+        return new FormProcessLinkActivityHandler(formDefinitionService,prefillFormService);
     }
 }

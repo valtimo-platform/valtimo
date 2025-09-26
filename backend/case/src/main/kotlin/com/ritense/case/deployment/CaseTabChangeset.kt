@@ -17,6 +17,7 @@
 package com.ritense.case.deployment
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.ritense.case.web.rest.dto.CaseTabDto
 
 class CaseTabChangeset(
     val changesetId: String,

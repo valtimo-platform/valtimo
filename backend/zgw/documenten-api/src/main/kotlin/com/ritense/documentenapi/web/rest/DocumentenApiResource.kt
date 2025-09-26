@@ -18,13 +18,9 @@ package com.ritense.documentenapi.web.rest
 
 import com.ritense.document.domain.RelatedFile
 import com.ritense.documentenapi.service.DocumentenApiService
-import com.ritense.documentenapi.service.DocumentenApiVersionService
-import com.ritense.documentenapi.web.rest.dto.ColumnResponse
-import com.ritense.documentenapi.web.rest.dto.DocumentenApiUploadFieldDto
+import com.ritense.documentenapi.web.rest.dto.ColumnDto
 import com.ritense.documentenapi.web.rest.dto.DocumentenApiVersionDto
 import com.ritense.documentenapi.web.rest.dto.ModifyDocumentRequest
-import com.ritense.logging.LoggableResource
-import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.core.io.InputStreamResource
@@ -44,12 +40,11 @@ import java.net.URLConnection
 @SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class DocumentenApiResource(
-    private val documentenApiService: DocumentenApiService,
-    private val documentenApiVersionService: DocumentenApiVersionService
+    val documentenApiService: DocumentenApiService
 ) {
     @GetMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}/download")
     fun downloadDocument(
-        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
     ): ResponseEntity<InputStreamResource> {
 
@@ -64,6 +59,7 @@ class DocumentenApiResource(
         } catch (exception: RuntimeException) {
             MediaType.APPLICATION_OCTET_STREAM
         }
+
         return ResponseEntity
             .ok()
             .headers(responseHeaders)
@@ -73,7 +69,7 @@ class DocumentenApiResource(
 
     @PutMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")
     fun modifyDocument(
-        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
         @RequestBody modifyDocumentRequest: ModifyDocumentRequest,
     ): ResponseEntity<RelatedFile> {
@@ -84,9 +80,9 @@ class DocumentenApiResource(
 
     @DeleteMapping("/v1/documenten-api/{pluginConfigurationId}/files/{documentId}")
     fun deleteDocument(
-        @LoggableResource(resourceType = PluginConfiguration::class) @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
+        @PathVariable(name = "pluginConfigurationId") pluginConfigurationId: String,
         @PathVariable(name = "documentId") documentId: String,
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<Void> {
         documentenApiService.deleteInformatieObject(pluginConfigurationId, documentId)
         return ResponseEntity
             .noContent()
@@ -95,27 +91,15 @@ class DocumentenApiResource(
 
     @GetMapping("/v1/case-definition/{caseDefinitionName}/zgw-document-column")
     fun getColumns(
-        @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
-    ): ResponseEntity<List<ColumnResponse>> {
-        val version = documentenApiVersionService.getVersion(caseDefinitionName)
-        val columns = documentenApiService.getColumns(caseDefinitionName)
-            .map { ColumnResponse.of(it, version) }
-        return ResponseEntity.ok(columns)
+        @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
+    ): ResponseEntity<List<ColumnDto>> {
+        return ResponseEntity.ok(documentenApiService.getColumns(caseDefinitionName).map { ColumnDto.of(it) })
     }
 
     @GetMapping("/v1/case-definition/{caseDefinitionName}/documenten-api/version")
     fun getApiVersion(
-        @LoggableResource("documentDefinitionName") @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
+        @PathVariable(name = "caseDefinitionName") caseDefinitionName: String
     ): ResponseEntity<DocumentenApiVersionDto> {
-        val version = documentenApiVersionService.getVersion(caseDefinitionName)
-        return ResponseEntity.ok(DocumentenApiVersionDto.of(version))
-    }
-
-    @GetMapping("/v1/document/{documentId}/zgw-document/upload-field")
-    fun getResolvedUploadFields(
-        @LoggableResource("documentId") @PathVariable(name = "documentId") documentId: String
-    ): ResponseEntity<List<DocumentenApiUploadFieldDto>> {
-        val uploadFields = documentenApiService.getResolvedUploadFields(documentId)
-        return ResponseEntity.ok(uploadFields)
+        return ResponseEntity.ok(documentenApiService.getApiVersion(caseDefinitionName).copy(detectedVersions = null))
     }
 }

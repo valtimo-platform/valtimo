@@ -16,4 +16,4 @@
 
 package com.ritense.authorization.testimpl
 
-class TestDocument(var name: String)
+class TestDocument

@@ -18,11 +18,10 @@ package com.ritense.dashboard.repository
 
 import com.ritense.dashboard.domain.Dashboard
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Repository
 
 @Repository
-interface DashboardRepository : JpaRepository<Dashboard, String>, JpaSpecificationExecutor<Dashboard> {
+interface DashboardRepository : JpaRepository<Dashboard, String> {
 
     fun findAllByOrderByOrder(): List<Dashboard>
 

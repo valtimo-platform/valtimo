@@ -21,21 +21,22 @@ import com.ritense.plugin.service.PluginService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
-import org.springframework.web.client.RestClient
+import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
 class ObjecttypenApiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ObjecttypenApiClient::class)
-    fun objecttypenApiClient(restClientBuilder: RestClient.Builder) = ObjecttypenApiClient(restClientBuilder)
+    fun objecttypenApiClient(webclientBuilder: WebClient.Builder): ObjecttypenApiClient {
+        return ObjecttypenApiClient(webclientBuilder)
+    }
 
     @Bean
     fun objecttypenApiPluginFactory(
         pluginService: PluginService,
         objecttypenApiClient: ObjecttypenApiClient
-    ) = ObjecttypenApiPluginFactory(
-        pluginService,
-        objecttypenApiClient
-    )
+    ): ObjecttypenApiPluginFactory {
+        return ObjecttypenApiPluginFactory(pluginService, objecttypenApiClient)
+    }
 }

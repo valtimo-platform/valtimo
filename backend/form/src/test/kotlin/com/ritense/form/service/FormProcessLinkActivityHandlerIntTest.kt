@@ -28,9 +28,7 @@ import com.ritense.form.processlink.FormProcessLinkActivityHandler
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.Test
-import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -54,23 +52,18 @@ internal class FormProcessLinkActivityHandlerIntTest : BaseIntegrationTest() {
     @Test
     fun `should retrieve form definition`() {
         val formDefinition = formDefinitionService.createFormDefinition(
-            CaseDefinitionId.of("person", "1.0.0"),
             CreateFormDefinitionRequest(
                 "aName",
                 getForm(),
                 false
             )
         )
-        val documentId = runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    "person",
-                    "person",
-                    "1.0.0",
-                    objectMapper.readTree(getDocument())
-                )
-            ).resultingDocument().get().id()
-        }
+        val documentId = runWithoutAuthorization { documentService.createDocument(
+            NewDocumentRequest(
+                "person",
+                objectMapper.readTree(getDocument())
+            )
+        ).resultingDocument().get().id() }
         val processDefinitionId: String = UUID.randomUUID().toString()
         val processLinkId = UUID.randomUUID()
         val processLink: ProcessLink = FormProcessLink(
@@ -78,25 +71,17 @@ internal class FormProcessLinkActivityHandlerIntTest : BaseIntegrationTest() {
             processDefinitionId = processDefinitionId,
             activityId = "some_activity_id",
             activityType = ActivityTypeWithEventName.START_EVENT_START,
-            formDefinitionId = UUID.fromString(formDefinition.id?.toString()),
-            viewModelEnabled = false
+            formDefinitionId = UUID.fromString(formDefinition.id?.toString())
         )
-        runWithoutAuthorization {
-            val result = formProcessLinkActivityHandler.getStartEventObject(
-                "",
-                documentId.id,
-                "",
-                processLink,
-            )
-
-            assertEquals("form", result.type)
-            assertEquals(formDefinition.id?.toString(), result.properties.formDefinitionId.toString())
-            JSONAssert.assertEquals(
-                getForm(),
-                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result.properties.prefilledForm),
-                true
-            )
-        }
+        val result = formProcessLinkActivityHandler.getStartEventObject(
+            "",
+            documentId.id,
+            "",
+            processLink,
+        )
+        assertEquals("form",result.type)
+        assertEquals(formDefinition.id?.toString(),result.properties.formDefinitionId.toString())
+        assertEquals(getForm(),objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result.properties.prefilledForm))
     }
 
     private fun getDocument(): String {
@@ -108,7 +93,7 @@ internal class FormProcessLinkActivityHandlerIntTest : BaseIntegrationTest() {
 
     }
 
-    private fun getForm(): String {
+    private fun getForm(): String{
         return """
             {
               "display" : "form",

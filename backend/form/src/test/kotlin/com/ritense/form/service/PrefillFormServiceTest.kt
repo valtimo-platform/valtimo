@@ -19,7 +19,6 @@ package com.ritense.form.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationService
 import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchema
@@ -33,14 +32,13 @@ import com.ritense.form.BaseTest
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.form.FormFieldDataResolver
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.json.patch.operation.AddOperation
 import com.ritense.valtimo.contract.json.patch.operation.Operation
 import com.ritense.valtimo.contract.json.patch.operation.ReplaceOperation
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.CamundaProcessService
+import com.ritense.valtimo.service.CamundaTaskService
 import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -58,32 +56,30 @@ class PrefillFormServiceTest : BaseTest() {
     lateinit var prefillFormService: PrefillFormService
     lateinit var documentService: JsonSchemaDocumentService
     lateinit var formDefinitionService: FormIoFormDefinitionService
-    lateinit var operatonProcessService: OperatonProcessService
-    lateinit var taskService: OperatonTaskService
+    lateinit var camundaProcessService: CamundaProcessService
+    lateinit var taskService: CamundaTaskService
     lateinit var formFieldDataResolver: FormFieldDataResolver
     lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
     lateinit var valueResolverService: ValueResolverService
-    lateinit var authorizationService: AuthorizationService
+
     @BeforeEach
     fun setUp() {
         documentService = mock()
         formDefinitionService = mock()
-        operatonProcessService = mock()
+        camundaProcessService = mock()
         taskService = mock()
         formFieldDataResolver = mock()
         processDocumentAssociationService = mock()
         valueResolverService = mock()
-        authorizationService = mock()
         prefillFormService = PrefillFormService(
             documentService,
             formDefinitionService,
-            operatonProcessService,
+            camundaProcessService,
             taskService,
             listOf(formFieldDataResolver),
             processDocumentAssociationService,
             valueResolverService,
-            MapperSingleton.get(),
-            authorizationService
+            MapperSingleton.get()
         )
     }
 
@@ -336,7 +332,7 @@ class PrefillFormServiceTest : BaseTest() {
     private fun document(): JsonSchemaDocument {
         val schema = JsonSchemaDocumentDefinition(
             JsonSchemaDocumentDefinitionId.existingId(
-                "test", CaseDefinitionId.of("person", "1.0.0"),
+                "test", 1L
             ),
             JsonSchema.fromString("""
                 {

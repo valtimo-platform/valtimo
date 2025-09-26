@@ -33,7 +33,7 @@ public class TestUtil {
      * @throws IOException
      */
     public static byte[] convertObjectToJsonBytes(Object object) throws IOException {
-        ObjectMapper mapper = MapperSingleton.get();
+        ObjectMapper mapper = MapperSingleton.INSTANCE.get();
         return mapper.writeValueAsBytes(object);
     }
 

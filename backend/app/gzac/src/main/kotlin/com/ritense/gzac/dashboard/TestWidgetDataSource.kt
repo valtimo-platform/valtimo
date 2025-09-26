@@ -19,6 +19,7 @@ package com.ritense.gzac.dashboard
 import com.ritense.valtimo.contract.dashboard.WidgetDataSource
 import org.springframework.stereotype.Component
 
+
 @Component
 class TestWidgetDataSource {
 

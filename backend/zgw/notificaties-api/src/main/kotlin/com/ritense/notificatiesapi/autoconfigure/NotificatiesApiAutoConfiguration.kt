@@ -17,7 +17,6 @@
 package com.ritense.notificatiesapi.autoconfigure
 
 import com.ritense.notificatiesapi.NotificatiesApiPluginFactory
-import com.ritense.notificatiesapi.PluginsDeployedEventListener
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.notificatiesapi.security.config.NotificatiesApiHttpSecurityConfigurer
@@ -25,7 +24,6 @@ import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiResource
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -33,7 +31,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import org.springframework.web.client.RestClient
+import org.springframework.web.reactive.function.client.WebClient
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = ["com.ritense.notificatiesapi.repository"])
@@ -41,9 +39,8 @@ import org.springframework.web.client.RestClient
 class NotificatiesApiAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(NotificatiesApiClient::class)
-    fun notificatiesApiClient(restClientBuilder: RestClient.Builder): NotificatiesApiClient {
-        return NotificatiesApiClient(restClientBuilder)
+    fun notificatiesApiClient(webclientBuilder: WebClient.Builder): NotificatiesApiClient {
+        return NotificatiesApiClient(webclientBuilder)
     }
 
     @Bean
@@ -58,22 +55,6 @@ class NotificatiesApiAutoConfiguration {
             pluginService,
             client,
             abonnementLinkRepository
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(PluginsDeployedEventListener::class)
-    fun pluginsDeployedEventListener(
-        client: NotificatiesApiClient,
-        notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
-        pluginService: PluginService,
-        @Value("\${valtimo.zgw.register-abonnementen:true}") registerAbonnementen: Boolean
-    ): PluginsDeployedEventListener {
-        return PluginsDeployedEventListener(
-            client,
-            notificatiesApiAbonnementLinkRepository,
-            pluginService,
-            registerAbonnementen
         )
     }
 

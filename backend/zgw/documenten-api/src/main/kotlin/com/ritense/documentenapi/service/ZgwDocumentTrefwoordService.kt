@@ -18,84 +18,39 @@ package com.ritense.documentenapi.service
 
 import com.ritense.documentenapi.domain.ZgwDocumentTrefwoord
 import com.ritense.documentenapi.repository.ZgwDocumentTrefwoordRepository
-import com.ritense.logging.LoggableResource
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-@Service
-@SkipComponentScan
 class ZgwDocumentTrefwoordService(
     private val zgwDocumentTrefwoordRepository: ZgwDocumentTrefwoordRepository
 ) {
-    fun getTrefwoorden(
-        @LoggableResource("documentDefinitionName") caseDefinitionName: String
-    ): List<ZgwDocumentTrefwoord> {
-        logger.debug { "Get Trefwoorden $caseDefinitionName" }
+    fun getTrefwoorden(caseDefinitionName: String): List<ZgwDocumentTrefwoord> {
         return zgwDocumentTrefwoordRepository.findAllByCaseDefinitionName(caseDefinitionName)
     }
 
-    fun getTrefwoorden(
-        @LoggableResource("documentDefinitionName") caseDefinitionName: String,
-        pageable: Pageable
-    ): Page<ZgwDocumentTrefwoord> {
-        logger.debug { "Get Trefwoorden $caseDefinitionName $pageable" }
+    fun getTrefwoorden(caseDefinitionName: String, pageable: Pageable): Page<ZgwDocumentTrefwoord> {
         return zgwDocumentTrefwoordRepository.findAllByCaseDefinitionName(caseDefinitionName, pageable)
     }
 
-    fun getTrefwoorden(
-        @LoggableResource("documentDefinitionName") caseDefinitionName: String,
-        search: String?,
-        pageable: Pageable
-    ): Page<ZgwDocumentTrefwoord> {
+    fun getTrefwoorden(caseDefinitionName: String, search: String?, pageable: Pageable): Page<ZgwDocumentTrefwoord> {
         return if (!search.isNullOrBlank()) {
-            zgwDocumentTrefwoordRepository.findAllByCaseDefinitionNameAndValueContaining(
-                caseDefinitionName,
-                search,
-                pageable
-            )
+            zgwDocumentTrefwoordRepository.findAllByCaseDefinitionNameAndValueContaining(caseDefinitionName, search, pageable)
         } else {
             zgwDocumentTrefwoordRepository.findAllByCaseDefinitionName(caseDefinitionName, pageable)
         }
     }
 
-    fun createTrefwoord(
-        @LoggableResource("documentDefinitionName") caseDefinitionName: String,
-        trefwoord: String
-    ) {
-        val existingTrefwoord = zgwDocumentTrefwoordRepository.findAllByCaseDefinitionNameAndValue(
-            caseDefinitionName,
-            trefwoord
-        )
+    fun createTrefwoord(caseDefinitionName: String, trefwoord: String) {
+        val existingTrefwoord = zgwDocumentTrefwoordRepository.findAllByCaseDefinitionNameAndValue(caseDefinitionName, trefwoord)
         require(existingTrefwoord == null) {
             "Trefwoord $trefwoord already exists for case definition $caseDefinitionName"
         }
-        logger.info { "Create Trefwoord $caseDefinitionName $trefwoord" }
         zgwDocumentTrefwoordRepository.save(ZgwDocumentTrefwoord(caseDefinitionName, trefwoord))
     }
 
-    fun deleteTrefwoord(
-        @LoggableResource("documentDefinitionName") caseDefinitionName: String,
-        trefwoord: String
-    ) {
-        logger.info { "Delete Trefwoord $caseDefinitionName $trefwoord" }
+    fun deleteTrefwoord(caseDefinitionName: String, trefwoord: String) {
         return zgwDocumentTrefwoordRepository.deleteByCaseDefinitionNameAndValue(caseDefinitionName, trefwoord)
     }
-
-    fun deleteTrefwoorden(
-        @LoggableResource("documentDefinitionName") caseDefinitionName: String,
-        trefwoorden: List<String>
-    ) {
-        logger.info { "Delete Trefwoorden $caseDefinitionName $trefwoorden" }
-        return zgwDocumentTrefwoordRepository.deleteByCaseDefinitionNameAndValueIn(caseDefinitionName, trefwoorden)
-    }
-
-    companion object {
-        val logger = KotlinLogging.logger { }
-    }
-
 }

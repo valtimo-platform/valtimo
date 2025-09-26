@@ -39,8 +39,4 @@
         </createIndex>
     </changeSet>
 
-    <changeSet author="Ritense" id="3">
-        <modifyDataType tableName="outbox_message" columnName="message" newDataType="MEDIUMTEXT"/>
-    </changeSet>
-
 </databaseChangeLog>

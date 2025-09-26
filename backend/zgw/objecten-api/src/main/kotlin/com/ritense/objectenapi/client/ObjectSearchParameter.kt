@@ -28,13 +28,8 @@ data class ObjectSearchParameter(
                 it.toQueryParameter()
             }
         }
-
-        fun toQueryParameter(vararg objectSearchParameters: ObjectSearchParameter): String {
-            return toQueryParameter(objectSearchParameters.toList())
-        }
     }
 }
-
 enum class Comparator(val value: String) {
     EQUAL_TO("exact"),
     GREATER_THAN("gt"),

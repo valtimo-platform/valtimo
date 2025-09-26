@@ -47,9 +47,8 @@ internal class BlacklistFilterTest : BaseTest() {
         `when`(blacklistService.isBlacklisted(testRecipient.email.get())).thenReturn(true)
         val blacklistFilter = BlacklistFilter(MailingProperties(), blacklistService)
         val rawMailMessageTest: RawMailMessage = rawMailMessage(testRecipient)
-        val filteredMessage = blacklistFilter.doFilter(rawMailMessageTest)
+        blacklistFilter.doFilter(rawMailMessageTest)
 
-        assertThat(filteredMessage.isPresent).isFalse
         assertThat(rawMailMessageTest.recipients.isPresent).isFalse
         assertThat(rawMailMessageTest.recipients.get()).isEmpty()
     }
@@ -59,9 +58,8 @@ internal class BlacklistFilterTest : BaseTest() {
         `when`(blacklistService.isBlacklisted(testRecipient.email.get())).thenReturn(false)
         val blacklistFilter = BlacklistFilter(MailingProperties(), blacklistService)
         val rawMailMessageTest: RawMailMessage = rawMailMessage(blacklistedRecipient)
-        val filteredMessage = blacklistFilter.doFilter(rawMailMessageTest)
+        blacklistFilter.doFilter(rawMailMessageTest)
 
-        assertThat(filteredMessage.isPresent).isTrue
         assertThat(rawMailMessageTest.recipients.isPresent).isTrue
         assertThat(rawMailMessageTest.recipients.get()).containsOnly(blacklistedRecipient)
     }

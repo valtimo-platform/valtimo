@@ -25,7 +25,6 @@ class NotificatiesApiAuthenticationPluginFactory(
 ) : PluginFactory<NotificatiesApiAuthenticationPlugin>(pluginService) {
 
     override fun create(): NotificatiesApiAuthenticationPlugin {
-        val pluginConfigurationId = super.pluginConfigurationId
-        return NotificatiesApiAuthenticationPlugin(pluginConfigurationId, tokenGeneratorService)
+        return NotificatiesApiAuthenticationPlugin(tokenGeneratorService)
     }
 }

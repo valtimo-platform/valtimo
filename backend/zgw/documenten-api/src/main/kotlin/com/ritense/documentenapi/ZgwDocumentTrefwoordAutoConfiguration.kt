@@ -17,11 +17,15 @@
 package com.ritense.documentenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.documentenapi.deployment.ZgwDocumentTrefwoordDeploymentService
 import com.ritense.documentenapi.repository.ZgwDocumentTrefwoordRepository
 import com.ritense.documentenapi.service.ZgwDocumentTrefwoordExporter
 import com.ritense.documentenapi.service.ZgwDocumentTrefwoordImporter
 import com.ritense.documentenapi.service.ZgwDocumentTrefwoordService
 import com.ritense.documentenapi.web.rest.ZgwDocumentTrefwoordResource
+import com.ritense.valtimo.changelog.service.ChangelogDeployer
+import com.ritense.valtimo.changelog.service.ChangelogService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -32,41 +36,55 @@ import org.springframework.context.annotation.Bean
 class ZgwDocumentTrefwoordAutoConfiguration {
 
     @Bean
+    @ConditionalOnMissingBean(ZgwDocumentTrefwoordDeploymentService::class)
+    fun zgwDocumentTrefwoordDeploymentService(
+        objectMapper: ObjectMapper,
+        zgwDocumentTrefwoordRepository: ZgwDocumentTrefwoordRepository,
+        zgwDocumentTrefwoordService: ZgwDocumentTrefwoordService,
+        changelogService: ChangelogService,
+        @Value("\${valtimo.changelog.zgw-document-trefwoord.clear-tables:false}") clearTables: Boolean
+    ): ZgwDocumentTrefwoordDeploymentService {
+        return ZgwDocumentTrefwoordDeploymentService(
+            objectMapper,
+            zgwDocumentTrefwoordRepository,
+            zgwDocumentTrefwoordService,
+            changelogService,
+            clearTables
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(ZgwDocumentTrefwoordService::class)
     fun zgwDocumentTrefwoordService(
         zgwDocumentTrefwoordRepository: ZgwDocumentTrefwoordRepository
-    ) = ZgwDocumentTrefwoordService(
-        zgwDocumentTrefwoordRepository
-    )
+    ): ZgwDocumentTrefwoordService {
+        return ZgwDocumentTrefwoordService(
+            zgwDocumentTrefwoordRepository
+        )
+    }
 
     @Bean
     @ConditionalOnMissingBean(ZgwDocumentTrefwoordResource::class)
     fun zgwDocumentTrefwoordResource(
         zgwDocumentTrefwoordService: ZgwDocumentTrefwoordService
-    ) = ZgwDocumentTrefwoordResource(
-        zgwDocumentTrefwoordService
-    )
+    ): ZgwDocumentTrefwoordResource {
+        return ZgwDocumentTrefwoordResource(
+            zgwDocumentTrefwoordService
+        )
+    }
 
     @Bean
     @ConditionalOnMissingBean(ZgwDocumentTrefwoordExporter::class)
     fun zgwDocumentTrefwoordExporter(
         objectMapper: ObjectMapper,
         zgwDocumentTrefwoordService: ZgwDocumentTrefwoordService,
-    ) = ZgwDocumentTrefwoordExporter(
-        objectMapper,
-        zgwDocumentTrefwoordService
-    )
+    ) = ZgwDocumentTrefwoordExporter(objectMapper, zgwDocumentTrefwoordService)
 
     @Bean
     @ConditionalOnMissingBean(ZgwDocumentTrefwoordImporter::class)
     fun zgwDocumentTrefwoordImporter(
-        objectMapper: ObjectMapper,
-        zgwDocumentTrefwoordRepository: ZgwDocumentTrefwoordRepository,
-        zgwDocumentTrefwoordService: ZgwDocumentTrefwoordService,
-    ) = ZgwDocumentTrefwoordImporter(
-        zgwDocumentTrefwoordRepository,
-        zgwDocumentTrefwoordService,
-        objectMapper
-    )
+        zgwDocumentTrefwoordDeploymentService: ZgwDocumentTrefwoordDeploymentService,
+        changelogDeployer: ChangelogDeployer,
+    ) = ZgwDocumentTrefwoordImporter(zgwDocumentTrefwoordDeploymentService, changelogDeployer)
 
 }

@@ -24,17 +24,17 @@ import java.util.Objects;
 
 public class MoveOperation extends JsonPatchOperation {
 
-    private final JsonPointer fromPath;
+    private final JsonPointer toPath; //only to be used in move/copy operation
 
     public MoveOperation(JsonPointer from, JsonPointer to) {
-        super(Operation.MOVE, to);
-        assertArgumentNotNull(from, "from is required");
-        this.fromPath = from;
+        super(Operation.MOVE, from);
+        assertArgumentNotNull(to, "to is required");
+        this.toPath = to;
     }
 
-    @JsonProperty("from")
-    public String getFromPath() {
-        return fromPath.toString();
+    @JsonProperty("to")
+    public String getToPath() {
+        return toPath.toString();
     }
 
     @Override
@@ -49,12 +49,12 @@ public class MoveOperation extends JsonPatchOperation {
             return false;
         }
         MoveOperation that = (MoveOperation) o;
-        return fromPath.equals(that.fromPath);
+        return toPath.equals(that.toPath);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), fromPath);
+        return Objects.hash(super.hashCode(), toPath);
     }
 
 }

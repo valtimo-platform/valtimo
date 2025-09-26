@@ -21,8 +21,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 enum class CaseTabType {
     STANDARD,
     FORMIO,
-    CUSTOM,
-    WIDGETS;
+    CUSTOM;
 
     val value: String
         @JsonValue get() = name.lowercase()

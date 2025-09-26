@@ -30,16 +30,14 @@ import java.net.URI
 
 class ClientTools {
     companion object {
-        val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
+        val logger = mu.KotlinLogging.logger {}
 
-        @Deprecated("Use of WebClient is deprecated, this was used before")
         fun <T> getTypedPage(responseClass: Class<out T>): ParameterizedTypeReference<Page<T>> {
             return ParameterizedTypeReference.forType(
                 ResolvableType.forClassWithGenerics(Page::class.java, responseClass).type
             )
         }
 
-        @Deprecated("Use of WebClient is deprecated, this was used before")
         fun zgwErrorHandler(): ExchangeFilterFunction {
             return ExchangeFilterFunction.ofResponseProcessor { clientResponse: ClientResponse ->
                 if (clientResponse.statusCode().is2xxSuccessful) {
@@ -71,11 +69,6 @@ class ClientTools {
                 .host(uri.host)
                 .path(uri.path)
                 .port(uri.port)
-        }
-
-        fun UriBuilder.optionalQueryParam(name: String, value: Any?): UriBuilder {
-            value?.let { this.queryParam(name, it) }
-            return this
         }
     }
 }

@@ -16,10 +16,7 @@
 
 package com.ritense.valtimo.autoconfigure;
 
-import com.ritense.valtimo.contract.hardening.service.HardeningService;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
-import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
-import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator;
 import com.ritense.valtimo.security.ActuatorSecurityFilterChainFactory;
 import com.ritense.valtimo.security.CoreSecurityFactory;
 import com.ritense.valtimo.security.Http401UnauthorizedEntryPoint;
@@ -27,8 +24,8 @@ import com.ritense.valtimo.security.SpringSecurityAuditorAware;
 import com.ritense.valtimo.security.ValtimoCoreSecurityFactory;
 import com.ritense.valtimo.security.config.AccountHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ApiLoginHttpSecurityConfigurer;
-import com.ritense.valtimo.security.config.OperatonCockpitHttpSecurityConfigurer;
-import com.ritense.valtimo.security.config.OperatonRestHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.CamundaCockpitHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.CamundaRestHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ChoiceFieldHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.CsrfHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.DenyAllHttpSecurityConfigurer;
@@ -49,17 +46,13 @@ import com.ritense.valtimo.security.jwt.authentication.TokenAuthenticationServic
 import com.ritense.valtimo.security.matcher.SecurityWhitelistProperties;
 import com.ritense.valtimo.security.matcher.WhitelistIpRequestMatcher;
 import java.util.List;
-import java.util.Optional;
-import org.operaton.bpm.engine.IdentityService;
+import org.camunda.bpm.engine.IdentityService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -224,7 +217,6 @@ public class HttpSecurityAutoConfiguration {
 
     @Order(440)
     @Bean
-    @Conditional(NoOAuth2ClientsConfiguredCondition.class)
     @ConditionalOnMissingBean(JwtHttpSecurityConfigurer.class)
     public JwtHttpSecurityConfigurer jwtHttpSecurityConfigurer(
         IdentityService identityService,
@@ -242,19 +234,19 @@ public class HttpSecurityAutoConfiguration {
 
     @Order(460)
     @Bean
-    @ConditionalOnMissingBean(OperatonRestHttpSecurityConfigurer.class)
-    public OperatonRestHttpSecurityConfigurer operatonRestHttpSecurityConfigurer() {
-        return new OperatonRestHttpSecurityConfigurer();
+    @ConditionalOnMissingBean(CamundaRestHttpSecurityConfigurer.class)
+    public CamundaRestHttpSecurityConfigurer camundaRestHttpSecurityConfigurer() {
+        return new CamundaRestHttpSecurityConfigurer();
     }
 
     @Order(470)
     @Bean
-    @ConditionalOnMissingBean(OperatonCockpitHttpSecurityConfigurer.class)
-    public OperatonCockpitHttpSecurityConfigurer operatonCockpitHttpSecurityConfigurer(
+    @ConditionalOnMissingBean(CamundaCockpitHttpSecurityConfigurer.class)
+    public CamundaCockpitHttpSecurityConfigurer camundaCockpitHttpSecurityConfigurer(
         SecurityWhitelistProperties whitelistProperties
     ) {
         WhitelistIpRequestMatcher whitelistIpRequestMatcher = new WhitelistIpRequestMatcher(whitelistProperties.getHosts());
-        return new OperatonCockpitHttpSecurityConfigurer(whitelistIpRequestMatcher);
+        return new CamundaCockpitHttpSecurityConfigurer(whitelistIpRequestMatcher);
     }
 
     @Order(500)
@@ -287,19 +279,12 @@ public class HttpSecurityAutoConfiguration {
     public SecurityFilterChain actuatorSecurityFilterChain(
         HttpSecurity httpSecurity,
         WebEndpointProperties webEndpointProperties,
-        HealthEndpointProperties healthEndpointProperties,
         PasswordEncoder passwordEncoder,
         @Value("${spring-actuator.username}") String username,
         @Value("${spring-actuator.password}") String password
     ) {
         return new ActuatorSecurityFilterChainFactory().createFilterChain(
-            httpSecurity,
-            webEndpointProperties,
-            healthEndpointProperties,
-            passwordEncoder,
-            username,
-            password
-        );
+            httpSecurity, webEndpointProperties, passwordEncoder, username, password);
     }
 
     @Order(100)
@@ -308,15 +293,6 @@ public class HttpSecurityAutoConfiguration {
         CoreSecurityFactory coreSecurityFactory
     ) {
         return coreSecurityFactory.createWebSecurityCustomizer();
-    }
-
-    @Order(Ordered.LOWEST_PRECEDENCE)
-    @Bean
-    @ConditionalOnMissingBean(ExceptionTranslator.class)
-    public ExceptionTranslator defaultCoreExceptionTranslator(
-        Optional<HardeningService> hardeningService
-    ) {
-        return new ExceptionTranslator(hardeningService);
     }
 
 }

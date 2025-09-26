@@ -91,16 +91,7 @@ class RoleManagementResource(
     fun getRolePermissions(@PathVariable roleKey: String)
         : ResponseEntity<List<PermissionDto>> {
         val rolePermissions = permissionRepository.findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(listOf(roleKey))
-            .map { permission ->
-                PermissionDto(
-                    permission.resourceType,
-                    permission.actions.map { it.key },
-                    permission.conditionContainer.conditions,
-                    permission.role.key,
-                    permission.contextResourceType,
-                    permission.contextConditionContainer?.conditions ?: emptyList()
-                )
-            }
+            .map { PermissionDto(it.resourceType, it.action.key, it.conditionContainer.conditions, it.role.key) }
         return ResponseEntity.ok(rolePermissions)
     }
 
@@ -120,16 +111,7 @@ class RoleManagementResource(
                     AuthorizationSupportedHelper.checkSupported(it.resourceType)
                     it.toPermission(role)
                 }
-            ).map { permission ->
-                PermissionDto(
-                    permission.resourceType,
-                    permission.actions.map { it.key },
-                    permission.conditionContainer.conditions,
-                    permission.role.key,
-                    permission.contextResourceType,
-                    permission.contextConditionContainer?.conditions ?: emptyList()
-                )
-            }
+            ).map { PermissionDto(it.resourceType, it.action.key, it.conditionContainer.conditions, it.role.key) }
         return ResponseEntity.ok(permissions)
     }
 }

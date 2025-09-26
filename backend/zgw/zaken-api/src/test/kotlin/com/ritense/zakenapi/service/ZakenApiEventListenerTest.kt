@@ -24,7 +24,6 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationIdUpdatedEvent
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakTypeLink
 import com.ritense.zakenapi.domain.ZaakTypeLinkId
@@ -32,7 +31,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -48,8 +46,6 @@ class ZakenApiEventListenerTest {
     lateinit var zaakTypeLinkService: ZaakTypeLinkService
     lateinit var zakenApiEventListener: ZakenApiEventListener
 
-    val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-
     @BeforeEach
     fun setUp() {
         pluginService = mock<PluginService>()
@@ -62,7 +58,7 @@ class ZakenApiEventListenerTest {
         val pluginId = PluginConfigurationId.existingId(UUID.randomUUID())
         val zaakTypeLink = ZaakTypeLink(
             ZaakTypeLinkId.newId(UUID.randomUUID()),
-            caseDefinitionId,
+            "name",
             URI("http://some-url"),
             true,
             pluginId.id,
@@ -80,7 +76,7 @@ class ZakenApiEventListenerTest {
 
         zakenApiEventListener.handle(event)
 
-        verify(zakenApiPlugin).createZaak(any<UUID>(), any(), any(), anyOrNull(), anyOrNull(), anyOrNull())
+        verify(zakenApiPlugin).createZaak(any<UUID>(), any(), any())
     }
 
     @Test
@@ -88,7 +84,7 @@ class ZakenApiEventListenerTest {
         val pluginId = PluginConfigurationId.existingId(UUID.randomUUID())
         val zaakTypeLink = ZaakTypeLink(
             ZaakTypeLinkId.newId(UUID.randomUUID()),
-            caseDefinitionId,
+            "name",
             URI("http://some-url"),
             true,
             null,
@@ -103,7 +99,7 @@ class ZakenApiEventListenerTest {
 
         zakenApiEventListener.handle(event)
 
-        verify(zakenApiPlugin, never()).createZaak(any<UUID>(), any(), any(), any(), any(), any())
+        verify(zakenApiPlugin, never()).createZaak(any<UUID>(), any(), any())
     }
 
     @Test
@@ -111,7 +107,7 @@ class ZakenApiEventListenerTest {
         val pluginId = PluginConfigurationId.existingId(UUID.randomUUID())
         val zaakTypeLink = ZaakTypeLink(
             ZaakTypeLinkId.newId(UUID.randomUUID()),
-            caseDefinitionId,
+            "name",
             URI("http://some-url"),
             false,
             pluginId.id,
@@ -126,12 +122,12 @@ class ZakenApiEventListenerTest {
 
         zakenApiEventListener.handle(event)
 
-        verify(zakenApiPlugin, never()).createZaak(any<UUID>(), any(), any(), any(), any(), any())
+        verify(zakenApiPlugin, never()).createZaak(any<UUID>(), any(), any())
     }
 
     @EventListener(DocumentCreatedEvent::class)
     fun handle(event: DocumentCreatedEvent) {
-        val zaakTypeLink = zaakTypeLinkService.get(event.definitionId().caseDefinitionId())
+        val zaakTypeLink = zaakTypeLinkService.get(event.definitionId().name())
         zaakTypeLink?.let {
             if (it.createWithDossier && it.zakenApiPluginConfigurationId != null) {
                 val zakenApiPlugin = pluginService.createInstance(it.zakenApiPluginConfigurationId!!) as ZakenApiPlugin
@@ -150,7 +146,7 @@ class ZakenApiEventListenerTest {
 
         val zaakTypeLink = ZaakTypeLink(
             ZaakTypeLinkId.newId(UUID.randomUUID()),
-            caseDefinitionId,
+            "name",
             URI("http://some-url"),
             true,
             pluginId.id,
@@ -177,7 +173,7 @@ class ZakenApiEventListenerTest {
 
         val zaakTypeLink = ZaakTypeLink(
             ZaakTypeLinkId.newId(UUID.randomUUID()),
-            caseDefinitionId,
+            "name",
             URI("http://some-url"),
             true,
             oldPluginId.id,
@@ -198,9 +194,7 @@ class ZakenApiEventListenerTest {
         val event = mock<DocumentCreatedEvent>()
         val idMock = mock<DocumentDefinition.Id>()
         whenever(event.definitionId()).thenReturn(idMock)
-        whenever(idMock.caseDefinitionId()).thenReturn(caseDefinitionId)
         whenever(idMock.name()).thenReturn("test")
-        whenever(idMock.caseDefinitionId()).thenReturn(caseDefinitionId)
         return event
     }
 }

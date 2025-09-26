@@ -38,7 +38,6 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.web.rest.PluginConfigurationResource
 import com.ritense.plugin.web.rest.PluginDefinitionResource
 import com.ritense.plugin.web.rest.converter.StringToActivityTypeConverter
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.persistence.EntityManager
 import jakarta.validation.Validator
@@ -125,8 +124,7 @@ class PluginAutoConfiguration {
         validator: Validator,
         applicationEventPublisher: ApplicationEventPublisher,
         encryptionService: EncryptionService,
-        environment: Environment,
-        caseDefinitionChecker: CaseDefinitionChecker,
+        environment: Environment
     ): PluginService {
         return PluginService(
             pluginDefinitionRepository,
@@ -141,7 +139,6 @@ class PluginAutoConfiguration {
             applicationEventPublisher,
             encryptionService,
             environment,
-            caseDefinitionChecker,
         )
     }
 
@@ -180,11 +177,6 @@ class PluginAutoConfiguration {
         @Value("\${valtimo.plugin.encryption-secret}")
         secret: String
     ): EncryptionService {
-        val secretByteLength = secret.toByteArray().size
-        require(secretByteLength == 16 || secretByteLength == 24 || secretByteLength == 32) {
-            "Invalid AES key length of '$secretByteLength' bytes. Expected property 'valtimo.plugin.encryption-secret' or 'VALTIMO_PLUGIN_ENCRYPTION-SECRET' to have a length of 16 or 24 or 32 bytes"
-        }
-
         return EncryptionService(secret)
     }
 
@@ -193,14 +185,12 @@ class PluginAutoConfiguration {
     fun pluginAutoDeploymentEventListener(
         objectMapper: ObjectMapper,
         pluginService: PluginService,
-        resourceLoader: ResourceLoader,
-        eventPublisher: ApplicationEventPublisher
+        resourceLoader: ResourceLoader
     ): PluginAutoDeploymentEventListener{
         return PluginAutoDeploymentEventListener(
             pluginService = pluginService,
             objectMapper = objectMapper,
-            resourceLoader = resourceLoader,
-            eventPublisher =  eventPublisher
+            resourceLoader = resourceLoader
         )
     }
 

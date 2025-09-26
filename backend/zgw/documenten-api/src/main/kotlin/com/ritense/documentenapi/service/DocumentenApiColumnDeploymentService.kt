@@ -18,36 +18,28 @@ package com.ritense.documentenapi.service
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.document.domain.event.DocumentDefinitionDeployedEvent
-import com.ritense.documentenapi.domain.ColumnDefaultSort.DESC
 import com.ritense.documentenapi.domain.DocumentenApiColumn
 import com.ritense.documentenapi.domain.DocumentenApiColumnId
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey.AUTEUR
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey.BESTANDSOMVANG
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey.CREATIEDATUM
-import com.ritense.documentenapi.domain.DocumentenApiColumnKey.INFORMATIEOBJECTTYPE_OMSCHRIJVING
+import com.ritense.documentenapi.domain.DocumentenApiColumnKey.INFORMATIEOBJECTTYPE
 import com.ritense.documentenapi.domain.DocumentenApiColumnKey.TITEL
 import com.ritense.documentenapi.repository.DocumentenApiColumnRepository
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
-import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-@Service
-@SkipComponentScan
-class DocumentenApiColumnDeploymentService(
+open class DocumentenApiColumnDeploymentService(
     private val documentenApiService: DocumentenApiService,
     private val documentenApiColumnRepository: DocumentenApiColumnRepository
 ) {
     @Transactional
     @RunWithoutAuthorization
     @EventListener(DocumentDefinitionDeployedEvent::class)
-    fun createDocumentenApiColumns(event: DocumentDefinitionDeployedEvent) {
-        logger.info { "Create columns for document definition ${event.documentDefinition().id().name()}" }
-        if (!columnsExistForDocumentDefinitionName(event.documentDefinition().id().name())
-        ) {
+    open fun createDocumentenApiColumns(event: DocumentDefinitionDeployedEvent) {
+        if (event.documentDefinition().id().version() == 1L && !columnsExistForDocumentDefinitionName(event.documentDefinition().id().name())) {
             getDefaultColumns(event.documentDefinition().id().name()).forEach { column ->
-                documentenApiService.createOrUpdateColumn(column)
+                documentenApiService.updateColumn(column)
             }
         }
     }
@@ -55,18 +47,14 @@ class DocumentenApiColumnDeploymentService(
     private fun getDefaultColumns(documentDefinitionName: String): List<DocumentenApiColumn> {
         return listOf(
             DocumentenApiColumn(DocumentenApiColumnId(documentDefinitionName, TITEL)),
-            DocumentenApiColumn(DocumentenApiColumnId(documentDefinitionName, CREATIEDATUM), 1, DESC),
+            DocumentenApiColumn(DocumentenApiColumnId(documentDefinitionName, CREATIEDATUM)),
             DocumentenApiColumn(DocumentenApiColumnId(documentDefinitionName, AUTEUR)),
             DocumentenApiColumn(DocumentenApiColumnId(documentDefinitionName, BESTANDSOMVANG)),
-            DocumentenApiColumn(DocumentenApiColumnId(documentDefinitionName, INFORMATIEOBJECTTYPE_OMSCHRIJVING)),
+            DocumentenApiColumn(DocumentenApiColumnId(documentDefinitionName, INFORMATIEOBJECTTYPE)),
         )
     }
 
     private fun columnsExistForDocumentDefinitionName(documentDefinitionName: String): Boolean {
         return documentenApiColumnRepository.existsByIdCaseDefinitionName(documentDefinitionName)
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }

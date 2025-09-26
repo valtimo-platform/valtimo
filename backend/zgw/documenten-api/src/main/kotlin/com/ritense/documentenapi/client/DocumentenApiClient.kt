@@ -16,67 +16,42 @@
 
 package com.ritense.documentenapi.client
 
-import BestandsdelenResult
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.documentenapi.DocumentenApiAuthentication
-import com.ritense.documentenapi.domain.DocumentenApiColumnKey
-import com.ritense.documentenapi.domain.FileUploadPart
 import com.ritense.documentenapi.event.DocumentDeleted
 import com.ritense.documentenapi.event.DocumentInformatieObjectDownloaded
 import com.ritense.documentenapi.event.DocumentInformatieObjectViewed
-import com.ritense.documentenapi.event.DocumentListed
 import com.ritense.documentenapi.event.DocumentStored
 import com.ritense.documentenapi.event.DocumentUpdated
-import com.ritense.documentenapi.web.rest.dto.DocumentSearchRequest
 import com.ritense.outbox.OutboxService
-import com.ritense.resource.authorization.ResourcePermission
-import com.ritense.resource.authorization.ResourcePermissionActionProvider
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zgw.ClientTools
-import com.ritense.zgw.ClientTools.Companion.optionalQueryParam
-import com.ritense.zgw.Page
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.core.io.Resource
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.MediaType
-import org.springframework.http.converter.ResourceHttpMessageConverter
-import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
-import org.springframework.web.client.RestClient
-import org.springframework.web.client.body
-import org.springframework.web.util.UriBuilder
+import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.bodyToFlux
 import org.springframework.web.util.UriComponentsBuilder
+import reactor.core.publisher.Flux
 import java.io.InputStream
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import java.net.URI
-import kotlin.math.min
 
-@SkipComponentScan
-@Component
 class DocumentenApiClient(
-    private val restClientBuilder: RestClient.Builder,
+    private val webclientBuilder: WebClient.Builder,
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,
-    private val platformTransactionManager: PlatformTransactionManager,
-    private val authorizationService: AuthorizationService,
+    private val platformTransactionManager: PlatformTransactionManager
 ) {
     fun storeDocument(
         authentication: DocumentenApiAuthentication,
         baseUrl: URI,
         request: CreateDocumentRequest
     ): CreateDocumentResult {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.CREATE,
-                ResourcePermission()
-            )
-        )
-
-        val result = restClient(authentication)
+        val result = buildFilteredClient(authentication)
             .post()
             .uri {
                 ClientTools.baseUrlToBuilder(it, baseUrl)
@@ -84,47 +59,21 @@ class DocumentenApiClient(
                     .build()
             }
             .contentType(MediaType.APPLICATION_JSON)
-            .body(request)
+            .body(BodyInserters.fromValue(request))
             .retrieve()
-            .body<CreateDocumentResult>()!!
+            .toEntity(CreateDocumentResult::class.java)
+            .block()
 
-        outboxService.send { DocumentStored(result.url, objectMapper.valueToTree(result)) }
-        return result
-    }
-
-    fun storeDocumentInParts(
-        authentication: DocumentenApiAuthentication,
-        baseUrl: URI,
-        request: BestandsdelenRequest,
-        createDocumentResult: CreateDocumentResult,
-    ) {
-        // Inside the CreateDocumentResult there is an array of bestandsdelen.
-        // Each bestandsdeel needs to be sent separately
-        // So the documenten api determines the amount (and size) of chunks, not this application.
-        logger.info { "Starting upload of file ${createDocumentResult.bestandsnaam} in ${createDocumentResult.bestandsdelen.size} chunks" }
-
-        createDocumentResult.bestandsdelen.forEach { bestandsdeel ->
-            logger.debug { "Sending chunk #${bestandsdeel.volgnummer} for a size of ${bestandsdeel.omvang} bytes" }
-
-            val body = FileUploadPart(bestandsdeel, request, createDocumentResult.bestandsnaam)
-                .createBody()
-
-            restClient(authentication)
-                .put()
-                .uri {
-                    ClientTools.baseUrlToBuilder(it, baseUrl)
-                        .pathSegment("bestandsdelen", "{uuid}")
-                        .build(bestandsdeel.url.substringAfterLast('/'))
-                }
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(body)
-                .retrieve()
-                .body<BestandsdelenResult>()!!
+        if (result.hasBody()) {
+            outboxService.send {
+                DocumentStored(
+                    result.body.url,
+                    objectMapper.valueToTree(result.body)
+                )
+            }
         }
 
-        check(request.inhoud.read() == -1) {
-            "Failed to upload the full file. The file is larger than the sum of the omvang of all bestandsdelen."
-        }
+        return result?.body!!
     }
 
     fun getInformatieObject(
@@ -139,19 +88,16 @@ class DocumentenApiClient(
         authentication: DocumentenApiAuthentication,
         objectUrl: URI
     ): DocumentInformatieObject {
-        val result = restClient(authentication)
-            .get()
-            .uri(objectUrl)
-            .retrieve()
-            .body<DocumentInformatieObject>()!!
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission()
-            )
-        )
+        val result = checkNotNull(
+            buildFilteredClient(authentication)
+                .get()
+                .uri(objectUrl)
+                .retrieve()
+                .toEntity(DocumentInformatieObject::class.java)
+                .block()?.body
+        ) {
+            "Could not retrieve ${DocumentInformatieObject::class.simpleName} at $objectUrl"
+        }
 
         outboxService.send {
             DocumentInformatieObjectViewed(
@@ -163,104 +109,19 @@ class DocumentenApiClient(
         return result
     }
 
-    fun getInformatieObjecten(
-        authentication: DocumentenApiAuthentication,
-        baseUrl: URI,
-        pageable: Pageable,
-        documentSearchRequest: DocumentSearchRequest,
-    ): org.springframework.data.domain.Page<DocumentInformatieObject> {
-        // because the documenten api only supports a fixed page size, we will try to calculate the page we need to request
-        // the only page sizes that are supported are those that can fit n times in the itemsPerPage
-        require(ITEMS_PER_PAGE % pageable.pageSize == 0) { "Page size is not supported" }
-        requireNotNull(documentSearchRequest.zaakUrl) { "Zaak URL is required" }
-
-        if (!authorizationService.hasPermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission()
-            )
-        )) {
-            return org.springframework.data.domain.Page.empty(pageable)
-        }
-
-        val pageToRequest = ((pageable.pageSize * pageable.pageNumber) / ITEMS_PER_PAGE) + 1
-        val result =
-            restClient(authentication)
-                .get()
-                .uri {
-                    ClientTools.baseUrlToBuilder(it, baseUrl)
-                        .path("enkelvoudiginformatieobjecten")
-                        .optionalQueryParam("titel", documentSearchRequest.titel)
-                        .optionalQueryParam("informatieobjecttype", documentSearchRequest.informatieobjecttype)
-                        .optionalQueryParam(
-                            "vertrouwelijkheidaanduiding",
-                            documentSearchRequest.vertrouwelijkheidaanduiding
-                        )
-                        .optionalQueryParam("auteur", documentSearchRequest.auteur)
-                        .optionalQueryParam("creatiedatum__gte", documentSearchRequest.creatiedatumFrom)
-                        .optionalQueryParam("creatiedatum__lte", documentSearchRequest.creatiedatumTo)
-                        .optionalQueryParam("trefwoorden", documentSearchRequest.trefwoorden?.joinToString(","))
-                        .queryParam("objectinformatieobjecten__object", documentSearchRequest.zaakUrl)
-                        .queryParam("page", pageToRequest)
-                        .addSortParameter(pageable)
-                        .build()
-                }
-                .retrieve()
-                .body<Page<DocumentInformatieObject>>()!!
-
-        // Fix issue where open-zaak responds contains duplicate results
-        val results = result.results.filter { documentInformatieObject ->
-            result.results.none {
-                it.url == documentInformatieObject.url
-                    && it.versie != null
-                    && documentInformatieObject.versie != null
-                    && it.versie > documentInformatieObject.versie
-            }
-        }
-
-        // trying to find the chunk of the returned page that we need
-        val fromIndex = (pageable.pageSize * (pageable.pageNumber)) % ITEMS_PER_PAGE
-        val toIndex = fromIndex + pageable.pageSize
-        val pageItems = if (fromIndex > results.size) {
-            emptyList()
-        } else {
-            results.subList(fromIndex, min(results.size, toIndex))
-        }
-
-        val returnedPage = PageImpl(pageItems, pageable, results.size.toLong())
-
-        outboxService.send {
-            DocumentListed(
-                objectMapper.valueToTree(pageItems)
-            )
-        }
-
-        return returnedPage
-    }
-
     fun downloadInformatieObjectContent(
         authentication: DocumentenApiAuthentication,
         baseUrl: URI,
         objectId: String,
-    ) = downloadInformatieObjectContent(
-        authentication,
-        toObjectUrl(baseUrl, objectId)
-    )
+    ): InputStream {
+        return downloadInformatieObjectContent(authentication, toObjectUrl(baseUrl, objectId))
+    }
 
     fun downloadInformatieObjectContent(
         authentication: DocumentenApiAuthentication,
         objectUrl: URI
     ): InputStream {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW,
-                ResourcePermission()
-            )
-        )
-
-        val result = restClient(authentication)
+        return buildFilteredClient(authentication)
             .get()
             .uri {
                 ClientTools.baseUrlToBuilder(it, objectUrl)
@@ -269,31 +130,33 @@ class DocumentenApiClient(
             }
             .accept(MediaType.APPLICATION_OCTET_STREAM)
             .retrieve()
-            .body<Resource>()!!
-
-        TransactionTemplate(platformTransactionManager).executeWithoutResult {
-            outboxService.send {
-                DocumentInformatieObjectDownloaded(
-                    objectUrl.toString()
-                )
+            .bodyToFlux<DataBuffer>()
+            .toInputStream {
+                TransactionTemplate(platformTransactionManager).executeWithoutResult {
+                    outboxService.send {
+                        DocumentInformatieObjectDownloaded(
+                            objectUrl.toString()
+                        )
+                    }
+                }
             }
-        }
-        return result.inputStream
     }
 
     fun lockInformatieObject(
         authentication: DocumentenApiAuthentication,
         objectUrl: URI
     ): DocumentLock {
-        val result = restClient(authentication)
-            .post()
-            .uri {
-                ClientTools.baseUrlToBuilder(it, objectUrl)
-                    .pathSegment("lock")
-                    .build()
-            }
-            .retrieve()
-            .body<DocumentLock>()!!
+        val result = checkNotNull(
+            buildFilteredClient(authentication)
+                .post()
+                .uri(objectUrl.toString() + "/lock")
+                .retrieve()
+                .toEntity(DocumentLock::class.java)
+                .block()?.body
+        ) {
+            "Could not lock document at $objectUrl"
+        }
+
         return result
     }
 
@@ -302,33 +165,23 @@ class DocumentenApiClient(
         objectUrl: URI,
         documentLock: DocumentLock,
     ) {
-        restClient(authentication)
+        buildFilteredClient(authentication)
             .post()
-            .uri {
-                ClientTools.baseUrlToBuilder(it, objectUrl)
-                    .pathSegment("unlock")
-                    .build()
-            }
+            .uri(objectUrl.toString() + "/unlock")
             .contentType(MediaType.APPLICATION_JSON)
-            .body(documentLock)
+            .body(BodyInserters.fromValue(documentLock))
             .retrieve()
             .toBodilessEntity()
+            .block()
     }
 
     fun deleteInformatieObject(authentication: DocumentenApiAuthentication, url: URI) {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.DELETE,
-                ResourcePermission()
-            )
-        )
-
-        restClient(authentication)
+        buildFilteredClient(authentication)
             .delete()
             .uri(url)
             .retrieve()
             .toBodilessEntity()
+            .block()
 
         outboxService.send { DocumentDeleted(url.toASCIIString()) }
     }
@@ -338,62 +191,58 @@ class DocumentenApiClient(
         documentUrl: URI,
         patchDocumentRequest: PatchDocumentRequest
     ): DocumentInformatieObject {
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.MODIFY,
-                ResourcePermission()
-            )
-        )
-
-        val result = restClient(authentication)
-            .patch()
-            .uri(documentUrl)
-            .body(patchDocumentRequest)
-            .retrieve()
-            .body<DocumentInformatieObject>()!!
-
-        outboxService.send {
-            DocumentUpdated(result.url.toASCIIString(), objectMapper.valueToTree(result))
+        check(getInformatieObject(authentication, documentUrl).status != DocumentStatusType.DEFINITIEF) {
+            "InformatieObject ${documentUrl.path.substringAfterLast("/")} with status 'definitief' cannot be updated!"
         }
-        return result
+
+        val result = checkNotNull(
+            buildFilteredClient(authentication)
+                .patch()
+                .uri(documentUrl)
+                .body(BodyInserters.fromValue(patchDocumentRequest))
+                .retrieve()
+                .toEntity(DocumentInformatieObject::class.java)
+                .block()
+        ) {
+            "Could not retrieve ${DocumentInformatieObject::class.simpleName} at $documentUrl"
+        }
+
+        if (result.hasBody()) {
+            outboxService.send {
+                DocumentUpdated(
+                    result.body.url.toASCIIString(),
+                    objectMapper.valueToTree(result.body)
+                )
+            }
+        }
+
+        return result.body!!
     }
 
     private fun toObjectUrl(baseUrl: URI, objectId: String): URI {
         return UriComponentsBuilder
             .fromUri(baseUrl)
-            .pathSegment("enkelvoudiginformatieobjecten", "{objectId}")
-            .build(objectId)
+            .pathSegment("enkelvoudiginformatieobjecten", objectId)
+            .build()
+            .toUri()
     }
 
-    private fun restClient(authentication: DocumentenApiAuthentication): RestClient {
-        return restClientBuilder
+    private fun buildFilteredClient(authentication: DocumentenApiAuthentication): WebClient {
+        return webclientBuilder
             .clone()
-            .apply {
-                authentication.applyAuth(it)
-            }
-            .messageConverters {
-                it + ResourceHttpMessageConverter(true)
-            }
+            .filter(authentication)
+            .filter(ClientTools.zgwErrorHandler())
             .build()
     }
 
-    fun UriBuilder.addSortParameter(pageable: Pageable): UriBuilder {
-        val sortString = pageable.sort.map {
-            val property = DocumentenApiColumnKey.fromProperty(it.property)
-                ?: throw IllegalArgumentException("Unknown Documenten API property ${it.property}")
-            val directionMarker = if (it.isAscending) "" else "-"
-            "$directionMarker${property.name.lowercase()}"
-        }.joinToString(",")
-        if (sortString.isNotBlank()) {
-            this.queryParam("ordering", sortString)
-        }
-        return this
-    }
-
-    companion object {
-        const val ITEMS_PER_PAGE = 100
-        val logger = KotlinLogging.logger {}
+    private fun Flux<DataBuffer>.toInputStream(doOnComplete: Runnable): InputStream {
+        val osPipe = PipedOutputStream()
+        val isPipe = PipedInputStream(osPipe)
+        val flux = this
+            .doOnError { isPipe.use {} }
+            .doFinally { osPipe.use {} }
+            .doOnComplete(doOnComplete)
+        DataBufferUtils.write(flux, osPipe).subscribe(DataBufferUtils.releaseConsumer())
+        return isPipe
     }
 }

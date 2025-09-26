@@ -23,5 +23,4 @@ data class CaseTabUpdateOrderDto(
     val name: String?,
     val type: CaseTabType,
     val contentKey: String,
-    val showTasks: Boolean = false
 )

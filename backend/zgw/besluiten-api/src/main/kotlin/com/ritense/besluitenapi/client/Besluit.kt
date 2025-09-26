@@ -17,7 +17,6 @@
 package com.ritense.besluitenapi.client
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import java.net.URI
 import java.time.LocalDate
 
@@ -35,7 +34,6 @@ class Besluit(
     val ingangsdatum: LocalDate,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     val vervaldatum: LocalDate?,
-    @JsonDeserialize(using = EmptyStringToVervalredenDeserializer::class)
     val vervalreden: Vervalreden?,
     val vervalredenWeergave: String?,
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

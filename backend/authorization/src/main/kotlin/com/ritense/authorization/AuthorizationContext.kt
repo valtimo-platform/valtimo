@@ -18,6 +18,7 @@ package com.ritense.authorization
 
 import java.util.concurrent.Callable
 
+
 class AuthorizationContext {
 
     companion object {

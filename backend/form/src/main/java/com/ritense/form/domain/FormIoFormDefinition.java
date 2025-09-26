@@ -28,17 +28,13 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.ritense.document.domain.patch.JsonPatchService;
 import com.ritense.form.autoconfigure.FormAutoConfiguration;
 import com.ritense.form.domain.event.FormRegisteredEvent;
 import com.ritense.form.domain.exception.FormDefinitionParsingException;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.json.MapperSingleton;
-import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -59,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.AbstractAggregateRoot;
 import org.springframework.data.domain.Persistable;
+import org.springframework.web.util.HtmlUtils;
 
 @Entity
 @Table(name = "form_io_form_definition")
@@ -72,7 +69,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     public static final String JSON_PATH_DELIMITER = JSON_POINTER_DELIMITER;
     public static final String PROPERTY_KEY = "key";
     public static final String COMPONENTS_KEY = "components";
-    public static final String TYPE_KEY = "type";
     public static final String DEFAULT_VALUE_FIELD = "defaultValue";
     public static final String PROCESS_VAR_PREFIX = "pv";
     public static final String EXTERNAL_FORM_FIELD_TYPE_SEPARATOR = ":";
@@ -82,7 +78,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     private static final String PROPERTY_ATTRIBUTES = "attributes";
     private static final String PROPERTY_TESTID = "data-testid";
 
-    public static final String PROPERTIES_CONTAINER_POINTER = "/properties/container";
     public static final String SOURCE_KEY_POINTER = "/properties/sourceKey";
     public static final String TARGET_KEY_POINTER = "/properties/targetKey";
 
@@ -96,7 +91,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
                 && objectNode.get(DISABLED_KEY).asBoolean()
         );
 
-    // TODO: Do we want to remove the UUID and instead have a composite ID of formDefinition and caseDefinitionId?
     @Id
     @Column(name = "id", updatable = false)
     private UUID id;
@@ -104,13 +98,9 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     @Column(name = "name", columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @Column(name = "form_definition", columnDefinition = "json", nullable = false)
+    @Column(name = "form_definition", columnDefinition = "json")
     @Type(value = JsonType.class)
     private String formDefinition;
-
-    @Embedded
-    @Nullable
-    private CaseDefinitionId caseDefinitionId;
 
     @Column(name = "read_only", columnDefinition = "BIT")
     private Boolean readOnly = false;
@@ -128,7 +118,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         final UUID id,
         final String name,
         final String formDefinition,
-        @Nullable final CaseDefinitionId caseDefinitionId,
         final Boolean isReadOnly
     ) {
         assertArgumentNotNull(id, "id is required");
@@ -137,7 +126,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         assertArgumentNotNull(formDefinition, "formDefinition is required");
         this.id = id;
         this.name = name;
-        this.caseDefinitionId = caseDefinitionId;
         setFormDefinition(formDefinition);
         setReadOnly(isReadOnly);
         this.isNew = true;
@@ -196,48 +184,29 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
                 String fieldKey = getFieldKey(fieldNode);
                 Object value = valueMap.get(fieldKey);
                 if (value != null) {
-                    JsonNode valueNode = MapperSingleton.get().valueToTree(value);
-                    setDefaultValueField(fieldNode, valueNode);
+                    JsonNode valueNode = MapperSingleton.INSTANCE.get().valueToTree(value);
+                    fieldNode.set(DEFAULT_VALUE_FIELD, htmlEscape(valueNode));
                 }
             });
     }
 
     public FormDefinition preFillWith(final String prefix, final Map<String, Object> variableMap) {
-        JsonNode rootNode = JsonNodeFactory.instance.objectNode();
-        JsonPatchBuilder jsonPatchBuilder = new JsonPatchBuilder();
-
-        for (var entry : variableMap.entrySet()) {
-            JsonPointer jsonPointer = toJsonPointer(entry.getKey());
-            JsonNode valueNode = MapperSingleton.get().valueToTree(entry.getValue());
-            jsonPatchBuilder.addJsonNodeValue(rootNode, jsonPointer, valueNode);
-        }
-
-        JsonPatchService.apply(jsonPatchBuilder.build().toJson(), rootNode);
-
-        if (prefix != null) {
-            var newRootNode = JsonNodeFactory.instance.objectNode();
-            newRootNode.set(prefix, rootNode);
-            rootNode = newRootNode;
-        }
+        final ObjectNode rootNode = JsonNodeFactory.instance.objectNode();
+        final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        variableMap.forEach((fieldName, value) -> objectNode.set(
+            fieldName,
+            MapperSingleton.INSTANCE.get().valueToTree(value)
+        ));
+        rootNode.set(prefix, objectNode);
         return preFill(rootNode);
     }
 
     public List<String> extractProcessVarNames() {
         return getInputFields().stream()
-            .map(FormIoFormDefinition::getProcessVar)
+            .map(this::getProcessVar)
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(ContentItem::getName)
-            .toList();
-    }
-
-    public List<JsonPointer> extractProcessVarJsonPointers() {
-        return getInputFields().stream()
-            .map(FormIoFormDefinition::getProcessVar)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .map(ContentItem::getJsonPointer)
-            .map(JsonPointer::tail)
             .toList();
     }
 
@@ -302,10 +271,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         return readOnly;
     }
 
-    public Optional<CaseDefinitionId> getCaseDefinitionId() {
-        return Optional.ofNullable(caseDefinitionId);
-    }
-
     public JsonNode asJson() {
         if (this.workingCopy == null) {
             try {
@@ -331,10 +296,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     }
 
     public Optional<ContentItem> getDocumentContentVar(JsonNode field) {
-        return getDocumentContentVarStatic(field);
-    }
-
-    private static Optional<ContentItem> getDocumentContentVarStatic(JsonNode field) {
         if (isDocumentContentVar(field)) {
             String key = getFieldKey(field);
             if (!key.isEmpty() && !key.startsWith(PROCESS_VAR_PREFIX)) {
@@ -360,7 +321,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
 
     public List<ObjectNode> getDocumentMappedFieldsFiltered(@Nullable Predicate<JsonNode> predicate) {
         final List<ObjectNode> inputFields = new LinkedList<>();
-        List<ArrayNode> components = getComponentsWithInputs(this.asJson());
+        List<ArrayNode> components = getComponents(this.asJson());
         components.forEach(componentsNode -> componentsNode.forEach(fieldNode -> {
             if (predicate == null || predicate.test(fieldNode) && (isDocumentContentVar(fieldNode))) {
                 inputFields.add((ObjectNode) fieldNode);
@@ -375,45 +336,13 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
 
     public static List<ObjectNode> getInputFields(JsonNode formDefinition) {
         final List<ObjectNode> inputFields = new LinkedList<>();
-        List<ArrayNode> components = getComponentsWithInputs(formDefinition);
+        List<ArrayNode> components = getComponents(formDefinition);
         components.forEach(componentsNode -> componentsNode.forEach(fieldNode -> {
-            if (
-                (isInputComponent(fieldNode) || isTextFieldComponent(fieldNode) || isHiddenFieldComponent(fieldNode))
-                && !isButtonTypeComponent(fieldNode)
-            ) {
+            if ((isInputComponent(fieldNode) || isTextFieldComponent(fieldNode)) && !isButtonTypeComponent(fieldNode)) {
                 inputFields.add((ObjectNode) fieldNode);
             }
         }));
         return Collections.unmodifiableList(inputFields);
-    }
-
-    public static Optional<String> resolveTargetKey(JsonNode field) {
-        final var targetKey = getTargetKey(field);
-        if (targetKey.isPresent()) {
-            return targetKey;
-        }
-        return resolveSourceKey(field);
-    }
-
-    public static Optional<String> resolveSourceKey(JsonNode field) {
-        final var sourceKey = getSourceKey(field);
-        if (sourceKey.isPresent()) {
-            return sourceKey;
-        }
-        final var fieldKey = getFieldKey(field);
-        if (fieldKey.startsWith(PROCESS_VAR_PREFIX)) {
-            return Optional.of(fieldKey.replaceFirst("\\.", ":"));
-        }
-        final var documentJsonPointer = getDocumentContentVarStatic(field);
-        if (documentJsonPointer.isPresent()) {
-            var docPath = documentJsonPointer.get().getName();
-            var containerPath = field.at(PROPERTIES_CONTAINER_POINTER).textValue();
-            if (containerPath != null && !containerPath.isEmpty()) {
-                docPath = containerPath + docPath.substring(1);
-            }
-            return Optional.of("doc:" + docPath);
-        }
-        return Optional.empty();
     }
 
     private void setFormDefinition(String formDefinition) {
@@ -425,6 +354,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         this.formDefinition = formDefinition;
     }
 
+
     private void fill(ObjectNode field, JsonNode content) {
         assertArgumentNotNull(field, "field is required");
         assertArgumentNotNull(content, "content is required");
@@ -433,30 +363,9 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
                 .flatMap(
                     contentItem -> getValueBy(content, contentItem.getJsonPointer())
                 ).ifPresent(
-                    valueNode -> setDefaultValueField(field, valueNode)
+                    valueNode -> field.set(DEFAULT_VALUE_FIELD, htmlEscape(valueNode))
                 );
         }
-    }
-
-    private void setDefaultValueField(ObjectNode field, JsonNode defaultValue) {
-        final var existingDefaultValue = field.get(DEFAULT_VALUE_FIELD);
-        if (existingDefaultValue != null && existingDefaultValue.isObject() && defaultValue != null && defaultValue.isObject()) {
-            mergeJson((ObjectNode) existingDefaultValue, (ObjectNode) defaultValue);
-        } else {
-            field.set(DEFAULT_VALUE_FIELD, defaultValue);
-        }
-    }
-
-    private void mergeJson(ObjectNode target, ObjectNode source) {
-        source.properties().forEach(property -> {
-            final var existingValue = target.get(property.getKey());
-            final var newValue = property.getValue();
-            if (existingValue != null && existingValue.isObject() && newValue != null && newValue.isObject()) {
-                mergeJson((ObjectNode) existingValue, (ObjectNode) newValue);
-            } else {
-                target.set(property.getKey(), newValue);
-            }
-        });
     }
 
     private Optional<? extends ContentItem> getContentItem(ObjectNode node) {
@@ -470,7 +379,15 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         return Optional.empty();
     }
 
-    private static Optional<JsonPointer> buildJsonPointer(String jsonPointerExpression) {
+    private JsonNode htmlEscape(JsonNode input) {
+        if (input.isTextual()) {
+            String escapedContent = HtmlUtils.htmlEscape(input.textValue(), StandardCharsets.UTF_8.name());
+            return new TextNode(escapedContent);
+        }
+        return input;
+    }
+
+    private Optional<JsonPointer> buildJsonPointer(String jsonPointerExpression) {
         try {
             return Optional.of(JsonPointer.valueOf(jsonPointerExpression));
         } catch (IllegalArgumentException e) {
@@ -478,25 +395,26 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         }
     }
 
-    private static Optional<ContentItem> getProcessVar(JsonNode field) {
+    private Optional<ContentItem> getProcessVar(JsonNode field) {
         if (isProcessVar(field)) {
-            String key = getFieldKey(field);
-            String jsonPointerExpr = JSON_POINTER_DELIMITER + key.replace(".", "/");
-            String processVarName = key.substring(PROCESS_VAR_PREFIX.length() + 1);
-            return buildJsonPointer(jsonPointerExpr).map(
-                jsonPointer -> new ContentItem(processVarName, jsonPointer));
+            String jsonPointerExpr = getFieldKey(field).replace(".", "/");
+            String processVarName = jsonPointerExpr.substring(
+                PROCESS_VAR_PREFIX.length() + 1); //example pv.varName -> gets varName
+            jsonPointerExpr = JSON_POINTER_DELIMITER + jsonPointerExpr;
+            return buildJsonPointer(jsonPointerExpr).flatMap(
+                jsonPointer -> Optional.of(new ContentItem(processVarName, jsonPointer)));
         }
         return Optional.empty();
     }
 
-    private static boolean isProcessVar(JsonNode field) {
+    private boolean isProcessVar(JsonNode field) {
         if (!field.has(PROPERTY_KEY)) {
             return false;
         }
         return getFieldKey(field).startsWith(PROCESS_VAR_PREFIX);
     }
 
-    private static boolean isDocumentContentVar(JsonNode field) {
+    private boolean isDocumentContentVar(JsonNode field) {
         if (!field.has(PROPERTY_KEY)) {
             return false;
         }
@@ -507,7 +425,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         return !key.isEmpty() && !key.startsWith(PROCESS_VAR_PREFIX.toUpperCase());
     }
 
-    private static Optional<ExternalContentItem> getExternalFormField(JsonNode field) {
+    private Optional<ExternalContentItem> getExternalFormField(JsonNode field) {
         return getExternalFormFieldType(field).flatMap(externalFormFieldType -> {
             String fieldKey = getFieldKey(field);
             String propertyName = fieldKey.substring(
@@ -540,11 +458,11 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         });
     }
 
-    private static boolean isExternalFormField(JsonNode field) {
+    private boolean isExternalFormField(JsonNode field) {
         return getExternalFormFieldType(field).isPresent();
     }
 
-    private static Optional<String> getExternalFormFieldType(JsonNode field) {
+    private Optional<String> getExternalFormFieldType(JsonNode field) {
         if (!field.has(PROPERTY_KEY) && !getFieldKey(field).isEmpty()) {
             return Optional.empty();
         }
@@ -570,7 +488,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         return Optional.empty();
     }
 
-    private static String getFieldKey(JsonNode fieldNode) {
+    private String getFieldKey(JsonNode fieldNode) {
         return getKey(fieldNode).orElseThrow();
     }
 
@@ -582,13 +500,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         return Optional.of(jsonNode);
     }
 
-    private static List<ArrayNode> getComponentsWithInputs(JsonNode formDefinition) {
-        if (formDefinition.has(TYPE_KEY)) {
-            final var type = formDefinition.get(TYPE_KEY).textValue();
-            if (type.equals("editgrid") || type.equals("datagrid")) {
-                return Collections.emptyList();
-            }
-        }
+    private static List<ArrayNode> getComponents(JsonNode formDefinition) {
         final var components = new ArrayList<ArrayNode>();
         if (formDefinition.isObject()
             && (formDefinition.has(COMPONENTS_KEY))
@@ -598,13 +510,13 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         }
         if (formDefinition.isContainerNode()) {
             for (JsonNode arrayNode : formDefinition) {
-                components.addAll(getComponentsWithInputs(arrayNode));
+                components.addAll(getComponents(arrayNode));
             }
         }
         return Collections.unmodifiableList(components);
     }
 
-    private static Object extractNodeValue(JsonNode node) {
+    private Object extractNodeValue(JsonNode node) {
         var nodeType = node.getNodeType();
         if (nodeType == JsonNodeType.STRING) {
             return node.textValue();
@@ -613,12 +525,8 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
         } else if (nodeType == JsonNodeType.BOOLEAN) {
             return node.booleanValue();
         } else if (nodeType == JsonNodeType.ARRAY) {
-            List<Object> values = new ArrayList<>();
-            node.forEach(childNode -> values.add(extractNodeValue(childNode)));
-            return values;
-        } else if (nodeType == JsonNodeType.OBJECT) {
-            Map<String, Object> values = new HashMap<>();
-            node.fields().forEachRemaining(entry -> values.put(entry.getKey(), extractNodeValue(entry.getValue())));
+            List<String> values = new ArrayList<>();
+            node.forEach(childNode -> values.add(childNode.textValue()));
             return values;
         } else {
             logger.warn("Submitted form field value to be stored in process variables is of an unsupported type");
@@ -631,7 +539,7 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
             && jsonNode.get("type").textValue().equalsIgnoreCase("button");
     }
 
-    public static boolean isInputComponent(JsonNode jsonNode) {
+    private static boolean isInputComponent(JsonNode jsonNode) {
         return jsonNode.has("input")
             && jsonNode.get("input").booleanValue()
             && jsonNode.has(PROPERTY_KEY);
@@ -640,12 +548,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     private static boolean isTextFieldComponent(JsonNode jsonNode) {
         return jsonNode.has("type")
             && jsonNode.get("type").textValue().equalsIgnoreCase("textfield")
-            && jsonNode.has(PROPERTY_KEY);
-    }
-
-    private static boolean isHiddenFieldComponent(JsonNode jsonNode) {
-        return jsonNode.has("type")
-            && jsonNode.get("type").textValue().equalsIgnoreCase("hidden")
             && jsonNode.has(PROPERTY_KEY);
     }
 
@@ -662,14 +564,6 @@ public class FormIoFormDefinition extends AbstractAggregateRoot<FormIoFormDefini
     public static Optional<String> getKey(JsonNode jsonNode) {
         JsonNode keyNode = jsonNode.path(PROPERTY_KEY);
         return Optional.ofNullable(keyNode.isTextual() ? keyNode.textValue() : null);
-    }
-
-    private static JsonPointer toJsonPointer(String path) {
-        String newPath = path;
-        if (!path.startsWith("/")) {
-            newPath = "/" + path;
-        }
-        return JsonPointer.valueOf(newPath.replace('.', '/'));
     }
 
     @Override

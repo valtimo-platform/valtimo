@@ -18,6 +18,7 @@ package com.ritense.authorization.permission.condition
 
 import com.fasterxml.jackson.annotation.JsonValue
 
+// TODO: consider not making this an enum
 enum class PermissionConditionType {
     CONTAINER,
     FIELD,

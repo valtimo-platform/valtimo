@@ -38,14 +38,14 @@ class TestAuthorizationSpecification(
         val predicates = permissions.stream()
             .filter { permission: Permission ->
                 TestEntity::class.java == permission.resourceType
-                    && permission.actions.contains(authRequest.action)
+                    && authRequest.action == permission.action
             }
             .map { permission: Permission ->
                 permission.toPredicate(
                     root,
                     query,
                     criteriaBuilder,
-                    authRequest,
+                    authRequest.resourceType,
                     queryDialectHelper
                 )
             }.toList()

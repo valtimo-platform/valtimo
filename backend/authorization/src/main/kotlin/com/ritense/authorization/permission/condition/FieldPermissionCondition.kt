@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.annotation.JsonView
 import com.ritense.authorization.permission.PermissionView
 import com.ritense.authorization.permission.condition.FieldPermissionCondition.Companion.FIELD
-import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
@@ -62,10 +61,10 @@ data class FieldPermissionCondition<V>(
     private fun resolveValue(): Any? {
         return if (this.value is List<*>) {
             this.value.map {
-                CurrentUserExpressionHandler.resolveValue(it)
+                PermissionConditionValueResolver.resolveValue(it)
             }
         } else {
-            CurrentUserExpressionHandler.resolveValue(this.value)
+            PermissionConditionValueResolver.resolveValue(this.value)
         }
     }
 

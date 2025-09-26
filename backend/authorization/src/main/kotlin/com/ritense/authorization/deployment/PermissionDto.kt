@@ -16,9 +16,6 @@
 
 package com.ritense.authorization.deployment
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonView
 import com.ritense.authorization.Action
 import com.ritense.authorization.permission.ConditionContainer
@@ -31,27 +28,16 @@ data class PermissionDto(
     @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
     val resourceType: Class<*>,
     @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
-    @field:JsonAlias("action") // accept "action" as an alias for "actions"
-    @field:JsonFormat(with = [JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY])
-    val actions: List<String>,
-//    @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+    val action: String,
     @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
     val conditions: List<PermissionCondition> = emptyList(),
     @field:JsonView(PermissionView.PermissionManagement::class)
-    val roleKey: String,
-    @field:JsonInclude(JsonInclude.Include.NON_NULL)
-    @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
-    val contextResourceType: Class<*>? = null,
-    @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
-    @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
-    val contextConditions: List<PermissionCondition> = emptyList(),
+    val roleKey: String
 ) {
     fun toPermission(roleRepository: RoleRepository) = Permission(
         resourceType = resourceType,
-        actions = actions.map { Action<Any>(it) }.toMutableList(),
+        action = Action<Any>(action),
         conditionContainer = ConditionContainer(conditions = conditions),
-        role = roleRepository.findByKey(roleKey)!!,
-        contextResourceType = contextResourceType,
-        contextConditionContainer = ConditionContainer(conditions = contextConditions)
+        role = roleRepository.findByKey(roleKey)!!
     )
 }

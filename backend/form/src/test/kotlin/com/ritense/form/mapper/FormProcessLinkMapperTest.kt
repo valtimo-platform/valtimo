@@ -17,17 +17,13 @@
 package com.ritense.form.mapper
 
 import com.ritense.exporter.request.FormDefinitionExportRequest
-import com.ritense.form.domain.FormDisplayType
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.domain.FormProcessLink
-import com.ritense.form.domain.FormSizes
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkCreateRequestDto
 import com.ritense.form.web.rest.dto.FormProcessLinkResponseDto
 import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -48,18 +44,12 @@ internal class FormProcessLinkMapperTest {
 
     private lateinit var formProcessLinkMapper: FormProcessLinkMapper
 
-    @Mock
-    lateinit var processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
-
-    val caseDefinitionId = CaseDefinitionId.of("person", "1.0.0")
-
     @BeforeEach
     fun beforeEach() {
         MockitoAnnotations.openMocks(this)
         formProcessLinkMapper = FormProcessLinkMapper(
             MapperSingleton.get(),
             formDefinitionService,
-            processDefinitionCaseDefinitionService,
         )
     }
 
@@ -69,12 +59,8 @@ internal class FormProcessLinkMapperTest {
             id = UUID.randomUUID(),
             processDefinitionId = "processDefinitionId",
             activityId = "activityId",
-            activityType = USER_TASK_CREATE,
-            formDefinitionId = UUID.randomUUID(),
-            viewModelEnabled = false,
-            formDisplayType = FormDisplayType.panel,
-            formSize = FormSizes.small,
-            subtitles = SUBTITLES,
+            activityType = SERVICE_TASK_START,
+            formDefinitionId = UUID.randomUUID()
         )
 
         val formProcessLinkResponseDto = formProcessLinkMapper.toProcessLinkResponseDto(formProcessLink)
@@ -85,10 +71,6 @@ internal class FormProcessLinkMapperTest {
         assertEquals(formProcessLink.activityId, formProcessLinkResponseDto.activityId)
         assertEquals(formProcessLink.activityType, formProcessLinkResponseDto.activityType)
         assertEquals(formProcessLink.formDefinitionId, formProcessLinkResponseDto.formDefinitionId)
-        assertEquals(formProcessLink.viewModelEnabled, formProcessLinkResponseDto.viewModelEnabled)
-        assertEquals(formProcessLink.formDisplayType, formProcessLinkResponseDto.formDisplayType)
-        assertEquals(formProcessLink.formSize, formProcessLinkResponseDto.formSize)
-        assertEquals(formProcessLink.subtitles, formProcessLinkResponseDto.subtitles)
     }
 
     @Test
@@ -96,26 +78,18 @@ internal class FormProcessLinkMapperTest {
         val createRequestDto = FormProcessLinkCreateRequestDto(
             processDefinitionId = "processDefinitionId",
             activityId = "activityId",
-            activityType = USER_TASK_CREATE,
-            formDefinitionId = UUID.randomUUID(),
-            viewModelEnabled = false,
-            formDisplayType = FormDisplayType.panel,
-            formSize = FormSizes.small,
-            subtitles = SUBTITLES,
+            activityType = SERVICE_TASK_START,
+            formDefinitionId = UUID.randomUUID()
         )
         whenever(formDefinitionService.formDefinitionExistsById(createRequestDto.formDefinitionId)).thenReturn(true)
 
-        val formProcessLink = formProcessLinkMapper.toNewProcessLink(createRequestDto, caseDefinitionId)
+        val formProcessLink = formProcessLinkMapper.toNewProcessLink(createRequestDto)
 
         assertTrue(formProcessLink is FormProcessLink)
         assertEquals(createRequestDto.processDefinitionId, formProcessLink.processDefinitionId)
         assertEquals(createRequestDto.activityId, formProcessLink.activityId)
         assertEquals(createRequestDto.activityType, formProcessLink.activityType)
         assertEquals(createRequestDto.formDefinitionId, formProcessLink.formDefinitionId)
-        assertEquals(createRequestDto.viewModelEnabled, formProcessLink.viewModelEnabled)
-        assertEquals(createRequestDto.formDisplayType, formProcessLink.formDisplayType)
-        assertEquals(createRequestDto.formSize, formProcessLink.formSize)
-        assertEquals(createRequestDto.subtitles, formProcessLink.subtitles)
     }
 
     @Test
@@ -124,31 +98,22 @@ internal class FormProcessLinkMapperTest {
             id = UUID.randomUUID(),
             processDefinitionId = "processDefinitionId",
             activityId = "activityId",
-            activityType = USER_TASK_CREATE,
-            formDefinitionId = UUID.randomUUID(),
-            viewModelEnabled = false,
+            activityType = SERVICE_TASK_START,
+            formDefinitionId = UUID.randomUUID()
         )
         val updateRequestDto = FormProcessLinkUpdateRequestDto(
             id = processLinkToUpdate.id,
-            formDefinitionId = UUID.randomUUID(),
-            viewModelEnabled = false,
-            formDisplayType = FormDisplayType.panel,
-            formSize = FormSizes.small,
-            subtitles = SUBTITLES
+            formDefinitionId = UUID.randomUUID()
         )
         whenever(formDefinitionService.formDefinitionExistsById(updateRequestDto.formDefinitionId)).thenReturn(true)
 
-        val formProcessLink = formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
+        val formProcessLink = formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto)
 
         assertTrue(formProcessLink is FormProcessLink)
         assertEquals(processLinkToUpdate.processDefinitionId, formProcessLink.processDefinitionId)
         assertEquals(processLinkToUpdate.activityId, formProcessLink.activityId)
         assertEquals(processLinkToUpdate.activityType, formProcessLink.activityType)
         assertEquals(updateRequestDto.formDefinitionId, formProcessLink.formDefinitionId)
-        assertEquals(updateRequestDto.viewModelEnabled, formProcessLink.viewModelEnabled)
-        assertEquals(updateRequestDto.formDisplayType, formProcessLink.formDisplayType)
-        assertEquals(updateRequestDto.formSize, formProcessLink.formSize)
-        assertEquals(updateRequestDto.subtitles, formProcessLink.subtitles)
     }
 
     @Test
@@ -156,13 +121,12 @@ internal class FormProcessLinkMapperTest {
         val createRequestDto = FormProcessLinkCreateRequestDto(
             processDefinitionId = "processDefinitionId",
             activityId = "activityId",
-            activityType = USER_TASK_CREATE,
-            formDefinitionId = UUID.randomUUID(),
-            viewModelEnabled = false
+            activityType = SERVICE_TASK_START,
+            formDefinitionId = UUID.randomUUID()
         )
 
         val exception = assertThrows<RuntimeException> {
-            formProcessLinkMapper.toNewProcessLink(createRequestDto, caseDefinitionId)
+            formProcessLinkMapper.toNewProcessLink(createRequestDto)
         }
 
         assertEquals("Form definition not found with id ${createRequestDto.formDefinitionId}", exception.message)
@@ -174,18 +138,16 @@ internal class FormProcessLinkMapperTest {
             id = UUID.randomUUID(),
             processDefinitionId = "processDefinitionId",
             activityId = "activityId",
-            activityType = USER_TASK_CREATE,
-            formDefinitionId = UUID.randomUUID(),
-            viewModelEnabled = false
+            activityType = SERVICE_TASK_START,
+            formDefinitionId = UUID.randomUUID()
         )
         val updateRequestDto = FormProcessLinkUpdateRequestDto(
             id = processLinkToUpdate.id,
-            formDefinitionId = UUID.randomUUID(),
-            viewModelEnabled = false
+            formDefinitionId = UUID.randomUUID()
         )
 
         val exception = assertThrows<RuntimeException> {
-            formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto, caseDefinitionId)
+            formProcessLinkMapper.toUpdatedProcessLink(processLinkToUpdate, updateRequestDto)
         }
 
         assertEquals("Form definition not found with id ${updateRequestDto.formDefinitionId}", exception.message)
@@ -197,28 +159,22 @@ internal class FormProcessLinkMapperTest {
             UUID.randomUUID(),
             "testing",
             "{}",
-            CaseDefinitionId.of("house", "1.0.0"),
             true
         )
         val formProcessLink = FormProcessLink(
             id = UUID.randomUUID(),
             processDefinitionId = "processDefinitionId",
             activityId = "activityId",
-            activityType = USER_TASK_CREATE,
-            formDefinitionId = formDefinition.id,
-            viewModelEnabled = false
+            activityType = SERVICE_TASK_START,
+            formDefinitionId = formDefinition.id
         )
 
         whenever(formDefinitionService.getFormDefinitionById(formProcessLink.formDefinitionId))
             .thenReturn(Optional.of(formDefinition))
-        val relatedExportRequests = formProcessLinkMapper.createRelatedExportRequests(formProcessLink, caseDefinitionId)
+        val relatedExportRequests = formProcessLinkMapper.createRelatedExportRequests(formProcessLink)
 
         assertThat(relatedExportRequests).contains(
-            FormDefinitionExportRequest("testing", caseDefinitionId)
+            FormDefinitionExportRequest("testing")
         )
-    }
-
-    companion object {
-        val SUBTITLES = listOf("test", "test2")
     }
 }

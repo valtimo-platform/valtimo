@@ -58,7 +58,7 @@ class SearchListColumnResource(
         @PathVariable ownerId: String,
         @Valid @RequestBody searchListColumn: List<SearchListColumn>
     ) =
-        ResponseEntity.ok(searchListColumnService.updateList(searchListColumn))
+        ResponseEntity.ok(searchListColumnService.updateList(ownerId, searchListColumn))
 
     @GetMapping("/{ownerId}")
     fun getByKey(@PathVariable ownerId: String) =

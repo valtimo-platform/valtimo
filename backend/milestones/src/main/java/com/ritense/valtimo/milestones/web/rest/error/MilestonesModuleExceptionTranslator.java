@@ -16,41 +16,36 @@
 
 package com.ritense.valtimo.milestones.web.rest.error;
 
+import com.ritense.valtimo.contract.hardening.service.HardeningService;
+import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator;
 import com.ritense.valtimo.milestones.service.exception.IllegalMilestoneSetDeletionException;
-import java.util.List;
+import java.util.Optional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
-import org.zalando.problem.spring.web.advice.AdviceTrait;
+import org.zalando.problem.spring.web.advice.ProblemHandling;
 
 /**
  * Controller advice to translate the server side exceptions to client-friendly json structures.
  * The error response follows RFC7807 - Problem Details for HTTP APIs (https://tools.ietf.org/html/rfc7807)
  */
 @ControllerAdvice
-public class MilestonesModuleExceptionTranslator {
+public class MilestonesModuleExceptionTranslator extends ExceptionTranslator implements ProblemHandling {
 
-    private final AdviceTrait adviceTrait;
-
-    public MilestonesModuleExceptionTranslator(
-        List<AdviceTrait> adviceTraits
-    ) {
-        this.adviceTrait = adviceTraits.get(0);
+    public MilestonesModuleExceptionTranslator(Optional<HardeningService> hardeningServiceOptional) {
+        super(hardeningServiceOptional);
     }
 
     @ExceptionHandler
-    public ResponseEntity<Problem> handleIllegalMilestoneSetDeletionException(
-        IllegalMilestoneSetDeletionException ex,
-        NativeWebRequest request
-    ) {
+    public ResponseEntity<Problem> handleIllegalMilestoneSetDeletionException(IllegalMilestoneSetDeletionException ex, NativeWebRequest request) {
         Problem problem = Problem.builder()
             .withStatus(Status.BAD_REQUEST)
             .with("message", ErrorConstants.ILLEGAL_MILESTONESET_DELETION)
             .build();
-        return adviceTrait.create(ex, problem, request);
+        return create(ex, problem, request);
     }
 
 }

@@ -21,12 +21,10 @@ import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgument
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.document.domain.Document;
-import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.repository.FormDefinitionRepository;
 import com.ritense.form.service.FormLoaderService;
 import com.ritense.form.service.PrefillFormService;
-import com.ritense.logging.LoggableResource;
 import java.util.Optional;
 
 public class FormIoFormLoaderService implements FormLoaderService {
@@ -43,21 +41,19 @@ public class FormIoFormLoaderService implements FormLoaderService {
     }
 
     @Override
-    public Optional<JsonNode> getFormDefinitionByName(
-        @LoggableResource("formDefinitionName")final String formDefinitionName
-    ) {
+    public Optional<JsonNode> getFormDefinitionByName(final String formDefinitionName) {
         assertArgumentNotNull(formDefinitionName, "formDefinitionName is required");
-        return formDefinitionRepository.findByNameAndCaseDefinitionIdIsNull(formDefinitionName).map(FormIoFormDefinition::asJson);
+        return formDefinitionRepository.findByName(formDefinitionName).map(FormIoFormDefinition::asJson);
     }
 
     @Override
     public Optional<JsonNode> getFormDefinitionByNamePreFilled(
-        @LoggableResource("formDefinitionName") final String formDefinitionName,
-        @LoggableResource(resourceType = JsonSchemaDocument.class) final Document.Id documentId
+        final String formDefinitionName,
+        final Document.Id documentId
     ) {
         assertArgumentNotNull(documentId, "documentId is required");
         return AuthorizationContext.runWithoutAuthorization(
-            () -> formDefinitionRepository.findByNameAndCaseDefinitionIdIsNull(formDefinitionName)
+            () -> formDefinitionRepository.findByName(formDefinitionName)
                 .map(formIoFormDefinition -> {
                     FormIoFormDefinition prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(
                         formIoFormDefinition.getId(), documentId.getId());

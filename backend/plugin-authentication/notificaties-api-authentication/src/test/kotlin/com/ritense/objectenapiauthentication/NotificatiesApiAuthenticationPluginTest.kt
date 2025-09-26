@@ -18,7 +18,6 @@ package com.ritense.objectenapiauthentication
 
 import com.ritense.notificatiesapiauthentication.NotificatiesApiAuthenticationPlugin
 import com.ritense.notificatiesapiauthentication.token.NotificatiesApiPluginTokenGeneratorService
-import com.ritense.plugin.domain.PluginConfigurationId
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -38,7 +37,7 @@ internal class NotificatiesApiAuthenticationPluginTest {
     fun `should add header to request`() {
         val requestCaptor = argumentCaptor<ClientRequest>()
         val tokenGeneratorService = mock<NotificatiesApiPluginTokenGeneratorService>()
-        val plugin = NotificatiesApiAuthenticationPlugin(PluginConfigurationId.newId(), tokenGeneratorService)
+        val plugin = NotificatiesApiAuthenticationPlugin(tokenGeneratorService)
         plugin.clientId = "test"
         plugin.clientSecret = "test"
 

@@ -17,13 +17,13 @@
 package com.ritense.outbox.publisher
 
 import com.ritense.outbox.OutboxMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 
 // TODO: Remove this MessagePublisher when Valtimo has another MessagePublisher out of the box.
 open class LoggingMessagePublisher : MessagePublisher {
 
     override fun publish(message: OutboxMessage) {
-        logger.debug { "OutboxMessage id: '${message.id}'" }
+        logger.info { "OutboxMessage id: '${message.id}'" }
     }
 
     companion object {

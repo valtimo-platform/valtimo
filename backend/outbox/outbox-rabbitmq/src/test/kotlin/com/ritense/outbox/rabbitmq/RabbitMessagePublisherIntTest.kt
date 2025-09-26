@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ActiveProfiles
 import java.util.UUID
 
-class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
+class RabbitMessagePublisherIntTest {
     @Nested
     inner class RoutingKey @Autowired constructor(
         val springCloudMessagePublisher: RabbitMessagePublisher,
@@ -54,7 +54,7 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
     @Nested
     @ActiveProfiles("exchange")
     inner class Exchange @Autowired constructor(
-        val messagePublisher: RabbitMessagePublisher,
+        val springCloudMessagePublisher: RabbitMessagePublisher,
         val rabbitTemplate: RabbitTemplate,
         val configurationProperties: RabbitOutboxConfigurationProperties,
         val rabbitAdmin: RabbitAdmin
@@ -67,7 +67,7 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
             rabbitAdmin.purgeQueue("valtimo-audit")
 
             val uuid = UUID.randomUUID().toString()
-            messagePublisher.publish(
+            springCloudMessagePublisher.publish(
                 OutboxMessage(message = uuid)
             )
 
@@ -79,13 +79,13 @@ class RabbitMessagePublisherIntTest : BaseIntegrationTest() {
     @Nested
     @ActiveProfiles("invalidrouting")
     inner class InvalidRouting @Autowired constructor(
-        val messagePublisher: RabbitMessagePublisher
+        val springCloudMessagePublisher: RabbitMessagePublisher
     ) : BaseIntegrationTest() {
         @Test
         fun `should not send message to rabbitmq`() {
             val uuid = UUID.randomUUID().toString()
             val ex = assertThrows<MessagePublishingFailed> {
-                messagePublisher.publish(
+                springCloudMessagePublisher.publish(
                     OutboxMessage(message = uuid)
                 )
             }

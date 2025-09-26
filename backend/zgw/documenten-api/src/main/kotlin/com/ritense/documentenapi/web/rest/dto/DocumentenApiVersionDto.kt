@@ -16,22 +16,7 @@
 
 package com.ritense.documentenapi.web.rest.dto
 
-import com.ritense.documentenapi.domain.DocumentenApiVersion
-
 data class DocumentenApiVersionDto(
     val selectedVersion: String? = null,
-    val supportsFilterableColumns: Boolean,
-    val supportsSortableColumns: Boolean,
-    val supportsTrefwoorden: Boolean,
-    val supportsUpdatingDefinitiveDocument: Boolean,
-) {
-    companion object {
-        fun of(version: DocumentenApiVersion?) = DocumentenApiVersionDto(
-            selectedVersion = version?.version,
-            supportsFilterableColumns = version?.supportsFilterableColumns() ?: false,
-            supportsSortableColumns = version?.supportsSortableColumns() ?: false,
-            supportsTrefwoorden = version?.supportsTrefwoorden ?: false,
-            supportsUpdatingDefinitiveDocument = version?.supportsUpdatingDefinitiveDocument ?: false,
-        )
-    }
-}
+    val detectedVersions: List<String>? = null
+)

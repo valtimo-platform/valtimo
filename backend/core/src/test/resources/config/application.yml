@@ -35,7 +35,7 @@ spring-actuator:
     username: test
     password: test
 
-operaton:
+camunda:
     bpm:
         history-level: audit
         generic-properties:
@@ -51,9 +51,7 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    operaton:
-        scripting:
-            allowedClasses: java.lang.System
+
 aws:
     profile: ritense
     region: eu-central-1
@@ -70,9 +68,4 @@ management:
     endpoints:
         web:
             exposure:
-                include: [ "health", "configprops" ]
-    endpoint:
-        health:
-            show-details: when_authorized
-            roles:
-                - ROLE_ACTUATOR
+                include: 'health'

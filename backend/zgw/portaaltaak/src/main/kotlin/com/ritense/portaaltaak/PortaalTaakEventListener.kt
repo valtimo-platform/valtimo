@@ -31,15 +31,14 @@ import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.domain.ProcessInstanceId
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.camunda.domain.CamundaTask
+import com.ritense.valtimo.service.CamundaProcessService
+import com.ritense.valtimo.service.CamundaTaskService
 import com.ritense.valueresolver.ValueResolverService
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.RuntimeService
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.delegate.VariableScope
 import org.springframework.context.event.EventListener
 import org.springframework.transaction.annotation.Transactional
 import java.net.MalformedURLException
@@ -50,8 +49,8 @@ open class PortaalTaakEventListener(
     private val objectManagementService: ObjectManagementService,
     private val pluginService: PluginService,
     private val processDocumentService: ProcessDocumentService,
-    private val processService: OperatonProcessService,
-    private val taskService: OperatonTaskService,
+    private val processService: CamundaProcessService,
+    private val taskService: CamundaTaskService,
     private val runtimeService: RuntimeService,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper
@@ -61,45 +60,32 @@ open class PortaalTaakEventListener(
     @RunWithoutAuthorization
     @EventListener(NotificatiesApiNotificationReceivedEvent::class)
     open fun processCompletePortaalTaakEvent(event: NotificatiesApiNotificationReceivedEvent) {
-        logger.debug { "Received Notificaties API event, checking if it fits criteria to complete a portaaltaak" }
-
         val objectType = event.kenmerken["objectType"]
+
         if (!event.kanaal.equals("objecten", ignoreCase = true) ||
             !event.actie.equals("update", ignoreCase = true) ||
             objectType == null
         ) {
-            logger.debug { "Notificaties API event does not match criteria for completing a portaaltaak. Ignoring." }
             return
         }
 
-        val objectTypeId = objectType.substringAfterLast("/")
-
         val objectManagement =
-            objectManagementService.findByObjectTypeId(objectTypeId)
-                ?: run {
-                    logger.warn { "Object management not found for object type id '$objectTypeId'" }
-                    return
-                }
+            objectManagementService.findByObjectTypeId(objectType.substringAfterLast("/")) ?: return
 
-        pluginService.findPluginConfiguration(PortaaltaakPlugin::class.java) { properties: JsonNode ->
+        pluginService.findPluginConfiguration(PortaaltaakPlugin::class.java) { properties: JsonNode
+            ->
             properties.get("objectManagementConfigurationId").textValue().equals(objectManagement.id.toString())
         }?.let {
-            logger.debug { "Completing portaaltaak using plugin configuration with id '${it.id}'" }
 
-            val taakObject: TaakObject = objectMapper.convertValue(getPortaalTaakObjectData(objectManagement, event))
+            val taakObject: TaakObject =
+                objectMapper.convertValue(getPortaalTaakObjectData(objectManagement, event))
             when (taakObject.status) {
                 TaakStatus.INGEDIEND -> {
-                    logger.debug { "Processing task with status 'ingediend' and verwerker task id '${taakObject.verwerkerTaakId}'" }
-                    val task = taskService.findTaskById(taakObject.verwerkerTaakId)
-                        ?: run {
-                            logger.warn { "Task not found with verwerker task id '${taakObject.verwerkerTaakId}'" }
-                            return
-                        }
-
+                    val task = taskService.findTaskById(taakObject.verwerkerTaakId) ?: return
                     val receiveData = getReceiveDataActionProperty(task, it.id.id) ?: return
 
                     val portaaltaakPlugin = pluginService.createInstance(it) as PortaaltaakPlugin
-                    val processInstanceId = OperatonProcessInstanceId(task.getProcessInstanceId())
+                    val processInstanceId = CamundaProcessInstanceId(task.getProcessInstanceId())
                     val documentId = runWithoutAuthorization {
                         processDocumentService.getDocumentId(processInstanceId, task)
                     }
@@ -113,25 +99,18 @@ open class PortaalTaakEventListener(
                     )
                 }
 
-                else -> {
-                    logger.debug { "Taak status is not 'ingediend', skipping completion of portaaltaak" }
-                }
+                else -> null
             }
         }
-            ?: logger.warn { "No portaaltaak plugin configuration found with object management configuration id '${objectManagement.id}'" }
     }
 
-    private fun getReceiveDataActionProperty(task: OperatonTask, pluginConfigurationId: UUID): List<DataBindingConfig>? {
-        logger.debug { "Retrieving receive data action property for task with id '${task.id}'" }
+    private fun getReceiveDataActionProperty(task: CamundaTask, pluginConfigurationId: UUID): List<DataBindingConfig>? {
         val processLinks = pluginService.getProcessLinks(task.getProcessDefinitionId(), task.taskDefinitionKey!!)
         val processLink = processLinks.firstOrNull { processLink ->
             processLink.pluginConfigurationId == pluginConfigurationId
         }
 
-        val receiveDataJsonNode = processLink?.actionProperties?.get("receiveData") ?: run {
-            logger.warn { "No receive data for task with id '${task.id}'" }
-            return null
-        }
+        val receiveDataJsonNode = processLink?.actionProperties?.get("receiveData") ?: return null
 
         val typeRef = object : TypeReference<List<DataBindingConfig>>() {}
         return objectMapper.treeToValue(receiveDataJsonNode, objectMapper.constructType(typeRef))
@@ -139,17 +118,15 @@ open class PortaalTaakEventListener(
 
     internal fun saveDataInDocument(
         taakObject: TaakObject,
-        task: OperatonTask,
+        task: CamundaTask,
         receiveData: List<DataBindingConfig>
     ) {
-        logger.debug { "Saving data in document for task with id '${task.id}'" }
         if (taakObject.verzondenData.isNotEmpty()) {
-            val processInstanceId = OperatonProcessInstanceId(task.getProcessInstanceId())
+            val processInstanceId = CamundaProcessInstanceId(task.getProcessInstanceId())
+            val variableScope = getVariableScope(task)
             val taakObjectData = objectMapper.valueToTree<JsonNode>(taakObject.verzondenData)
             val resolvedValues = getResolvedValues(receiveData, taakObjectData)
-            handleTaakObjectData(processInstanceId, task, resolvedValues)
-        } else {
-            logger.warn { "No data found in taakobject for task with id '${task.id}'" }
+            handleTaakObjectData(processInstanceId, variableScope, resolvedValues)
         }
     }
 
@@ -178,6 +155,12 @@ open class PortaalTaakEventListener(
         if (resolvedValues.isNotEmpty()) {
             valueResolverService.handleValues(processInstanceId.toString(), variableScope, resolvedValues)
         }
+    }
+
+    private fun getVariableScope(task: CamundaTask): VariableScope {
+        return runtimeService.createProcessInstanceQuery()
+            .processInstanceId(task.getProcessInstanceId())
+            .singleResult() as VariableScope
     }
 
     internal fun getDocumentenUrls(verzondenData: JsonNode): List<String> {
@@ -221,7 +204,6 @@ open class PortaalTaakEventListener(
         objectenApiPluginConfigurationId: String,
         portaalTaakObjectUrl: String
     ) {
-        logger.debug { "Starting process to upload documents for taak with verwerker task id '${taakObject.verwerkerTaakId}'" }
         val variables = mapOf(
             "portaalTaakObjectUrl" to portaalTaakObjectUrl,
             "objectenApiPluginConfigurationId" to objectenApiPluginConfigurationId,
@@ -230,13 +212,16 @@ open class PortaalTaakEventListener(
         )
         try {
             runWithoutAuthorization {
-                processService.startProcess(processDefinitionKey, businessKey, variables)
+                processService.startProcess(
+                    processDefinitionKey,
+                    businessKey,
+                    variables
+                )
             }
-            logger.info { "Process started successfully for process definition key '$processDefinitionKey' and document id '${businessKey}'" }
         } catch (ex: RuntimeException) {
             throw NotificatiesNotificationEventException(
                 "Could not start process with definition: $processDefinitionKey and businessKey: $businessKey.\n " +
-                    "Reason: ${ex.message}"
+                        "Reason: ${ex.message}"
             )
         }
     }
@@ -245,7 +230,6 @@ open class PortaalTaakEventListener(
         objectManagement: ObjectManagement,
         event: NotificatiesApiNotificationReceivedEvent
     ): JsonNode {
-        logger.debug { "Retrieving portaalTaak object data for event with resource url '${event.resourceUrl}'" }
         val objectenApiPlugin =
             pluginService
                 .createInstance(PluginConfigurationId(objectManagement.objectenApiPluginConfigurationId)) as ObjectenApiPlugin
@@ -255,8 +239,4 @@ open class PortaalTaakEventListener(
             )
     }
 
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
-    }
 }

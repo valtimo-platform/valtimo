@@ -32,7 +32,7 @@ public enum Mapper {
     private final ObjectMapper objectMapper = new ObjectMapper()
         .findAndRegisterModules()
         .registerModule(new JavaTimeModule())
-        .registerModule(new KotlinModule.Builder().build());
+        .registerModule(new KotlinModule());
 
 
     Mapper() {

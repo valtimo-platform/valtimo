@@ -22,7 +22,6 @@ import com.ritense.valtimo.contract.mail.MailSender
 import com.ritense.valtimo.contract.mail.model.MailMessageStatus
 import com.ritense.valtimo.contract.mail.model.RawMailMessage
 import com.ritense.valtimo.contract.mail.model.TemplatedMailMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
 
 /**
@@ -40,7 +39,6 @@ class FilteredMailSender(
         if (optionalMessage.isPresent) {
             return Optional.of(mailDispatcher.send(rawMailMessage))
         }
-        logger.debug { "Skipped sending mail message." }
         return Optional.empty()
     }
 
@@ -49,7 +47,6 @@ class FilteredMailSender(
         if (optionalMessage.isPresent) {
             return Optional.of(mailDispatcher.send(templatedMailMessage))
         }
-        logger.debug { "Skipped sending mail message." }
         return Optional.empty()
     }
 
@@ -90,10 +87,6 @@ class FilteredMailSender(
             .filter { it.isEnabled }
             .sorted(compareBy { it.priority })
             .toList()
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 
 }

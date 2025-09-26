@@ -46,7 +46,7 @@ dependencies {
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
-    api "org.semver4j:semver4j:${semver4jVersion}"
+    api "jakarta.inject:jakarta.inject-api:${jakartaInjectVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-web"
@@ -61,12 +61,10 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    implementation "org.apache.httpcomponents.client5:httpclient5"
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "io.github.classgraph:classgraph:${classgraphVersion}"
 
     testImplementation project(":test-utils-common")
@@ -74,8 +72,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "com.jayway.jsonpath:json-path-assert:${jaywayJsonpathVersion}"
-
-    testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation("com.mysql:mysql-connector-j")
 
     implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
 }

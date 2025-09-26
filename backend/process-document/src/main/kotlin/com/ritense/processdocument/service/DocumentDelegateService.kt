@@ -24,19 +24,15 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.springframework.stereotype.Service
+import mu.KotlinLogging
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
-@Service
-@SkipComponentScan
 class DocumentDelegateService(
     private val processDocumentService: ProcessDocumentService,
     private val documentService: DocumentService,
@@ -77,7 +73,7 @@ class DocumentDelegateService(
 
     fun getDocument(execution: DelegateExecution): Document {
         val documentId =
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(execution.processInstanceId), execution)
+            processDocumentService.getDocumentId(CamundaProcessInstanceId(execution.processInstanceId), execution)
         return jsonSchemaDocumentService.getDocumentBy(documentId)
     }
 
@@ -85,7 +81,7 @@ class DocumentDelegateService(
         return findOptionalValueByJsonPointer(jsonPointer, execution!!).orElseThrow()
     }
 
-    fun findValueByJsonPointerOrDefault(jsonPointer: String?, execution: DelegateExecution, defaultValue: Any?): Any? {
+    fun findValueByJsonPointerOrDefault(jsonPointer: String?, execution: DelegateExecution, defaultValue: Any): Any {
         return findOptionalValueByJsonPointer(jsonPointer, execution).orElse(defaultValue)
     }
 
@@ -95,7 +91,7 @@ class DocumentDelegateService(
         }
         logger.debug("Assigning user {} to document {}", userEmail, execution.processBusinessKey)
 
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
+        val processInstanceId = CamundaProcessInstanceId(execution.processInstanceId)
         val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
         val user = userManagementService.findByEmail(userEmail)
             .orElseThrow { IllegalArgumentException("No user found with email: $userEmail") }
@@ -103,30 +99,16 @@ class DocumentDelegateService(
     }
 
     fun setInternalStatus(execution: DelegateExecution, statusKey: String?) {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
+        val processInstanceId = CamundaProcessInstanceId(execution.processInstanceId)
         val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
 
         documentService.setInternalStatus(documentId, statusKey)
     }
 
-    fun addCaseTag(execution: DelegateExecution, caseTagKey: String) {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
-
-        documentService.addCaseTag(documentId, caseTagKey)
-    }
-
-    fun removeCaseTag(execution: DelegateExecution, caseTagKey: String) {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
-        val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
-
-        documentService.removeCaseTag(documentId, caseTagKey)
-    }
-
     fun unassign(execution: DelegateExecution) {
         logger.debug("Unassigning user from document {}", execution.processBusinessKey)
 
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
+        val processInstanceId = CamundaProcessInstanceId(execution.processInstanceId)
         val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
         documentService.unassignUserFromDocument(documentId.id)
     }

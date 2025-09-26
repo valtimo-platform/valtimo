@@ -16,6 +16,7 @@
 
 package com.ritense.outbox
 
+
 import com.ritense.outbox.domain.BaseEvent
 import java.util.function.Supplier
 

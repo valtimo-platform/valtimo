@@ -16,11 +16,14 @@
 
 package com.ritense.documentenapi.web.rest
 
+import com.ritense.case.domain.CaseDefinitionSettings
+import com.ritense.case.repository.CaseDefinitionSettingsRepository
 import com.ritense.documentenapi.BaseIntegrationTest
 import com.ritense.documentenapi.service.ZgwDocumentTrefwoordService
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
+import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,9 +37,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
-import kotlin.test.assertEquals
 
 @Transactional
 internal class ZgwDocumentTrefwoordResourceIT : BaseIntegrationTest() {
@@ -46,6 +47,9 @@ internal class ZgwDocumentTrefwoordResourceIT : BaseIntegrationTest() {
 
     @Autowired
     private lateinit var service: ZgwDocumentTrefwoordService
+
+    @Autowired
+    private lateinit var caseDefinitionSettingsRepository: CaseDefinitionSettingsRepository
 
     private lateinit var mockMvc: MockMvc
 
@@ -60,6 +64,8 @@ internal class ZgwDocumentTrefwoordResourceIT : BaseIntegrationTest() {
     @WithMockUser(username = "user@ritense.com", authorities = [USER])
     fun `test getTrefwoorden as a user`() {
         val caseDefinitionName = "TestDefinition"
+
+        caseDefinitionSettingsRepository.save(CaseDefinitionSettings(caseDefinitionName))
 
         service.createTrefwoord(caseDefinitionName, "Trefwoord1")
         service.createTrefwoord(caseDefinitionName, "Trefwoord2")
@@ -80,6 +86,8 @@ internal class ZgwDocumentTrefwoordResourceIT : BaseIntegrationTest() {
     fun `test getTrefwoorden`() {
         val caseDefinitionName = "TestDefinition"
 
+        caseDefinitionSettingsRepository.save(CaseDefinitionSettings(caseDefinitionName))
+
         service.createTrefwoord(caseDefinitionName, "Trefwoord1")
         service.createTrefwoord(caseDefinitionName, "Trefwoord2")
 
@@ -98,6 +106,8 @@ internal class ZgwDocumentTrefwoordResourceIT : BaseIntegrationTest() {
     @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
     fun `test getTrefwoorden with search`() {
         val caseDefinitionName = "TestDefinition"
+
+        caseDefinitionSettingsRepository.save(CaseDefinitionSettings(caseDefinitionName))
 
         service.createTrefwoord(caseDefinitionName, "test123")
         service.createTrefwoord(caseDefinitionName, "test456")
@@ -131,25 +141,5 @@ internal class ZgwDocumentTrefwoordResourceIT : BaseIntegrationTest() {
         mockMvc.perform(delete("/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord/{trefwoord}", caseDefinitionName, trefwoord)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNoContent)
-    }
-
-    @Test
-    @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
-    fun `test deleteTrefwoorden`() {
-        val caseDefinitionName = "TestDefinition"
-
-        service.createTrefwoord(caseDefinitionName, "Trefwoord1")
-        service.createTrefwoord(caseDefinitionName, "Trefwoord2")
-        service.createTrefwoord(caseDefinitionName, "Trefwoord3")
-
-        mockMvc.perform(delete("/api/management/v1/case-definition/{caseDefinitionName}/zgw-document/trefwoord", caseDefinitionName)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("[\"Trefwoord1\", \"Trefwoord2\"]"))
-            .andExpect(status().isNoContent)
-
-        service.getTrefwoorden(caseDefinitionName).let {
-            assertEquals(1, it.size)
-            assertEquals("Trefwoord3", it[0].value)
-        }
     }
 }

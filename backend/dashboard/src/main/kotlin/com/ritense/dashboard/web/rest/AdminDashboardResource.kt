@@ -16,7 +16,6 @@
 
 package com.ritense.dashboard.web.rest
 
-import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.dashboard.datasource.WidgetDataSourceDto
 import com.ritense.dashboard.service.DashboardService
 import com.ritense.dashboard.web.rest.dto.AdminWidgetConfigurationResponseDto
@@ -45,7 +44,6 @@ class AdminDashboardResource(
     private val dashboardService: DashboardService,
 ) {
 
-    @RunWithoutAuthorization
     @GetMapping("/v1/dashboard")
     fun getDashboards(): ResponseEntity<List<DashboardResponseDto>> {
         val dashboardResponseDtos = dashboardService.getDashboards()
@@ -53,7 +51,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(dashboardResponseDtos)
     }
 
-    @RunWithoutAuthorization
     @GetMapping("/v1/dashboard/{dashboardKey}")
     fun getDashboard(
         @PathVariable(name = "dashboardKey") dashboardKey: String
@@ -62,7 +59,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(DashboardResponseDto.of(dashboard))
     }
 
-    @RunWithoutAuthorization
     @PostMapping("/v1/dashboard")
     fun createDashboard(
         @RequestBody dashboardDto: DashboardCreateRequestDto
@@ -74,7 +70,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(DashboardResponseDto.of(dashboard))
     }
 
-    @RunWithoutAuthorization
     @PutMapping("/v1/dashboard")
     fun editDashboards(
         @RequestBody dashboardUpdateRequestDtos: List<DashboardUpdateRequestDto>
@@ -84,7 +79,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(dashboardResponseDtos)
     }
 
-    @RunWithoutAuthorization
     @DeleteMapping("/v1/dashboard/{dashboardKey}")
     fun deleteDashboard(
         @PathVariable(name = "dashboardKey") dashboardKey: String
@@ -93,7 +87,6 @@ class AdminDashboardResource(
         return ResponseEntity.noContent().build()
     }
 
-    @RunWithoutAuthorization
     @PutMapping("/v1/dashboard/{dashboardKey}")
     fun editDashboard(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -107,7 +100,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(dashboardResponseDto)
     }
 
-    @RunWithoutAuthorization
     @GetMapping("/v1/dashboard/{dashboardKey}/widget-configuration")
     fun getWidgetConfigurations(
         @PathVariable(name = "dashboardKey") dashboardKey: String
@@ -117,7 +109,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(widgetDtos)
     }
 
-    @RunWithoutAuthorization
     @PostMapping("/v1/dashboard/{dashboardKey}/widget-configuration")
     fun createWidgetConfiguration(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -129,13 +120,11 @@ class AdminDashboardResource(
             widgetDto.dataSourceKey,
             widgetDto.displayType,
             widgetDto.dataSourceProperties,
-            widgetDto.displayTypeProperties,
-            widgetDto.url,
+            widgetDto.displayTypeProperties
         )
         return ResponseEntity.ok(AdminWidgetConfigurationResponseDto.of(widget))
     }
 
-    @RunWithoutAuthorization
     @PutMapping("/v1/dashboard/{dashboardKey}/widget-configuration")
     fun editWidgetConfigurations(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -146,7 +135,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(widgetResponseDtos)
     }
 
-    @RunWithoutAuthorization
     @PutMapping("/v1/dashboard/{dashboardKey}/widget-configuration/{widgetKey}")
     fun editWidgetConfiguration(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -158,7 +146,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(widgetResponseDto)
     }
 
-    @RunWithoutAuthorization
     @GetMapping("/v1/dashboard/{dashboardKey}/widget-configuration/{widgetKey}")
     fun getWidgetConfigurations(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -168,7 +155,6 @@ class AdminDashboardResource(
         return ResponseEntity.ok(AdminWidgetConfigurationResponseDto.of(widget))
     }
 
-    @RunWithoutAuthorization
     @DeleteMapping("/v1/dashboard/{dashboardKey}/widget-configuration/{widgetKey}")
     fun deleteWidgetConfiguration(
         @PathVariable(name = "dashboardKey") dashboardKey: String,
@@ -178,7 +164,6 @@ class AdminDashboardResource(
         return ResponseEntity.noContent().build()
     }
 
-    @RunWithoutAuthorization
     @GetMapping("/v1/dashboard/widget-data-sources")
     fun getWidgetDataSources(): ResponseEntity<List<WidgetDataSourceDto>> {
         return ResponseEntity.ok(dashboardService.getWidgetDataSources())

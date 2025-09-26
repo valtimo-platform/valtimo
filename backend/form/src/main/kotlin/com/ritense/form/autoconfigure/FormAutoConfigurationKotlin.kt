@@ -19,35 +19,23 @@ package com.ritense.form.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
-import com.ritense.case.service.CaseDefinitionService
-import com.ritense.document.service.DocumentService
-import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.autodeployment.FormDefinitionDeploymentService
-import com.ritense.form.casewidget.FormIoCaseWidgetDataProvider
-import com.ritense.form.casewidget.FormIoCaseWidgetMapper
-import com.ritense.form.listener.FormCaseEventListener
-import com.ritense.form.repository.IntermediateSubmissionRepository
 import com.ritense.form.security.config.FormHttpSecurityConfigurerKotlin
 import com.ritense.form.service.FormDefinitionExporter
 import com.ritense.form.service.FormDefinitionImporter
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.service.FormSubmissionService
 import com.ritense.form.service.FormSupportedProcessLinksHandler
-import com.ritense.form.service.IntermediateSubmissionService
 import com.ritense.form.service.PrefillFormService
 import com.ritense.form.service.impl.DefaultFormSubmissionService
 import com.ritense.form.service.impl.FormIoFormDefinitionService
-import com.ritense.form.validation.FormDefinitionExistsValidator
-import com.ritense.form.web.rest.FormOptionResource
 import com.ritense.form.web.rest.FormResource
-import com.ritense.form.web.rest.IntermediateSubmissionResource
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
+import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
+import com.ritense.valtimo.service.CamundaTaskService
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.ApplicationEventPublisher
@@ -59,7 +47,6 @@ import org.springframework.core.annotation.Order
 class FormAutoConfigurationKotlin {
 
     @Bean
-    @Order(10)
     @ConditionalOnMissingBean(FormSupportedProcessLinksHandler::class)
     fun formSupportedProcessLinks(
         formDefinitionService: FormDefinitionService
@@ -75,12 +62,10 @@ class FormAutoConfigurationKotlin {
     @Bean
     @ConditionalOnMissingBean(FormResource::class)
     fun formResource(
-        documentService: DocumentService,
         formSubmissionService: FormSubmissionService,
         prefillFormService: PrefillFormService,
         formDefinitionService: FormDefinitionService,
     ) = FormResource(
-        documentService,
         formSubmissionService,
         prefillFormService,
         formDefinitionService
@@ -98,31 +83,27 @@ class FormAutoConfigurationKotlin {
         processLinkService: ProcessLinkService,
         formDefinitionService: FormIoFormDefinitionService,
         documentService: JsonSchemaDocumentService,
-        documentDefinitionService: JsonSchemaDocumentDefinitionService,
-        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
+        processDocumentAssociationService: ProcessDocumentAssociationService,
         processDocumentService: ProcessDocumentService,
-        operatonTaskService: OperatonTaskService,
-        repositoryService: OperatonRepositoryService,
+        camundaTaskService: CamundaTaskService,
+        repositoryService: CamundaRepositoryService,
         applicationEventPublisher: ApplicationEventPublisher,
         prefillFormService: PrefillFormService,
         authorizationService: AuthorizationService,
         valueResolverService: ValueResolverService,
-        caseDefinitionService: CaseDefinitionService,
         objectMapper: ObjectMapper,
     ) = DefaultFormSubmissionService(
         processLinkService,
         formDefinitionService,
         documentService,
-        documentDefinitionService,
-        processDefinitionCaseDefinitionService,
+        processDocumentAssociationService,
         processDocumentService,
-        operatonTaskService,
+        camundaTaskService,
         repositoryService,
         applicationEventPublisher,
         prefillFormService,
         authorizationService,
         valueResolverService,
-        caseDefinitionService,
         objectMapper,
     )
 
@@ -132,61 +113,8 @@ class FormAutoConfigurationKotlin {
         objectMapper: ObjectMapper,
         formDefinitionService: FormDefinitionService
     ) = FormDefinitionExporter(
-        objectMapper,
-        formDefinitionService
-    )
+            objectMapper,
+            formDefinitionService
+        )
 
-    @ConditionalOnMissingBean(FormIoCaseWidgetMapper::class)
-    @Bean
-    fun formIoCaseWidgetMapper() = FormIoCaseWidgetMapper()
-
-    @ConditionalOnMissingBean(FormIoCaseWidgetDataProvider::class)
-    @Bean
-    fun formIoCaseWidgetDataProvider(
-        formDefinitionService: FormDefinitionService,
-        formService: PrefillFormService
-    ) = FormIoCaseWidgetDataProvider(formDefinitionService, formService)
-
-    @ConditionalOnMissingBean(FormDefinitionExistsValidator::class)
-    @Bean
-    fun formDefinitionExistsValidator(formDefinitionService: FormDefinitionService) =
-        FormDefinitionExistsValidator(formDefinitionService)
-
-    @Bean
-    @ConditionalOnMissingBean(IntermediateSubmissionService::class)
-    fun intermediateSubmissionService(
-        intermediateSubmissionRepository: IntermediateSubmissionRepository,
-        userManagementService: UserManagementService,
-        authorizationService: AuthorizationService,
-        operatonTaskService: OperatonTaskService
-    ) = IntermediateSubmissionService(
-        intermediateSubmissionRepository = intermediateSubmissionRepository,
-        userManagementService = userManagementService,
-        authorizationService = authorizationService,
-        operatonTaskService = operatonTaskService
-    )
-
-    @Bean
-    @ConditionalOnMissingBean(IntermediateSubmissionResource::class)
-    fun intermediateSubmissionResource(
-        intermediateSubmissionService: IntermediateSubmissionService
-    ) = IntermediateSubmissionResource(
-        intermediateSubmissionService
-    )
-
-    @Bean
-    @ConditionalOnMissingBean(FormOptionResource::class)
-    fun formOptionResource(
-        formDefinitionService: FormDefinitionService
-    ) = FormOptionResource(
-        formDefinitionService
-    )
-
-    @Bean
-    @ConditionalOnMissingBean(FormCaseEventListener::class)
-    fun formCaseEventListener(
-        formDefinitionService: FormDefinitionService,
-        processLinkService: ProcessLinkService
-    ) =
-        FormCaseEventListener(formDefinitionService, processLinkService)
 }

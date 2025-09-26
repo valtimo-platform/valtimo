@@ -29,9 +29,9 @@ import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginCategory
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.processlink.domain.ActivityTypeWithEventName
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.springframework.context.ApplicationContext
-import org.springframework.web.client.RestClient
+import org.springframework.web.reactive.function.client.WebClient
 import java.time.LocalDateTime
 
 @PluginCategory(key = "exact-supplier")
@@ -42,7 +42,7 @@ import java.time.LocalDateTime
 )
 class ExactPlugin(
     private val exactService: ExactService,
-    private val exactClient: RestClient,
+    private val exactClient: WebClient,
     private val context: ApplicationContext
 ) {
 
@@ -105,14 +105,15 @@ class ExactPlugin(
 
         if (properties.bean != null) {
             val bean = context.getBean(properties.bean, ExactGetRequest::class.java)
-            val response = bean.createRequest(execution, token).call(exactClient)
+            val response = bean.createRequest(execution, token)
+                .call(exactClient)
             bean.handleResponse(execution, response)
         } else {
             execution.setVariable(
                 "exactGetResult", GetEndpoint(
-                    token,
-                    properties.uri!!
-                ).call(exactClient)
+                        token,
+                        properties.uri!!
+                    ).call(exactClient)
             )
         }
     }
@@ -123,15 +124,13 @@ class ExactPlugin(
         description = "Make a POST call to Exact",
         activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
     )
-    fun postCallExact(
-        execution: DelegateExecution,
-        @PluginActionProperty properties: ExactCallProperties
-    ) {
+    fun postCallExact(execution: DelegateExecution, @PluginActionProperty properties: ExactCallProperties) {
         val token = exactService.refreshAccessTokens(exactService.getPluginConfiguration(this))
 
         if (properties.bean != null) {
             val bean = context.getBean(properties.bean, ExactPostRequest::class.java)
-            val response = bean.createRequest(execution, token).call(exactClient)
+            val response = bean.createRequest(execution, token)
+                .call(exactClient)
             bean.handleResponse(execution, response)
         } else {
             execution.setVariable(
@@ -155,7 +154,8 @@ class ExactPlugin(
 
         if (properties.bean != null) {
             val bean = context.getBean(properties.bean, ExactPutRequest::class.java)
-            val response = bean.createRequest(execution, token).call(exactClient)
+            val response = bean.createRequest(execution, token)
+                .call(exactClient)
             bean.handleResponse(execution, response)
         } else {
             execution.setVariable(

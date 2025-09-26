@@ -22,7 +22,6 @@ import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginProperty
 import org.hibernate.validator.constraints.Length
 import org.springframework.http.HttpHeaders
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
@@ -33,7 +32,8 @@ import reactor.core.publisher.Mono
     title = "Object Token Authentication",
     description = "Plugin used to provide authentication based on a token"
 )
-class ObjectTokenAuthenticationPlugin : ObjectenApiAuthentication, ObjecttypenApiAuthentication {
+class ObjectTokenAuthenticationPlugin
+    : ObjectenApiAuthentication, ObjecttypenApiAuthentication {
 
     @Length(min = 20)
     @PluginProperty(key = "token", secret = true, required = true)
@@ -44,11 +44,5 @@ class ObjectTokenAuthenticationPlugin : ObjectenApiAuthentication, ObjecttypenAp
             headers.set(HttpHeaders.AUTHORIZATION, "Token $token")
         }.build()
         return next.exchange(filteredRequest)
-    }
-
-    override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-        return builder.defaultHeaders { headers ->
-            headers.set(HttpHeaders.AUTHORIZATION, "Token $token")
-        }
     }
 }

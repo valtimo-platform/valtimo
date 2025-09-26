@@ -31,10 +31,10 @@ public class UserSettingsService {
     }
 
     public Optional<UserSettings> findUserSettings(ManageableUser user) {
-        return userSettingsRepository.findById(user.getUsername());
+        return userSettingsRepository.findById(user.getId());
     }
 
     public void saveUserSettings(ManageableUser user, Map<String, Object> settings) {
-        userSettingsRepository.save(new UserSettings(user.getUsername(), settings));
+        userSettingsRepository.save(new UserSettings(user.getId(), settings));
     }
 }

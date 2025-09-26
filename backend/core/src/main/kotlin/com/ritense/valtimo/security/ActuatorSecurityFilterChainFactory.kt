@@ -18,8 +18,6 @@ package com.ritense.valtimo.security
 
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ACTUATOR
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties
-import org.springframework.boot.actuate.endpoint.Show
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.authentication.AuthenticationManager
@@ -37,21 +35,9 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher
 
 class ActuatorSecurityFilterChainFactory {
 
-    @Deprecated("Will be removed in 13.0", ReplaceWith("createFilterChain(http, webEndpointProperties, healthEndpointProperties, passwordEncoder, username, password)"))
     fun createFilterChain(
         http: HttpSecurity,
         webEndpointProperties: WebEndpointProperties,
-        passwordEncoder: PasswordEncoder,
-        username: String,
-        password: String
-    ): SecurityFilterChain {
-        return createFilterChain(http, webEndpointProperties, null, passwordEncoder, username, password)
-    }
-
-    fun createFilterChain(
-        http: HttpSecurity,
-        webEndpointProperties: WebEndpointProperties,
-        healthEndpointProperties: HealthEndpointProperties?,
         passwordEncoder: PasswordEncoder,
         username: String,
         password: String
@@ -59,23 +45,9 @@ class ActuatorSecurityFilterChainFactory {
         val matchers = getActuatorMatchers(webEndpointProperties.basePath)
         http
             .securityMatcher(OrRequestMatcher(*matchers))
-            .authorizeHttpRequests {
-                if (healthEndpointProperties != null && (
-                        //Allow access to this endpoint only if the details are not shown to anonymous users or users without ROLE_ACTUATOR
-                        healthEndpointProperties.showDetails == Show.NEVER || (
-                            healthEndpointProperties.showDetails == Show.WHEN_AUTHORIZED &&
-                            healthEndpointProperties.roles.contains(ACTUATOR)
-                        )
-                )) {
-                    it.requestMatchers(getHealthMatcher(webEndpointProperties.basePath)).permitAll()
-                }
-                it.requestMatchers(*matchers).hasAuthority(ACTUATOR)
-            }
+            .authorizeHttpRequests { it.requestMatchers(*matchers).hasAuthority(ACTUATOR) }
             .authenticationManager(actuatorAuthenticationManager(passwordEncoder, username, password))
             .httpBasic { it.realmName(ACTUATOR_REALM) }
-            .csrf {
-                csrfConfigurer -> csrfConfigurer.ignoringRequestMatchers("${webEndpointProperties.basePath}/loggers/**")
-            }
 
         return http.build()
     }
@@ -111,7 +83,7 @@ class ActuatorSecurityFilterChainFactory {
         antMatcher(GET, actuatorPath),
         antMatcher(GET, "${actuatorPath}/configprops"),
         antMatcher(GET, "${actuatorPath}/env"),
-        getHealthMatcher(actuatorPath),
+        antMatcher(GET, "${actuatorPath}/health"),
         antMatcher(GET, "${actuatorPath}/health/liveness"),
         antMatcher(GET, "${actuatorPath}/health/readiness"),
         antMatcher(GET, "${actuatorPath}/mappings"),
@@ -120,9 +92,6 @@ class ActuatorSecurityFilterChainFactory {
         antMatcher(POST, "${actuatorPath}/loggers/**"),
         antMatcher(GET, "${actuatorPath}/info"),
     )
-
-    private fun getHealthMatcher(actuatorPath: String) =
-        antMatcher(GET, "${actuatorPath}/health")
 
     companion object {
         const val ACTUATOR_REALM = "Actuator realm"

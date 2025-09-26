@@ -16,8 +16,6 @@
 
 package com.ritense.valtimo.contract.database;
 
-import static com.ritense.valtimo.contract.database.ExpressionHelper.cast;
-
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
@@ -44,7 +42,7 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
             // Booleans extracted from JSON can be true/false while MySQL only accepts 1/0.
             return cb.function("IF", type, jsonValue, cb.literal(1), cb.literal(0));
         } else {
-            return cast(jsonValue, type);
+            return jsonValue.as(type);
         }
     }
 
@@ -52,7 +50,7 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
     public Predicate getJsonValueExistsExpression(CriteriaBuilder cb, Path column, String value) {
         Expression<?> searchColumn = column;
         Expression<?> searchValue = cb.literal("%" + value.trim() + "%");
-        if (column.getJavaType() == String.class || column.getJavaType() == Object.class) {
+        if (column.getJavaType() == String.class) {
             searchColumn = cb.function(LOWER_CASE_FUNCTION, String.class, searchColumn);
             searchValue = cb.function(LOWER_CASE_FUNCTION, String.class, searchValue);
         }
@@ -73,7 +71,7 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
         Expression<?> searchColumn = column;
         Expression<?> searchPath = cb.literal(path);
         Expression<?> searchValue = cb.literal("%" + value.trim() + "%");
-        if (column.getJavaType() == String.class || column.getJavaType() == Object.class) {
+        if (column.getJavaType() == String.class) {
             searchColumn = cb.function(LOWER_CASE_FUNCTION, String.class, searchColumn);
             searchPath = cb.function(LOWER_CASE_FUNCTION, String.class, searchPath);
             searchValue = cb.function(LOWER_CASE_FUNCTION, String.class, searchValue);

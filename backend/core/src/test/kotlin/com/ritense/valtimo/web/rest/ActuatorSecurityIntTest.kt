@@ -16,19 +16,14 @@
 
 package com.ritense.valtimo.web.rest
 
-import com.jayway.jsonpath.JsonPath.read
-import com.jayway.jsonpath.PathNotFoundException
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import java.util.Base64
 
@@ -36,85 +31,40 @@ import java.util.Base64
 class ActuatorSecurityIntTest : SecuritySpecificEndpointIntegrationTest() {
 
     @Test
-    fun `actuator user should have full access to health endpoint`() {
+    fun `actuator user should have access to actuator endpoints`() {
         val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/health")
-            .init()
-            .withBasicTestUser()
-
-        val response = mockMvc.perform(request).andReturn().response
-        assertThat(response.status).isEqualTo(HttpStatus.OK.value())
-
-        val pingStatus = read<Any>(response.contentAsString, "$.components.ping.status")
-        assertThat(pingStatus).isEqualTo("UP")
-    }
-
-    @Test
-    @WithMockUser(authorities = [AuthoritiesConstants.USER])
-    fun `authenticated user should have access to health endpoint without details`() {
-        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/health")
-            .init()
-
-        val response = mockMvc.perform(request).andReturn().response
-        assertThat(response.status).isEqualTo(HttpStatus.OK.value())
-
-        assertThrows<PathNotFoundException> {
-            read<Map<String, Any>>(response.contentAsString, "$.components")
+        val credentials = Base64.getEncoder().encodeToString("test:test".toByteArray())
+        request.accept(MediaType.APPLICATION_JSON)
+        request.header("Authorization", "Basic $credentials")
+        request.with { r: MockHttpServletRequest ->
+            r.remoteAddr = "8.8.8.8"
+            r
         }
-    }
-
-    @Test
-    fun `unauthenticated user should have access to health endpoint without details`() {
-        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/health")
-            .init()
-
-        val response = mockMvc.perform(request).andReturn().response
-        assertThat(response.status).isEqualTo(HttpStatus.OK.value())
-
-        assertThrows<PathNotFoundException> {
-            read<Map<String, Any>>(response.contentAsString, "$.components")
-        }
-    }
-
-    @Test
-    fun `actuator user should have access to configprops endpoint`() {
-        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/configprops")
-            .init()
-            .withBasicTestUser()
-
-        val response = mockMvc.perform(request).andReturn().response
-        assertThat(response.status).isEqualTo(HttpStatus.OK.value())
-
-        val contexts = read<Map<String,Any>>(response.contentAsString, "$.contexts")
-        assertThat(contexts).containsKey("application")
+        assertHttpStatus(request, HttpStatus.OK)
     }
 
     @Test
     fun `actuator user should not have access to non-actuator endpoints`() {
         val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/api/v1/valtimo/version")
-            .init()
-            .withBasicTestUser()
+        val credentials = Base64.getEncoder().encodeToString("test:test".toByteArray())
+        request.accept(MediaType.APPLICATION_JSON)
+        request.header("Authorization", "Basic $credentials")
+        request.with { r: MockHttpServletRequest ->
+            r.remoteAddr = "8.8.8.8"
+            r
+        }
         assertHttpStatus(request, HttpStatus.FORBIDDEN)
     }
 
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `admin user should not have access to actuator endpoints`() {
-        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/configprops")
-            .init()
+        val request = MockMvcRequestBuilders.request(HttpMethod.GET, "/actuator/health")
+        request.accept(MediaType.APPLICATION_JSON)
+        request.with { r: MockHttpServletRequest ->
+            r.remoteAddr = "8.8.8.8"
+            r
+        }
         assertHttpStatus(request, HttpStatus.FORBIDDEN)
     }
-
-    fun MockHttpServletRequestBuilder.init() =
-        this.accept(MediaType.APPLICATION_JSON)
-            .with { r: MockHttpServletRequest ->
-                r.remoteAddr = "8.8.8.8"
-                r
-            }
-
-    fun MockHttpServletRequestBuilder.withBasicTestUser(): MockHttpServletRequestBuilder {
-        val credentials = Base64.getEncoder().encodeToString("test:test".toByteArray())
-
-        return this.header("Authorization", "Basic $credentials")
-    }
-
 }

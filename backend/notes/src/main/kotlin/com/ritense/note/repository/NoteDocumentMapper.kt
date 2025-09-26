@@ -21,7 +21,7 @@ import com.ritense.authorization.AuthorizationEntityMapper
 import com.ritense.authorization.AuthorizationEntityMapperResult
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
+import com.ritense.document.service.DocumentService
 import com.ritense.note.domain.Note
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
@@ -29,33 +29,22 @@ import jakarta.persistence.criteria.Root
 import java.util.UUID
 
 class NoteDocumentMapper(
-    private val documentRepository: JsonSchemaDocumentRepository
+    private val documentService: DocumentService
 ) : AuthorizationEntityMapper<Note, JsonSchemaDocument> {
     override fun mapRelated(entity: Note): List<JsonSchemaDocument> {
-        return runWithoutAuthorization { listOf(documentRepository.findById(JsonSchemaDocumentId.existingId(entity.documentId)).get()) }
+        return runWithoutAuthorization { listOf(documentService.get(entity.documentId.toString()) as JsonSchemaDocument) }
     }
 
-    override fun mapQuery(
-        root: Root<Note>,
-        query: AbstractQuery<*>,
-        criteriaBuilder: CriteriaBuilder
-    ): AuthorizationEntityMapperResult<JsonSchemaDocument> {
-
-        val subquery = query.subquery(Int::class.java)
-        val documentRoot = subquery.from(JsonSchemaDocument::class.java)
-
-        subquery.select(criteriaBuilder.literal(1))
-            .where(
-                criteriaBuilder.equal(
-                    root.get<UUID>("documentId"),
-                    documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id")
-                )
-            )
+    override fun mapQuery(root: Root<Note>, query: AbstractQuery<*>, criteriaBuilder: CriteriaBuilder): AuthorizationEntityMapperResult<JsonSchemaDocument> {
+        val documentRoot: Root<JsonSchemaDocument> = query.from(JsonSchemaDocument::class.java)
+        val groupList = query.groupList.toMutableList()
+        groupList.add(root.get<UUID>("documentId"))
+        query.groupBy(groupList)
 
         return AuthorizationEntityMapperResult(
             documentRoot,
-            subquery,
-            criteriaBuilder.exists(subquery)
+            query,
+            criteriaBuilder.equal(root.get<UUID>("documentId"), documentRoot.get<JsonSchemaDocumentId>("id").get<UUID>("id"))
         )
     }
 

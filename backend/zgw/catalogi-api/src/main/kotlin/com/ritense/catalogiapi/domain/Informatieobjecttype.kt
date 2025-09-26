@@ -16,7 +16,6 @@
 
 package com.ritense.catalogiapi.domain
 
-import java.io.Serializable
 import java.net.URI
 import java.time.LocalDate
 
@@ -28,4 +27,4 @@ class Informatieobjecttype(
     val beginGeldigheid: LocalDate,
     val eindeGeldigheid: LocalDate?,
     val concept: Boolean
-) : Serializable
+)

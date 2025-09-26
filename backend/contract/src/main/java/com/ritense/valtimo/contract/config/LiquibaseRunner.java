@@ -19,15 +19,9 @@ package com.ritense.valtimo.contract.config;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Stream;
 import javax.sql.DataSource;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.Scope;
-import liquibase.command.CommandFactory;
-import liquibase.command.core.AbstractUpdateCommandStep;
-import liquibase.command.core.UpdateCommandStep;
-import liquibase.command.core.UpdateSqlCommandStep;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
@@ -61,7 +55,6 @@ public class LiquibaseRunner {
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
         try {
             for (LiquibaseMasterChangeLogLocation changeLogLocation : liquibaseMasterChangeLogLocations) {
-                disableFastCheckCaching();
                 runChangeLog(database, changeLogLocation.getFilePath());
             }
         } catch (LiquibaseException liquibaseException) {
@@ -82,13 +75,5 @@ public class LiquibaseRunner {
         Liquibase liquibase = new Liquibase(filePath, new ClassLoaderResourceAccessor(), database);
         logger.info("Running liquibase master changelog: {}", liquibase.getChangeLogFile());
         liquibase.update(context);
-    }
-
-    private void disableFastCheckCaching() {
-        CommandFactory commandFactory = Scope.getCurrentScope().getSingleton(CommandFactory.class);
-        Stream.of(UpdateSqlCommandStep.COMMAND_NAME, UpdateCommandStep.COMMAND_NAME)
-            .flatMap(command -> commandFactory.getCommandDefinition(command).getPipeline().stream())
-            .filter(AbstractUpdateCommandStep.class::isInstance)
-            .forEach(it -> ((AbstractUpdateCommandStep) it).setFastCheckEnabled(false));
     }
 }

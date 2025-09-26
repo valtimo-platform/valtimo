@@ -19,29 +19,21 @@ package com.ritense.importer
 class ValtimoImportTypes {
     companion object {
         // CORE
-        const val CASE_DEFINITION = "casedefinition"
+        const val CASE_DEFINITION_SETTINGS = "casesettings"
         const val CASE_LIST = "caselist"
         const val CASE_TAB = "casetab"
-        const val CASE_TAG = "casetag"
-        const val CASE_WIDGET_TAB = "casewidgettab"
         const val CASE_TASK_LIST = "casetasklist"
+        const val INTERNAL_CASE_STATUS = "internalcasestatus"
         const val DECISION_DEFINITION = "decisiondefinition"
         const val DOCUMENT_DEFINITION = "documentdefinition"
         const val FORM = "form"
         const val FORM_FLOW = "formflow"
-        const val INTERNAL_CASE_STATUS = "internalcasestatus"
         const val PROCESS_DEFINITION = "processdefinition"
-        const val GLOBAL_PROCESS_DEFINITION = "globalprocessdefinition"
-        const val GLOBAL_DECISION_DEFINITION = "globaldecisiondefinition"
         const val PROCESS_DOCUMENT_LINK = "processdocumentlink"
         const val PROCESS_LINK = "processlink"
         const val SEARCH = "search"
-        const val SEARCH_FIELD = "searchField"
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"
-        const val ZGW_DOCUMENT_TREFWOORD = "zgwdocumenttrefwoord"
-        const val ZGW_DOCUMENT_UPLOAD_FIELD = "zgwdocumentuploadfield"
-        const val ZGW_ZAAK_TYPE_LINK = "zgwzaaktypelink"
     }
 }
