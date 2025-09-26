@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3313:5432"
+        environment:
+            - POSTGRES_DB=milestones-test
