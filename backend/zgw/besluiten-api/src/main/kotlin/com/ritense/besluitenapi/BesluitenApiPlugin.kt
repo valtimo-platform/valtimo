@@ -33,8 +33,9 @@ import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zgw.LoggingConstants.BESLUITEN_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
 import com.ritense.zgw.Rsin
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import mu.KLogger
+import mu.KotlinLogging
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
@@ -163,7 +164,7 @@ class BesluitenApiPlugin(
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
         const val PLUGIN_KEY = "besluitenapi"
         const val URL_PROPERTY = "url"
 

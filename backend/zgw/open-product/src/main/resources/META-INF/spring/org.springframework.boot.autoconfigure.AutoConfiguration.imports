@@ -1,0 +1,2 @@
+com.ritense.openproduct.plugin.OpenProductPluginAutoConfiguration
+com.ritense.openproduct.config.ProductResolverAutoConfiguration

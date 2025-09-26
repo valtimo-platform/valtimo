@@ -22,6 +22,7 @@ import com.ritense.valtimo.domain.ValtimoApplicationProperty
 import com.ritense.valtimo.repository.ValtimoApplicationPropertyRepository
 import jakarta.annotation.PostConstruct
 import org.springframework.stereotype.Service
+import kotlin.jvm.optionals.getOrNull
 
 @Service
 @SkipComponentScan
@@ -29,10 +30,18 @@ class ValtimoApplicationPropertyService(
     val repository: ValtimoApplicationPropertyRepository,
     val valtimoProperties: ValtimoProperties
 ) {
-
-    @Deprecated("Since 13.0.0")
     @PostConstruct
     fun databaseValidation() {
-        repository.save(ValtimoApplicationProperty("identifierField", "username"))
+        val identifierField = repository.findById("identifierField").getOrNull()
+        if (identifierField == null) {
+            repository.save(
+                ValtimoApplicationProperty(
+                    "identifierField",
+                    valtimoProperties.oauth.identifierField.toString()
+                )
+            )
+        } else {
+            require(identifierField.propertyValue == valtimoProperties.oauth.identifierField.toString())
+        }
     }
 }
