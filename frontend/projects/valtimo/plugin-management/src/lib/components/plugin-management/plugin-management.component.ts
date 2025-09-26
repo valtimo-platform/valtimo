@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,25 +22,17 @@ import {
   PluginTranslationService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
+import {BehaviorSubject, combineLatest} from 'rxjs';
 import {map, switchMap, take, tap} from 'rxjs/operators';
 import {PluginManagementStateService} from '../../services';
-import {cloneDeep} from 'lodash';
-import {v4 as uuidv4} from 'uuid';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-plugin-management',
   templateUrl: './plugin-management.component.html',
   styleUrls: ['./plugin-management.component.scss'],
 })
 export class PluginManagementComponent {
   public readonly fields: ColumnConfig[] = [
-    {
-      key: 'title',
-      label: 'pluginManagement.labels.configurationName',
-      viewType: ViewType.TEXT,
-    },
     {
       key: 'pluginName',
       label: 'pluginManagement.labels.pluginName',
@@ -51,15 +43,16 @@ export class PluginManagementComponent {
       label: 'pluginManagement.labels.identifier',
       viewType: ViewType.TEXT,
     },
+    {
+      key: 'title',
+      label: 'pluginManagement.labels.configurationName',
+      viewType: ViewType.TEXT,
+    },
   ];
   public readonly actionItems: ActionItem[] = [
     {
       callback: this.editConfiguration.bind(this),
       label: 'interface.edit',
-    },
-    {
-      label: 'interface.duplicate',
-      callback: this.duplicateConfiguration.bind(this),
     },
     {
       callback: this.deleteConfiguration.bind(this),
@@ -71,32 +64,28 @@ export class PluginManagementComponent {
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly showEditModal$ = new BehaviorSubject<boolean>(false);
   public readonly showAddModal$ = new BehaviorSubject<boolean>(false);
-  public readonly pluginConfigurations$: Observable<PluginConfiguration[]> =
-    this.stateService.refresh$.pipe(
-      switchMap(() =>
-        combineLatest([
-          this.pluginManagementService.getAllPluginConfigurations(),
-          this.translateService.stream('key'),
-        ]).pipe(
-          map(([pluginConfigurations]) =>
-            pluginConfigurations.map(configuration => ({
-              ...configuration,
-              pluginName: this.pluginTranslationService.instant(
-                'title',
-                configuration.pluginDefinition?.key ?? ''
-              ),
-              definitionKey: configuration.pluginDefinition?.key ?? '',
-            }))
-          ),
-          tap(() => {
-            this.loading$.next(false);
-          })
-        )
+  public readonly pluginConfigurations$ = this.stateService.refresh$.pipe(
+    switchMap(() =>
+      combineLatest([
+        this.pluginManagementService.getAllPluginConfigurations(),
+        this.translateService.stream('key'),
+      ]).pipe(
+        map(([pluginConfigurations]) =>
+          pluginConfigurations.map(configuration => ({
+            ...configuration,
+            pluginName: this.pluginTranslationService.instant(
+              'title',
+              configuration.pluginDefinition?.key ?? ''
+            ),
+            definitionKey: configuration.pluginDefinition?.key ?? '',
+          }))
+        ),
+        tap(() => {
+          this.loading$.next(false);
+        })
       )
-    );
-
-  public readonly saveNewConfiguration$ = new BehaviorSubject<boolean>(false);
-
+    )
+  );
   constructor(
     private readonly logger: NGXLogger,
     private readonly pluginManagementService: PluginManagementService,
@@ -111,7 +100,6 @@ export class PluginManagementComponent {
 
   public editConfiguration(configuration: PluginConfiguration): void {
     this.showEditModal$.next(true);
-    this.saveNewConfiguration$.next(false);
     this.stateService.selectPluginConfiguration(configuration);
   }
 
@@ -139,13 +127,5 @@ export class PluginManagementComponent {
 
   public closeAddModal(): void {
     this.showAddModal$.next(false);
-  }
-
-  public duplicateConfiguration(configuration: PluginConfiguration): void {
-    const configurationClone = cloneDeep(configuration);
-    configurationClone.id = uuidv4();
-    this.showEditModal$.next(true);
-    this.saveNewConfiguration$.next(true);
-    this.stateService.selectPluginConfiguration(configurationClone);
   }
 }

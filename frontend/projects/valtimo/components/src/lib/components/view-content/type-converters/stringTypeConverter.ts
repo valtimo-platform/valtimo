@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,19 +21,7 @@ export class StringTypeConverter implements TypeConverter {
     return 'string';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
   public convert(value: any): string {
-    if (!value) return '-';
-
-    if (Array.isArray(value) && typeof value[0] === 'string')
-      return value.reduce(
-        (acc, curr, index) => `${acc}${index < value.length && index > 0 ? ', ' : ''}${curr}`,
-        ''
-      );
-
     return value;
   }
 }

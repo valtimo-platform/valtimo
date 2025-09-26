@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import {
   SelectModule,
   TableColumn,
   TableModule,
+  TitleModule,
   VModalComponent,
   VModalModule,
 } from '@valtimo/components';
@@ -37,7 +38,7 @@ import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
-  selector: 'valtimo-case-detail-tab-zaakobjecten',
+  selector: 'valtimo-dossier-detail-tab-zaakobjecten',
   templateUrl: './zaakobjecten.component.html',
   styleUrls: ['./zaakobjecten.component.scss'],
   standalone: true,
@@ -48,11 +49,12 @@ import {TranslateModule} from '@ngx-translate/core';
     ParagraphModule,
     TableModule,
     VModalModule,
+    TitleModule,
     FormIoModule,
     TranslateModule,
   ],
 })
-export class CaseDetailTabZaakobjectenComponent {
+export class DossierDetailTabZaakobjectenComponent {
   @ViewChild('viewZaakobjectModal') viewZaakobjectModal: VModalComponent;
 
   private readonly documentId$ = this.route.params.pipe(map(params => params.documentId));
@@ -82,15 +84,15 @@ export class CaseDetailTabZaakobjectenComponent {
 
   readonly columns$ = new BehaviorSubject<Array<TableColumn>>([
     {
-      labelTranslationKey: 'case.zaakobjecten.index',
+      labelTranslationKey: 'dossier.zaakobjecten.index',
       dataKey: 'index',
     },
     {
-      labelTranslationKey: 'case.zaakobjecten.registrationAt',
+      labelTranslationKey: 'dossier.zaakobjecten.registrationAt',
       dataKey: 'registrationAt',
     },
     {
-      labelTranslationKey: 'case.zaakobjecten.title',
+      labelTranslationKey: 'dossier.zaakobjecten.title',
       dataKey: 'title',
     },
   ]);

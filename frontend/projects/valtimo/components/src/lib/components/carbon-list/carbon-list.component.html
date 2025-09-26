@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -100,7 +100,6 @@
 
 <ng-template #actionsMenuTemplate let-data="data">
   <cds-overflow-menu
-    *ngIf="showActionItems"
     [open]="currentOpenActionId === data.item"
     (openChange)="handleActionOpenChange(data.item, $event)"
     [flip]="true"
@@ -142,7 +141,7 @@
       size="sm"
       (click)="onMoveUpClick($event, data)"
     >
-      <svg cdsIcon="arrow--up" size="16"></svg>
+      <svg cdsIcon="arrow--up" size="16" class="cds--btn__icon"></svg>
     </button>
 
     <button
@@ -152,7 +151,7 @@
       size="sm"
       (click)="onMoveDownClick($event, data)"
     >
-      <svg cdsIcon="arrow--down" size="16"></svg>
+      <svg cdsIcon="arrow--down" size="16" class="cds--btn__icon"></svg>
     </button>
   </div>
 </ng-template>
@@ -166,36 +165,32 @@
       size="sm"
       (mousedown)="onDragStart($event, data)"
     >
-      <svg cdsIcon="draggable" size="16"></svg>
+      <svg cdsIcon="draggable" size="16" class="cds--btn__icon"></svg>
     </button>
   </div>
 </ng-template>
 
 <ng-template #tagTemplate let-data="data">
-  @if (!data.tags) {
-    -
-  } @else {
-    <div class="tag-template">
-      @if (data.tags.length === 0) {
-        -
-      } @else {
-        @for (tag of data.tags.slice(0, data.tagAmount); track tag) {
-          <cds-tag class="cds-tag--no-margin" [type]="tag.type">
-            {{ tag.ellipsisContent ?? tag.content }}
-          </cds-tag>
-        }
+  <ng-container *ngIf="!data.tags">-</ng-container>
 
-        <cds-tag
-          *ngIf="data.tags.length > data.tagAmount"
-          class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
-          type="high-contrast"
-          (click)="onTagClick($event, data.tags)"
-        >
-          {{ data.tags.length - data.tagAmount }} <svg cdsIcon="add" size="16"></svg>
-        </cds-tag>
-      }
-    </div>
-  }
+  <div *ngIf="data.tags" class="tag-template">
+    @if (data.tags.length === 0) {
+      -
+    } @else {
+      <cds-tag *ngIf="!!data.tags[0].content" class="cds-tag--no-margin" [type]="data.tags[0].type">
+        {{ data.tags[0].ellipsisContent ?? data.tags[0].content }}
+      </cds-tag>
+
+      <cds-tag
+        *ngIf="data.tags.length > 1"
+        class="cds-tag--no-margin valtimo-carbon-list__expand-tag"
+        type="high-contrast"
+        (click)="onTagClick($event, data.tags)"
+      >
+        {{ data.tags.length - 1 }} <svg cdsIcon="add" size="16"></svg>
+      </cds-tag>
+    }
+  </div>
 </ng-template>
 
 <ng-template #defaultTemplate let-data="data">

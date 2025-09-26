@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@
  */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/shared';
-import {BehaviorSubject, catchError, filter, Observable, of} from 'rxjs';
+import {BaseApiService, ConfigService} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
+import {BehaviorSubject, Observable, filter} from 'rxjs';
 import {IntermediateSaveRequest, IntermediateSubmission} from '../models';
 
 @Injectable({providedIn: 'root'})
@@ -38,17 +39,16 @@ export class TaskIntermediateSaveService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getIntermediateSubmission(
-    taskInstanceId: string
-  ): Observable<IntermediateSubmission | null> {
-    return this.httpClient
-      .get<IntermediateSubmission>(this.getApiUrl('/v1/form/intermediate/submission'), {
+  public getIntermediateSubmission(taskInstanceId: string): Observable<IntermediateSubmission> {
+    return this.httpClient.get<IntermediateSubmission>(
+      this.getApiUrl('/v1/form/intermediate/submission'),
+      {
         params: {
           taskInstanceId,
         },
         headers: new HttpHeaders().set(InterceptorSkip, '404'),
-      })
-      .pipe(catchError(() => of(null)));
+      }
+    );
   }
 
   public storeIntermediateSubmission(
@@ -74,7 +74,6 @@ export class TaskIntermediateSaveService extends BaseApiService {
   public setSubmission(value: any): void {
     this._submission$.next(value);
   }
-
   public setFormIoFormData(value: any): void {
     this._formIoFormData$.next(value);
   }

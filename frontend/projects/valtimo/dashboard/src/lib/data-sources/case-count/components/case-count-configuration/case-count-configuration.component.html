@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@
       >{{ 'conditions' | widgetTranslate: dataSourceKey | async }}</cds-label
     >
     <valtimo-carbon-multi-input
-      type="valuePathSelectorDropdownValue"
       [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
       [defaultValues]="defaultConditionValues$ | async"
       [dropdownColumnTitle]="'operator' | widgetTranslate: dataSourceKey | async"
@@ -50,15 +49,9 @@
       [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
       [minimumAmountOfRows]="0"
       [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
+      type="keyDropdownValue"
       (allValuesValidEvent)="onAllConditionsValid($event)"
       (valueChange)="conditionsValueChange($event)"
-      valuePathSelectorNotation="dots"
-      [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-      [valuePathSelectorShowCaseDefinitionSelector]="false"
-      [valuePathSelectorCaseDefinitionKey]="selectedDocumentDefinition$ | async"
-      [keyColumnFlex]="2"
-      [dropdownColumnFlex]="1"
-      [valueColumnFlex]="1"
     ></valtimo-carbon-multi-input>
   </div>
 </form>

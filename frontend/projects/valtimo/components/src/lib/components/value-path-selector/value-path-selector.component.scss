@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,20 +33,14 @@
 }
 
 .value-path-selector__form {
-  display: grid;
-  grid-template-columns: 110px 1fr;
+  display: flex;
   width: 100%;
   align-items: center;
   gap: 16px;
   justify-content: space-between;
 
-  ::ng-deep &--case-def-input {
-    display: flex !important;
-  }
-
   ::ng-deep cds-dropdown {
     width: 100%;
-    min-width: 0;
   }
 
   ::ng-deep .cds--toggle__label-text {
