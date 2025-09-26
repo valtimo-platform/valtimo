@@ -21,6 +21,7 @@ import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 
+import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
@@ -149,35 +150,22 @@ public class KeycloakUserManagementService implements UserManagementService {
     }
 
     @Override
-    public ValtimoUser findByIdentifier(String userIdentifier) {
+    public ValtimoUser findByUserIdentifier(String userIdentifier) {
         return userCache.get(
             CacheType.USER_IDENTIFIER,
             userIdentifier,
             (identifier) -> {
                 UserRepresentation user = null;
                 try (Keycloak keycloak = keycloakService.keycloak()) {
-                    var users = keycloakService.usersResource(keycloak).searchByUsername(userIdentifier, true);
-                    if (!users.isEmpty()) {
-                        user = users.get(0);
-                    }
-                }
-                Boolean isUserEnabled = user != null ? user.isEnabled() : null;
-                return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRoles(user) : null;
-            }
-        );
-    }
-
-    @Override
-    public ValtimoUser findByUsername(String username) {
-        return userCache.get(
-            CacheType.USER_IDENTIFIER,
-            username,
-            (identifier) -> {
-                UserRepresentation user = null;
-                try (Keycloak keycloak = keycloakService.keycloak()) {
-                    var users = keycloakService.usersResource(keycloak).searchByUsername(username, true);
-                    if (!users.isEmpty()) {
-                        user = users.get(0);
+                    switch (OauthConfigHolder.getCurrentInstance().getIdentifierField()) {
+                        case USERID ->
+                            user = keycloakService.usersResource(keycloak).get(userIdentifier).toRepresentation();
+                        case USERNAME -> {
+                            var users = keycloakService.usersResource(keycloak).searchByUsername(userIdentifier, true);
+                            if (!users.isEmpty()) {
+                                user = users.get(0);
+                            }
+                        }
                     }
                 }
                 Boolean isUserEnabled = user != null ? user.isEnabled() : null;

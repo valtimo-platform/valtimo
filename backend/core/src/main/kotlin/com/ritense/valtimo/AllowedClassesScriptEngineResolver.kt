@@ -17,9 +17,9 @@
 package com.ritense.valtimo
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
+import org.camunda.bpm.engine.impl.scripting.engine.DefaultScriptEngineResolver
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.HostAccess
-import org.operaton.bpm.engine.impl.scripting.engine.DefaultScriptEngineResolver
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 
@@ -43,7 +43,7 @@ class AllowedClassesScriptEngineResolver(
             "org.joda.time.DateTime",
             "java.util.Date",
             "java.lang.Math",
-            "org.operaton.spin.Spin",
+            "org.camunda.spin.Spin",
             //java.time classes
             "java.time.Clock",
             "java.time.Duration",

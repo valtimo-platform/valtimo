@@ -32,7 +32,6 @@ import org.springframework.web.client.RestClient
 import org.springframework.web.client.RestTemplate
 import java.io.InputStream
 import java.net.URI
-import kotlin.text.Charsets.UTF_8
 
 @Component
 @SkipComponentScan

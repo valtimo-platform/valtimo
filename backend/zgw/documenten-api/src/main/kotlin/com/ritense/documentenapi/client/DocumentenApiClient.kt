@@ -37,7 +37,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zgw.ClientTools
 import com.ritense.zgw.ClientTools.Companion.optionalQueryParam
 import com.ritense.zgw.Page
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -62,20 +62,22 @@ class DocumentenApiClient(
     private val objectMapper: ObjectMapper,
     private val platformTransactionManager: PlatformTransactionManager,
     private val authorizationService: AuthorizationService,
+    private val authorizationEnabled: Boolean = false,
 ) {
     fun storeDocument(
         authentication: DocumentenApiAuthentication,
         baseUrl: URI,
         request: CreateDocumentRequest
     ): CreateDocumentResult {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.CREATE,
-                ResourcePermission()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.CREATE,
+                    ResourcePermission()
+                )
             )
-        )
-
+        }
         val result = restClient(authentication)
             .post()
             .uri {
@@ -145,13 +147,15 @@ class DocumentenApiClient(
             .retrieve()
             .body<DocumentInformatieObject>()!!
 
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW_LIST,
-                ResourcePermission()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.VIEW_LIST,
+                    ResourcePermission()
+                )
             )
-        )
+        }
 
         outboxService.send {
             DocumentInformatieObjectViewed(
@@ -174,7 +178,7 @@ class DocumentenApiClient(
         require(ITEMS_PER_PAGE % pageable.pageSize == 0) { "Page size is not supported" }
         requireNotNull(documentSearchRequest.zaakUrl) { "Zaak URL is required" }
 
-        if (!authorizationService.hasPermission(
+        if (authorizationEnabled && !authorizationService.hasPermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
@@ -252,13 +256,15 @@ class DocumentenApiClient(
         authentication: DocumentenApiAuthentication,
         objectUrl: URI
     ): InputStream {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.VIEW,
-                ResourcePermission()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.VIEW,
+                    ResourcePermission()
+                )
             )
-        )
+        }
 
         val result = restClient(authentication)
             .get()
@@ -316,13 +322,15 @@ class DocumentenApiClient(
     }
 
     fun deleteInformatieObject(authentication: DocumentenApiAuthentication, url: URI) {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.DELETE,
-                ResourcePermission()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.DELETE,
+                    ResourcePermission()
+                )
             )
-        )
+        }
 
         restClient(authentication)
             .delete()
@@ -339,13 +347,15 @@ class DocumentenApiClient(
         patchDocumentRequest: PatchDocumentRequest
     ): DocumentInformatieObject {
 
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.MODIFY,
-                ResourcePermission()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.MODIFY,
+                    ResourcePermission()
+                )
             )
-        )
+        }
 
         val result = restClient(authentication)
             .patch()

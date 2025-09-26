@@ -16,14 +16,14 @@
 
 package com.ritense.case.service.exception
 
-import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.valtimo.web.rest.error.BadRequestAlertException
 
 import org.zalando.problem.Exceptional
 
 class ExportLimitExceedsException(caseDefinitionKey: String) : BadRequestAlertException
     ("Export failed for case '$caseDefinitionKey': the number of cases exceeds the maximum limit of 10,000. Please refine your search criteria.",
-    CaseDefinition::class.simpleName,
+    JsonSchemaDocument::class.simpleName,
     "exportLimit"
 ) {
     override fun getCause(): Exceptional? {

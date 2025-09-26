@@ -26,18 +26,23 @@ import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.authorization.role.Role
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
 import jakarta.persistence.criteria.Predicate
 import jakarta.persistence.criteria.Root
+import mu.KotlinLogging
 import org.springframework.data.jpa.domain.Specification
 
 abstract class AuthorizationSpecification<T : Any>(
     protected val authRequest: AuthorizationRequest<T>,
-    protected val permissions: List<Permission>
+    protected val permissionSupplier: () -> List<Permission>
 ) : Specification<T> {
+    @Deprecated("Since 12.17.0", ReplaceWith("com.ritense.authorization.specification.AuthorizationSpecification(authRequest, permissionSupplier)"))
+    constructor(authRequest: AuthorizationRequest<T>, permissions: List<Permission>) : this(authRequest, { permissions })
+
+    protected val permissions by lazy { permissionSupplier() }
+
     internal open fun isAuthorized(): Boolean {
         return when (authRequest) {
             is EntityAuthorizationRequest<T> -> isAuthorizedForEntity(authRequest)
@@ -91,7 +96,7 @@ abstract class AuthorizationSpecification<T : Any>(
         return permissions
             .filter { permission ->
                 relatedEntityAuthorizationRequest.resourceType == permission.resourceType
-                    && permission.actions.contains(relatedEntityAuthorizationRequest.action)
+                    &&  permission.actions.contains(relatedEntityAuthorizationRequest.action)
             }
             .firstOrNull { permission ->
                 permission.appliesInContext(
@@ -164,12 +169,10 @@ abstract class AuthorizationSpecification<T : Any>(
      */
     override fun toPredicate(
         root: Root<T>,
-        query: CriteriaQuery<*>?,
+        query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder
-    ): Predicate? {
-        return query?.let {
-            toPredicate(root, it as AbstractQuery<*>, criteriaBuilder)
-        }
+    ): Predicate {
+        return toPredicate(root, query as AbstractQuery<*>, criteriaBuilder)
     }
 
     /**

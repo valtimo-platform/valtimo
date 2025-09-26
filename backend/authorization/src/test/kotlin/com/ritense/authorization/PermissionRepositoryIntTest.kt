@@ -149,7 +149,6 @@ internal class PermissionRepositoryIntTest : BaseIntegrationTest() {
                 Action<TestDocument>(Action.VIEW)
             )
         )
-        assertThat(permissions[0].actions).hasSize(1)
         assertThat(permissions[0].conditionContainer.conditions).hasSize(1)
         assertThat(permissions[0].conditionContainer.conditions[0].type).isEqualTo(FIELD)
         assertTrue(permissions[0].conditionContainer.conditions[0] is FieldPermissionCondition<*>)

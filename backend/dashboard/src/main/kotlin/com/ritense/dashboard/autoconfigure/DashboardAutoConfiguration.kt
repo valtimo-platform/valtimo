@@ -75,6 +75,7 @@ class DashboardAutoConfiguration {
         userManagementService: UserManagementService,
         widgetDataSourceResolver: WidgetDataSourceResolver,
         authorizationService: AuthorizationService,
+        @Value("\${valtimo.authorization.dashboard.enabled:false}") authorizationEnabled: Boolean
     ): DashboardService {
         return DashboardService(
             applicationContext,
@@ -82,7 +83,8 @@ class DashboardAutoConfiguration {
             widgetConfigurationRepository,
             userManagementService,
             widgetDataSourceResolver,
-            authorizationService
+            authorizationService,
+            authorizationEnabled
         )
     }
 
@@ -95,6 +97,7 @@ class DashboardAutoConfiguration {
         objectMapper: ObjectMapper,
         dashboardService: DashboardService,
         authorizationService: AuthorizationService,
+        @Value("\${valtimo.authorization.dashboard.enabled:false}") authorizationEnabled: Boolean
     ): DashboardDataService {
         return DashboardDataService(
             applicationContext,
@@ -102,7 +105,8 @@ class DashboardAutoConfiguration {
             widgetConfigurationRepository,
             objectMapper,
             dashboardService,
-            authorizationService
+            authorizationService,
+            authorizationEnabled
         )
     }
 
