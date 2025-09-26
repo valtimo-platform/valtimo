@@ -118,11 +118,11 @@ export class WidgetWizardDisplayConditionsStepComponent implements OnInit {
         }))
       );
     }
-    this.widgetWizardService.widgetDisplayConditions.set(this.conditions.value);
+    this.widgetWizardService.$widgetDisplayConditions.set(this.conditions.value);
   }
 
   private prefill(): void {
-    const conditions = this.widgetWizardService.widgetDisplayConditions() as Array<Condition>;
+    const conditions = this.widgetWizardService.$widgetDisplayConditions() as Array<Condition>;
     if (!conditions) return;
 
     this.defaultConditionValues$.next(
