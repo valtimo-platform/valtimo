@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+
 import {ChangeDetectionStrategy, Component, ViewChild} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {
-  ActionItem,
-  CarbonListComponent,
-  CarbonListModule,
-  ColumnConfig,
-  ConfirmationModalModule,
-  ViewType,
-} from '@valtimo/components';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
-import {ButtonModule, IconModule} from 'carbon-components-angular';
+import {DocumentenApiColumnModalType, DocumentenApiColumnModalTypeCloseEvent} from '../../models';
 import {
   BehaviorSubject,
   combineLatest,
@@ -38,14 +23,29 @@ import {
   map,
   Observable,
   startWith,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
-import {DocumentenApiColumnModalType, DocumentenApiColumnModalTypeCloseEvent} from '../../models';
-import {DocumentenApiUploadField} from '../../models/documenten-api-upload-field.model';
+import {ActivatedRoute} from '@angular/router';
+import {
+  ActionItem,
+  CarbonListComponent,
+  CarbonListItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  ViewType,
+} from '@valtimo/components';
+import {CommonModule} from '@angular/common';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {ButtonModule, IconModule} from 'carbon-components-angular';
+import {
+  DOCUMENTEN_API_UPLOAD_KEYS,
+  DocumentenApiUploadField,
+} from '../../models/documenten-api-upload-field.model';
 import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiUploadFieldModalComponent} from '../documenten-api-upload-field-model/documenten-api-upload-field-modal.component';
-import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-documenten-api-upload-fields',
@@ -67,13 +67,11 @@ export class DocumentenApiUploadFieldsComponent {
   @ViewChild(CarbonListComponent) carbonList: CarbonListComponent;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
-
-  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
-    filter(caseDefinitionKey => !!caseDefinitionKey)
+  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params?.name),
+    filter(docDefName => !!docDefName)
   );
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
   public readonly uploadFieldModalType$ = new BehaviorSubject<DocumentenApiColumnModalType>(
@@ -81,8 +79,12 @@ export class DocumentenApiUploadFieldsComponent {
   );
   public readonly prefill$ = new BehaviorSubject<DocumentenApiUploadField | undefined>(undefined);
 
+  public get documentDefinitionName$(): Observable<string> {
+    return this._documentDefinitionName$;
+  }
+
   public readonly documentUploadFields$: Observable<string[]> = combineLatest([
-    this.caseDefinitionKey$,
+    this._documentDefinitionName$,
     this._reload$,
     this.translateService.stream('key'),
   ]).pipe(
@@ -91,8 +93,8 @@ export class DocumentenApiUploadFieldsComponent {
         this.loading$.next(true);
       }
     }),
-    switchMap(([caseDefinitionKey]) =>
-      this.documentenApiDocumentService.getUploadFields(caseDefinitionKey)
+    switchMap(([documentDefinitionName]) =>
+      this.documentenApiDocumentService.getUploadFields(documentDefinitionName)
     ),
     map(fields =>
       fields.map(field => ({
@@ -104,17 +106,6 @@ export class DocumentenApiUploadFieldsComponent {
     tap(() => {
       this.loading$.next(false);
     })
-  );
-
-  public readonly hasEditPermissions$: Observable<boolean> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    switchMap(params =>
-      this.editPermissionsService.hasEditPermissions(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag
-      )
-    )
   );
 
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -151,18 +142,12 @@ export class DocumentenApiUploadFieldsComponent {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
-    private readonly translateService: TranslateService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly translateService: TranslateService
   ) {}
 
   public openEditModal(uploadField: DocumentenApiUploadField): void {
-    this.hasEditPermissions$.pipe(take(1)).subscribe(hasPermission => {
-      if (!hasPermission && uploadField.key !== 'informatieobjecttype') {
-        return;
-      }
-      this.prefill$.next(uploadField);
-      this.uploadFieldModalType$.next('edit');
-    });
+    this.prefill$.next(uploadField);
+    this.uploadFieldModalType$.next('edit');
   }
 
   public closeModal(closeModalEvent: DocumentenApiColumnModalTypeCloseEvent): void {

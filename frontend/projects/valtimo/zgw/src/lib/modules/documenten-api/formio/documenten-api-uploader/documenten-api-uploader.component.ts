@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import {
   FormIoStateService,
   ValtimoModalService,
 } from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
 import {DocumentenApiFileReference, UploadProviderService} from '@valtimo/resource';
 import {UserProviderService} from '@valtimo/security';
 import {
@@ -36,10 +37,8 @@ import {
 import {catchError, filter, map, take, tap} from 'rxjs/operators';
 import {DocumentenApiMetadata, SupportedDocumentenApiFeatures} from '../../models';
 import {DocumentenApiVersionService} from '../../services';
-import {DocumentService} from '@valtimo/document';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-documenten-api-formio-uploader',
   templateUrl: './documenten-api-uploader.component.html',
   styleUrls: ['./documenten-api-uploader.component.scss'],
@@ -109,15 +108,8 @@ export class DocumentenApiUploaderComponent
     this.defaultValues['informatieobjecttype'] = defaultValue;
     this.stateService.documentDefinitionName$
       .pipe(
-        filter(documentDefinitionName => !!documentDefinitionName),
         switchMap(documentDefinitionName =>
-          this.documentService.getCaseSettings(documentDefinitionName)
-        ),
-        switchMap(caseDefinition =>
-          this.documentService.getDocumentTypesForCase(
-            String(caseDefinition.caseDefinitionKey),
-            String(caseDefinition.caseDefinitionVersionTag)
-          )
+          this.documentService.getDocumentTypes(documentDefinitionName)
         ),
         catchError(() => {
           this.defaultValues['informatieobjecttype'] = defaultValue;
@@ -185,36 +177,34 @@ export class DocumentenApiUploaderComponent
     this.hideField(hide, 'trefwoorden');
   }
 
-  @Input() documentUrlProcessVariable: string;
-
   @Output() valueChange = new EventEmitter<Array<DocumentenApiFileReference>>();
 
-  public readonly uploading$ = new BehaviorSubject<boolean>(false);
-  public readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
-  public readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
-  public readonly showModal = signal<boolean>(false);
-  public readonly uploadProcessLinked$: Observable<boolean | string> =
-    this.modalService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey =>
-        this.uploadProviderService.checkUploadProcessLink(caseDefinitionKey)
+  readonly uploading$ = new BehaviorSubject<boolean>(false);
+  readonly fileToBeUploaded$ = new BehaviorSubject<File | null>(null);
+  readonly modalDisabled$ = new BehaviorSubject<boolean>(false);
+  readonly showModal = signal<boolean>(false);
+  readonly uploadProcessLinked$: Observable<boolean | string> =
+    this.modalService.documentDefinitionName$.pipe(
+      switchMap(documentDefinitionName =>
+        this.uploadProviderService.checkUploadProcessLink(documentDefinitionName)
       ),
       startWith('loading')
     );
-  public readonly isAdmin$: Observable<boolean> = this.userProviderService
+  readonly isAdmin$: Observable<boolean> = this.userProviderService
     .getUserSubject()
     .pipe(map(userIdentity => userIdentity?.roles.includes('ROLE_ADMIN')));
 
   public readonly supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    this.modalService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey =>
-        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey)
+    this.modalService.documentDefinitionName$.pipe(
+      switchMap(caseDefinitionName =>
+        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionName)
       )
     );
 
   public defaultValues: {} = {};
   public hideFields: Array<string> = [];
 
-  private readonly _subscriptions = new Subscription();
+  private _subscriptions = new Subscription();
 
   constructor(
     private readonly uploadProviderService: UploadProviderService,
@@ -228,7 +218,7 @@ export class DocumentenApiUploaderComponent
   ) {}
 
   public ngOnInit(): void {
-    this.openCaseDefinitionKeySubscription();
+    this.openDocumentDefinitionSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -248,12 +238,12 @@ export class DocumentenApiUploaderComponent
     }
   }
 
-  public fileSelected(file: File): void {
+  fileSelected(file: File): void {
     this.fileToBeUploaded$.next(file);
     this.showModal.set(true);
   }
 
-  public deleteFile(id: string): void {
+  deleteFile(id: string): void {
     this.domService.toggleSubmitButton(true);
     this._value = this._value.filter((file: DocumentenApiFileReference) =>
       file?.id ? file?.id !== id : true
@@ -261,11 +251,11 @@ export class DocumentenApiUploaderComponent
     this.valueChange.emit(this._value);
   }
 
-  public closeMetadataModal(): void {
+  closeMetadataModal(): void {
     this.showModal.set(false);
   }
 
-  public metadataSet(metadata: DocumentenApiMetadata): void {
+  metadataSet(metadata: DocumentenApiMetadata): void {
     this.uploading$.next(true);
     this.showModal.set(false);
     this.domService.toggleSubmitButton(true);
@@ -273,34 +263,30 @@ export class DocumentenApiUploaderComponent
     this.fileToBeUploaded$
       .pipe(
         take(1),
-        switchMap(file =>
-          this.uploadProviderService.uploadTempFileWithMetadata(file, {
-            ...metadata,
-            processInstanceId: this.stateService.processInstanceId,
-            documentUrlProcessVariable: this.documentUrlProcessVariable || null,
-          })
-        ),
+        switchMap(file => this.uploadProviderService.uploadTempFileWithMetadata(file, metadata)),
         tap(result => {
           this.domService.toggleSubmitButton(false);
           this.uploading$.next(false);
-          this._value = [...this._value, result];
+          this._value.push(result);
           this.valueChange.emit(this._value);
         })
       )
       .subscribe();
   }
 
-  private openCaseDefinitionKeySubscription() {
+  private openDocumentDefinitionSubscription() {
     this._subscriptions.add(
       combineLatest([this.route?.params || of(null), this.route?.firstChild?.params || of(null)])
         .pipe(
           map(
             ([params, firstChildParams]) =>
-              (params?.caseDefinitionKey || firstChildParams?.caseDefinitionKey) as string
+              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
           ),
-          filter(caseDefinitionKey => !!caseDefinitionKey)
+          filter(documentDefinitionName => !!documentDefinitionName)
         )
-        .subscribe(caseDefinitionKey => this.modalService.setCaseDefinitionKey(caseDefinitionKey))
+        .subscribe(documentDefinitionName =>
+          this.modalService.setDocumentDefinitionName(documentDefinitionName)
+        )
     );
   }
 

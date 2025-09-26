@@ -1,8 +1,8 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
+ * You may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
@@ -28,10 +28,9 @@ import {
 
 @Directive({
   selector: '[valtimoCdsModal]',
-  standalone: true,
 })
 export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
-  @Input() public readonly minContentHeight = 0;
+  @Input() public readonly enableOverflow = false;
 
   private _mutationObserver: MutationObserver;
 
@@ -50,17 +49,15 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       attributes: true,
       childList: true,
       subtree: true,
-      characterData: true,
     });
 
     const open = this.elementRef.nativeElement.getAttribute('ng-reflect-open');
+
     if (open === 'true') {
       this.applyDocumentOverflowHidden();
     }
 
-    this.applyStyleToModalElements();
-
-    setTimeout(() => this.applyStyleToModalElements(), 0);
+    this.applyOverflowToModalElements();
   }
 
   public ngOnDestroy(): void {
@@ -81,7 +78,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       }
     }
 
-    this.applyStyleToModalElements();
+    this.applyOverflowToModalElements();
   }
 
   private applyDocumentOverflowHidden(): void {
@@ -100,19 +97,13 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
     this.renderer.removeStyle(this.document.documentElement, 'overflow');
   }
 
-  private applyStyleToModalElements(): void {
-    if (this.minContentHeight <= 0) return;
+  private applyOverflowToModalElements(): void {
+    if (!this.enableOverflow) return;
 
-    const contentElements = Array.from(this.document.querySelectorAll('.cds--modal-content'));
-
-    for (const element of contentElements) {
-      this.renderer.setStyle(
-        element,
-        'min-height',
-        `${this.minContentHeight}px`,
-        RendererStyleFlags2.Important
-      );
-    }
+    const modalContainerElements = this.document.querySelectorAll('.cds--modal-container');
+    modalContainerElements.forEach((el: Element) => {
+      this.renderer.setStyle(el, 'max-height', 'calc(100vh - 64px)', RendererStyleFlags2.Important);
+    });
   }
 
   private preventModalCloseButtonTooltip(): void {

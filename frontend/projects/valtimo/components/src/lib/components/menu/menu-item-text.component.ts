@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,13 @@
  */
 
 import {Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
-import {MenuItem} from '@valtimo/shared';
+import {MenuItem} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-menu-item-text',
   templateUrl: './menu-item-text.component.html',
   styleUrls: ['./menu-item-text.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
 })
 export class MenuItemTextComponent {
   @Input() menuItem: MenuItem;

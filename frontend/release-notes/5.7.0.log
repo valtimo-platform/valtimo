@@ -1,0 +1,30 @@
+7915ff9 - Updated version to 5.7.0
+945b267 - Updated version to 5.7.0-76.RC-SNAPSHOT
+96d070a - feat: show zaakobjecten on case detail page (#176)
+829cfef - feat: autofit width for document definition name (#174)
+1f5d4d3 - upgrade skeleton loader (#173)
+b52161e - feat: modal in user tasks should autoscroll to the top (#170)
+3d36a03 - add more specific class names (#169)
+f748a06 - duplicate name change in basis menu (#164)
+4afe319 - added separate digit only input (#162)
+e3b6118 - Feature/36693 fixing zgw plugin labels (#161)
+9c89f8f - revert accidental commit
+0ebd7e7 - fix lint
+7c4d2b2 - feat: fix case list pagination with observables (#156)
+4e5eb68 - feat: new design dropdown seems disabled (#158)
+1496dd5 - fix tooltip exports (#160)
+1d368c1 - Feature/36693 fixing zgw plugin labels (#159)
+170b1e7 - Merge branch 'main' into development
+759f110 - Feature/36279 zaken api plugin (#157)
+ab171dc - add type coercion to direction variable (#155)
+21991f7 - change the type of default direction to string (#154)
+2398c74 - fix title component (#152)
+b746dc7 - feat: configurable sorting direction case list columns (#151)
+d35dea2 - fix lint
+9e4f524 - feat: support multiple zgw api plugins (#143)
+0dbd09d - fix no form definition found warning message (#150)
+0125f59 - updated translation files so the number of options is no longer specified (#149)
+5cbf806 - lock swagger-ui 4.12.0 (#148)
+5fa6ec7 - feat: edit and delete plugin configs (#147)
+a463f22 - fix: downgrade @ng-bootstrap/ng-bootstrap (#145)
+d2dfd05 - show user full name in top bar (#144)
