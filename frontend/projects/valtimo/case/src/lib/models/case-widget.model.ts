@@ -48,6 +48,7 @@ interface BasicCaseWidget {
   key: string;
   properties: WidgetContentProperties;
   actions?: CaseWidgetAction[];
+  displayConditions: Array<Condition>;
 }
 
 interface FieldsCaseWidgetValue {
@@ -159,6 +160,21 @@ interface CustomCaseWidgetConfig {
   [componentKey: string]: Type<any>;
 }
 
+enum Operator {
+  NOT_EQUAL_TO = '!=',
+  EQUAL_TO = '==',
+  GREATER_THAN = '>',
+  GREATER_THAN_OR_EQUAL_TO = '>=',
+  LESS_THAN = '<',
+  LESS_THAN_OR_EQUAL_TO = '<=',
+}
+
+interface Condition {
+  path: string;
+  operator: string;
+  value: string;
+}
+
 export {
   BasicCaseWidget,
   CaseWidget,
@@ -184,4 +200,6 @@ export {
   CaseWidgetPackResultItemsByRow,
   FormioCaseWidgetWidgetWithUuid,
   MaxRectsResult,
+  Operator,
+  Condition,
 };

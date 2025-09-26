@@ -820,7 +820,8 @@
         "content": "Choose widget content",
         "style": "Choose widget style",
         "type": "Choose widget type",
-        "width": "Choose widget width"
+        "width": "Choose widget width",
+        "displayConditions": "Set display conditions"
       }
     },
     "notification": {
@@ -932,6 +933,15 @@
         "titleTooltip": "Title for the property",
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
       }
+    },
+    "displayConditions": {
+      "description": "Configure conditions to control when this widget is shown. If you do not add any conditions, the widget is always displayed.",
+      "conditions": "Conditions",
+      "conditionsHelperText": "Define when this widget becomes visible by comparing case or document properties. Leave empty to always show the widget.",
+      "addCondition": "Add condition",
+      "operator": "Operator",
+      "path": "Path",
+      "value": "Value"
     },
     "cancelModal": {
       "title": "Leaving the editor",

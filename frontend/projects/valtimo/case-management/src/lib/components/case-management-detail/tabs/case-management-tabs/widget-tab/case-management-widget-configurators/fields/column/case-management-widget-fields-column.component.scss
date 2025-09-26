@@ -20,7 +20,7 @@
 
   &__item,
   &__cotainer {
-    background: var(--cds-layer-01);
+    background: var(--cds-layer-02);
   }
 
   &__item .cds--accordion__content {
@@ -90,6 +90,13 @@
       grid-template-columns: 1fr 1fr auto;
       align-items: flex-end;
       gap: 16px;
+    }
+  }
+
+  valtimo-value-path-selector {
+    .cds--list-box,
+    .cds--text-input {
+      background-color: var(--cds-layer-01) !important;
     }
   }
 }
