@@ -99,16 +99,18 @@ export class DocumentenApiTagModalComponent implements OnDestroy {
   public addTag(): void {
     this.disable();
 
-    this.documentenApiTagService.createTag(this.caseDefinitionKey, this.value.value).subscribe({
-      next: () => {
-        this.enable();
-        this.closeAndRefresh();
-        this.resetForm();
-      },
-      error: () => {
-        this.enable(false);
-      },
-    });
+    this.documentenApiTagService
+      .createTag(this.caseDefinitionKey, this.value.value)
+      .subscribe({
+        next: () => {
+          this.enable();
+          this.closeAndRefresh();
+          this.resetForm();
+        },
+        error: () => {
+          this.enable(false);
+        },
+      });
   }
 
   private resetForm(): void {

@@ -18,28 +18,24 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  Input,
   signal,
   TemplateRef,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
 import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {ApiTabItem, ApiTabType} from '@valtimo/case';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import {ApiTabItem, ApiTabType} from '@valtimo/case';
 import {IconService} from 'carbon-components-angular';
-import {BehaviorSubject, filter, map, Observable, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, map, Observable, tap} from 'rxjs';
 import {TabManagementService, TabService} from '../../../../services';
+import {ActivatedRoute, Router} from '@angular/router';
+import {getCaseManagementRouteParams} from '../../../../utils';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-case-management-tabs',
   templateUrl: './case-management-tabs.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -48,6 +44,9 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   @ViewChild('tabContentColumn') tabContentColumnTemplate: TemplateRef<any>;
   @ViewChild('tabTypeColumn') tabTypeColumnTemplate: TemplateRef<any>;
   @ViewChild('moveButtonsTemplate') moveButtonsTemplate: TemplateRef<any>;
+
+  @Input() public readonly canUpdateGlobalConfiguration;
+  @Input() public readonly isFinalVersion;
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route).pipe(
     tap(params => {
@@ -90,18 +89,6 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   public readonly tab$ = new BehaviorSubject<ApiTabItem | null>(null);
   public readonly dragAndDropDisabled = signal(false);
 
-  private readonly params$: Observable<CaseManagementParams | undefined> =
-    getCaseManagementRouteParams(this.route);
-
-  public readonly hasEditPermissions$: Observable<boolean> = this.params$.pipe(
-    switchMap(params =>
-      this.editPermissionsService.hasEditPermissions(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag
-      )
-    )
-  );
-
   constructor(
     private readonly cd: ChangeDetectorRef,
     private readonly iconService: IconService,
@@ -109,8 +96,7 @@ export class CaseManagementTabsComponent implements AfterViewInit {
     private readonly tabService: TabService,
     private readonly translateService: TranslateService,
     private readonly router: Router,
-    private readonly route: ActivatedRoute,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngAfterViewInit(): void {
@@ -128,25 +114,22 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   }
 
   public openEditModal(tab: ApiTabItem): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     this.tab$.next(tab);
     this.openEditModal$.next(true);
   }
 
   public onRowClicked(tab: ApiTabItem): void {
-    this.hasEditPermissions$
-      .pipe(
-        filter(hasPermission => hasPermission),
-        take(1)
-      )
-      .subscribe(() => {
-        this.tab$.next(tab);
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
 
-        if (tab.type === ApiTabType.WIDGETS) {
-          this.router.navigate(['widget-tab', tab.key], {relativeTo: this.route});
-        } else {
-          this.openEditModal$.next(true);
-        }
-      });
+    this.tab$.next(tab);
+
+    if (tab.type === ApiTabType.WIDGETS) {
+      this.router.navigate(['widget-tab', tab.key], {relativeTo: this.route});
+    } else {
+      this.openEditModal$.next(true);
+    }
   }
 
   public onCloseAddModalEvent(tab: ApiTabItem | null): void {
@@ -171,6 +154,8 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   }
 
   public openDeleteConfirmationModal(tab: ApiTabItem): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     this.deleteRowKey$.next(tab.key);
   }
 
@@ -179,6 +164,8 @@ export class CaseManagementTabsComponent implements AfterViewInit {
   }
 
   public onItemsReorderedEvent(reorderedItems: ApiTabItem[]): void {
+    if (!this.canUpdateGlobalConfiguration || this.isFinalVersion) return;
+
     if (!reorderedItems) return;
 
     this.dragAndDropDisabled.set(true);

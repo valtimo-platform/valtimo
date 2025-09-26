@@ -20,7 +20,7 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   EditorModule,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
 import {AccessControlManagementRoutingModule} from './access-control-management-routing.module';
 import {AccessControlOverviewComponent} from './components/overview/access-control-overview.component';
@@ -59,7 +59,7 @@ import {ExportRoleModalComponent} from './components/export-role-modal/export-ro
     IconModule,
     ConfirmationModalModule,
     EditorModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     LoadingModule,
     IconModule,
     DialogModule,

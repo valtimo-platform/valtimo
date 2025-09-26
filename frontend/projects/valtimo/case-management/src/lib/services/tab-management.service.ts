@@ -16,10 +16,11 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService, CaseManagementParams} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {ApiTabItem} from '@valtimo/case';
 import {BehaviorSubject, Observable, of} from 'rxjs';
 import {catchError, switchMap, take, tap} from 'rxjs/operators';
+import {CaseManagementParams} from '../models';
 
 @Injectable()
 export class TabManagementService {

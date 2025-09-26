@@ -22,6 +22,7 @@ import {
   AlertModule,
   BpmnJsDiagramModule,
   CarbonListModule,
+  ListModule,
   SpinnerModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -47,6 +48,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     CommonModule,
     DashboardRoutingModule,
     WidgetModule,
+    ListModule,
     BpmnJsDiagramModule,
     TranslateModule.forRoot({
       loader: {

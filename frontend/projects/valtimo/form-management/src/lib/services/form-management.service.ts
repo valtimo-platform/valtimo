@@ -23,12 +23,14 @@ import {
   QueryFormsResponse,
 } from '../models';
 import {Observable, of} from 'rxjs';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FormManagementService extends BaseApiService {
+  private valtimoApiConfig: any;
+
   constructor(
     protected readonly httpClient: HttpClient,
     protected readonly configService: ConfigService
@@ -67,7 +69,7 @@ export class FormManagementService extends BaseApiService {
     caseDefinitionVersionTag: string,
     formDefinitionName: string
   ): Observable<boolean> {
-    if (!formDefinitionName || !caseDefinitionKey || !caseDefinitionVersionTag) return of(false);
+    if (!formDefinitionName) return of(false);
 
     return this.httpClient.get<boolean>(
       this.getApiUrl(
@@ -115,7 +117,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public modifyFormDefinition(request: ModifyFormDefinitionRequest): Observable<FormDefinition> {
-    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/management/v1/form`), request);
+    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/management/v1/form/`), request);
   }
 
   public modifyFormDefinitionCase(

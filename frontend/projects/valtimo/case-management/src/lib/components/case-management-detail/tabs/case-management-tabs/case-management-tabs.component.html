@@ -14,12 +14,7 @@
   ~ limitations under the License.
   -->
 
-<ng-container
-  *ngIf="{
-    routeParams: caseManagementRouteParams$ | async,
-    hasEditPermissions: hasEditPermissions$ | async,
-  } as obs"
->
+<ng-container *ngIf="{routeParams: caseManagementRouteParams$ | async} as obs">
   <valtimo-carbon-list
     *ngIf="{fields: fields$ | async, loading: loading$ | async, tabs: tabs$ | async} as obs"
     [actionItems]="actionItems"
@@ -29,7 +24,7 @@
     [loading]="obs.loading"
     (rowClicked)="onRowClicked($event)"
     [dragAndDrop]="true"
-    [dragAndDropDisabled]="dragAndDropDisabled() || !(hasEditPermissions$ | async)"
+    [dragAndDropDisabled]="dragAndDropDisabled()"
     (itemsReordered)="onItemsReorderedEvent($event)"
   >
     <ng-container carbonToolbarContent>
@@ -60,7 +55,11 @@
   </ng-template>
 
   <ng-template #addTabButton>
-    <button cdsButton="primary" *ngIf="obs.hasEditPermissions" (click)="openAddTabModal()">
+    <button
+      *ngIf="canUpdateGlobalConfiguration && !isFinalVersion"
+      cdsButton="primary"
+      (click)="openAddTabModal()"
+    >
       {{ 'caseManagement.tabManagement.addModal.addTab' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

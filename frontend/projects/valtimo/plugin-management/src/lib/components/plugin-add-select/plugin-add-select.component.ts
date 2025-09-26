@@ -46,8 +46,8 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
     this.refreshSubscription?.unsubscribe();
   }
 
-  selectPluginDefinition(event: {value: PluginDefinition}): void {
-    this.stateService.selectPluginDefinition(event.value);
+  selectPluginDefinition(pluginDefinition: PluginDefinition): void {
+    this.stateService.selectPluginDefinition(pluginDefinition);
   }
 
   deselectPluginDefinition(): void {

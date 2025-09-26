@@ -16,7 +16,7 @@
 
 import {NGXLogger} from 'ngx-logger';
 import {TranslateService} from '@ngx-translate/core';
-import {ConfigService, Language} from '@valtimo/shared';
+import {ConfigService, Language} from '@valtimo/config';
 
 export function accountInitializer(
   translate: TranslateService,

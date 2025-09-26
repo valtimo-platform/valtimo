@@ -25,16 +25,15 @@ import {
 import {ActivatedRoute} from '@angular/router';
 import {Edit16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ApiTabItem} from '@valtimo/case';
 import {
   BreadcrumbService,
   ConfirmationModalComponent,
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {ApiTabItem} from '@valtimo/case';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import moment from 'moment/moment';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
@@ -47,6 +46,7 @@ import {
 import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
 import {CaseManagementWidgetsEditorComponent} from './editor/case-management-widgets-editor.component';
 import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-management-widgets-json-editor.component';
+import {getCaseManagementRouteParams} from '../../../../../../utils';
 
 @Component({
   templateUrl: './case-management-widget-tab.component.html',
@@ -59,7 +59,7 @@ import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-manag
     CaseManagementWidgetsEditorComponent,
     CaseManagementWidgetTabEditModalComponent,
     CaseManagementWidgetsJsonEditorComponent,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     ButtonModule,
     IconModule,
     TabsModule,
@@ -217,9 +217,9 @@ export class CaseManagementWidgetTabComponent
       });
 
       this.breadcrumbService.setFourthBreadcrumb({
-        route: [`${route}/case-detail`],
-        content: this.translateService.instant('caseManagement.tabs.caseDetailsTab.title'),
-        href: `${route}/case-detail`,
+        route: [`${route}/tabs`],
+        content: this.translateService.instant('caseManagement.tabs.tabManagement'),
+        href: `${route}/tabs`,
       });
     });
   }

@@ -15,12 +15,11 @@
   -->
 
 <valtimo-carbon-list
-  [actionItems]="ACTION_ITEMS"
   [header]="false"
   [items]="formFlowDefinitions$ | async"
-  [fields]="FIELDS"
+  [fields]="fields"
   [loading]="loading$ | async"
-  (rowClicked)="editFormFlowDetails($event)"
+  (rowClicked)="onRowClick($event)"
 >
   <ng-container header> {{ 'formFlow.title' | translate }} </ng-container>
 
@@ -41,19 +40,9 @@
 ></valtimo-new-form-flow-modal>
 
 <ng-template #addFormFlowButton>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="openAddModal()">
+  <button cdsButton="primary" (click)="openAddModal()">
     {{ 'formFlow.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
   </button>
 </ng-template>
-
-<valtimo-confirmation-modal
-  confirmButtonTextTranslationKey="interface.delete"
-  confirmButtonType="danger"
-  contentTranslationKey="formFlow.deleteModalContent"
-  [outputOnConfirm]="deleteDefinitionKey$ | async"
-  [showModalSubject$]="showDeleteModal$"
-  titleTranslationKey="interface.delete"
-  (confirmEvent)="onDelete($event)"
-></valtimo-confirmation-modal>

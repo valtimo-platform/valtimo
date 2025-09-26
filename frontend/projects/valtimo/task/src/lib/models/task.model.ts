@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {User} from '@valtimo/shared';
+import {User} from '@valtimo/config';
 
 interface Task {
   assignee: string;

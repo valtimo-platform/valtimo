@@ -27,9 +27,8 @@ import {
 import {map, Observable, switchMap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {DocumentDefinition, DocumentService} from '@valtimo/document';
-import {CASE_CONFIGURATION_EXTENSIONS_TOKEN, EditPermissionsService} from '@valtimo/shared';
+import {EnvironmentService, ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN} from '@valtimo/config';
 import {CaseManagementService} from '../../../../services';
-import {MuuriItemComponent} from '@valtimo/components';
 
 @Component({
   standalone: false,
@@ -54,13 +53,15 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     )
   );
 
-  public readonly isReadOnly$: Observable<boolean> = this.params$.pipe(
-    switchMap(params =>
-      this.editPermissionsService
-        .hasEditPermissions(params?.caseDefinitionKey, params?.caseDefinitionVersionTag)
-        .pipe(map(hasPermissions => !hasPermissions))
-    )
+  public readonly isReadOnly$ = this.params$.pipe(
+    switchMap(({caseDefinitionKey, caseDefinitionVersionTag}) =>
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
   );
+
+  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
+    this.environmentService.canUpdateGlobalConfiguration();
 
   constructor(
     private readonly documentService: DocumentService,
@@ -68,9 +69,9 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
     private readonly cdr: ChangeDetectorRef,
     private readonly caseManagementService: CaseManagementService,
     @Optional()
-    @Inject(CASE_CONFIGURATION_EXTENSIONS_TOKEN)
-    private readonly caseConfigurationExtensionComponents: Type<any>[],
-    private readonly editPermissionsService: EditPermissionsService
+    @Inject(ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN)
+    private readonly zgwCaseConfigurationExtensionComponents: Type<any>[],
+    private readonly environmentService: EnvironmentService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -79,19 +80,14 @@ export class CaseManagementGeneralComponent implements AfterViewInit {
 
   private renderExtensions(): void {
     if (
-      !Array.isArray(this.caseConfigurationExtensionComponents) ||
-      this.caseConfigurationExtensionComponents.length === 0
+      !Array.isArray(this.zgwCaseConfigurationExtensionComponents) ||
+      this.zgwCaseConfigurationExtensionComponents.length === 0
     ) {
       return;
     }
 
-    this.caseConfigurationExtensionComponents.forEach(extensionComponent => {
-      const itemRef = this._extensions.createComponent(MuuriItemComponent);
-
-      const wrapperInstance = itemRef.instance;
-      const container = wrapperInstance.container;
-
-      const componentRef = container.createComponent(extensionComponent);
+    this.zgwCaseConfigurationExtensionComponents.forEach(extensionComponent => {
+      const componentRef = this._extensions.createComponent(extensionComponent);
       componentRef.setInput('isReadOnly$', this.isReadOnly$);
     });
 

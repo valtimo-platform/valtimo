@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ManagementContext} from '@valtimo/shared';
+import {ManagementContext} from '@valtimo/config';
 
 interface FormManagementParams {
   caseDefinitionKey: string;

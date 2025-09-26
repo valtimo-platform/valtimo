@@ -16,16 +16,15 @@
 
 <cds-tile
   class="external-case-form-container"
-  *ngIf="{params: params$ | async, caseSettings: caseSettings$ | async} as obs"
+  *ngIf="{
+    params: params$ | async,
+    caseSettings: caseSettings$ | async,
+  } as obs"
 >
-  <h4 class="external-case-form-container__title">
-    {{ 'caseManagement.externalStartForm.title' | translate }}
-  </h4>
+  <h4>{{ 'caseManagement.externalStartForm.title' | translate }}</h4>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1">
     <cds-toggle
-      valtimoReadOnly
-      [isReadOnly]="isReadOnly"
       [disabled]="isReadOnly"
       formControlName="hasExternalForm"
       label="{{ 'caseManagement.externalStartForm.enabledToggle' | translate }}"
@@ -35,42 +34,27 @@
 
     <cds-label>
       {{ 'caseManagement.externalStartForm.externalUrl' | translate }}
-
       <input
         cdsText
-        valtimoReadOnly
-        [isReadOnly]="isReadOnly"
         type="text"
         formControlName="externalFormUrl"
-        [placeholder]="
-          isReadOnly ? '-' : ('caseManagement.externalStartForm.externalUrlPlaceholder' | translate)
-        "
+        placeholder="{{ 'caseManagement.externalStartForm.externalUrlPlaceholder' | translate }}"
         maxlength="512"
       />
     </cds-label>
 
     <cds-label>
       {{ 'caseManagement.externalStartForm.description' | translate }}
-
       <input
         cdsText
-        valtimoReadOnly
-        [isReadOnly]="isReadOnly"
         type="text"
         formControlName="description"
-        [placeholder]="
-          isReadOnly ? '-' : ('caseManagement.externalStartForm.descriptionPlaceholder' | translate)
-        "
+        placeholder="{{ 'caseManagement.externalStartForm.descriptionPlaceholder' | translate }}"
         maxlength="512"
       />
     </cds-label>
 
-    <button
-      *ngIf="!isReadOnly"
-      cdsButton="primary"
-      type="submit"
-      [disabled]="!form.valid || isReadOnly"
-    >
+    <button cdsButton="primary" type="submit" [disabled]="!form.valid || isReadOnly">
       {{ 'caseManagement.externalStartForm.apply' | translate }}
     </button>
   </form>

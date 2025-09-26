@@ -15,7 +15,7 @@
  */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/config';
 import {Observable} from 'rxjs';
 
 @Injectable({providedIn: 'root'})

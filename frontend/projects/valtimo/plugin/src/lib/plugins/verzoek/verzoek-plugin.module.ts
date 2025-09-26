@@ -20,11 +20,11 @@ import {PluginTranslatePipeModule} from '../../pipes';
 import {CommonModule} from '@angular/common';
 import {
   ButtonModule as CarbonButtonModule,
-  IconModule,
   InputModule as CarbonInputModule,
   ModalModule,
 } from 'carbon-components-angular';
 import {
+  ButtonModule,
   CarbonMultiInputModule,
   FormModule,
   InputLabelModule,
@@ -34,7 +34,7 @@ import {
   RadioModule,
   SelectModule,
   TooltipIconModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
   VModalModule,
 } from '@valtimo/components';
 
@@ -50,14 +50,14 @@ import {
     MultiInputFormModule,
     RadioModule,
     InputLabelModule,
+    ButtonModule,
     ModalModule,
     CarbonInputModule,
     TooltipIconModule,
     CarbonMultiInputModule,
     CarbonButtonModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     VModalModule,
-    IconModule,
   ],
   exports: [VerzoekConfigurationComponent],
 })

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {UrlUtils, ValtimoConfig} from '@valtimo/shared';
+import {UrlUtils, ValtimoConfig} from '@valtimo/config';
 
 const getFormioAppConfig = (config: ValtimoConfig) => {
   const origin = window.location.origin;

@@ -29,22 +29,23 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, ParamMap} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/case';
 import {
   CARBON_THEME,
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
 } from '@valtimo/components';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {FieldsCaseWidgetValue, WidgetFieldsContent} from '@valtimo/case';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
-import {debounceTime, map, Subscription} from 'rxjs';
+import {debounceTime, map, Observable, Subscription} from 'rxjs';
+
 import {WidgetContentComponent} from '../../../../../../../models';
 import {WidgetWizardService} from '../../../../../../../services';
 import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
 import {CaseManagementWidgetFieldsColumnComponent} from './column/case-management-widget-fields-column.component';
+import {getCaseManagementRouteParams} from '../../../../../../../utils';
 
 @Component({
   templateUrl: './case-management-widget-fields.component.html',
@@ -73,19 +74,19 @@ export class CaseManagementWidgetFieldsComponent
   @ViewChild(Tab) private readonly _tab: Tab;
 
   public form = this.fb.group({
-    widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
+    widgetTitle: this.fb.control(this.widgetWizardService.widgetTitle(), Validators.required),
   });
 
-  public readonly $columns = signal<null[]>([null]);
-  public readonly $widgetWidth = this.widgetWizardService.$widgetWidth();
+  public readonly columns = signal<null[]>([null]);
+  public readonly widgetWidth = this.widgetWizardService.widgetWidth();
   public readonly selectedTabIndex = -1;
   public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
     map((theme: CurrentCarbonTheme) =>
       theme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
     )
   );
-  public readonly $selectedWidgetContent = computed(() =>
-    (this.widgetWizardService.$widgetContent() as WidgetFieldsContent)?.columns.reduce(
+  public readonly selectedWidgetContent = computed(() =>
+    (this.widgetWizardService.widgetContent() as WidgetFieldsContent)?.columns.reduce(
       (acc, curr, index) => ({
         ...acc,
         [index]: curr,
@@ -109,15 +110,15 @@ export class CaseManagementWidgetFieldsComponent
   public ngOnInit(): void {
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(100)).subscribe(formValue => {
-        this.widgetWizardService.$widgetTitle.set(formValue.widgetTitle ?? '');
+        this.widgetWizardService.widgetTitle.set(formValue.widgetTitle ?? '');
         this.changeValidEvent.emit(this.form.valid && this._contentValid());
       })
     );
-    const widgetContent = (this.widgetWizardService.$widgetContent() as WidgetFieldsContent)
+    const widgetContent = (this.widgetWizardService.widgetContent() as WidgetFieldsContent)
       ?.columns;
     if (!widgetContent) return;
 
-    this.$columns.set(Object.keys(widgetContent).map(() => null));
+    this.columns.set(Object.keys(widgetContent).map(() => null));
   }
 
   public ngAfterViewInit(): void {
@@ -132,8 +133,8 @@ export class CaseManagementWidgetFieldsComponent
   }
 
   public onAddColumnClick(): void {
-    this.$columns.update(value => [...value, null]);
-    this.activeTab.set(this.$columns().length - 1);
+    this.columns.update(value => [...value, null]);
+    this.activeTab.set(this.columns().length - 1);
     this.changeValidEvent.emit(false);
   }
 
@@ -142,14 +143,14 @@ export class CaseManagementWidgetFieldsComponent
   }
 
   public onDeleteColumnClick(index: number): void {
-    this.widgetWizardService.$widgetContent.update(content => {
+    this.widgetWizardService.widgetContent.update(content => {
       if (!content) return null;
 
       const widgetContent = content as WidgetFieldsContent;
 
       let tempIndex = index;
       let tempContent = {...widgetContent};
-      while (tempIndex < this.$columns().length - 1) {
+      while (tempIndex < this.columns().length - 1) {
         tempContent.columns[tempIndex] = tempContent.columns[tempIndex + 1];
         tempIndex++;
       }
@@ -158,7 +159,7 @@ export class CaseManagementWidgetFieldsComponent
       return tempContent;
     });
 
-    this.$columns.update((columns: null[]) => {
+    this.columns.update((columns: null[]) => {
       const temp = columns;
       temp.splice(index, 1);
 
@@ -177,7 +178,7 @@ export class CaseManagementWidgetFieldsComponent
     },
     columnIndex: number
   ): void {
-    this.widgetWizardService.$widgetContent.update(content => {
+    this.widgetWizardService.widgetContent.update(content => {
       if (!content) return {columns: [event.data]};
 
       const columns = (content as WidgetFieldsContent)?.columns.map((column, index) =>

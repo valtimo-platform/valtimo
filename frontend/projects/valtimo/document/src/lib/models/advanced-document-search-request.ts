@@ -16,7 +16,7 @@
 
 import {HttpParams} from '@angular/common/http';
 import {SortState} from './index';
-import {AssigneeFilter, SearchFilter, SearchFilterRange, SearchOperator} from '@valtimo/shared';
+import {AssigneeFilter, SearchFilter, SearchFilterRange, SearchOperator} from '@valtimo/config';
 
 export interface AdvancedDocumentSearchRequest {
   definitionName: string;

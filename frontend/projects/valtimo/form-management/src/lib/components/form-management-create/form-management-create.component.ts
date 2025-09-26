@@ -1,29 +1,13 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
+import {ValtimoCdsModalDirectiveModule, WidgetModule} from '@valtimo/components';
+import {FormManagementService} from '../../services';
+import {CreateFormDefinitionRequest} from '../../models';
+import {combineLatest, switchMap, tap} from 'rxjs';
+import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.validator';
+import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {ValtimoCdsModalDirective, WidgetModule} from '@valtimo/components';
-import {
-  getCaseManagementRouteParams,
-  getCaseManagementRouteParamsAndContext,
-} from '@valtimo/shared';
 import {
   ButtonModule,
   InputModule,
@@ -31,12 +15,8 @@ import {
   ModalModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {switchMap, tap} from 'rxjs';
-import {filter, take} from 'rxjs/operators';
-import {CreateFormDefinitionRequest} from '../../models';
-import {FormManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
-import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.validator';
+import {take} from 'rxjs/operators';
+import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
 
 @Component({
   selector: 'valtimo-form-management-create',
@@ -54,7 +34,7 @@ import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.valid
     TilesModule,
     LayerModule,
     ModalModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     ButtonModule,
   ],
 })
@@ -68,8 +48,7 @@ export class FormManagementCreateComponent implements OnInit {
   public readonly context$ = getContextObservable(this.route);
 
   public readonly caseManagementRouteParams$ = this.context$.pipe(
-    filter(context => context === 'case'),
-    switchMap(() => getCaseManagementRouteParams(this.route))
+    switchMap(context => getCaseManagementRouteParams(context, this.route))
   );
 
   public form: FormGroup;
@@ -85,17 +64,13 @@ export class FormManagementCreateComponent implements OnInit {
   }
 
   private initForm(): void {
-    getCaseManagementRouteParamsAndContext(this.route)
+    combineLatest([this.context$, this.caseManagementRouteParams$])
       .pipe(
         take(1),
         tap(([context, caseManagementParams]) => {
           this.form = this.formBuilder.group({
             name: new FormControl('', Validators.required, [
-              noDuplicateFormValidator(
-                context,
-                caseManagementParams as any,
-                this.formManagementService
-              ),
+              noDuplicateFormValidator(context, caseManagementParams, this.formManagementService),
             ]),
           });
         })
@@ -126,9 +101,8 @@ export class FormManagementCreateComponent implements OnInit {
       formDefinition: JSON.stringify(emptyForm),
     };
 
-    getCaseManagementRouteParamsAndContext(this.route)
+    combineLatest([this.context$, this.caseManagementRouteParams$])
       .pipe(
-        take(1),
         switchMap(([context, caseManagementParams]) =>
           context === 'case'
             ? this.formManagementService.createFormDefinitionsCase(

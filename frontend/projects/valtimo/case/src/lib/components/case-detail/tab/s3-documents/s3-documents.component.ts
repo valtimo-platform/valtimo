@@ -21,7 +21,7 @@ import {DownloadService, ResourceDto, UploadProviderService} from '@valtimo/reso
 import {map, switchMap} from 'rxjs/operators';
 import {BehaviorSubject, combineLatest, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
-import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
+import {ConfigService, GlobalNotificationService} from '@valtimo/config';
 import {PromptService} from '@valtimo/components';
 
 @Component({
@@ -137,6 +137,10 @@ export class CaseDetailTabS3DocumentsComponent implements OnInit {
       bodyText: this.translateService.instant('case.deleteConfirmation.description'),
       cancelButtonText: this.translateService.instant('case.deleteConfirmation.cancel'),
       confirmButtonText: this.translateService.instant('case.deleteConfirmation.delete'),
+      cancelMdiIcon: 'cancel',
+      confirmMdiIcon: 'delete',
+      cancelButtonType: 'secondary',
+      confirmButtonType: 'primary',
       closeOnConfirm: true,
       closeOnCancel: true,
       confirmCallBackFunction: () => {

@@ -48,7 +48,7 @@ import {
   FORM_VIEW_MODEL_TOKEN,
   FormViewModel,
   GlobalNotificationService,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
@@ -276,7 +276,6 @@ export class TaskDetailContentComponent implements OnInit, OnDestroy, AfterViewI
       title: task.name,
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${task.created}`,
     });
-    this.stateService.setProcessInstanceId(task.processInstanceId);
   }
 
   private getCurrentProgress(formViewModelComponentRef?: ComponentRef<any>): void {

@@ -19,14 +19,13 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, switchMap} from 'rxjs';
-import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
-import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
-import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
-import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.component';
-import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
-import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
-import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
+import {BehaviorSubject, combineLatest, delay, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {
+  CaseTabService,
+  CaseWidgetsApiService,
+  CaseWidgetsLayoutService,
+} from '../../../../services';
+import {WidgetsContainerComponent} from './components/widgets-container/widgets-container.component';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -35,7 +34,7 @@ import {CaseWidgetCollectionComponent} from './components/collection/case-widget
   imports: [
     CommonModule,
     LoadingModule,
-    WidgetContainerComponent,
+    WidgetsContainerComponent,
     CarbonListModule,
     TranslateModule,
   ],
@@ -53,24 +52,22 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
 
+  public readonly loadingWidgetConfiguration$ = new BehaviorSubject<boolean>(true);
+
   public readonly widgetConfiguration$ = combineLatest([this._documentId$, this._tabKey$]).pipe(
     switchMap(([documentId, tabKey]) =>
       this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey)
-    )
+    ),
+    tap(() => this.loadingWidgetConfiguration$.next(false))
   );
 
-  public readonly widgetComponentMap: WidgetComponentMap = {
-    [WidgetType.FIELDS]: CaseWidgetFieldComponent,
-    [WidgetType.CUSTOM]: CaseWidgetCustomComponent,
-    [WidgetType.FORMIO]: CaseWidgetFormioComponent,
-    [WidgetType.TABLE]: CaseWidgetTableComponent,
-    [WidgetType.COLLECTION]: CaseWidgetCollectionComponent,
-  };
+  public readonly loaded$ = this.caseWidgetsLayoutService.loaded$.pipe(delay(400));
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly caseTabService: CaseTabService,
-    private readonly widgetsApiService: CaseWidgetsApiService
+    private readonly widgetsApiService: CaseWidgetsApiService,
+    private readonly caseWidgetsLayoutService: CaseWidgetsLayoutService
   ) {}
 
   public ngOnInit(): void {
@@ -78,6 +75,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this.caseWidgetsLayoutService.reset();
     this.caseTabService.enableTabHorizontalOverflow();
   }
 }

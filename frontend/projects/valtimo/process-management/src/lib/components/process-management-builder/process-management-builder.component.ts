@@ -25,24 +25,18 @@ import {
 } from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
+import {ArrowLeft16, Deploy16, Download16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   BreadcrumbService,
-  FitPageDirective,
+  FitPageDirectiveModule,
   ModalService,
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
 } from '@valtimo/components';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-  getCaseManagementRouteParamsAndContext,
-  GlobalNotificationService,
-  ManagementContext,
-} from '@valtimo/shared';
+import {EnvironmentService, GlobalNotificationService, ManagementContext} from '@valtimo/config';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {
   ProcessLinkButtonService,
@@ -97,13 +91,13 @@ import {EMPTY_BPMN} from '../../constants';
 import {
   OpenProcessLinkModalEvent,
   ProcessDefinitionResult,
+  ProcessManagementParams,
   ProcessManagementWindow,
   UpdateProcessDefinitionCaseDefinitionRequest,
 } from '../../models';
 import {ProcessManagementEditorService, ProcessManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
+import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
 import {ValtimoPropertiesProviderModule} from './panel';
-import {PluginTranslationService} from '@valtimo/plugin';
 
 @Component({
   selector: 'valtimo-process-management-builder',
@@ -112,9 +106,9 @@ import {PluginTranslationService} from '@valtimo/plugin';
   standalone: true,
   imports: [
     CommonModule,
-    FitPageDirective,
+    FitPageDirectiveModule,
     LoadingModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     DropdownModule,
     ReactiveFormsModule,
     SelectModule,
@@ -159,6 +153,9 @@ export class ProcessManagementBuilderComponent
   public readonly canInitializeDocument$ = new BehaviorSubject<boolean>(false);
   public readonly startableByUser$ = new BehaviorSubject<boolean>(false);
 
+  public readonly canUpdateGlobalConfiguration$ =
+    this.environmentService.canUpdateGlobalConfiguration();
+
   public readonly selectedProcessDefinitionXml$ =
     this.processManagementEditorService.selectionProcessDefinition$.pipe(
       filter(selectedProcessDefinition => !!selectedProcessDefinition?.id),
@@ -197,23 +194,7 @@ export class ProcessManagementBuilderComponent
   public readonly context$ = getContextObservable(this.route);
 
   public readonly managementParams$ = this.context$.pipe(
-    filter(context => context === 'case'),
-    switchMap(() => getCaseManagementRouteParams(this.route))
-  );
-
-  public readonly params$: Observable<any> | undefined = getCaseManagementRouteParams(this.route);
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.params$,
-    this.context$,
-  ]).pipe(
-    switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      )
-    )
+    switchMap(context => getCaseManagementRouteParams(context, this.route))
   );
 
   private readonly _reload$ = new Subject<null>();
@@ -257,8 +238,8 @@ export class ProcessManagementBuilderComponent
 
   public readonly creatingNewProcess$ = new BehaviorSubject<boolean>(false);
 
-  public readonly $extraSpace: Signal<number> = computed(() =>
-    this.processManagementService.$context() === 'case' ? 0 : 0
+  public readonly extraSpace: Signal<number> = computed(() =>
+    this.processManagementService.context() === 'case' ? 0 : 0
   );
 
   public readonly updatingProcessDefinitionCaseDefinition$ = new BehaviorSubject<boolean>(false);
@@ -281,11 +262,13 @@ export class ProcessManagementBuilderComponent
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly translateService: TranslateService,
-    private readonly pluginTranslationService: PluginTranslationService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly environmentService: EnvironmentService
   ) {
     super();
-    this.setProcessManagementWindow();
+    this.iconService.registerAll([Deploy16, Download16, ArrowLeft16]);
+    (window as any as ProcessManagementWindow).processManagementEditorService =
+      processManagementEditorService;
+    (window as any as ProcessManagementWindow).translateService = translateService;
   }
 
   public ngAfterViewInit(): void {
@@ -331,7 +314,7 @@ export class ProcessManagementBuilderComponent
       this.processManagementEditorService.processLinksForSelectedDefinition$,
       this.processManagementEditorService.selectionProcessDefinition$,
       this.context$,
-      this.managementParams$.pipe(startWith(null)),
+      this.managementParams$,
     ])
       .pipe(
         take(1),
@@ -341,10 +324,8 @@ export class ProcessManagementBuilderComponent
               processLinks as ProcessLinkCreateEvent[],
               selectedProcessDefinition.id,
               !isReadOnlyProcess ? (result?.xml ?? '') : null,
-              params?.caseDefinitionKey ?? '',
-              params?.caseDefinitionVersionTag ?? '',
-              this.canInitializeDocument$.getValue(),
-              this.startableByUser$.getValue()
+              params.caseDefinitionKey,
+              params.caseDefinitionVersionTag
             );
           }
 
@@ -363,7 +344,6 @@ export class ProcessManagementBuilderComponent
             this.reload();
             this.showNotification('success');
           } else {
-            this.pendingChanges = false;
             this.navigateBack('success');
           }
         },
@@ -378,7 +358,7 @@ export class ProcessManagementBuilderComponent
       from(this._bpmnModeler.saveXML()),
       this.processManagementEditorService.processLinksForSelectedDefinition$,
       this.context$,
-      this.managementParams$.pipe(startWith(null)),
+      this.managementParams$,
     ])
       .pipe(
         take(1),
@@ -399,9 +379,7 @@ export class ProcessManagementBuilderComponent
                 null,
                 result.xml ?? '',
                 params.caseDefinitionKey,
-                params.caseDefinitionVersionTag,
-                this.canInitializeDocument$.getValue(),
-                this.startableByUser$.getValue()
+                params.caseDefinitionVersionTag
               );
         })
       )
@@ -441,19 +419,25 @@ export class ProcessManagementBuilderComponent
     field: keyof UpdateProcessDefinitionCaseDefinitionRequest,
     value: boolean
   ): void {
-    if (field === 'canInitializeDocument') this.canInitializeDocument$.next(value);
-    if (field === 'startableByUser') this.startableByUser$.next(value);
-    this.changesPending$.next(true);
-  }
+    this.updatingProcessDefinitionCaseDefinition$.next(true);
 
-  private setProcessManagementWindow(): void {
-    const processManagementWindow = window as any as ProcessManagementWindow;
-
-    if (!processManagementWindow) return;
-
-    processManagementWindow.processManagementEditorService = this.processManagementEditorService;
-    processManagementWindow.translateService = this.translateService;
-    processManagementWindow.pluginTranslationService = this.pluginTranslationService;
+    this.managementParams$
+      .pipe(
+        switchMap(managementParams =>
+          this.processManagementService.updateProcessDefinitionCaseDefinitionProperties(
+            managementParams.caseDefinitionKey,
+            managementParams.caseDefinitionVersionTag,
+            this.processManagementEditorService.selectionProcessDefinition.id,
+            {
+              [field]: value,
+            }
+          )
+        ),
+        take(1)
+      )
+      .subscribe(() => {
+        this.updatingProcessDefinitionCaseDefinition$.next(false);
+      });
   }
 
   private showNotification(notification: null | 'success' | 'error'): void {
@@ -483,8 +467,12 @@ export class ProcessManagementBuilderComponent
         camundaPlatformBehaviors,
         ValtimoPropertiesProviderModule,
       ],
-      moddleExtensions: {camunda: CamundaBpmnModdle},
-      propertiesPanel: {parent: this.modelerPanelElementRef.nativeElement},
+      moddleExtensions: {
+        camunda: CamundaBpmnModdle,
+      },
+      propertiesPanel: {
+        parent: this.modelerPanelElementRef.nativeElement,
+      },
     });
 
     this._bpmnModeler?.attachTo(this.modelerElementRef.nativeElement);
@@ -495,19 +483,6 @@ export class ProcessManagementBuilderComponent
     });
 
     this._bpmnModeler.on('import.done', () => {
-      const idMap: Record<string, string> = {};
-      const elementRegistry = this._bpmnModeler.get('elementRegistry') as any;
-
-      elementRegistry.forEach(element => {
-        const activityId = element?.di?.id;
-        const businessId = element?.id;
-
-        if (!activityId || !businessId) return;
-
-        idMap[activityId] = businessId;
-      });
-
-      this.processManagementEditorService.setActivityIdBusinessIdMap(idMap);
       this.listenToActivityChangesOnModeler();
     });
   }
@@ -545,7 +520,13 @@ export class ProcessManagementBuilderComponent
         },
       ],
       move: ['value', null],
-      resizeHandles: ['value', {addResizer: () => {}, removeResizers: () => {}}],
+      resizeHandles: [
+        'value',
+        {
+          addResizer: () => {},
+          removeResizers: () => {},
+        },
+      ],
     };
 
     this._bpmnViewer = new Modeler({
@@ -554,8 +535,12 @@ export class ProcessManagementBuilderComponent
         BpmnPropertiesPanelModule,
         ValtimoPropertiesProviderModule,
       ],
-      moddleExtensions: {camunda: CamundaBpmnModdle},
-      propertiesPanel: {parent: this.viewerPanelElementRef.nativeElement},
+      moddleExtensions: {
+        camunda: CamundaBpmnModdle,
+      },
+      propertiesPanel: {
+        parent: this.viewerPanelElementRef.nativeElement,
+      },
     });
 
     this._bpmnViewer?.attachTo(this.viewerElementRef.nativeElement);
@@ -662,13 +647,6 @@ export class ProcessManagementBuilderComponent
 
   private elementChangedHandler = (event: any): void => {
     this.logger.debug('Element changed:', event);
-
-    const activityId = event?.element?.di?.id;
-    const businessId = event?.element?.id;
-
-    if (!activityId || !businessId) return;
-
-    this.processManagementEditorService.updateProcessLinksOnIdChange(activityId, businessId);
   };
 
   private listenToActivityChangesOnModeler(): void {
@@ -703,14 +681,13 @@ export class ProcessManagementBuilderComponent
           const processDefinitionResult = result as ProcessDefinitionResult;
 
           this.cleanUpListenersOnModeler();
-
           this._bpmnModeler?.importXML(processDefinitionResult.bpmn20Xml);
           this._bpmnViewer?.importXML(processDefinitionResult.bpmn20Xml);
 
           this.canInitializeDocument$.next(
-            !!processDefinitionResult?.processCaseLink?.canInitializeDocument
+            processDefinitionResult.processCaseLink.canInitializeDocument
           );
-          this.startableByUser$.next(!!processDefinitionResult?.processCaseLink?.startableByUser);
+          this.startableByUser$.next(processDefinitionResult.processCaseLink.startableByUser);
 
           this.loading$.next(false);
         })
@@ -719,7 +696,7 @@ export class ProcessManagementBuilderComponent
 
   private openParamsAndContextSubscription(): void {
     this._subscriptions.add(
-      getCaseManagementRouteParamsAndContext(this.route).subscribe(([context, params]) => {
+      combineLatest([this.context$, this.managementParams$]).subscribe(([context, params]) => {
         if (context) this.processManagementService.context = context;
 
         if (params) {
@@ -730,12 +707,11 @@ export class ProcessManagementBuilderComponent
         }
 
         this.initBreadcrumbs(params, context);
-        this.processManagementEditorService.setCaseManagementRouteParams(context, params);
       })
     );
   }
 
-  private initBreadcrumbs(params: CaseManagementParams, context: ManagementContext): void {
+  private initBreadcrumbs(params: ProcessManagementParams, context: ManagementContext): void {
     if (context === 'independent') return;
 
     const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
@@ -756,7 +732,7 @@ export class ProcessManagementBuilderComponent
   }
 
   private initEditing(): void {
-    combineLatest([this.editParam$, this.managementParams$.pipe(startWith(null)), this.context$])
+    combineLatest([this.editParam$, this.managementParams$, this.context$])
       .pipe(
         take(1),
         switchMap(([editParam, params, context]) => {

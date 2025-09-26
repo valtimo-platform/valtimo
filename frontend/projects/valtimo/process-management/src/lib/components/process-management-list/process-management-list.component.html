@@ -16,31 +16,23 @@
 
 <valtimo-carbon-list
   [actionItems]="ACTION_ITEMS"
-  [showActionItems]="hasEditPermissions$ | async"
   [fields]="FIELDS"
   [header]="false"
   [items]="processDefinitions$ | async"
   [loading]="loading$ | async"
   (rowClicked)="editProcessDefinition($event)"
 >
-  <ng-container carbonToolbarContent>
-    <button
-      *ngIf="hasEditPermissions$ | async"
-      cdsButton="ghost"
-      iconOnly="true"
-      (click)="openModal()"
-    >
+  <ng-container carbonToolbarContent *ngIf="canUpdateGlobalConfiguration$ | async">
+    <button cdsButton="ghost" iconOnly="true" (click)="openModal()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
-    <ng-container [ngTemplateOutlet]="createProcess"></ng-container>
-  </ng-container>
+    <button cdsButton="primary" (click)="onCreateProcess()">
+      Create process
 
-  <valtimo-no-results
-    [action]="createProcess"
-    [title]="'processManagement.noResults.title' | translate"
-    [description]="'processManagement.noResults.' + $context() + 'Description' | translate"
-  ></valtimo-no-results>
+      <svg cdsIcon="add" size="16"></svg>
+    </button>
+  </ng-container>
 </valtimo-carbon-list>
 
 <valtimo-confirmation-modal
@@ -52,11 +44,3 @@
   titleTranslationKey="processManagement.deleteModal.title"
   (confirmEvent)="onDeleteConfirm($event)"
 ></valtimo-confirmation-modal>
-
-<ng-template #createProcess>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="onCreateProcess()">
-    {{ 'processManagement.createProcess' | translate }}
-
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-  </button>
-</ng-template>

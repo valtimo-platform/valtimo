@@ -25,6 +25,7 @@ import {
   ParagraphModule,
   TableColumn,
   TableModule,
+  TitleModule,
   VModalComponent,
   VModalModule,
 } from '@valtimo/components';
@@ -37,7 +38,7 @@ import {CommonModule} from '@angular/common';
   templateUrl: './object-type.component.html',
   styleUrls: ['./object-type.component.scss'],
   standalone: true,
-  imports: [CommonModule, TableModule, ParagraphModule, VModalModule, FormIoModule],
+  imports: [CommonModule, TableModule, ParagraphModule, VModalModule, TitleModule, FormIoModule],
 })
 export class CaseDetailTabObjectTypeComponent {
   @ViewChild('viewObjectModal') viewObjectModal: VModalComponent;

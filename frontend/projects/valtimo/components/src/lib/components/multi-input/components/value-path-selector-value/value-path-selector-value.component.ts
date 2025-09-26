@@ -9,7 +9,8 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHimport { LabelModule } from 'carbon-components-angular';
+OUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -46,9 +47,9 @@ export class ValuePathSelectorValueComponent {
   @Input() public readonly value!: MultiInputKeyValue;
   @Input() @HostBinding('class.--full-width') public readonly fullWidth = false;
   @Input() public readonly disabled = false;
-  @Input() public readonly caseDefinitionKey = '';
+  @Input() public readonly documentDefinitionName = '';
   @Input() public readonly prefixes: ValuePathSelectorPrefix[] = [];
-  @Input() public readonly showCaseDefinitionSelector = false;
+  @Input() public readonly showDocumentDefinitionSelector = false;
   @Input() public readonly notation: ValuePathSelectorNotation = 'dots';
   @Input() public readonly keyColumnFlex = 1;
   @Input() public readonly valueColumnFlex = 1;

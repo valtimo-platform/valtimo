@@ -15,6 +15,7 @@
  */
 
 import {NgModule} from '@angular/core';
+import {DecisionComponent} from './decision.component';
 import {DecisionRoutingModule} from './decision-routing.module';
 import {DecisionDeployComponent} from './decision-deploy/decision-deploy.component';
 import {CommonModule} from '@angular/common';
@@ -22,20 +23,29 @@ import {FormsModule} from '@angular/forms';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
 import {DecisionListComponent} from './decision-list/decision-list.component';
 import {
-  CarbonListModule,
+  ListModule,
   ModalModule,
-  SelectModule,
   SpinnerModule,
   WidgetModule,
+  SelectModule,
+  CarbonListModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 
 @NgModule({
+  declarations: [
+    DecisionComponent,
+    DecisionDeployComponent,
+    DecisionDisplayComponent,
+    DecisionListComponent,
+    DecisionModelerComponent,
+  ],
   imports: [
     DecisionRoutingModule,
     WidgetModule,
+    ListModule,
     TranslateModule,
     ModalModule,
     CommonModule,
@@ -45,11 +55,7 @@ import {ButtonModule, IconModule} from 'carbon-components-angular';
     CarbonListModule,
     ButtonModule,
     IconModule,
-    DecisionDeployComponent,
-    DecisionModelerComponent,
-    DecisionListComponent,
-    DecisionDisplayComponent,
   ],
-  exports: [DecisionModelerComponent],
+  exports: [DecisionComponent, DecisionModelerComponent],
 })
 export class DecisionModule {}

@@ -15,10 +15,9 @@
  */
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, InterceptorSkip, Page} from '@valtimo/shared';
+import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {CaseWidgetsRes} from '../models';
-import {CarbonListItem} from '@valtimo/components';
 
 @Injectable({
   providedIn: 'root',
@@ -42,8 +41,8 @@ export class CaseWidgetsApiService extends BaseApiService {
     tabKey: string,
     widgetKey: string,
     queryParams?: string
-  ): Observable<Page<CarbonListItem>> {
-    return this.httpClient.get<Page<CarbonListItem>>(
+  ): Observable<object> {
+    return this.httpClient.get<object>(
       this.getApiUrl(
         !queryParams
           ? `v1/document/${documentId}/widget-tab/${tabKey}/widget/${widgetKey}`

@@ -1,0 +1,10 @@
+0ba6316 - Updated version to 4.18.0
+5e42458 - Merge branch 'main' of github.com:valtimo-platform/valtimo-frontend-libraries into rc/4.18.0-2.RC
+1483360 - Updated version to 4.18.0-2.RC-SNAPSHOT
+b11fa34 - feature 33595 - Added ng-multiselect-dropdown to @valtimo/components (#53)
+56be530 - Feature/33595 dossier access by role (#50)
+7e4fe98 - #33414 Fixes Taak connector (#49)
+cce8c52 - improve consistency proces details (#48)
+120ba6f - #33414 Change Taak connector editor (#47)
+5b87a2b - #33414 Change ProductAanvraag connector editor (#46)
+40ce1d2 - feat: improve consistency of buttons (#45)

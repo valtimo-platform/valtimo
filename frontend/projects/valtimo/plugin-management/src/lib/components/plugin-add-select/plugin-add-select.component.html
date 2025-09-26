@@ -37,23 +37,25 @@
 </ng-template>
 
 <ng-template #pluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
-  <cds-tile-group [multiple]="false" (selected)="selectPluginDefinition($event)" [cdsLayer]="1">
-    <cds-selection-tile
-      *ngFor="let pluginDefinition of pluginDefinitions"
-      [value]="pluginDefinition"
+  <div *ngFor="let pluginDefinition of pluginDefinitions" class="plugin-definition__item">
+    <v-card
+      [title]="'title' | pluginTranslate: pluginDefinition.key | async"
+      [description]="'description' | pluginTranslate: pluginDefinition.key | async"
+      [selectable]="true"
       [selected]="(selectedPluginDefinition$ | async)?.key === pluginDefinition.key"
+      [fullHeight]="true"
+      (selectEvent)="selectPluginDefinition(pluginDefinition)"
+      (deselectEvent)="deselectPluginDefinition()"
     >
-      <img
-        class="plugin-definition-logo"
-        [title]="'title' | pluginTranslate: pluginDefinition.key | async"
-        [src]="pluginDefinition.pluginLogoBase64"
-      />
-
-      <h5>{{ 'title' | pluginTranslate: pluginDefinition.key | async }}</h5>
-
-      <p>{{ 'description' | pluginTranslate: pluginDefinition.key | async }}</p>
-    </cds-selection-tile>
-  </cds-tile-group>
+      <div *ngIf="pluginDefinition.pluginLogoBase64" role="header">
+        <img
+          class="plugin-definition-logo"
+          [title]="'title' | pluginTranslate: pluginDefinition.key | async"
+          [src]="pluginDefinition.pluginLogoBase64"
+        />
+      </div>
+    </v-card>
+  </div>
 </ng-template>
 
 <ng-template #loading>
@@ -66,6 +68,6 @@
 
 <ng-template #loadingCard>
   <div class="plugin-definition__item">
-    <cds-loading size="sm"></cds-loading>
+    <v-card [loading]="true" [loadingDescription]="true" [loadingTitle]="true"></v-card>
   </div>
 </ng-template>

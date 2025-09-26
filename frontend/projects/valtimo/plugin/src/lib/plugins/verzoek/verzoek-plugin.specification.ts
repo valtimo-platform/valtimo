@@ -36,8 +36,7 @@ const verzoekPluginSpecification: PluginSpecification = {
       rsin: 'RSIN',
       verzoekProperties: 'Verzoektypen',
       type: 'Type',
-      caseDefinitionKey: 'Dossierdefinitie',
-      caseDefinitionVersionTag: 'Dossierdefinitie versie',
+      caseDefinitionName: 'Dossierdefinitie',
       initiatorRoltypeUrl: 'Roltype',
       processDefinitionKey: 'Procesdefinitie',
       initiatorRolDescription: 'Rolbeschrijving',
@@ -52,10 +51,8 @@ const verzoekPluginSpecification: PluginSpecification = {
       rsinTooltip: 'Dit nummer moet voldoen aan dezelfde specificaties als een BSN-nummer.',
       typeTooltip:
         "Het type van het verzoek dat wordt gebruikt om het object te identificeren. Bv. 'verzoek'.",
-      caseDefinitionKeyTooltip:
+      caseDefinitionNameTooltip:
         'Selecteer hier het dossiertype waarvan een instantie gestart moet worden wanneer er een verzoek binnenkomt.',
-      caseDefinitionVersionTagTooltip:
-        'Vul hier de versie in van het dossiertype waarvan een instantie gestart moet worden wanneer er een verzoek binnenkomt.',
       initiatorRoltypeUrlTooltip:
         'Het roltype van de aanvrager die wordt opgeslagen wanneer er een verzoek binnenkomt.',
       initiatorRolDescriptionTooltip:
@@ -89,8 +86,7 @@ const verzoekPluginSpecification: PluginSpecification = {
       rsin: 'RSIN',
       verzoekProperties: 'Verzoek types',
       type: 'Type',
-      caseDefinitionKey: 'Case definition',
-      caseDefinitionVersionTag: 'Case definition version',
+      caseDefinitionName: 'Case definition',
       initiatorRoltypeUrl: 'Role type',
       processDefinitionKey: 'Process definition',
       initiatorRolDescription: 'Role description',
@@ -103,10 +99,8 @@ const verzoekPluginSpecification: PluginSpecification = {
       processToStartTooltip: 'The process that creates a case when a notification is received.',
       rsinTooltip: 'This number must meet the same specifications as a BSN number.',
       typeTooltip: "The type of verzoek used to identify the object. Eg. 'verzoek'.",
-      caseDefinitionKeyTooltip:
+      caseDefinitionNameTooltip:
         'The case type of which an instance should be started when a verzoek comes in.',
-      caseDefinitionVersionTagTooltip:
-        'The version of the case type of which an instance should be started when a verzoek comes in.',
       initiatorRoltypeUrlTooltip:
         'The role type of the requestor that is saved when a verzoek comes in.',
       initiatorRolDescriptionTooltip:
@@ -140,8 +134,7 @@ const verzoekPluginSpecification: PluginSpecification = {
       rsin: 'RSIN',
       verzoekProperties: 'Verzoektypen',
       type: 'Typ',
-      caseDefinitionKey: 'Dateidefinition',
-      caseDefinitionVersionTag: 'Falldefinitionsversion',
+      caseDefinitionName: 'Dateidefinition',
       initiatorRoltypeUrl: 'Rollentyp',
       processDefinitionKey: 'Prozessdefinition',
       initiatorRolDescription: 'Rollenbeschreibung',
@@ -157,10 +150,8 @@ const verzoekPluginSpecification: PluginSpecification = {
       rsinTooltip: 'Diese Nummer muss die gleichen Spezifikationen wie eine BSN-Nummer erfüllen.',
       typeTooltip:
         "Der Verzoektyp, der zum Identifizieren des Objects verwendet wird. Z.B. 'verzoek'.",
-      caseDefinitionKeyTooltip:
+      caseDefinitionNameTooltip:
         'Wählen Sie hier den Falltyp aus, von dem eine Instanz gestartet werden soll, wenn eine Verzoek eintrifft.',
-      caseDefinitionVersionTagTooltip:
-        'Die Version des Falltyps, dessen Instanz bei eingehender Verzoek gestartet werden soll.',
       initiatorRoltypeUrlTooltip:
         'Der Rollentyp des Anforderers, der gespeichert wird, wenn eine Verzoek eingeht.',
       initiatorRolDescriptionTooltip:

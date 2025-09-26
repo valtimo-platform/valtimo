@@ -85,8 +85,11 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   }
 
   onValid(valid: boolean): void {
-    if (valid) this.buttonService.enableSaveButton();
-    else this.buttonService.disableSaveButton();
+    if (valid) {
+      this.buttonService.enableSaveButton();
+    } else {
+      this.buttonService.disableSaveButton();
+    }
   }
 
   onConfiguration(configuration: PluginConfigurationData): void {

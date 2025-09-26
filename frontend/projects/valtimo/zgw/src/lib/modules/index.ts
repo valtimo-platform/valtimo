@@ -16,5 +16,7 @@
 
 export * from './documenten-api';
 export * from './objecten-api';
+export * from './contactmomenten';
+export * from './haalcentraal-brp';
 export * from './zaakdetails';
 export * from './zaken-api';

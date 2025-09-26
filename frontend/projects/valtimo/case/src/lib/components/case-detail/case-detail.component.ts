@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import {
   PageTitleService,
   PendingChangesComponent,
 } from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/config';
 import {
   CaseStatusService,
   CaseTag,
@@ -270,8 +270,7 @@ export class CaseDetailComponent
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly $tabHorizontalOverflowDisabled =
-    this.caseTabService.$tabHorizontalOverflowDisabled;
+  public readonly tabHorizontalOverflowDisabled = this.caseTabService.tabHorizontalOverflowDisabled;
   public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
 
   public readonly showTaskList$ = this.caseTabService.showTaskList$;
@@ -333,7 +332,6 @@ export class CaseDetailComponent
     this._snapshot = this.route.snapshot.paramMap;
     this.caseDefinitionKey = this._snapshot.get('caseDefinitionKey') || '';
     this.documentId = this._snapshot.get('documentId') || '';
-    this.widgetsService.documentId = this.documentId;
   }
 
   public ngAfterViewInit(): void {
@@ -388,7 +386,7 @@ export class CaseDetailComponent
       this.widgetsService.startProcessEvent
         .pipe(switchMap(() => this.widgetsService.activeProcess$))
         .subscribe(processDefinitionCaseDefinition => {
-          this.startProcess(processDefinitionCaseDefinition);
+          this.startProcess(processDefinitionCaseDefinition[0]);
         })
     );
   }
@@ -515,8 +513,9 @@ export class CaseDetailComponent
 
   public onFormSubmitEvent(): void {
     this.caseDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
-    this.caseDetailLayoutService.refreshTasks();
-    this.tabLoader?.refreshView();
+
+    if (!this.tabLoader) return;
+    this.tabLoader.refreshView();
   }
 
   protected onConfirmRedirect(): void {

@@ -27,7 +27,7 @@ interface ProcessLink {
     [key: string]: any;
   };
   formDefinitionId?: string;
-  formFlowDefinitionKey?: string;
+  formFlowDefinitionId?: string;
   viewModelEnabled?: boolean;
   url?: string;
   formDisplayType?: FormDisplayType;
@@ -74,7 +74,7 @@ interface FormFlowProcessLinkCreateRequestDto {
   activityId: string;
   activityType: string;
   processLinkType: string;
-  formFlowDefinitionKey: string;
+  formFlowDefinitionId: string;
   subtitles: string[];
 }
 
@@ -131,7 +131,6 @@ interface UIComponentProcessLinkCreateRequestDto {
 interface UIComponentProcessLinkUpdateRequestDto {
   id: string;
   componentKey: string;
-  activityId: string;
 }
 
 interface URLProcessLinkCreateDto {
@@ -187,8 +186,7 @@ type ProcessLinkUpdateEvent =
   | PluginProcessLinkUpdateDto
   | FormFlowProcessLinkUpdateRequestDto
   | FormProcessLinkUpdateRequestDto
-  | URLProcessLinkUpdateRequestDto
-  | UIComponentProcessLinkUpdateRequestDto;
+  | URLProcessLinkUpdateRequestDto;
 
 interface ProcessLinkDeleteEvent {
   activityId: string;

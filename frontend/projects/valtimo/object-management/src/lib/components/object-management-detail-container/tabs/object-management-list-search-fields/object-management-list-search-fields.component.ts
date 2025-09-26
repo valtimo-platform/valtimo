@@ -35,7 +35,7 @@ import {
   SearchFieldColumnView,
   SearchFieldDataType,
   SearchFieldFieldType,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {ListField} from '@valtimo/components';
 import {catchError, take} from 'rxjs/operators';
 import {FormControl, FormGroup, Validators} from '@angular/forms';

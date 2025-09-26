@@ -98,18 +98,3 @@
 
   margin-block-end: var(--v-input-margin);
 }
-
-div.v-input--preset-options {
-  margin-top: 3px;
-  font-size: var(--v-input-font-size);
-  color: var(--v-input-color);
-
-  span:first-child {
-    padding-right: 3px;
-  }
-
-  a.v-input--preset-option {
-    cursor: pointer;
-    font-style: italic;
-  }
-}

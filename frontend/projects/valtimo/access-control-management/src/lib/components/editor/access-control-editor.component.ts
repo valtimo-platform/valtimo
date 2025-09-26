@@ -18,11 +18,15 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/co
 import {AccessControlService} from '../../services/access-control.service';
 import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
+import {
+  EditorModel,
+  PageHeaderService,
+  PageTitleService,
+} from '@valtimo/components';
 import {Role} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/config';
 
 @Component({
   standalone: false,

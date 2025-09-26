@@ -20,7 +20,7 @@ import {
   ConfigService,
   InterceptorSkip,
   InterceptorSkipHeader,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {Page} from '@valtimo/document';
 import {map, Observable} from 'rxjs';
 import {CaseListItem} from '../models';
@@ -59,22 +59,6 @@ export class CaseManagementService extends BaseApiService {
       this.getApiUrl(`management/v1/case-definition/draft`),
       payload
     );
-  }
-
-  public isDraftVersion(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
-  ): Observable<boolean> {
-    return this.httpClient
-      .get<CaseDefinition>(
-        this.getApiUrl(
-          `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
-        ),
-        {
-          headers: new HttpHeaders().set(InterceptorSkip, '403'),
-        }
-      )
-      .pipe(map(caseDefinition => !caseDefinition.final));
   }
 
   public getGlobalActiveCase(caseDefinitionKey: string): Observable<any> {
@@ -137,6 +121,22 @@ export class CaseManagementService extends BaseApiService {
         headers: new HttpHeaders().set(InterceptorSkip, '403'),
       }
     );
+  }
+
+  public checkFinalVersion(
+    caseDefinitionKey: string,
+    caseDefinitionVersionTag: string
+  ): Observable<boolean> {
+    return this.httpClient
+      .get<CaseDefinition>(
+        this.getApiUrl(
+          `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
+        ),
+        {
+          headers: new HttpHeaders().set(InterceptorSkip, '403'),
+        }
+      )
+      .pipe(map(response => response.final));
   }
 
   public importDocumentDefinitionZip(file: FormData): Observable<HttpResponse<Blob>> {

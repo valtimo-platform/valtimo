@@ -26,15 +26,14 @@ import {
   ConfirmationModalModule,
   FormIoModule,
   PageHeaderModule,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SpinnerModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
   WidgetModule,
-  TooltipModule as ValtimoTooltipModule
 } from '@valtimo/components';
-import {HttpLoaderFactory} from '@valtimo/shared';
+import {HttpLoaderFactory} from '@valtimo/config';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {
   ButtonModule,
@@ -81,19 +80,18 @@ import {TaskRoutingModule} from './task-routing.module';
     ProcessLinkModule,
     TabsModule,
     ContentSwitcherModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     DropdownModule,
     ButtonModule,
     IconModule,
     TooltipModule,
-    ValtimoTooltipModule,
     ConfirmationModalModule,
     SearchFieldsModule,
     AssignUserToTaskComponent,
     TaskDetailContentComponent,
     TaskDetailIntermediateSaveComponent,
     SetTaskDueDateComponent,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })

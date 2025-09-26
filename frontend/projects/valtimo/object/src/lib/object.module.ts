@@ -20,15 +20,15 @@ import {ObjectListComponent} from './components/object-list/object-list.componen
 import {TranslateModule} from '@ngx-translate/core';
 import {AsyncPipe, CommonModule} from '@angular/common';
 import {
-  CarbonListModule,
   ConfirmationModalModule,
   FormIoModule,
-  MenuService,
+  ListModule,
   SearchFieldsModule,
   SpinnerModule,
-  TooltipIconModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
   WidgetModule,
+  TooltipIconModule,
+  CarbonListModule,
 } from '@valtimo/components';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
 import {ObjectDetailComponent} from './components/object-detail-container/tabs/object-detail/object-detail.component';
@@ -40,8 +40,6 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {ReactiveFormsModule} from '@angular/forms';
-import {ConfigService} from '@valtimo/shared';
-import {ObjectMenuService} from './services';
 
 @NgModule({
   declarations: [ObjectListComponent, ObjectDetailContainerComponent, ObjectDetailComponent],
@@ -51,6 +49,7 @@ import {ObjectMenuService} from './services';
     TranslateModule,
     AsyncPipe,
     WidgetModule,
+    ListModule,
     ButtonModule,
     IconModule,
     SpinnerModule,
@@ -62,21 +61,9 @@ import {ObjectMenuService} from './services';
     TooltipIconModule,
     ConfirmationModalModule,
     SearchFieldsModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     CarbonListModule,
   ],
   exports: [],
 })
-export class ObjectModule {
-  constructor(
-    private readonly menuService: MenuService,
-    private readonly configService: ConfigService,
-    private readonly objectMenuService: ObjectMenuService
-  ) {
-    const enabled = this.configService.config?.featureToggles?.enableObjectManagement;
-
-    if (!enabled) return;
-
-    this.menuService.registerAppendMenuItemsFunction(this.objectMenuService.appendObjectMenuItems);
-  }
-}
+export class ObjectModule {}

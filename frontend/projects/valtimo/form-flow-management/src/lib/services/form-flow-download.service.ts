@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Injectable} from '@angular/core';
-import {CaseManagementParams} from '@valtimo/shared';
+import {FormFlowService} from './form-flow.service';
+import {FormFlowDefinitionId} from '../models';
 
 @Injectable({providedIn: 'root'})
 export class FormFlowDownloadService {
-  public downloadJson(
-    json: object,
-    params: CaseManagementParams & {formFlowDefinitionKey: string}
-  ): void {
+  constructor(private readonly formFlowService: FormFlowService) {}
+
+  public downloadJson(json: object, formFlowDefinitionId: FormFlowDefinitionId): void {
     const sJson = JSON.stringify(json, null, 2);
     const element = document.createElement('a');
     element.setAttribute('href', 'data:text/json;charset=UTF-8,' + encodeURIComponent(sJson));
     element.setAttribute(
       'download',
-      `${params.caseDefinitionKey}-${params.caseDefinitionVersionTag}-${params.formFlowDefinitionKey}.formflow.json`
+      `${formFlowDefinitionId.key}-${formFlowDefinitionId.version}.formflow.json`
     );
     element.style.display = 'none';
     document.body.appendChild(element);

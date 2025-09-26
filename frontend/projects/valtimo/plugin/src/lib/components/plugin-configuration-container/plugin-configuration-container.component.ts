@@ -37,8 +37,6 @@ import {
   PluginConfigurationComponent,
   PluginConfigurationData,
 } from '../../models';
-import {ActivatedRoute} from '@angular/router';
-import {getCaseManagementRouteParamsAndContext} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-plugin-configuration-container',
@@ -91,10 +89,7 @@ export class PluginConfigurationContainerComponent
     tap(isTypeConfiguration => this._validDefaultConfiguration.next(!isTypeConfiguration))
   );
 
-  constructor(
-    private readonly pluginService: PluginService,
-    private readonly route: ActivatedRoute
-  ) {}
+  constructor(private readonly pluginService: PluginService) {}
 
   ngOnInit(): void {
     this.openPluginSubscription();
@@ -168,7 +163,6 @@ export class PluginConfigurationContainerComponent
         instance.save$ = this.save$;
         instance.disabled$ = this.disabled$;
         instance.pluginId = pluginDefinitionKey;
-        instance.context$ = getCaseManagementRouteParamsAndContext(this.route);
 
         if (this.prefillConfiguration$) {
           instance.prefillConfiguration$ = this.prefillConfiguration$;

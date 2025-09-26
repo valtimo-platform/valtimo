@@ -1,26 +1,11 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
-import {AbstractControl, FormBuilder, ReactiveFormsModule} from '@angular/forms';
+import {FormBuilder, ReactiveFormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {CaseManagementParams} from '@valtimo/shared';
-import {ComboBoxModule, InputModule, ListItem} from 'carbon-components-angular';
+import {CaseWidgetAction} from '@valtimo/case';
+import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   debounceTime,
@@ -31,6 +16,7 @@ import {
   switchMap,
 } from 'rxjs';
 import {WidgetWizardService} from '../../../../../../../services';
+import {CaseManagementParams} from '../../../../../../../models';
 
 @Component({
   selector: 'valtimo-case-management-widget-process-selector',
@@ -38,7 +24,7 @@ import {WidgetWizardService} from '../../../../../../../services';
   styleUrl: './case-management-widget-process-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, InputModule, ReactiveFormsModule, ComboBoxModule],
+  imports: [CommonModule, TranslateModule, DropdownModule, InputModule, ReactiveFormsModule],
 })
 export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
   private readonly _params$ = new BehaviorSubject<CaseManagementParams | null>(null);
@@ -48,12 +34,12 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
 
   public readonly formGroup = this.fb.group({
     name: this.fb.control<string>({
-      value: this.widgetWizardService.$widgetActions()?.[0]?.name ?? '',
-      disabled: !this.widgetWizardService.$widgetActions()?.length,
+      value: this.widgetWizardService.widgetActions()?.[0]?.name ?? '',
+      disabled: !this.widgetWizardService.widgetActions()?.length,
     }),
     processDefinitionKey: this.fb.control<ListItem>({
       content: '',
-      key: this.widgetWizardService.$widgetActions()?.[0]?.processDefinitionKey,
+      key: this.widgetWizardService.widgetActions()?.[0]?.processDefinitionKey,
       selected: false,
     }),
   });
@@ -66,8 +52,8 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
       )
     ),
     map((processDocumentDefinitions: ProcessDefinitionCaseDefinition[]) => {
-      const selectedProcessKey: string | undefined = this.widgetWizardService.$editMode()
-        ? this.widgetWizardService.$widgetActions()?.[0]?.processDefinitionKey
+      const selectedProcessKey: string | undefined = this.widgetWizardService.editMode()
+        ? this.widgetWizardService.widgetActions()?.[0]?.processDefinitionKey
         : undefined;
 
       return processDocumentDefinitions.map((definition: ProcessDefinitionCaseDefinition) => {
@@ -108,27 +94,47 @@ export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
         .subscribe(
           (changes: Partial<{name: string | null; processDefinitionKey: ListItem | null}>) => {
             const {name, processDefinitionKey} = changes;
-            this.widgetWizardService.$widgetActions.update(() =>
-              // This can be extended in the future if we need to support multiple actions on a widget
-              !Array.isArray(processDefinitionKey)
-                ? [
+            this.widgetWizardService.widgetActions.update(
+              (value: CaseWidgetAction[] | undefined) => {
+                if (!value)
+                  return [
                     {
                       name: !name ? processDefinitionKey?.content : name,
                       processDefinitionKey: processDefinitionKey?.key,
                     },
-                  ]
-                : []
+                  ];
+
+                const edittedProcess = value.find(
+                  (process: CaseWidgetAction) =>
+                    process.processDefinitionKey === processDefinitionKey?.key
+                );
+
+                return !!edittedProcess
+                  ? value.map((process: CaseWidgetAction) =>
+                      process.processDefinitionKey === edittedProcess.processDefinitionKey
+                        ? {
+                            ...process,
+                            name: !name ? processDefinitionKey?.content : name,
+                          }
+                        : process
+                    )
+                  : [
+                      ...value,
+                      {
+                        name: !name ? processDefinitionKey?.content : name,
+                        processDefinitionKey: processDefinitionKey?.key,
+                      },
+                    ];
+              }
             );
           }
         )
     );
   }
 
-  public onProcessSelected(selection: ListItem | Array<object>): void {
-    const nameFormControl: AbstractControl | null = this.formGroup.get('name');
-    if (!nameFormControl) return;
+  public onProcessSelected(): void {
+    if (!this.formGroup.get('name')?.disabled) return;
 
-    if (Array.isArray(selection) && selection.length === 0) nameFormControl.disable();
-    else nameFormControl.enable();
+    this.formGroup.get('name')?.enable();
   }
 }

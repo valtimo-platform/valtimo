@@ -24,7 +24,7 @@ import {
   TabLoaderImpl,
 } from '../models';
 import {CASE_TAB_TOKEN, DEFAULT_TAB_COMPONENTS, DEFAULT_TABS, TAB_MAP} from '../constants';
-import {ConfigService, ZGW_OBJECT_TYPE_COMPONENT_TOKEN} from '@valtimo/shared';
+import {ConfigService, ZGW_OBJECT_TYPE_COMPONENT_TOKEN} from '@valtimo/config';
 import {ActivatedRoute} from '@angular/router';
 import {CaseTabApiService} from './case-tab-api.service';
 import {
@@ -54,10 +54,10 @@ export class CaseTabService implements OnDestroy {
   private readonly _tabs$ = new BehaviorSubject<Array<TabImpl> | null>(null);
   private readonly _subscriptions = new Subscription();
   private readonly _tabLoader$ = new BehaviorSubject<TabLoaderImpl | null>(null);
-  private readonly _$tabHorizontalOverflowDisabled = signal(false);
+  private readonly _tabHorizontalOverflowDisabled = signal(false);
 
-  public get $tabHorizontalOverflowDisabled(): Signal<boolean> {
-    return this._$tabHorizontalOverflowDisabled.asReadonly();
+  public get tabHorizontalOverflowDisabled(): Signal<boolean> {
+    return this._tabHorizontalOverflowDisabled.asReadonly();
   }
 
   public get tabs$(): Observable<Array<TabImpl>> {
@@ -107,11 +107,11 @@ export class CaseTabService implements OnDestroy {
   }
 
   public disableTabHorizontalOverflow(): void {
-    this._$tabHorizontalOverflowDisabled.set(true);
+    this._tabHorizontalOverflowDisabled.set(true);
   }
 
   public enableTabHorizontalOverflow(): void {
-    this._$tabHorizontalOverflowDisabled.set(false);
+    this._tabHorizontalOverflowDisabled.set(false);
   }
 
   private getConfigurableTabs(caseDefinitionKey: string): Map<string, object> {

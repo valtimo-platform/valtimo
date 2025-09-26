@@ -13,16 +13,14 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <valtimo-carbon-list
   *ngIf="{
     formDefinitions: formDefinitions$ | async,
     pagination: pagination$ | async,
     loading: loading$ | async,
-    context: context$ | async,
-    hasEditPermissions: hasEditPermissions$ | async,
+    canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
   } as obs"
-  [showActionItems]="obs.hasEditPermissions"
-  [actionItems]="ACTION_ITEMS"
   [fields]="FIELDS"
   [header]="false"
   [isSearchable]="true"
@@ -35,36 +33,19 @@
   (rowClicked)="editFormDefinition($event)"
   (search)="searchTermEntered($event)"
 >
-  <ng-container *ngIf="obs.hasEditPermissions" carbonToolbarContent>
+  <ng-container carbonToolbarContent>
     <button cdsButton="ghost" [iconOnly]="true" (click)="navigateToUploadRoute()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
-    <ng-container [ngTemplateOutlet]="createFormButton"></ng-container>
+    <button
+      cdsButton="primary"
+      *ngIf="obs.canUpdateGlobalConfiguration"
+      (click)="navigateToCreateRoute()"
+    >
+      {{ 'Create new Form' | translate }}
+
+      <svg cdsIcon="add" size="16"></svg>
+    </button>
   </ng-container>
-
-  <valtimo-no-results
-    [action]="createFormButton"
-    [description]="'formManagement.noResults.' + obs.context + 'Description' | translate"
-    [title]="'formManagement.noResults.title' | translate"
-  ></valtimo-no-results>
 </valtimo-carbon-list>
-
-<valtimo-confirmation-modal
-  confirmButtonTextTranslationKey="interface.delete"
-  confirmButtonType="danger"
-  contentTranslationKey="interface.deleteConfirmation"
-  cancelButtonTextTranslationKey="interface.cancel"
-  [outputOnConfirm]="formDefinitionToDelete$ | async"
-  [showModalSubject$]="showDeleteModal$"
-  titleTranslationKey="dashboardManagement.delete"
-  (confirmEvent)="deleteFormDefinition($event)"
-></valtimo-confirmation-modal>
-
-<ng-template #createFormButton>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="navigateToCreateRoute()">
-    {{ 'Create Form' | translate }}
-
-    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-  </button>
-</ng-template>

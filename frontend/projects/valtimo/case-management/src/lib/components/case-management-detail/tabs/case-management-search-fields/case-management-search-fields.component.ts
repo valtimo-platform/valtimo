@@ -16,21 +16,19 @@
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
+  EventEmitter,
   OnDestroy,
   OnInit,
-  computed,
-  signal,
+  Output,
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {Code16} from '@carbon/icons';
+import {ArrowDown16, ArrowUp16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   CARBON_CONSTANTS,
   ColumnConfig,
-  EditorModel,
   MultiInputOutput,
   MultiInputValues,
   SelectItem,
@@ -39,12 +37,12 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {
-  EditPermissionsService,
+  EnvironmentService,
   SearchField,
   SearchFieldDataType,
   SearchFieldFieldType,
   SearchFieldMatchType,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {
@@ -61,19 +59,20 @@ import {
   tap,
 } from 'rxjs';
 import {v4 as uuidv4} from 'uuid';
+import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-case-management-search-fields',
   templateUrl: './case-management-search-fields.component.html',
   styleUrls: ['./case-management-search-fields.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, AfterViewInit {
+  @Output() searchField: EventEmitter<SearchField> = new EventEmitter();
+
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<string | undefined>(undefined);
   public readonly disableInput$ = new BehaviorSubject<boolean>(false);
-  public readonly showActionItems$ = new BehaviorSubject<boolean>(false);
   public readonly selectedSearchField$ = new BehaviorSubject<SearchField | undefined>(undefined);
   public readonly selectedDeleteSearchField$ = new BehaviorSubject<SearchField | undefined>(
     undefined
@@ -84,8 +83,18 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   public readonly modalShowing$ = new BehaviorSubject<boolean>(false);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
-  public readonly jsonEditorActive = signal<boolean>(false);
-  public readonly buttonTheme = computed(() => (this.jsonEditorActive() ? 'primary' : 'ghost'));
+  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
+    this.environmentService.canUpdateGlobalConfiguration();
+
+  public readonly isFinalVersion$: Observable<boolean> = combineLatest([
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$,
+  ]).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
+  );
 
   private _subscriptions = new Subscription();
 
@@ -220,14 +229,10 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
     tap((caseDefinitionKey: string) => (this._caseDefinitionKey = caseDefinitionKey))
   );
 
-  public readonly caseDefinitionVersionTag$: Observable<string> = this.route.parent.params.pipe(
-    map(params => params.caseDefinitionVersionTag || ''),
-    filter(caseDefinitionVersionTag => !!caseDefinitionVersionTag)
-  );
-
   private cachedSearchFields!: Array<SearchField>;
 
   public searchFieldActionTypeIsAdd: boolean;
+  public loadingSearchFields = true;
 
   private readonly refreshSearchFields$ = new BehaviorSubject<null>(null);
 
@@ -247,17 +252,11 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
     }),
     tap(searchFields => {
       this.cachedSearchFields = searchFields;
+      this.loadingSearchFields = false;
     })
   );
 
   private _cachedSearchFieldsWithUuid: SearchField[] = [];
-
-  public readonly jsonEditorModel$: Observable<EditorModel> = this.searchFields$.pipe(
-    map((searchFields: SearchField[]) => ({
-      value: JSON.stringify(searchFields),
-      language: 'json',
-    }))
-  );
 
   public readonly translatedSearchFields$: Observable<Array<SearchField>> = combineLatest([
     this.searchFields$,
@@ -276,15 +275,6 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
         fieldType: this.translateService.instant(`searchFieldsOverview.${searchField.fieldType}`),
       }));
     })
-  );
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$,
-  ]).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
-    )
   );
 
   public readonly fieldTypeIsDropdown$ = new BehaviorSubject<boolean>(false);
@@ -375,9 +365,10 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
     private readonly iconService: IconService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly environmentService: EnvironmentService,
+    private readonly caseManagementService: CaseManagementService
   ) {
-    this.iconService.registerAll([Code16]);
+    this.iconService.registerAll([ArrowDown16, ArrowUp16]);
   }
 
   public ngOnInit(): void {
@@ -393,19 +384,17 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   }
 
   public searchFieldClicked(searchField: SearchField, searchFieldActionTypeIsAdd: boolean): void {
-    combineLatest([this.disableInput$, this.hasEditPermissions$])
-      .pipe(
-        take(1),
-        filter(([inputDisabled, hasPermission]) => !inputDisabled && hasPermission)
-      )
-      .subscribe(() => {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
+    this.disableInput$.pipe(take(1)).subscribe(inputDisabled => {
+      if (!inputDisabled) {
         this.searchFieldActionTypeIsAdd = searchFieldActionTypeIsAdd;
         const searchFieldToSelect = this.cachedSearchFields.find(
           field => field.key === searchField.key
         );
         this.selectedSearchField$.next(searchFieldToSelect || ({} as SearchField));
         this.showModal();
-      });
+      }
+    });
   }
 
   public formValueChange(data: SearchField): void {
@@ -570,12 +559,6 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
       });
   }
 
-  public switchView(): void {
-    this.jsonEditorActive.set(!this.jsonEditorActive());
-
-    if (!this.jsonEditorActive()) this.refreshSearchFields$.next(null);
-  }
-
   private nextIfChanged(behaviourSubject$: BehaviorSubject<any>, value: any) {
     if (JSON.stringify(behaviourSubject$.value) !== JSON.stringify(value)) {
       behaviourSubject$.next(value);
@@ -663,11 +646,13 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   }
 
   private showDeleteModal(searchField: SearchField): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
     this.selectedDeleteSearchField$.next(searchField);
     this.showDeleteModal$.next(true);
   }
 
   private showEditModal(searchField: SearchField): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
     this.searchFieldClicked(searchField, false);
   }
 }

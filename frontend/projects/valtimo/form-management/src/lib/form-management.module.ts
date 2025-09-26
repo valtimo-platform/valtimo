@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
  */
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {ROLE_ADMIN, RouterUtils} from '@valtimo/shared';
+import {ROLE_ADMIN, RouterUtils} from '@valtimo/config';
 import {AuthGuardService} from '@valtimo/security';
 import {FormManagementComponent} from './components/form-management/form-management.component';
 import {FormManagementRouteData} from './models';
 import {FormManagementEditComponent} from './components';
+import {pendingChangesGuard} from '@valtimo/components';
 
 const routes: Routes = [
   {
@@ -32,6 +33,7 @@ const routes: Routes = [
     path: 'form-management/:formDefinitionId',
     component: FormManagementEditComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Forms',
       roles: [ROLE_ADMIN],

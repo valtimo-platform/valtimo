@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -21,14 +22,10 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {EditPermissionsService, getCaseManagementRouteParams} from '@valtimo/shared';
 import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
 import {
   BehaviorSubject,
   combineLatest,
-  filter,
   map,
   Observable,
   Subject,
@@ -37,7 +34,11 @@ import {
   take,
   tap,
 } from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
+import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
+import {getCaseManagementRouteParams} from '../../../../utils';
+import {EnvironmentService} from '@valtimo/config';
 import {CaseManagementService} from '../../../../services';
 
 @Component({
@@ -52,22 +53,13 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
-  private readonly _params$ = getCaseManagementRouteParams(this.route);
-
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  private readonly _params$ = getCaseManagementRouteParams(this.route);
 
   public readonly caseDefinitionKey$ = this._params$.pipe(map(p => p.caseDefinitionKey));
   public readonly caseDefinitionVersionTag$ = this._params$.pipe(
     map(p => p.caseDefinitionVersionTag)
-  );
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest(
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$
-  ).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
-    )
   );
 
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
@@ -99,13 +91,17 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
     })
   );
 
-  public readonly isDraftVersion$: Observable<boolean> = combineLatest([
+  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
+    this.environmentService.canUpdateGlobalConfiguration();
+
+  public readonly isFinalVersion$: Observable<boolean> = combineLatest([
     this.caseDefinitionKey$,
     this.caseDefinitionVersionTag$,
   ]).pipe(
     switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
-    )
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
   );
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
@@ -132,7 +128,7 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   constructor(
     private readonly caseTagService: CaseTagService,
     private readonly route: ActivatedRoute,
-    private readonly editPermissionsService: EditPermissionsService,
+    private readonly environmentService: EnvironmentService,
     private readonly caseManagementService: CaseManagementService
   ) {}
 
@@ -145,15 +141,17 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   }
 
   public openDeleteModal(caseTag: CaseTag): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
+
     this.caseTagToDelete$.next(caseTag);
     this.showDeleteModal$.next(true);
   }
 
   public openEditModal(caseTag: CaseTag): void {
-    this.hasEditPermissions$.pipe(filter(hasPermission => hasPermission)).subscribe(() => {
-      this.prefillCaseTag$.next(caseTag);
-      this.statusModalType$.next('edit');
-    });
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
+
+    this.prefillCaseTag$.next(caseTag);
+    this.statusModalType$.next('edit');
   }
 
   public openAddModal(): void {
@@ -187,14 +185,13 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   }
 
   public onItemsReorderedEvent(reorderedItems: CaseTag[]): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
+
     if (!reorderedItems) return;
 
-    this.hasEditPermissions$
+    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
       .pipe(
-        filter(hasPermission => hasPermission),
-        switchMap(() =>
-          combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$]).pipe(take(1))
-        ),
+        take(1),
         switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
           this.caseTagService.updateCaseTags(
             caseDefinitionKey,

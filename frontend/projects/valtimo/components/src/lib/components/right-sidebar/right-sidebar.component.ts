@@ -34,7 +34,7 @@ import {
   UserSettingsService,
   ValtimoConfig,
   VERSIONS,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {UserProviderService} from '@valtimo/security';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';

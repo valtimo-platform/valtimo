@@ -14,26 +14,21 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
-import {WidgetFormioContent} from '@valtimo/case';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {WidgetFormioContent} from '@valtimo/case';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
-import {WidgetContentComponent} from '../../../../../../../models';
+import {CaseManagementParams, WidgetContentComponent} from '../../../../../../../models';
 import {WidgetWizardService} from '../../../../../../../services';
-import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
+import {
+  CaseManagementWidgetProcessSelectorComponent,
+} from '../process-selector/case-management-widget-process-selector.component';
+import {ActivatedRoute} from '@angular/router';
+import {getCaseManagementRouteParams} from '../../../../../../../utils';
 
 @Component({
   templateUrl: './case-management-widget-formio.component.html',
@@ -56,7 +51,7 @@ export class CaseManagementWidgetFormioComponent
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public readonly form = this.fb.group({
-    widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
+    widgetTitle: this.fb.control(this.widgetWizardService.widgetTitle(), Validators.required),
   });
 
   public get widgetTitle(): AbstractControl<string | null> | null {
@@ -109,7 +104,7 @@ export class CaseManagementWidgetFormioComponent
     if (!formDefinitionId) return;
 
     this._selectedFormDefinitionId$.next(formDefinitionId);
-    this.widgetWizardService.$widgetContent.set({formDefinitionName: formDefinitionId});
+    this.widgetWizardService.widgetContent.set({formDefinitionName: formDefinitionId});
     this.changeValidEvent.emit(true);
   }
 
@@ -126,28 +121,26 @@ export class CaseManagementWidgetFormioComponent
   private openTitleSubscription(): void {
     this._subscriptions.add(
       this.widgetTitle?.valueChanges.subscribe(title => {
-        this.widgetWizardService.$widgetTitle.set(title);
+        this.widgetWizardService.widgetTitle.set(title);
       })
     );
   }
 
   private fetchFormDefinition(): void {
-    getCaseManagementRouteParams(this.route).subscribe((params: CaseManagementParams) => {
-      if (!params) return [];
+    getCaseManagementRouteParams(this.route)
+      .subscribe((params: CaseManagementParams) => {
+          if (!params) return [];
 
-      this.formService
-        .getAllFormDefinitionsForCaseDefinition(
-          params.caseDefinitionKey,
-          params.caseDefinitionVersionTag
-        )
-        .subscribe(definitions => {
-          this._formDefinitionOptions$.next(definitions);
+          this.formService
+            .getAllFormDefinitionsForCaseDefinition(params.caseDefinitionKey, params.caseDefinitionVersionTag)
+            .subscribe(definitions => {
+              this._formDefinitionOptions$.next(definitions);
+            });
         });
-    });
   }
 
   private prefill(): void {
-    const formDefinitionId = (this.widgetWizardService.$widgetContent() as WidgetFormioContent)
+    const formDefinitionId = (this.widgetWizardService.widgetContent() as WidgetFormioContent)
       ?.formDefinitionName;
 
     if (!formDefinitionId) return;

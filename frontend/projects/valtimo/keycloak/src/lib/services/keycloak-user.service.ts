@@ -18,7 +18,7 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {combineLatest, ReplaySubject, Subject, Subscription, switchMap, timer} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
 import {KeycloakEventTypeLegacy, KeycloakService} from 'keycloak-angular';
-import {ConfigService, UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/shared';
+import {ConfigService, UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
 import {KeycloakOptionsService} from './keycloak-options.service';
 import {jwtDecode} from 'jwt-decode';
 import {TranslateService} from '@ngx-translate/core';
@@ -195,6 +195,8 @@ export class KeycloakUserService implements UserService, OnDestroy {
       bodyText,
       cancelButtonText,
       confirmButtonText,
+      cancelMdiIcon: 'logout',
+      confirmMdiIcon: 'check',
       closeOnConfirm: true,
       closeOnCancel: false,
       cancelCallbackFunction: () => {

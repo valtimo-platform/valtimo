@@ -15,21 +15,18 @@
  */
 
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ActivatedRoute, RouterModule} from '@angular/router';
-import {DecisionService} from '../services/decision.service';
-import {DecisionXml} from '../models';
+import {DecisionService} from '../decision.service';
 import DmnViewer from 'dmn-js';
+import {DecisionXml} from '../models';
+import {ActivatedRoute} from '@angular/router';
 import {migrateDiagram} from '@bpmn-io/dmn-migrate';
-import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
+  standalone: false,
   selector: 'valtimo-decision-display',
-  standalone: true,
   templateUrl: './decision-display.component.html',
   styleUrls: ['./decision-display.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  imports: [CommonModule, RouterModule, TranslateModule],
 })
 export class DecisionDisplayComponent implements OnInit {
   public viewer: DmnViewer;
@@ -38,14 +35,14 @@ export class DecisionDisplayComponent implements OnInit {
 
   constructor(
     private readonly decisionService: DecisionService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.viewer = new DmnViewer({
       container: '#canvas',
     });
-    this.decisionId = this.route.snapshot.paramMap.get('id')!;
+    this.decisionId = this.route.snapshot.paramMap.get('id');
     this.loadDecisionXml();
   }
 
@@ -60,13 +57,13 @@ export class DecisionDisplayComponent implements OnInit {
     });
   }
 
-  async migrateAndLoadDecisionXml(decision: DecisionXml): Promise<void> {
+  async migrateAndLoadDecisionXml(decision: DecisionXml) {
     const decisionXml = await migrateDiagram(decision.dmnXml);
 
     if (decisionXml) {
       this.viewer.importXML(decisionXml, error => {
         if (error) {
-          console.error('Error importing migrated XML', error);
+          console.log('error');
         }
       });
       this.decisionXml = decisionXml;

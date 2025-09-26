@@ -16,26 +16,25 @@
 
 import {Injector, Type} from '@angular/core';
 import {createCustomElement} from '@angular/elements';
-import {Components} from 'formiojs';
+import {Components} from '@formio/js';
 import {FormioCustomComponentInfo} from './elements.common';
 import {createCustomFormioComponent} from './create-custom-component';
 import {CustomTagsService} from '@formio/angular';
-import {FormIoTagsService} from '../../components/form-io/services/form-io.tags.service';
 
-function registerCustomTag(tag: string, injector: Injector): void {
+export function registerCustomTag(tag: string, injector: Injector): void {
   injector.get(CustomTagsService).addCustomTag(tag);
 }
 
-function registerCustomFormioComponent(
+export function registerCustomTags(tags: string[], injector: Injector): void {
+  tags.forEach(tag => registerCustomTag(tag, injector));
+}
+
+export function registerCustomFormioComponent(
   options: FormioCustomComponentInfo,
   angularComponent: Type<any>,
   injector: Injector
 ): void {
-  const tagsService = injector.get(FormIoTagsService);
-
   registerCustomTag(options.selector, injector);
-
-  tagsService.markTagForRegistration(options.selector);
 
   if (!customElements.get(options.selector)) {
     const complexCustomComponent = createCustomElement(angularComponent, {injector});
@@ -45,4 +44,18 @@ function registerCustomFormioComponent(
   Components.setComponent(options.type, createCustomFormioComponent(options));
 }
 
-export {registerCustomTag, registerCustomFormioComponent};
+export function registerCustomFormioComponentWithClass(
+  options: FormioCustomComponentInfo,
+  angularComponent: Type<any>,
+  formioClass: any,
+  injector: Injector
+): void {
+  registerCustomTag(options.selector, injector);
+
+  if (!customElements.get(options.selector)) {
+    const complexCustomComponent = createCustomElement(angularComponent, {injector});
+    customElements.define(options.selector, complexCustomComponent);
+  }
+
+  Components.setComponent(options.type, formioClass);
+}

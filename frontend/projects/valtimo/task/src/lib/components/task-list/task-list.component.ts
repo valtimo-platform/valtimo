@@ -52,7 +52,7 @@ import {
   SearchFieldValues,
   SortState,
   TaskListTab,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
 import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
@@ -144,14 +144,14 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
 
-  public readonly caseDefinitionKey$ = this.taskListService.caseDefinitionKey$;
+  public readonly caseDefinitionName$ = this.taskListService.caseDefinitionName$;
 
   public readonly tasks$: Observable<Task[] | MappedSpecifiedTask[]> = combineLatest([
     this.taskListService.loadingStateForCaseDefinition$,
     this.selectedTaskType$,
     this.taskListPaginationService.paginationForCurrentTaskType$,
     this.taskListSortService.sortStringForCurrentTaskType$,
-    this.caseDefinitionKey$,
+    this.caseDefinitionName$,
     this._enableLoadingAnimation$,
     this._reload$,
     this.taskListSearchService.otherFilters$,
@@ -164,7 +164,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
         selectedTaskType,
         paginationForSelectedTaskType,
         sortStringForSelectedTaskType,
-        caseDefinitionKey,
+        caseDefinitionName,
         enableLoadingAnimation,
         reload,
         otherFilters,
@@ -174,7 +174,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
           paginationForSelectedTaskType,
           overrideSortStateString || sortStringForSelectedTaskType,
           selectedTaskType,
-          caseDefinitionKey,
+          caseDefinitionName,
           enableLoadingAnimation,
           reload,
           otherFilters
@@ -190,10 +190,10 @@ export class TaskListComponent implements OnInit, OnDestroy {
         this.taskService.queryTasksPageV3(
           params.selectedTaskType,
           params.params,
-          params.caseDefinitionKey,
+          params.caseDefinitionName,
           params.otherFilters
         ),
-        of(!!params.caseDefinitionKey),
+        of(!!params.caseDefinitionName),
       ])
     ),
     switchMap(([tasksResult, isSpecified]) =>
@@ -290,12 +290,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
     this._subscriptions.add(
       combineLatest([
         this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-        this.caseDefinitionKey$,
+        this.caseDefinitionName$,
       ])
         .pipe(
           filter(
-            ([event, caseDefinitionKey]) =>
-              caseDefinitionKey === null || event.caseDefinitionKey === caseDefinitionKey
+            ([event, caseDefinitionName]) =>
+              caseDefinitionName === null || event.caseDefinitionName === caseDefinitionName
           )
         )
         .subscribe(() => this.reload())
@@ -371,7 +371,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     if (definition.item.id) {
       this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
-      this.taskListService.setCaseDefinitionKey(definition.item.id);
+      this.taskListService.setCaseDefinitionName(definition.item.id);
     }
   }
 
@@ -425,7 +425,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
     paginationForSelectedTaskType: TaskPageParams,
     sortStringForSelectedTaskType: string,
     selectedTaskType: TaskListTab,
-    caseDefinitionKey: string,
+    caseDefinitionName: string,
     enableLoadingAnimation: boolean,
     reload: boolean,
     otherFilters?: TaskListOtherFilters
@@ -442,8 +442,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
         reload,
         selectedTaskType,
         params,
-        ...(caseDefinitionKey &&
-          caseDefinitionKey !== this.ALL_CASES_ID && {caseDefinitionKey: caseDefinitionKey}),
+        ...(caseDefinitionName && caseDefinitionName !== this.ALL_CASES_ID && {caseDefinitionName}),
         ...(otherFilters && {otherFilters}),
       },
       enableLoadingAnimation,
@@ -532,9 +531,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
   private setParamsFromQueryParams(): void {
     const decodedParams = this.taskListQueryParamService.getTaskListQueryParams();
 
-    if (decodedParams.caseDefinitionKey) {
-      this.taskListService.setCaseDefinitionKey(decodedParams.caseDefinitionKey);
-      this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionKey);
+    if (decodedParams.caseDefinitionName) {
+      this.taskListService.setCaseDefinitionName(decodedParams.caseDefinitionName);
+      this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionName);
     }
 
     if (decodedParams.otherFilters?.length > 0) {

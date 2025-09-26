@@ -20,7 +20,6 @@ import {take} from 'rxjs/operators';
 import {BehaviorSubject, Subject} from 'rxjs';
 import {PluginConfigurationData, PluginManagementService} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
-import {CARBON_CONSTANTS} from '@valtimo/components';
 
 @Component({
   standalone: false,
@@ -50,12 +49,9 @@ export class PluginAddModalComponent {
 
   hide(): void {
     this.closeModal.emit();
-
-    setTimeout(() => {
-      this.returnToFirstStep();
-      this.stateService.enableInput();
-      this.stateService.clear();
-    }, CARBON_CONSTANTS.modalAnimationMs);
+    this.returnToFirstStep();
+    this.stateService.enableInput();
+    this.stateService.clear();
   }
 
   onValid(valid: boolean): void {

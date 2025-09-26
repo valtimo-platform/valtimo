@@ -16,7 +16,7 @@
 
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService, Page, BaseApiService} from '@valtimo/shared';
+import {ConfigService, Page, BaseApiService} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {LoggingEvent, LoggingEventSearchRequest} from '../models';
 

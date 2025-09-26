@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -20,21 +21,17 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
+import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
+import {BehaviorSubject, combineLatest, map, Observable, Subject, switchMap, tap} from 'rxjs';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {
-  EditPermissionsService,
-  EnvironmentService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
-import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, map, Observable, Subject, switchMap, take, tap} from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
+import {getCaseManagementRouteParams} from '../../../../utils';
+import {EnvironmentService} from '@valtimo/config';
 import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-case-management-statuses',
   templateUrl: './case-management-statuses.component.html',
   styleUrls: ['./case-management-statuses.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,22 +74,17 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
     })
   );
 
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest(
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$
-  ).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
-    )
-  );
+  public readonly canUpdateGlobalConfiguration$: Observable<boolean> =
+    this.environmentService.canUpdateGlobalConfiguration();
 
-  public readonly isDraftVersion$: Observable<boolean> = combineLatest([
+  public readonly isFinalVersion$: Observable<boolean> = combineLatest([
     this.caseDefinitionKey$,
     this.caseDefinitionVersionTag$,
   ]).pipe(
     switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
-    )
+      this.caseManagementService.getCaseDefinition(caseDefinitionKey, caseDefinitionVersionTag)
+    ),
+    map(caseDefinition => caseDefinition.final)
   );
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
@@ -120,26 +112,27 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
     private readonly caseStatusService: CaseStatusService,
     private readonly route: ActivatedRoute,
     private readonly environmentService: EnvironmentService,
-    private readonly editPermissionsService: EditPermissionsService,
     private readonly caseManagementService: CaseManagementService
   ) {}
 
   public ngAfterViewInit(): void {
     this.initFields();
+    console.log('canUpdateGlobalConfiguration: ', this.canUpdateGlobalConfiguration$);
+    console.log('isFinalVersion: ', this.isFinalVersion$);
   }
 
   public openDeleteModal(status: InternalCaseStatus): void {
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
+
     this.statusToDelete$.next(status);
     this.showDeleteModal$.next(true);
   }
 
   public openEditModal(status: InternalCaseStatus): void {
-    this.hasEditPermissions$.pipe(take(1)).subscribe(hasPermission => {
-      if (!hasPermission) return;
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
 
-      this.prefillStatus$.next(status);
-      this.statusModalType$.next('edit');
-    });
+    this.prefillStatus$.next(status);
+    this.statusModalType$.next('edit');
   }
 
   public openAddModal(): void {
@@ -167,7 +160,7 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
   }
 
   public onItemsReordered(reorderedItems: InternalCaseStatus[]): void {
-    if (!reorderedItems) return;
+    if (!this.canUpdateGlobalConfiguration$ || this.isFinalVersion$) return;
 
     this.caseDefinitionKey$
       .pipe(
