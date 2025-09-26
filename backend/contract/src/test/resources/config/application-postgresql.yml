@@ -1,0 +1,21 @@
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:3346/contract-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
+    jpa:
+        database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+        database: postgresql
+
+valtimo:
+    database: postgres
+    http:
+        rest-templates:
+            connection-timeout: 30
+            read-timeout: 40
+        web-client:
+            connection-timeout: 50
+            read-timeout: 60
