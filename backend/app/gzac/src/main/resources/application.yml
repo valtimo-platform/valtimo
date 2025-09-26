@@ -23,7 +23,7 @@ spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: org.postgresql.Driver
-        url: jdbc:postgresql://localhost:54320/gzac
+        url: ${SPRING_DATASOURCE_URL}
         username: gzac
         hikari:
             auto-commit: false
@@ -51,18 +51,18 @@ spring:
         oauth2:
             resourceserver:
                 jwt:
-                    jwk-set-uri: http://localhost:8081/auth/realms/valtimo/protocol/openid-connect/certs
+                    jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI}
             client:
                 provider:
                     keycloakjwt:
-                        issuer-uri: http://localhost:8081/auth/realms/valtimo
+                        issuer-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI}
                     keycloakapi:
-                        issuer-uri: http://localhost:8081/auth/realms/valtimo
+                        issuer-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI}
                 registration:
                     keycloakjwt:
-                        client-id: valtimo-console
+                        client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKJWT_CLIENTID}
                     keycloakapi:
-                        client-id: valtimo-user-m2m-client
+                        client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTID}
                         authorization-grant-type: authorization_code
                         scope: openid
 
@@ -156,21 +156,13 @@ mailing:
     onlyAllowWhitelistedRecipients: true
     redirectAllMails: false
     whitelistedEmailAddresses:
-        - valtimodemo@gmail.com
     whitelistedDomains:
-        - ritense.com
     sendRedirectedMailsTo:
 
 valtimo:
     app:
         scheme: http
     database: postgres
-    mandrill:
-        apiKey: #external
-        dateFormat: dd-MM-yyyy
-        notificationTemplate: bpc-task-notification
-        completionTemplate: bpc-task-completion
-        reminderTemplate: bpc-task-reminder
     oauth:
         tokenValidityInSeconds: 3600 # Token is valid 1 hour
 
@@ -193,20 +185,13 @@ valtimo:
         contactEmail:
         license:
         licenseUrl:
-    portal:
-        hostname: localhost:4201
-        scheme: http
     web:
         cors:
             corsConfiguration:
-                allowedOrigins:
-                    - "*"
-                allowedMethods:
-                    - "*"
-                allowedHeaders:
-                    - "*"
-            paths:
-                - "/**"
+                allowedOrigins: ${VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDORIGINS}
+                allowedMethods: ${VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDMETHODS}
+                allowedHeaders: ${VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDHEADERS}
+            paths: ${VALTIMO_WEB_CORS_PATHS}
 
     genericTemplateName: "template-name"
     besluitDocumentRequired: true
@@ -218,9 +203,6 @@ valtimo:
             - application/xml
             - image/jpeg
             - image/png
-    changelog:
-        pbac:
-            clear-tables: false
 
     outbox:
         enabled: true
@@ -238,8 +220,8 @@ valtimo:
             enabled: true
 
 spring-actuator:
-    username: admin
-    password: password
+    username: ${SPRING_ACTUATOR_USERNAME}
+    password: ${SPRING_ACTUATOR_PASSWORD}
 
 audit:
     record:
@@ -262,16 +244,6 @@ operaton:
             properties:
                 enforceHistoryTimeToLive: false
         admin-user:
-            id: Admin
-            password: admin
+            id: ${OPERATON_BPM_ADMINUSER_ID}
+            password: ${OPERATON_BPM_ADMINUSER_PASSWORD}
             first-name: Admin account
-
-external:
-    case:
-        links:
-            person:
-                caseKey: portal-person
-                processDefinitionKey: portal-person
-            bezwaar:
-                caseKey: bezwaar
-                processDefinitionKey: bezwaar
