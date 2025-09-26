@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ export * from './lib/components/dashboard/dashboard.component';
 export * from './lib/components/widget-dashboard-content/widget-dashboard-content.component';
 export * from './lib/components/widget-dashboard/widget-dashboard.component';
 export * from './lib/display-types/display-widget-types.module';
-export * from './lib/data-sources/data-sources.module';
 export * from './lib/constants';
 export * from './lib/dashboard.module';
 export * from './lib/data-sources';

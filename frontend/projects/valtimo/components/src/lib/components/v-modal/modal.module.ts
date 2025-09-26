@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,15 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {VModalComponent} from './modal.component';
-import {ButtonModule, IconModule} from 'carbon-components-angular';
+import {ButtonModule} from '../button/button.module';
+import {ButtonModule as CarbonButtonModule, IconModule} from 'carbon-components-angular';
 
+/**
+ * @deprecated Migrate old design to Carbon
+ */
 @NgModule({
   declarations: [VModalComponent],
-  imports: [CommonModule, ButtonModule, IconModule],
+  imports: [CommonModule, ButtonModule, CarbonButtonModule, IconModule],
   exports: [VModalComponent],
 })
 export class VModalModule {}

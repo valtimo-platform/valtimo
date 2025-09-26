@@ -1,0 +1,27 @@
+import {FormDisplayType, FormSize} from '@valtimo/process-link';
+import {RightPanelMinWidths} from '../models';
+
+const DOSSIER_DETAIL_GUTTER_SIZE = 32;
+
+const DOSSIER_DETAIL_TASK_LIST_WIDTH = 412;
+
+const DOSSIER_DETAIL_LEFT_PANEL_MIN_WIDTH = 320;
+
+const DOSSIER_DETAIL_RIGHT_PANEL_MIN_WIDTHS: RightPanelMinWidths = {
+  extraSmall: 240,
+  small: 320,
+  medium: 480,
+  large: 640,
+};
+
+const DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE: FormDisplayType = 'modal';
+const DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE: FormSize = 'medium';
+
+export {
+  DOSSIER_DETAIL_GUTTER_SIZE,
+  DOSSIER_DETAIL_LEFT_PANEL_MIN_WIDTH,
+  DOSSIER_DETAIL_RIGHT_PANEL_MIN_WIDTHS,
+  DOSSIER_DETAIL_TASK_LIST_WIDTH,
+  DOSSIER_DETAIL_DEFAULT_DISPLAY_TYPE,
+  DOSSIER_DETAIL_DEFAULT_DISPLAY_SIZE,
+};

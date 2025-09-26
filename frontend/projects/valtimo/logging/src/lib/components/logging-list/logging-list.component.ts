@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
-import {Page} from '@valtimo/shared';
+import {Page} from '@valtimo/config';
 import {
   ButtonModule,
   DialogModule,
@@ -97,7 +97,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
 
       return loggingPage.content.map((logEvent: LoggingEvent) => ({
         ...logEvent,
-        levelTags: [
+        tags: [
           {
             content: logEvent.level,
             type: LOG_LEVEL_TAG[logEvent.level],
@@ -126,7 +126,7 @@ export class LoggingListComponent implements OnInit, OnDestroy {
       viewType: ViewType.DATE_TIME,
     },
     {
-      key: 'levelTags',
+      key: 'level',
       label: 'logging.columns.level',
       viewType: ViewType.TAGS,
     },

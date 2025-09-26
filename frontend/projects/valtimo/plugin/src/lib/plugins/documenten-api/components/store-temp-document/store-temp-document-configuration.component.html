@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@
     [defaultValue]="obs.prefill?.fileName"
     [disabled]="obs.disabled"
     [tooltip]="'fileNameTooltip' | pluginTranslate: pluginId | async"
-    [trim]="true"
   ></v-input>
   <v-select
     [items]="confidentialityLevelItems$ | async"
@@ -47,7 +46,6 @@
     [defaultValue]="obs.prefill?.title"
     [disabled]="obs.disabled"
     [tooltip]="'inputTitleTooltip' | pluginTranslate: pluginId | async"
-    [trim]="true"
   ></v-input>
   <v-input
     name="description"
@@ -64,7 +62,6 @@
     [defaultValue]="obs.prefill?.localDocumentLocation"
     [disabled]="obs.disabled"
     [required]="true"
-    [trim]="true"
     [tooltip]="'localDocumentLocationTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
@@ -74,7 +71,6 @@
     [margin]="true"
     [defaultValue]="obs.prefill?.storedDocumentUrl"
     [disabled]="obs.disabled"
-    [trim]="true"
     [tooltip]="'storeDocumentUrlTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>
@@ -105,7 +101,6 @@
     [defaultValue]="obs.prefill?.informatieobjecttype"
     [disabled]="obs.disabled"
     [required]="true"
-    [trim]="true"
     [tooltip]="'informatieobjecttypeTooltip' | pluginTranslate: pluginId | async"
     [fullWidth]="true"
   >

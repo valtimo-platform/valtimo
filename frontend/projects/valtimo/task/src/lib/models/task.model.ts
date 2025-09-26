@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {User} from '@valtimo/shared';
+import {User} from '@valtimo/config';
+import {FormDisplayType, FormSize} from '@valtimo/process-link';
 
 interface Task {
   assignee: string;
@@ -58,6 +59,23 @@ interface AssigneeRequest {
   assignee: string;
 }
 
+type TaskProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url';
+
+interface TaskProcessLinkResult {
+  processLinkId: string;
+  type: TaskProcessLinkType;
+  properties: {
+    formFlowInstanceId?: string;
+    formDefinitionId?: string;
+    prefilledForm?: any;
+    formDefinition?: any;
+    formName?: string;
+    url?: string;
+    formDisplayType?: FormDisplayType;
+    formSize?: FormSize;
+  };
+}
+
 interface SpecifiedTask {
   id: string;
   businessKey: string;
@@ -78,15 +96,12 @@ interface MappedSpecifiedTask {
   [key: string]: any;
 }
 
-interface SetTaskDueDateRequest {
-  dueDate: string | null;
-}
-
 export {
   AssigneeRequest,
   ListItemField,
   Task,
+  TaskProcessLinkResult,
+  TaskProcessLinkType,
   SpecifiedTask,
   MappedSpecifiedTask,
-  SetTaskDueDateRequest,
 };

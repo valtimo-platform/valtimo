@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -32,12 +32,9 @@ export class BesluitenApiService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  public getBesluitTypesByCaseAndVersion(
-    caseDefinitionKey: string,
-    versionTag: string
-  ): Observable<Array<any>> {
+  public getBesluitTypesByCaseDefinition(caseDefinitionId: string): Observable<Array<any>> {
     return this.http.get<Array<any>>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/besluittype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionId}/zaaktype/besluittype`
     );
   }
 }

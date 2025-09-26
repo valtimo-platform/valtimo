@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {DatePipe} from '@angular/common';
-import {AfterViewInit, Component, computed, signal, ViewEncapsulation} from '@angular/core';
+import {AfterViewInit, Component, ViewEncapsulation} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
-import {Code16, Edit16} from '@carbon/icons';
+import {ArrowDown16, ArrowUp16, Edit16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   ColumnConfig,
-  EditorModel,
   PageHeaderService,
   PageTitleService,
   ViewType,
@@ -33,7 +33,6 @@ import {DashboardItem, DashboardWidget, WidgetModalType} from '../../models';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
 
 @Component({
-  standalone: false,
   templateUrl: './dashboard-details.component.html',
   styleUrls: ['./dashboard-details.component.scss'],
   encapsulation: ViewEncapsulation.None,
@@ -45,10 +44,6 @@ export class DashboardDetailsComponent implements AfterViewInit {
     {
       label: 'Edit',
       callback: this.editWidget.bind(this),
-    },
-    {
-      label: 'Duplicate',
-      callback: this.duplicateWidget.bind(this),
     },
     {
       label: 'Delete',
@@ -113,13 +108,6 @@ export class DashboardDetailsComponent implements AfterViewInit {
     })
   );
 
-  public readonly jsonEditorModel$: Observable<EditorModel> = this.widgetData$.pipe(
-    map((data: DashboardWidget[]) => ({
-      value: JSON.stringify(data),
-      language: 'json',
-    }))
-  );
-
   public readonly showModal$ = new BehaviorSubject<boolean>(false);
   public readonly showEditDashboardModal$ = new BehaviorSubject<boolean>(false);
 
@@ -127,9 +115,6 @@ export class DashboardDetailsComponent implements AfterViewInit {
     new BehaviorSubject<DashboardWidgetConfiguration | null>(null);
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
-
-  public readonly $jsonEditorActive = signal<boolean>(false);
-  public readonly $buttonTheme = computed(() => (this.$jsonEditorActive() ? 'primary' : 'ghost'));
 
   constructor(
     private readonly dashboardManagementService: DashboardManagementService,
@@ -142,7 +127,7 @@ export class DashboardDetailsComponent implements AfterViewInit {
   ) {}
 
   public ngAfterViewInit(): void {
-    this.iconService.registerAll([Code16, Edit16]);
+    this.iconService.registerAll([ArrowDown16, ArrowUp16, Edit16]);
     this.setFields();
   }
 
@@ -164,7 +149,7 @@ export class DashboardDetailsComponent implements AfterViewInit {
     this._refreshDashboardSubject$.next(null);
   }
 
-  public updateWidgetData(items: DashboardWidget[]): void {
+  public onItemsReordered(items: DashboardWidget[]): void {
     if (!items) return;
 
     this._refreshWidgetsSubject$.next(items);
@@ -173,18 +158,6 @@ export class DashboardDetailsComponent implements AfterViewInit {
   public editWidget(event: DashboardWidgetConfiguration): void {
     this.editWidgetConfiguration$.next({...event});
     this.modalType = 'edit';
-    this.showModal();
-  }
-
-  public switchView(): void {
-    this.$jsonEditorActive.set(!this.$jsonEditorActive());
-
-    if (!this.$jsonEditorActive()) this.refreshWidgets();
-  }
-
-  private duplicateWidget(event: DashboardWidgetConfiguration): void {
-    this.editWidgetConfiguration$.next({...event});
-    this.modalType = 'create';
     this.showModal();
   }
 

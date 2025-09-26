@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
 import {
   PluginStateService,
   ProcessLinkButtonService,
@@ -22,24 +22,17 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
-import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {combineLatest, Subscription} from 'rxjs';
 import {map, take} from 'rxjs/operators';
-import {PluginConfiguration, PluginConfigurationData} from '@valtimo/plugin';
-import {
-  PluginProcessLinkCreateDto,
-  PluginProcessLinkUpdateDto,
-  ProcessLinkEditMode,
-  ProcessLink,
-} from '../../models';
+import {PluginConfigurationData} from '@valtimo/plugin';
+import {PluginProcessLinkCreateDto, PluginProcessLinkUpdateDto} from '../../models';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-plugin-action-configuration',
   templateUrl: './plugin-action-configuration.component.html',
   styleUrls: ['./plugin-action-configuration.component.scss'],
 })
 export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
-  @Input() selectedPluginConfiguration$: Observable<PluginConfiguration>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<PluginConfigurationData> =
     new EventEmitter<PluginConfigurationData>();
@@ -48,21 +41,8 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   public readonly functionKey$ = this.pluginStateService.functionKey$;
   public readonly save$ = this.pluginStateService.save$;
   public readonly saving$ = this.stateService.saving$;
-
-  private readonly _prefillConfigurationSubject$ = new BehaviorSubject<
-    ProcessLink['actionProperties'] | null
-  >(null);
-  private readonly _prefillConfiguration$ = this.stateService.selectedProcessLink$.pipe(
+  public readonly prefillConfiguration$ = this.stateService.selectedProcessLink$.pipe(
     map(processLink => (processLink ? processLink?.actionProperties : undefined))
-  );
-  public readonly prefillConfiguration$ = combineLatest([
-    this._prefillConfigurationSubject$,
-    this._prefillConfiguration$,
-  ]).pipe(
-    map(
-      ([prefillConfigurationSubjectValue, prefillConfiguration]) =>
-        prefillConfigurationSubjectValue || prefillConfiguration
-    )
   );
 
   private _subscriptions = new Subscription();
@@ -85,8 +65,11 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   }
 
   onValid(valid: boolean): void {
-    if (valid) this.buttonService.enableSaveButton();
-    else this.buttonService.disableSaveButton();
+    if (valid) {
+      this.buttonService.enableSaveButton();
+    } else {
+      this.buttonService.disableSaveButton();
+    }
   }
 
   onConfiguration(configuration: PluginConfigurationData): void {
@@ -101,24 +84,14 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
     });
   }
 
-  public onImportConfiguration(configuration: ProcessLink['actionProperties']): void {
-    this._prefillConfigurationSubject$.next(configuration);
-  }
-
   private updateProcessLink(configuration: PluginConfigurationData): void {
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
       const updateProcessLinkRequest: PluginProcessLinkUpdateDto = {
         id: selectedProcessLink.id,
-        pluginConfigurationId: selectedProcessLink.pluginConfigurationId ?? '',
-        pluginActionDefinitionKey: selectedProcessLink.pluginActionDefinitionKey ?? '',
+        pluginConfigurationId: selectedProcessLink.pluginConfigurationId,
+        pluginActionDefinitionKey: selectedProcessLink.pluginActionDefinitionKey,
         actionProperties: configuration,
-        activityId: selectedProcessLink.activityId,
       };
-
-      if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.stateService.sendProcessLinkUpdateEvent(updateProcessLinkRequest);
-        return;
-      }
 
       this.processLinkService.updateProcessLink(updateProcessLinkRequest).subscribe(
         () => {
@@ -144,20 +117,15 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
           const processLinkRequest: PluginProcessLinkCreateDto = {
             actionProperties: configuration,
             activityId: modalData?.element?.id,
-            activityType: modalData?.element?.activityListenerType ?? '',
+            activityType: modalData?.element?.activityListenerType,
             pluginConfigurationId: selectedConfiguration.id,
             processDefinitionId: modalData?.processDefinitionId,
             pluginActionDefinitionKey: selectedFunction.key,
             processLinkType: selectedProcessLinkTypeId,
           };
 
-          if (this.stateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-            this.stateService.sendProcessLinkCreateEvent(processLinkRequest);
-            return;
-          }
-
           this.processLinkService.saveProcessLink(processLinkRequest).subscribe(
-            () => {
+            response => {
               this.stateService.closeModal();
             },
             () => {

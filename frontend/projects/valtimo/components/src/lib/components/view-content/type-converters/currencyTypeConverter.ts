@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,6 @@ export class CurrencyTypeConverter implements TypeConverter {
 
   public getTypeString(): string {
     return 'currency';
-  }
-
-  public isRawValue(): boolean {
-    return false;
   }
 
   public convert(value: any, definition: any): string {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,17 @@ import {
   ViewChild,
 } from '@angular/core';
 import {Router} from '@angular/router';
-import {MenuItem} from '@valtimo/shared';
+import {MenuItem} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 
 import {ShellService} from '../../services/shell.service';
-import {MenuService} from '../menu/services/menu.service';
+import {MenuService} from '../menu/menu.service';
 
 @Component({
   selector: 'valtimo-left-sidebar',
   templateUrl: './left-sidebar.component.html',
   styleUrls: ['./left-sidebar.component.scss'],
-  standalone: false,
 })
 export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
   @ViewChild('toggleButton') toggleButtonRef: ElementRef;
@@ -60,7 +59,6 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
 
   public includeFunctionObservables: {[key: string]: Observable<boolean>} = {};
   public readonly menuItems$: Observable<Array<MenuItem>> = this.menuService.menuItems$;
-  public readonly menuItemsLoaded$ = this.menuService.menuItemsLoaded$;
   public readonly sideBarExpanded$ = this.shellService.sideBarExpanded$;
   public readonly closestSequence$: Observable<string> = this.menuService.closestSequence$;
   public readonly overflowMenuSequence$ = new BehaviorSubject<string>('');
@@ -91,11 +89,11 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     this._breakpointSubscription?.unsubscribe();
   }
 
-  public navigateToRoute(route: Array<string>, event: MouseEvent): void {
+  public navigateToRoute(route: Array<string>, event: MouseEvent) {
     event.preventDefault();
 
     if (!event.ctrlKey && !event.metaKey) {
-      this.router.navigate(route, {queryParams: {}});
+      this.router.navigate(route);
 
       combineLatest([
         this.shellService.sideBarExpanded$,

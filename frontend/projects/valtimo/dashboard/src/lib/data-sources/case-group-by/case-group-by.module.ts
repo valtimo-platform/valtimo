@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import {CaseGroupByConfigurationComponent} from './components';
 import {ReactiveFormsModule} from '@angular/forms';
 import {WidgetTranslatePipeModule} from '../../pipes';
 import {DropdownModule, InputModule} from 'carbon-components-angular';
-import {CarbonMultiInputModule, ValuePathSelectorComponent} from '@valtimo/components';
+import {CarbonMultiInputModule} from '@valtimo/components';
 
 @NgModule({
   declarations: [CaseGroupByConfigurationComponent],
@@ -33,7 +33,6 @@ import {CarbonMultiInputModule, ValuePathSelectorComponent} from '@valtimo/compo
     InputModule,
     DropdownModule,
     CarbonMultiInputModule,
-    ValuePathSelectorComponent,
   ],
   exports: [CaseGroupByConfigurationComponent],
   providers: [

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,47 +14,12 @@
   ~ limitations under the License.
   -->
 
-<cds-modal [open]="open" size="lg" (close)="onCloseSelect()">
+<cds-modal [open]="open" size="lg">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()">
     {{ 'logging.detailsTitle' | translate }}
   </cds-modal-header>
 
   <section cdsModalContent class="valtimo-log-details__content">
-    <h4 class="log-header">
-      {{ 'logging.formattedMessage' | translate }}
-    </h4>
-
-    <div>{{ logEventFormatted?.formattedMessage || '-' }}</div>
-
-    <h4 class="log-header">
-      {{ 'logging.timestamp' | translate }}
-    </h4>
-
-    <div>
-      {{ logEventFormatted?.timestamp || '-' }}
-    </div>
-
-    @if (logEventFormatted?.properties?.length > 0) {
-      <h4 class="log-header">
-        {{ 'logging.properties' | translate }}
-      </h4>
-      <div>
-        @for (property of logEventFormatted.properties; track property.key) {
-          <div>
-            <span class="property-key">{{ property.key }}: </span>
-            <span class="property-value">{{ property.value }}</span>
-          </div>
-        }
-      </div>
-    }
-
-    @if (logEventFormatted?.stacktrace) {
-      <h4 class="log-header">
-        {{ 'logging.stacktrace' | translate }}
-      </h4>
-      <div>
-        <pre class="valtimo-log-stacktrace" [innerHtml]="logEventFormatted.stacktrace"></pre>
-      </div>
-    }
+    <ngx-json-viewer *ngIf="logEvent" [json]="logEvent"></ngx-json-viewer>
   </section>
 </cds-modal>
