@@ -1,0 +1,71 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+
+    <changeSet id="0" author="Ritense">
+        <delete tableName="case_tab"/>
+    </changeSet>
+
+    <changeSet id="1" author="Ritense">
+        <validCheckSum>8:55ec1eec9524bbed6474028555a8f8dc</validCheckSum>
+        <sql>
+            INSERT INTO case_tab (case_definition_name, tab_key, name, tab_order, type, content_key)
+            SELECT DISTINCT document_definition_name, 'summary', NULL, 0, 'STANDARD', 'summary'
+            FROM json_schema_document_definition
+        </sql>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <validCheckSum>8:e2865d0af9ebe7e340594030e532d738</validCheckSum>
+        <sql>
+            INSERT INTO case_tab (case_definition_name, tab_key, name, tab_order, type, content_key)
+            SELECT DISTINCT document_definition_name, 'progress', NULL, 1, 'STANDARD', 'progress'
+            FROM json_schema_document_definition
+        </sql>
+    </changeSet>
+
+    <changeSet id="3" author="Ritense">
+        <validCheckSum>8:655f1e67fb751ae7144ab03b2670c27d</validCheckSum>
+        <sql>
+            INSERT INTO case_tab (case_definition_name, tab_key, name, tab_order, type, content_key)
+            SELECT DISTINCT document_definition_name, 'audit', NULL, 2, 'STANDARD', 'audit'
+            FROM json_schema_document_definition
+        </sql>
+    </changeSet>
+
+    <changeSet id="4" author="Ritense">
+        <validCheckSum>8:c7b443bac72e647268c9c57b526a07b8</validCheckSum>
+        <sql>
+            INSERT INTO case_tab (case_definition_name, tab_key, name, tab_order, type, content_key)
+            SELECT DISTINCT document_definition_name, 'documents', NULL, 3, 'STANDARD', 'documents'
+            FROM json_schema_document_definition
+        </sql>
+    </changeSet>
+
+    <changeSet id="5" author="Ritense">
+        <validCheckSum>8:9f61aa14866fd3d19d3a132a01ccd1a6</validCheckSum>
+        <sql>
+            INSERT INTO case_tab (case_definition_name, tab_key, name, tab_order, type, content_key)
+            SELECT DISTINCT document_definition_name, 'notes', NULL, 4, 'STANDARD', 'notes'
+            FROM json_schema_document_definition
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
