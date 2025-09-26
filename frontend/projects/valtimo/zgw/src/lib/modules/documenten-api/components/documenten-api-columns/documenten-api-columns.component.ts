@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -21,30 +21,37 @@ import {
   TemplateRef,
   ViewChild,
 } from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
-import {
-  ActionItem,
-  CarbonListModule,
-  ColumnConfig,
-  ConfirmationModalModule,
-  ViewType,
-} from '@valtimo/components';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
-import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
+import {DocumentenApiColumnService} from '../../services';
 import {
   ConfiguredColumn,
   DocumentenApiColumnModalType,
   DocumentenApiColumnModalTypeCloseEvent,
 } from '../../models';
-import {DocumentenApiColumnService} from '../../services';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subject,
+  switchMap,
+  tap,
+} from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
+import {
+  ActionItem,
+  CarbonListModule,
+  ColumnConfig,
+  ConfirmationModalModule,
+  MoveRowDirection,
+  MoveRowEvent,
+  PendingChangesComponent,
+  ViewType,
+} from '@valtimo/components';
 import {DocumentenApiColumnModalComponent} from '../documenten-api-column-modal/documenten-api-column-modal.component';
-import {take} from 'rxjs/operators';
+import {CommonModule} from '@angular/common';
+import {TranslateModule} from '@ngx-translate/core';
+import {ButtonModule, TagModule} from 'carbon-components-angular';
 
 @Component({
   selector: 'valtimo-documenten-api-columns',
@@ -60,72 +67,51 @@ import {take} from 'rxjs/operators';
     ConfirmationModalModule,
     TagModule,
     ButtonModule,
-    IconModule,
   ],
 })
-export class DocumentenApiColumnsComponent implements AfterViewInit {
-  @ViewChild('columnKeyTemplate') public readonly columnKeyTemplate: TemplateRef<any>;
-  @ViewChild('defaultSortTemplate') public readonly defaultSortTemplate: TemplateRef<any>;
+export class DocumentenApiColumnsComponent
+  extends PendingChangesComponent
+  implements AfterViewInit
+{
+  @ViewChild('colorColumnTemplate') colorColumnTemplate: TemplateRef<any>;
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
-  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
-    filter((caseDefinitionKey: string) => !!caseDefinitionKey)
+  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params?.name),
+    filter(docDefName => !!docDefName)
   );
 
-  public readonly caseDefinitionVersionTag$: Observable<string> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(map((params: CaseManagementParams | undefined) => params?.caseDefinitionVersionTag ?? ''));
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$,
-  ]).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
-    )
-  );
+  public get documentDefinitionName$(): Observable<string> {
+    return this._documentDefinitionName$;
+  }
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
-  public readonly configuredColumns$: Observable<ConfiguredColumn[]> = combineLatest([
-    this.caseDefinitionKey$,
+  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
+
+  private _documentStatuses: ConfiguredColumn[] = [];
+
+  public readonly documentStatuses$: Observable<ConfiguredColumn[]> = combineLatest([
+    this._documentDefinitionName$,
     this._reload$,
   ]).pipe(
     tap(([_, reload]) => {
-      if (reload === null) this.loading$.next(true);
+      if (reload === null) {
+        this.loading$.next(true);
+      }
     }),
-    switchMap(([caseDefinitionKey]) =>
-      this.zgwDocumentColumnService.getAdminConfiguredColumns(caseDefinitionKey)
+    switchMap(([documentDefinitionName]) =>
+      this.zgwDocumentColumnService.getConfiguredColumns(documentDefinitionName)
     ),
-    tap(() => {
+    tap(statuses => {
+      this._documentStatuses = statuses;
+      this.usedKeys$.next(statuses.map(status => status.key));
       this.loading$.next(false);
     })
   );
 
-  public readonly configurableColumns$: Observable<ConfiguredColumn[]> =
-    this.caseDefinitionKey$.pipe(
-      switchMap((caseDefinitionKey: string) =>
-        combineLatest([
-          this.zgwDocumentColumnService.getAdminConfigurableColumns(caseDefinitionKey),
-          this.configuredColumns$,
-        ])
-      ),
-      map(([configurableColumns, configuredColumns]) => {
-        const configuredKeys: string[] = configuredColumns.map(
-          (column: ConfiguredColumn) => column.key
-        );
-
-        return configurableColumns.filter(
-          (column: ConfiguredColumn) => !configuredKeys.includes(column.key)
-        );
-      })
-    );
-
-  public fields: ColumnConfig[];
+  public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
@@ -140,76 +126,130 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
     },
   ];
 
-  public readonly columnModalType$ = new BehaviorSubject<DocumentenApiColumnModalType>('closed');
-  public readonly prefillColumn$ = new BehaviorSubject<ConfiguredColumn | undefined>(undefined);
+  public readonly CARBON_THEME = 'g10';
 
-  public readonly columnToUpdate$ = new BehaviorSubject<ConfiguredColumn | undefined>(undefined);
-  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
+  public readonly statusModalType$ = new BehaviorSubject<DocumentenApiColumnModalType>('closed');
+  public readonly prefillStatus$ = new BehaviorSubject<ConfiguredColumn>(undefined);
+
+  public readonly columnToUpdate$ = new BehaviorSubject<ConfiguredColumn>(undefined);
+  public readonly showDisableModal$ = new Subject<boolean>();
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly zgwDocumentColumnService: DocumentenApiColumnService,
-    private readonly editPermissionsService: EditPermissionsService
-  ) {}
+    private readonly zgwDocumentColumnService: DocumentenApiColumnService
+  ) {
+    super();
+
+    this._documentDefinitionName$.subscribe(documentDefinitionName => {
+      zgwDocumentColumnService.getConfiguredColumns(documentDefinitionName).subscribe(
+        configuredColumns => {
+          console.log(configuredColumns);
+        },
+        error => {
+          console.error(error);
+        }
+      );
+    });
+  }
 
   public ngAfterViewInit(): void {
-    this.fields = [
-      {
-        key: 'key',
-        label: 'zgw.columns.column',
-        viewType: ViewType.TEMPLATE,
-        template: this.columnKeyTemplate,
-      },
-      {
-        key: 'defaultSort',
-        label: 'listColumn.defaultSort',
-        viewType: ViewType.TEMPLATE,
-        template: this.defaultSortTemplate,
-      },
-    ];
+    this.initFields();
   }
 
-  public openDeleteModal(column: ConfiguredColumn): void {
-    this.columnToUpdate$.next(column);
-    this.showDeleteModal$.next(true);
+  public openDeleteModal(status: ConfiguredColumn): void {
+    this.columnToUpdate$.next(status);
+    this.showDisableModal$.next(true);
   }
 
-  public openEditModal(column: ConfiguredColumn): void {
-    this.hasEditPermissions$
-      .pipe(
-        filter(hasPermission => hasPermission),
-        take(1)
-      )
-      .subscribe(() => {
-        this.prefillColumn$.next(column);
-        this.columnModalType$.next('edit');
-      });
+  public openEditModal(status: ConfiguredColumn): void {
+    this.prefillStatus$.next(status);
+    this.statusModalType$.next('edit');
   }
 
   public openAddModal(): void {
-    this.columnModalType$.next('add');
-    this.prefillColumn$.next(undefined);
+    this.statusModalType$.next('add');
   }
 
-  public onCloseModal(closeModalEvent: DocumentenApiColumnModalTypeCloseEvent): void {
-    if (closeModalEvent === 'closeAndRefresh') this.reload();
-
-    this.columnModalType$.next('closed');
-  }
-
-  public confirmDeleteStatus(column: ConfiguredColumn, definitionName: string): void {
-    this.zgwDocumentColumnService.deleteColumn(definitionName, column.key).subscribe(() => {
+  public closeModal(closeModalEvent: DocumentenApiColumnModalTypeCloseEvent): void {
+    if (closeModalEvent === 'closeAndRefresh') {
       this.reload();
-    });
+    }
+
+    this.statusModalType$.next('closed');
   }
 
-  public onItemsReordered(definitionName: string, columns: ConfiguredColumn[]): void {
-    this.zgwDocumentColumnService.updateConfiguredColumns(definitionName, columns).subscribe(() => {
-      this.reload(true);
-    });
+  public confirmDeleteStatus(status: ConfiguredColumn): void {
+    this.documentDefinitionName$
+      .pipe(
+        switchMap(documentDefinitionName =>
+          this.zgwDocumentColumnService.deleteConfiguredColumn(documentDefinitionName, status.key)
+        )
+      )
+      .subscribe(() => {
+        this.reload();
+      });
+  }
+
+  public onMoveRowClick(event: MoveRowEvent): void {
+    const {direction, index} = event;
+
+    const orderedStatuses: ConfiguredColumn[] =
+      direction === MoveRowDirection.UP
+        ? this.swapStatuses(this._documentStatuses, index - 1, index)
+        : this.swapStatuses(this._documentStatuses, index, index + 1);
+
+    this.documentDefinitionName$
+      .pipe(
+        switchMap(documentDefinitionName =>
+          this.zgwDocumentColumnService.updateConfiguredColumns(
+            documentDefinitionName,
+            orderedStatuses
+          )
+        )
+      )
+      .subscribe(() => {
+        this.reload(true);
+      });
   }
 
   private reload(noAnimation = false): void {
     this._reload$.next(noAnimation ? 'noAnimation' : null);
+  }
+
+  private swapStatuses(
+    statuses: ConfiguredColumn[],
+    index1: number,
+    index2: number
+  ): ConfiguredColumn[] {
+    const temp = [...statuses];
+    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
+
+    return temp;
+  }
+
+  private initFields(): void {
+    this.fields$.next([
+      {
+        key: 'title',
+        label: 'dossierManagement.statuses.columns.title',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'key',
+        label: 'dossierManagement.statuses.columns.key',
+        viewType: ViewType.TEXT,
+      },
+      {
+        key: 'visibleInCaseListByDefault',
+        label: 'dossierManagement.statuses.columns.visible',
+        viewType: ViewType.BOOLEAN,
+      },
+      {
+        viewType: ViewType.TEMPLATE,
+        template: this.colorColumnTemplate,
+        key: 'color',
+        label: 'dossierManagement.statuses.columns.color',
+      },
+    ]);
   }
 }

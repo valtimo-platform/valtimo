@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,24 @@
  * limitations under the License.
  */
 
-import {QueryCondition} from '../../../models';
+interface QueryCondition {
+  queryPath: string;
+  queryOperator: string;
+  queryValue: string;
+}
 
 interface CaseCountConfiguration {
   documentDefinition: string;
-  queryConditions: QueryCondition[];
+  queryConditions: Array<QueryCondition>;
 }
 
-export {CaseCountConfiguration};
+enum Operator {
+  NOT_EQUAL_TO = '!=',
+  EQUAL_TO = '==',
+  GREATER_THAN = '>',
+  GREATER_THAN_OR_EQUAL_TO = '>=',
+  LESS_THAN = '<',
+  LESS_THAN_OR_EQUAL_TO = '<=',
+}
+
+export {CaseCountConfiguration, QueryCondition, Operator};

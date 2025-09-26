@@ -1,0 +1,112 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    documentDefinitionModel: documentDefinitionModel$ | async,
+    editActive: editActive$ | async,
+    loadingDocumentDefinition: loadingDocumentDefinition$ | async,
+    pendingChanges: pendingChanges$ | async,
+    saveButtonDisabled: saveButtonDisabled$ | async,
+    selectedDocumentDefinition: selectedDocumentDefinition$ | async,
+    compactMode: compactMode$ | async
+  } as obs"
+>
+  <div class="cds--toolbar-content">
+    <ng-container *ngIf="!obs.editActive; else editActive">
+      <button
+        cdsButton="ghost"
+        (click)="downloadDefinition()"
+        [disabled]="obs.loadingDocumentDefinition || !obs.selectedDocumentDefinition"
+      >
+        {{ 'interface.download' | translate }}
+
+        <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
+      </button>
+
+      <button
+        cdsButton="primary"
+        [disabled]="obs.selectedDocumentDefinition?.readOnly"
+        (click)="onEditClick()"
+      >
+        {{ 'interface.edit' | translate }}
+
+        <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </ng-container>
+  </div>
+
+  <valtimo-editor
+    *ngIf="!obs.loadingDocumentDefinition; else loading"
+    [model]="obs.documentDefinitionModel"
+    [disabled]="!obs.editActive"
+    (validEvent)="onValidEvent($event)"
+    (valueChangeEvent)="onValueChangeEvent($event)"
+    [fitPage]="true"
+    [fitPageExtraSpace]="96"
+  >
+  </valtimo-editor>
+
+  <a id="downloadAnchorElement" style="display: none"></a>
+
+  <ng-template #editActive>
+    <button cdsButton="secondary" (click)="onCancelClick(obs.pendingChanges)">
+      {{ 'interface.cancel' | translate }}
+
+      <svg cdsIcon="close" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    <button cdsButton="primary" [disabled]="obs.saveButtonDisabled" (click)="onSaveClick()">
+      {{ 'interface.save' | translate }}
+
+      <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </ng-template>
+
+  <valtimo-confirmation-modal
+    [showModalSubject$]="showSaveConfirmation$"
+    cancelButtonTextTranslationKey="interface.cancel"
+    confirmButtonTextTranslationKey="interface.save"
+    contentTranslationKey="dossierManagement.documentDefinition.saveModalContent"
+    titleTranslationKey="interface.save"
+    (cancelEvent)="keepEditing()"
+    (confirmEvent)="saveDefinition()"
+  ></valtimo-confirmation-modal>
+
+  <valtimo-confirmation-modal
+    #cancelModal
+    [showModalSubject$]="showCancelConfirmation$"
+    cancelButtonTextTranslationKey="dossierManagement.documentDefinition.cancelModal.keepEditing"
+    cancelButtonType="ghost"
+    confirmButtonTextTranslationKey="interface.discard"
+    confirmButtonType="danger"
+    contentTranslationKey="dossierManagement.documentDefinition.cancelModal.content"
+    optionalButtonTextTranslationKey="interface.save"
+    optionalButtonType="secondary"
+    titleTranslationKey="dossierManagement.documentDefinition.cancelModal.title"
+    showOptionalButton="true"
+    spacerAfterCancelButton="true"
+    (cancelEvent)="keepEditingDefinition()"
+    (confirmEvent)="discardChanges()"
+    (optionalEvent)="saveDefinition()"
+  ></valtimo-confirmation-modal>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <cds-loading></cds-loading>
+  </div>
+</ng-template>

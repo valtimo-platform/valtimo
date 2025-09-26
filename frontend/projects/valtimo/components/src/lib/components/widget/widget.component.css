@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,4 +62,13 @@
 
 .pie-label {
   font-size: 16px !important;
+}
+
+.widget.widget-tile svg.ngx-charts {
+  margin-left: -1.5rem !important;
+}
+
+svg.ngx-charts {
+  margin: 0;
+  padding: 0;
 }

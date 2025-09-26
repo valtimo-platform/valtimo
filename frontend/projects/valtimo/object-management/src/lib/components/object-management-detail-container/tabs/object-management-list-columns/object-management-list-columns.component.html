@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
     objectId: objectId$ | async,
     downloadUrl: downloadUrl$ | async,
     downloadName: downloadName$ | async,
-    loading: loading$ | async,
+    loading: loading$ | async
   } as obs"
 >
   <div class="container-fluid pr-0 pl-0">
@@ -72,7 +72,7 @@
     class="move-row-buttons"
     *ngIf="{
       disableInput: disableInput$ | async,
-      objectId: objectId$ | async,
+      objectId: objectId$ | async
     } as obs"
   >
     <i
@@ -89,14 +89,14 @@
       class="mdi mdi-arrow-down-bold btn btn-outline-secondary"
       (click)="moveRow(index, false, $event, obs.objectId)"
       [ngClass]="{
-        'disabled disabled-move-row-button': index === length - 1 || obs.disableInput,
+        'disabled disabled-move-row-button': index === length - 1 || obs.disableInput
       }"
     ></i>
   </div>
 </ng-template>
 
 <ng-template #list let-obs="obs">
-  <valtimo-carbon-list
+  <valtimo-list
     [items]="obs.listColumn"
     [fields]="obs.fields"
     [viewMode]="false"
@@ -105,7 +105,7 @@
     [lastColumnTemplate]="moveRowButtonsTemplateRef"
     (rowClicked)="columnRowClicked($event)"
   >
-  </valtimo-carbon-list>
+  </valtimo-list>
 </ng-template>
 
 <ng-template #createEditModal>
@@ -118,10 +118,9 @@
       validKey: validKey$ | async,
       disableDefaultSort: disableDefaultSort$ | async,
       showEnum: showEnum$ | async,
-      isYesNo: isYesNo$ | async,
+      isYesNo: isYesNo$ | async
     } as modalObs"
     [open]="modalObs.show"
-    (close)="closeModal()"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>
@@ -296,7 +295,7 @@
       [notificationObj]="{
         type: 'info',
         title: 'listColumn.noConfigWarningTitle' | translate,
-        showClose: false,
+        showClose: false
       }"
     >
     </cds-notification>

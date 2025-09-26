@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
   (valueChange)="formValueChange($event)"
   *ngIf="{
     disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
   } as obs"
 >
   <v-input
@@ -28,19 +28,19 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
     [required]="true"
-    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
+    [widthPx]="350"
     placeholder="Notificaties API Plugin"
   >
   </v-input>
   <v-input
     name="url"
     [title]="'url' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.url"
     [required]="true"
-    [trim]="true"
     [tooltip]="'urlTooltip' | pluginTranslate: pluginId | async"
     placeholder="https://opennotificaties.example.com/api/v1/"
   >
@@ -48,13 +48,13 @@
   <v-input
     name="callbackUrl"
     [title]="'callbackUrl' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.callbackUrl"
     [required]="true"
-    [trim]="true"
     [tooltip]="'callbackUrlTooltip' | pluginTranslate: pluginId | async"
-    placeholder="https://{gzac-back-end-url}/api/v1/notificatiesapi/callback"
+    placeholder="https://{gzac-front-end-url}/api/v1/notificatiesapi/callback"
   >
   </v-input>
   <ng-container
@@ -63,6 +63,7 @@
     <v-select
       [items]="authObs.authenticationPluginSelectItems"
       [margin]="true"
+      [widthInPx]="350"
       name="authenticationPluginConfiguration"
       [title]="'authenticationPluginConfiguration' | pluginTranslate: pluginId | async"
       [disabled]="obs.disabled"

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@
 <ng-container
   *ngIf="{
     formFlowDefinitions: formFlowDefinitionListItems$ | async,
-    saving: saving$ | async,
+    saving: saving$ | async
   } as obs"
 >
   <p class="step-description">
     {{ 'processLinkConfiguration.chooseFormFlowDescription' | translate }}
   </p>
-
   <div class="select-form-flow">
     <cds-combo-box
       [appendInline]="true"
@@ -34,14 +33,5 @@
       [label]="'processLinkSteps.selectFormFlow' | translate"
       ><cds-dropdown-list></cds-dropdown-list
     ></cds-combo-box>
-
-    <br />
-
-    <valtimo-form-display-configuration
-      [selectedFormDefinition]="selectedFormFlowDefinitionId"
-      (formDisplayValue)="selectedFormDisplayValue($event)"
-      (formSizeValue)="selectedFormSizeValue($event)"
-      (subtitlesValue)="selectedSubtitlesValue($event)"
-    ></valtimo-form-display-configuration>
   </div>
 </ng-container>

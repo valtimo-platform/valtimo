@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -13,151 +13,104 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 <div
   class="carbon-document-table-wrapper"
   *ngIf="{
     loading: loading$ | async,
-    fieldsLoading: fieldsLoading$ | async,
     uploading: uploading$ | async,
-    relatedFiles: relatedFiles$ | async,
-    fields: fields$ | async,
-    supportedDocumentenApiFeatures: supportedDocumentenApiFeatures$ | async,
-    pagination: pagination$ | async,
-    sortState: sortState$ | async,
-    uploadFields: uploadFields$ | async,
-    defaultValues: defaultValues$ | async,
-    hideFields: hideFields$ | async,
+    relatedFiles: relatedFiles$ | async
   } as obs"
 >
-  @if ((!obs.fieldsLoading && obs.fields.length) || obs.fieldsLoading) {
-    <valtimo-carbon-list
-      [actionItems]="actionItems"
-      [items]="obs.relatedFiles"
-      [fields]="obs.fields"
-      [initialSortState]="obs.sortState"
-      [loading]="obs.loading"
-      [pagination]="obs.pagination"
-      [paginatorConfig]="paginatorConfig"
-      paginationIdentifier="documentenApi"
-      (rowClicked)="onRowClick($event)"
-      (sortChanged)="
-        obs?.supportedDocumentenApiFeatures?.supportsSortableColumns && onSortChanged($event)
-      "
-      (paginationClicked)="onPaginationClicked($event)"
-      (paginationSet)="onPaginationSet($event)"
-      hideColumnHeader
-    >
-      <div carbonToolbarContent>
-        <input
-          [accept]="acceptedFiles"
-          (change)="onFileSelected($event)"
-          hidden
-          type="file"
-          #fileInput
-        />
-
-        <button
-          *ngIf="obs?.supportedDocumentenApiFeatures?.supportsFilterableColumns"
-          [cdsOverflowMenu]="overflowFilter"
-          [customPane]="true"
-          [flip]="true"
-          [offset]="{x: 0, y: 47}"
-          cdsButton="ghost"
-          placement="bottom"
-        >
-          <svg cdsIcon="filter" size="16"></svg>
-        </button>
-
-        <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
-      </div>
-
-      <ng-container *ngTemplateOutlet="noResults"></ng-container>
-    </valtimo-carbon-list>
+  @if (!obs.loading && !obs.uploading && obs.relatedFiles) {
+    <ng-container
+      *ngTemplateOutlet="list; context: {relatedFiles: obs.relatedFiles}"
+    ></ng-container>
   } @else {
-    <valtimo-no-results
-      [action]="navigateToCaseAdminButton"
-      [description]="'zgw.documents.noColumns.description' | translate"
-      [title]="'zgw.documents.noColumns.title' | translate"
-    ></valtimo-no-results>
+    <ng-container *ngTemplateOutlet="listLoading"></ng-container>
   }
-
-  <valtimo-documenten-api-metadata-modal
-    [defaultValues]="obs.defaultValues"
-    [disableAuthor]="obs.uploadFields?.auteur?.readonly"
-    [disableConfidentialityLevel]="obs.uploadFields?.vertrouwelijkheidaanduiding?.readonly"
-    [disableCreationDate]="obs.uploadFields?.creatiedatum?.readonly"
-    [disableDescription]="obs.uploadFields?.beschrijving?.readonly"
-    [disableDocumentTitle]="obs.uploadFields?.titel?.readonly"
-    [disableDocumentType]="obs.uploadFields?.informatieobjecttype?.readonly"
-    [disableFilename]="obs.uploadFields?.bestandsnaam?.readonly"
-    [disableLanguage]="obs.uploadFields?.taal?.readonly"
-    [disableStatus]="obs.uploadFields?.status?.readonly"
-    [hideFields]="obs.hideFields"
-    [open]="showUploadModal$ | async"
-    [disabled$]="modalDisabled$"
-    [file$]="fileToBeUploaded$"
-    [isEditMode]="isEditMode$ | async"
-    [supportsTrefwoorden]="obs?.supportedDocumentenApiFeatures?.supportsTrefwoorden"
-    (modalClose)="closeMetadataModal()"
-    (metadata)="metadataSet($event)"
-  ></valtimo-documenten-api-metadata-modal>
 </div>
 
-<valtimo-confirmation-modal
-  confirmButtonTextTranslationKey="dashboardManagement.deleteModal.confirm"
-  contentTranslationKey="case.documenten.deleteConfirmationModal.content"
-  confirmButtonType="danger"
-  titleTranslationKey="case.documenten.deleteConfirmationModal.title"
-  [showModalSubject$]="showDeleteConfirmationModal$"
-  (confirmEvent)="deleteDocument()"
->
-</valtimo-confirmation-modal>
+<valtimo-documenten-api-metadata-modal
+  [disabled$]="modalDisabled$"
+  [file$]="fileToBeUploaded$"
+  [hide$]="hideModal$"
+  [show$]="showModal$"
+  (metadata)="metadataSet($event)"
+></valtimo-documenten-api-metadata-modal>
 
-<ng-template #noResults>
-  @if ((filter$ | async | keyvalue)?.length) {
-    <valtimo-no-results
-      [action]="resetFilterButton"
-      [description]="'zgw.documents.noResults.filterDescription' | translate"
-      [title]="'zgw.documents.noResults.filterTitle' | translate"
-    ></valtimo-no-results>
-  } @else if (showZaakLinkWarning && isAdmin) {
-    <valtimo-no-results
-      [action]="navigateToCaseAdminButton"
-      [description]="'case.documenten.noZaakFound' | translate"
-      [title]="'case.documenten.noZaakFoundTitle' | translate"
-    ></valtimo-no-results>
-  } @else {
-    <valtimo-no-results
-      [action]="uploadButton"
-      [description]="'case.documenten.noFiles' | translate"
-      [title]="'case.documenten.noFilesTitle' | translate"
-    ></valtimo-no-results>
-  }
+<ng-template #list let-relatedFiles="relatedFiles">
+  <valtimo-carbon-list
+    [actionItems]="actionItems"
+    [items]="relatedFiles"
+    [fields]="fields"
+    (rowClicked)="onRowClick($event)"
+    hideColumnHeader
+  >
+    <div carbonToolbarContent>
+      <input
+        [accept]="acceptedFiles"
+        (change)="onFileSelected($event)"
+        hidden
+        type="file"
+        #fileInput
+      />
+
+      <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
+    </div>
+
+    @if (showZaakLinkWarning && isAdmin) {
+      <valtimo-no-results
+        [action]="navigateToCaseAdminButton"
+        description="{{ 'dossier.documenten.noZaakFound' | translate }}"
+        title="{{ 'dossier.documenten.noZaakFoundTitle' | translate }}"
+      ></valtimo-no-results>
+    } @else {
+      <valtimo-no-results
+        [action]="uploadButton"
+        description="{{ 'dossier.documenten.noFiles' | translate }}"
+        title="{{ 'dossier.documenten.noFilesTitle' | translate }}"
+      ></valtimo-no-results>
+    }
+  </valtimo-carbon-list>
 </ng-template>
 
-<ng-template #overflowFilter>
-  <valtimo-case-detail-tab-documenten-api-filter
-    [prefillFilter]="filter$ | async"
-    (filterEvent)="onFilterEvent($event)"
-  ></valtimo-case-detail-tab-documenten-api-filter>
+<ng-template #listLoading>
+  <valtimo-carbon-list [items]="[]" [fields]="fields" [loading]="true" hideColumnHeader>
+    <div carbonToolbarContent>
+      <ng-container *ngTemplateOutlet="uploadButton; context: {disabled: true}"></ng-container>
+    </div>
+  </valtimo-carbon-list>
 </ng-template>
 
-<ng-template #resetFilterButton>
-  <button cdsButton="primary" (click)="onFilterEvent(null)">
-    {{ 'Reset filter' | translate }}
+<ng-template #downloadButton let-index="index" let-item="item">
+  <div
+    *ngIf="{isDownloading: indexesIncludeIndex(downloadingFileIndexes$ | async, index)} as vars"
+    class="download-button-container"
+  >
+    <button
+      *ngIf="!vars.isDownloading"
+      cdsButton="primary"
+      size="sm"
+      (click)="downloadDocument(item, index)"
+    >
+      {{ 'interface.download' | translate }}
 
-    <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-  </button>
+      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+    </button>
+
+    <cds-loading size="sm" *ngIf="vars.isDownloading"></cds-loading>
+  </div>
+</ng-template>
+
+<ng-template #dossierListActions>
+  <input [accept]="acceptedFiles" (change)="onFileSelected($event)" hidden type="file" #fileInput />
+  <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
 </ng-template>
 
 <ng-template #uploadButton let-disabled="disabled">
   <button
-    [disabled]="
-      (uploadProcessLinkedSet && !uploadProcessLinked) ||
-      showZaakLinkWarning ||
-      disabled ||
-      (canCreateResource$ | async) === false
-    "
+    [disabled]="(uploadProcessLinkedSet && !uploadProcessLinked) || showZaakLinkWarning || disabled"
     [vTooltip]="getUploadButtonTooltip() | translate"
     (click)="onUploadButtonClick()"
     cdsButton="primary"
@@ -167,18 +120,15 @@
   </button>
 </ng-template>
 
-<ng-template #translationTemplate let-data="data">
-  @if (data.item[data.key]) {
-    {{ 'document.' + data.item[data.key] | translate }}
-  } @else {
-    -
-  }
-</ng-template>
-
 <ng-template #navigateToCaseAdminButton>
   <button (click)="onNavigateToCaseAdminClick()" cdsButton="primary">
-    {{ 'case.documenten.navigateToCaseAdmin' | translate }}
-
+    {{ 'dossier.documenten.navigateToCaseAdmin' | translate }}
     <svg class="cds--btn__icon" cdsIcon="settings" size="16"></svg>
   </button>
+</ng-template>
+
+<ng-template #sizeTemplate let-data="data">
+  <div class="documenten-api-documents-filesize-template">
+    {{ bytesToMegabytes(data.item.sizeInBytes) }}
+  </div>
 </ng-template>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-interface ProcessStart {
+export interface ProcessStart {
   key: string;
   businessKey: string;
   variables: Array<any>;
 }
 
-interface Process {
+export interface Process {
   id: string;
   businessKey: string;
   startTime: string;
@@ -36,7 +36,7 @@ interface Process {
   variables: ProcessInstanceVariable[];
 }
 
-interface ProcessDefinition {
+export interface ProcessDefinition {
   visibleInMenu: any;
   category: string;
   deploymentId: string;
@@ -54,29 +54,25 @@ interface ProcessDefinition {
   versionTag: string;
 }
 
-interface ProcessDefinitionStartForm {
+export interface ProcessDefinitionStartForm {
   formFields: Array<any>;
   formLocation: string;
   genericForm: boolean;
 }
 
-type StartProcessLinkType = 'form' | 'form-flow' | 'form-view-model' | 'url' | 'ui-component';
+export type StartProcessLinkType = 'form' | 'form-flow';
 
-interface ProcessDefinitionStartProcessLink {
+export interface ProcessDefinitionStartProcessLink {
   processLinkId: string;
   type: StartProcessLinkType;
   properties: {
     formFlowInstanceId?: string;
     formDefinitionId?: string;
     prefilledForm?: any;
-    formName?: string;
-    formDefinition?: object;
-    url?: string;
-    componentKey?: string;
   };
 }
 
-interface ProcessInstance {
+export interface ProcessInstance {
   id: string;
   businessKey: string;
   startTime: string;
@@ -88,7 +84,7 @@ interface ProcessInstance {
   variables: ProcessInstanceVariable[];
 }
 
-interface ProcessInstanceVariable {
+export interface ProcessInstanceVariable {
   id: string;
   type: string;
   name: string;
@@ -97,14 +93,13 @@ interface ProcessInstanceVariable {
   local: boolean;
 }
 
-interface ProcessInstanceTask {
+export interface ProcessInstanceTask {
   id: string;
   name: string;
   assignee: string;
   created: string;
   createdUnix: number;
-  due?: string;
-  dueUnix?: number;
+  due: string;
   followUp: string;
   delegationState: string;
   description: string;
@@ -123,32 +118,10 @@ interface ProcessInstanceTask {
   tenantId: string;
   identityLinks: IdentityLink[];
   isLocked: boolean;
-  subtitles?: string[];
 }
 
-interface IdentityLink {
+export interface IdentityLink {
   userId: string;
   groupId: string;
   type: string;
 }
-
-interface ProcessDefinitionXml {
-  bpmn20Xml: string;
-  id: string;
-  readOnly: boolean;
-  systemProcess: boolean;
-}
-
-export {
-  ProcessStart,
-  Process,
-  ProcessDefinition,
-  ProcessDefinitionStartForm,
-  StartProcessLinkType,
-  ProcessDefinitionStartProcessLink,
-  ProcessInstance,
-  ProcessInstanceVariable,
-  ProcessInstanceTask,
-  IdentityLink,
-  ProcessDefinitionXml,
-};

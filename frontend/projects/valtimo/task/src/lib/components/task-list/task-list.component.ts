@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  HostListener,
-  OnDestroy,
   OnInit,
   ViewChild,
   ViewEncapsulation,
@@ -30,31 +28,13 @@ import {
   MappedSpecifiedTask,
   SpecifiedTask,
   Task,
-  TaskListOtherFilters,
   TaskListParams,
   TaskPageParams,
 } from '../../models';
 import {TaskDetailModalComponent} from '../task-detail-modal/task-detail-modal.component';
-import {
-  BehaviorSubject,
-  combineLatest,
-  Observable,
-  of,
-  Subject,
-  Subscription,
-  switchMap,
-  tap,
-} from 'rxjs';
-import {
-  ConfigService,
-  Page,
-  SearchField,
-  SearchFieldValues,
-  SortState,
-  TaskListTab,
-} from '@valtimo/shared';
+import {BehaviorSubject, combineLatest, Observable, of, switchMap, tap} from 'rxjs';
+import {ConfigService, Page, SortState, TaskListTab} from '@valtimo/config';
 import {DocumentService} from '@valtimo/document';
-import {SseService} from '@valtimo/sse';
 import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
 import {PermissionService} from '@valtimo/access-control';
 import {
@@ -62,25 +42,15 @@ import {
   CAN_VIEW_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
-import {
-  TaskListColumnService,
-  TaskListPaginationService,
-  TaskListQueryParamService,
-  TaskListSearchService,
-  TaskListService,
-} from '../../services';
+import {TaskListColumnService, TaskListPaginationService, TaskListService} from '../../services';
 import {isEqual} from 'lodash';
 import {ListItem} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {TaskListSortService} from '../../services/task-list-sort.service';
-import {CarbonListNoResultsMessage, PageTitleService} from '@valtimo/components';
-import {TASK_LIST_NO_SEARCH_RESULTS_MESSAGE} from '../../constants';
-import {TaskUpdateSseEvent} from '../../models';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
-  standalone: false,
   selector: 'valtimo-task-list',
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss'],
@@ -91,41 +61,12 @@ moment.locale(localStorage.getItem('langKey') || '');
     TaskListColumnService,
     TaskListPaginationService,
     TaskListSortService,
-    TaskListSearchService,
-    TaskListQueryParamService,
   ],
 })
-export class TaskListComponent implements OnInit, OnDestroy {
+export class TaskListComponent implements OnInit {
   @ViewChild('taskDetail') private readonly _taskDetail: TaskDetailModalComponent;
 
-  @HostListener('window:popstate', ['$event'])
-  private onPopState() {
-    setTimeout(() => {
-      this.setParamsFromQueryParams();
-    });
-  }
-
-  public readonly ALL_CASES_ID = this.taskListService.ALL_CASES_ID;
-
   public readonly selectedTaskType$ = this.taskListService.selectedTaskType$;
-
-  private readonly _overrideNoResultsMessage$ =
-    new BehaviorSubject<CarbonListNoResultsMessage | null>(null);
-
-  public readonly noResultsMessage$: Observable<CarbonListNoResultsMessage> = combineLatest([
-    this.selectedTaskType$,
-    this._overrideNoResultsMessage$,
-  ]).pipe(
-    map(
-      ([selectedTaskType, overrideNoResultsMessage]) =>
-        overrideNoResultsMessage || {
-          title: 'task-list.' + selectedTaskType + '.noResultsTitle',
-          description: 'task-list.' + selectedTaskType + '.noResultsDescription',
-          isSearchResult: false,
-        }
-    )
-  );
-
   public readonly fields$ = this.taskListColumnService.fields$;
   public readonly loadingTasks$ = new BehaviorSubject<boolean>(true);
   public readonly visibleTabs$ = new BehaviorSubject<Array<TaskListTab> | null>(null);
@@ -140,22 +81,16 @@ export class TaskListComponent implements OnInit, OnDestroy {
   public readonly sortStateForCurrentTaskType$ =
     this.taskListSortService.sortStateForCurrentTaskType$;
 
-  public readonly overrideSortState$ = this.taskListSortService.overrideSortState$;
-
   private readonly _reload$ = new BehaviorSubject<boolean>(true);
-
-  public readonly caseDefinitionKey$ = this.taskListService.caseDefinitionKey$;
 
   public readonly tasks$: Observable<Task[] | MappedSpecifiedTask[]> = combineLatest([
     this.taskListService.loadingStateForCaseDefinition$,
     this.selectedTaskType$,
     this.taskListPaginationService.paginationForCurrentTaskType$,
     this.taskListSortService.sortStringForCurrentTaskType$,
-    this.caseDefinitionKey$,
+    this.taskListService.caseDefinitionName$,
     this._enableLoadingAnimation$,
     this._reload$,
-    this.taskListSearchService.otherFilters$,
-    this.taskListSortService.overrideSortStateString$,
   ]).pipe(
     filter(([loadingStateForCaseDefinition]) => loadingStateForCaseDefinition === false),
     map(
@@ -164,36 +99,31 @@ export class TaskListComponent implements OnInit, OnDestroy {
         selectedTaskType,
         paginationForSelectedTaskType,
         sortStringForSelectedTaskType,
-        caseDefinitionKey,
+        caseDefinitionName,
         enableLoadingAnimation,
         reload,
-        otherFilters,
-        overrideSortStateString,
       ]) =>
         this.getTaskListParams(
           paginationForSelectedTaskType,
-          overrideSortStateString || sortStringForSelectedTaskType,
+          sortStringForSelectedTaskType,
           selectedTaskType,
-          caseDefinitionKey,
+          caseDefinitionName,
           enableLoadingAnimation,
-          reload,
-          otherFilters
+          reload
         )
     ),
     distinctUntilChanged((previous, current) => isEqual(previous.params, current.params)),
-    tap(params => {
-      if (params.enableLoadingAnimation) this.loadingTasks$.next(true);
-      this.taskListQueryParamService.setTaskListParams(params.params);
+    tap(({enableLoadingAnimation}) => {
+      if (enableLoadingAnimation) this.loadingTasks$.next(true);
     }),
     switchMap(({params}) =>
       combineLatest([
         this.taskService.queryTasksPageV3(
           params.selectedTaskType,
           params.params,
-          params.caseDefinitionKey,
-          params.otherFilters
+          params.caseDefinitionName
         ),
-        of(!!params.caseDefinitionKey),
+        of(!!params.caseDefinitionName),
       ])
     ),
     switchMap(([tasksResult, isSpecified]) =>
@@ -213,18 +143,13 @@ export class TaskListComponent implements OnInit, OnDestroy {
       this.cachedTasks$.next(tasks);
       this.loadingTasks$.next(false);
       this.disableLoadingAnimation();
-
-      this.taskListSearchService.otherFilters$.pipe(take(1)).subscribe(otherFilters => {
-        this._overrideNoResultsMessage$.next(
-          otherFilters?.length > 0 ? TASK_LIST_NO_SEARCH_RESULTS_MESSAGE : null
-        );
-      });
     })
   );
 
   public readonly loadingCaseListItems$ = new BehaviorSubject<boolean>(true);
-  private readonly _selectedCaseDefinitionId$ = new BehaviorSubject<string>(this.ALL_CASES_ID);
-
+  private readonly _selectedCaseDefinitionId$ = new BehaviorSubject<string>(
+    this.taskListService.ALL_CASES_ID
+  );
   public readonly caseListItems$: Observable<ListItem[]> = combineLatest([
     this.documentService.getAllDefinitions(),
     this._selectedCaseDefinitionId$,
@@ -233,8 +158,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
     map(([documentDefinitionRes, selectedCaseDefinitionId]) => [
       {
         content: this.translateService.instant('task-list.allCases'),
-        id: this.ALL_CASES_ID,
-        selected: selectedCaseDefinitionId === this.ALL_CASES_ID,
+        id: this.taskListService.ALL_CASES_ID,
+        selected: selectedCaseDefinitionId === this.taskListService.ALL_CASES_ID,
       },
       ...documentDefinitionRes.content.map(documentDefinition => ({
         id: documentDefinition.id.name,
@@ -247,19 +172,11 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
   public readonly taskListColumnsForCase$ = this.taskListColumnService.taskListColumnsForCase$;
 
-  public readonly loadingSearchFields$ = this.taskListSearchService.loadingSearchFields$;
-  public readonly searchFields$: Observable<SearchField[]> =
-    this.taskListSearchService.searchFields$;
-
   private readonly _DEFAULT_TASK_LIST_TABS: TaskListTab[] = [
     TaskListTab.MINE,
     TaskListTab.OPEN,
     TaskListTab.ALL,
   ];
-
-  public readonly setSearchFieldValuesSubject$ = new BehaviorSubject<SearchFieldValues>({});
-  public readonly clearSearchFieldValuesSubject$ = new Subject<null>();
-  private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly configService: ConfigService,
@@ -271,40 +188,12 @@ export class TaskListComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly taskListColumnService: TaskListColumnService,
     private readonly taskListPaginationService: TaskListPaginationService,
-    private readonly taskListSortService: TaskListSortService,
-    private readonly taskListSearchService: TaskListSearchService,
-    private readonly taskListQueryParamService: TaskListQueryParamService,
-    private readonly pageTitleService: PageTitleService,
-    private readonly sseService: SseService
+    private readonly taskListSortService: TaskListSortService
   ) {}
 
   public ngOnInit(): void {
     this.taskListColumnService.resetTaskListFields();
     this.setVisibleTabs();
-    this.pageTitleService.disableReset();
-    this.setParamsFromQueryParams();
-    this.openTaskUpdateSseEventSubscription();
-  }
-
-  private openTaskUpdateSseEventSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([
-        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-        this.caseDefinitionKey$,
-      ])
-        .pipe(
-          filter(
-            ([event, caseDefinitionKey]) =>
-              caseDefinitionKey === null || event.caseDefinitionKey === caseDefinitionKey
-          )
-        )
-        .subscribe(() => this.reload())
-    );
-  }
-
-  public ngOnDestroy(): void {
-    this.pageTitleService.enableReset();
-    this._subscriptions.unsubscribe();
   }
 
   public paginationClicked(page: number, type: TaskListTab | string): void {
@@ -351,7 +240,7 @@ export class TaskListComponent implements OnInit, OnDestroy {
           .pipe(take(1))
           .subscribe(document => {
             this.router.navigate([
-              `/cases/${document.definitionId?.name}/document/${currentTask.businessKey}`,
+              `/dossiers/${document.definitionId?.name}/document/${currentTask.businessKey}`,
             ]);
           });
       }
@@ -363,27 +252,19 @@ export class TaskListComponent implements OnInit, OnDestroy {
   }
 
   public sortChanged(sortState: SortState): void {
-    this.taskListSortService.setOverrideSortState(sortState);
     this.taskListSortService.updateSortState(this.taskListService.selectedTaskType, sortState);
   }
 
   public setCaseDefinition(definition: {item: {id: string}}): void {
     if (definition.item.id) {
-      this.taskListSortService.resetOverrideSortState();
       this.loadingTasks$.next(true);
-      this.taskListService.setCaseDefinitionKey(definition.item.id);
+      this.taskListService.setCaseDefinitionName(definition.item.id);
     }
   }
 
   public reload(): void {
     this.enableLoadingAnimation();
     this._reload$.next(!this._reload$.getValue());
-  }
-
-  public search(searchFieldValues: SearchFieldValues): void {
-    if (!searchFieldValues) return;
-
-    this.taskListSearchService.setSearchFieldValues(searchFieldValues);
   }
 
   private updateTaskListPaginationAfterResponse(newCollectionSize: number): void {
@@ -425,10 +306,9 @@ export class TaskListComponent implements OnInit, OnDestroy {
     paginationForSelectedTaskType: TaskPageParams,
     sortStringForSelectedTaskType: string,
     selectedTaskType: TaskListTab,
-    caseDefinitionKey: string,
+    caseDefinitionName: string,
     enableLoadingAnimation: boolean,
-    reload: boolean,
-    otherFilters?: TaskListOtherFilters
+    reload: boolean
   ): TaskListParams {
     const params = {
       ...paginationForSelectedTaskType,
@@ -442,9 +322,8 @@ export class TaskListComponent implements OnInit, OnDestroy {
         reload,
         selectedTaskType,
         params,
-        ...(caseDefinitionKey &&
-          caseDefinitionKey !== this.ALL_CASES_ID && {caseDefinitionKey: caseDefinitionKey}),
-        ...(otherFilters && {otherFilters}),
+        ...(caseDefinitionName &&
+          caseDefinitionName !== this.taskListService.ALL_CASES_ID && {caseDefinitionName}),
       },
       enableLoadingAnimation,
     };
@@ -527,39 +406,5 @@ export class TaskListComponent implements OnInit, OnDestroy {
 
       return taskCopy;
     }) as Task[];
-  }
-
-  private setParamsFromQueryParams(): void {
-    const decodedParams = this.taskListQueryParamService.getTaskListQueryParams();
-
-    if (decodedParams.caseDefinitionKey) {
-      this.taskListService.setCaseDefinitionKey(decodedParams.caseDefinitionKey);
-      this._selectedCaseDefinitionId$.next(decodedParams.caseDefinitionKey);
-    }
-
-    if (decodedParams.otherFilters?.length > 0) {
-      const searchFieldValues = this.taskListSearchService.mapOtherFilterToSearchValues(
-        decodedParams.otherFilters
-      );
-      this.setSearchFieldValuesSubject$.next(searchFieldValues);
-    } else {
-      this.clearSearchFieldValuesSubject$.next(null);
-    }
-
-    if (decodedParams.selectedTaskType)
-      this.taskListService.setSelectedTaskType(decodedParams.selectedTaskType);
-
-    if (decodedParams.params?.sort) {
-      const stateFromSortString = this.taskListSortService.getSortStateFromSortString(
-        decodedParams.params.sort
-      );
-      if (stateFromSortString) this.taskListSortService.setOverrideSortState(stateFromSortString);
-    }
-
-    if (decodedParams.params)
-      this.taskListPaginationService.updateTaskPagination(
-        this.taskListService.selectedTaskType,
-        decodedParams.params
-      );
   }
 }

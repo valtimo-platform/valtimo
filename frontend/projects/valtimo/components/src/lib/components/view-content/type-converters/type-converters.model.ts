@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,86 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {InjectionToken} from '@angular/core';
 
+import {StringTypeConverter} from './stringTypeConverter';
 import {BooleanTypeConverter} from './booleanTypeConverter';
-import {CurrencyTypeConverter} from './currencyTypeConverter';
-import {DateTimeTypeConverter} from './dateTimeTypeConverter';
 import {DateTypeConverter} from './dateTypeConverter';
 import {EnumTypeConverter} from './enumTypeConverter';
-import {NumberTypeConverter} from './numberTypeConverter';
-import {PercentTypeConverter} from './percentTypeConverter';
-import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
 import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
-import {StringTypeConverter} from './stringTypeConverter';
-import {LinkTypeConverter} from './linkTypeConverter';
+import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
 
-export const TYPE_CONVERTER_TOKEN = new InjectionToken<TypeConverter[]>('Type Converter');
+const stringTypeConverter = new StringTypeConverter();
+const booleanTypeConverter = new BooleanTypeConverter();
+const dateTypeConverter = new DateTypeConverter();
+const enumTypeConverter = new EnumTypeConverter();
+const stringReplaceUnderscoreTypeConverter = new StringReplaceUnderscoreTypeConverter();
+const relatedFilesTypeConverter = new RelatedFilesTypeConverter();
 
-export const TYPE_PROVIDERS = [
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: StringTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: BooleanTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: DateTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: DateTimeTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: EnumTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: StringReplaceUnderscoreTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: RelatedFilesTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: NumberTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: PercentTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: CurrencyTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: LinkTypeConverter,
-    multi: true,
-  },
+// TODO: Via injection
+export const TYPE_CONVERTERS: Array<TypeConverter> = [
+  stringTypeConverter,
+  booleanTypeConverter,
+  dateTypeConverter,
+  enumTypeConverter,
+  stringReplaceUnderscoreTypeConverter,
+  relatedFilesTypeConverter,
 ];
 
 export interface TypeConverter {
   getTypeString(): string;
-  /*
-   * Returns true if the converter returns a raw value, meaning it should be treated as HTML.
-   */
-  isRawValue(): boolean;
 
   convert(value: any, definition: any): string;
 }

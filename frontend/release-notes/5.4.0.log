@@ -1,0 +1,9 @@
+0a36bd8 - Updated version to 5.4.0
+a917fbe - Updated version to 5.4.0-55.RC-SNAPSHOT
+79f439e - Merge branch 'main' into development
+65f8c0e - updated translations file to use process links instead of process connections (#132)
+dec631a - fix: selecting pluginconfiguration and haalcentraal (#131)
+5171cdf - #35319 Vervangen Mock API plugin configuraties door echte API (#130)
+8d29987 - feat: change formio dependency (#129)
+2704a2a - feat: add plugin configuration get and post endpoints (#128)
+383a4a3 - Merge branch 'main' into development

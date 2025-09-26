@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 <ng-container *ngIf="loading">
   <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
 </ng-container>
-
 <ng-container *ngIf="!loading">
   <cds-accordion>
     <cds-accordion-item
@@ -38,14 +37,13 @@
   <ng-container *ngIf="searchFields$ | async as searchFields">
     <ng-container
       *ngIf="{
-        noSearchFields: (!searchFields || searchFields.length === 0) && !externalSearchField,
+        noSearchFields: (!searchFields || searchFields.length === 0) && !externalSearchField
       } as vars"
     >
       <div
         *ngIf="!vars.noSearchFields"
         class="search-fields-container"
         [ngClass]="{'search-fields-container--hidden': (expanded$ | async) === false}"
-        [cdsLayer]="1"
       >
         <ng-content></ng-content>
 
@@ -78,7 +76,7 @@
         searchField.title ||
         ('searchFields.' + searchField.key !== ('searchFields.' + searchField.key | translate)
           ? ('searchFields.' + searchField.key | translate)
-          : searchField.key),
+          : searchField.key)
     } as vars"
   >
     <ng-container
@@ -89,7 +87,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -101,7 +99,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -113,7 +111,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -125,7 +123,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -137,7 +135,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -149,7 +147,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -161,7 +159,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -173,7 +171,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -185,7 +183,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -197,7 +195,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -209,7 +207,7 @@
           tooltipKey: vars.tooltipKey,
           tooltip: vars.tooltip,
           title: vars.title,
-          values: vars.values,
+          values: vars.values
         }
       "
     ></ng-container>
@@ -226,7 +224,6 @@
 >
   <v-input
     *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
-    [dataTestId]="'search-field-' + searchField.key"
     [name]="searchField.key"
     [title]="title"
     [fullWidth]="true"
@@ -237,6 +234,7 @@
     (keyup.enter)="search()"
     [defaultValue]="values[searchField.key]"
     [disabled]="inputDisabled"
+    [carbonTheme]="carbonTheme"
   >
   </v-input>
 </ng-template>
@@ -251,7 +249,6 @@
 >
   <v-input
     *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'single'"
-    [dataTestId]="'search-field-' + searchField.key"
     [name]="searchField.key"
     [title]="title"
     [fullWidth]="true"
@@ -264,6 +261,7 @@
     (keyup.enter)="search()"
     [defaultValue]="values[searchField.key]"
     [disabled]="inputDisabled"
+    [carbonTheme]="carbonTheme"
   >
   </v-input>
 </ng-template>
@@ -288,6 +286,7 @@
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
     [disabled]="inputDisabled"
+    [carbonTheme]="carbonTheme"
   ></v-date-picker>
 </ng-template>
 
@@ -311,23 +310,23 @@
     >
       <v-input
         name="start"
-        [dataTestId]="'search-field-' + searchField.key"
         [fullWidth]="true"
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-input
         name="end"
-        [dataTestId]="'search-field-' + searchField.key"
         [fullWidth]="true"
         [clear$]="clear$"
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       >
       </v-input>
     </v-form>
@@ -354,7 +353,6 @@
     >
       <v-input
         name="start"
-        [dataTestId]="'search-field-' + searchField.key"
         [fullWidth]="true"
         type="number"
         [hideNumberSpinBox]="true"
@@ -362,12 +360,12 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       >
       </v-input>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-input
         name="end"
-        [dataTestId]="'search-field-' + searchField.key"
         [fullWidth]="true"
         type="number"
         [hideNumberSpinBox]="true"
@@ -375,6 +373,7 @@
         (keyup.enter)="search()"
         [defaultValue]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       >
       </v-input>
     </v-form>
@@ -406,6 +405,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -415,6 +415,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -445,6 +446,7 @@
       (keyup.enter)="search()"
       [defaultSelectionId]="getDefaultBooleanSelectionId(values, searchField.key)"
       [disabled]="inputDisabled"
+      [carbonTheme]="carbonTheme"
       [appendInline]="false"
     ></v-select>
   </ng-container>
@@ -471,6 +473,7 @@
     (keyup.enter)="search()"
     [defaultDate]="values[searchField.key]"
     [disabled]="inputDisabled"
+    [carbonTheme]="carbonTheme"
   ></v-date-picker>
 </ng-template>
 
@@ -500,6 +503,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.start"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       ></v-date-picker>
       <ng-container *ngTemplateOutlet="toText"></ng-container>
       <v-date-picker
@@ -510,6 +514,7 @@
         (keyup.enter)="search()"
         [defaultDate]="values[searchField.key]?.end"
         [disabled]="inputDisabled"
+        [carbonTheme]="carbonTheme"
       ></v-date-picker>
     </v-form>
   </ng-container>
@@ -524,11 +529,7 @@
   let-values="values"
 >
   <ng-container
-    *ngIf="
-      searchField.dataType === 'text' &&
-      (searchField.fieldType === 'single-select-dropdown' ||
-        searchField.fieldType === 'single_select_dropdown')
-    "
+    *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single-select-dropdown'"
   >
     <v-input-label
       [title]="title"
@@ -546,6 +547,7 @@
       (keyup.enter)="search()"
       [defaultSelectionId]="values[searchField.key]"
       [disabled]="inputDisabled"
+      [carbonTheme]="carbonTheme"
       [appendInline]="false"
     ></v-select>
   </ng-container>
@@ -560,11 +562,7 @@
   let-values="values"
 >
   <ng-container
-    *ngIf="
-      searchField.dataType === 'text' &&
-      (searchField.fieldType === 'multi-select-dropdown' ||
-        searchField.fieldType === 'multi_select_dropdown')
-    "
+    *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'multi-select-dropdown'"
   >
     <v-input-label
       [title]="title"
@@ -583,6 +581,7 @@
       (keyup.enter)="search()"
       [defaultSelectionIds]="values[searchField.key]"
       [disabled]="inputDisabled"
+      [carbonTheme]="carbonTheme"
       [appendInline]="false"
     ></v-select>
   </ng-container>
@@ -604,7 +603,6 @@
       <button
         *ngIf="obs.expanded"
         cdsButton="tertiary"
-        data-testid="search-fields-clear-button"
         (click)="clear()"
         [disabled]="loading || noSearchFields || inputDisabled"
         type="button"
@@ -618,7 +616,6 @@
       <button
         *ngIf="obs.expanded"
         cdsButton="primary"
-        data-testid="search-fields-search-button"
         (click)="search()"
         [disabled]="
           loading || noSearchFields || (hasValidValues$ | async) === false || inputDisabled
@@ -636,7 +633,7 @@
 
 <ng-template #noSearchFieldsTemplate let-noSearchFields="noSearchFields">
   <div class="no-search-fields-message" *ngIf="noSearchFields">
-    <v-paragraph dataTestId="search-fields-no-fields" [fullWidth]="true" [center]="true">{{
+    <v-paragraph [fullWidth]="true" [center]="true">{{
       'searchFields.noneConfigured' | translate
     }}</v-paragraph>
   </div>

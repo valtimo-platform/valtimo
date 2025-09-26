@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 import {Inject, Injectable, OnDestroy} from '@angular/core';
 import {combineLatest, filter, map, Subject, Subscription} from 'rxjs';
-import {CurrentCarbonTheme, MonacoTheme} from '../../models';
+import {CurrentCarbonTheme, MonacoTheme, WindowWithMonaco} from '../../models';
 import {DOCUMENT} from '@angular/common';
 import {CdsThemeService} from '../../services';
-import {ValtimoWindow} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +27,7 @@ export class EditorService implements OnDestroy {
   public readonly loadingFinished$ = new Subject<null>();
 
   public readonly monacoEditor$ = this.loadingFinished$.pipe(
-    map(() => (this.document.defaultView as ValtimoWindow)?.monaco?.editor),
+    map(() => (this.document.defaultView as WindowWithMonaco)?.monaco?.editor),
     filter(editor => !!editor)
   );
 
@@ -54,22 +53,16 @@ export class EditorService implements OnDestroy {
   public load(): void {
     const baseUrl = './assets' + '/monaco-editor/min/vs';
 
-    if (typeof (window as ValtimoWindow).monaco === 'object') {
+    if (typeof (window as WindowWithMonaco).monaco === 'object') {
       this.finishLoading();
       return;
     }
 
     const onGotAmdLoader = () => {
-      const win = window as any;
-
-      if (typeof win.require === 'function' && typeof win.require.config === 'function') {
-        win.require.config({paths: {vs: `${baseUrl}`}});
-        win.require(['vs/editor/editor.main'], () => {
-          this.finishLoading();
-        });
-      } else {
-        setTimeout(onGotAmdLoader, 10);
-      }
+      (window as any).require.config({paths: {vs: `${baseUrl}`}});
+      (window as any).require([`vs/editor/editor.main`], () => {
+        this.finishLoading();
+      });
     };
 
     if (!(window as any).require) {

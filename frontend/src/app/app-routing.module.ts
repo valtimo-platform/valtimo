@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {NgModule} from '@angular/core';
-import {RouterModule, Routes} from '@angular/router';
-import {AuthGuardService} from '@valtimo/security';
+import {Router, RouterModule, Routes} from '@angular/router';
 import {FormioComponent} from './form-io/form-io.component';
+import {AuthGuardService} from '@valtimo/security';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
 
 const routes: Routes = [
@@ -35,13 +36,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes, {
-      errorHandler: error => {
-        window.location.href = '/';
-      },
-    }),
-  ],
+  imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule {
+  constructor(private router: Router) {
+    this.router.errorHandler = (error: any) => {
+      this.router.navigate(['']);
+    };
+  }
+}

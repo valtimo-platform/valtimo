@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,14 @@
 
 import {Component} from '@angular/core';
 import {
-  PluginStateService,
   ProcessLinkButtonService,
   ProcessLinkService,
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
 import {take} from 'rxjs/operators';
-import {ConfigService} from '@valtimo/shared';
-import {ProcessLinkEditMode} from '../../models';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-process-link-modal',
   templateUrl: './process-link-modal.component.html',
   styleUrls: ['./process-link-modal.component.scss'],
@@ -46,21 +42,12 @@ export class ProcessLinkModalComponent {
   public readonly hideProgressIndicator$ = this.stateService.hideProgressIndicator$;
   public readonly saving$ = this.stateService.saving$;
   public readonly typeOfSelectedProcessLink$ = this.stateService.typeOfSelectedProcessLink$;
-  public readonly viewModelEnabled$ = this.stateService.viewModelEnabled$;
-  public readonly selectedPluginConfiguration$ =
-    this.pluginStateService.selectedPluginConfiguration$;
-
-  public readonly showViewModelToggle =
-    this.configService.config.featureToggles.enableFormViewModel;
 
   constructor(
     private readonly stateService: ProcessLinkStateService,
     private readonly stepService: ProcessLinkStepService,
     private readonly buttonService: ProcessLinkButtonService,
-    private readonly pluginStateService: PluginStateService,
-    private readonly processLinkService: ProcessLinkService,
-    private readonly processLinkStateService: ProcessLinkStateService,
-    private readonly configService: ConfigService
+    private readonly processLinkService: ProcessLinkService
   ) {}
 
   closeModal(): void {
@@ -80,17 +67,9 @@ export class ProcessLinkModalComponent {
   }
 
   unlinkButtonClick(): void {
+    this.stateService.startSaving();
+
     this.stateService.selectedProcessLink$.pipe(take(1)).subscribe(selectedProcessLink => {
-      if (this.processLinkStateService.processLinkEditMode === ProcessLinkEditMode.EMIT_EVENTS) {
-        this.processLinkStateService.sendProcessLinkDeleteEvent({
-          activityId: selectedProcessLink.activityId,
-        });
-
-        return;
-      }
-
-      this.stateService.startSaving();
-
       this.processLinkService.deleteProcessLink(selectedProcessLink.id).subscribe(
         () => {
           this.stateService.closeModal();
@@ -100,9 +79,5 @@ export class ProcessLinkModalComponent {
         }
       );
     });
-  }
-
-  public toggleCheckedChange(value: boolean): void {
-    this.processLinkStateService.setViewModelEnabled(value);
   }
 }

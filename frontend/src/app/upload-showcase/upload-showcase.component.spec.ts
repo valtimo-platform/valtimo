@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {UploadShowcaseComponent} from './upload-showcase.component';
 
@@ -22,7 +22,7 @@ describe('UploadShowcaseComponent', () => {
   let component: UploadShowcaseComponent;
   let fixture: ComponentFixture<UploadShowcaseComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [UploadShowcaseComponent],
     }).compileComponents();

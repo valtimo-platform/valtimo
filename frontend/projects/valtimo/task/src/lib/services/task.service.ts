@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,25 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
   AssigneeRequest,
-  SetTaskDueDateRequest,
   SpecifiedTask,
   Task,
   TaskListColumn,
-  TaskListOtherFilters,
-  TaskListSearchField,
   TaskPageParams,
+  TaskProcessLinkResult,
 } from '../models';
 import {
   BaseApiService,
   ConfigService,
   CustomTaskList,
-  InterceptorSkip,
   NamedUser,
   Page,
   TaskListTab,
-} from '@valtimo/shared';
-import {TaskProcessLinkResult} from '@valtimo/process-link';
+} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
 
 @Injectable({providedIn: 'root'})
 export class TaskService extends BaseApiService {
@@ -63,47 +60,32 @@ export class TaskService extends BaseApiService {
   public queryTasksPageV3(
     assigneeFilter: TaskListTab = TaskListTab.ALL,
     pageParams: TaskPageParams,
-    caseDefinitionKey?: string,
-    otherFilters?: TaskListOtherFilters
+    caseDefinitionName?: string
   ): Observable<Page<Task> | Page<SpecifiedTask>> {
-    let httpParams = new HttpParams().set('page', pageParams.page).set('size', pageParams.size);
+    let httpParams = new HttpParams()
+      .set('filter', assigneeFilter.toUpperCase())
+      .set('page', pageParams.page)
+      .set('size', pageParams.size);
 
     if (pageParams.sort) {
       httpParams = httpParams.append('sort', pageParams.sort);
     }
 
-    if (caseDefinitionKey && (otherFilters || []).length > 0) {
-      return this.searchTasks(httpParams, caseDefinitionKey, otherFilters, assigneeFilter);
+    if (caseDefinitionName) {
+      return this.httpClient.post<Page<SpecifiedTask>>(
+        this.getApiUrl('/v3/task'),
+        {
+          caseDefinitionName,
+        },
+        {params: httpParams}
+      );
     }
 
-    httpParams = httpParams.append('filter', assigneeFilter.toUpperCase());
-
-    return this.httpClient.post<Page<Task>>(
-      this.getApiUrl('/v3/task'),
-      {...(caseDefinitionKey && {caseDefinitionKey})},
-      {params: httpParams}
-    );
-  }
-
-  private searchTasks(
-    params: HttpParams,
-    caseDefinitionKey: string,
-    otherFilters: TaskListOtherFilters,
-    assigneeFilter: TaskListTab = TaskListTab.ALL
-  ): Observable<Page<SpecifiedTask>> {
-    return this.httpClient.post<Page<SpecifiedTask>>(
-      this.getApiUrl(`/v1/document-definition/${caseDefinitionKey}/task/search`),
-      {
-        caseDefinitionKey,
-        assigneeFilter: assigneeFilter.toUpperCase(),
-        ...(otherFilters && {otherFilters}),
-      },
-      {params}
-    );
+    return this.httpClient.post<Page<Task>>(this.getApiUrl('/v3/task'), {}, {params: httpParams});
   }
 
   public getTasks(): Observable<Task[]> {
-    return this.httpClient.get<Task[]>(this.getApiUrl('/v1/task?filter=all'));
+    return this.httpClient.get<Task[]>(this.getApiUrl('/v1/task?filter=all`'));
   }
 
   public getTask(id: string): Observable<any> {
@@ -132,37 +114,19 @@ export class TaskService extends BaseApiService {
   public getTaskProcessLink(taskId: string): Observable<TaskProcessLinkResult> {
     return this.httpClient.get<TaskProcessLinkResult>(
       this.getApiUrl(`/v2/process-link/task/${taskId}`),
-      {headers: new HttpHeaders().set(InterceptorSkip, '404')}
+      {
+        headers: {[InterceptorSkip]: '404'},
+      }
     );
   }
 
-  public getTaskListColumns(caseDefinitionKey: string): Observable<TaskListColumn[]> {
+  public getTaskListColumns(caseDefinitionName: string): Observable<TaskListColumn[]> {
     return this.httpClient.get<TaskListColumn[]>(
-      this.getApiUrl(`/v1/case/${caseDefinitionKey}/task-list-column`)
+      this.getApiUrl(`/v1/case/${caseDefinitionName}/task-list-column`)
     );
   }
 
   public getConfigCustomTaskList(): CustomTaskList {
     return this.configService.config.customTaskList;
-  }
-
-  public getTaskListSearchFields(caseDefinitionKey: string): Observable<TaskListSearchField[]> {
-    return this.httpClient.get<TaskListSearchField[]>(
-      this.getApiUrl(`v1/search/field/TaskListSearchColumns/${caseDefinitionKey}`)
-    );
-  }
-
-  public setTaskDueDate(
-    taskId: string,
-    setTaskDueDateRequest: SetTaskDueDateRequest
-  ): Observable<void> {
-    return this.httpClient.post<void>(
-      this.getApiUrl(`/v1/task/${taskId}/set-due-date`),
-      setTaskDueDateRequest
-    );
-  }
-
-  public removeTaskDueDate(taskId: string): Observable<void> {
-    return this.httpClient.post<void>(this.getApiUrl(`/v1/task/${taskId}/set-due-date`), null);
   }
 }

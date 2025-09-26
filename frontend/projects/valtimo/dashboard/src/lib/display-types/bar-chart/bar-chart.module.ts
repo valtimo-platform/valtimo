@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,13 @@
 
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {BarChartDisplayComponent} from './components/bar-chart-display/bar-chart-display.component';
 import {DISPLAY_TYPE_TOKEN} from '../../constants';
 import {barChartSpecification} from './bar-chart.specification';
-import {ReactiveFormsModule} from '@angular/forms';
-import {WidgetTranslatePipeModule} from '../../pipes';
-import {CheckboxModule, InputModule} from 'carbon-components-angular';
-import {BarChartConfigurationComponent, BarChartDisplayComponent} from './components';
-import {ChartsModule} from '@carbon/charts-angular';
-import {CarbonListModule} from '@valtimo/components';
-import {TranslateModule} from '@ngx-translate/core';
 
 @NgModule({
-  declarations: [BarChartDisplayComponent, BarChartConfigurationComponent],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    WidgetTranslatePipeModule,
-    InputModule,
-    CheckboxModule,
-    CommonModule,
-    ChartsModule,
-    CarbonListModule,
-    TranslateModule,
-  ],
+  declarations: [BarChartDisplayComponent],
+  imports: [CommonModule],
   exports: [BarChartDisplayComponent],
   providers: [{provide: DISPLAY_TYPE_TOKEN, useValue: barChartSpecification, multi: true}],
 })

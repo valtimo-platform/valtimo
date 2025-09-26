@@ -7,13 +7,9 @@
   "allowedNonPeerDependencies": [
     "moment",
     "d3",
-    "d3-cloud",
-    "d3-sankey",
     "d3-shape",
     "@ngx-translate/core",
     "@ngx-translate/http-loader",
-    "@carbon/charts-angular",
-    "muuri",
-    "@types/topojson"
+    "bin-pack-with-constraints"
   ]
 }

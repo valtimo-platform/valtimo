@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
   (valueChange)="formValueChange($event)"
   *ngIf="{
     disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
   } as obs"
 >
   <v-input
@@ -27,8 +27,8 @@
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.configurationTitle"
+    [widthPx]="350"
     [required]="true"
-    [trim]="true"
     [tooltip]="'configurationTitleTooltip' | pluginTranslate: pluginId | async"
     placeholder="Open Notificaties Plugin"
   >
@@ -39,6 +39,7 @@
     [margin]="true"
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.clientId"
+    [widthPx]="350"
     [required]="true"
     [tooltip]="'clientIdTooltip' | pluginTranslate: pluginId | async"
     placeholder="client-id"
@@ -52,6 +53,7 @@
     [disabled]="obs.disabled"
     [defaultValue]="obs.prefill?.clientSecret"
     [required]="true"
+    [fullWidth]="true"
     [tooltip]="'clientSecretTooltip' | pluginTranslate: pluginId | async"
   >
   </v-input>

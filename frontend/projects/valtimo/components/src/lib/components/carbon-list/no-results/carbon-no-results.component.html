@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,14 +14,7 @@
   ~ limitations under the License.
   -->
 
-<div
-  #noResults
-  class="valtimo-no-results"
-  [ngClass]="{
-    'valtimo-no-results--small-padding': smallPadding,
-    'valtimo-no-results--render-vertically': renderVertically() || alwaysRenderVertically,
-  }"
->
+<div class="valtimo-no-results">
   <img [src]="illustration" alt="{{ 'interface.noResults' | translate }}" />
 
   <div class="valtimo-no-results__content">
@@ -29,7 +22,7 @@
       {{ title }}
     </h4>
 
-    <span class="valtimo-no-results__description" [innerHtml]="description"></span>
+    <span [innerHtml]="description"></span>
 
     <ng-container [ngTemplateOutlet]="action"></ng-container>
   </div>

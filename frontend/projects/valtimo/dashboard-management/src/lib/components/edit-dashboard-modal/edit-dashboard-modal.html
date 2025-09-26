@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
   showFooter="true"
   title="{{ 'dashboardManagement.widgets.editDashboard' | translate }}"
   class="edit-dashboard-modal"
-  (close)="closeModal()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>{{ 'dashboardManagement.widgets.editDashboard' | translate }}</h3>
@@ -37,12 +36,7 @@
 </cds-modal>
 
 <ng-template #editDashboardFormTemplate let-obs="obs">
-  <form
-    *ngIf="editDashboardForm"
-    [formGroup]="editDashboardForm"
-    class="dashboard-modal__form"
-    [cdsLayer]="1"
-  >
+  <form *ngIf="editDashboardForm" [formGroup]="editDashboardForm" class="dashboard-modal__form">
     <div class="form__element">
       <cds-label
         [disabled]="obs.disabled"

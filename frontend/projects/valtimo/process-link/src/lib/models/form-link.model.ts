@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ interface BpmnElement {
   id: string;
   type: string;
   activityListenerType?: string;
-  activityType?: string;
   name?: string;
 }
 
@@ -71,18 +70,6 @@ interface FormDefinitionListItem extends ListItem {
   id: string;
 }
 
-interface FormFlowBreadcrumbs extends ListItem {
-  currentStepIndex: number;
-  breadcrumbs: Array<FormFlowBreadcrumb>;
-}
-
-interface FormFlowBreadcrumb extends ListItem {
-  title: string;
-  key: string;
-  stepInstanceId: string;
-  completed: boolean;
-}
-
 export {
   FormSubmissionResult,
   BpmnElement,
@@ -95,6 +82,4 @@ export {
   FormFlowCreateRequest,
   ModalParams,
   FormDefinitionListItem,
-  FormFlowBreadcrumbs,
-  FormFlowBreadcrumb,
 };

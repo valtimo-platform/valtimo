@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rx
 import {CreateNietNatuurlijkePersoonZaakRolConfig} from '../../models';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-create-niet-natuurlijk-persoon-zaak-rol-configuration',
   templateUrl: './create-niet-natuurlijk-persoon-zaak-rol.component.html',
+  styleUrls: ['./create-niet-natuurlijk-persoon-zaak-rol.component.scss'],
 })
-export class CreateNietNatuurlijkPersoonZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateNietNatuurlijkPersoonZaakRolComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -33,35 +35,35 @@ export class CreateNietNatuurlijkPersoonZaakRolComponent implements FunctionConf
   @Output() configuration: EventEmitter<CreateNietNatuurlijkePersoonZaakRolConfig> =
     new EventEmitter<CreateNietNatuurlijkePersoonZaakRolConfig>();
 
-  private _saveSubscription!: Subscription;
+  private saveSubscription!: Subscription;
 
-  private readonly _formValue$ =
+  private readonly formValue$ =
     new BehaviorSubject<CreateNietNatuurlijkePersoonZaakRolConfig | null>(null);
-  private readonly _valid$ = new BehaviorSubject<boolean>(false);
+  private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  public ngOnInit(): void {
+  ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  public ngOnDestroy(): void {
-    this._saveSubscription?.unsubscribe();
+  ngOnDestroy() {
+    this.saveSubscription?.unsubscribe();
   }
 
-  public formValueChange(formValue: CreateNietNatuurlijkePersoonZaakRolConfig): void {
-    this._formValue$.next(formValue);
+  formValueChange(formValue: CreateNietNatuurlijkePersoonZaakRolConfig): void {
+    this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
 
   private handleValid(formValue: CreateNietNatuurlijkePersoonZaakRolConfig): void {
     const valid = !!(formValue.rolToelichting && formValue.roltypeUrl);
 
-    this._valid$.next(valid);
+    this.valid$.next(valid);
     this.valid.emit(valid);
   }
 
   private openSaveSubscription(): void {
-    this._saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this._formValue$, this._valid$])
+    this.saveSubscription = this.save$?.subscribe(save => {
+      combineLatest([this.formValue$, this.valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {

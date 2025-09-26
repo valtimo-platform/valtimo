@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
+import {InternalCaseStatusColor} from '../models';
 import {TagType} from 'carbon-components-angular';
-import {TagColor} from '@valtimo/shared';
 
 class InternalCaseStatusUtils {
-  static getTagTypeFromInternalCaseStatusColor(internalCaseStatusColor: TagColor): TagType {
+  static getTagTypeFromInternalCaseStatusColor(
+    internalCaseStatusColor: InternalCaseStatusColor
+  ): TagType {
     switch (internalCaseStatusColor) {
-      case TagColor.HighContrast:
+      case InternalCaseStatusColor.HighContrast:
         return 'high-contrast';
-      case TagColor.CoolGray:
+      case InternalCaseStatusColor.CoolGray:
         return 'cool-gray';
-      case TagColor.WarmGray:
+      case InternalCaseStatusColor.WarmGray:
         return 'warm-gray';
       default:
         return internalCaseStatusColor?.toLowerCase() as TagType;

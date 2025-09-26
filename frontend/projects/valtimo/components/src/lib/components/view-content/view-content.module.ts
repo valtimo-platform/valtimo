@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,9 @@
  */
 
 import {NgModule} from '@angular/core';
-import {CommonModule, CurrencyPipe, DecimalPipe, PercentPipe} from '@angular/common';
-import {ViewContentService} from './view-content.service';
-import {TYPE_PROVIDERS} from './type-converters/type-converters.model';
+import {CommonModule} from '@angular/common';
 
 @NgModule({
   imports: [CommonModule],
-  providers: [CurrencyPipe, DecimalPipe, PercentPipe, ViewContentService, ...TYPE_PROVIDERS],
 })
 export class ViewContentModule {}

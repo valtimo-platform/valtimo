@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,19 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {FunctionConfigurationComponent} from '../../../../models';
+import {
+  FunctionConfigurationComponent,
+  FunctionConfigurationData,
+  PluginConfigurationComponent,
+  PluginConfigurationData,
+} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {DocumentFormat, GenerateDocumentConfig} from '../../models';
-import {ValuePathSelectorPrefix} from '@valtimo/components';
+import {DocumentFormat, GenerateDocumentConfig, SmartDocumentsConfig} from '../../models';
 
 @Component({
   selector: 'valtimo-generate-document-configuration',
   templateUrl: './generate-document-configuration.component.html',
   styleUrls: ['./generate-document-configuration.component.scss'],
-  standalone: false,
 })
 export class GenerateDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -42,8 +45,6 @@ export class GenerateDocumentConfigurationComponent
     id: format,
     text: format,
   }));
-
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   private saveSubscription!: Subscription;
   private readonly formValue$ = new BehaviorSubject<GenerateDocumentConfig | null>(null);

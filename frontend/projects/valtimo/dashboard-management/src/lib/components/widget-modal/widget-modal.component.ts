@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DOCUMENT} from '@angular/common';
+
 import {
   Component,
   EventEmitter,
@@ -24,18 +24,6 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormBuilder, Validators} from '@angular/forms';
-import {TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
-import {
-  ConfigurationOutput,
-  DashboardWidgetConfiguration,
-  DisplayTypeSpecification,
-  WidgetService,
-  WidgetTranslationService,
-} from '@valtimo/dashboard';
-import {ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -48,14 +36,26 @@ import {
   tap,
 } from 'rxjs';
 import {DashboardItem, WidgetDataSource, WidgetModalType} from '../../models';
+import {FormBuilder, Validators} from '@angular/forms';
+import {ListItem, NotificationService} from 'carbon-components-angular';
+import {TranslateService} from '@ngx-translate/core';
+import {DOCUMENT} from '@angular/common';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
+import {CARBON_CONSTANTS} from '@valtimo/components';
+import {
+  ConfigurationOutput,
+  DashboardWidgetConfiguration,
+  DisplayTypeSpecification,
+  WidgetService,
+  WidgetTranslationService,
+} from '@valtimo/dashboard';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-widget-modal',
   templateUrl: './widget-modal.component.html',
   styleUrls: ['./widget-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  providers: [NotificationService],
 })
 export class WidgetModalComponent implements OnInit, OnDestroy {
   @Input() public showModal$: Observable<boolean>;
@@ -65,7 +65,6 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
   @Input() public set editWidgetConfiguration(configuration: DashboardWidgetConfiguration) {
     if (configuration) {
       this.title.setValue(configuration.title);
-      this.url.setValue(configuration.url);
       this.dataSourceSelected({item: {key: configuration.dataSourceKey}} as any);
       this.displayTypeSelected({item: {key: configuration.displayType}} as any);
       this.dataSourcePrefillConfig$.next(configuration.dataSourceProperties);
@@ -81,7 +80,6 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
     title: this.fb.control('', [Validators.required]),
     dataSource: this.fb.control(null, [Validators.required]),
     displayType: this.fb.control(null, [Validators.required]),
-    url: this.fb.control(''),
   });
 
   public readonly open$ = new BehaviorSubject<boolean>(false);
@@ -177,18 +175,16 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
   public get dataSource() {
     return this.form.get('dataSource');
   }
+
   public get displayType() {
     return this.form.get('displayType');
-  }
-  public get url() {
-    return this.form.get('url');
   }
 
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
     private readonly fb: FormBuilder,
     private readonly translateService: TranslateService,
-    private readonly notificationService: GlobalNotificationService,
+    private readonly notificationService: NotificationService,
     private readonly dashboardManagementService: DashboardManagementService,
     private readonly widgetService: WidgetService,
     private readonly widgetTranslationService: WidgetTranslationService
@@ -236,7 +232,6 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
             dataSourceKey: selectedDataSourceKey,
             dataSourceProperties: {...dataSourceConfiguration.data},
             displayTypeProperties: {...displayTypeConfiguration.data},
-            url: this.url.value,
           })
         ),
         switchMap(widgetUpdateObject =>
@@ -322,13 +317,8 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
       const selectedDataSource = dataSources.find(source => source.key === selectedDataSourceKey);
       const availableDataFeatures = selectedDataSource?.dataFeatures;
       const compatibleDisplayTypes = supportedDisplayTypes.filter(displayType => {
-        const supportedDataFeatures = displayType.requiredDataFeatures.filter(
-          requiredDataFeature =>
-            !!availableDataFeatures?.some(
-              availableDataFeature =>
-                this.trimAndToUpperCase(availableDataFeature) ===
-                this.trimAndToUpperCase(requiredDataFeature)
-            )
+        const supportedDataFeatures = displayType.requiredDataFeatures.filter(feature =>
+          availableDataFeatures?.includes(feature)
         );
         return supportedDataFeatures.length === displayType.requiredDataFeatures.length;
       });
@@ -345,9 +335,5 @@ export class WidgetModalComponent implements OnInit, OnDestroy {
   private enable(): void {
     this.disabled$.next(false);
     this.form.enable();
-  }
-
-  private trimAndToUpperCase(text: string): string {
-    return `${text}`.trim().toUpperCase();
   }
 }

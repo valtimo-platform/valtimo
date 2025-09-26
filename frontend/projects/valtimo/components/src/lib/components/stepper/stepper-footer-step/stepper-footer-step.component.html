@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -33,31 +33,36 @@
 </div>
 
 <ng-template #cancelButton let-disabled="disabled">
-  <button cdsButton="secondary" (click)="cancel()" [disabled]="disabled">
-    {{
-      cancelButtonTranslationKey
-        ? (cancelButtonTranslationKey | translate)
-        : ('stepper.cancelButtonText' | translate)
-    }}
-  </button>
+  <v-button (clickEvent)="cancel()" type="secondary" [disabled]="disabled">{{
+    cancelButtonTranslationKey
+      ? (cancelButtonTranslationKey | translate)
+      : ('stepper.cancelButtonText' | translate)
+  }}</v-button>
 </ng-template>
 
 <ng-template #nextButton let-disabled="disabled">
-  <button cdsButton="primary" [disabled]="!nextButtonEnabled || disabled" (click)="goToNextStep()">
-    {{
+  <v-button
+    [disabled]="!nextButtonEnabled || disabled"
+    (clickEvent)="goToNextStep()"
+    mdiIcon="arrow-right"
+    >{{
       nextButtonTranslationKey
         ? (nextButtonTranslationKey | translate)
         : ('stepper.nextButtonText' | translate)
-    }}
-  </button>
+    }}</v-button
+  >
 </ng-template>
 
 <ng-template #completeButton let-disabled="disabled">
-  <button cdsButton="primary" [disabled]="!completeButtonEnabled || disabled" (click)="complete()">
-    {{
+  <v-button
+    [disabled]="!completeButtonEnabled || disabled"
+    (clickEvent)="complete()"
+    [mdiIcon]="completeButtonMdiIcon || 'check'"
+    type="success"
+    >{{
       completeButtonTranslationKey
         ? (completeButtonTranslationKey | translate)
         : ('stepper.completeButtonText' | translate)
-    }}
-  </button>
+    }}</v-button
+  >
 </ng-template>

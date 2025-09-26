@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,20 +25,19 @@ import {
 } from '@angular/core';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 
-import BpmnViewer from 'bpmn-js';
+import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import {ActivatedRoute} from '@angular/router';
 import {combineLatest} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {PageTitleService} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-form-link-process-diagram',
   templateUrl: './form-link-process-diagram.component.html',
   styleUrls: ['./form-link-process-diagram.component.scss'],
 })
 export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
-  private bpmnViewer: BpmnViewer;
+  private bpmnJS: BpmnJS;
 
   @ViewChild('ref') public el: ElementRef;
   @Output() public bpmnElementModalOpen: EventEmitter<any> = new EventEmitter();
@@ -82,11 +81,11 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
           this.loadProcessDefinitionFromKey(this.processDefinitionKey);
         }
       });
-    this.bpmnViewer = new BpmnViewer({});
-    this.bpmnViewer.on('import.done', ({error}: any) => {
+    this.bpmnJS = new BpmnJS();
+    this.bpmnJS.on('import.done', ({error}: any) => {
       if (!error) {
-        const canvas = this.bpmnViewer.get('canvas') as any;
-        const eventBus = this.bpmnViewer.get('eventBus') as any;
+        const canvas = this.bpmnJS.get('canvas');
+        const eventBus = this.bpmnJS.get('eventBus');
         canvas.zoom('fit-viewport', 'auto');
 
         if (this.processDefinitionVersions && !this.callbacksAdded) {
@@ -117,8 +116,8 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.bpmnElementModalClose.emit();
-    if (this.bpmnViewer) {
-      this.bpmnViewer.destroy();
+    if (this.bpmnJS) {
+      this.bpmnJS.destroy();
     }
     this.pageTitleService.enableReset();
   }
@@ -149,8 +148,8 @@ export class FormLinkProcessDiagramComponent implements OnInit, OnDestroy {
   public loadProcessDefinitionXml(processDefinitionId: string): void {
     this.processService.getProcessDefinitionXml(processDefinitionId).subscribe(response => {
       this.processDiagram = response;
-      this.bpmnViewer.importXML(this.processDiagram.bpmn20Xml);
-      this.bpmnViewer.attachTo(this.el.nativeElement);
+      this.bpmnJS.importXML(this.processDiagram.bpmn20Xml);
+      this.bpmnJS.attachTo(this.el.nativeElement);
     });
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Injectable, signal} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {FormioComponent} from '@formio/angular';
 
@@ -24,10 +24,6 @@ import {FormioComponent} from '@formio/angular';
 export class FormIoStateService {
   private _documentDefinitionName$ = new BehaviorSubject<string>(undefined);
   private _documentId$ = new BehaviorSubject<string>(undefined);
-  private readonly _$processInstanceId = signal<string>('');
-  public get processInstanceId(): string {
-    return this._$processInstanceId();
-  }
 
   private _currentForm$ = new BehaviorSubject<FormioComponent>(undefined);
 
@@ -43,10 +39,6 @@ export class FormIoStateService {
     return this._documentId$.asObservable();
   }
 
-  public get documentId(): string {
-    return this._documentId$.getValue();
-  }
-
   public setDocumentId(documentId: string) {
     this._documentId$.next(documentId);
   }
@@ -59,7 +51,7 @@ export class FormIoStateService {
     this._currentForm$.next(form);
   }
 
-  public flattenTranslationsObject(translations) {
+  flattenTranslationsObject(translations) {
     const stack = [{prefix: '', value: translations}];
     const flattened = {};
 
@@ -78,9 +70,5 @@ export class FormIoStateService {
     }
 
     return flattened;
-  }
-
-  public setProcessInstanceId(id: string): void {
-    this._$processInstanceId.set(id);
   }
 }

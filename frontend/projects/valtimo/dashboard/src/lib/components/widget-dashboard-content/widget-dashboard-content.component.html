@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,27 +14,11 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="{loaded: loaded$ | async} as obs">
-  <div *ngIf="!obs.loaded" class="loading-container">
-    <cds-loading></cds-loading>
-  </div>
-</ng-container>
-
-<div
-  #widgetContainer
-  class="widget-container"
-  [ngClass]="{'widget-container__visible': loaded$ | async}"
->
+<div #widgetContainer [class.loading]="isLoading$ | async" class="widget-container">
   <ng-container *ngIf="widgetConfigurations$ | async as widgetConfigurations">
     <ng-container *ngFor="let config of widgetConfigurations">
       <div #widgetConfiguration [id]="config.key" class="widget-configuration">
-        <div
-          (click)="navigateToRoute(config, $event)"
-          [ngClass]="{
-            'widget-configuration-content-clickable': config.url,
-          }"
-          class="widget-configuration-content"
-        >
+        <div class="widget-configuration-content">
           <ng-container #widgetConfigurationContent></ng-container>
         </div>
       </div>
@@ -48,3 +32,5 @@
     ></valtimo-no-results>
   </ng-container>
 </div>
+
+<cds-loading *ngIf="isLoading$ | async" class="widget-loader"></cds-loading>

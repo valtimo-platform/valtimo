@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,46 +14,51 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {VModalComponent, ModalService} from '@valtimo/components';
+import {BehaviorSubject, Observable, Subject, Subscription} from 'rxjs';
 import {
-  PluginConfiguration,
   PluginConfigurationData,
+  PluginConfiguration,
   PluginManagementService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-plugin-edit-modal',
   templateUrl: './plugin-edit-modal.component.html',
   styleUrls: ['./plugin-edit-modal.component.scss'],
 })
-export class PluginEditModalComponent {
-  @Input() public readonly open = false;
-  @Input() public readonly saveNewConfiguration = false;
-
-  @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
+export class PluginEditModalComponent implements OnInit {
+  @ViewChild('pluginEditModal') pluginEditModal: VModalComponent;
 
   readonly inputDisabled$ = this.stateService.inputDisabled$;
   readonly selectedPluginConfiguration$: Observable<PluginConfiguration> =
     this.stateService.selectedPluginConfiguration$;
   readonly configurationValid$ = new BehaviorSubject<boolean>(false);
 
+  private showSubscription!: Subscription;
+  private hideSubscription!: Subscription;
+
   constructor(
     private readonly stateService: PluginManagementStateService,
+    private readonly modalService: ModalService,
     private readonly pluginManagementService: PluginManagementService,
     private readonly logger: NGXLogger
   ) {}
+
+  ngOnInit(): void {
+    this.openShowSubscription();
+    this.openHideSubscription();
+  }
 
   save(): void {
     this.stateService.saveEdit();
   }
 
   delete(): void {
-    this.stateService.delete();
     this.stateService.disableInput();
 
     this.stateService.selectedPluginConfiguration$
@@ -74,22 +79,19 @@ export class PluginEditModalComponent {
       });
   }
 
-  public hide(): void {
-    this.closeModal.emit();
-    this.stateService.enableInput();
+  hide(): void {
+    this.modalService.closeModal(() => {
+      this.stateService.enableInput();
+      this.stateService.clear();
+    });
   }
 
-  public onPluginValid(valid: boolean): void {
+  onPluginValid(valid: boolean): void {
     this.configurationValid$.next(valid);
   }
 
-  public onPluginConfiguration(configuration: PluginConfigurationData): void {
+  onPluginConfiguration(configuration: PluginConfigurationData): void {
     this.stateService.disableInput();
-
-    if (this.saveNewConfiguration) {
-      this.saveNewPluginConfiguration(configuration);
-      return;
-    }
 
     this.stateService.selectedPluginConfiguration$
       .pipe(take(1))
@@ -106,42 +108,34 @@ export class PluginEditModalComponent {
             configurationTitle,
             configurationData
           )
-          .subscribe({
-            next: () => {
+          .subscribe(
+            () => {
               this.stateService.refresh();
               this.hide();
             },
-            error: () => {
+            () => {
               this.logger.error('Something went wrong with updating the plugin configuration.');
               this.stateService.enableInput();
-            },
-          });
+            }
+          );
       });
   }
 
-  private saveNewPluginConfiguration(configuration: PluginConfigurationData): void {
-    this.stateService.selectedPluginConfiguration$
-      .pipe(take(1))
-      .subscribe(selectedPluginConfiguration => {
-        const duplicatedConfiguration = {...selectedPluginConfiguration, properties: configuration};
+  private openShowSubscription(): void {
+    this.showSubscription = this.stateService.showModal$.subscribe(modalType => {
+      if (modalType === 'edit') {
+        this.show();
+      }
+    });
+  }
 
-        duplicatedConfiguration.title = duplicatedConfiguration.properties.configurationTitle;
+  private openHideSubscription(): void {
+    this.hideSubscription = this.stateService.hideModal$.subscribe(() => {
+      this.hide();
+    });
+  }
 
-        delete duplicatedConfiguration.properties.configurationTitle;
-        delete duplicatedConfiguration.properties.configurationId;
-
-        this.pluginManagementService.savePluginConfiguration(duplicatedConfiguration).subscribe({
-          next: () => {
-            this.stateService.refresh();
-            this.hide();
-          },
-          error: () => {
-            this.logger.error(
-              'Something went wrong with saving the duplicated plugin configuration.'
-            );
-            this.stateService.enableInput();
-          },
-        });
-      });
+  private show(): void {
+    this.modalService.openModal(this.pluginEditModal);
   }
 }

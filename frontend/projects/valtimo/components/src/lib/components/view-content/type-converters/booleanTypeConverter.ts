@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,13 @@
  */
 
 import {TypeConverter} from './type-converters.model';
-import {Injectable} from '@angular/core';
-import {TranslateService} from '@ngx-translate/core';
 
-@Injectable()
 export class BooleanTypeConverter implements TypeConverter {
-  constructor(private readonly translateService: TranslateService) {}
-
-  public getTypeString(): string {
+  getTypeString(): string {
     return 'boolean';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
-  public convert(value: any, definition: any): string {
-    if (value === null || value === undefined) return '-';
+  convert(value: any, definition: any): string {
     const enumeration = definition?.enum;
 
     if (enumeration && Array.isArray(enumeration) && enumeration.length > 1) {
@@ -42,8 +32,6 @@ export class BooleanTypeConverter implements TypeConverter {
         : enumeration[Object.keys(enumeration)[0]] || 'No';
     }
 
-    return this.translateService.instant(
-      `viewTypeConverter.${typeof value === 'boolean' ? (value ? 'Yes' : 'No') : 'errors.boolean'}`
-    );
+    return value ? 'Yes' : 'No';
   }
 }

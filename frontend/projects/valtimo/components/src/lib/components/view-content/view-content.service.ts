@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {inject, Injectable} from '@angular/core';
-import {TYPE_CONVERTER_TOKEN, TypeConverter} from './type-converters/type-converters.model';
 
-@Injectable()
+import {Injectable} from '@angular/core';
+import {StringTypeConverter} from './type-converters/stringTypeConverter';
+import {TYPE_CONVERTERS, TypeConverter} from './type-converters/type-converters.model';
+
+@Injectable({
+  providedIn: 'root',
+})
 export class ViewContentService {
-  private readonly converters = inject(TYPE_CONVERTER_TOKEN);
+  private converters: {[key: string]: TypeConverter} = {};
+  private defaultConverter: TypeConverter;
+
+  constructor() {
+    this.defaultConverter = new StringTypeConverter();
+
+    TYPE_CONVERTERS.forEach(converter => this.addConverter(converter));
+  }
 
   public get(value: any, definition: any) {
     const separator = ':';
@@ -39,30 +50,22 @@ export class ViewContentService {
       );
     }
 
-    const converter: TypeConverter | undefined = this.converters.find(
-      converter => converter.getTypeString() === definition.viewType
-    );
-
-    if (!!converter) {
-      return converter.convert(value, definition);
+    if (typeof this.converters[definition.viewType] !== 'undefined') {
+      return this.converters[definition.viewType].convert(value, definition);
     }
 
-    return this.converters[0].convert(value, definition);
+    return this.defaultConverter.convert(value, definition);
   }
 
-  public isRawValue(definition: any): boolean {
-    const converter: TypeConverter | undefined = this.converters.find(
-      converter => converter.getTypeString() === definition.viewType
-    );
-
-    if (!!converter) {
-      return converter.isRawValue();
+  public addConverter(converter: TypeConverter) {
+    if (typeof this.converters[converter.getTypeString()] !== 'undefined') {
+      throw new Error('Converter with name ' + converter.getTypeString() + ' already exists');
     }
 
-    return this.converters[0].isRawValue();
+    this.converters[converter.getTypeString()] = converter;
   }
 
-  public getSeparatorIndex(definition, separator): number {
+  getSeparatorIndex(definition, separator) {
     return definition.viewType.indexOf(separator);
   }
 }

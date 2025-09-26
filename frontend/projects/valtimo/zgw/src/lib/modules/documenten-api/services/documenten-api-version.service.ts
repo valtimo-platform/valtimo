@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, Observable} from 'rxjs';
-import {DocumentenApiManagementVersion, SupportedDocumentenApiFeatures} from '../models';
+import {DocumentenApiManagementVersion} from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -42,14 +42,6 @@ export class DocumentenApiVersionService extends BaseApiService {
   ): Observable<DocumentenApiManagementVersion> {
     return this.httpClient.get<DocumentenApiManagementVersion>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/documenten-api/version`)
-    );
-  }
-
-  public getSupportedApiFeatures(
-    caseDefinitionKey: string
-  ): Observable<SupportedDocumentenApiFeatures> {
-    return this.httpClient.get<SupportedDocumentenApiFeatures>(
-      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/documenten-api/version`)
     );
   }
 

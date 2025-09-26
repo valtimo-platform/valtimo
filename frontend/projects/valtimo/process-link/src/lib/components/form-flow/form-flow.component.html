@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,40 +14,20 @@
   ~ limitations under the License.
   -->
 
-<div
-  *ngIf="{
-    breadcrumbs: breadcrumbs$ | async,
-    currentStepIndex: currentStepIndex$ | async,
-    enableFormFlowBreadcrumbs: enableFormFlowBreadcrumbs$ | async,
-    formFlowInstanceId: formFlowInstanceId$ | async,
-  } as obs"
->
-  <div *ngIf="formDefinition && (formFlowStepType$ | async) === 'form'">
-    <div *ngIf="obs.enableFormFlowBreadcrumbs" class="form-flow__progress-bar-indicator">
-      <cds-progress-indicator
-        [spacing]="'equal'"
-        [skeleton]="obs.breadcrumbs.length === 0"
-        [current]="obs.currentStepIndex"
-        [steps]="obs.breadcrumbs"
-        (stepSelected)="onStepSelected($event)"
-      >
-      </cds-progress-indicator>
-    </div>
-
+<div>
+  <div body *ngIf="formDefinition && (formFlowStepType$ | async) === 'form'">
     <valtimo-form-io
       #form
       [form]="formDefinition"
       (submit)="onSubmit($event)"
       (change)="onChange($event)"
-      (event)="onEvent($event)"
       [options]="formioOptions"
     ></valtimo-form-io>
   </div>
-
-  <div *ngIf="(formFlowStepType$ | async) === 'custom-component'">
+  <div body *ngIf="(formFlowStepType$ | async) === 'custom-component'">
     <valtimo-form-flow-configuration-container
       [componentId]="FormFlowCustomComponentId$ | async"
-      [formFlowInstanceId]="obs.formFlowInstanceId"
+      [formFlowInstanceId]="formFlowInstanceId"
       [disabled]="disabled$ | async"
       (submitEvent)="onSubmit($event)"
       (changeEvent)="onChange($event)"

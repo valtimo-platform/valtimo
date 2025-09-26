@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnDestroy,
@@ -27,9 +26,9 @@ import {
   ViewChild,
 } from '@angular/core';
 import {FormControl} from '@angular/forms';
-import {ArrowDown16, ArrowUp16, Draggable16, SettingsView16} from '@carbon/icons';
+import {ArrowDown16, ArrowUp16, SettingsView16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
-import {SortState} from '@valtimo/document';
+import {InternalCaseStatus, InternalCaseStatusUtils, SortState} from '@valtimo/document';
 import {
   IconService,
   OverflowMenu,
@@ -39,8 +38,9 @@ import {
   TableHeaderItem,
   TableItem,
   TableModel,
+  TagType,
 } from 'carbon-components-angular';
-import {get as _get, isArray} from 'lodash';
+import {get as _get} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -71,51 +71,40 @@ import {
   Pagination,
   ViewType,
 } from '../../models';
-import {KeyStateService} from '../../services/key-state.service';
 import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
-import {CarbonListDragAndDropService} from './services';
-import {EllipsisPipe} from '../../pipes';
 
 @Component({
   selector: 'valtimo-carbon-list',
   templateUrl: './carbon-list.component.html',
   styleUrls: ['./carbon-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [CarbonListFilterPipe, CarbonListDragAndDropService],
-  standalone: false,
+  providers: [CarbonListFilterPipe],
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;
   @ViewChild('actionTemplate') actionTemplate: TemplateRef<any>;
   @ViewChild('booleanTemplate') booleanTemplate: TemplateRef<any>;
   @ViewChild('moveRowsTemplate') moveRowsTemplate: TemplateRef<any>;
-  @ViewChild('dragAndDropTemplate') dragAndDropTemplate: TemplateRef<any>;
   @ViewChild('rowDisabled') rowDisabled: TemplateRef<any>;
   @ViewChild('tagTemplate') tagTemplate: TemplateRef<any>;
-  @ViewChild('defaultTemplate') defaultTemplate: TemplateRef<any>;
   @ViewChild(Table) private _table: Table;
 
   private _completeDataSource: TableItem[][];
-
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
+  private _items: CarbonListItem[];
+  public items$ = new BehaviorSubject<TableItem[][]>([]);
+  public currentOpenActionId: string | null = null;
 
-  private get _items(): CarbonListItem[] {
-    return this._items$.getValue();
+  @Input() set items(value: CarbonListItem[]) {
+    this._items = value;
+    this._items$.next(value);
   }
-
   public get items(): CarbonListItem[] {
     return this._items;
   }
 
-  @Input() set items(value: CarbonListItem[]) {
-    this._items$.next(value);
-  }
-
-  public currentOpenActionId: string | null = null;
-
   private readonly _fields$ = new BehaviorSubject<ColumnConfig[]>([]);
-
   @Input() set fields(value: ColumnConfig[]) {
     this._fields$.next(value);
   }
@@ -123,17 +112,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _tableTranslations$: BehaviorSubject<CarbonListTranslations> = new BehaviorSubject(
     DEFAULT_LIST_TRANSLATIONS
   );
-
   @Input() set tableTranslations(value: Partial<CarbonListTranslations>) {
     this._tableTranslations$.next({...DEFAULT_LIST_TRANSLATIONS, ...value});
   }
 
   @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
   private _pagination: Pagination;
-  private _isPaginationInit = false;
-
-  @Input()
-  public set pagination(value: Partial<Pagination> | false) {
+  @Input() public set pagination(value: Partial<Pagination> | false) {
     if (!value) {
       return;
     }
@@ -144,13 +129,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._pagination = {...this._pagination, ...value};
     this.buildPaginationModel();
-
-    if (this._isPaginationInit || !value.size) return;
-
-    this.setPaginationSize(value.size.toString());
-    this._isPaginationInit = true;
   }
-
   public get pagination(): Pagination {
     return this._pagination;
   }
@@ -162,22 +141,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   @Input() actions: any[] = [];
   @Input() actionItems: ActionItem[];
-  @Input() showActionItems: boolean = true;
   @Input() header: boolean;
   @Input() hideColumnHeader: boolean;
-  private _isSortInit = false;
-  @Input() set initialSortState(value: SortState) {
-    if (!value || this._isSortInit) return;
-
-    this._isSortInit = true;
-    this.sort$.next(value);
-  }
-
-  @Input() set sortState(value: SortState) {
-    if (!value) return;
-    this.sort$.next(value);
-  }
-
+  @Input() initialSortState: SortState;
   @Input() isSearchable = false;
   @Input() enableSingleSelection = false;
   /**
@@ -190,8 +156,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() hideToolbar = false;
   @Input() lockedTooltipTranslationKey = '';
   @Input() movingRowsEnabled: boolean;
-  @Input() dragAndDrop = false;
-  @Input() dragAndDropDisabled = false;
 
   @Output() rowClicked = new EventEmitter<any>();
   @Output() paginationClicked = new EventEmitter<number>();
@@ -273,22 +237,22 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   constructor(
-    private readonly ellipsisPipe: EllipsisPipe,
     private readonly filterPipe: CarbonListFilterPipe,
     private readonly iconService: IconService,
     private readonly logger: NGXLogger,
     private readonly translateService: TranslateService,
-    private readonly viewContentService: ViewContentService,
-    private readonly keyStateService: KeyStateService,
-    private readonly dragAndDropService: CarbonListDragAndDropService,
-    private readonly elementRef: ElementRef
+    private readonly viewContentService: ViewContentService
   ) {
-    this.iconService.registerAll([ArrowDown16, ArrowUp16, SettingsView16, Draggable16]);
+    this.iconService.registerAll([ArrowDown16, ArrowUp16, SettingsView16]);
   }
 
   public ngOnInit(): void {
     if (this.pagination) {
       this.loadPaginationSize();
+    }
+
+    if (this.initialSortState) {
+      this.sort$.next(this.initialSortState);
     }
 
     this._subscriptions.add(
@@ -314,36 +278,19 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngAfterViewInit(): void {
     this._viewInitialized$.next(true);
-    this.openDragAndDropSubscription();
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  public openDragAndDropSubscription(): void {
-    this._subscriptions.add(
-      this.dragAndDropService.dragAndDropEvents$.subscribe(dragAndDropEvent => {
-        const reorderedItems = this.swapItems(
-          this._items,
-          dragAndDropEvent.startIndex,
-          dragAndDropEvent.newIndex
-        );
-        this.itemsReordered.emit(reorderedItems);
-      })
-    );
-  }
-
   public onRowClick(index: number): void {
-    const rowData = this._table.model.data[index];
-    const firstItemWithData = rowData.find(item => !!item['item']);
-    const firstItem = firstItemWithData?.['item'];
+    const item = this._table.model.data[index][0]['item'];
 
-    if (firstItem) firstItem.ctrlClick = this.keyStateService.getCtrlOrCmdState();
-
-    if (!firstItem || firstItem?.locked) return;
-
-    this.rowClicked.emit(firstItem);
+    if (!item || item?.locked) {
+      return;
+    }
+    this.rowClicked.emit(item);
   }
 
   public onSelectPage(page: number): void {
@@ -387,16 +334,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  public onDragStart(
-    mouseEvent: MouseEvent,
-    carbonEvent: {index: number; item: CarbonListItem; length: number}
-  ): void {
-    if (this.dragAndDropDisabled) return;
-
-    this.dragAndDropService.setCarbonListElementRef(this.elementRef);
-    this.dragAndDropService.startDrag(mouseEvent.y, carbonEvent.index);
-  }
-
   private buildPaginationModel(): void {
     this.paginationModel = {
       currentPage: this.pagination.page,
@@ -407,7 +344,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _translatedFields$: Observable<ColumnConfig[]> = this.translateService.stream('key').pipe(
     switchMap(() => this._fields$),
-    filter((fields: ColumnConfig[]) => !!fields),
     map((fields: ColumnConfig[]) =>
       fields.map((field: ColumnConfig) => ({
         ...field,
@@ -433,28 +369,19 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
           })
       )
     ),
-    map((header: TableHeaderItem[]) => [
-      ...this.dragAndDropHeaderColumns,
-      ...header,
-      ...this.extraColumns,
-    ])
+    map((header: TableHeaderItem[]) => [...header, ...this.extraColumns])
   );
 
-  private readonly _tableItems$: Observable<TableItem[][]> = combineLatest([
-    this._fields$,
-    this._items$,
-    this._viewInitialized$,
-  ]).pipe(
-    filter(([fields, items, viewInitialized]) => !!fields && !!items && viewInitialized),
+  private readonly _tableItems$: Observable<TableItem[][]> = this._viewInitialized$.pipe(
+    switchMap(() => combineLatest([this._fields$, this._items$])),
+    filter(([fields, items]) => !!fields && !!items),
     map(([fields, items]) =>
       items.map((item: CarbonListItem, index: number) => [
-        ...this.getDragAndDropItemsItems(item, index, items.length),
         ...fields.map((field: ColumnConfig) => {
           switch (field.viewType) {
             case ViewType.TEMPLATE:
               return new TableItem({
-                data: {item, index, length: items.length, ...field.templateData},
-                item,
+                data: {item, index, length: items.length},
                 template: field.template,
               });
             case ViewType.BOOLEAN:
@@ -466,26 +393,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 data,
                 template: this.booleanTemplate,
               });
-            case ViewType.TAGS: {
+            case ViewType.TAGS:
               return new TableItem({
-                data: {
-                  tags: this.resolveTagObject(item, field.key),
-                  tagAmount: field?.tagAmount || 1,
-                },
+                data: {tags: item?.tags ?? []},
                 template: this.tagTemplate,
               });
-            }
             default:
-              const resolvedObject: string = this.resolveObject(field, item);
-              return new TableItem({
-                title: resolvedObject ?? '-',
-                data:
-                  (field.tooltipCharLimit
-                    ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
-                    : resolvedObject) ?? '-',
-                template: this.defaultTemplate,
-                item,
-              });
+              return new TableItem({data: this.resolveObject(field, item) ?? '-', item});
           }
         }),
         ...this.getExtraItems(item, index, items.length),
@@ -511,23 +425,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     }),
     startWith(new TableModel())
   );
-
-  private get dragAndDropHeaderColumns(): TableHeaderItem[] {
-    const emptyHeader = new TableHeaderItem();
-
-    emptyHeader.sortable = false;
-
-    return [
-      ...(this.dragAndDrop
-        ? [
-            new TableHeaderItem({
-              className: 'valtimo-carbon-list__actions',
-              sortable: false,
-            }),
-          ]
-        : []),
-    ];
-  }
 
   private get extraColumns(): TableHeaderItem[] {
     const emptyHeader = new TableHeaderItem();
@@ -608,26 +505,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tagModalOpen$.next(false);
   }
 
-  public handleActionOpenChange(actionId: string, isOpen: boolean): void {
-    if (isOpen) {
-      this.currentOpenActionId = actionId;
-    } else if (this.currentOpenActionId === actionId) {
-      this.currentOpenActionId = null;
-    }
-  }
-
-  private getDragAndDropItemsItems(
-    item: CarbonListItem,
-    index: number,
-    length: number
-  ): TableItem[] {
-    return [
-      ...(!!this.dragAndDrop
-        ? [new TableItem({data: {item, index, length}, template: this.dragAndDropTemplate})]
-        : []),
-    ];
-  }
-
   private getExtraItems(item: CarbonListItem, index: number, length: number): TableItem[] {
     return [
       ...(!!this.actions
@@ -706,33 +583,17 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private swapItems(items: CarbonListItem[], index1: number, index2: number): CarbonListItem[] {
-    const itemToInsert = items[index1];
-    const filteredItems = items.filter((_, index) => index !== index1);
-    filteredItems.splice(index2, 0, itemToInsert);
+    const temp = [...items];
+    temp[index1] = temp.splice(index2, 1, temp[index1])[0];
 
-    return filteredItems;
+    return temp;
   }
 
-  private resolveTagObject(item: CarbonListItem, key: string): CarbonTag[] | null {
-    const object: string | string[] | CarbonTag | CarbonTag[] = item[key];
-
-    if (!object) return null;
-
-    if (isArray(object) && typeof object[0] !== 'string') return object as CarbonTag[];
-
-    if (!isArray(object) && typeof object !== 'string') return [object as CarbonTag];
-
-    if (typeof object === 'string')
-      return [
-        {
-          content: object,
-          type: 'blue',
-        },
-      ];
-
-    return (object as string[]).map((content: string) => ({
-      content,
-      type: 'blue',
-    }));
+  public handleActionOpenChange(actionId: string, isOpen: boolean): void {
+    if (isOpen) {
+      this.currentOpenActionId = actionId;
+    } else if (this.currentOpenActionId === actionId) {
+      this.currentOpenActionId = null;
+    }
   }
 }

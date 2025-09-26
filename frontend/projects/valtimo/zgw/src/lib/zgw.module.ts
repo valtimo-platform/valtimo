@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+
 import {NgModule} from '@angular/core';
-import {RouterModule} from '@angular/router';
-import {FormioModule} from '@formio/angular';
-import {TranslateModule} from '@ngx-translate/core';
-import {DropzoneModule, FileSizeModule} from '@valtimo/components';
 import {
-  CASE_CONFIGURATION_EXTENSIONS_TOKEN,
-  CASE_MANAGEMENT_TAB_TOKEN,
-  ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
-  ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
-} from '@valtimo/shared';
-import {DocumentModule} from '@valtimo/document';
-import {ResourceModule} from '@valtimo/resource';
-import {
-  CaseDetailTabDocumentenApiDocumentsComponent,
-  CaseDetailTabObjectTypeComponent,
-  CaseManagementLinkProcessComponent,
+  CustomerModule,
   DocumentenApiMetadataModalComponent,
   DocumentenApiUploaderComponent,
+  DocumentenApiVersionComponent,
+  DossierDetailTabDocumentenApiDocumentsComponent,
+  DossierDetailTabObjectTypeComponent,
+  DossierManagementLinkProcessComponent,
+  DocumentObjectenApiSyncComponent,
+  ZakenApiZaaktypeLinkComponent,
 } from './modules';
-import {CaseManagementZgwComponent} from './components';
+import {
+  ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
+  ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
+  ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
+} from '@valtimo/config';
+import {CommonModule} from '@angular/common';
+import {FormioModule} from '@formio/angular';
+import {TranslateModule} from '@ngx-translate/core';
+import {RouterModule} from '@angular/router';
+import {DropzoneModule, FileSizeModule} from '@valtimo/components';
+import {DocumentModule} from '@valtimo/document';
+import {ResourceModule} from '@valtimo/resource';
 
 @NgModule({
   imports: [
@@ -47,30 +50,27 @@ import {CaseManagementZgwComponent} from './components';
     ResourceModule,
     RouterModule,
     DocumentenApiMetadataModalComponent,
+    CustomerModule,
   ],
   declarations: [DocumentenApiUploaderComponent],
   exports: [DocumentenApiUploaderComponent],
   providers: [
     {
-      provide: CASE_MANAGEMENT_TAB_TOKEN,
-      useValue: {
-        translationKey: 'caseManagement.tabs.zgw',
-        component: CaseManagementZgwComponent,
-        tabRoute: 'zgw',
-      },
-      multi: true,
-    },
-    {
       provide: ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
-      useValue: CaseDetailTabObjectTypeComponent,
+      useValue: DossierDetailTabObjectTypeComponent,
     },
     {
       provide: ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
-      useValue: CaseDetailTabDocumentenApiDocumentsComponent,
+      useValue: DossierDetailTabDocumentenApiDocumentsComponent,
     },
     {
-      provide: CASE_CONFIGURATION_EXTENSIONS_TOKEN,
-      useValue: [CaseManagementLinkProcessComponent],
+      provide: ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
+      useValue: [
+        DossierManagementLinkProcessComponent,
+        DocumentenApiVersionComponent,
+        DocumentObjectenApiSyncComponent,
+        ZakenApiZaaktypeLinkComponent,
+      ],
     },
   ],
 })

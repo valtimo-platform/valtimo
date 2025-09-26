@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,4 @@ interface DocumentenApiManagementVersion {
   detectedVersions: string;
 }
 
-interface SupportedDocumentenApiFeatures {
-  selectedVersion: string;
-  supportsFilterableColumns: boolean;
-  supportsSortableColumns: boolean;
-  supportsTrefwoorden: boolean;
-  supportsUpdatingDefinitiveDocument: boolean;
-}
-
-export {DocumentenApiManagementVersion, SupportedDocumentenApiFeatures};
+export {DocumentenApiManagementVersion};

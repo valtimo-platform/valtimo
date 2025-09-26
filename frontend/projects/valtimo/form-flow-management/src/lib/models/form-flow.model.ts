@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ interface ListFormFlowDefinition {
 
 interface FormFlowDefinition {
   key: string;
+  version?: number;
   readOnly?: boolean;
   startStep: string;
   steps: Array<FormFlowStep>;
@@ -68,12 +69,6 @@ interface LoadedValue<T> {
   value?: T;
 }
 
-interface FormFlowEditorParams {
-  formFlowDefinitionKey: string;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-}
-
 export {
   ListFormFlowDefinition,
   FormFlowDefinition,
@@ -85,5 +80,4 @@ export {
   CustomComponentStepTypeProperties,
   DeleteFormFlowsRequest,
   LoadedValue,
-  FormFlowEditorParams,
 };

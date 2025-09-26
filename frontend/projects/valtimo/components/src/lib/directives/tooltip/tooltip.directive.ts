@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import {Overlay, OverlayPositionBuilder, OverlayRef} from '@angular/cdk/overlay'
 import {ComponentPortal} from '@angular/cdk/portal';
 import {TooltipComponent} from './tooltip.component';
 
-@Directive({selector: '[vTooltip]', standalone: false})
+@Directive({selector: '[vTooltip]'})
 export class TooltipDirective implements OnInit {
   @Input('vTooltip') text = '';
   @Input() onBottom = false;
@@ -52,7 +52,7 @@ export class TooltipDirective implements OnInit {
 
   @HostListener('mouseenter')
   show() {
-    if (!this.tooltipDisabled && !this.overlayRef.hasAttached()) {
+    if (!this.tooltipDisabled) {
       const tooltipRef: ComponentRef<TooltipComponent> = this.overlayRef.attach(
         new ComponentPortal(TooltipComponent)
       );
@@ -60,10 +60,8 @@ export class TooltipDirective implements OnInit {
     }
   }
 
-  @HostListener('mouseleave')
+  @HostListener('mouseout')
   hide() {
-    if (this.overlayRef.hasAttached()) {
-      this.overlayRef.detach();
-    }
+    this.overlayRef.detach();
   }
 }

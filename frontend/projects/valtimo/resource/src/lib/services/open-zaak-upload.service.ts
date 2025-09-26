@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {
   DocumentenApiFileReference,
@@ -52,7 +52,7 @@ export class OpenZaakUploadService implements UploadService {
     metadata: {[key: string]: any}
   ): Observable<void> {
     return this.openZaakService.uploadWithMetadata(
-      new File([file], metadata?.bestandsnaam || file.name, {type: file.type}),
+      new File([file], file.name, {type: file.type}),
       documentId,
       metadata
     );
@@ -63,7 +63,7 @@ export class OpenZaakUploadService implements UploadService {
     metadata: {[key: string]: any}
   ): Observable<DocumentenApiFileReference> {
     return this.openZaakService.uploadTempFileWithMetadata(
-      new File([file], metadata?.bestandsnaam || file.name, {type: file.type}),
+      new File([file], file.name, {type: file.type}),
       metadata
     );
   }

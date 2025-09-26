@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,22 +16,12 @@
 
 <div
   class="v-input-label-container"
-  [ngClass]="{
-    'v-input-label-container--large-margin': largeMargin,
-    'v-input-label-container--no-margin': noMargin,
-  }"
+  [ngClass]="{'v-input-label-container--large-margin': largeMargin}"
 >
   <cds-label [disabled]="disabled">
     <span class="label-with-tooltip">
       {{ displayTitle$ | async }}
-
-      <v-tooltip-icon
-        *ngIf="tooltip || tooltipTranslationKey"
-        [disabled]="disabled"
-        [tooltip]="tooltipTranslationKey ? (tooltipTranslationKey | translate) : tooltip"
-      ></v-tooltip-icon>
+      <v-tooltip-icon *ngIf="tooltip" [disabled]="disabled" [tooltip]="tooltip"></v-tooltip-icon>
     </span>
-
-    <ng-content></ng-content>
   </cds-label>
 </div>

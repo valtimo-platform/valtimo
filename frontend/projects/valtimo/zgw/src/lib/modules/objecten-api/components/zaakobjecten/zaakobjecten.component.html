@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
     objecttypeSelectItems: objecttypeSelectItems$ | async,
     objects: objects$ | async,
     columns: columns$ | async,
-    selectedObjectTypeUrl: selectedObjecttypeUrl$ | async,
+    selectedObjectTypeUrl: selectedObjecttypeUrl$ | async
   } as obs"
 >
   <v-select
@@ -27,17 +27,17 @@
     [margin]="true"
     [widthInPx]="350"
     name="objecttypes"
-    [title]="'case.zaakobjecten.objecttype' | translate"
-    [placeholder]="'case.zaakobjecten.objecttypePlaceholder' | translate"
+    [title]="'dossier.zaakobjecten.objecttype' | translate"
+    [placeholder]="'dossier.zaakobjecten.objecttypePlaceholder' | translate"
     [loading]="!obs.objecttypeSelectItems"
     (selectedChange)="selectObjectType($event)"
   ></v-select>
   <v-input-label
-    titleTranslationKey="case.zaakobjecten.objecten"
+    titleTranslationKey="dossier.zaakobjecten.objecten"
     [largeMargin]="!!obs.selectedObjectTypeUrl"
   ></v-input-label>
   <v-paragraph *ngIf="!obs.selectedObjectTypeUrl">{{
-    'case.zaakobjecten.objectenPlaceholder' | translate
+    'dossier.zaakobjecten.objectenPlaceholder' | translate
   }}</v-paragraph>
   <v-table
     *ngIf="obs.selectedObjectTypeUrl"
@@ -48,14 +48,16 @@
     [amountOfLoadingRows]="2"
     [itemsTranslationKey]="'pluginManagement.tableItemsText'"
     [showPagination]="false"
-    editButtonTranslationKey="case.zaakobjecten.objectType.viewObject"
+    editButtonTranslationKey="dossier.zaakobjecten.objectType.viewObject"
     (editButtonClicked)="rowClicked($event, obs.objecttypeSelectItems)"
   ></v-table>
 </ng-container>
 
 <v-modal #viewZaakobjectModal (closeEvent)="hide()" [hideFooter]="true" [maxWidthPx]="750">
   <div role="header">
-    <h4>{{ objectName$ | async }}</h4>
+    <v-title [margin]="false" type="h2" [fullWidth]="true" [center]="true">{{
+      objectName$ | async
+    }}</v-title>
   </div>
 
   <div role="content">
@@ -64,7 +66,7 @@
       [form]="objectForm$ | async"
     ></valtimo-form-io>
     <v-paragraph *ngIf="noFormDefinitionComponent$ | async" [center]="true">{{
-      'case.zaakobjecten.noFormDefinitionComponent' | translate
+      'dossier.zaakobjecten.noFormDefinitionComponent' | translate
     }}</v-paragraph>
   </div>
 </v-modal>

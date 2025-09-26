@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import {StepperHeaderComponent} from './stepper-header/stepper-header.component'
 import {StepperStepComponent} from './stepper-step/stepper-step.component';
 import {TranslateModule} from '@ngx-translate/core';
 import {StepperFooterStepComponent} from './stepper-footer-step/stepper-footer-step.component';
-import {ButtonModule as CarbonButtonModule} from 'carbon-components-angular';
+import {ButtonModule} from '../button/button.module';
 
 /**
  * @deprecated Migrate old design to Carbon
@@ -37,7 +37,7 @@ import {ButtonModule as CarbonButtonModule} from 'carbon-components-angular';
     StepperStepComponent,
     StepperFooterStepComponent,
   ],
-  imports: [CommonModule, TranslateModule, CarbonButtonModule],
+  imports: [CommonModule, TranslateModule, ButtonModule],
   exports: [
     StepperContainerComponent,
     StepperContentComponent,

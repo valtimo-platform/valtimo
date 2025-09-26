@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,48 +14,57 @@
  * limitations under the License.
  */
 
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, OnInit, ViewChild} from '@angular/core';
 import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
-import {BehaviorSubject, Subject} from 'rxjs';
+import {VModalComponent, ModalService} from '@valtimo/components';
+import {BehaviorSubject, Subject, Subscription} from 'rxjs';
 import {PluginConfigurationData, PluginManagementService} from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
-import {CARBON_CONSTANTS} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-plugin-add-modal',
   templateUrl: './plugin-add-modal.component.html',
   styleUrls: ['./plugin-add-modal.component.scss'],
 })
-export class PluginAddModalComponent {
-  @Input() open = false;
-
-  @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
+export class PluginAddModalComponent implements OnInit {
+  @ViewChild('pluginAddModal') pluginAddModal: VModalComponent;
 
   readonly inputDisabled$ = this.stateService.inputDisabled$;
   readonly selectedPluginDefinition$ = this.stateService.selectedPluginDefinition$;
   readonly configurationValid$ = new BehaviorSubject<boolean>(false);
   readonly returnToFirstStepSubject$ = new Subject<boolean>();
 
+  private showSubscription!: Subscription;
+  private hideSubscription!: Subscription;
+
   constructor(
     private readonly stateService: PluginManagementStateService,
+    private readonly modalService: ModalService,
     private readonly pluginManagementService: PluginManagementService,
     private readonly logger: NGXLogger
   ) {}
+
+  ngOnInit(): void {
+    this.openShowSubscription();
+    this.openHideSubscription();
+  }
 
   complete(): void {
     this.stateService.save();
   }
 
-  hide(): void {
-    this.closeModal.emit();
+  delete(): void {
+    this.stateService.delete();
+  }
 
-    setTimeout(() => {
+  hide(): void {
+    this.stateService.disableInput();
+    this.modalService.closeModal(() => {
       this.returnToFirstStep();
       this.stateService.enableInput();
       this.stateService.clear();
-    }, CARBON_CONSTANTS.modalAnimationMs);
+    });
   }
 
   onValid(valid: boolean): void {
@@ -89,7 +98,25 @@ export class PluginAddModalComponent {
     });
   }
 
+  private openShowSubscription(): void {
+    this.showSubscription = this.stateService.showModal$.subscribe(modalType => {
+      if (modalType === 'add') {
+        this.show();
+      }
+    });
+  }
+
+  private openHideSubscription(): void {
+    this.hideSubscription = this.stateService.hideModal$.subscribe(() => {
+      this.hide();
+    });
+  }
+
   private returnToFirstStep(): void {
     this.returnToFirstStepSubject$.next(true);
+  }
+
+  private show(): void {
+    this.modalService.openModal(this.pluginAddModal);
   }
 }

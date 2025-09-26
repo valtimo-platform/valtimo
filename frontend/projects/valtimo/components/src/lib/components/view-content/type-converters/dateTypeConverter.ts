@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import moment from 'moment';
+
 import {TypeConverter} from './type-converters.model';
+import moment from 'moment';
+
+moment.locale(localStorage.getItem('langKey'));
 
 export class DateTypeConverter implements TypeConverter {
-  public getTypeString(): string {
+  getTypeString(): string {
     return 'date';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
+  convert(value: any, definition: any): string {
+    if (!value) {
+      return '-';
+    }
 
-  public convert(value: any, definition: any): string {
-    if (!value) return '-';
-
-    const dateValue = moment(value);
-    return (dateValue.isValid() ? dateValue : moment(value, 'DD-MM-YYYY'))
-      .locale(localStorage.getItem('langKey') ?? 'nl')
-      .format(definition?.format || 'DD-MM-YYYY');
+    return moment(value).format(definition?.format || 'DD-MM-YYYY, hh:mm A');
   }
 }

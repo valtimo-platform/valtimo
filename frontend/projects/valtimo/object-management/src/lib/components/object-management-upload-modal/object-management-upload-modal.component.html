@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
   *ngIf="{
     disabled: disabled$ | async,
     jsonString: jsonString$ | async,
-    error: error$ | async,
+    error: error$ | async
   } as obs"
 >
   <div role="header">
     <div class="add-title">
-      <h4>{{ 'objectManagement.uploadObjecttype' | translate }}</h4>
+      <v-title [margin]="false">{{ 'objectManagement.uploadObjecttype' | translate }}</v-title>
     </div>
   </div>
   <div role="content">
@@ -32,17 +32,17 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled">
+      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
         {{ 'objectManagement.cancel' | translate }}
-      </button>
-
-      <button
-        cdsButton="primary"
-        (click)="uploadDefinition()"
+      </v-button>
+      <v-button
+        (clickEvent)="uploadDefinition()"
         [disabled]="obs.jsonString === '' || obs.disabled"
+        mdiIcon="plus"
+        type="success"
       >
         {{ 'Upload' | translate }}
-      </button>
+      </v-button>
     </div>
   </div>
 </v-modal>

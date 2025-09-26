@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,32 +23,16 @@
     visibleTabs: visibleTabs$ | async,
     pagination: paginationForCurrentTaskTypeForList$ | async,
     taskListColumnsForCase: taskListColumnsForCase$ | async,
-    sortState: sortStateForCurrentTaskType$ | async,
-    overrideSortState: overrideSortState$ | async,
-    searchFields: searchFields$ | async,
-    loadingSearchFields: loadingSearchFields$ | async,
-    caseDefinitionKey: caseDefinitionKey$ | async,
-    noResultsMessage: noResultsMessage$ | async,
+    sortState: sortStateForCurrentTaskType$ | async
   } as obs"
   class="main-content"
 >
   <div class="container-fluid">
-    @if (obs.caseDefinitionKey && obs.caseDefinitionKey !== ALL_CASES_ID) {
-      <ng-container
-        *ngTemplateOutlet="
-          searchFields;
-          context: {
-            obs: obs,
-          }
-        "
-      ></ng-container>
-    }
-
     <ng-container
       *ngTemplateOutlet="
         tasksList;
         context: {
-          obs: obs,
+          obs: obs
         }
       "
     ></ng-container>
@@ -57,7 +41,7 @@
       *ngTemplateOutlet="
         tasksListLoading;
         context: {
-          obs: obs,
+          obs: obs
         }
       "
     ></ng-container>
@@ -74,7 +58,6 @@
   <cds-tabs *ngIf="visibleTabs" type="contained" class="valtimo-carbon-list__tabs">
     <cds-tab
       *ngFor="let tab of visibleTabs"
-      [attr.data-testid]="'task-list-tab-' + tab"
       [heading]="'task-list.' + tab + '.title' | translate"
       [active]="selectedTaskType === tab"
       (selected)="tabChange(tab)"
@@ -118,7 +101,7 @@
     [pagination]="obs.pagination"
     paginationIdentifier="taskList"
     lockedTooltipTranslationKey="task-list.rowLocked"
-    [sortState]="obs.overrideSortState || obs.sortState"
+    [initialSortState]="obs.sortState"
     (paginationClicked)="paginationClicked($event, obs.selectedTaskType)"
     (paginationSet)="paginationSet($event)"
     (rowClicked)="rowOpenTaskClick($event)"
@@ -136,8 +119,8 @@
     </div>
 
     <valtimo-no-results
-      [description]="obs.noResultsMessage.description | translate"
-      [title]="obs.noResultsMessage.title | translate"
+      [description]="'task-list.' + obs.selectedTaskType + '.noResultsDescription' | translate"
+      [title]="'task-list.' + obs.selectedTaskType + '.noResultsTitle' | translate"
     >
     </valtimo-no-results>
   </valtimo-carbon-list>
@@ -177,34 +160,19 @@
   </valtimo-carbon-list>
 </ng-template>
 
-<ng-template #searchFields let-obs="obs">
-  <div class="mb-3">
-    <valtimo-search-fields
-      [searchFields]="obs.searchFields"
-      [inputDisabled]="obs.loadingSearchFields"
-      [caseDefinitionKey]="obs.caseDefinitionKey"
-      [setValuesSubject$]="setSearchFieldValuesSubject$"
-      [clearValuesSubject$]="clearSearchFieldValuesSubject$"
-      (doSearch)="search($event)"
-    >
-    </valtimo-search-fields>
-  </div>
-</ng-template>
-
 <ng-container renderInPageHeader [fullWidth]="true">
   <ng-template>
     <cds-dropdown
       class="case-definition-selection"
       *ngIf="{
         loadingCaseListItems: loadingCaseListItems$ | async,
-        caseListItems: caseListItems$ | async,
+        caseListItems: caseListItems$ | async
       } as obs"
-      [attr.data-testid]="'task-list-case-dropdown'"
       [disabled]="obs.loadingCaseListItems || (obs.caseListItems || []).length === 1"
       [skeleton]="obs.loadingCaseListItems"
       (selected)="setCaseDefinition($event)"
     >
-      <cds-dropdown-list [items]="obs.caseListItems || []"></cds-dropdown-list>
-    </cds-dropdown>
-  </ng-template>
-</ng-container>
+      <cds-dropdown-list
+        [items]="obs.caseListItems || []"
+      ></cds-dropdown-list></cds-dropdown></ng-template
+></ng-container>

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,19 +20,19 @@
     isCreate: type === 'create',
     isDelete: type === 'delete',
     isEdit: type === 'edit',
-    open: open$ | async,
+    open: open$ | async
   } as vars"
 >
   <ng-container
     *ngIf="{
       create: vars.isCreate && ('dashboardManagement.widgets.add' | translate),
       delete: vars.isDelete && ('dashboardManagement.widgets.delete' | translate),
-      edit: vars.isEdit && ('dashboardManagement.widgets.edit' | translate),
+      edit: vars.isEdit && ('dashboardManagement.widgets.edit' | translate)
     } as titles"
   >
     <cds-modal
       *ngIf="{
-        title: titles.edit || titles.create || titles.delete,
+        title: titles.edit || titles.create || titles.delete
       } as translations"
       valtimoCdsModal
       [open]="vars.open"
@@ -40,7 +40,6 @@
       size="md"
       title="{{ translations.title }}"
       class="widget-modal"
-      (close)="closeModal()"
     >
       <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
         <h3 cdsModalHeaderHeading>
@@ -48,7 +47,7 @@
         </h3>
       </cds-modal-header>
 
-      <section cdsModalContent [cdsLayer]="1">
+      <section cdsModalContent>
         <ng-container *ngIf="vars.isDelete">
           {{ 'dashboardManagement.widgets.deleteDescription' | translate }}</ng-container
         >
@@ -79,7 +78,7 @@
         displayTypeDropdownDisabled: displayTypeDropdownDisabled$ | async,
         displayTypeItems: displayTypeItems$ | async,
         selectedDataSourceKey: selectedDataSourceKey$ | async,
-        selectedDisplayTypeKey: selectedDisplayTypeKey$ | async,
+        selectedDisplayTypeKey: selectedDisplayTypeKey$ | async
       } as obs
     "
     [formGroup]="form"
@@ -145,18 +144,6 @@
       [prefillConfiguration]="displayTypePrefillConfig$ | async"
       (configurationEvent)="displayTypeConfiguration($event)"
     ></valtimo-widget-configuration-container>
-
-    <div class="form__element">
-      <cds-label
-        [helperText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
-        [invalidText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
-        [invalid]="url.dirty && url.invalid"
-      >
-        {{ 'dashboardManagement.widgets.form.url' | translate }}
-
-        <input cdsText formControlName="url" [invalid]="url.dirty && url.invalid" />
-      </cds-label>
-    </div>
   </form>
 </ng-template>
 
@@ -164,7 +151,7 @@
   <ng-container
     *ngIf="{
       dataSourceConfiguration: dataSourceConfiguration$ | async,
-      displayTypeConfiguration: displayTypeConfiguration$ | async,
+      displayTypeConfiguration: displayTypeConfiguration$ | async
     } as obs"
   >
     <button cdsButton="ghost" [disabled]="vars.disabled" (click)="closeModal()">
