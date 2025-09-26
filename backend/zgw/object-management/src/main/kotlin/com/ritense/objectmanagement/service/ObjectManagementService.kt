@@ -104,7 +104,7 @@ class ObjectManagementService(
 
     fun getByTitle(title: String): ObjectManagement? = objectManagementRepository.findByTitle(title)
 
-    fun getAll(): List<ObjectManagement> = objectManagementRepository.findAll().sortedBy { it.title }
+    fun getAll(): List<ObjectManagement> = objectManagementRepository.findAll()
 
     @Transactional
     fun deleteById(id: UUID) {

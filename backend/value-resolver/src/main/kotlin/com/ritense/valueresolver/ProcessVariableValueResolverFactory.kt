@@ -22,10 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.flipkart.zjsonpatch.JsonPatch
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.RuntimeService
-import org.operaton.bpm.engine.delegate.VariableScope
-import org.operaton.bpm.engine.impl.context.Context
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.HistoryService
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.function.Function
 
 /**
@@ -35,6 +34,7 @@ import java.util.function.Function
  */
 class ProcessVariableValueResolverFactory(
     private val runtimeService: RuntimeService,
+    private val historicService: HistoryService,
     private val objectMapper: ObjectMapper,
 ) : ValueResolverFactory {
 
@@ -63,7 +63,7 @@ class ProcessVariableValueResolverFactory(
     }
 
     override fun createResolver(documentId: String): Function<String, Any?> {
-        val processInstanceIds = runtimeService.createProcessInstanceQuery()
+        val processInstanceIds = historicService.createHistoricProcessInstanceQuery()
             .processInstanceBusinessKey(documentId)
             .list()
             .map { it.id }
@@ -71,17 +71,11 @@ class ProcessVariableValueResolverFactory(
 
         return Function { requestedValue ->
             val jsonPointer = toJsonPointer(requestedValue)
-            val variables = runtimeService.createVariableInstanceQuery()
+            val values = historicService.createHistoricVariableInstanceQuery()
                 .processInstanceIdIn(*processInstanceIds)
                 .variableName(jsonPointer.matchingProperty)
                 .list()
-
-            val values = variables
-                .map {
-                    logger.info {it }
-                    logger.info { it.value }
-                    getValue(objectMapper.valueToTree<JsonNode>(it.value).at(jsonPointer.tail()))
-                }
+                .map { getValue(objectMapper.valueToTree<JsonNode>(it.value).at(jsonPointer.tail())) }
                 .distinct()
             if (values.size > 1) {
                 throw RuntimeException(
@@ -152,6 +146,5 @@ class ProcessVariableValueResolverFactory(
 
     companion object {
         const val PREFIX = "pv"
-        private val logger = KotlinLogging.logger {}
     }
 }
