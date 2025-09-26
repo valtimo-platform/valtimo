@@ -41,7 +41,7 @@ import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
 import com.ritense.zakenapi.domain.ZaakopschortingResponse
 import com.ritense.zakenapi.domain.rol.Rol
-import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
+import com.ritense.zakenapi.domain.rol.RolType
 import com.ritense.zakenapi.event.DocumentLinkedToZaak
 import com.ritense.zakenapi.event.ZaakCreated
 import com.ritense.zakenapi.event.ZaakInformatieObjectenListed
@@ -65,7 +65,8 @@ import com.ritense.zakenapi.event.ZaakeigenschapUpdated
 import com.ritense.zakenapi.exception.ZaakRolNotUpdatedException
 import com.ritense.zgw.ClientTools
 import com.ritense.zgw.Page
-import org.springframework.context.ApplicationEventPublisher
+import mu.KLogger
+import mu.KotlinLogging
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestClient
@@ -79,20 +80,21 @@ class ZakenApiClient(
     private val objectMapper: ObjectMapper,
     private val authorizationService: AuthorizationService,
     private val authorizationEnabled: Boolean = false,
-    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     fun linkDocument(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         request: LinkDocumentRequest
     ): LinkDocumentResult {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.CREATE,
-                ResourcePermission()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.CREATE,
+                    ResourcePermission()
+                )
             )
-        )
+        }
 
         val result = buildRestClient(authentication)
             .post()
@@ -106,9 +108,7 @@ class ZakenApiClient(
             .retrieve()
             .body<LinkDocumentResult>()!!
 
-        val event = DocumentLinkedToZaak(result.uuid, objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send { DocumentLinkedToZaak(result.uuid, objectMapper.valueToTree(result)) }
         return result
     }
 
@@ -164,7 +164,7 @@ class ZakenApiClient(
         zaakUrl: URI? = null,
         informatieobjectUrl: URI? = null,
     ): List<ZaakInformatieObject> {
-        if (!authorizationService.hasPermission(
+        if (authorizationEnabled && !authorizationService.hasPermission(
             EntityAuthorizationRequest(
                 ResourcePermission::class.java,
                 ResourcePermissionActionProvider.VIEW_LIST,
@@ -201,7 +201,7 @@ class ZakenApiClient(
         baseUrl: URI,
         zaakUrl: URI,
         page: Int,
-        omschrijvingGeneriek: RolTypeGeneriekeBeschrijving? = null
+        roleType: RolType? = null
     ): Page<Rol> {
         val result = buildRestClient(authentication)
             .get()
@@ -211,8 +211,8 @@ class ZakenApiClient(
                     .queryParam("page", page)
                     .queryParam("zaak", zaakUrl)
                     .apply {
-                        if (omschrijvingGeneriek != null) {
-                            queryParam("omschrijvingGeneriek", omschrijvingGeneriek.getApiValue())
+                        if (roleType != null) {
+                            queryParam("omschrijvingGeneriek", roleType.getApiValue())
                         }
                     }
                     .build()
@@ -240,10 +240,8 @@ class ZakenApiClient(
             .retrieve()
             .body<Rol>()!!
 
-        val event = ZaakRolCreated(result.url.toString(), objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
         outboxService.send {
-            event
+            ZaakRolCreated(result.url.toString(), objectMapper.valueToTree(result))
         }
         return result
     }
@@ -265,9 +263,9 @@ class ZakenApiClient(
             .retrieve()
             .body<Rol>() ?: throw ZaakRolNotUpdatedException("No body was returned when updating rol($rolUuid)")
 
-        val event =  ZaakRolUpdated(result.url.toString(), objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send {
+            ZaakRolUpdated(result.url.toString(), objectMapper.valueToTree(result))
+        }
 
         return result
     }
@@ -290,9 +288,7 @@ class ZakenApiClient(
             .retrieve()
             .body<ZaakResponse>()!!
 
-        val event = ZaakCreated(result.url.toString(), objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send { ZaakCreated(result.url.toString(), objectMapper.valueToTree(result)) }
         return result
     }
 
@@ -311,10 +307,7 @@ class ZakenApiClient(
             .body(request)
             .retrieve()
             .body<ZaakResponse>()!!
-
-        val event = ZaakPatched(result.url.toString(), objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send { ZaakPatched(result.url.toString(), objectMapper.valueToTree(result)) }
         return result
     }
 
@@ -336,9 +329,7 @@ class ZakenApiClient(
             .retrieve()
             .body<CreateZaakStatusResponse>()!!
 
-        val event = ZaakStatusCreated(result.url.toString(), objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send { ZaakStatusCreated(result.url.toString(), objectMapper.valueToTree(result)) }
         return result
     }
 
@@ -388,9 +379,7 @@ class ZakenApiClient(
             .retrieve()
             .body<CreateZaakResultaatResponse>()!!
 
-        val event = ZaakResultaatCreated(result.url.toString(), objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event}
+        outboxService.send { ZaakResultaatCreated(result.url.toString(), objectMapper.valueToTree(result)) }
         return result
     }
 
@@ -408,9 +397,7 @@ class ZakenApiClient(
             .retrieve()
             .body<ZaakopschortingResponse>()!!
 
-        val event = ZaakOpschortingUpdated(result.url, objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send { ZaakOpschortingUpdated(result.url, objectMapper.valueToTree(result)) }
         return result
     }
 
@@ -450,13 +437,11 @@ class ZakenApiClient(
             .retrieve()
             .body<ZaakeigenschapResponse>()!!
 
-        val event = ZaakeigenschapCreated(
-            result.url.toString(),
-            objectMapper.valueToTree(result)
-        )
-        applicationEventPublisher.publishEvent(event)
         outboxService.send {
-            event
+            ZaakeigenschapCreated(
+                result.url.toString(),
+                objectMapper.valueToTree(result)
+            )
         }
         return result
     }
@@ -478,12 +463,12 @@ class ZakenApiClient(
             .retrieve()
             .body<ZaakeigenschapResponse>()!!
 
-        val event = ZaakeigenschapUpdated(
-            result.url.toString(),
-            objectMapper.valueToTree(result)
-        )
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send {
+            ZaakeigenschapUpdated(
+                result.url.toString(),
+                objectMapper.valueToTree(result)
+            )
+        }
         return result
     }
 
@@ -500,9 +485,9 @@ class ZakenApiClient(
             .retrieve()
             .toBodilessEntity()
 
-        val event = ZaakeigenschapDeleted(zaakeigenschapUrl.toString())
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send {
+            ZaakeigenschapDeleted(zaakeigenschapUrl.toString())
+        }
     }
 
     fun getZaakeigenschappen(
@@ -531,13 +516,15 @@ class ZakenApiClient(
         require(zaakInformatieobjectUrl.toString().startsWith(baseUrl.toString())) {
             "zaakInformatieobjectUrl '$zaakInformatieobjectUrl' does not start with baseUrl '$baseUrl'"
         }
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                ResourcePermission::class.java,
-                ResourcePermissionActionProvider.DELETE,
-                ResourcePermission()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    ResourcePermission::class.java,
+                    ResourcePermissionActionProvider.DELETE,
+                    ResourcePermission()
+                )
             )
-        )
+        }
 
         buildRestClient(authentication)
             .delete()
@@ -590,9 +577,9 @@ class ZakenApiClient(
 
         result = result.copy(objectUrl = result.objectUrl)
 
-        val event = ZaakObjectCreated(result.url.toString(), objectMapper.valueToTree(result))
-        applicationEventPublisher.publishEvent(event)
-        outboxService.send { event }
+        outboxService.send {
+            ZaakObjectCreated(result.url.toString(), objectMapper.valueToTree(result))
+        }
         return result
     }
 
@@ -616,5 +603,9 @@ class ZakenApiClient(
                 authentication.applyAuth(it)
             }
             .build()
+    }
+
+    companion object {
+        private val logger: KLogger = KotlinLogging.logger {}
     }
 }

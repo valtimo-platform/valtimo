@@ -16,15 +16,11 @@
 
 package com.ritense.valtimo
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.impl.cfg.AbstractProcessEnginePlugin
-import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
-import org.springframework.stereotype.Component
+import mu.KotlinLogging
+import org.camunda.bpm.engine.impl.cfg.AbstractProcessEnginePlugin
+import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
 import javax.script.ScriptEngineManager
 
-@SkipComponentScan
-@Component
 class ScriptingWhitelistPlugin(
     private val allowedScriptingClasses: Set<String> = emptySet()
 ) : AbstractProcessEnginePlugin() {
@@ -38,6 +34,6 @@ class ScriptingWhitelistPlugin(
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        val logger = KotlinLogging.logger {}
     }
 }

@@ -32,17 +32,6 @@ class NotificatiesApiClient(
     private val restClientBuilder: RestClient.Builder
 ) {
 
-    fun getAbonnementen(
-        authentication: NotificatiesApiAuthentication,
-        baseUrl: URI
-    ): List<Abonnement> {
-        return buildNotificatiesRestClient(authentication, baseUrl)
-            .get()
-            .uri { it.pathSegment("abonnement").build() }
-            .retrieve()
-            .body<List<Abonnement>>()!!
-    }
-
     fun getAbonnement(
         authentication: NotificatiesApiAuthentication,
         baseUrl: URI,

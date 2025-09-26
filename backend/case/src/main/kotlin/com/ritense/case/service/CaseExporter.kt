@@ -30,7 +30,7 @@ import com.ritense.document.event.DocumentsExported
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService
 import com.ritense.outbox.OutboxService
 import com.ritense.valtimo.contract.utils.SecurityUtils
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -123,8 +123,6 @@ class CaseExporter(
         searchRequest: SearchWithConfigRequest,
         pageable: Pageable
     ): List<CaseListRowDto> {
-        val userLabel = currentUserInfo()
-
         val newPageable = mutatePageable(exportableColumns, pageable)
 
         val searchResults = documentSearchService.searchForExport(
@@ -144,7 +142,7 @@ class CaseExporter(
 
     private fun getExportableColumns(caseDefinitionKey: String, currentUser: String): List<CaseListColumn> {
         val exportableColumns = caseDefinitionListColumnRepository
-            .findByIdCaseDefinitionKeyOrderByOrderAsc(caseDefinitionKey)
+            .findByIdCaseDefinitionNameOrderByOrderAsc(caseDefinitionKey)
             .filter { it.exportable }
 
         if (exportableColumns.isEmpty()) {

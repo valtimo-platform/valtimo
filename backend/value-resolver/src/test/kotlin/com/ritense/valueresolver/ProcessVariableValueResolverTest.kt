@@ -20,24 +20,24 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.valtimo.contract.json.MapperSingleton
+import java.time.LocalDate
+import java.util.UUID
 import org.assertj.core.api.Assertions
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.impl.context.Context
+import org.camunda.bpm.engine.impl.interceptor.CommandContext
+import org.camunda.bpm.engine.variable.Variables
+import org.camunda.bpm.engine.variable.impl.value.ObjectValueImpl
+import org.camunda.bpm.engine.variable.impl.value.builder.SerializedObjectValueBuilderImpl
+import org.camunda.community.mockito.delegate.DelegateCaseVariableInstanceFake
+import org.camunda.community.mockito.delegate.DelegateTaskFake
+import org.camunda.community.mockito.process.ProcessInstanceFake
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.RETURNS_DEEP_STUBS
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.operaton.bpm.engine.RuntimeService
-import org.operaton.bpm.engine.delegate.DelegateTask
-import org.operaton.bpm.engine.impl.context.Context
-import org.operaton.bpm.engine.impl.interceptor.CommandContext
-import org.operaton.bpm.engine.runtime.ProcessInstance
-import org.operaton.bpm.engine.runtime.VariableInstance
-import org.operaton.bpm.engine.variable.impl.value.ObjectValueImpl
-import org.operaton.bpm.engine.variable.impl.value.builder.SerializedObjectValueBuilderImpl
-import java.time.LocalDate
-import java.util.UUID
 
 internal class ProcessVariableValueResolverTest {
     private val runtimeService: RuntimeService = mock(defaultAnswer = RETURNS_DEEP_STUBS)
@@ -55,15 +55,11 @@ internal class ProcessVariableValueResolverTest {
     fun `should resolve requestedValue from process variables`() {
         val somePropertyName = "somePropertyName"
         val now = LocalDate.now()
-        val variableScope = mockTaskWithVariables(
-            mapOf(
-                "firstName" to "John",
-                somePropertyName to true,
-                "lastName" to "Doe",
-                "dateTime" to now
-            )
-        )
-
+        val variableScope = DelegateTaskFake()
+            .withVariable("firstName", "John")
+            .withVariable(somePropertyName, true)
+            .withVariable("lastName", "Doe")
+            .withVariable("dateTime", now)
         val processInstanceId = UUID.randomUUID().toString()
 
         val resolver = processVariableValueResolver.createResolver(
@@ -79,11 +75,8 @@ internal class ProcessVariableValueResolverTest {
 
     @Test
     fun `should resolve legacy requestedValue with dots from process variables`() {
-        val variableScope = mockTaskWithVariables(
-            mapOf(
-                "person.firstName" to "John"
-            )
-        )
+        val variableScope = DelegateTaskFake()
+            .withVariable("person.firstName", "John")
 
         val resolver = processVariableValueResolver.createResolver(
             processInstanceId = UUID.randomUUID().toString(),
@@ -106,10 +99,9 @@ internal class ProcessVariableValueResolverTest {
                     }
                 }
             """)
-        val variables = mapOf(
-            "person" to personVariable
-        )
-        val variableScope = mockTaskWithVariables(variables)
+        val variableScope = DelegateTaskFake()
+            .withVariable("person", personVariable)
+
         val resolver = processVariableValueResolver.createResolver(
             processInstanceId =  UUID.randomUUID().toString(),
             variableScope = variableScope
@@ -134,14 +126,9 @@ internal class ProcessVariableValueResolverTest {
     @Test
     fun `should NOT resolve requestedValue from process variables`() {
         val somePropertyName = "somePropertyName"
-        val variableScope = mock<DelegateTask> {
-            on { getVariables() }.thenReturn(
-                mapOf(
-                    "firstName" to "John",
-                    "lastName" to "Doe"
-                )
-            )
-        }
+        val variableScope = DelegateTaskFake()
+            .withVariable("firstName", "John")
+            .withVariable("lastName", "Doe")
         val processInstanceId = UUID.randomUUID().toString()
 
         val resolvedValue = processVariableValueResolver.createResolver(
@@ -158,15 +145,10 @@ internal class ProcessVariableValueResolverTest {
     fun `should resolve requestedValue from process variables by document ID`() {
         val somePropertyName = "somePropertyName"
         val documentInstanceId = UUID.randomUUID().toString()
-        val processInstance = mock<ProcessInstance> {
-            on { id }.thenReturn(UUID.randomUUID().toString())
-        }
+        val processInstance = ProcessInstanceFake.builder().processInstanceId(UUID.randomUUID().toString()).build()
         whenever(runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(documentInstanceId).list())
             .thenReturn(listOf(processInstance))
-        val variableInstance = mock<VariableInstance> {
-            on { name }.thenReturn(somePropertyName)
-            on { value }.thenReturn(true)
-        }
+        val variableInstance = DelegateCaseVariableInstanceFake().create(somePropertyName, Variables.booleanValue(true))
         whenever(runtimeService.createVariableInstanceQuery()
             .processInstanceIdIn(processInstance.id)
             .variableName(somePropertyName)
@@ -196,15 +178,13 @@ internal class ProcessVariableValueResolverTest {
                 }
             """)
         val documentInstanceId = UUID.randomUUID().toString()
-        val processInstance = mock<ProcessInstance> {
-            on { id }.thenReturn(UUID.randomUUID().toString())
-        }
+        val processInstance = ProcessInstanceFake.builder().processInstanceId(UUID.randomUUID().toString()).build()
         whenever(runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(documentInstanceId).list())
             .thenReturn(listOf(processInstance))
-        val variableInstance = mock<VariableInstance> {
-            on { name }.thenReturn("person")
-            on { value }.thenReturn(personVariable)
-        }
+        val variableInstance = DelegateCaseVariableInstanceFake().create(
+            "person",
+            SerializedObjectValueBuilderImpl(ObjectValueImpl(personVariable)).create()
+        )
         whenever(runtimeService.createVariableInstanceQuery()
             .processInstanceIdIn(processInstance.id)
             .variableName("person")
@@ -233,7 +213,7 @@ internal class ProcessVariableValueResolverTest {
 
     @Test
     fun `should handle value from process variables`() {
-        val variableScope = mock<DelegateTask>()
+        val variableScope = mock<DelegateTaskFake>()
         val processInstanceId = UUID.randomUUID().toString()
 
         processVariableValueResolver.handleValues(
@@ -317,17 +297,5 @@ internal class ProcessVariableValueResolverTest {
             processInstanceId,
             mapOf("person" to mapOf("info" to mapOf("firstName" to "John", "lastName" to "Doe")))
         )
-    }
-
-    private fun mockTaskWithVariables(map: Map<String, Any?>): DelegateTask {
-        val delegateTask: DelegateTask = mock()
-        whenever(delegateTask.variables).thenReturn(map)
-        whenever(delegateTask.getVariable(any())).thenAnswer(
-            { invocation ->
-                val variableName = invocation.getArgument<String>(0)
-                map[variableName]
-            }
-        )
-        return delegateTask
     }
 }

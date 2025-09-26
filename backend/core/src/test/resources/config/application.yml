@@ -35,7 +35,7 @@ spring-actuator:
     username: test
     password: test
 
-operaton:
+camunda:
     bpm:
         history-level: audit
         generic-properties:
@@ -51,9 +51,11 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    operaton:
+    camunda:
         scripting:
-            allowedClasses: java.lang.System
+            allowedClasses:
+                - java.lang.Math
+
 aws:
     profile: ritense
     region: eu-central-1

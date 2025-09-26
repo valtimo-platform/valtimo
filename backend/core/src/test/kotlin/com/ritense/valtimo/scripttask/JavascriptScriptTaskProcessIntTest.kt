@@ -18,12 +18,12 @@ package com.ritense.valtimo.scripttask
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.BaseIntegrationTest
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.HistoryService
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.HistoryService
+import org.camunda.bpm.engine.ScriptEvaluationException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.operaton.bpm.engine.ScriptEvaluationException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -33,7 +33,7 @@ import kotlin.test.assertEquals
 class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
 
     @Autowired
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
     @Autowired
     lateinit var historyService: HistoryService
@@ -41,7 +41,7 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
     @Test
     fun `should execute javascript in script-task`() {
         val processInstance = runWithoutAuthorization {
-            operatonProcessService.startProcess(
+            camundaProcessService.startProcess(
                 "javascript-script-task-process",
                 UUID.randomUUID().toString(),
                 mapOf("a" to 1, "b" to 2)
@@ -61,7 +61,7 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
 
         assertDoesNotThrow {
             runWithoutAuthorization {
-                operatonProcessService.startProcess(
+                camundaProcessService.startProcess(
                     "javascript-script-task-process-allowed",
                     UUID.randomUUID().toString(),
                     emptyMap()
@@ -75,7 +75,7 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
 
         assertDoesNotThrow {
             runWithoutAuthorization {
-                operatonProcessService.startProcess(
+                camundaProcessService.startProcess(
                     "javascript-script-task-process-default-allowed",
                     UUID.randomUUID().toString(),
                     emptyMap()
@@ -88,7 +88,7 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
     fun `non-whitelisted classes should not be allowed in script tasks`() {
         assertThrows<ScriptEvaluationException> {
             runWithoutAuthorization {
-                operatonProcessService.startProcess(
+                camundaProcessService.startProcess(
                     "javascript-script-task-process-unallowed",
                     UUID.randomUUID().toString(),
                     emptyMap()

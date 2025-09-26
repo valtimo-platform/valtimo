@@ -39,10 +39,10 @@ class UserSettingsServiceIntTest extends BaseIntegrationTest {
     void getCurrentUserSettings() {
         // given
         ValtimoUser user = new ValtimoUser();
-        user.setUsername("example");
+        user.setId("12345");
 
         UserSettings userSettings = new UserSettings(
-            "example",
+            "12345",
             Map.of(
                 "key1", "value1",
                 "key2", "value2"
@@ -55,7 +55,7 @@ class UserSettingsServiceIntTest extends BaseIntegrationTest {
         // then
         Optional<UserSettings> foundUserSettings = userSettingsService.findUserSettings(user);
         assertTrue(foundUserSettings.isPresent());
-        assertThat(foundUserSettings.get().getUsername()).isEqualTo("example");
+        assertThat(foundUserSettings.get().getUserId()).isEqualTo("12345");
         assertThat(foundUserSettings.get().getSettings()).isEqualTo(userSettings.getSettings());
     }
 
@@ -63,10 +63,10 @@ class UserSettingsServiceIntTest extends BaseIntegrationTest {
     void saveUserSettings() {
         // given
         ValtimoUser user = new ValtimoUser();
-        user.setUsername("example");
+        user.setId("12345");
 
         UserSettings userSettings = new UserSettings(
-            "example",
+            "12345",
             Map.of(
                 "key1", "value1",
                 "key2", "value2"
@@ -77,9 +77,9 @@ class UserSettingsServiceIntTest extends BaseIntegrationTest {
         userSettingsService.saveUserSettings(user, userSettings.getSettings());
 
         // then
-        Optional<UserSettings> foundUserSettings = userSettingsRepository.findById("example");
+        Optional<UserSettings> foundUserSettings = userSettingsRepository.findById("12345");
         assertTrue(foundUserSettings.isPresent());
-        assertThat(foundUserSettings.get().getUsername()).isEqualTo("example");
+        assertThat(foundUserSettings.get().getUserId()).isEqualTo("12345");
         assertThat(foundUserSettings.get().getSettings()).isEqualTo(userSettings.getSettings());
     }
 }
