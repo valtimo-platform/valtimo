@@ -1,0 +1,220 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+
+plugins {
+    id "idea"
+
+    id "org.springframework.boot" version "${springBootVersion}"
+    id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
+
+    id "org.jetbrains.kotlin.jvm" version "${kotlinVersion}"
+    id "org.jetbrains.kotlin.plugin.spring" version "${kotlinVersion}"
+    id "org.jetbrains.kotlin.plugin.jpa" version "${kotlinVersion}"
+    id "org.jetbrains.kotlin.plugin.allopen" version "${kotlinVersion}"
+    id "org.jetbrains.dokka" version "${dokkaPluginVersion}"
+    id "com.github.ben-manes.versions" version "${versionsPluginVersion}"
+    id "org.sonarqube" version "${sonarqubePluginVersion}"
+    id "checkstyle"
+    id "jacoco"
+    id "jacoco-report-aggregation"
+    id "com.avast.gradle.docker-compose" version "${dockerComposePluginVersion}"
+    id "com.github.jk1.dependency-license-report" version "${dependencyLicenseReportVersion}"
+    id "project-report"
+    id "org.owasp.dependencycheck" version "8.4.3"
+    id "org.jreleaser" version "${jreleaserPluginVersion}"
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
+dependencies {
+    subprojects { subproject ->
+        if (!project.name.endsWith("-dependencies")) {
+            jacocoAggregation(subproject)
+        }
+    }
+}
+reporting {
+    reports {
+        testCodeCoverageReport(JacocoCoverageReport) {
+            testType = TestSuiteType.UNIT_TEST
+        }
+    }
+}
+
+htmlDependencyReport {
+    projects = project.allprojects
+}
+
+//Sonarqube
+sonar {
+    properties {
+        property "sonar.scm.provider", "git"
+        property "sonar.coverage.jacoco.xmlReportPaths", allTestCoverageFile
+    }
+}
+
+dockerCompose {
+    useDockerComposeV2 = true
+    removeOrphans = true
+}
+
+configurations {
+    testImplementation {
+        // Globally exclude JUnit4, will not be on the testCompileClasspath thus
+        exclude group: 'junit', module: 'junit'
+    }
+}
+
+allprojects {
+    if (!project.name.endsWith("-dependency-versions")) {
+        apply plugin: "java"
+        apply plugin: "org.springframework.boot"
+        apply plugin: "io.spring.dependency-management"
+
+        dependencyManagement {
+            imports {
+                mavenBom "software.amazon.awssdk:bom:${awssdkVersion}"
+                mavenBom "com.fasterxml.jackson:jackson-bom:${jacksonVersion}"
+                mavenBom "org.junit:junit-bom:${junitVersion}"
+            }
+            dependencies {
+                dependency "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
+                dependency "org.yaml:snakeyaml:${snakeYamlVersionOverride}"
+                dependency "io.netty:netty-codec:${nettyCodecVersionOverride}"
+                dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
+                dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
+            }
+        }
+
+        bootJar.enabled = false
+    }
+
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+
+    group = projectGroup
+    version = projectVersion
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+apply from: "gradle/deployment.gradle"
+
+subprojects { subproject ->
+    apply plugin: "maven-publish"
+    if (project.name.endsWith("-dependency-versions")) {
+        apply plugin: 'java-platform'
+    } else if (project.name.endsWith("-dependencies")) {
+        apply plugin: "java-library"
+    } else {
+        apply plugin: "idea"
+        apply plugin: "java-library"
+        apply plugin: "checkstyle"
+        apply plugin: "jacoco"
+        apply plugin: "kotlin"
+        apply plugin: "kotlin-spring"
+        apply plugin: "kotlin-jpa"
+        apply from: "$rootProject.projectDir/gradle/test.gradle"
+        apply plugin: "com.avast.gradle.docker-compose"
+        apply plugin: "org.jetbrains.dokka"
+        apply plugin: "maven-publish"
+        apply plugin: "org.owasp.dependencycheck"
+
+        tasks.register("allDeps", DependencyReportTask) {}
+        tasks.register("allDepInsight", DependencyInsightReportTask) {
+            showingAllVariants.set(false)
+        }
+
+        allOpen {
+            annotation("com.ritense.valtimo.contract.annotation.AllOpen")
+        }
+
+        java {
+            withSourcesJar()
+            withJavadocJar()
+        }
+
+        ext.javaSubProjectPath = subproject.projectDir.getAbsolutePath() + "/src/main/java"
+        ext.kotlinSubProjectPath = subproject.projectDir.getAbsolutePath() + "/src/main/kotlin"
+        if (new File(ext.kotlinSubProjectPath).exists() && !new File(ext.javaSubProjectPath).exists()) {
+            tasks.getByName('javadocJar') {
+                from dokkaJavadoc
+            }
+        }
+
+        dockerCompose {
+            useDockerComposeV2 = true
+            if (DefaultNativePlatform.currentOperatingSystem.macOsX) {
+                executable = "/usr/local/bin/docker-compose"
+                dockerExecutable = "/usr/local/bin/docker"
+            }
+        }
+
+        tasks.withType(KotlinCompile).configureEach {
+            compilerOptions {
+                jvmTarget = JvmTarget.JVM_17
+                freeCompilerArgs.add("-Xemit-jvm-type-annotations")
+            }
+        }
+
+        checkstyle {
+            //config project.resources.text.fromUri("${ritenseCheckStyleLocation}")
+            config project.resources.text.fromFile(rootProject.file("ritense_valtimo_only_checks.xml"))
+            ignoreFailures = false
+            showViolations = true
+        }
+
+        tasks.withType(Checkstyle).configureEach {
+            reports {
+                html.destination rootProject.file("build/reports/${subproject.project.name}-checkstyle.html")
+            }
+        }
+
+        sonar {
+            properties {
+                property "sonar.coverage.jacoco.xmlReportPaths", allTestCoverageFile
+            }
+        }
+
+        jar {
+            enabled = true
+            manifest {
+                attributes(
+                    "Implementation-Title": projectName,
+                    "Implementation-Version": projectVersion
+                )
+            }
+        }
+    }
+}
+
+tasks.withType(PublishToMavenRepository) {
+    enabled = false
+}
+tasks.withType(PublishToMavenLocal) {
+    enabled = false
+}
