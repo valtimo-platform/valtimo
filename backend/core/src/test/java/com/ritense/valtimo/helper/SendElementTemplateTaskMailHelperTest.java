@@ -33,73 +33,73 @@ class SendElementTemplateTaskMailHelperTest {
     private static final String SENDER_VALUE_STATIC = "sender@test.com";
     private static final String SENDER_VALUE_EXPRESSION = "sender@process-variable.com";
 
-    private static final String SUBJECT_VALUE_STATIC = "subject from operaton property";
+    private static final String SUBJECT_VALUE_STATIC = "subject from camunda property";
     private static final String SUBJECT_VALUE_EXPRESSION = "subject from process-variable";
 
     private static final String TEMPLATE_ID = "template_id";
 
     @Test
     void getReceiverKeyValueStaticTest() {
-        String receiver = SendElementTemplateTaskMailHelper.getReceiverKeyValue(getOperatonPropertiesWithStatics(), getProcessVariables());
+        String receiver = SendElementTemplateTaskMailHelper.getReceiverKeyValue(getCamundaPropertiesWithStatics(), getProcessVariables());
 
         assertEquals(RECEIVER_VALUE_STATIC, receiver);
     }
 
     @Test
     void getReceiverKeyValueExpressionTest() {
-        String receiver = SendElementTemplateTaskMailHelper.getReceiverKeyValue(getOperatonPropertiesWithExpressions(), getProcessVariables());
+        String receiver = SendElementTemplateTaskMailHelper.getReceiverKeyValue(getCamundaPropertiesWithExpressions(), getProcessVariables());
 
         assertEquals(RECEIVER_VALUE_EXPRESSION, receiver);
     }
 
     @Test
     void getSenderKeyValueStaticTest() {
-        String sender = SendElementTemplateTaskMailHelper.getSenderKeyValue(getOperatonPropertiesWithStatics(), getProcessVariables());
+        String sender = SendElementTemplateTaskMailHelper.getSenderKeyValue(getCamundaPropertiesWithStatics(), getProcessVariables());
 
         assertEquals(SENDER_VALUE_STATIC, sender);
     }
 
     @Test
     void getSenderKeyValueExpressionTest() {
-        String sender = SendElementTemplateTaskMailHelper.getSenderKeyValue(getOperatonPropertiesWithExpressions(), getProcessVariables());
+        String sender = SendElementTemplateTaskMailHelper.getSenderKeyValue(getCamundaPropertiesWithExpressions(), getProcessVariables());
 
         assertEquals(SENDER_VALUE_EXPRESSION, sender);
     }
 
     @Test
     void getSubjectKeyValueStaticTest() {
-        String subject = SendElementTemplateTaskMailHelper.getSubjectKeyValue(getOperatonPropertiesWithStatics(), getProcessVariables());
+        String subject = SendElementTemplateTaskMailHelper.getSubjectKeyValue(getCamundaPropertiesWithStatics(), getProcessVariables());
 
         assertEquals(SUBJECT_VALUE_STATIC, subject);
     }
 
     @Test
     void getSubjectKeyValueExpressionTest() {
-        String subject = SendElementTemplateTaskMailHelper.getSubjectKeyValue(getOperatonPropertiesWithExpressions(), getProcessVariables());
+        String subject = SendElementTemplateTaskMailHelper.getSubjectKeyValue(getCamundaPropertiesWithExpressions(), getProcessVariables());
 
         assertEquals(SUBJECT_VALUE_EXPRESSION, subject);
     }
 
     @Test
     void getTemplateKeyValueStaticTest() {
-        String templateId = SendElementTemplateTaskMailHelper.getTemplateKeyValue(getOperatonPropertiesWithStatics(), getProcessVariables());
+        String templateId = SendElementTemplateTaskMailHelper.getTemplateKeyValue(getCamundaPropertiesWithStatics(), getProcessVariables());
 
         assertEquals(TEMPLATE_ID, templateId);
     }
 
     @Test
     void getTemplateKeyValueExpressionTest() {
-        String templateId = SendElementTemplateTaskMailHelper.getTemplateKeyValue(getOperatonPropertiesWithExpressions(), getProcessVariables());
+        String templateId = SendElementTemplateTaskMailHelper.getTemplateKeyValue(getCamundaPropertiesWithExpressions(), getProcessVariables());
 
         assertEquals(TEMPLATE_ID, templateId);
     }
 
     @Test
     void shouldThrowExpectedElementTemplatePropertyNotFoundExceptionTest() throws IllegalElementTemplatePropertyValueException {
-        Map<String, Object> operatonProperties = new HashMap<>();
+        Map<String, Object> camundaProperties = new HashMap<>();
 
         try {
-            SendElementTemplateTaskMailHelper.validateExpectedKeys(operatonProperties);
+            SendElementTemplateTaskMailHelper.validateExpectedKeys(camundaProperties);
             fail();
         } catch (ExpectedElementTemplatePropertyNotFoundException e) {
             System.out.print(e.getMessage());
@@ -109,14 +109,14 @@ class SendElementTemplateTaskMailHelperTest {
     @Test
     void shouldThrowIllegalElementTemplatePropertyValueExceptionTest() throws ExpectedElementTemplatePropertyNotFoundException {
         try {
-            SendElementTemplateTaskMailHelper.validateExpectedKeys(getOperatonPropertiesWithEmptyStatics());
+            SendElementTemplateTaskMailHelper.validateExpectedKeys(getCamundaPropertiesWithEmptyStatics());
             fail();
         } catch (IllegalElementTemplatePropertyValueException e) {
             System.out.print(e.getMessage());
         }
     }
 
-    private Map<String, Object> getOperatonPropertiesWithStatics() {
+    private Map<String, Object> getCamundaPropertiesWithStatics() {
         Map<String, Object> map = new HashMap<>();
         map.put(SendElementTemplateTaskMailHelper.RECEIVER_KEY, RECEIVER_VALUE_STATIC);
         map.put(SendElementTemplateTaskMailHelper.SENDER_KEY, SENDER_VALUE_STATIC);
@@ -126,7 +126,7 @@ class SendElementTemplateTaskMailHelperTest {
         return map;
     }
 
-    private Map<String, Object> getOperatonPropertiesWithEmptyStatics() {
+    private Map<String, Object> getCamundaPropertiesWithEmptyStatics() {
         Map<String, Object> map = new HashMap<>();
         map.put(SendElementTemplateTaskMailHelper.RECEIVER_KEY, "");
         map.put(SendElementTemplateTaskMailHelper.SENDER_KEY, "");
@@ -136,7 +136,7 @@ class SendElementTemplateTaskMailHelperTest {
         return map;
     }
 
-    private Map<String, Object> getOperatonPropertiesWithExpressions() {
+    private Map<String, Object> getCamundaPropertiesWithExpressions() {
         Map<String, Object> map = new HashMap<>();
         map.put(SendElementTemplateTaskMailHelper.RECEIVER_KEY, "${email-receiver}");
         map.put(SendElementTemplateTaskMailHelper.SENDER_KEY, "${email-sender}");

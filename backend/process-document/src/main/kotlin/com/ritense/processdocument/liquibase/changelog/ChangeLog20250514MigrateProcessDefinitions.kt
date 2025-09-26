@@ -17,23 +17,21 @@
 package com.ritense.processdocument.liquibase.changelog
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.service.CamundaProcessService
+import com.ritense.valtimo.service.CamundaProcessService.CAMUNDA_CASE_DEFINITION_VERSION_TAG_PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
 import liquibase.change.custom.CustomTaskChange
 import liquibase.database.Database
 import liquibase.database.jvm.JdbcConnection
 import liquibase.exception.ValidationErrors
 import liquibase.resource.ResourceAccessor
-import org.operaton.bpm.model.bpmn.Bpmn
-import org.operaton.bpm.model.bpmn.BpmnModelInstance
-import org.operaton.bpm.model.bpmn.instance.BusinessRuleTask
-import org.operaton.bpm.model.bpmn.instance.CallActivity
-import org.operaton.bpm.model.bpmn.instance.Process
+import org.camunda.bpm.model.bpmn.Bpmn
+import org.camunda.bpm.model.bpmn.BpmnModelInstance
+import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask
+import org.camunda.bpm.model.bpmn.instance.CallActivity
+import org.camunda.bpm.model.bpmn.instance.Process
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.nio.ByteBuffer
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
@@ -54,11 +52,6 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
                 startable_by_user
             FROM
                 camunda_process_json_schema_document_definition
-            WHERE
-            	camunda_process_definition_key in (
-            		select distinct key_
-            		from act_re_procdef
-            	)
         """.trimIndent()
         val statement = connection.prepareStatement(linkQuery)
         val result = statement.executeQuery()
@@ -76,7 +69,6 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
             migrateProcessDefinition(
                 connection,
-                database,
                 caseDefinitionKey,
                 caseDefinitionVersionTag,
                 caseDefinitionVersionTagForDatabase,
@@ -91,19 +83,18 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
     private fun translateDocumentDefVersionToCaseDefVersionTag(
         documentDefinitionVersion: Int,
     ): String {
-        return "0.$documentDefinitionVersion.0-migrated"
+        return "0.$documentDefinitionVersion.0-env"
     }
 
     private fun translateDocumentDefVersionToCaseDefVersionTagForDatabase(
         documentDefinitionVersion: Int,
     ): String {
         val minorVersion = documentDefinitionVersion.toString().padStart(6, '0')
-        return "000000.$minorVersion.000000-migrated"
+        return "000000.$minorVersion.000000-env"
     }
 
     private fun migrateProcessDefinition(
         connection: JdbcConnection,
-        database: Database,
         caseDefinitionKey: String,
         caseDefinitionVersionTag: String,
         caseDefinitionVersionTagForDatabase: String,
@@ -132,7 +123,6 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
         migrateProcessLinksWithRelatedResources(
             connection,
-            database,
             procDef,
             updatedProcDef,
             caseDefinitionKey,
@@ -154,7 +144,6 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         referencedEntities.processDefinitionKeys.forEach { subProcessDefinitionKey ->
             migrateProcessDefinition(
                 connection,
-                database,
                 caseDefinitionKey,
                 caseDefinitionVersionTag,
                 caseDefinitionVersionTagForDatabase,
@@ -175,22 +164,20 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
     private fun migrateProcessLinksWithRelatedResources(
         connection: JdbcConnection,
-        database: Database,
         originalProcessDefinition: ProcessDefinition,
         newProcessDefinition: ProcessDefinition,
         caseDefinitionKey: String,
         caseDefinitionVersionTagForDatabase: String,
     ) {
-        val processLinks = getProcessLinksForProcess(connection, database, originalProcessDefinition.id)
+        val processLinks = getProcessLinksForProcess(connection, originalProcessDefinition.id)
         processLinks.forEach {
             val updatedLink = it.copy(processDefinitionId = newProcessDefinition.id, id = UUID.randomUUID())
-            saveProcessLink(connection, database, updatedLink)
+            saveProcessLink(connection, updatedLink)
         }
     }
 
     private fun getProcessLinksForProcess(
         connection: JdbcConnection,
-        database: Database,
         processDefinitionId: String,
     ): List<ProcessLink> {
         val query = """
@@ -222,19 +209,19 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         while (results.next()) {
             processLinks.add(
                 ProcessLink(
-                    getIdFromResultSet(database, results, "id")!!,
+                    UUID.fromString(results.getString("id")),
                     results.getString("process_definition_id"),
                     results.getString("activity_id"),
                     results.getString("activity_type"),
                     results.getString("process_link_type"),
                     results.getString("component_key"),
-                    getIdFromResultSet(database, results, "form_definition_id"),
+                    results.getString("form_definition_id")?.let { UUID.fromString(it) },
                     results.getBoolean("view_model_enabled"),
                     results.getString("form_display_type"),
                     results.getString("form_size"),
                     results.getString("subtitles"),
                     results.getString("action_properties"),
-                    getIdFromResultSet(database, results, "plugin_configuration_id"),
+                    results.getString("plugin_configuration_id")?.let { UUID.fromString(it) },
                     results.getString("plugin_action_definition_key"),
                     results.getString("form_flow_definition_id")
                 )
@@ -243,29 +230,11 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         return processLinks
     }
 
-    private fun getIdFromResultSet(
-        database: Database,
-        results: ResultSet,
-        columnName: String
-    ): UUID? {
-        return if (database.databaseProductName == "MySQL") {
-            val bytesResult = results.getBytes(columnName)
-            bytesResult?.let {
-                val byteBuffer = ByteBuffer.wrap(it)
-                UUID(byteBuffer.long, byteBuffer.long)
-            }
-        } else {
-            val stringResult = results.getString(columnName)
-            stringResult?.let { UUID.fromString(it) }
-        }
-    }
-
     private fun saveProcessLink(
         connection: JdbcConnection,
-        database: Database,
         processLink: ProcessLink,
     ) {
-        val insertProcessLinkPostgresQuery = """
+        val insertProcessLinkQuery = """
             insert into process_link
             (
                 id,
@@ -285,84 +254,29 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
                 form_flow_definition_id,
                 migration_form_name
             )
-            values
-            (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json, ?::json, ?, ?, ?,
-                (select name from form_io_form_definition where id = ?)
-            )
+             select ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::json, ?::json, ?, ?, ?, name
+             from form_io_form_definition
+             where id = ?
         """.trimIndent()
-
-        val insertProcessLinkMysqlQuery = """
-            insert into process_link
-            (
-                id,
-                process_definition_id,
-                activity_id,
-                activity_type,
-                process_link_type,
-                component_key,
-                form_definition_id,
-                view_model_enabled,
-                form_display_type,
-                form_size,
-                subtitles,
-                action_properties,
-                plugin_configuration_id,
-                plugin_action_definition_key,
-                form_flow_definition_id,
-                migration_form_name
-            )
-            values
-            (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                (select name from form_io_form_definition where id = ?)
-            )
-        """.trimIndent()
-
-        val insertProcessLinkQuery = if (database.databaseProductName == "MySQL") {
-            insertProcessLinkMysqlQuery
-        } else {
-            insertProcessLinkPostgresQuery
-        }
 
         val statement = connection.prepareStatement(insertProcessLinkQuery)
-        setUuidParameter(1, processLink.id, statement, database)
+        statement.setObject(1, processLink.id)
         statement.setString(2, processLink.processDefinitionId)
         statement.setString(3, processLink.activityId)
         statement.setString(4, processLink.activityType)
         statement.setString(5, processLink.processLinkType)
         statement.setString(6, processLink.componentKey)
-        setUuidParameter(7, processLink.formDefinitionId, statement, database)
+        statement.setObject(7, processLink.formDefinitionId)
         statement.setBoolean(8, processLink.viewModelEnabled)
         statement.setString(9, processLink.formDisplayType)
         statement.setString(10, processLink.formSize)
         statement.setString(11, processLink.subtitles)
         statement.setString(12, processLink.actionProperties)
-        setUuidParameter(13, processLink.pluginConfigurationId, statement, database)
+        statement.setObject(13, processLink.pluginConfigurationId)
         statement.setString(14, processLink.pluginActionDefinitionKey)
         statement.setString(15, processLink.formFlowDefinitionId)
-        setUuidParameter(16, processLink.formDefinitionId, statement, database)
+        statement.setObject(16, processLink.formDefinitionId)
         statement.executeUpdate()
-    }
-
-    private fun setUuidParameter(
-        index: Int,
-        value: UUID?,
-        statement: PreparedStatement,
-        database: Database,
-    ) {
-        if (database.databaseProductName == "MySQL") {
-            if (value == null) {
-                statement.setNull(index, java.sql.Types.BINARY)
-            } else {
-                val bb = ByteBuffer.wrap(ByteArray(16))
-                bb.putLong(value.getMostSignificantBits())
-                bb.putLong(value.getLeastSignificantBits())
-                statement.setBytes(index, bb.array())
-            }
-        } else {
-            statement.setObject(index, value)
-        }
     }
 
     private fun migrateDecisionDefinition(
@@ -398,7 +312,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             decisionDefinitions = decisionDefinitionSet.decisionDefinitions.map { decisionDefinition ->
                 decisionDefinition.copy(
                     id = UUID.randomUUID().toString(),
-                    versionTag = OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
+                    versionTag = CAMUNDA_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
                     version = decisionDefinition.version + 1,
                     deploymentId = deploymentId,
                 )
@@ -453,7 +367,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
         val statement = connection.prepareStatement(existingProcDefQuery)
         statement.setString(1, decisionDefinitionKey)
-        statement.setString(2, OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag))
+        statement.setString(2, CAMUNDA_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag))
 
         val resultSet = statement.executeQuery()
         resultSet.next()
@@ -515,17 +429,15 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             left join act_re_decision_req_def ardrd
                 on ardrd.deployment_id_ = ardd.deployment_id_
                 and ardrd.resource_name_ = ardd.resource_name_
-            join (
-                select ard2.id_, ardd2.resource_name_
+            where ardd.deployment_id_ = (
+                select ard2.id_
                 from act_re_deployment ard2
                 join act_re_decision_def ardd2
                     on ardd2.deployment_id_ = ard2.id_
                 where ardd2.key_ = ?
                 order by version_ desc
                 limit 1
-            ) as original_definition
-                on original_definition.id_ = ardd.deployment_id_
-                and original_definition.resource_name_ = ardd.resource_name_
+            )
         """.trimIndent()
 
         val statement = connection.prepareStatement(query)
@@ -996,7 +908,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             join act_re_procdef pd on pd.id_ = pdcd.process_definition_id
             where pdcd.case_definition_key = ?
             and pdcd.case_definition_version_tag = ?
-            and pd.key_ = ?
+            and pd.name_ = ?
         """.trimIndent()
 
         val statement = connection.prepareStatement(existingProcDefQuery)
@@ -1014,30 +926,29 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         val referencedProcesses = mutableListOf<String>()
         val referencedDecisions = mutableListOf<String>()
 
-        bpmnModel.getDefinitions().getChildElementsByType<Process?>(Process::class.java).forEach { process: Process? ->
-            process!!.setOperatonVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
-        }
-
-        bpmnModel.getModelElementsByType<CallActivity>(CallActivity::class.java).forEach {callActivity ->
-            val elementBinding = callActivity.getOperatonCalledElementBinding()
-            // when the element binding is null, it means it's set to latest
-            if (elementBinding == null || callActivity.operatonCalledElementVersionTag?.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
-                callActivity.setOperatonCalledElementBinding("versionTag")
-                callActivity.setOperatonCalledElementVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
-                referencedProcesses.add(callActivity.calledElement)
+        bpmnModel.getDefinitions().getChildElementsByType<Process?>(Process::class.java).forEach(
+            Consumer { process: Process? ->
+                process!!.setCamundaVersionTag(CamundaProcessService.CAMUNDA_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
+                process.getChildElementsByType<CallActivity>(CallActivity::class.java).forEach {callActivity ->
+                    val elementBinding = callActivity.getCamundaCalledElementBinding()
+                    // when the element binding is null, it means it's set to latest
+                    if (elementBinding == null) {
+                        callActivity.setCamundaCalledElementBinding("versionTag")
+                        callActivity.setCamundaCalledElementVersionTag(CamundaProcessService.CAMUNDA_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
+                        referencedProcesses.add(callActivity.calledElement)
+                    }
+                }
+                process.getChildElementsByType(BusinessRuleTask::class.java).forEach { businessRuleTask ->
+                    val elementBinding = businessRuleTask.getCamundaDecisionRefBinding()
+                    // when the element binding is null, it means it's set to latest
+                    if (elementBinding == null) {
+                        businessRuleTask.setCamundaDecisionRefBinding("versionTag")
+                        businessRuleTask.setCamundaDecisionRefVersionTag(CamundaProcessService.CAMUNDA_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
+                        referencedDecisions.add(businessRuleTask.camundaDecisionRef)
+                    }
+                }
             }
-        }
-
-        bpmnModel.getModelElementsByType(BusinessRuleTask::class.java).forEach { businessRuleTask ->
-            val elementBinding = businessRuleTask.getOperatonDecisionRefBinding()
-            // when the element binding is null, it means it's set to latest
-            if (elementBinding == null || businessRuleTask.operatonDecisionRefVersionTag?.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
-                businessRuleTask.setOperatonDecisionRefBinding("versionTag")
-                businessRuleTask.setOperatonDecisionRefVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
-                referencedDecisions.add(businessRuleTask.operatonDecisionRef)
-            }
-        }
-
+        )
         return ReferencedEntities(referencedProcesses, referencedDecisions)
     }
 
@@ -1064,12 +975,12 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
     data class ProcessDefinition(
         val id: String,
         val rev: Int,
-        val category: String?,
-        val name: String?,
+        val category: String,
+        val name: String,
         val key: String,
         val version: Int,
         val deploymentId: String,
-        val resourceName: String?,
+        val resourceName: String,
         val dgrmResourceName: String?,
         val hasStartFormKey: Boolean,
         val suspensionState: Int,
@@ -1092,7 +1003,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
     data class CamundaByteArray(
         val id: String,
         val rev: Int,
-        val name: String?,
+        val name: String,
         val deploymentId: String?,
         val bytes: ByteArray,
         val generated: Boolean?,
@@ -1138,7 +1049,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         val id: String,
         val rev: Int,
         val category: String?,
-        val name: String?,
+        val name: String,
         val key: String,
         val version: Int,
         val deploymentId: String,

@@ -17,8 +17,6 @@
 package com.ritense.case.service
 
 import com.ritense.BaseTest
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.DisplayType
 import com.ritense.case.domain.EnumDisplayTypeParameter
@@ -28,7 +26,6 @@ import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case.web.rest.mapper.CaseListColumnMapper
-import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -37,15 +34,12 @@ import com.ritense.valueresolver.exception.ValueResolverValidationException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
 import java.util.Optional
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -57,7 +51,6 @@ class CaseDefinitionServiceTest : BaseTest() {
     lateinit var service: CaseDefinitionService
     lateinit var documentDefinitionService: DocumentDefinitionService
     lateinit var valueResolverService: ValueResolverService
-    lateinit var authorizationService: AuthorizationService
 
     @BeforeEach
     fun setUp() {
@@ -65,15 +58,14 @@ class CaseDefinitionServiceTest : BaseTest() {
         caseDefinitionListColumnRepository = mock()
         caseDefinitionRepository = mock()
         valueResolverService = mock()
-        authorizationService = mock()
         service = CaseDefinitionService(
             caseDefinitionListColumnRepository,
             documentDefinitionService,
             caseDefinitionRepository,
             valueResolverService,
-            authorizationService,
             mock(),
-            mock()
+            mock(),
+            mock(),
         )
     }
 
@@ -363,40 +355,6 @@ class CaseDefinitionServiceTest : BaseTest() {
         )
     }
 
-    @Test
-    fun `should not delete an active draft when more drafts exist`() {
-        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(id = caseDefinitionId, active = true, final = false)
-        whenever(caseDefinitionRepository.findAll(any(), any<Pageable>()))
-            .thenReturn(PageImpl(listOf<CaseDefinition>(caseDefinition, mock())))
-        whenever(caseDefinitionRepository.findById(caseDefinitionId))
-            .thenReturn(Optional.of(caseDefinition))
-        val spec = mock<AuthorizationSpecification<CaseDefinition>>()
-        whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
-            .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
-
-        assertEquals("Failed to delete case-definition. Case-definition with id: '$caseDefinitionId' is the global active version.", assertThrows<Exception> {
-            service.deleteCaseDefinition(caseDefinitionId)
-        }.message)
-    }
-
-    @Test
-    fun `should delete an active draft when it is the last one`() {
-        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(id = caseDefinitionId, active = true, final = false)
-        whenever(caseDefinitionRepository.findAll(any(), any<Pageable>()))
-            .thenReturn(PageImpl(listOf(caseDefinition)))
-        whenever(caseDefinitionRepository.findById(caseDefinitionId))
-            .thenReturn(Optional.of(caseDefinition))
-        val spec = mock<AuthorizationSpecification<CaseDefinition>>()
-        whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
-            .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
-
-        service.deleteCaseDefinition(caseDefinitionId)
-    }
-
     private fun getListColumnDtoToFirstName(displayType: DisplayType): CaseListColumnDto {
         return CaseListColumnDto(
             title = "First name",
@@ -405,8 +363,7 @@ class CaseDefinitionServiceTest : BaseTest() {
             displayType = displayType,
             sortable = true,
             defaultSort = ColumnDefaultSort.ASC,
-            order = 1,
-            exportable = false
+            order = 1
         )
     }
 
@@ -418,8 +375,7 @@ class CaseDefinitionServiceTest : BaseTest() {
             displayType = displayType,
             sortable = true,
             defaultSort = null,
-            order = 2,
-            exportable = false
+            order = 2
         )
     }
 }

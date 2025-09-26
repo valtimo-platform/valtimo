@@ -41,13 +41,12 @@ import com.ritense.documentenapi.web.rest.DocumentenApiResource
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
 import com.ritense.valueresolver.ValueResolverService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -74,16 +73,18 @@ class DocumentenApiAutoConfiguration {
         objectMapper: ObjectMapper,
         platformTransactionManager: PlatformTransactionManager,
         authorizationService: AuthorizationService,
+        @Value("\${valtimo.authorization.zgwDocuments.enabled:false}")
+        authorizationEnabled: Boolean,
     ) = DocumentenApiClient(
         restClientBuilder,
         outboxService,
         objectMapper,
         platformTransactionManager,
         authorizationService,
+        authorizationEnabled,
     )
 
     @Bean
-    @ConditionalOnMissingBean(DocumentenApiPluginFactory::class)
     fun documentenApiPluginFactory(
         pluginService: PluginService,
         client: DocumentenApiClient,
@@ -92,8 +93,6 @@ class DocumentenApiAutoConfiguration {
         objectMapper: ObjectMapper,
         documentDeleteHandlers: List<DocumentDeleteHandler>,
         documentenApiVersionService: DocumentenApiVersionService,
-        processDocumentAssociationService: ProcessDocumentAssociationService,
-        runtimeService: OperatonRuntimeService,
     ): DocumentenApiPluginFactory {
         return DocumentenApiPluginFactory(
             pluginService,
@@ -103,7 +102,6 @@ class DocumentenApiAutoConfiguration {
             objectMapper,
             documentDeleteHandlers,
             documentenApiVersionService,
-            runtimeService
         )
     }
 
@@ -145,7 +143,7 @@ class DocumentenApiAutoConfiguration {
         documentDefinitionService: DocumentDefinitionService,
         caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
         pluginProcessLinkService: PluginProcessLinkService,
-        operatonRepositoryService: OperatonRepositoryService,
+        camundaRepositoryService: CamundaRepositoryService,
         activeCaseDefinitionService: ActiveCaseDefinitionService,
     ): DocumentenApiVersionService {
         return DocumentenApiVersionService(
@@ -158,7 +156,7 @@ class DocumentenApiAutoConfiguration {
             documentDefinitionService,
             caseDefinitionProcessLinkService,
             pluginProcessLinkService,
-            operatonRepositoryService,
+            camundaRepositoryService,
             activeCaseDefinitionService,
         )
     }
