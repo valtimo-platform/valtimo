@@ -18,7 +18,6 @@ package com.ritense.objectenapi
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.logging.withLoggingContext
-import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.client.ObjectenApiClient
@@ -29,7 +28,8 @@ import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.validation.Url
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KLogger
+import mu.KotlinLogging
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.web.util.UriComponentsBuilder
@@ -73,13 +73,6 @@ class ObjectenApiPlugin(
         withLoggingContext("objectUrl" to objectUrl.toString()) {
             logger.debug { "Getting Objecten API object with url '$objectUrl'" }
             return objectenApiClient.getObject(authenticationPluginConfiguration, objectUrl)
-        }
-    }
-
-    fun getObjectRecord(objectUrl: URI, index: Int): ObjectRecord {
-        withLoggingContext("objectUrl" to objectUrl.toString()) {
-            logger.debug { "Getting Objecten API object with url '$objectUrl' and index '$index'" }
-            return objectenApiClient.getObjectRecord(authenticationPluginConfiguration, objectUrl, index)
         }
     }
 
@@ -145,7 +138,7 @@ class ObjectenApiPlugin(
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
 
         const val URL_PROPERTY = "url"
 

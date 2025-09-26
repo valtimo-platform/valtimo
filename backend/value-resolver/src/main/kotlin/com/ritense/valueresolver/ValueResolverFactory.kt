@@ -16,9 +16,8 @@
 
 package com.ritense.valueresolver
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.exception.ValueResolverValidationException
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.UUID
 import java.util.function.Function
 
@@ -44,7 +43,7 @@ interface ValueResolverFactory {
      * The requestedValue argument of the returned resolver is already stripped of the prefix:
      * 'someProperty' will be passed as an argument when the original requestedValue was 'pv:someProperty'
      *
-     * @param processInstanceId The Operaton processInstanceId these values belong to
+     * @param processInstanceId The Camunda processInstanceId these values belong to
      * @param variableScope An implementation of VariableScope. For instance: a TaskDelegate or DelegateExecution
      *
      * @return a resolver that handles one requestedValue at a time within the same context.
@@ -87,7 +86,7 @@ interface ValueResolverFactory {
         : Function<String, Any?>
 
     /**
-     * @param processInstanceId The Operaton processInstanceId these values belong to
+     * @param processInstanceId The Camunda processInstanceId these values belong to
      * @param variableScope An implementation of VariableScope.
      * @param values The values to handle. i.e. mapOf(doc:add:/firstname to John)
      */
@@ -113,11 +112,21 @@ interface ValueResolverFactory {
         return values
     }
 
-    fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions instead", ReplaceWith("getResolvableKeyOptions(documentDefinitionName, version)"))
+    fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
         return emptyList()
     }
 
-    fun getResolvableKeyOptions(caseDefinitionKey: String): List<ValueResolverOption> {
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions instead", ReplaceWith("getResolvableKeyOptions(documentDefinitionName)"))
+    fun getResolvableKeys(documentDefinitionName: String): List<String> {
+        return emptyList()
+    }
+
+    fun getResolvableKeyOptions(documentDefinitionName: String, version: Long): List<ValueResolverOption> {
+        return emptyList()
+    }
+
+    fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
         return emptyList()
     }
 

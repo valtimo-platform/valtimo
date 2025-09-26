@@ -18,8 +18,8 @@
 package com.ritense.valtimo
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.ProcessEngine
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.ProcessEngine
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
@@ -38,13 +38,13 @@ class JobServiceIntTest: BaseIntegrationTest() {
     lateinit var jobService: JobService
 
     @Autowired
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
     @Test
     fun `should delay job`(){
         val testProcessDefinition = "test-timer-event"
         val testProcessInstance = runWithoutAuthorization{
-            operatonProcessService.startProcess(
+            camundaProcessService.startProcess(
                 testProcessDefinition, UUID.randomUUID().toString(),null
             )
         }
@@ -60,7 +60,7 @@ class JobServiceIntTest: BaseIntegrationTest() {
     fun `should move the job forward`(){
         val testProcessDefinition = "test-timer-event"
         val testProcessInstance = runWithoutAuthorization {
-            operatonProcessService.startProcess(
+            camundaProcessService.startProcess(
                 testProcessDefinition, UUID.randomUUID().toString(),null
             )
         }
@@ -75,7 +75,7 @@ class JobServiceIntTest: BaseIntegrationTest() {
     fun `should change job date`(){
         val testProcessDefinition = "test-timer-event"
         val testProcessInstance = runWithoutAuthorization {
-            operatonProcessService.startProcess(
+            camundaProcessService.startProcess(
                 testProcessDefinition, UUID.randomUUID().toString(),null
             )
         }

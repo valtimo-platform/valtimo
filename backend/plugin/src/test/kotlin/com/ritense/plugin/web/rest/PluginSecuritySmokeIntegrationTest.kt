@@ -16,17 +16,8 @@
 
 package com.ritense.plugin.web.rest
 
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
 import com.ritense.valtimo.web.rest.SecuritySmokeIntegrationTest
-import org.operaton.bpm.engine.HistoryService
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 class PluginSecuritySmokeIntegrationTest : SecuritySmokeIntegrationTest(
     basePackageName = "com.ritense.plugin"
-) {
-    @MockitoBean
-    lateinit var processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
-
-    @MockitoBean
-    lateinit var historyService: HistoryService
-}
+)

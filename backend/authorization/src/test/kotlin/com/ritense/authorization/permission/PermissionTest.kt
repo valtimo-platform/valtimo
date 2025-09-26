@@ -42,7 +42,7 @@ class PermissionTest {
         permission = spy(
             Permission(
                 resourceType = String::class.java,
-                actions = mutableListOf(Action<String>(Action.VIEW)),
+                action = Action<String>(Action.VIEW),
                 conditionContainer = ConditionContainer(listOf(
                     condition1,
                     condition2
