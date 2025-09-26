@@ -53,7 +53,8 @@ valtimo:
         encryption-secret: "abcdefghijklmnop"
     operaton:
         scripting:
-            allowedClasses: java.lang.System
+            allowedClasses:
+                - java.lang.Math
 aws:
     profile: ritense
     region: eu-central-1
