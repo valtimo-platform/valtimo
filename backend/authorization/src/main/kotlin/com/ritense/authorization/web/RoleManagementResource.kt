@@ -94,7 +94,7 @@ class RoleManagementResource(
             .map { permission ->
                 PermissionDto(
                     permission.resourceType,
-                    permission.actions.map { it.key },
+                    permission.action.key,
                     permission.conditionContainer.conditions,
                     permission.role.key,
                     permission.contextResourceType,
@@ -123,7 +123,7 @@ class RoleManagementResource(
             ).map { permission ->
                 PermissionDto(
                     permission.resourceType,
-                    permission.actions.map { it.key },
+                    permission.action.key,
                     permission.conditionContainer.conditions,
                     permission.role.key,
                     permission.contextResourceType,

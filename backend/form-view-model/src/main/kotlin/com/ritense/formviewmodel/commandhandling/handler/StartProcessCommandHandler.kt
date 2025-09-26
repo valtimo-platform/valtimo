@@ -18,28 +18,28 @@ package com.ritense.formviewmodel.commandhandling.handler
 
 import com.ritense.commandhandling.CommandHandler
 import com.ritense.formviewmodel.commandhandling.StartProcessCommand
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
-import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.CamundaProcessService
 
 class StartProcessCommandHandler(
-    private val operatonProcessService: OperatonProcessService,
+    private val camundaProcessService: CamundaProcessService,
     private val processDocumentAssociationService: ProcessDocumentAssociationService
 ) : CommandHandler<StartProcessCommand, Unit> {
 
     override fun execute(command: StartProcessCommand) {
         // Start process instance
-        val processInstanceWithDefinition = operatonProcessService.startProcess(
+        val processInstanceWithDefinition = camundaProcessService.startProcess(
             command.processDefinitionKey,
             command.businessKey,
             command.processVariables
         )
         // Link case instance to process instance
-        val operatonProcessInstanceId = OperatonProcessInstanceId(
+        val camundaProcessInstanceId = CamundaProcessInstanceId(
             processInstanceWithDefinition.processInstanceDto.id
         )
         processDocumentAssociationService.createProcessDocumentInstance(
-            operatonProcessInstanceId.toString(),
+            camundaProcessInstanceId.toString(),
             command.caseInstanceId,
             processInstanceWithDefinition.processDefinition.name
         )

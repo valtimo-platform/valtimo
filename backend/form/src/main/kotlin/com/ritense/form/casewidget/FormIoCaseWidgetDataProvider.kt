@@ -33,11 +33,7 @@ class FormIoCaseWidgetDataProvider(
     override fun supportedWidgetType() = FormIoCaseWidget::class.java
 
     override fun getData(documentId: UUID, widgetTab: CaseWidgetTab, widget: FormIoCaseWidget, pageable: Pageable): JsonNode? {
-        val caseDefinitionId = widgetTab.id.caseDefinitionId
-        val formDefinition = formDefinitionService.getFormDefinitionByName(
-            widget.properties.formDefinitionName,
-            caseDefinitionId
-        ).getOrNull()
+        val formDefinition = formDefinitionService.getFormDefinitionByName(widget.properties.formDefinitionName).getOrNull()
 
         return formDefinition?.let {
             formService.getPrefilledFormDefinition(formDefinition.id, documentId).asJson()
