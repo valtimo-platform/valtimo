@@ -22,8 +22,8 @@ import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.domain.TestProcessLink
 import com.ritense.processlink.repository.ProcessLinkRepository
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional
 class ProcessLinkImporterIntTest @Autowired constructor(
     private val processLinkImporter: ProcessLinkImporter,
     private val processLinkRepository: ProcessLinkRepository,
-    private val repositoryService: OperatonRepositoryService
+    private val repositoryService: CamundaRepositoryService
 ) : BaseIntegrationTest() {
 
     @Test
@@ -59,7 +59,7 @@ class ProcessLinkImporterIntTest @Autowired constructor(
         assertThat(processLink.someValue).isEqualTo("importer test")
     }
 
-    private fun getLatestProcessDefinition(): OperatonProcessDefinition {
+    private fun getLatestProcessDefinition(): CamundaProcessDefinition {
         return AuthorizationContext.runWithoutAuthorization {
             repositoryService.findLatestProcessDefinition("test-importer-process")!!
         }

@@ -112,7 +112,7 @@
                 cd.external_start_form_url,
                 cd.external_start_form_description,
                 jsdd.document_definition_name,
-                '000000.' || LPAD(jsdd.document_definition_version::text, 6, '0') || '.000000-migrated'
+                '000000.' || LPAD(jsdd.document_definition_version::text, 6, '0') || '.000000-${environmentName}'
             from json_schema_document_definition jsdd
             left join case_definition cd
                 on jsdd.document_definition_name = cd.case_definition_key
@@ -136,14 +136,14 @@
                 case_definition_version_tag
             )
             select
-                jsdd.json_schema->> '$.title' as case_definition_name,
+                JSON_EXTRACT(jsdd.json_schema, '$.title') as case_definition_name,
                 cd.can_have_assignee,
                 cd.auto_assign_tasks,
                 cd.has_external_start_form,
                 cd.external_start_form_url,
                 cd.external_start_form_description,
                 jsdd.document_definition_name,
-                CONCAT('000000.', LPAD(jsdd.document_definition_version, 6, '0'), '.000000-migrated')
+                CONCAT('000000.', LPAD(jsdd.document_definition_version, 6, '0'), '.000000-', '${environmentName}')
             from json_schema_document_definition jsdd
                 left join case_definition cd
             on jsdd.document_definition_name = cd.case_definition_key
@@ -156,7 +156,7 @@
         </preConditions>
         <sql>
             update json_schema_document_definition as ddu
-            set case_definition_version_tag = '000000.' || LPAD(ddu.document_definition_version::text, 6, '0') || '.000000-migrated',
+            set case_definition_version_tag = '000000.' || LPAD(ddu.document_definition_version::text, 6, '0') || '.000000-${environmentName}',
                 case_definition_key = ddu.document_definition_name
             where ddu.case_definition_version_tag is null
         </sql>
@@ -168,7 +168,7 @@
         </preConditions>
         <sql>
             update json_schema_document_definition as ddu
-            set case_definition_version_tag = CONCAT('000000.', LPAD(ddu.document_definition_version, 6, '0'), '.000000-migrated'),
+            set case_definition_version_tag = CONCAT('000000.', LPAD(ddu.document_definition_version, 6, '0'), '.000000-', '${environmentName}'),
                 case_definition_key = ddu.document_definition_name
             where ddu.case_definition_version_tag is null
         </sql>

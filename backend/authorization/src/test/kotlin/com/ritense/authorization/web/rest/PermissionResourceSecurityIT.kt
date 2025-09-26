@@ -55,7 +55,7 @@ class PermissionResourceSecurityIT : SecuritySpecificEndpointIntegrationTest() {
             Permission(
                 UUID.randomUUID(),
                 TestEntity::class.java,
-                mutableListOf(TestEntityActionProvider.view),
+                TestEntityActionProvider.view,
                 ConditionContainer(emptyList()),
                 role
             )

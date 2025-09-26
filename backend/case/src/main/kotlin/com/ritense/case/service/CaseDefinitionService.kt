@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ class CaseDefinitionService(
     valueResolverService: ValueResolverService,
     private val authorizationService: AuthorizationService,
     private val applicationEventPublisher: ApplicationEventPublisher,
-    private val caseDefinitionChecker: CaseDefinitionChecker
+    private val caseDefinitionChecker: CaseDefinitionChecker,
 ) {
     var validators: Map<Operation, ListColumnValidator<CaseListColumnDto>> = mapOf(
         Operation.CREATE to CreateCaseListColumnValidator(
@@ -134,11 +134,7 @@ class CaseDefinitionService(
     fun deleteCaseDefinition(caseDefinitionId: CaseDefinitionId) {
         denyManagementOperation()
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-        val isLastCaseDefinition = getCaseDefinitions(
-            caseDefinitionKey = caseDefinitionId.key,
-            pageable = Pageable.ofSize(2)
-        ).count() == 1
-        require(isLastCaseDefinition || !getCaseDefinition(caseDefinitionId).active) {
+        require(!getCaseDefinition(caseDefinitionId).active) {
             "Failed to delete case-definition. Case-definition with id: '$caseDefinitionId' is the global active version."
         }
         require(!getCaseDefinition(caseDefinitionId).final) {
@@ -267,18 +263,10 @@ class CaseDefinitionService(
             validators[Operation.CREATE]!!.validate(caseDefinitionKey, caseListColumnDto)
         }
         caseListColumnDto.order = caseDefinitionListColumnRepository.countByIdCaseDefinitionKey(caseDefinitionKey)
-
-        if (caseListColumnDto.exportable) {
-            validateExportPath(caseListColumnDto.path, caseListColumnDto.key)
-        }
-
         caseDefinitionListColumnRepository
             .save(CaseListColumnMapper.toEntity(caseDefinitionKey, caseListColumnDto))
-
-        logger.info { "User '${getCurrentUser()}' created a case list column configuration: '$caseListColumnDto' for case definition: '$caseDefinitionKey'"}
     }
 
-    @Transactional
     fun updateListColumns(
         caseDefinitionName: String,
         caseListColumnDtoList: List<CaseListColumnDto>
@@ -288,32 +276,14 @@ class CaseDefinitionService(
         runWithoutAuthorization {
             validators[Operation.UPDATE]!!.validate(caseDefinitionName, caseListColumnDtoList)
         }
-
-        caseListColumnDtoList.forEachIndexed { index, dto ->
-            dto.order = index
+        var order = 0
+        caseListColumnDtoList.forEach { caseListColumnDto ->
+            caseListColumnDto.order = order++
         }
-
-        caseListColumnDtoList
-            .filter { it.exportable }
-            .forEach { dto ->
-                validateExportPath(dto.path, dto.key)
-            }
-
-        val entities = CaseListColumnMapper.toEntityList(caseDefinitionName, caseListColumnDtoList)
-
-        val incomingKeys = entities.map { it.id.key }
-
-        caseDefinitionListColumnRepository.deleteByIdCaseDefinitionKey(caseDefinitionName)
-
-        caseDefinitionListColumnRepository.saveAll(entities)
-
-        val currentUser = getCurrentUser()
-
-        if(currentUser != null) {
-            logger.info { "User '${currentUser}' " +
-                "updated case list column configuration: '$entities' for case definition: '$caseDefinitionName'"}
-        }
+        caseDefinitionListColumnRepository
+            .saveAll(CaseListColumnMapper.toEntityList(caseDefinitionName, caseListColumnDtoList))
     }
+
 
     @Throws(UnknownDocumentDefinitionException::class)
     fun getListColumns(caseDefinitionKey: String): List<CaseListColumnDto> {
@@ -405,18 +375,7 @@ class CaseDefinitionService(
         }
     }
 
-    private fun validateExportPath(path: String, key: String) {
-        require(PATH_REGEX_EXPORTABLE.containsMatchIn(path)) {
-            "Failed to save the case list column configuration for key '$key'. Only document or case properties can be exported."
-        }
-    }
-
-    private fun getCurrentUser(): String? {
-        return SecurityUtils.getCurrentUserLogin()
-    }
-
     companion object {
         val logger = KotlinLogging.logger {}
-        val PATH_REGEX_EXPORTABLE = Regex("^(case:|doc:)")
     }
 }

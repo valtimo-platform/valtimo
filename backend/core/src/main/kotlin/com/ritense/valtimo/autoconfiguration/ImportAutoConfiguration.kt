@@ -17,11 +17,11 @@
 
 package com.ritense.valtimo.autoconfiguration
 
-import com.ritense.valtimo.importer.OperatonDecisionDefinitionImporter
-import com.ritense.valtimo.importer.OperatonProcessDefinitionImporter
+import com.ritense.valtimo.importer.CamundaDecisionDefinitionImporter
+import com.ritense.valtimo.importer.CamundaProcessDefinitionImporter
 import com.ritense.valtimo.importer.GlobalProcessDefinitionImporter
 import com.ritense.valtimo.importer.GlobalDecisionDefinitionImporter
-import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.CamundaProcessService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -31,26 +31,26 @@ class ImportAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    fun operatonProcessDefinitionImporter(
-        operatonProcessService: OperatonProcessService
-    ) = OperatonProcessDefinitionImporter(operatonProcessService)
+    fun camundaProcessDefinitionImporter(
+        camundaProcessService: CamundaProcessService
+    ) = CamundaProcessDefinitionImporter(camundaProcessService)
 
     @Bean
     @ConditionalOnMissingBean
-    fun operatonDecisionDefinitionImporter(
-        operatonProcessService: OperatonProcessService
-    ) = OperatonDecisionDefinitionImporter(operatonProcessService)
+    fun camundaDecisionDefinitionImporter(
+        camundaProcessService: CamundaProcessService
+    ) = CamundaDecisionDefinitionImporter(camundaProcessService)
 
     @Bean
     @ConditionalOnMissingBean
     fun globalProcessDefinitionImporter(
-        operatonProcessService: OperatonProcessService
-    ) = GlobalProcessDefinitionImporter(operatonProcessService)
+        camundaProcessService: CamundaProcessService
+    ) = GlobalProcessDefinitionImporter(camundaProcessService)
 
     @Bean
     @ConditionalOnMissingBean
     fun systemDecisionDefinitionImporter(
-        operatonProcessService: OperatonProcessService
-    ) = GlobalDecisionDefinitionImporter(operatonProcessService)
+        camundaProcessService: CamundaProcessService
+    ) = GlobalDecisionDefinitionImporter(camundaProcessService)
 
 }

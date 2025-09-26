@@ -22,7 +22,7 @@ import com.ritense.processlink.uicomponent.domain.UIComponentActivityResultPrope
 import com.ritense.processlink.uicomponent.domain.UIComponentProcessLink
 import com.ritense.processlink.uicomponent.domain.UIComponentProcessLink.Companion.TYPE_UI_COMPONENT
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
-import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.camunda.domain.CamundaTask
 import java.util.UUID
 
 class UIComponentProcessLinkActivityHandler : ProcessLinkActivityHandler<UIComponentActivityResultProperties> {
@@ -32,7 +32,7 @@ class UIComponentProcessLinkActivityHandler : ProcessLinkActivityHandler<UICompo
     }
 
     override fun openTask(
-        task: OperatonTask,
+        task: CamundaTask,
         processLink: ProcessLink
     ): ProcessLinkActivityResult<UIComponentActivityResultProperties> {
         processLink as UIComponentProcessLink

@@ -11,8 +11,7 @@
         },
         "sortable": false,
         "defaultSort": "DESC",
-        "order": 0,
-        "exportable" : false
+        "order": 0
     },
     {
         "key": "modifiedOn",
@@ -23,7 +22,6 @@
                 "dateFormat": null
             }
         },
-        "sortable": true,
-        "exportable" : false
+        "sortable": true
     }
 ]

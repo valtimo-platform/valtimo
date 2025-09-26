@@ -99,7 +99,7 @@ spring:
             max-file-size: 10MB
             max-request-size: 10MB
     jersey:
-        application-path: /api/operaton-rest
+        application-path: /api/camunda-rest
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
@@ -231,6 +231,13 @@ valtimo:
                 delivery-timeout: "PT0.5S"
             polling.rate: "PT15M"
 
+    authorization:
+        objectenapi:
+            enabled: true
+        dashboard:
+            enabled: true
+        zgwDocuments:
+            enabled:true
     logging:
         retentionInMinutes: 1440
     docker:
@@ -254,7 +261,7 @@ scheduling:
         cron:
             cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
             taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
-operaton:
+camunda:
     bpm:
         history-level: AUDIT
         history-level-default: AUDIT

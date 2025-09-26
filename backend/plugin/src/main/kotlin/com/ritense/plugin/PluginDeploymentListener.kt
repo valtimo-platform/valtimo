@@ -114,7 +114,6 @@ open class PluginDeploymentListener(
             pluginAnnotation.description,
             clazz.name,
             mutableSetOf(),
-            mutableSetOf(),
             mutableSetOf()
         )
 
@@ -153,20 +152,18 @@ open class PluginDeploymentListener(
     private fun createActionDefinition(deployedPluginDefinition: PluginDefinition, clazz: Class<*>) {
         findPluginActions(clazz)
             .forEach { (method, actionAnnotation) ->
-                val actionDefinition = PluginActionDefinition(
-                    PluginActionDefinitionId(
-                        actionAnnotation.key,
-                        deployedPluginDefinition
-                    ),
-                    actionAnnotation.title,
-                    actionAnnotation.description,
-                    method.name,
-                    actionAnnotation.activityTypes.toList()
+                val actionDefinition = deployActionDefinition(
+                    PluginActionDefinition(
+                        PluginActionDefinitionId(
+                            actionAnnotation.key,
+                            deployedPluginDefinition
+                        ),
+                        actionAnnotation.title,
+                        actionAnnotation.description,
+                        method.name,
+                        actionAnnotation.activityTypes.toList()
+                    )
                 )
-
-                deployActionDefinition(actionDefinition)
-                (deployedPluginDefinition.actions as MutableSet).add(actionDefinition)
-
                 findPluginActionParameters(method)
                     .forEach { (parameter, _) ->
                         deployActionParameterDefinition(

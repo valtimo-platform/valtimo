@@ -18,7 +18,7 @@ package com.ritense.zakenapi.provider
 
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInstanceLink
@@ -30,6 +30,7 @@ import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import org.assertj.core.api.Assertions.assertThat
+import org.camunda.community.mockito.delegate.DelegateTaskFake
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -37,7 +38,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.operaton.bpm.engine.delegate.DelegateTask
 import java.net.URI
 import java.util.UUID
 
@@ -62,9 +62,8 @@ class ZaakBsnProviderTest {
 
     @Test
     fun `should get bsn via zaak rollen`() {
-        val task = mock<DelegateTask> {
-            on { processInstanceId }.thenReturn(UUID.randomUUID().toString())
-        }
+        val task = DelegateTaskFake()
+                .withProcessInstanceId(UUID.randomUUID().toString())
         val zaakUrl = URI("example.com")
 
         prepareMocks(task, zaakUrl)
@@ -84,9 +83,8 @@ class ZaakBsnProviderTest {
 
     @Test
     fun `should throw exception when plugin configuration is not found`() {
-        val task = mock<DelegateTask> {
-            on { processInstanceId }.thenReturn(UUID.randomUUID().toString())
-        }
+        val task = DelegateTaskFake()
+                .withProcessInstanceId(UUID.randomUUID().toString())
         val zaakUrl = URI("example.com")
 
         prepareMocks(task, zaakUrl)
@@ -98,9 +96,9 @@ class ZaakBsnProviderTest {
         assertThat(exception.message).isEqualTo("No plugin configuration was found for zaak with URL $zaakUrl")
     }
 
-    private fun prepareMocks(task: DelegateTask, zaakUrl: URI) {
+    private fun prepareMocks(task: DelegateTaskFake, zaakUrl: URI) {
         val documentId = UUID.randomUUID()
-        whenever(processDocumentService.getDocumentId(eq(OperatonProcessInstanceId(task.processInstanceId)), eq(task))).thenReturn(JsonSchemaDocumentId.existingId(documentId))
+        whenever(processDocumentService.getDocumentId(eq(CamundaProcessInstanceId(task.processInstanceId)), eq(task))).thenReturn(JsonSchemaDocumentId.existingId(documentId))
         val zaakInstanceLink = mock<ZaakInstanceLink>()
         whenever(zaakInstanceLink.zaakInstanceUrl).thenReturn(zaakUrl)
         whenever(zaakInstanceLinkService.getByDocumentId(documentId)).thenReturn(zaakInstanceLink)

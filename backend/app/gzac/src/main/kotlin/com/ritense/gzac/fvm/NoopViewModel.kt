@@ -18,12 +18,12 @@ package com.ritense.gzac.fvm
 
 import com.ritense.formviewmodel.viewmodel.Submission
 import com.ritense.formviewmodel.viewmodel.ViewModel
-import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.camunda.domain.CamundaTask
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class NoopViewModel : ViewModel, Submission {
 
-    override fun update(task: OperatonTask?, page: Int?): ViewModel {
+    override fun update(task: CamundaTask?, page: Int?): ViewModel {
         logger.info { "Update called on ${this::class.java.simpleName}, taskId=${task?.id}, page=$page" }
 
         return this

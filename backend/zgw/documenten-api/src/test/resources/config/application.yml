@@ -30,10 +30,13 @@ spring-actuator:
 valtimo:
     plugin:
         encryption-secret: "abcdefghijklmnop"
+    authorization:
+        zgwDocuments:
+            enabled: true
     import:
         whitelistedPaths: "example.properties.*"
 
-operaton:
+camunda:
     bpm:
         history-level: audit
         generic-properties:

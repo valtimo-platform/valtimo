@@ -87,7 +87,6 @@
     <changeSet id="9" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <columnExists tableName="process_link" columnName="form_flow_definition_key"/>
-            <tableExists tableName="json_schema_document"/>
             <dbms type="postgresql"/>
         </preConditions>
         <sql>
@@ -152,7 +151,6 @@
     <changeSet id="10" author="Ritense">
         <preConditions onFail="MARK_RAN">
             <columnExists tableName="process_link" columnName="form_flow_definition_key"/>
-            <tableExists tableName="json_schema_document"/>
             <dbms type="mysql"/>
         </preConditions>
         <sql>
@@ -257,7 +255,6 @@
 
     <changeSet id="13" author="Ritense">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="json_schema_document"/>
             <dbms type="postgresql"/>
         </preConditions>
         <sql>
@@ -265,7 +262,7 @@
             set case_definition_key = jsd.case_definition_key,
                 case_definition_version_tag = jsd.case_definition_version_tag,
                 form_flow_definition_key = ffd.form_flow_definition_key
-            from json_schema_document jsd
+                from json_schema_document jsd
             join form_flow_instance ffi2
                 on (additional_properties->>'documentId')::uuid = jsd.json_schema_document_id
             join form_flow_definition ffd
@@ -279,7 +276,6 @@
 
     <changeSet id="14" author="Ritense">
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="json_schema_document"/>
             <dbms type="mysql"/>
         </preConditions>
         <sql>
@@ -394,9 +390,7 @@
     </changeSet>
 
     <changeSet id="22" author="Ritense">
-        <validCheckSum>9:c1ac5d86013c9859ae5e3e9ac6d9f462</validCheckSum>
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="form_io_form_definition"/>
             <dbms type="postgresql"/>
         </preConditions>
         <sql>
@@ -422,20 +416,18 @@
                     on fd.name = ffs.type->'properties'->>'definition'
                 where ffs.type->>'name' = 'form'
                 and not exists (
-                    select 1
+                    select *
                     from form_io_form_definition fd2
                     where fd.name = fd2.name
-                    and ffs.case_definition_key = fd2.case_definition_key
-                    and ffs.case_definition_version_tag = fd2.case_definition_version_tag
+                    and fd.case_definition_key = fd2.case_definition_key
+                    and fd.case_definition_version_tag = fd2.case_definition_version_tag
                 )
             ) as forms
         </sql>
     </changeSet>
 
     <changeSet id="23" author="Ritense">
-        <validCheckSum>9:9a40a9c2d8df3183b8504f9ea2e1a6c1</validCheckSum>
         <preConditions onFail="MARK_RAN">
-            <tableExists tableName="form_io_form_definition"/>
             <dbms type="mysql"/>
         </preConditions>
         <sql>
@@ -461,11 +453,11 @@
                     on fd.name = ffs.type->>'$.properties.definition'
                 where ffs.type->>'$.name' = 'form'
                 and not exists (
-                    select 1
+                    select *
                     from form_io_form_definition fd2
                     where fd.name = fd2.name
-                    and ffs.case_definition_key = fd2.case_definition_key
-                    and ffs.case_definition_version_tag = fd2.case_definition_version_tag
+                    and fd.case_definition_key = fd2.case_definition_key
+                    and fd.case_definition_version_tag = fd2.case_definition_version_tag
                 )
             ) as forms
         </sql>

@@ -39,7 +39,8 @@ class DashboardDataService(
     private val widgetConfigurationRepository: WidgetConfigurationRepository,
     private val objectMapper: ObjectMapper,
     private val dashboardService: DashboardService,
-    private val authorizationService: AuthorizationService
+    private val authorizationService: AuthorizationService,
+    private val authorizationEnabled: Boolean
 ) {
 
     /**
@@ -100,13 +101,15 @@ class DashboardDataService(
         applicationContext.getBean(this::class.java)
 
     private fun checkAuthorization(dashboard: Dashboard) {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Dashboard::class.java,
-                DashboardActionProvider.VIEW,
-                dashboard
+        if(authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Dashboard::class.java,
+                    DashboardActionProvider.VIEW,
+                    dashboard
+                )
             )
-        )
+        }
     }
 
     companion object {
