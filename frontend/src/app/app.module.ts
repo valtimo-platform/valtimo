@@ -25,22 +25,21 @@ import {
 } from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {CUSTOM_WIDGET_TOKEN, LayoutModule, TranslationManagementModule} from '@valtimo/layout';
+import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
 import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
+  BpmnJsDiagramModule,
   enableCustomFormioComponents,
   FormIoModule,
-  registerFormioCurrencyComponent,
+  MenuModule,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
   registerFormioIbanComponent,
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   UploaderModule,
-  BpmnJsDiagramModule,
-  MenuModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
@@ -51,6 +50,7 @@ import {
   CaseDetailTabProgressComponent,
   CaseDetailTabSummaryComponent,
   CaseModule,
+  CUSTOM_CASE_WIDGET_TOKEN,
   DefaultTabs,
 } from '@valtimo/case';
 import {ProcessModule} from '@valtimo/process';
@@ -97,8 +97,6 @@ import {
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
-  KlantinteractiesApiPluginModule,
-  klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
   notificatiesApiPluginSpecification,
   ObjectenApiPluginModule,
@@ -107,8 +105,6 @@ import {
   objectTokenAuthenticationPluginSpecification,
   ObjecttypenApiPluginModule,
   objecttypenApiPluginSpecification,
-  OpenKlantTokenAuthenticationPluginModule,
-  openKlantTokenAuthenticationPluginSpecification,
   OpenNotificatiesPluginModule,
   openNotificatiesPluginSpecification,
   OpenZaakPluginModule,
@@ -128,6 +124,7 @@ import {ObjectModule} from '@valtimo/object';
 import {AccessControlManagementModule} from '@valtimo/access-control-management';
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custom-form-flow.component';
+import {TaskManagementModule} from '@valtimo/task-management';
 import {CaseMigrationModule} from '@valtimo/case-migration';
 import {
   CaseDetailTabZaakobjectenComponent,
@@ -138,6 +135,8 @@ import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
 import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
+import {FormIoCurrencyComponent} from '../../projects/valtimo/components/src/lib/components/form-io/form-io-currency/currency.component';
+import {Formio} from '@formio/js';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -160,6 +159,7 @@ export function tabsFactory() {
     UploadShowcaseComponent,
     CustomCaseTabComponent,
     CustomMapsTabComponent,
+    FormIoCurrencyComponent,
   ],
   bootstrap: [AppComponent],
   imports: [
@@ -167,15 +167,18 @@ export function tabsFactory() {
     BrowserModule,
     AppRoutingModule,
     LayoutModule,
+    WidgetModule,
     BootstrapModule,
     ConfigModule.forRoot(environment),
     LoggerModule.forRoot(environment.logger),
     environment.authentication.module,
     SecurityModule,
+    MenuModule,
     TaskModule,
     CaseMigrationModule,
     CaseModule.forRoot(tabsFactory),
     ProcessModule,
+    BpmnJsDiagramModule,
     FormsModule,
     ReactiveFormsModule,
     DashboardModule,
@@ -204,9 +207,7 @@ export function tabsFactory() {
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
-    KlantinteractiesApiPluginModule,
     ObjecttypenApiPluginModule,
-    OpenKlantTokenAuthenticationPluginModule,
     ZakenApiPluginModule,
     ObjectenApiPluginModule,
     BesluitenApiPluginModule,
@@ -224,13 +225,11 @@ export function tabsFactory() {
     AccessControlManagementModule,
     TranslationManagementModule,
     CustomFormFlowComponent,
+    TaskManagementModule,
     ZgwModule,
     FormViewModelModule,
     LoggingModule,
     FormManagementModule,
-    BpmnJsDiagramModule,
-    MenuModule,
-    WidgetModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),
@@ -241,12 +240,10 @@ export function tabsFactory() {
         besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
-        klantinteractiesApiPluginSpecification,
         notificatiesApiPluginSpecification,
         objectenApiPluginSpecification,
         objectTokenAuthenticationPluginSpecification,
         objecttypenApiPluginSpecification,
-        openKlantTokenAuthenticationPluginSpecification,
         openNotificatiesPluginSpecification,
         openZaakPluginSpecification,
         portaaltaakPluginSpecification,
@@ -272,7 +269,7 @@ export function tabsFactory() {
       ],
     },
     {
-      provide: CUSTOM_WIDGET_TOKEN,
+      provide: CUSTOM_CASE_WIDGET_TOKEN,
       useValue: {
         caseWidgetComponent: CustomCaseTabComponent,
       },
@@ -293,7 +290,7 @@ export class AppModule {
     registerFormioFileSelectorComponent(injector);
     registerDocumentenApiFormioUploadComponent(injector);
     registerFormioIbanComponent(injector);
-    registerFormioCurrencyComponent(injector);
     registerFormioValueResolverSelectorComponent(injector);
+    Formio.Components.addComponent('currency', FormIoCurrencyComponent);
   }
 }

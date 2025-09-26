@@ -16,7 +16,6 @@
 
 <valtimo-carbon-list
   [actionItems]="ACTION_ITEMS"
-  [showActionItems]="hasEditPermissions$ | async"
   [fields]="FIELDS"
   [header]="false"
   [items]="processDefinitions$ | async"
@@ -24,12 +23,7 @@
   (rowClicked)="editProcessDefinition($event)"
 >
   <ng-container carbonToolbarContent>
-    <button
-      *ngIf="hasEditPermissions$ | async"
-      cdsButton="ghost"
-      iconOnly="true"
-      (click)="openModal()"
-    >
+    <button *ngIf="hasEditPermissions$ | async" cdsButton="ghost" iconOnly="true" (click)="openModal()">
       <svg cdsIcon="upload" size="16"></svg>
     </button>
 
@@ -39,7 +33,7 @@
   <valtimo-no-results
     [action]="createProcess"
     [title]="'processManagement.noResults.title' | translate"
-    [description]="'processManagement.noResults.' + $context() + 'Description' | translate"
+    [description]="'processManagement.noResults.' + context() + 'Description' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
@@ -54,7 +48,11 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #createProcess>
-  <button *ngIf="hasEditPermissions$ | async" cdsButton="primary" (click)="onCreateProcess()">
+  <button
+    *ngIf="hasEditPermissions$ | async"
+    cdsButton="primary"
+    (click)="onCreateProcess()"
+  >
     {{ 'processManagement.createProcess' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

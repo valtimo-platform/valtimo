@@ -29,12 +29,17 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {Deploy16, Version16} from '@carbon/icons';
 import {TranslateService} from '@ngx-translate/core';
 import {PageHeaderService} from '@valtimo/components';
-import {getCaseManagementRouteParams, GlobalNotificationService} from '@valtimo/shared';
+import {
+  EditPermissionsService,
+  getCaseManagementRouteParams,
+  GlobalNotificationService,
+} from '@valtimo/shared';
 import {IconService, ListItem, Notification} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {lt, valid} from 'semver';
 import {CaseDetailService, CaseManagementService} from '../../services';
+import {CaseManagementRemoveModalComponent} from '../case-management-remove-modal/case-management-remove-modal.component';
 
 @Component({
   standalone: false,
@@ -46,6 +51,8 @@ import {CaseDetailService, CaseManagementService} from '../../services';
 export class CaseManagementDetailActionsComponent {
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
+  @ViewChild('caseRemoveModal')
+  private readonly _caseRemoveModal: CaseManagementRemoveModalComponent;
 
   @Input() public documentDefinitionTitle = '';
   @Input() public set caseDefinitionKey(value: string) {
@@ -75,6 +82,15 @@ export class CaseManagementDetailActionsComponent {
       this.caseManagementService
         .getGlobalActiveCase(caseDefinitionKey)
         .pipe(map(result => result.caseDefinitionVersionTag))
+    )
+  );
+
+  public readonly hasEditPermissions$: Observable<boolean> = combineLatest(
+    this.caseDefinitionKey$,
+    this.caseDefinitionVersionTag$
+  ).pipe(
+    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
+      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
     )
   );
 
@@ -181,7 +197,8 @@ export class CaseManagementDetailActionsComponent {
     private readonly pageHeaderService: PageHeaderService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly editPermissionsService: EditPermissionsService
   ) {
     this.iconService.register(Version16);
     this.iconService.register(Deploy16);
@@ -246,6 +263,14 @@ export class CaseManagementDetailActionsComponent {
 
   public selectVersionFromModal(version: string): void {
     this.setVersion(version);
+  }
+
+  public openCaseRemoveModal(): void {
+    this.selectedDocumentDefinition$.pipe(take(1)).subscribe(definition => {
+      if (!definition) return;
+
+      this._caseRemoveModal.openModal(definition);
+    });
   }
 
   public openGlobalActiveVersionModal(): void {

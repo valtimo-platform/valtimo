@@ -21,7 +21,7 @@ import {FormService} from '@valtimo/form';
 import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
-import {BehaviorSubject, combineLatest, map, of, Subscription, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, of, Subscription, tap} from 'rxjs';
 import {NotificationContent} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {catchError} from 'rxjs/operators';
@@ -39,16 +39,16 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
   public readonly caseDefinitionKey: string;
   public readonly documentId!: string;
 
+  public document!: Document;
   private snapshot: ParamMap;
   public moment!: typeof moment;
+  public formDefinition: FormioForm = null;
 
-  public readonly formDefinition$ = new BehaviorSubject<FormioForm>(null);
-  public readonly document$ = new BehaviorSubject<Document>(null);
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   public options: ValtimoFormioOptions;
 
-  public notificationObj$ = new BehaviorSubject<NotificationContent>(null);
+  public notificationObj$: Observable<NotificationContent> | null = null;
 
   private _subscriptions = new Subscription();
 
@@ -84,25 +84,23 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
       ])
         .pipe(
           tap(([document, formDefinition]) => {
-            this.document$.next(document);
-            this.formDefinition$.next(formDefinition);
+            this.document = document;
+            this.formDefinition = formDefinition;
 
             if (!formDefinition || !document) {
-              combineLatest([
+              this.notificationObj$ = combineLatest([
                 this.translateService.stream('interface.warning'),
                 this.translateService.stream('case.summaryFormNotFound', {
                   summary: this.caseDefinitionKey,
                 }),
               ]).pipe(
-                take(1),
                 map(([title, message]) => ({
-                  type: 'warning' as any,
+                  type: 'warning',
                   title,
                   message,
                   showClose: false,
                   lowContrast: true,
-                })),
-                tap(notificationObject => this.notificationObj$.next(notificationObject))
+                }))
               );
             }
 

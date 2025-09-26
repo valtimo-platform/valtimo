@@ -36,7 +36,8 @@ import {
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {
-  CaseManagementParams,
+    CaseManagementParams,
+
   EditPermissionsService,
   getCaseManagementRouteParams,
   getCaseManagementRouteParamsAndContext,
@@ -257,8 +258,8 @@ export class ProcessManagementBuilderComponent
 
   public readonly creatingNewProcess$ = new BehaviorSubject<boolean>(false);
 
-  public readonly $extraSpace: Signal<number> = computed(() =>
-    this.processManagementService.$context() === 'case' ? 0 : 0
+  public readonly extraSpace: Signal<number> = computed(() =>
+    this.processManagementService.context() === 'case' ? 0 : 0
   );
 
   public readonly updatingProcessDefinitionCaseDefinition$ = new BehaviorSubject<boolean>(false);

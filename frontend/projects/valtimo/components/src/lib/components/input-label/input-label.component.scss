@@ -67,9 +67,3 @@
   display: flex;
   align-items: center;
 }
-
-:host ::ng-deep .cds--label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}

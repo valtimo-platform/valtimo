@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Inject, NgModule, Optional} from '@angular/core';
+import {Inject, NgModule} from '@angular/core';
 import {Route, Router, RouterModule, Routes} from '@angular/router';
 import {pendingChangesGuard} from '@valtimo/components';
 import {
@@ -34,7 +34,6 @@ import {
 } from '@valtimo/process-management';
 import {AuthGuardService} from '@valtimo/security';
 import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig, ROLE_ADMIN} from '@valtimo/shared';
-import {TaskManagementDetailComponent} from '@valtimo/task-management';
 import {CaseManagementCaseDetailComponent} from './components/case-management-case-detail/case-management-case-detail.component';
 import {CaseManagementCaseListComponent} from './components/case-management-case-list/case-management-case-list.component';
 import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
@@ -89,14 +88,13 @@ const routes: Routes = [
         data: {context: 'case'} as DecisionManagementRouteData,
       },
       {path: TabEnum.CASE_LIST, component: CaseManagementCaseListComponent},
-      {path: TabEnum.CASE_DETAILS, component: CaseManagementCaseDetailComponent},
+      {path: TabEnum.CASE_DETAIL, component: CaseManagementCaseDetailComponent},
       {
         path: TabEnum.FORMS,
         component: FormManagementComponent,
         data: {context: 'case'} as FormManagementRouteData,
       },
       {path: TabEnum.FORM_FLOWS, component: FormFlowOverviewComponent},
-      {path: TabEnum.TASKS, component: TaskManagementDetailComponent},
     ],
   },
   {
@@ -109,6 +107,7 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.FORMS}/:formDefinitionId`,
     component: FormManagementEditComponent,
     canActivate: [AuthGuardService],
+    canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Forms',
       roles: [ROLE_ADMIN],
@@ -117,7 +116,7 @@ const routes: Routes = [
     } as FormManagementRouteData,
   },
   {
-    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.CASE_DETAILS}/widget-tab/:key`,
+    path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.CASE_DETAIL}/widget-tab/:key`,
     component: CaseManagementWidgetTabComponent,
     canActivate: [AuthGuardService],
     canDeactivate: [pendingChangesGuard],
@@ -175,7 +174,6 @@ const routes: Routes = [
 @NgModule({imports: [RouterModule.forChild(routes)], exports: [RouterModule], declarations: []})
 export class CaseManagementRoutingModule {
   constructor(
-    @Optional()
     @Inject(CASE_MANAGEMENT_TAB_TOKEN)
     private readonly caseManagementTabConfig: CaseManagementTabConfig[],
     private readonly router: Router

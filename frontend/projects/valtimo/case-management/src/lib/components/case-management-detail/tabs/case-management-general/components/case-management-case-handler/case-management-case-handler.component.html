@@ -43,29 +43,31 @@
       [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
     ></cds-toggle>
 
-    <cds-tooltip
-      [isOpen]="false"
-      [description]="
+    <cds-toggle
+      valtimoReadOnly
+      [isReadOnly]="isReadOnly"
+      [checked]="obs?.currentValue?.autoAssignTasks"
+      [disabled]="!obs?.currentValue?.canHaveAssignee || isReadOnly"
+      (checkedChange)="
+        toggleTaskAssignment(
+          obs?.currentValue,
+          obs?.caseDefinitionKey,
+          obs.caseDefinitionVersionTag
+        )
+      "
+      [label]="'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate"
+      [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
+      [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
+    ></cds-toggle>
+
+    <span
+      *ngIf="!obs?.currentValue?.canHaveAssignee"
+      [attr.title]="
         'caseManagement.tabs.generalTab.caseHandler.disabledAutoAssignTooltip' | translate
       "
-      [align]="'top'"
+      class="case-handler-process__helper-text"
     >
-      <cds-toggle
-        valtimoReadOnly
-        [isReadOnly]="isReadOnly"
-        [checked]="obs?.currentValue?.autoAssignTasks"
-        [disabled]="!obs?.currentValue?.canHaveAssignee || isReadOnly"
-        (checkedChange)="
-          toggleTaskAssignment(
-            obs?.currentValue,
-            obs?.caseDefinitionKey,
-            obs.caseDefinitionVersionTag
-          )
-        "
-        [label]="'caseManagement.toggleAutoAssignTasks.checkboxDescription' | translate"
-        [onText]="'caseManagement.tabs.generalTab.caseHandler.toggle.onText' | translate"
-        [offText]="'caseManagement.tabs.generalTab.caseHandler.toggle.offText' | translate"
-      ></cds-toggle>
-    </cds-tooltip>
+      {{ 'caseManagement.tabs.generalTab.caseHandler.disabledAutoAssignTooltip' | translate }}
+    </span>
   </div>
 </div>

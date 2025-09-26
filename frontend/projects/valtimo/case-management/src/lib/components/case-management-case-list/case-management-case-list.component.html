@@ -13,23 +13,9 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
+
 @if (currentTab$ | async; as currentTab) {
-  <valtimo-case-management-draft-warning
-    *ngIf="isDraftVersion$ | async"
-    [name]="DRAFT_WARNING_MESSAGE[currentTab] | translate | lowercase"
-  ></valtimo-case-management-draft-warning>
-
   <cds-tabs class="case-management-tabs" type="contained">
-    <cds-tab
-      [active]="currentTab === TabEnum.LIST"
-      [heading]="'caseManagement.tabs.caseListTab.columns' | translate"
-      (selected)="switchTab(TabEnum.LIST)"
-    >
-      <valtimo-case-management-list-columns
-        *ngIf="currentTab === TabEnum.LIST"
-      ></valtimo-case-management-list-columns>
-    </cds-tab>
-
     <cds-tab
       [active]="currentTab === TabEnum.SEARCH"
       [heading]="'caseManagement.tabs.caseListTab.searchFields' | translate"
@@ -38,6 +24,16 @@
       <valtimo-case-management-search-fields
         *ngIf="currentTab === TabEnum.SEARCH"
       ></valtimo-case-management-search-fields>
+    </cds-tab>
+
+    <cds-tab
+      [active]="currentTab === TabEnum.LIST"
+      [heading]="'caseManagement.tabs.caseListTab.columns' | translate"
+      (selected)="switchTab(TabEnum.LIST)"
+    >
+      <valtimo-case-management-list-columns
+        *ngIf="currentTab === TabEnum.LIST"
+      ></valtimo-case-management-list-columns>
     </cds-tab>
   </cds-tabs>
 }

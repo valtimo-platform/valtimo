@@ -13,14 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {ChangeDetectionStrategy, Component} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {
-  CaseManagementParams,
-  DraftVersionService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
-import {BehaviorSubject, Observable, of, switchMap} from 'rxjs';
+import {BehaviorSubject} from 'rxjs';
 import {TabEnum} from '../../models';
 
 @Component({
@@ -30,25 +25,8 @@ import {TabEnum} from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseManagementCaseDetailComponent {
-  public readonly isDraftVersion$: Observable<boolean> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    switchMap((params: CaseManagementParams | undefined) =>
-      !params
-        ? of(false)
-        : this.draftVersionService.isDraftVersion(
-            params.caseDefinitionKey,
-            params.caseDefinitionVersionTag
-          )
-    )
-  );
   public readonly currentTab$ = new BehaviorSubject<TabEnum>(TabEnum.TABS);
   public readonly TabEnum = TabEnum;
-
-  constructor(
-    private readonly draftVersionService: DraftVersionService,
-    private readonly route: ActivatedRoute
-  ) {}
 
   public switchTab(tab: TabEnum): void {
     this.currentTab$.next(tab);

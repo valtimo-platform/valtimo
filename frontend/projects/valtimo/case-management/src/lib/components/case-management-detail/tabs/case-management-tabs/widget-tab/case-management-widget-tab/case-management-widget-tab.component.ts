@@ -218,7 +218,7 @@ export class CaseManagementWidgetTabComponent
 
       this.breadcrumbService.setFourthBreadcrumb({
         route: [`${route}/case-detail`],
-        content: this.translateService.instant('caseManagement.tabs.caseDetailsTab.title'),
+        content: this.translateService.instant('caseManagement.tabs.caseDetailTab.title'),
         href: `${route}/case-detail`,
       });
     });

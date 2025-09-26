@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {DisplayType} from '@valtimo/shared';
 import {CaseTag} from './case-tags.model';
 
 interface SortResult {
@@ -42,6 +41,19 @@ interface Page<T> {
   numberOfElements: number;
   size: number;
   number: number;
+}
+
+interface DocumentDefinitions {
+  content: DocumentDefinition[];
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+  size: number;
+  sort: any;
+  totalElements: number;
+  totalPages: number;
 }
 
 interface DocumentDefinition {
@@ -314,8 +326,7 @@ interface ExternalStartFormConfiguration {
 }
 
 interface CaseSettings extends ExternalStartFormConfiguration {
-  caseDefinitionKey?: string;
-  caseDefinitionVersionTag?: string;
+  name?: string;
   canHaveAssignee?: boolean;
   autoAssignTasks?: boolean;
 }
@@ -333,7 +344,6 @@ interface CaseListColumn {
   sortable: boolean;
   defaultSort: string;
   uuid?: string;
-  exportable?: boolean;
 }
 
 interface CaseListColumnView {
@@ -345,7 +355,19 @@ interface CaseListColumnView {
   sortable: boolean;
   defaultSort: string;
   uuid?: string;
-  exportable?: boolean;
+}
+
+interface DisplayType {
+  type: string;
+  displayTypeParameters: DisplayTypeParameters;
+}
+
+interface DisplayTypeParameters {
+  enum?: {
+    [key: string]: string;
+  };
+  dateFormat?: string;
+  tagAmount?: number;
 }
 
 interface DocumentDefinitionVersionsResult {
@@ -392,9 +414,12 @@ export {
   CaseSettings,
   CreateDocumentDefinitionResponse,
   DocumentDefinitionId,
+  DisplayType,
+  DisplayTypeParameters,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
+  DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
   DocumentRole,

@@ -46,8 +46,6 @@ import {CommonModule} from '@angular/common';
 import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiUploadField} from '../../models/documenten-api-upload-field.model';
 import {DocumentService} from '@valtimo/document';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
-import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-documenten-api-upload-field-modal',
@@ -129,20 +127,13 @@ export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
       }))
     )
   );
-
-  private readonly _context = getCaseManagementRouteParams(this.route);
-
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this._context,
     this.defaultValue.valueChanges,
     this.translateService.stream('key'),
   ]).pipe(
-    switchMap(([params, selectedItem]) =>
+    switchMap(([selectedItem]) =>
       combineLatest([
-        this.documentService.getDocumentTypesForCase(
-          params.caseDefinitionKey,
-          params.caseDefinitionVersionTag
-        ),
+        this.documentService.getDocumentTypes(this.caseDefinitionKey),
         of(selectedItem),
       ])
     ),
@@ -181,8 +172,7 @@ export class DocumentenApiUploadFieldModalComponent implements OnDestroy {
     private readonly fb: FormBuilder,
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
     private readonly translateService: TranslateService,
-    private readonly documentService: DocumentService,
-    private readonly route: ActivatedRoute
+    private readonly documentService: DocumentService
   ) {}
 
   public ngOnDestroy(): void {

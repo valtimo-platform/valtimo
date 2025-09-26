@@ -37,6 +37,7 @@ import {
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
+  DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
   Documents,
@@ -90,8 +91,8 @@ export class DocumentService {
   }
 
   // Document-calls
-  public getAllDefinitions(): Observable<Page<DocumentDefinition>> {
-    return this.http.get<Page<DocumentDefinition>>(
+  public getAllDefinitions(): Observable<DocumentDefinitions> {
+    return this.http.get<DocumentDefinitions>(
       `${this.valtimoEndpointUri}v1/document-definition?size=1000`
     );
   }
@@ -504,18 +505,9 @@ export class DocumentService {
     return this.http.post(`${this.valtimoEndpointUri}v1/document/${documentId}/message`, request);
   }
 
-  public getDocumentTypesForCase(
-    caseDefinitionKey: string,
-    versionTag: string
-  ): Observable<DocumentType[]> {
-    return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`
-    );
-  }
-
-  public getDocumentTypesForDocument(documentId: string): Observable<DocumentType[]> {
-    return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`
+  public getDocumentTypes(caseDefinitionKey: string): Observable<Array<DocumentType>> {
+    return this.http.get<Array<DocumentType>>(
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/documenttype`
     );
   }
 

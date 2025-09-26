@@ -30,7 +30,6 @@ import {
 import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, switchMap, take, tap} from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
-import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
@@ -86,15 +85,6 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
     )
   );
 
-  public readonly isDraftVersion$: Observable<boolean> = combineLatest([
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$,
-  ]).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
-    )
-  );
-
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -120,8 +110,7 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
     private readonly caseStatusService: CaseStatusService,
     private readonly route: ActivatedRoute,
     private readonly environmentService: EnvironmentService,
-    private readonly editPermissionsService: EditPermissionsService,
-    private readonly caseManagementService: CaseManagementService
+    private readonly editPermissionsService: EditPermissionsService
   ) {}
 
   public ngAfterViewInit(): void {

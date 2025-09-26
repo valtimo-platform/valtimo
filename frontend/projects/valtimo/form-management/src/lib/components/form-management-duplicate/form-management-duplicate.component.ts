@@ -30,9 +30,9 @@ import {CreateFormDefinitionRequest, FormDefinition, FormManagementParams} from 
 import {FormManagementService} from '../../services';
 import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.validator';
 import {CommonModule} from '@angular/common';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {TranslateModule} from '@ngx-translate/core';
 import {ValtimoCdsModalDirective} from '@valtimo/components';
-import {GlobalNotificationService, ManagementContext} from '@valtimo/shared';
+import {ManagementContext} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-form-management-duplicate-modal',
@@ -64,14 +64,14 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
 
   constructor(
     @Inject('formToDuplicate') public readonly formToDuplicate: FormDefinition,
+    @Inject('disabledPendingChangesCallback')
+    public readonly disablePendingChangesCallback: () => void,
     @Inject('context') public readonly context: ManagementContext,
     @Inject('params') public readonly params: FormManagementParams,
     protected modalService: ModalService,
     protected formManagementService: FormManagementService,
     protected route: ActivatedRoute,
-    private router: Router,
-    private readonly notificationService: GlobalNotificationService,
-    private readonly translateService: TranslateService
+    private router: Router
   ) {
     super();
   }
@@ -93,7 +93,7 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
 
   public duplicate(): void {
     const control = this.duplicateFormName;
-    this.formToDuplicate.name = this.duplicateForm.controls['duplicateFormName'].value;
+
     const request: CreateFormDefinitionRequest = {
       name: control.value.toString(),
       formDefinition: JSON.stringify(this.formToDuplicate.formDefinition),
@@ -110,13 +110,8 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
       .pipe(take(1))
       .subscribe({
         next: formDefinition => {
-          this.navigateWithNewId(formDefinition.id).then(() => {
-            this.closeModal();
-            this.notificationService.showToast({
-              type: 'success',
-              title: this.translateService.instant('formManagement.notifications.duplicated'),
-            });
-          });
+          this.disablePendingChangesCallback();
+          this.navigateWithNewId(formDefinition.id).then(() => window.location.reload());
         },
         error: err => {
           if (err.toString().includes('Duplicate name')) {

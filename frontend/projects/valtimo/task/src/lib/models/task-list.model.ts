@@ -66,7 +66,7 @@ type TaskListOtherFilters = Array<SearchFilter | SearchFilterRange>;
 interface TaskListQueryParams {
   selectedTaskType: TaskListTab;
   params: TaskPageParams;
-  caseDefinitionKey?: string;
+  caseDefinitionName?: string;
   otherFilters?: TaskListOtherFilters;
 }
 

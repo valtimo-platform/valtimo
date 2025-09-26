@@ -81,13 +81,6 @@ export class WidgetFieldsService {
       id: CaseWidgetDisplayTypeKey.PERCENT,
       selected: false,
     },
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${CaseWidgetDisplayTypeKey.LINK}`
-      ),
-      id: CaseWidgetDisplayTypeKey.LINK,
-      selected: false,
-    },
   ];
 
   constructor(

@@ -26,7 +26,6 @@ import {
   ColumnConfig,
   ConfirmationModalModule,
   Pagination,
-  ViewType,
 } from '@valtimo/components';
 import {
   DraftVersionService,
@@ -155,21 +154,17 @@ export class FormManagementListComponent {
           return this.formManagementService.queryFormDefinitions(params);
       }
     }),
-    map((res: any) => {
+    map(res => {
       this._collectionSize$.next(res?.totalElements);
 
-      return res?.content
-        ? [...res.content].sort((firstForm, secondForm) =>
-            (firstForm.name ?? '').localeCompare(secondForm.name ?? '')
-          )
-        : [];
+      return res?.content || [];
     }),
     tap(() => this.loading$.next(false))
   );
 
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'name', label: 'Form name'},
-    {key: 'readOnly', label: 'Read-only', viewType: ViewType.BOOLEAN},
+    {key: 'readOnly', label: 'Read-only'},
   ];
 
   constructor(
