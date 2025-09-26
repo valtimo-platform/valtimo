@@ -1,17 +1,41 @@
-# Repository archived
+## Welcome to the Valtimo backend
 
-The Valtimo backend and frontend libraries have been merged into a single  
-[Valtimo repository](https://github.com/valtimo-platform/valtimo).
+This folder contains:
+- A collection of Java/Kotlin libraries that together form the Valtimo backend.
+- The `app:gzac` module, containing a Spring Boot application, used for library development.
 
-All future development and contributions should be made in that repository.  
-This repository is archived and will remain available in **read-only mode** for the foreseeable future.
+### Starting the Valtimo platform
+Starting up the Valtimo platform requires two steps:
+1. Starting the Valtimo backend. Instructions can be found [here](#starting-the-valtimo-backend-from-source).
+2. Starting the Valtimo frontend. Instructions can be found [here](../frontend/README.md#starting-the-valtimo-frontend-from-source)
 
----
+### Starting the Valtimo backend from source
+#### Prerequisites
+- Java 21
+- [Docker (Desktop)](https://www.docker.com/products/docker-desktop/)
+- (Optional) An IDE like [IntelliJ](https://www.jetbrains.com/idea/download/) or [Eclipse](https://www.eclipse.org/downloads/)
 
-# Repository gearchiveerd
+#### Start Application
+Run the following command to start the Spring Boot application: `./gradlew :app:gzac:bootRunWithDocker`.
 
-De Valtimo backend- en frontendbibliotheken zijn samengevoegd in één  
-[Valtimo repository](https://github.com/valtimo-platform/valtimo).
+### Test users
+Keycloak management can be accessed on http://localhost:8081 with the default credentials of username <ins>admin</ins> and password <ins>admin</ins>.
 
-Alle toekomstige ontwikkeling en bijdragen vinden daar plaats.  
-Deze repository is gearchiveerd en blijft beschikbaar in **alleen-lezen modus** voor de komende tijd.
+Keycloak comes preconfigured with the following users.
+
+| Name         | Role           | Username  | Password  |
+|--------------|----------------|-----------|-----------|
+| James Vance  | ROLE_USER      | user      | user      |
+| Asha Miller  | ROLE_ADMIN     | admin     | admin     |
+| Morgan Finch | ROLE_DEVELOPER | developer | developer |
+
+### Code quality
+#### Running tests
+- Run the following command to run the unit tests: `./gradlew test`.
+- Run the following command to run the integration tests using a PostgreSQL database: `./gradlew integrationTestingPostgresql`.
+- Run the following command to run the integration tests using a MySQL database: `./gradlew integrationTestingMysql`.
+- Run the following command to run the security tests: `./gradlew securityTesting`.
+
+#### Code guidelines
+<!--- TODO: write the coding guidelines--->
+For contributing code, please refer to the [backend coding guidelines](./backend/CODING-GUIDELINES.md) or the [frontend coding guidelines](./frontend/CODING-GUIDELINES.md).
