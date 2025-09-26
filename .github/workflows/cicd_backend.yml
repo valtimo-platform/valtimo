@@ -1,11 +1,17 @@
-name: Run tests
+name: CI/CD backend
 permissions:
     contents: read
 on:
     pull_request:
         types: [synchronize, opened]
+        paths:
+            - backend/**
+            - .github/workflows/cicd_backend.yml
     push:
         branches: [next-minor, next-major, rc/*, release/*, development]
+        paths:
+            - backend/**
+            - .github/workflows/cicd_backend.yml
     workflow_dispatch:
 
 jobs:

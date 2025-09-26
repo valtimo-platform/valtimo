@@ -1,9 +1,15 @@
-name: CI/CD
+name: CI/CD frontend
 on:
   pull_request:
     branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'cicd/*']
+    paths:
+      - frontend/**
+      - .github/workflows/cicd_frontend.yml
   push:
     branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'feature/*']
+    paths:
+      - frontend/**
+      - .github/workflows/cicd_frontend.yml
   workflow_dispatch:
 
 jobs:
