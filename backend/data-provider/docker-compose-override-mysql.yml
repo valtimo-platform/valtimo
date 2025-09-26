@@ -1,0 +1,6 @@
+services:
+    db:
+        ports:
+            - "3339:3306"
+        environment:
+            - MYSQL_DATABASE=dataprovider-test
