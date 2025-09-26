@@ -12,6 +12,10 @@ on:
       - .github/workflows/cicd_frontend.yml
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: frontend
+
 jobs:
   # Install and cache NPM packages for other jobs
   install_packages:
@@ -26,8 +30,8 @@ jobs:
         id: restore_node_modules_cache
         with:
           lookup-only: true
-          path: node_modules
-          key: ${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          path: frontend/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
       - name: Install NPM packages
         if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
         run: npm install
@@ -35,7 +39,7 @@ jobs:
         if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: node_modules
+          path: frontend/node_modules
           key: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
 
   build_and_test:
@@ -52,7 +56,7 @@ jobs:
         uses: actions/cache/restore@v4
         id: restore_node_modules_cache
         with:
-          path: node_modules
+          path: frontend/node_modules
           key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
 
       # There is a small chance the node_modules that the 'install_packages' job cached were evicted
@@ -106,7 +110,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist
+          path: frontend/dist
           retention-days: 1
 
   # 'lint' can run in parallel with 'build_and_test'
@@ -122,7 +126,7 @@ jobs:
         uses: actions/cache/restore@v4
         id: restore_node_modules_cache
         with:
-          path: node_modules
+          path: frontend/node_modules
           key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
 
       # There is a small chance the node_modules that the 'install_packages' job cached were evicted
@@ -157,7 +161,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist
-          path: dist
+          path: frontend/dist
       - name: 'Publish all libs'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
