@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,60 +16,23 @@
 
 package com.ritense.valueresolver
 
-import com.ritense.logging.LoggableResource
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import org.operaton.bpm.engine.delegate.VariableScope
-import org.springframework.stereotype.Service
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.UUID
 
-@Service
-@SkipComponentScan
-class ValueResolverServiceImpl(
-    valueResolverFactories: List<ValueResolverFactory>
+open class ValueResolverServiceImpl(
+    private val valueResolverFactories: List<ValueResolverFactory>
 ) : ValueResolverService {
+    private val resolverFactoryMap: Map<String, ValueResolverFactory>
+        get() = valueResolverFactories.groupBy { it.supportedPrefix() }
+        .filter { (key, value) ->
+            if(value.size != 1) {
+                throw RuntimeException("Expected 1 resolver for prefix '$key'. Found: ${value.joinToString { resolver -> resolver.javaClass.simpleName }}")
+            }
+            true
+        }.map { (key, value) ->
+            key to value.first()
+        }.toMap()
 
-    // This property is lazy because valueResolverFactories can contain Lazy proxy instances
-    private val resolverFactoryMap: Map<String, ValueResolverFactory> by lazy {
-        valueResolverFactories.groupBy { it.supportedPrefix() }
-            .onEach { (key, value) ->
-                if (value.size != 1) {
-                    throw RuntimeException("Expected 1 resolver for prefix '$key'. Found: ${value.joinToString { resolver -> resolver.javaClass.simpleName }}")
-                }
-            }.map { (key, value) ->
-                key to value.first()
-            }.toMap()
-    }
-
-    override fun supportsValue(value: String): Boolean {
-        return resolverFactoryMap.containsKey(getPrefix(value))
-    }
-
-    override fun getValueResolvers(): List<String> {
-        return resolverFactoryMap.keys.filter { prefix -> prefix != "" }.toList()
-    }
-
-    override fun getResolvableKeys(
-        request: ValueResolverOptionRequest,
-        caseDefinitionKey: String
-    ): List<ValueResolverOption> {
-        val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
-        return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionKey) ?: emptyList()
-            list + newOptions.filter { option -> request.type.equals(option.type) }
-        }
-    }
-
-    override fun getResolvableKeys(
-        request: ValueResolverOptionRequest,
-        caseDefinitionId: CaseDefinitionId
-    ): List<ValueResolverOption> {
-        val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
-        return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionId) ?: emptyList()
-            list + newOptions.filter { option -> request.type.equals(option.type) }
-        }
-    }
 
     /**
      * This method provides a way of resolving requestedValues into values using defined resolvers.
@@ -79,21 +42,22 @@ class ValueResolverServiceImpl(
      * A requestedValue can only be resolved when a resolver for that prefix is configured.
      * An unresolved requestedValue will not be included in the returned map.
      *
-     * @param processInstanceId The Operaton processInstanceId these values belong to
+     * @param processInstanceId The Camunda processInstanceId these values belong to
      * @param variableScope An implementation of VariableScope. For instance: a TaskDelegate or DelegateExecution
      * @param requestedValues The requestedValues that should be resolved into values.
      * @return A map where the key is the requestedValue, and the value the resolved value.
      */
     override fun resolveValues(
-        @LoggableResource("com.ritense.valtimo.operaton.domain.OperatonExecution") processInstanceId: String,
+        processInstanceId: String,
         variableScope: VariableScope,
-        requestedValues: Collection<String>
-    ): Map<String, Any?> {
+        requestedValues: List<String>
+    ): Map<String, Any> {
         return toResolverFactoryMap(requestedValues).map { (resolverFactory, requestedValues) ->
             val resolver = resolverFactory.createResolver(processInstanceId, variableScope)
             //Create a list of resolved Map entries
-            requestedValues.map { requestedValue ->
-                requestedValue to resolver.apply(trimPrefix(requestedValue))
+            requestedValues.mapNotNull { requestedValue ->
+                resolver.apply(requestedValue.substringAfter(":"))
+                    ?.let { requestedValue to it }
             }
         }.flatten().toMap()
     }
@@ -106,18 +70,18 @@ class ValueResolverServiceImpl(
      *
      * If the resolver doesn't accept the propertyName, it will throw an error.
      *
-     * @param documentDefinitionName The documentInstanceId these values belong to.
+     * @param documentInstanceId The documentInstanceId these values belong to.
      * @param requestedValues The requestedValues that should be validated.
      */
     override fun validateValues(
-        @LoggableResource("documentDefinitionName") documentDefinitionName: String,
+        documentDefinitionName: String,
         requestedValues: List<String>
     ) {
         toResolverFactoryMap(requestedValues).forEach { (resolverFactory, requestedValues) ->
             val validator = resolverFactory.createValidator(documentDefinitionName)
 
             requestedValues.forEach { requestedValue ->
-                validator.apply(trimPrefix(requestedValue))
+                validator.apply(requestedValue.substringAfter(":"))
             }
         }
     }
@@ -135,14 +99,15 @@ class ValueResolverServiceImpl(
      * @return A map where the key is the requestedValue, and the value the resolved value.
      */
     override fun resolveValues(
-        @LoggableResource("com.ritense.document.domain.impl.JsonSchemaDocument") documentInstanceId: String,
-        requestedValues: Collection<String>
-    ): Map<String, Any?> {
+        documentInstanceId: String,
+        requestedValues: List<String>
+    ): Map<String, Any> {
         return toResolverFactoryMap(requestedValues).map { (resolverFactory, requestedValues) ->
             val resolver = resolverFactory.createResolver(documentInstanceId)
             //Create a list of resolved Map entries
-            requestedValues.map { requestedValue ->
-                requestedValue to resolver.apply(trimPrefix(requestedValue))
+            requestedValues.mapNotNull { requestedValue ->
+                resolver.apply(requestedValue.substringAfter(":"))
+                    ?.let { requestedValue to it }
             }
         }.flatten().toMap()
     }
@@ -150,76 +115,60 @@ class ValueResolverServiceImpl(
     /**
      * Handle values. Usually by storing them somewhere.
      *
-     * @param processInstanceId The Operaton processInstanceId these values belong to
+     * @param processInstanceId The Camunda processInstanceId these values belong to
      * @param variableScope An implementation of VariableScope.
      * @param values mapOf(doc:add:/firstname to John)
      */
     override fun handleValues(
-        @LoggableResource("com.ritense.valtimo.operaton.domain.OperatonExecution") processInstanceId: String,
+        processInstanceId: String,
         variableScope: VariableScope?,
-        values: Map<String, Any?>
+        values: Map<String, Any>
     ) {
         toResolverFactoryMap(values.keys).forEach { (resolverFactory, propertyPaths) ->
 
             resolverFactory.handleValues(
                 processInstanceId,
                 variableScope,
-                mapPropertyPaths(propertyPaths, values)
+                propertyPaths.associate { propertyPath -> propertyPath.substringAfter(":") to values[propertyPath]!! }
             )
         }
     }
 
     override fun handleValues(
-        @LoggableResource("com.ritense.document.domain.impl.JsonSchemaDocument") documentId: UUID,
-        values: Map<String, Any?>
+        documentId: UUID,
+        values: Map<String, Any>
     ) {
         toResolverFactoryMap(values.keys).forEach { (resolverFactory, propertyPaths) ->
 
             resolverFactory.handleValues(
                 documentId,
-                mapPropertyPaths(propertyPaths, values)
+                propertyPaths.associate { propertyPath -> propertyPath.substringAfter(":") to values[propertyPath]!! }
             )
         }
     }
 
     override fun preProcessValuesForNewCase(
-        values: Map<String, Any?>
+        values: Map<String, Any>
     ): Map<String, Any> {
         return toResolverFactoryMap(values.keys).mapValues { (resolverFactory, propertyPaths) ->
             resolverFactory.preProcessValuesForNewCase(
-                mapPropertyPaths(propertyPaths, values)
+                propertyPaths.associate { propertyPath -> propertyPath.substringAfter(":") to values[propertyPath]!! }
             )
         }.mapKeys { (resolverFactory, _) ->
             resolverFactory.supportedPrefix()
         }
     }
 
-    private fun mapPropertyPaths(
-        propertyPaths: List<String>,
-        values: Map<String, Any?>
-    ) = propertyPaths.associate { propertyPath -> trimPrefix(propertyPath) to values[propertyPath] }
-
     private fun toResolverFactoryMap(requestedValues: Collection<String>): Map<ValueResolverFactory, List<String>> {
         //Group by prefix
-        return requestedValues.groupBy(::getPrefix)
-            .mapNotNull { (prefix, requestedValues) ->
-                //Create a resolver per prefix group
-                val resolverFactory = resolverFactoryMap[prefix]
-                    ?: throw RuntimeException("No resolver factory found for value prefix $prefix")
-                //Create a map of ValueResolverFactories
-                resolverFactory to requestedValues
-            }.toMap()
-    }
-
-
-    private fun getPrefix(value: String) = value.substringBefore(DELIMITER, missingDelimiterValue = "")
-    private fun trimPrefix(value: String) = value.substringAfter(DELIMITER)
-
-    private fun addPrefixToResolvableKeys(prefix: String, resolvableKeys: List<String>?): List<String> {
-        return (resolvableKeys ?: emptyList()).map { "$prefix:$it" }
-    }
-
-    companion object {
-        const val DELIMITER = ":"
+        return requestedValues.groupBy {
+            it.substringBefore(":", missingDelimiterValue = "")
+        }.mapNotNull { (prefix, requestedValues) ->
+            //Create a resolver per prefix group
+            val resolverFactory = resolverFactoryMap[prefix]
+                ?: throw RuntimeException("No resolver factory found for value prefix $prefix")
+            //Create a map of ValueResolverFactories
+            resolverFactory to requestedValues
+        }.toMap()
     }
 }

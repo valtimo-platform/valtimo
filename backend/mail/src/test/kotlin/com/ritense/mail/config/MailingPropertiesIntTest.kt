@@ -3,11 +3,11 @@ package com.ritense.mail.config
 import com.ritense.mail.BaseIntegrationTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
+import javax.inject.Inject
 
 internal class MailingPropertiesIntTest : BaseIntegrationTest() {
 
-    @Autowired
+    @Inject
     lateinit var mailingProperties: MailingProperties
 
     @Test

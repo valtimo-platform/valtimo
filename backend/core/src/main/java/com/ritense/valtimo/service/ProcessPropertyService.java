@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,21 @@
 
 package com.ritense.valtimo.service;
 
-import com.ritense.authorization.AuthorizationContext;
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.domain.processdefinition.ProcessDefinitionProperties;
 import com.ritense.valtimo.processdefinition.repository.ProcessDefinitionPropertiesRepository;
+import org.camunda.bpm.engine.RepositoryService;
 
 public class ProcessPropertyService {
 
     private final ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository;
     private final ValtimoProperties valtimoProperties;
-    private final OperatonRepositoryService repositoryService;
+    private final RepositoryService repositoryService;
 
     public ProcessPropertyService(
         ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository,
         ValtimoProperties valtimoProperties,
-        OperatonRepositoryService repositoryService
+        RepositoryService repositoryService
     ) {
         this.processDefinitionPropertiesRepository = processDefinitionPropertiesRepository;
         this.valtimoProperties = valtimoProperties;
@@ -59,15 +58,16 @@ public class ProcessPropertyService {
     }
 
     private String getProcessDefinitionKeyById(String processDefinitionId) {
-        var processDefinition = AuthorizationContext
-            .runWithoutAuthorization(() -> repositoryService.findProcessDefinitionById(processDefinitionId));
+        var processDefinition = repositoryService.createProcessDefinitionQuery()
+            .processDefinitionId(processDefinitionId)
+            .singleResult();
         if (processDefinition == null) {
             throw new RuntimeException("Failed to find process definition with id: " + processDefinitionId);
         }
         return processDefinition.getKey();
     }
 
-    public ProcessDefinitionProperties findByProcessDefinitionKey(String processDefinitionKey) {
+    public ProcessDefinitionProperties findByProcessDefinitionKey(String processDefinitionKey){
         return processDefinitionPropertiesRepository.findByProcessDefinitionKey(processDefinitionKey);
     }
 

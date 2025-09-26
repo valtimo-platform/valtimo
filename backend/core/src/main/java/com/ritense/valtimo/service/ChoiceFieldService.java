@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,16 @@ package com.ritense.valtimo.service;
 import com.ritense.valtimo.choicefield.repository.ChoiceFieldRepository;
 import com.ritense.valtimo.domain.choicefield.ChoiceField;
 import com.ritense.valtimo.domain.choicefield.ChoiceFieldValue;
-import com.ritense.valtimo.web.rest.dto.ChoiceFieldCreateRequestDTO;
 import com.ritense.valtimo.web.rest.dto.ChoiceFieldDTO;
-import com.ritense.valtimo.web.rest.dto.ChoiceFieldUpdateRequestDTO;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 public class ChoiceFieldService {
@@ -47,27 +45,13 @@ public class ChoiceFieldService {
     /**
      * Save a choiceField.
      *
-     * @param choiceFieldCreateRequestDTO the entity to save
+     * @param choiceField the entity to save
      * @return the persisted entity
      */
-    public ChoiceField create(ChoiceFieldCreateRequestDTO choiceFieldCreateRequestDTO) {
-        logger.debug("Request to save ChoiceField : {}", choiceFieldCreateRequestDTO);
-
-        ChoiceField choiceField = new ChoiceField();
-        choiceField.setTitle(choiceFieldCreateRequestDTO.getTitle());
-        choiceField.setKeyName(choiceFieldCreateRequestDTO.getKeyName());
-
-        return choiceFieldRepository.save(choiceField);
-    }
-
-    public ChoiceField update(ChoiceFieldUpdateRequestDTO choiceFieldUpdateRequestDTO) {
-        logger.debug("Request to update ChoiceField : {}", choiceFieldUpdateRequestDTO);
-
-        ChoiceField choiceField = choiceFieldRepository.findById(choiceFieldUpdateRequestDTO.getId()).orElseThrow();
-        choiceField.setTitle(choiceFieldUpdateRequestDTO.getTitle());
-        choiceField.setKeyName(choiceFieldUpdateRequestDTO.getKeyName());
-
-        return choiceFieldRepository.save(choiceField);
+    public ChoiceField save(ChoiceField choiceField) {
+        logger.debug("Request to save ChoiceField : {}", choiceField);
+        ChoiceField result = choiceFieldRepository.save(choiceField);
+        return result;
     }
 
     /**
@@ -79,7 +63,8 @@ public class ChoiceFieldService {
     @Transactional(readOnly = true)
     public Page<ChoiceField> findAll(Pageable pageable) {
         logger.debug("Request to get all ChoiceFields");
-        return choiceFieldRepository.findAll(pageable);
+        Page<ChoiceField> result = choiceFieldRepository.findAll(pageable);
+        return result;
     }
 
     /**
@@ -91,7 +76,8 @@ public class ChoiceFieldService {
     @Transactional(readOnly = true)
     public Optional<ChoiceField> findOneById(Long id) {
         logger.debug("Request to get ChoiceField : {}", id);
-        return choiceFieldRepository.findById(id);
+        Optional<ChoiceField> choiceField = choiceFieldRepository.findById(id);
+        return choiceField;
     }
 
 

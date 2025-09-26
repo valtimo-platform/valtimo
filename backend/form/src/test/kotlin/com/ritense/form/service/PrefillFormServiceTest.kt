@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,109 +19,48 @@ package com.ritense.form.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationService
-import com.ritense.document.domain.DocumentDefinition
-import com.ritense.document.domain.impl.JsonDocumentContent
-import com.ritense.document.domain.impl.JsonSchema
-import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.patch.JsonPatchService
-import com.ritense.document.service.DocumentSequenceGeneratorService
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.BaseTest
-import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.form.FormFieldDataResolver
-import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valtimo.contract.json.patch.operation.AddOperation
 import com.ritense.valtimo.contract.json.patch.operation.Operation
 import com.ritense.valtimo.contract.json.patch.operation.ReplaceOperation
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.OperatonTaskService
-import com.ritense.valueresolver.ValueResolverService
+import com.ritense.valtimo.service.CamundaProcessService
 import org.assertj.core.api.Assertions.assertThat
+import org.camunda.bpm.engine.TaskService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
-import java.util.Optional
 
 class PrefillFormServiceTest : BaseTest() {
 
     lateinit var prefillFormService: PrefillFormService
     lateinit var documentService: JsonSchemaDocumentService
     lateinit var formDefinitionService: FormIoFormDefinitionService
-    lateinit var operatonProcessService: OperatonProcessService
-    lateinit var taskService: OperatonTaskService
+    lateinit var camundaProcessService: CamundaProcessService
+    lateinit var taskService: TaskService
     lateinit var formFieldDataResolver: FormFieldDataResolver
     lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
-    lateinit var valueResolverService: ValueResolverService
-    lateinit var authorizationService: AuthorizationService
+
     @BeforeEach
     fun setUp() {
         documentService = mock()
         formDefinitionService = mock()
-        operatonProcessService = mock()
+        camundaProcessService = mock()
         taskService = mock()
         formFieldDataResolver = mock()
         processDocumentAssociationService = mock()
-        valueResolverService = mock()
-        authorizationService = mock()
         prefillFormService = PrefillFormService(
             documentService,
             formDefinitionService,
-            operatonProcessService,
+            camundaProcessService,
             taskService,
             listOf(formFieldDataResolver),
-            processDocumentAssociationService,
-            valueResolverService,
-            MapperSingleton.get(),
-            authorizationService
+            processDocumentAssociationService
         )
-    }
-
-    @Test
-    fun shouldPrefillWithValueResolver() {
-        val formDefinition = formDefinitionOf("form-example-various-prefill-fields")
-        val document = document()
-
-        whenever(formDefinitionService.getFormDefinitionById(formDefinition.id))
-            .thenReturn(Optional.of(formDefinition))
-        whenever(documentService.get(eq(document.id().toString())))
-            .thenReturn(document)
-
-        whenever(valueResolverService.supportsValue(any())).then {
-            it.arguments.first().toString().matches("(doc|pv):.*".toRegex())
-        }
-
-        val dataMap = mapOf(
-            "doc:/person/firstName" to "John",
-            "pv:lastName" to "Doe"
-        )
-
-        whenever(valueResolverService.resolveValues(eq(document.id().toString()), any())).then {
-            val requestedValues = it.arguments[1] as Collection<String>
-            requestedValues.associateWith(dataMap::get)
-        }
-
-        val prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(formDefinition.id!!, document.id.id)
-        assertThat(prefilledFormDefinition).isNotNull
-
-        val inputFields = prefilledFormDefinition.inputFields
-        dataMap.map { (sourceKey, value) ->
-            val defaultValue = inputFields.first { FormIoFormDefinition.getSourceKey(it).get() == sourceKey }
-                .path(FormIoFormDefinition.DEFAULT_VALUE_FIELD)
-                .textValue()
-
-            assertThat(defaultValue).isEqualTo(value)
-        }
     }
 
     @Test
@@ -136,8 +75,6 @@ class PrefillFormServiceTest : BaseTest() {
         )
         assertThat(formDefinition.asJson().at("/components/0/defaultValue").textValue())
             .isEqualTo("Pita bread")
-
-        verify(valueResolverService, never()).supportsValue(any())
     }
 
     @Test
@@ -151,7 +88,7 @@ class PrefillFormServiceTest : BaseTest() {
             submission,
             placeholders,
             source
-        )
+        )!!
 
         //Assert initial submission is cleaned up
         assertThat(submission["name"]).isNullOrEmpty()
@@ -177,7 +114,7 @@ class PrefillFormServiceTest : BaseTest() {
             submission,
             placeholders,
             source
-        )
+        )!!
 
         //Assert initial submission is cleaned up
         assertThat(submission["name"]).isNullOrEmpty()
@@ -209,7 +146,7 @@ class PrefillFormServiceTest : BaseTest() {
             submission,
             placeholders,
             source
-        )
+        )!!
 
         //Assert initial submission is cleaned up
         assertThat(submission["name"]).isNullOrEmpty()
@@ -241,7 +178,7 @@ class PrefillFormServiceTest : BaseTest() {
             submission,
             placeholders,
             source
-        )
+        )!!
 
         //Assert initial submission is cleaned up
         assertThat(submission["name"]).isNullOrEmpty()
@@ -262,7 +199,7 @@ class PrefillFormServiceTest : BaseTest() {
             submission,
             placeholders,
             source
-        )
+        )!!
 
         //Assert initial submission is cleaned up
         assertThat(submission["name"]).isNullOrEmpty()
@@ -331,34 +268,5 @@ class PrefillFormServiceTest : BaseTest() {
         breads.add(pitaBread)
         source.set<JsonNode>("favorites", breads)
         return source
-    }
-
-    private fun document(): JsonSchemaDocument {
-        val schema = JsonSchemaDocumentDefinition(
-            JsonSchemaDocumentDefinitionId.existingId(
-                "test", CaseDefinitionId.of("person", "1.0.0"),
-            ),
-            JsonSchema.fromString("""
-                {
-                    "${'$'}id": "test.schema",
-                    "${'$'}schema": "http://json-schema.org/draft-07/schema#",
-                    "title": "additional-property-example",
-                    "type": "object",
-                    "additionalProperties": true
-                }
-            """.trimIndent()))
-        val content = JsonDocumentContent.build(MapperSingleton.get().createObjectNode())
-
-        return JsonSchemaDocument.create(
-            schema,
-            content,
-            "test",
-            object : DocumentSequenceGeneratorService {
-                override fun next(documentDefinitionId: DocumentDefinition.Id?) = 1L
-
-                override fun deleteSequenceRecordBy(documentDefinitionName: String?) {}
-            },
-            mock()
-        ).resultingDocument().get()
     }
 }

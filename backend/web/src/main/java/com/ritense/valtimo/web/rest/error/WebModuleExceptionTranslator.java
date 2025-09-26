@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.ritense.valtimo.web.rest.error;
 
-import com.ritense.valtimo.contract.annotation.SkipComponentScan;
 import com.ritense.valtimo.contract.exception.DocumentParserException;
 import com.ritense.valtimo.contract.exception.ProcessNotFoundException;
 import com.ritense.valtimo.contract.exception.ValtimoRuntimeException;
@@ -24,13 +23,7 @@ import com.ritense.valtimo.contract.hardening.service.HardeningService;
 import com.ritense.valtimo.contract.upload.MimeTypeDeniedException;
 import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator;
 import com.ritense.valtimo.web.rest.util.HeaderUtil;
-import jakarta.annotation.Nonnull;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindingResult;
@@ -41,17 +34,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
-
-import static com.ritense.logging.LoggingContextKt.withErrorLoggingContext;
+import org.zalando.problem.spring.web.advice.ProblemHandling;
+import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Controller advice to translate the server side exceptions to client-friendly json structures.
- * The error response follows RFC7807 - Problem Details for HTTP APIs (<a href="https://tools.ietf.org/html/rfc7807">...</a>)
+ * The error response follows RFC7807 - Problem Details for HTTP APIs (https://tools.ietf.org/html/rfc7807)
  */
-@SkipComponentScan
 @ControllerAdvice
-public class WebModuleExceptionTranslator extends ExceptionTranslator {
-    private static final String MESSAGE = "message";
+public class WebModuleExceptionTranslator extends ExceptionTranslator implements ProblemHandling {
 
     public WebModuleExceptionTranslator(Optional<HardeningService> hardeningServiceOptional) {
         super(hardeningServiceOptional);
@@ -69,7 +64,7 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
             .withType(ErrorConstants.CONSTRAINT_VIOLATION_TYPE)
             .withTitle("Method argument not valid")
             .withStatus(defaultConstraintViolationStatus())
-            .with(MESSAGE, ErrorConstants.ERR_VALIDATION)
+            .with("message", ErrorConstants.ERR_VALIDATION)
             .with("fieldErrors", fieldErrors)
             .build();
         return create(ex, problem, request);
@@ -79,7 +74,7 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
     public ResponseEntity<Problem> handleNoSuchElementException(NoSuchElementException ex, NativeWebRequest request) {
         Problem problem = Problem.builder()
             .withStatus(Status.NOT_FOUND)
-            .with(MESSAGE, ErrorConstants.ENTITY_NOT_FOUND_TYPE)
+            .with("message", ErrorConstants.ENTITY_NOT_FOUND_TYPE)
             .build();
         return create(ex, problem, request);
     }
@@ -93,7 +88,7 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
     public ResponseEntity<Problem> handleConcurrencyFailure(ConcurrencyFailureException ex, NativeWebRequest request) {
         Problem problem = Problem.builder()
             .withStatus(Status.CONFLICT)
-            .with(MESSAGE, ErrorConstants.ERR_CONCURRENCY_FAILURE)
+            .with("message", ErrorConstants.ERR_CONCURRENCY_FAILURE)
             .build();
         return create(ex, problem, request);
     }
@@ -122,7 +117,7 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
     public ResponseEntity<Problem> handleAccessDenied(AccessDeniedException ex, NativeWebRequest request) {
         Problem problem = Problem.builder()
             .withStatus(Status.FORBIDDEN)
-            .with(MESSAGE, ErrorConstants.ERR_ACCESS_DENIED)
+            .with("message", ErrorConstants.ERR_ACCESS_DENIED)
             .withDetail(ex.getMessage())
             .build();
         return create(ex, problem, request);
@@ -132,7 +127,7 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
     public ResponseEntity<Problem> handleRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex, NativeWebRequest request) {
         Problem problem = Problem.builder()
             .withStatus(Status.METHOD_NOT_ALLOWED)
-            .with(MESSAGE, ErrorConstants.ERR_METHOD_NOT_SUPPORTED)
+            .with("message", ErrorConstants.ERR_METHOD_NOT_SUPPORTED)
             .build();
         return create(ex, problem, request);
     }
@@ -140,19 +135,6 @@ public class WebModuleExceptionTranslator extends ExceptionTranslator {
     @ExceptionHandler
     public ResponseEntity<Problem> handleValtimoRuntimeException(ValtimoRuntimeException ex, NativeWebRequest request) {
         return create(Status.BAD_REQUEST, ex, request, HeaderUtil.createFailureAlert(ex.getMessage(), ex.getCategory(), ex.getErrorDescription()));
-    }
-
-    @Override
-    public void log(
-        final Throwable throwable,
-        final Problem problem,
-        final NativeWebRequest request,
-        final HttpStatus status
-    ) {
-        withErrorLoggingContext(() -> {
-            super.log(throwable, problem, request, status);
-            return null;
-        });
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.ritense.catalogiapi
 
-import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.security.CatalogiApiHttpSecurityConfigurer
 import com.ritense.catalogiapi.service.CatalogiService
@@ -25,24 +23,18 @@ import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
 import com.ritense.catalogiapi.web.rest.CatalogiResource
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.service.PluginService
-import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.cache.CacheManager
-import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
-import org.springframework.web.client.RestClient
+import org.springframework.web.reactive.function.client.WebClient
 
-@AutoConfiguration
-@EnableCaching
+@Configuration
 class CatalogiApiAutoConfiguration {
 
     @Bean
-    fun catalogiApiClient(
-        restClientBuilder: RestClient.Builder,
-        cacheManager: CacheManager,
-    ): CatalogiApiClient {
-        return CatalogiApiClient(restClientBuilder, cacheManager)
+    fun catalogiApiClient(webclientBuilder: WebClient.Builder): CatalogiApiClient {
+        return CatalogiApiClient(webclientBuilder)
     }
 
     @Bean
@@ -59,25 +51,18 @@ class CatalogiApiAutoConfiguration {
     @ConditionalOnMissingBean(CatalogiService::class)
     fun catalogiService(
         zaaktypeUrlProvider: ZaaktypeUrlProvider,
-        pluginService: PluginService
-    ) = CatalogiService(
-        zaaktypeUrlProvider,
-        pluginService
-    )
+        pluginService : PluginService
+    ): CatalogiService {
+        return CatalogiService(zaaktypeUrlProvider, pluginService)
+    }
 
     @Bean
     @ConditionalOnMissingBean(CatalogiResource::class)
     fun catalogiResource(
-        catalogiService: CatalogiService,
-        activeCaseDefinitionService: ActiveCaseDefinitionService,
-        caseDefinitionService: CaseDefinitionService,
-        documentService: DocumentService
-    ) = CatalogiResource(
-        catalogiService,
-        activeCaseDefinitionService,
-        caseDefinitionService,
-        documentService
-    )
+        catalogiService: CatalogiService
+    ): CatalogiResource {
+        return CatalogiResource(catalogiService)
+    }
 
     @Order(400)
     @Bean

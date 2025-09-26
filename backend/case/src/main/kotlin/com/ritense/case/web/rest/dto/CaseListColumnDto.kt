@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@
 
 package com.ritense.case.web.rest.dto
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.DisplayType
 import com.ritense.case.exception.InvalidListColumnException
 import org.zalando.problem.Status
 
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class CaseListColumnDto(
     var title: String?,
     var key: String,
@@ -32,8 +30,7 @@ data class CaseListColumnDto(
     var sortable: Boolean,
     var defaultSort: ColumnDefaultSort?,
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    var order: Int?,
-    var exportable: Boolean = false
+    var order: Int?
 ) {
     @Throws(InvalidListColumnException::class)
     fun validate() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package com.ritense.portaaltaak
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRequest
@@ -26,7 +28,6 @@ import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.ZaakInstanceLink
@@ -37,8 +38,7 @@ import com.ritense.zakenapi.domain.rol.RolNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
-import org.operaton.bpm.engine.delegate.DelegateTask
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.DelegateTask
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -79,7 +79,7 @@ internal class PortaaltaakPluginTest {
         processDocumentService = mock()
         zaakInstanceLinkService = mock()
         zakenApiPlugin = mock()
-        objectMapper = MapperSingleton.get()
+        objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
         whenever(pluginService.getObjectMapper()).thenReturn(objectMapper)
         portaaltaakPlugin = PortaaltaakPlugin(
             objectManagementService,
@@ -178,7 +178,7 @@ internal class PortaaltaakPluginTest {
         val objectManagement = getObjectManagement()
         val objectTypeUrl = URI("https://example.com/")
 
-        val objectMapper = MapperSingleton.get()
+        val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
         whenever(objectManagementService.getById(any())).thenReturn(objectManagement)
         whenever(pluginService.createInstance(PluginConfigurationId(objectManagement.objectenApiPluginConfigurationId))).thenReturn(objectenApiPlugin)
@@ -250,7 +250,7 @@ internal class PortaaltaakPluginTest {
         val objectManagement = getObjectManagement()
         val objectTypeUrl = URI("https://example.com/")
 
-        val objectMapper = MapperSingleton.get()
+        val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
         whenever(objectManagementService.getById(any())).thenReturn(objectManagement)
         whenever(pluginService.createInstance(PluginConfigurationId(objectManagement.objectenApiPluginConfigurationId))).thenReturn(objectenApiPlugin)
@@ -368,7 +368,7 @@ internal class PortaaltaakPluginTest {
     fun `should get a correct taak identification`() {
         val processInstanceId = UUID.randomUUID().toString()
         whenever(delegateTask.processInstanceId).thenReturn(processInstanceId)
-        whenever(processDocumentService.getDocumentId(any(), any<VariableScope>())).thenReturn(jsonSchemaDocumentId)
+        whenever(processDocumentService.getDocumentId(any(), any())).thenReturn(jsonSchemaDocumentId)
         whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
         whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
         whenever(pluginService.createInstance(any<Class<ZakenApiPlugin>>(), any())).thenReturn(zakenApiPlugin)
@@ -391,7 +391,7 @@ internal class PortaaltaakPluginTest {
     fun `should throw exception when getting zaak initiator with invalid zaakUrl`() {
         val processInstanceId = UUID.randomUUID().toString()
         whenever(delegateTask.processInstanceId).thenReturn(processInstanceId)
-        whenever(processDocumentService.getDocumentId(any(), any<VariableScope>())).thenReturn(jsonSchemaDocumentId)
+        whenever(processDocumentService.getDocumentId(any(), any())).thenReturn(jsonSchemaDocumentId)
         whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
         whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
         whenever(pluginService.createInstance(any<Class<ZakenApiPlugin>>(), any())).thenReturn(null)
@@ -409,7 +409,7 @@ internal class PortaaltaakPluginTest {
     fun `should throw exception when no rol was found for zaak url`() {
         val processInstanceId = UUID.randomUUID().toString()
         whenever(delegateTask.processInstanceId).thenReturn(processInstanceId)
-        whenever(processDocumentService.getDocumentId(any(), any<VariableScope>())).thenReturn(jsonSchemaDocumentId)
+        whenever(processDocumentService.getDocumentId(any(), any())).thenReturn(jsonSchemaDocumentId)
         whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
         whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
         whenever(pluginService.createInstance(any<Class<ZakenApiPlugin>>(), any())).thenReturn(zakenApiPlugin)
@@ -430,7 +430,7 @@ internal class PortaaltaakPluginTest {
     fun `should get a correct zaak initiator`() {
         val processInstanceId = UUID.randomUUID().toString()
         whenever(delegateTask.processInstanceId).thenReturn(processInstanceId)
-        whenever(processDocumentService.getDocumentId(any(), any<VariableScope>())).thenReturn(jsonSchemaDocumentId)
+        whenever(processDocumentService.getDocumentId(any(), any())).thenReturn(jsonSchemaDocumentId)
         whenever(jsonSchemaDocumentId.id).thenReturn(UUID.randomUUID())
         whenever(zaakInstanceLinkService.getByDocumentId(jsonSchemaDocumentId.id)).thenReturn(getZaakInstanceLink())
         whenever(pluginService.createInstance(any<Class<ZakenApiPlugin>>(), any())).thenReturn(zakenApiPlugin)

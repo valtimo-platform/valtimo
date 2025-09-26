@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,9 @@
 
 package com.ritense.valtimo.web.rest
 
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-
 class CoreSecuritySmokeIntegrationTest : SecuritySmokeIntegrationTest(
     ignoredPathPatterns = setOf(
         "GET /api/v1/ping",
-        "GET /api/v1/sse",
-        "GET /api/v1/sse/{subscriptionId}"
+        "GET /api/v1/public/process/definition/{processDefinitionKey}/start-form"
     )
-) {
-    @MockitoBean
-    lateinit var processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
-}
+)

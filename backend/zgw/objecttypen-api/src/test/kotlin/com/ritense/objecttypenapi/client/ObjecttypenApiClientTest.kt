@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
+import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.time.LocalDate
@@ -51,8 +51,8 @@ internal class ObjecttypenApiClientTest {
 
     @Test
     fun `should send get single objecttype request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ObjecttypenApiClient(restClientBuilder)
+        val webclientBuilder = WebClient.builder()
+        val client = ObjecttypenApiClient(webclientBuilder)
 
         val responseBody = """
             {
@@ -120,92 +120,13 @@ internal class ObjecttypenApiClientTest {
         assertEquals(listOf(URI("http://example.com")), result.versions)
     }
 
-    @Test
-    fun `should send get multiple objecttypes request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ObjecttypenApiClient(restClientBuilder)
-
-        val responseBody = """
-            [
-                {
-                  "url": "http://example.com",
-                  "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                  "name": "string",
-                  "namePlural": "string",
-                  "description": "string",
-                  "dataClassification": "open",
-                  "maintainerOrganization": "string",
-                  "maintainerDepartment": "string",
-                  "contactPerson": "string",
-                  "contactEmail": "string",
-                  "source": "string",
-                  "updateFrequency": "real_time",
-                  "providerOrganization": "string",
-                  "documentationUrl": "http://example.com",
-                  "labels": {
-                    "property1": "something",
-                    "property2": "other"
-                  },
-                  "createdAt": "2019-08-24",
-                  "modifiedAt": "2019-08-24",
-                  "versions": [
-                    "http://example.com"
-                  ]
-                }
-            ]
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        val objecttypeUrl = mockApi.url("/some-object").toString()
-
-        val result = client.getObjecttypes(
-            TestAuthentication(),
-            URI(objecttypeUrl)
-        ).first()
-
-        val recordedRequest = mockApi.takeRequest()
-        val requestedUrl = recordedRequest.requestUrl
-
-        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
-
-        assertEquals(objecttypeUrl, requestedUrl.toString())
-
-        assertEquals(URI("http://example.com"), result.url)
-        assertEquals(UUID.fromString("095be615-a8ad-4c33-8e9c-c7612fbf6c9f"), result.uuid)
-        assertEquals("string", result.name)
-        assertEquals("string", result.namePlural)
-        assertEquals("string", result.description)
-        assertEquals(DataClassification.OPEN, result.dataClassification)
-        assertEquals("string", result.maintainerOrganization)
-        assertEquals("string", result.maintainerDepartment)
-        assertEquals("string", result.contactPerson)
-        assertEquals("string", result.contactEmail)
-        assertEquals("string", result.source)
-        assertEquals(UpdateFrequency.REAL_TIME, result.updateFrequency)
-        assertEquals("string", result.providerOrganization)
-        assertEquals(URI("http://example.com"), result.documentationUrl)
-        assertEquals("something", result.labels?.get("property1").toString())
-        assertEquals("other", result.labels?.get("property2").toString())
-        assertEquals("other", result.labels?.get("property2").toString())
-        assertEquals(LocalDate.of(2019, 8, 24), result.createdAt)
-        assertEquals(LocalDate.of(2019, 8, 24), result.modifiedAt)
-        assertEquals(listOf(URI("http://example.com")), result.versions)
-    }
-
     private fun mockResponse(body: String): MockResponse {
         return MockResponse()
             .addHeader("Content-Type", "application/json")
             .setBody(body)
     }
 
-    class TestAuthentication : ObjecttypenApiAuthentication {
-        override fun applyAuth(restClient: RestClient.Builder): RestClient.Builder {
-            return restClient.defaultHeaders { headers ->
-                headers.setBearerAuth("test")
-            }
-        }
-
+    class TestAuthentication: ObjecttypenApiAuthentication {
         override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
             val filteredRequest = ClientRequest.from(request).headers { headers ->
                 headers.setBearerAuth("test")

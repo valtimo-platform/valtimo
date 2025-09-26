@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.domain.Document
+import com.ritense.valtimo.contract.json.JsonPointerHelper
 import org.springframework.context.ApplicationEventPublisher
 
 abstract class FormField(
@@ -31,6 +32,10 @@ abstract class FormField(
     abstract fun preProcess(document: Document?)
 
     abstract fun postProcess(document: Document?)
+
+    open fun appendValueToDocument(documentContent: ObjectNode) {
+        JsonPointerHelper.appendJsonPointerTo(documentContent, pointer, value)
+    }
 
     companion object {
         fun getFormField(
@@ -44,7 +49,6 @@ abstract class FormField(
                 return null
             }
             return when {
-                ComponentsField.isComponentsComponent(objectNode) -> ComponentsField(value, jsonPointer, applicationEventPublisher, objectNode)
                 UploadField.isUploadComponent(objectNode) -> UploadField(value, jsonPointer, applicationEventPublisher)
                 DataField.isDataFieldComponent(objectNode) -> DataField(value, jsonPointer, applicationEventPublisher)
                 else -> null

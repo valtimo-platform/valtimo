@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginConfigurationEntityListener
-import io.hypersistence.utils.hibernate.type.json.JsonType
-import jakarta.persistence.Column
-import jakarta.persistence.Embedded
-import jakarta.persistence.Entity
-import jakarta.persistence.EntityListeners
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
 import org.hibernate.annotations.Type
+import javax.persistence.Column
+import javax.persistence.Embedded
+import javax.persistence.Entity
+import javax.persistence.EntityListeners
+import javax.persistence.FetchType
+import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.Table
 
 @Entity
 @EntityListeners(PluginConfigurationEntityListener::class)
@@ -43,38 +42,27 @@ class PluginConfiguration(
     val id: PluginConfigurationId,
     @Column(name = "title")
     var title: String,
-    properties: ObjectNode? = null,
+    @Type(type = "com.vladmihalcea.hibernate.type.json.JsonType")
+    @Column(name = "properties", columnDefinition = "JSON")
+    internal var rawProperties: ObjectNode? = null,
     @JoinColumn(name = "plugin_definition_key", updatable = false, nullable = false)
     @ManyToOne(fetch = FetchType.EAGER)
     val pluginDefinition: PluginDefinition,
-    @Transient
-    var encryptionService: EncryptionService? = null,
-    @Transient
-    var objectMapper: ObjectMapper? = null,
 ) {
     // used to store unencrypted properties without dirtying the managed entity
-    @Type(value = JsonType::class)
-    @Column(name = "properties", columnDefinition = "JSON")
-    internal var rawProperties: ObjectNode? = null
-
     @Transient
-    var properties = properties
+    var properties: ObjectNode? = rawProperties?.deepCopy()
         get() {
-            if (field == null && rawProperties != null)
-            {
+            if (field == null && rawProperties != null) {
+                field = this.rawProperties?.deepCopy()
                 decryptProperties()
             }
             return field
         }
-        private set(value) {
-            field = value
-        }
-
-    init {
-        if (encryptionService != null && objectMapper != null) {
-            encryptProperties()
-        }
-    }
+    @Transient
+    var encryptionService: EncryptionService? = null
+    @Transient
+    var objectMapper: ObjectMapper? = null
 
     fun updateProperties(propertiesForUpdate: ObjectNode) {
         pluginDefinition.properties.forEach {
@@ -83,18 +71,24 @@ class PluginConfiguration(
                 properties?.replace(it.fieldName, updateValue)
             }
         }
-        encryptProperties()
+        encryptProperties(properties)
     }
 
     internal fun encryptProperties() {
-        this.rawProperties = this.properties?.deepCopy()
-        PluginConfigurationEntityListener.logger.debug { "Encrypting secrets for PluginConfiguration $title" }
+        encryptProperties(this.rawProperties)
+    }
+
+    private fun encryptProperties(propertiesToEncrypt: ObjectNode?) {
+        if (propertiesToEncrypt !== this.rawProperties) {
+            this.rawProperties = propertiesToEncrypt?.deepCopy()
+        }
+        PluginConfigurationEntityListener.logger.debug { "Encrypting secrets for PluginConfiguration ${title}" }
         pluginDefinition.properties.filter {
             it.secret
         }.filter {
             this.rawProperties?.has(it.fieldName) ?: false
         }.forEach {
-            PluginConfigurationEntityListener.logger.debug { "Encrypting property ${it.fieldName} for PluginConfiguration $title" }
+            PluginConfigurationEntityListener.logger.debug { "Encrypting property ${it.fieldName} for PluginConfiguration ${title}" }
             replaceProperty(
                 this.rawProperties!!,
                 it.fieldName,
@@ -104,14 +98,13 @@ class PluginConfiguration(
     }
 
     internal fun decryptProperties() {
-        this.properties = this.rawProperties?.deepCopy()
-        PluginConfigurationEntityListener.logger.debug { "Decrypting secrets for PluginConfiguration $title" }
+        PluginConfigurationEntityListener.logger.debug { "Decrypting secrets for PluginConfiguration ${title}" }
         pluginDefinition.properties.filter {
             it.secret
         }.filter {
             properties?.has(it.fieldName) ?: false
         }.forEach {
-            PluginConfigurationEntityListener.logger.debug { "Decrypting property ${it.fieldName} for PluginConfiguration $title" }
+            PluginConfigurationEntityListener.logger.debug { "Decrypting property ${it.fieldName} for PluginConfiguration ${title}" }
             replaceProperty(
                 properties!!,
                 it.fieldName,

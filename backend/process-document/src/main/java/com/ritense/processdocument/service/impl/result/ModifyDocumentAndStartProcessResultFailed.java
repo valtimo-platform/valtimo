@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 
 package com.ritense.processdocument.service.impl.result;
 
-import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
-import static com.ritense.valtimo.contract.utils.AssertionConcern.assertStateTrue;
-
 import com.ritense.document.domain.impl.JsonSchemaDocument;
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.service.result.ModifyDocumentAndStartProcessResult;
 import com.ritense.processdocument.service.result.TransactionalResult;
 import com.ritense.valtimo.contract.result.OperationError;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
+import static com.ritense.valtimo.contract.utils.AssertionConcern.assertStateTrue;
 
 public class ModifyDocumentAndStartProcessResultFailed implements ModifyDocumentAndStartProcessResult, TransactionalResult {
 
@@ -34,7 +35,7 @@ public class ModifyDocumentAndStartProcessResultFailed implements ModifyDocument
 
     public ModifyDocumentAndStartProcessResultFailed(List<? extends OperationError> errors) {
         assertArgumentNotNull(errors, "errors may not be null");
-        assertStateTrue(!errors.isEmpty(), "errors may not be empty");
+        assertStateTrue(errors.size() > 0, "errors may not be empty");
         this.errors = new ArrayList<>(errors);
         rollback();
     }
@@ -56,7 +57,7 @@ public class ModifyDocumentAndStartProcessResultFailed implements ModifyDocument
     }
 
     @Override
-    public Optional<OperatonProcessInstanceId> resultingProcessInstanceId() {
+    public Optional<CamundaProcessInstanceId> resultingProcessInstanceId() {
         return Optional.empty();
     }
 }

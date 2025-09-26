@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 package com.ritense.plugin.domain
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.plugin.service.EncryptionService
-import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.json.Mapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -89,14 +90,14 @@ internal class PluginConfigurationTest {
         configuration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get().readTree(input) as ObjectNode,
+            Mapper.INSTANCE.get().readTree(input) as ObjectNode,
             pluginDefinition
         )
 
         val encryptionService = mock<EncryptionService>()
         whenever(encryptionService.encrypt(any())).thenAnswer { it.arguments[0] }
         whenever(encryptionService.decrypt(any())).thenAnswer { it.arguments[0] }
-        configuration.objectMapper = MapperSingleton.get()
+        configuration.objectMapper = ObjectMapper()
         configuration.encryptionService = encryptionService
     }
 
@@ -110,7 +111,7 @@ internal class PluginConfigurationTest {
             }
         """.trimMargin()
 
-        configuration.updateProperties(MapperSingleton.get().readTree(input) as ObjectNode)
+        configuration.updateProperties(Mapper.INSTANCE.get().readTree(input) as ObjectNode)
 
         assertEquals(456, configuration.properties?.get("property3")?.intValue())
     }
@@ -125,7 +126,7 @@ internal class PluginConfigurationTest {
             }
         """.trimMargin()
 
-        configuration.updateProperties(MapperSingleton.get().readTree(input) as ObjectNode)
+        configuration.updateProperties(Mapper.INSTANCE.get().readTree(input) as ObjectNode)
 
         assertEquals("test", configuration.properties?.get("property1")?.textValue())
     }
@@ -140,7 +141,7 @@ internal class PluginConfigurationTest {
             }
         """.trimMargin()
 
-        configuration.updateProperties(MapperSingleton.get().readTree(input) as ObjectNode)
+        configuration.updateProperties(Mapper.INSTANCE.get().readTree(input) as ObjectNode)
 
         assertEquals("old-value", configuration.properties?.get("property1")?.textValue())
     }
@@ -154,7 +155,7 @@ internal class PluginConfigurationTest {
             }
         """.trimMargin()
 
-        configuration.updateProperties(MapperSingleton.get().readTree(input) as ObjectNode)
+        configuration.updateProperties(Mapper.INSTANCE.get().readTree(input) as ObjectNode)
 
         assertEquals("old-value", configuration.properties?.get("property1")?.textValue())
     }
@@ -169,7 +170,7 @@ internal class PluginConfigurationTest {
             }
         """.trimMargin()
 
-        configuration.updateProperties(MapperSingleton.get().readTree(input) as ObjectNode)
+        configuration.updateProperties(Mapper.INSTANCE.get().readTree(input) as ObjectNode)
 
         assertEquals("old-value", configuration.properties?.get("property1")?.textValue())
     }
@@ -185,7 +186,7 @@ internal class PluginConfigurationTest {
             }
         """.trimMargin()
 
-        configuration.updateProperties(MapperSingleton.get().readTree(input) as ObjectNode)
+        configuration.updateProperties(Mapper.INSTANCE.get().readTree(input) as ObjectNode)
 
         assertTrue(configuration.properties?.get("property3")!!.isNull)
     }

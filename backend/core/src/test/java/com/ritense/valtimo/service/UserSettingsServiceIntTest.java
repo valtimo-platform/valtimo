@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,17 @@
 
 package com.ritense.valtimo.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.ritense.valtimo.BaseIntegrationTest;
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser;
 import com.ritense.valtimo.domain.user.UserSettings;
 import com.ritense.valtimo.repository.UserSettingsRepository;
-import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Map;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class UserSettingsServiceIntTest extends BaseIntegrationTest {
     @Autowired
@@ -39,10 +39,10 @@ class UserSettingsServiceIntTest extends BaseIntegrationTest {
     void getCurrentUserSettings() {
         // given
         ValtimoUser user = new ValtimoUser();
-        user.setUsername("example");
+        user.setId("12345");
 
         UserSettings userSettings = new UserSettings(
-            "example",
+            "12345",
             Map.of(
                 "key1", "value1",
                 "key2", "value2"
@@ -54,19 +54,20 @@ class UserSettingsServiceIntTest extends BaseIntegrationTest {
 
         // then
         Optional<UserSettings> foundUserSettings = userSettingsService.findUserSettings(user);
-        assertTrue(foundUserSettings.isPresent());
-        assertThat(foundUserSettings.get().getUsername()).isEqualTo("example");
+        assertThat(foundUserSettings.isPresent());
+        assertThat(foundUserSettings.get().getUserId()).isEqualTo("12345");
         assertThat(foundUserSettings.get().getSettings()).isEqualTo(userSettings.getSettings());
+
     }
 
     @Test
     void saveUserSettings() {
         // given
         ValtimoUser user = new ValtimoUser();
-        user.setUsername("example");
+        user.setId("12345");
 
         UserSettings userSettings = new UserSettings(
-            "example",
+            "12345",
             Map.of(
                 "key1", "value1",
                 "key2", "value2"
@@ -77,9 +78,9 @@ class UserSettingsServiceIntTest extends BaseIntegrationTest {
         userSettingsService.saveUserSettings(user, userSettings.getSettings());
 
         // then
-        Optional<UserSettings> foundUserSettings = userSettingsRepository.findById("example");
-        assertTrue(foundUserSettings.isPresent());
-        assertThat(foundUserSettings.get().getUsername()).isEqualTo("example");
+        Optional<UserSettings> foundUserSettings = userSettingsRepository.findById("12345");
+        assertThat(foundUserSettings.isPresent());
+        assertThat(foundUserSettings.get().getUserId()).isEqualTo("12345");
         assertThat(foundUserSettings.get().getSettings()).isEqualTo(userSettings.getSettings());
     }
 }

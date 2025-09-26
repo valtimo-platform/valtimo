@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,47 +16,29 @@
 
 package com.ritense.processlink.service
 
-import com.ritense.logging.LoggableResource
-import com.ritense.logging.withLoggingContext
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.domain.ProcessLinkType
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
-import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.exception.ProcessLinkNotFoundException
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.data.repository.findByIdOrNull
-import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 
 @Transactional(readOnly = true)
-@Service
-@SkipComponentScan
-class ProcessLinkService(
+open class ProcessLinkService(
     private val processLinkRepository: ProcessLinkRepository,
     private val processLinkMappers: List<ProcessLinkMapper>,
-    private val processLinkTypes: List<SupportedProcessLinkTypeHandler>,
-    private val operatonRepositoryService: OperatonRepositoryService,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val processLinkTypes: List<SupportedProcessLinkTypeHandler>
 ) {
 
-    fun <T : ProcessLink> getProcessLink(
-        @LoggableResource(resourceType = ProcessLink::class) processLinkId: UUID,
-        clazz: Class<T>
-    ): T {
+    fun <T : ProcessLink> getProcessLink(processLinkId: UUID, clazz: Class<T>): T {
         val processLink = processLinkRepository.findByIdOrNull(processLinkId)
             ?: throw ProcessLinkNotFoundException("For id $processLinkId")
 
@@ -67,86 +49,62 @@ class ProcessLinkService(
         }
     }
 
-    fun getProcessLinks(
-        @LoggableResource(resourceType = OperatonProcessDefinition::class) processDefinitionId: String,
-        activityId: String
-    ): List<ProcessLink> {
+    fun getProcessLinks(processDefinitionId: String, activityId: String): List<ProcessLink> {
         return processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinitionId, activityId)
     }
 
     fun getProcessLinks(
-        @LoggableResource(resourceType = OperatonProcessDefinition::class) processDefinitionId: String
+        activityId: String,
+        activityType: ActivityTypeWithEventName,
+        processLinkType: String
     ): List<ProcessLink> {
-        return processLinkRepository.findByProcessDefinitionId(processDefinitionId)
+        return processLinkRepository.findByActivityIdAndActivityTypeAndProcessLinkType(
+            activityId,
+            activityType,
+            processLinkType
+        )
     }
 
-    fun getProcessLinksByProcessDefinitionKey(
-        @LoggableResource("processDefinitionKey") processDefinitionKey: String
-    ): List<ProcessLink> {
-        return operatonRepositoryService.findProcessDefinitions(byKey(processDefinitionKey).and(byLatestVersion()))
-            .flatMap { processLinkRepository.findByProcessDefinitionId(it.id) }
-    }
-
-    fun getProcessLinksByProcessDefinitionIdAndActivityType(
-        @LoggableResource(resourceType = OperatonProcessDefinition::class) processDefinitionId: String,
-        activityType: ActivityTypeWithEventName
-    ): ProcessLink? {
+    fun getProcessLinksByProcessDefinitionIdAndActivityType(processDefinitionId: String, activityType: ActivityTypeWithEventName): ProcessLink? {
         return processLinkRepository.findByProcessDefinitionIdAndActivityType(processDefinitionId, activityType)
     }
 
-    @Transactional(noRollbackFor = [ProcessLinkExistsException::class])
+    @Transactional
     @Throws(ProcessLinkExistsException::class)
-    fun createProcessLink(createRequest: ProcessLinkCreateRequestDto, caseDefinitionId: CaseDefinitionId?): ProcessLink {
-        return withLoggingContext(OperatonProcessDefinition::class, createRequest.processDefinitionId) {
-            val mapper = getProcessLinkMapper(createRequest.processLinkType)
-            val newProcessLink = mapper.toNewProcessLink(createRequest, caseDefinitionId)
+    fun createProcessLink(createRequest: ProcessLinkCreateRequestDto): ProcessLink {
+        val mapper = getProcessLinkMapper(createRequest.processLinkType)
+        val newProcessLink = mapper.toNewProcessLink(createRequest)
 
-            val currentProcessLinks = getProcessLinks(createRequest.processDefinitionId, createRequest.activityId)
-            if (currentProcessLinks.isNotEmpty()) {
-                val contentsDiffer = currentProcessLinks.any { processLinkEntity ->
-                    newProcessLink.copy(id = processLinkEntity.id) != processLinkEntity
-                }
-
-                throw ProcessLinkExistsException(
-                    "A process-link for process-definition '${createRequest.processDefinitionId}' and activity '${createRequest.activityId}' already exists!",
-                    contentsDiffer,
-                    currentProcessLinks.first().id
-                )
+        val currentProcessLinks = getProcessLinks(createRequest.processDefinitionId, createRequest.activityId)
+        if (currentProcessLinks.isNotEmpty()) {
+            val contentsDiffer = currentProcessLinks.any { processLinkEntity ->
+                newProcessLink.copy(id = processLinkEntity.id) != processLinkEntity
             }
 
-            processLinkRepository.save(mapper.toNewProcessLink(createRequest, caseDefinitionId))
+            throw ProcessLinkExistsException(
+                "A process-link for process-definition '${createRequest.processDefinitionId}' and activity '${createRequest.activityId}' already exists!",
+                contentsDiffer
+            )
         }
+
+        return processLinkRepository.save(mapper.toNewProcessLink(createRequest))
     }
 
     @Transactional
-    fun updateProcessLink(updateRequest: ProcessLinkUpdateRequestDto, caseDefinitionId: CaseDefinitionId?): ProcessLink {
-        return withLoggingContext(ProcessLink::class, updateRequest.id) {
-            if (caseDefinitionId != null) {
-                caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-            } else {
-                caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
-            }
-            val processLinkToUpdate = processLinkRepository.findById(updateRequest.id)
-                .getOrElse { throw IllegalStateException("No ProcessLink found with id ${updateRequest.id}") }
-            val mapper = getProcessLinkMapper(updateRequest.processLinkType)
-            val processLinkUpdated = mapper.toUpdatedProcessLink(processLinkToUpdate, updateRequest, caseDefinitionId)
-            if (processLinkToUpdate::class != processLinkUpdated::class) {
-                // Hibernate does not allow 2 different objects with the same identifier in the session, so do delete + insert instead
-                processLinkRepository.delete(processLinkToUpdate)
-            }
-            processLinkRepository.save(processLinkUpdated)
+    fun updateProcessLink(updateRequest: ProcessLinkUpdateRequestDto): ProcessLink {
+        val processLinkToUpdate = processLinkRepository.findById(updateRequest.id)
+            .getOrElse { throw IllegalStateException("No ProcessLink found with id ${updateRequest.id}") }
+        check(updateRequest.processLinkType == processLinkToUpdate.processLinkType) {
+            "The processLinkType of the persisted entity does not match the given type!"
         }
+        val mapper = getProcessLinkMapper(processLinkToUpdate.processLinkType)
+        val processLinkUpdated = mapper.toUpdatedProcessLink(processLinkToUpdate, updateRequest)
+        return processLinkRepository.save(processLinkUpdated)
     }
 
     @Transactional
-    fun deleteProcessLink(
-        @LoggableResource(resourceType = ProcessLink::class) id: UUID
-    ) {
+    fun deleteProcessLink(id: UUID) {
         processLinkRepository.deleteById(id)
-    }
-
-    fun deleteProcessLinksForProcessDefinition(processDefinitionId: String) {
-        processLinkRepository.deleteAllByProcessDefinitionId(processDefinitionId)
     }
 
     fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
@@ -154,17 +112,7 @@ class ProcessLinkService(
             ?: throw IllegalStateException("No ProcessLinkMapper found for processLinkType $processLinkType")
     }
 
-    fun getImporterDependsOnTypes(): Set<String> {
-        return processLinkMappers.mapNotNull {
-            it.getImporterType()
-        }.toSet()
-    }
-
     fun getSupportedProcessLinkTypes(activityType: String): List<ProcessLinkType> {
-        if (!ActivityTypeWithEventName.contains(activityType)) {
-            logger.warn { "Unsupported activity type: $activityType" }
-            return emptyList()
-        }
         return processLinkTypes.mapNotNull {
             it.getProcessLinkType(activityType)
         }

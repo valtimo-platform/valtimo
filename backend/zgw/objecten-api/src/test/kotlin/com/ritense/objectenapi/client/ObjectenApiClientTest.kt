@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,80 +19,38 @@ package com.ritense.objectenapi.client
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.IntNode
 import com.fasterxml.jackson.databind.node.TextNode
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath
 import com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath
-import com.ritense.authorization.AuthorizationService
 import com.ritense.objectenapi.ObjectenApiAuthentication
-import com.ritense.objectenapi.event.ObjectCreated
-import com.ritense.objectenapi.event.ObjectDeleted
-import com.ritense.objectenapi.event.ObjectPatched
-import com.ritense.objectenapi.event.ObjectUpdated
-import com.ritense.objectenapi.event.ObjectViewed
-import com.ritense.objectenapi.event.ObjectsListed
-import com.ritense.outbox.OutboxService
-import com.ritense.outbox.domain.BaseEvent
-import com.ritense.valtimo.contract.json.MapperSingleton
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
-import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.reset
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.data.domain.PageRequest
-import org.springframework.http.HttpHeaders.CONTENT_TYPE
-import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
-import org.springframework.web.client.HttpClientErrorException
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
+import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
-import java.util.function.Supplier
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ObjectenApiClientTest {
 
     lateinit var mockApi: MockWebServer
 
-    lateinit var objectMapper: ObjectMapper
-
-    lateinit var outboxService: OutboxService
-
-    lateinit var restClientBuilder: RestClient.Builder
-
-    lateinit var authorizationService: AuthorizationService
-
     @BeforeAll
     fun setUp() {
         mockApi = MockWebServer()
         mockApi.start()
-        objectMapper = MapperSingleton.get()
-        outboxService = mock()
-        restClientBuilder = RestClient.builder()
-            .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-        authorizationService = mock()
-    }
-
-    @BeforeEach
-    fun beforeEach() {
-        reset(outboxService)
     }
 
     @AfterAll
@@ -102,7 +60,8 @@ internal class ObjectenApiClientTest {
 
     @Test
     fun `should send get single object request and parse response`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
+        val webclientBuilder = WebClient.builder()
+        val client = ObjectenApiClient(webclientBuilder)
 
         val responseBody = """
             {
@@ -168,146 +127,9 @@ internal class ObjectenApiClientTest {
     }
 
     @Test
-    fun `should send get single objectrecord request and parse response`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val responseBody = """
-            {
-                "index": 0,
-                "typeVersion": 32767,
-                "data": {
-                  "property1": "henk",
-                  "property2": 123
-                },
-                "geometry": {
-                  "type": "string",
-                  "coordinates": [
-                    0,
-                    0
-                  ]
-                },
-                "startAt": "2019-08-24",
-                "endAt": "2019-08-25",
-                "registrationAt": "2019-08-26",
-                "correctionFor": "string",
-                "correctedBy": "string2"
-            }
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-
-        val objectUrl = mockApi.url("/some-object/1").toString()
-
-        val result = client.getObjectRecord(
-            TestAuthentication(),
-            URI(objectUrl),
-            2
-        )
-
-        val recordedRequest = mockApi.takeRequest()
-        val requestedUrl = recordedRequest.requestUrl
-
-        assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
-
-        assertEquals("$objectUrl/2", requestedUrl.toString())
-
-        assertEquals(0, result.index)
-        assertEquals(32767, result.typeVersion)
-        assertEquals("henk", (result.data?.get("property1") as TextNode).asText())
-        assertEquals(123, (result.data?.get("property2") as IntNode).asInt())
-        assertEquals(2, result.data?.size())
-        assertEquals("string", result.geometry?.type)
-        assertEquals(0, result.geometry?.coordinates?.get(0))
-        assertEquals(0, result.geometry?.coordinates?.get(1))
-        assertEquals(2, result.geometry?.coordinates?.size)
-        assertEquals(LocalDate.of(2019, 8, 24), result.startAt)
-        assertEquals(LocalDate.of(2019, 8, 25), result.endAt)
-        assertEquals(LocalDate.of(2019, 8, 26), result.registrationAt)
-        assertEquals("string", result.correctionFor)
-        assertEquals("string2", result.correctedBy)
-    }
-
-    @Test
-    fun `should send outbox message on retrieving object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val responseBody = """
-            {
-              "url": "http://example.com",
-              "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-              "type": "http://example.com",
-              "record": {
-                "index": 0,
-                "typeVersion": 32767,
-                "data": {
-                  "property1": "henk",
-                  "property2": 123
-                },
-                "geometry": {
-                  "type": "string",
-                  "coordinates": [
-                    0,
-                    0
-                  ]
-                },
-                "startAt": "2019-08-24",
-                "endAt": "2019-08-25",
-                "registrationAt": "2019-08-26",
-                "correctionFor": "string",
-                "correctedBy": "string2"
-              }
-            }
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        val objectUrl = mockApi.url("/some-object").toString()
-
-        val result = client.getObject(
-            TestAuthentication(),
-            URI(objectUrl)
-        )
-
-        mockApi.takeRequest()
-
-        verify(outboxService).send(eventCapture.capture())
-
-        val firstEventValue = eventCapture.firstValue.get()
-        val mappedFirstEventResult: ObjectWrapper = objectMapper.readValue(firstEventValue.result.toString())
-
-        assertThat(firstEventValue).isInstanceOf(ObjectViewed::class.java)
-        assertThat(result.url.toString()).isEqualTo(firstEventValue.resultId.toString())
-        assertThat(result.type).isEqualTo(mappedFirstEventResult.type)
-    }
-
-    @Test
-    fun `should not send outbox message on failing to retrieve object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        mockApi.enqueue(mockResponse("").setResponseCode(400))
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        val objectUrl = mockApi.url("/some-object").toString()
-
-        assertThrows<HttpClientErrorException> {
-            client.getObject(
-                TestAuthentication(),
-                URI(objectUrl)
-            )
-        }
-
-        mockApi.takeRequest()
-
-        verify(outboxService, times(0)).send(eventCapture.capture())
-    }
-
-    @Test
     fun `should get objectslist`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
+        val webclientBuilder = WebClient.builder()
+        val client = ObjectenApiClient(webclientBuilder)
 
         val responseBody = """
             {
@@ -352,7 +174,6 @@ internal class ObjectenApiClientTest {
             URI(objectUrl),
             URI(objectTypesApiUrl),
             "typeId",
-            "",
             PageRequest.of(0, 10)
         )
 
@@ -383,288 +204,9 @@ internal class ObjectenApiClientTest {
     }
 
     @Test
-    fun `should send outbox message when getting objects by object type url`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val responseBody = """
-            {
-              "count": 2,
-              "next": "next.url",
-              "previous": "previous.url",
-              "results": [{
-                  "url": "http://example.com",
-                  "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                  "type": "http://example.com",
-                  "record": {
-                    "index": 0,
-                    "typeVersion": 32767,
-                    "data": {
-                      "property1": "henk",
-                      "property2": 123
-                    },
-                    "geometry": {
-                      "type": "string",
-                      "coordinates": [
-                        0,
-                        0
-                      ]
-                    },
-                    "startAt": "2019-08-24",
-                    "endAt": "2019-08-25",
-                    "registrationAt": "2019-08-26",
-                    "correctionFor": "string",
-                    "correctedBy": "string2"
-                  }
-              }]
-            }
-        """.trimIndent()
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString()
-
-        val result = client.getObjectsByObjecttypeUrl(
-            TestAuthentication(),
-            URI(objectUrl),
-            URI(objectTypesApiUrl),
-            "typeId",
-            "",
-            PageRequest.of(0, 10)
-        )
-
-        mockApi.takeRequest()
-
-        verify(outboxService).send(eventCapture.capture())
-
-        val firstEventValue = eventCapture.firstValue.get()
-        val mappedFirstEventResult: List<ObjectWrapper> = objectMapper.readValue(firstEventValue.result.toString())
-
-        assertThat(firstEventValue).isInstanceOf(ObjectsListed::class.java)
-        assertThat(result.results.first().type).isEqualTo(mappedFirstEventResult.first().type)
-    }
-
-    @Test
-    fun `should not send outbox message when failing to get objects by object type url`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse("").setResponseCode(400))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString()
-        assertThrows<HttpClientErrorException> {
-            client.getObjectsByObjecttypeUrl(
-                TestAuthentication(),
-                URI(objectUrl),
-                URI(objectTypesApiUrl),
-                "typeId",
-                "",
-                PageRequest.of(0, 10)
-            )
-        }
-
-        mockApi.takeRequest()
-
-        verify(outboxService, times(0)).send(eventCapture.capture())
-    }
-
-    @Test
-    fun `should send outbox message when getting objects by object type url with search params`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val responseBody = """
-            {
-              "count": 2,
-              "next": "next.url",
-              "previous": "previous.url",
-              "results": [{
-                  "url": "http://example.com",
-                  "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                  "type": "http://example.com",
-                  "record": {
-                    "index": 0,
-                    "typeVersion": 32767,
-                    "data": {
-                      "property1": "henk",
-                      "property2": 123
-                    },
-                    "geometry": {
-                      "type": "string",
-                      "coordinates": [
-                        0,
-                        0
-                      ]
-                    },
-                    "startAt": "2019-08-24",
-                    "endAt": "2019-08-25",
-                    "registrationAt": "2019-08-26",
-                    "correctionFor": "string",
-                    "correctedBy": "string2"
-                  }
-              }]
-            }
-        """.trimIndent()
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString()
-
-        val result = client.getObjectsByObjecttypeUrlWithSearchParams(
-            authentication = TestAuthentication(),
-            objecttypesApiUrl = URI(objectUrl),
-            objectsApiUrl = URI(objectTypesApiUrl),
-            objectypeId = "typeId",
-            searchString = "test",
-            ordering = "ordering",
-            pageable = PageRequest.of(0, 10)
-        )
-
-        mockApi.takeRequest()
-
-        verify(outboxService).send(eventCapture.capture())
-
-        val firstEventValue = eventCapture.firstValue.get()
-        val mappedFirstEventResult: List<ObjectWrapper> = objectMapper.readValue(firstEventValue.result.toString())
-
-        assertThat(firstEventValue).isInstanceOf(ObjectsListed::class.java)
-        assertThat(result.results.first().type).isEqualTo(mappedFirstEventResult.first().type)
-    }
-
-    @Test
-    fun `should not send outbox message when failing to get objects by object type url with search params`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse("").setResponseCode(400))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString()
-
-        assertThrows<HttpClientErrorException> {
-            client.getObjectsByObjecttypeUrlWithSearchParams(
-                authentication = TestAuthentication(),
-                objecttypesApiUrl = URI(objectUrl),
-                objectsApiUrl = URI(objectTypesApiUrl),
-                objectypeId = "typeId",
-                searchString = "test",
-                ordering = "ordering",
-                pageable = PageRequest.of(0, 10)
-            )
-        }
-
-        mockApi.takeRequest()
-
-        verify(outboxService, times(0)).send(eventCapture.capture())
-    }
-
-    @Test
-    fun `should send outbox message on creating object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val responseBody = """
-            {
-              "url": "http://example.com",
-              "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-              "type": "http://example.com",
-              "record": {
-                "index": 0,
-                "typeVersion": 32767,
-                "data": {
-                  "property1": "henk",
-                  "property2": 123
-                },
-                "geometry": {
-                  "type": "string",
-                  "coordinates": [
-                    0,
-                    0
-                  ]
-                },
-                "startAt": "2019-08-24",
-                "endAt": "2019-08-25",
-                "registrationAt": "2019-08-26",
-                "correctionFor": "string",
-                "correctedBy": "string2"
-              }
-            }
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
-
-        val result = client.createObject(
-            TestAuthentication(),
-            URI(objectUrl),
-            ObjectRequest(
-                URI(objectTypesApiUrl),
-                ObjectRecord(
-                    index = 1,
-                    typeVersion = 2,
-                    data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
-                    startAt = LocalDate.of(2000, 1, 2)
-                )
-            )
-        )
-
-        mockApi.takeRequest()
-
-        verify(outboxService).send(eventCapture.capture())
-
-        val firstEventValue = eventCapture.firstValue.get()
-        val mappedFirstEventResult: ObjectWrapper = objectMapper.readValue(firstEventValue.result.toString())
-
-        assertThat(firstEventValue).isInstanceOf(ObjectCreated::class.java)
-        assertThat(result.url.toString()).isEqualTo(firstEventValue.resultId.toString())
-        assertThat(result.type).isEqualTo(mappedFirstEventResult.type)
-    }
-
-    @Test
-    fun `should not send outbox message on failing to create object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        mockApi.enqueue(mockResponse("").setResponseCode(400))
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
-
-        assertThrows<HttpClientErrorException> {
-            client.createObject(
-                TestAuthentication(),
-                URI(objectUrl),
-                ObjectRequest(
-                    URI(objectTypesApiUrl),
-                    ObjectRecord(
-                        index = 1,
-                        typeVersion = 2,
-                        data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
-                        startAt = LocalDate.of(2000, 1, 2)
-                    )
-                )
-            )
-        }
-
-        mockApi.takeRequest()
-
-        verify(outboxService, times(0)).send(eventCapture.capture())
-    }
-
-    @Test
     fun `should send post request when creating object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
+        val webclientBuilder = WebClient.builder()
+        val client = ObjectenApiClient(webclientBuilder)
 
         val responseBody = """
             {
@@ -707,7 +249,7 @@ internal class ObjectenApiClientTest {
                 ObjectRecord(
                     index = 1,
                     typeVersion = 2,
-                    data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
+                    data = ObjectMapper().readTree("{\"test\":\"some-value\"}"),
                     startAt = LocalDate.of(2000, 1, 2)
                 )
             )
@@ -722,7 +264,8 @@ internal class ObjectenApiClientTest {
 
     @Test
     fun `should send post request with uuid when uuid has been provided when creating object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
+        val webclientBuilder = WebClient.builder()
+        val client = ObjectenApiClient(webclientBuilder)
 
         val responseBody = """
             {
@@ -768,7 +311,7 @@ internal class ObjectenApiClientTest {
                 ObjectRecord(
                     index = 1,
                     typeVersion = 2,
-                    data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
+                    data = ObjectMapper().readTree("{\"test\":\"some-value\"}"),
                     startAt = LocalDate.of(2000, 1, 2)
                 )
             )
@@ -782,7 +325,8 @@ internal class ObjectenApiClientTest {
 
     @Test
     fun `should send patch request`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
+        val webclientBuilder = WebClient.builder()
+        val client = ObjectenApiClient(webclientBuilder)
 
         val responseBody = """
             {
@@ -815,7 +359,7 @@ internal class ObjectenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
+        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost","host")
 
         val result = client.objectPatch(
             TestAuthentication(),
@@ -825,7 +369,7 @@ internal class ObjectenApiClientTest {
                 ObjectRecord(
                     index = 1,
                     typeVersion = 2,
-                    data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
+                    data = ObjectMapper().readTree("{\"test\":\"some-value\"}"),
                     startAt = LocalDate.of(2000, 1, 2)
                 )
             )
@@ -871,247 +415,6 @@ internal class ObjectenApiClientTest {
         assertEquals("string2", result.record.correctedBy)
     }
 
-    @Test
-    fun `should send outbox message on patching object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val responseBody = """
-            {
-              "url": "http://example.com",
-              "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-              "type": "http://example.com",
-              "record": {
-                "index": 0,
-                "typeVersion": 32767,
-                "data": {
-                  "property1": "henk",
-                  "property2": 123
-                },
-                "geometry": {
-                  "type": "string",
-                  "coordinates": [
-                    0,
-                    0
-                  ]
-                },
-                "startAt": "2019-08-24",
-                "endAt": "2019-08-25",
-                "registrationAt": "2019-08-26",
-                "correctionFor": "string",
-                "correctedBy": "string2"
-              }
-            }
-        """.trimIndent()
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
-
-        val result = client.objectPatch(
-            TestAuthentication(),
-            URI(objectUrl),
-            ObjectRequest(
-                URI(objectTypesApiUrl),
-                ObjectRecord(
-                    index = 1,
-                    typeVersion = 2,
-                    data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
-                    startAt = LocalDate.of(2000, 1, 2)
-                )
-            )
-        )
-
-        mockApi.takeRequest()
-
-        verify(outboxService).send(eventCapture.capture())
-
-        val firstEventValue = eventCapture.firstValue.get()
-        val mappedFirstEventResult: ObjectWrapper = objectMapper.readValue(firstEventValue.result.toString())
-
-        assertThat(firstEventValue).isInstanceOf(ObjectPatched::class.java)
-        assertThat(result.url.toString()).isEqualTo(firstEventValue.resultId.toString())
-        assertThat(result.type).isEqualTo(mappedFirstEventResult.type)
-    }
-
-    @Test
-    fun `should not send outbox message on failing to patch object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse("").setResponseCode(400))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
-
-        assertThrows<HttpClientErrorException> {
-            client.objectPatch(
-                TestAuthentication(),
-                URI(objectUrl),
-                ObjectRequest(
-                    URI(objectTypesApiUrl),
-                    ObjectRecord(
-                        index = 1,
-                        typeVersion = 2,
-                        data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
-                        startAt = LocalDate.of(2000, 1, 2)
-                    )
-                )
-            )
-        }
-
-        mockApi.takeRequest()
-
-        verify(outboxService, times(0)).send(eventCapture.capture())
-    }
-
-    @Test
-    fun `should send outbox message on updating object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val responseBody = """
-            {
-              "url": "http://example.com",
-              "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-              "type": "http://example.com",
-              "record": {
-                "index": 0,
-                "typeVersion": 32767,
-                "data": {
-                  "property1": "henk",
-                  "property2": 123
-                },
-                "geometry": {
-                  "type": "string",
-                  "coordinates": [
-                    0,
-                    0
-                  ]
-                },
-                "startAt": "2019-08-24",
-                "endAt": "2019-08-25",
-                "registrationAt": "2019-08-26",
-                "correctionFor": "string",
-                "correctedBy": "string2"
-              }
-            }
-        """.trimIndent()
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
-
-        val result = client.objectUpdate(
-            TestAuthentication(),
-            URI(objectUrl),
-            ObjectRequest(
-                URI(objectTypesApiUrl),
-                ObjectRecord(
-                    index = 1,
-                    typeVersion = 2,
-                    data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
-                    startAt = LocalDate.of(2000, 1, 2)
-                )
-            )
-        )
-
-        mockApi.takeRequest()
-
-        verify(outboxService).send(eventCapture.capture())
-
-        val firstEventValue = eventCapture.firstValue.get()
-        val mappedFirstEventResult: ObjectWrapper = objectMapper.readValue(firstEventValue.result.toString())
-
-        assertThat(firstEventValue).isInstanceOf(ObjectUpdated::class.java)
-        assertThat(result.url.toString()).isEqualTo(firstEventValue.resultId.toString())
-        assertThat(result.type).isEqualTo(mappedFirstEventResult.type)
-    }
-
-    @Test
-    fun `should not send outbox message on failing to update object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse("").setResponseCode(400))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-        val objectTypesApiUrl = mockApi.url("/some-objectTypesApi").toString().replace("localhost", "host")
-
-        assertThrows<HttpClientErrorException> {
-            client.objectUpdate(
-                TestAuthentication(),
-                URI(objectUrl),
-                ObjectRequest(
-                    URI(objectTypesApiUrl),
-                    ObjectRecord(
-                        index = 1,
-                        typeVersion = 2,
-                        data = MapperSingleton.get().readTree("{\"test\":\"some-value\"}"),
-                        startAt = LocalDate.of(2000, 1, 2)
-                    )
-                )
-            )
-        }
-
-        mockApi.takeRequest()
-
-        verify(outboxService, times(0)).send(eventCapture.capture())
-    }
-
-    @Test
-    fun `should send outbox message on deleting object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse("").setResponseCode(200))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-
-        client.deleteObject(
-            TestAuthentication(),
-            URI(objectUrl),
-        )
-
-        mockApi.takeRequest()
-
-        verify(outboxService).send(eventCapture.capture())
-
-        val firstEventValue = eventCapture.firstValue.get()
-
-        assertThat(firstEventValue).isInstanceOf(ObjectDeleted::class.java)
-        assertThat(objectUrl).isEqualTo(firstEventValue.resultId.toString())
-    }
-
-    @Test
-    fun `should not send outbox message on failing to delete object`() {
-        val client = ObjectenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService)
-
-        val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
-
-        mockApi.enqueue(mockResponse("").setResponseCode(400))
-
-        val objectUrl = mockApi.url("/some-object").toString()
-
-        assertThrows<HttpClientErrorException> {
-            client.deleteObject(
-                TestAuthentication(),
-                URI(objectUrl),
-            )
-        }
-
-        mockApi.takeRequest()
-
-        verify(outboxService, times(0)).send(eventCapture.capture())
-    }
-
     private fun mockResponse(body: String): MockResponse {
         return MockResponse()
             .addHeader("Content-Type", "application/json")
@@ -1119,12 +422,6 @@ internal class ObjectenApiClientTest {
     }
 
     class TestAuthentication : ObjectenApiAuthentication {
-        override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-            return builder.defaultHeaders { headers ->
-                headers.setBearerAuth("test")
-            }
-        }
-
         override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
             val filteredRequest = ClientRequest.from(request).headers { headers ->
                 headers.setBearerAuth("test")

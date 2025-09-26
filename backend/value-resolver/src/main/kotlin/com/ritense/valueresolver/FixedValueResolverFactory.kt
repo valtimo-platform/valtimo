@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package com.ritense.valueresolver
 
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.function.Function
-import org.operaton.bpm.engine.delegate.VariableScope
 
 /**
  * This resolver returns the requestedValue as the value.
@@ -28,7 +28,7 @@ import org.operaton.bpm.engine.delegate.VariableScope
  * These requestedValues do not have a prefix
  */
 class FixedValueResolverFactory(
-    private val prefix: String = ""
+    val prefix: String = ""
 ) : ValueResolverFactory {
 
     override fun supportedPrefix(): String {
@@ -42,14 +42,14 @@ class FixedValueResolverFactory(
         return createResolver()
     }
 
-    override fun createResolver(documentId: String): Function<String, Any?> {
+    override fun createResolver(documentInstanceId: String): Function<String, Any?> {
         return createResolver()
     }
 
     override fun handleValues(
         processInstanceId: String,
         variableScope: VariableScope?,
-        values: Map<String, Any?>
+        values: Map<String, Any>
     ) {
         val firstValue = values.iterator().next()
         throw RuntimeException("Can't save fixed value (unknown destination): {${firstValue.key} to ${firstValue.value}}")
@@ -58,29 +58,13 @@ class FixedValueResolverFactory(
     private fun createResolver(): Function<String, Any?> {
         return Function { requestedValue->
             requestedValue.toBooleanStrictOrNull()
-                ?: toLongOrNullSave(requestedValue)
-                ?: toDoubleOrNullSave(requestedValue)
+                ?: requestedValue.toLongOrNull()
+                ?: requestedValue.toDoubleOrNull()
                 ?:  if (prefix.isEmpty()) {
                         requestedValue
                     } else {
                         "$prefix:$requestedValue"
                     }
-        }
-    }
-
-    private fun toLongOrNullSave(value: String): Long? {
-        return if (value != value.toLongOrNull().toString()) {
-            null
-        } else {
-            value.toLongOrNull()
-        }
-    }
-
-    private fun toDoubleOrNullSave(value: String): Double? {
-        return if (value != value.toDoubleOrNull().toString()) {
-            null
-        } else {
-            value.toDoubleOrNull()
         }
     }
 

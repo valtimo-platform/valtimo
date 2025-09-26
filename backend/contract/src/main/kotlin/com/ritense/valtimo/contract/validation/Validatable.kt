@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,33 @@
 package com.ritense.valtimo.contract.validation
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.validation.Validator
+import mu.KotlinLogging
+import javax.validation.ConstraintViolationException
+import javax.validation.Validation
+import javax.validation.Validator
 
 interface Validatable {
 
     @JsonIgnore
     fun validate() {
+        val logger = KotlinLogging.logger {}
         logger.debug { "validating $this" }
-        ValidatorHolder.validate(this)
+        val errors = getValidator().validate(this)
+        if (errors.isNotEmpty()) {
+            throw ConstraintViolationException(errors)
+        }
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private var validator: Validator? = null
 
-        @Deprecated("This method has been moved to ValidatorHolder", ReplaceWith("ValidatorHolder.getValidator()"))
         fun getValidator(): Validator {
-            return ValidatorHolder.getValidator()
+            validator = validator ?: Validation.buildDefaultValidatorFactory().validator
+            return validator!!
         }
 
-        @Deprecated("This method has been moved to ValidatorHolder", ReplaceWith("ValidatorHolder.setValidator(validator)"))
         fun setValidator(validator: Validator) {
-            ValidatorHolder.setValidator(validator)
+            Validatable.validator = validator
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,43 +16,63 @@
 
 package com.ritense.mail.wordpressmail.autoconfigure
 
+import com.ritense.connector.domain.Connector
+import com.ritense.connector.service.ConnectorService
 import com.ritense.mail.MailDispatcher
-import com.ritense.mail.wordpressmail.config.WordpressMailProperties
+import com.ritense.mail.wordpressmail.connector.WordpressMailConnector
+import com.ritense.mail.wordpressmail.connector.WordpressMailConnectorProperties
 import com.ritense.mail.wordpressmail.service.WordpressMailClient
 import com.ritense.mail.wordpressmail.service.WordpressMailDispatcher
-import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
-import org.springframework.web.client.RestClient
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Scope
+import org.springframework.http.client.reactive.ReactorClientHttpConnector
+import org.springframework.web.reactive.function.client.WebClient
+import reactor.netty.http.client.HttpClient
+import reactor.netty.transport.logging.AdvancedByteBufFormat
 
-@AutoConfiguration
-@EnableConfigurationProperties(WordpressMailProperties::class)
+@Configuration
+@EnableConfigurationProperties
 class WordpressMailAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(MailDispatcher::class)
     fun wordpressMailDispatcher(
-        wordpressMailClient: WordpressMailClient,
-        applicationEventPublisher: ApplicationEventPublisher
+        connectorService: ConnectorService
     ): WordpressMailDispatcher {
-        return WordpressMailDispatcher(
-            wordpressMailClient,
-            applicationEventPublisher,
-        )
+        return WordpressMailDispatcher(connectorService)
     }
 
     @Bean
     @ConditionalOnMissingBean(WordpressMailClient::class)
     fun wordpressMailClient(
-        wordpressMailProperties: WordpressMailProperties,
-        wordpressMailRestClientBuilder: RestClient.Builder
+        wordpressMailConnectorProperties: WordpressMailConnectorProperties,
+        wordpressMailWebClientBuilder: WebClient.Builder
     ): WordpressMailClient {
-        return WordpressMailClient(
-            wordpressMailProperties,
-            wordpressMailRestClientBuilder
-        )
+        return WordpressMailClient(wordpressMailConnectorProperties, wordpressMailWebClientBuilder)
+    }
+
+    //Connector
+
+    @Bean
+    @ConditionalOnMissingBean(WordpressMailConnector::class)
+    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
+    fun wordpressMailConnector(
+        wordpressMailConnectorProperties: WordpressMailConnectorProperties,
+        wordpressMailClient: WordpressMailClient,
+        applicationEventPublisher: ApplicationEventPublisher
+    ): Connector {
+        return WordpressMailConnector(wordpressMailConnectorProperties, wordpressMailClient, applicationEventPublisher)
+    }
+
+    @Bean
+    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
+    fun wordpressMailConnectorProperties(): WordpressMailConnectorProperties {
+        return WordpressMailConnectorProperties()
     }
 
 }

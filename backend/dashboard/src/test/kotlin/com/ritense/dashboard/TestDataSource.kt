@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 package com.ritense.dashboard
 
 import com.ritense.valtimo.contract.dashboard.WidgetDataSource
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KLogger
+import mu.KotlinLogging
 
 class TestDataSource {
 
@@ -43,7 +44,7 @@ class TestDataSource {
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
         const val NUMBER_DATA_KEY = "number-data"
         const val NUMBER_DATA_TITLE = "Number data"
         const val NUMBERS_DATA_KEY = "numbers-data"

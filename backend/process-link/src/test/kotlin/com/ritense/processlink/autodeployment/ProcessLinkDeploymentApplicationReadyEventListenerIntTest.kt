@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,43 +16,40 @@
 
 package com.ritense.processlink.autodeployment
 
-import com.ritense.authorization.AuthorizationContext
 import com.ritense.processlink.BaseIntegrationTest
-import com.ritense.processlink.domain.TestProcessLink
+import com.ritense.processlink.domain.CustomProcessLink
 import com.ritense.processlink.repository.ProcessLinkRepository
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.repository.ProcessDefinition
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
 
 
-@Transactional
 class ProcessLinkDeploymentApplicationReadyEventListenerIntTest @Autowired constructor(
-    private val repositoryService: OperatonRepositoryService,
-    private val processLinkRepository: ProcessLinkRepository,
-    private val listener: ProcessLinkDeploymentApplicationReadyEventListener
-) : BaseIntegrationTest() {
+    private val repositoryService: RepositoryService,
+    private val processLinkRepository: ProcessLinkRepository
+): BaseIntegrationTest() {
 
     @Test
-    fun `should find 1 deployed process link on user task`() {
+    fun `should find 1 deployed process link on service task`() {
         val processDefinition = getLatestProcessDefinition()
         val processLinks =
-            processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinition.id, "test-user-task")
+            processLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinition.id, "my-service-task")
 
         assertThat(processLinks, hasSize(1))
         val processLink = processLinks.first()
-        assertThat(processLink, Matchers.isA(TestProcessLink::class.java))
-        processLink as TestProcessLink
+        assertThat(processLink, Matchers.isA(CustomProcessLink::class.java))
+        processLink as CustomProcessLink
         assertThat(processLink.someValue, Matchers.equalTo("test"))
     }
 
-    private fun getLatestProcessDefinition(): OperatonProcessDefinition {
-        return AuthorizationContext.runWithoutAuthorization {
-            repositoryService.findLatestProcessDefinition("test-system-process")!!
-        }
+    private fun getLatestProcessDefinition(): ProcessDefinition {
+        return repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey("auto-deploy-process-link")
+            .latestVersion()
+            .singleResult()
     }
 }

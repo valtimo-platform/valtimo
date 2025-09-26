@@ -1,6 +1,0 @@
-services:
-    db:
-        ports:
-            - "3323:3306"
-        environment:
-            - MYSQL_DATABASE=value-resolver-test

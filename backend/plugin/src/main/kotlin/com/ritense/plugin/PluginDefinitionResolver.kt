@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,9 @@
 package com.ritense.plugin
 
 import com.ritense.plugin.annotation.Plugin
-import com.ritense.valtimo.contract.annotation.AnnotatedClassResolver
-import org.springframework.context.ApplicationContext
 
-class PluginDefinitionResolver(
-    context: ApplicationContext
-): AnnotatedClassResolver(context) {
+class PluginDefinitionResolver: AnnotatedClassResolver() {
     internal fun findPluginClasses() : Map<Class<*>, Plugin> {
-        return findClassesWithAnnotation()
+        return findAnnotatedClasses()
     }
 }

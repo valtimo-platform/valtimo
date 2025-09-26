@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,6 @@
 
 package com.ritense.audit.service.impl;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.ritense.audit.AbstractTestHelper;
 import com.ritense.audit.domain.AuditRecord;
 import com.ritense.audit.domain.AuditRecordId;
@@ -33,8 +24,6 @@ import com.ritense.audit.domain.event.TestEvent;
 import com.ritense.audit.exception.AuditRecordNotFoundException;
 import com.ritense.audit.repository.AuditRecordRepository;
 import com.ritense.audit.service.AuditService;
-import com.ritense.authorization.AuthorizationService;
-import com.ritense.document.service.DocumentService;
 import com.ritense.valtimo.contract.audit.AuditEvent;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -44,18 +33,24 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AuditServiceImplTest extends AbstractTestHelper {
 
     private AuditService auditService;
-    private AuditRecordRepository<AuditRecord> auditRecordRepository;
+    private AuditRecordRepository<AuditRecord, AuditRecordId> auditRecordRepository;
 
     @BeforeEach
     public void setUp() {
         auditRecordRepository = mock(AuditRecordRepository.class);
-        AuthorizationService authorizationService = mock(AuthorizationService.class);
-        DocumentService documentService = mock(DocumentService.class);
-        auditService = new AuditServiceImpl(auditRecordRepository, authorizationService, documentService);
+        auditService = new AuditServiceImpl(auditRecordRepository);
     }
 
     @Test
@@ -64,7 +59,9 @@ public class AuditServiceImplTest extends AbstractTestHelper {
         final AuditRecordId auditRecordId = AuditRecordId.existingId(event.getId());
         when(auditRecordRepository.findById(auditRecordId)).thenReturn(Optional.empty());
 
-        assertThrows(AuditRecordNotFoundException.class, () -> auditService.findById(auditRecordId));
+        assertThrows(AuditRecordNotFoundException.class, () -> {
+            auditService.findById(auditRecordId);
+        });
     }
 
     @Test
@@ -89,7 +86,7 @@ public class AuditServiceImplTest extends AbstractTestHelper {
         final MetaData metaData = metaData(testEvent);
         final AuditRecord auditRecord = auditRecord(testEvent, metaData);
 
-        final Class<? extends TestEvent> event = testEvent.getClass();
+        final Class event = testEvent.getClass();
         final LocalDateTime from = now.minusDays(2);
         final LocalDateTime until = now.plusDays(2);
         final Pageable unpaged = Pageable.unpaged();

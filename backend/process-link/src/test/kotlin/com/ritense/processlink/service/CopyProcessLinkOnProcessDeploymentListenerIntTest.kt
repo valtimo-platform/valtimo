@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,16 @@
 
 package com.ritense.processlink.service
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.processlink.domain.CustomProcessLinkCreateRequestDto
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.repository.ProcessDefinition
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
+import javax.transaction.Transactional
 import kotlin.test.assertEquals
 
 @Transactional
@@ -39,12 +35,12 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
     lateinit var processLinkService: ProcessLinkService
 
     @Autowired
-    lateinit var repositoryService: OperatonRepositoryService
+    lateinit var repositoryService: RepositoryService
 
     @Autowired
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
-    private lateinit var processDefinition: OperatonProcessDefinition
+    private lateinit var processDefinition: ProcessDefinition
 
     @BeforeEach
     fun beforeEach() {
@@ -52,53 +48,59 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
     }
 
     @Test
-    fun `should NOT copy process link on old process to a newly deployed process`() {
+    fun `should copy process link on latest process to a newly deployed process`() {
         // given
-        val changedProcessBpmn = readFileAsString("/config/case/autodeploy/1-0-0/bpmn/service-task-process.bpmn")
-            .replace("My service task", "My service task changed")
-        runWithoutAuthorization {
-            operatonProcessService.deploy(
-                CaseDefinitionId("autodeploy", "1.0.0"),
-                "service-task-process.bpmn",
-                changedProcessBpmn.byteInputStream()
-            )
-        }
         createProcessLink(processDefinition)
-        val changedAgainProcessBpmn = readFileAsString("/config/case/autodeploy/1-0-0/bpmn/service-task-process.bpmn")
-            .replace("My service task", "My service task changed again")
+        val changedProcessBpmn = readFileAsString("/bpmn/service-task-process.bpmn")
+            .replace("My service task", "My service task changed")
 
         // when
-        runWithoutAuthorization {
-            operatonProcessService.deploy(
-                CaseDefinitionId("autodeploy", "1.0.0"),
-                "service-task-process.bpmn",
-                changedAgainProcessBpmn.byteInputStream()
-            )
-        }
+        camundaProcessService.deploy("service-task-process.bpmn", changedProcessBpmn.byteInputStream())
 
         // then
         val latestProcessDefinition = getLatestProcessDefinition()
         assertEquals(1, processDefinition.version)
         assertEquals(1, processLinkService.getProcessLinks(processDefinition.id, SERVICE_TASK_ID).count())
-        assertEquals(1, latestProcessDefinition.version)
+        assertEquals(2, latestProcessDefinition.version)
+        assertEquals(1, processLinkService.getProcessLinks(latestProcessDefinition.id, SERVICE_TASK_ID).count())
+    }
+
+    @Test
+    fun `should NOT copy process link on old process to a newly deployed process`() {
+        // given
+        val changedProcessBpmn = readFileAsString("/bpmn/service-task-process.bpmn")
+            .replace("My service task", "My service task changed")
+        camundaProcessService.deploy("service-task-process.bpmn", changedProcessBpmn.byteInputStream())
+        createProcessLink(processDefinition)
+        val changedAgainProcessBpmn = readFileAsString("/bpmn/service-task-process.bpmn")
+            .replace("My service task", "My service task changed again")
+
+        // when
+        camundaProcessService.deploy("service-task-process.bpmn", changedAgainProcessBpmn.byteInputStream())
+
+        // then
+        val latestProcessDefinition = getLatestProcessDefinition()
+        assertEquals(1, processDefinition.version)
+        assertEquals(1, processLinkService.getProcessLinks(processDefinition.id, SERVICE_TASK_ID).count())
+        assertEquals(3, latestProcessDefinition.version)
         assertEquals(0, processLinkService.getProcessLinks(latestProcessDefinition.id, SERVICE_TASK_ID).count())
     }
 
-    private fun createProcessLink(processDefinition: OperatonProcessDefinition) {
+    private fun createProcessLink(processDefinition: ProcessDefinition) {
         processLinkService.createProcessLink(
-            TestProcessLinkCreateRequestDto(
+            CustomProcessLinkCreateRequestDto(
                 processDefinition.id,
                 SERVICE_TASK_ID,
-                ActivityTypeWithEventName.SERVICE_TASK_START,
-            ),
-            CaseDefinitionId.of("autodeploy", "1.0.0")
+                ActivityTypeWithEventName.SERVICE_TASK_START
+            )
         )
     }
 
-    private fun getLatestProcessDefinition(): OperatonProcessDefinition {
-        return runWithoutAuthorization {
-            repositoryService.findProcessDefinition(byKey(PROCESS_DEFINITION_KEY).and(byLatestVersion()))!!
-        }
+    private fun getLatestProcessDefinition(): ProcessDefinition {
+        return repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey(PROCESS_DEFINITION_KEY)
+            .latestVersion()
+            .singleResult()
     }
 
     private fun readFileAsString(fileName: String) = this::class.java.getResource(fileName).readText(Charsets.UTF_8)

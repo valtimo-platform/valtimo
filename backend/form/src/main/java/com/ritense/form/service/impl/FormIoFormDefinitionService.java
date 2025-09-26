@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 
 package com.ritense.form.service.impl;
 
-import static com.ritense.logging.LoggingContextKt.withLoggingContext;
-
 import com.ritense.form.domain.FormDefinition;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
@@ -25,45 +23,29 @@ import com.ritense.form.domain.request.ModifyFormDefinitionRequest;
 import com.ritense.form.repository.FormDefinitionRepository;
 import com.ritense.form.service.FormDefinitionService;
 import com.ritense.form.web.rest.dto.FormOption;
-import com.ritense.logging.LoggableResource;
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
 public class FormIoFormDefinitionService implements FormDefinitionService {
 
     private final FormDefinitionRepository formDefinitionRepository;
-    private final CaseDefinitionChecker caseDefinitionChecker;
 
-    public FormIoFormDefinitionService(
-        final FormDefinitionRepository formDefinitionRepository,
-        final CaseDefinitionChecker caseDefinitionChecker
-    ) {
+    public FormIoFormDefinitionService(final FormDefinitionRepository formDefinitionRepository) {
         this.formDefinitionRepository = formDefinitionRepository;
-        this.caseDefinitionChecker = caseDefinitionChecker;
     }
 
     @Override
     public Page<FormIoFormDefinition> getAll(Pageable pageable) {
-        return formDefinitionRepository.findByCaseDefinitionIdIsNull(pageable);
+        return formDefinitionRepository.findAll(pageable);
     }
 
     @Override
-    public List<FormOption> getUnlinkedFormOptions() {
-        return formDefinitionRepository.findAllByCaseDefinitionIdIsNullOrderByNameAsc()
-            .stream()
-            .map(formIoFormDefinition -> new FormOption(formIoFormDefinition.getId(), formIoFormDefinition.getName()))
-            .toList();
-    }
-
-    @Override
-    public List<FormOption> getFormOptionsForCaseDefinition(CaseDefinitionId caseDefinitionId) {
-        return formDefinitionRepository.findAllByCaseDefinitionIdOrderByNameAsc(caseDefinitionId)
+    public List<FormOption> getAllFormOptions() {
+        return formDefinitionRepository.findAllByOrderByNameAsc()
             .stream()
             .map(formIoFormDefinition -> new FormOption(formIoFormDefinition.getId(), formIoFormDefinition.getName()))
             .toList();
@@ -71,154 +53,58 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
 
     @Override
     public Page<? extends FormDefinition> queryFormDefinitions(String searchTerm, Pageable pageable) {
-        return formDefinitionRepository.findAllWithoutCaseByNameContainingIgnoreCase(searchTerm, pageable);
+        return formDefinitionRepository.findAllByNameContainingIgnoreCase(searchTerm, pageable);
     }
 
     @Override
-    public Page<? extends FormDefinition> queryFormDefinitions(
-        CaseDefinitionId caseDefinitionId,
-        String searchTerm,
-        Pageable pageable
-    ) {
-        return formDefinitionRepository.findAllByCaseDefinitionIdAndNameContainingIgnoreCase(
-            caseDefinitionId,
-            searchTerm, pageable
-        );
-    }
-
-    @Override
-    public List<FormIoFormDefinition> getFormDefinitions(CaseDefinitionId caseDefinitionId) {
-        return formDefinitionRepository.findAllByCaseDefinitionId(caseDefinitionId);
-    }
-
-    @Override
-    public Optional<FormIoFormDefinition> getFormDefinitionById(
-        @LoggableResource(resourceType = FormIoFormDefinition.class) UUID formDefinitionId
-    ) {
+    public Optional<FormIoFormDefinition> getFormDefinitionById(UUID formDefinitionId) {
         return formDefinitionRepository.findById(formDefinitionId);
     }
 
     @Override
-    public Optional<FormIoFormDefinition> getFormDefinitionById(
-        @LoggableResource("caseDefinitionId") CaseDefinitionId caseDefinitionId,
-        @LoggableResource(resourceType = FormIoFormDefinition.class) UUID formDefinitionId
-    ) {
-        return formDefinitionRepository.findByIdAndCaseDefinitionId(formDefinitionId, caseDefinitionId);
+    public Optional<FormIoFormDefinition> getFormDefinitionByName(String name) {
+        return formDefinitionRepository.findByName(name);
     }
 
     @Override
-    public Optional<FormIoFormDefinition> getFormDefinitionByName(
-        @LoggableResource("formDefinitionName") String name
-    ) {
-        return formDefinitionRepository.findByNameAndCaseDefinitionIdIsNull(name);
-    }
-
-    public Optional<FormIoFormDefinition> getFormDefinitionByName(
-        @LoggableResource("formDefinitionName") String name,
-        @LoggableResource("caseDefinitionId") CaseDefinitionId caseDefinitionId
-    ) {
-        return formDefinitionRepository.findByNameAndCaseDefinitionId(name, caseDefinitionId);
-    }
-
-    @Override
-    public Optional<FormIoFormDefinition> getFormDefinitionByNameIgnoringCase(
-        @LoggableResource("formDefinitionName") String name
-    ) {
-        return formDefinitionRepository.findByNameIgnoreCaseAndCaseDefinitionIdIsNull(name);
+    public Optional<FormIoFormDefinition> getFormDefinitionByNameIgnoringCase(String name) {
+        return formDefinitionRepository.findByNameIgnoreCase(name);
     }
 
     @Override
     @Transactional
-    public FormIoFormDefinition createFormDefinition(
-        CreateFormDefinitionRequest request
-    ) {
-        return withLoggingContext("formDefinitionName", request.getName(), () -> {
-            caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
-            if (formDefinitionRepository.findByNameAndCaseDefinitionId(request.getName(), null)
-                .isPresent()) {
-                throw new IllegalArgumentException("Duplicate name for new form: " + request.getName());
-            }
-            return formDefinitionRepository.save(
-                new FormIoFormDefinition(
-                    UUID.randomUUID(),
-                    request.getName(),
-                    request.getFormDefinition(),
-                    null,
-                    request.isReadOnly()
-                )
-            );
-        });
-    }
-
-    @Override
-    @Transactional
-    public FormIoFormDefinition createFormDefinition(
-        CaseDefinitionId caseDefinitionId,
-        CreateFormDefinitionRequest request
-    ) {
-        return withLoggingContext("formDefinitionName", request.getName(), () -> {
-            caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
-            if (formDefinitionRepository.findByNameAndCaseDefinitionId(request.getName(), caseDefinitionId)
-                .isPresent()) {
-                throw new IllegalArgumentException("Duplicate name for new form: " + request.getName());
-            }
-            return formDefinitionRepository.save(
-                new FormIoFormDefinition(
-                    UUID.randomUUID(),
-                    request.getName(),
-                    request.getFormDefinition(),
-                    caseDefinitionId,
-                    request.isReadOnly()
-                )
-            );
-        });
+    public FormIoFormDefinition createFormDefinition(CreateFormDefinitionRequest request) {
+        if(formDefinitionRepository.findByName(request.getName()).isPresent()) {
+            throw new IllegalArgumentException("Duplicate name for new form: "+request.getName());
+        }
+        return formDefinitionRepository.save(
+            new FormIoFormDefinition(
+                UUID.randomUUID(),
+                request.getName(),
+                request.getFormDefinition(),
+                request.isReadOnly()
+            )
+        );
     }
 
     @Override
     @Transactional
     public FormIoFormDefinition modifyFormDefinition(ModifyFormDefinitionRequest request) {
-        return withLoggingContext("formDefinitionName", request.getName(), () -> {
-            caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
-            if (!formDefinitionRepository.existsById(request.getId())) {
-                throw new RuntimeException("Form definition not found with id " + request.getId().toString());
-            }
-            return formDefinitionRepository
-                .findById(request.getId())
-                .map(formIoFormDefinition -> {
-                    formIoFormDefinition.changeName(request.getName());
-                    formIoFormDefinition.changeDefinition(request.getFormDefinition());
-                    return formDefinitionRepository.save(formIoFormDefinition);
-                }).orElseThrow();
-        });
+        if (!formDefinitionRepository.existsById(request.getId())) {
+            throw new RuntimeException("Form definition not found with id " + request.getId().toString());
+        }
+        return formDefinitionRepository
+            .findById(request.getId())
+            .map(formIoFormDefinition -> {
+                formIoFormDefinition.changeName(request.getName());
+                formIoFormDefinition.changeDefinition(request.getFormDefinition());
+                return formDefinitionRepository.save(formIoFormDefinition);
+            }).orElseThrow();
     }
 
     @Override
     @Transactional
-    public FormDefinition modifyFormDefinition(CaseDefinitionId caseDefinitionId, ModifyFormDefinitionRequest request) {
-        return withLoggingContext("formDefinitionName", request.getName(), () -> {
-            caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
-            if (!formDefinitionRepository.existsById(request.getId())) {
-                throw new RuntimeException("Form definition not found with id " + request.getId().toString());
-            }
-            return formDefinitionRepository
-                .findById(request.getId())
-                .map(formIoFormDefinition -> {
-                    formIoFormDefinition.changeName(request.getName());
-                    formIoFormDefinition.changeDefinition(request.getFormDefinition());
-                    return formDefinitionRepository.save(formIoFormDefinition);
-                }).orElseThrow();
-        });
-    }
-
-    @Override
-    @Transactional
-    public FormIoFormDefinition modifyFormDefinition(
-        @LoggableResource(resourceType = FormIoFormDefinition.class) UUID id,
-        String name,
-        String definition,
-        Boolean readOnly
-    ) {
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
+    public FormIoFormDefinition modifyFormDefinition(UUID id, String name, String definition, Boolean readOnly) {
         return formDefinitionRepository
             .findById(id)
             .map(
@@ -236,31 +122,12 @@ public class FormIoFormDefinitionService implements FormDefinitionService {
 
     @Override
     @Transactional
-    public void deleteFormDefinition(
-        @LoggableResource(resourceType = FormIoFormDefinition.class) UUID formDefinitionId
-    ) {
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration();
+    public void deleteFormDefinition(UUID formDefinitionId) {
         formDefinitionRepository.deleteById(formDefinitionId);
     }
 
     @Override
-    @Transactional
-    public void deleteFormDefinition(CaseDefinitionId caseDefinitionId, UUID formDefinitionId) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
-        formDefinitionRepository.deleteById(formDefinitionId);
-    }
-
-    @Override
-    @Transactional
-    public void deleteAllFormDefinitions(CaseDefinitionId caseDefinitionId) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId);
-        formDefinitionRepository.deleteAllByCaseDefinitionId(caseDefinitionId);
-    }
-
-    @Override
-    public boolean formDefinitionExistsById(
-        @LoggableResource(resourceType = FormIoFormDefinition.class) UUID id
-    ) {
+    public boolean formDefinitionExistsById(UUID id) {
         return formDefinitionRepository.existsById(id);
     }
 

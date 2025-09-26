@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,12 @@
 
 package com.ritense.processlink.service
 
-import com.ritense.authorization.AuthorizationService
-import com.ritense.document.service.DocumentService
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
-import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.OperatonTaskService
+import java.util.UUID
+import org.camunda.bpm.engine.TaskService
+import org.camunda.community.mockito.CamundaMockito
+import org.camunda.community.mockito.task.TaskFake
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mock
@@ -32,13 +30,12 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.UUID
 
 
 class ProcessLinkActivityServiceTest {
 
     @Mock
-    lateinit var taskService: OperatonTaskService
+    lateinit var taskService: TaskService
 
     @Mock
     lateinit var processLinkService: ProcessLinkService
@@ -48,48 +45,25 @@ class ProcessLinkActivityServiceTest {
 
     lateinit var processLinkActivityService: ProcessLinkActivityService
 
-    @Mock
-    lateinit var authorizationService: AuthorizationService
-
-    @Mock
-    lateinit var operatonRepositoryService: OperatonRepositoryService
-
-    @Mock
-    lateinit var documentService: DocumentService
-
-    @Mock
-    lateinit var operatonTaskService: OperatonTaskService
-
-    @Mock
-    lateinit var operatonProcessService: OperatonProcessService
-
     @BeforeEach
     fun init() {
         MockitoAnnotations.openMocks(this)
-        processLinkActivityService = ProcessLinkActivityService(
-            processLinkService,
-            taskService,
-            listOf(processLinkActivityHandler),
-            authorizationService,
-            operatonRepositoryService,
-            documentService,
-            operatonTaskService,
-            operatonProcessService,
-        )
+        processLinkActivityService = ProcessLinkActivityService(processLinkService, taskService, listOf(processLinkActivityHandler))
     }
 
     @Test
     fun `should use task provider to open task`() {
         val taskId = UUID.randomUUID()
-        val task: OperatonTask = mock()
-        whenever(task.id).thenReturn(taskId.toString())
-        whenever(task.getProcessDefinitionId()).thenReturn("some-process:1")
-        whenever(task.taskDefinitionKey).thenReturn("some-activity")
+        val task = TaskFake.builder()
+            .id(taskId.toString())
+            .processDefinitionId("some-process:1")
+            .taskDefinitionKey("some-activity")
+            .build()
 
         val processLink: ProcessLink = mock()
-        val processLinkActivityResult = ProcessLinkActivityResult<Map<String, Any>>(UUID.randomUUID(), "test", mapOf())
+        val processLinkActivityResult = ProcessLinkActivityResult<Map<String,Any>>(UUID.randomUUID(), "test", mapOf())
 
-        whenever(taskService.findTaskOrThrow(any())).thenReturn(task)
+        CamundaMockito.mockTaskQuery(taskService).singleResult(task)
         whenever(processLinkService.getProcessLinks(any(), any())).thenReturn(listOf(processLink))
         whenever(processLinkActivityHandler.supports(processLink)).thenReturn(true)
         whenever(processLinkActivityHandler.openTask(task, processLink)).thenReturn(processLinkActivityResult)

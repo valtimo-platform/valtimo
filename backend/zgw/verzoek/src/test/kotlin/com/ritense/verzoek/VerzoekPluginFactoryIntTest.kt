@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.ritense.verzoek
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.BaseIntegrationTest
 import com.ritense.notificatiesapiauthentication.NotificatiesApiAuthenticationPlugin
 import com.ritense.plugin.domain.PluginConfiguration
@@ -37,9 +37,6 @@ internal class VerzoekPluginFactoryIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var verzoekPluginFactory: VerzoekPluginFactory
-
-    @Autowired
-    lateinit var objectMapper: ObjectMapper
 
     lateinit var notificatiesApiPluginConfiguration: PluginConfiguration
 
@@ -123,13 +120,13 @@ internal class VerzoekPluginFactoryIntTest : BaseIntegrationTest() {
             "verzoek", """
             {
               "notificatiesApiPluginConfiguration": "${notificatiesApiPluginConfiguration.id.id}",
+              "objectManagementId": "0b993a22-aa70-49a8-934a-79b17a70df6f",
               "processToStart": "verzoek-process",
               "rsin": "637549971",
               "verzoekProperties": [{
                 "type": "objection",
-                "caseDefinitionKey": "profile",
+                "caseDefinitionName": "profile",
                 "processDefinitionKey": "objection-process",
-                "objectManagementId": "0b993a22-aa70-49a8-934a-79b17a70df6f",
                 "initiatorRoltypeUrl": "https://example.com/my-role-type",
                 "initiatorRolDescription": "Initiator",
                 "copyStrategy": "specified",
@@ -154,7 +151,7 @@ internal class VerzoekPluginFactoryIntTest : BaseIntegrationTest() {
         assertEquals("637549971", plugin.rsin.toString())
         assertEquals(1, plugin.verzoekProperties.size)
         assertEquals("objection", plugin.verzoekProperties[0].type)
-        assertEquals("profile", plugin.verzoekProperties[0].caseDefinitionKey)
+        assertEquals("profile", plugin.verzoekProperties[0].caseDefinitionName)
         assertEquals("objection-process", plugin.verzoekProperties[0].processDefinitionKey)
         assertEquals("https://example.com/my-role-type", plugin.verzoekProperties[0].initiatorRoltypeUrl.toString())
         assertEquals("Initiator", plugin.verzoekProperties[0].initiatorRolDescription)
@@ -171,7 +168,7 @@ internal class VerzoekPluginFactoryIntTest : BaseIntegrationTest() {
     private fun createPluginConfiguration(pluginDefinitionKey: String, pluginProperties: String): PluginConfiguration {
         return pluginService.createPluginConfiguration(
             "my-configuration-$pluginDefinitionKey-${pluginProperties.hashCode()}",
-            objectMapper.readTree(pluginProperties).deepCopy(),
+            jacksonObjectMapper().readTree(pluginProperties).deepCopy(),
             pluginDefinitionKey
         )
     }

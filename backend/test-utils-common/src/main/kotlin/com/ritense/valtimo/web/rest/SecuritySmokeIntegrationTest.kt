@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.ritense.valtimo.web.rest
 
 import com.ritense.valtimo.contract.authentication.UserManagementService
@@ -26,9 +27,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -58,10 +59,10 @@ abstract class SecuritySmokeIntegrationTest(
     private val basePackageName: String? = null,
     private val ignoredPathPatterns: Set<String> = setOf()
 ) {
-    @MockitoBean
+    @MockBean
     private lateinit var userManagementService: UserManagementService
 
-    @MockitoBean
+    @MockBean
     private lateinit var mailSender: MailSender
 
     @Qualifier("requestMappingHandlerMapping")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.ritense.processlink.security.config
 
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.DELETE
@@ -24,95 +25,21 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
-class ProcessLinkHttpSecurityConfigurer : HttpSecurityConfigurer {
+class ProcessLinkHttpSecurityConfigurer: HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
-            http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$PROCESS_LINK_URL/types")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, PROCESS_LINK_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$PROCESS_LINK_URL/export")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$PROCESS_LINK_URL/{processLinkId}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(POST, "/api/v1/process/definition/deployment/process-link"))
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/v2/process-link/task/{taskId}")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/process-definition/{processDefinitionId}/start-form"))
-                    .authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/process/{processInstanceId}/tasks/process-link"))
-                    .authenticated()
-                    .requestMatchers(
-                        antMatcher(
-                            GET,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"
-                        )
-                    )
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(
-                            POST,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition"
-                        )
-                    )
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(
-                            DELETE,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"
-                        )
-                    )
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(
-                            GET,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/process-definition/key/{processDefinitionKey}"
-                        )
-                    )
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(
-                            GET,
-                            "/api/management/v1/process-definition"
-                        )
-                    )
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(
-                            GET,
-                            "/api/management/v1/process-definition/{processDefinitionId}"
-                        )
-                    )
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(
-                            POST,
-                            "/api/management/v1/process-definition"
-                        )
-                    )
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(
-                            DELETE,
-                            "/api/management/v1/process-definition/key/{processDefinitionKey}"
-                        )
-                    )
-                    .hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(
-                            GET,
-                            "/api/management/v1/process-definition/key/{processDefinitionKey}"
-                        )
-                    ).hasAuthority(ADMIN)
-            }
-        } catch (e: Exception) {
+            http.authorizeRequests()
+                .antMatchers(GET, "/api/v1/process-link").hasAuthority(ADMIN)
+                .antMatchers(GET, "/api/v1/process-link/types").hasAuthority(ADMIN)
+                .antMatchers(POST, "/api/v1/process-link").hasAuthority(ADMIN)
+                .antMatchers(PUT, "/api/v1/process-link").hasAuthority(ADMIN)
+                .antMatchers(DELETE, "/api/v1/process-link/{processLinkId}").hasAuthority(ADMIN)
+                .antMatchers(GET, "/api/v2/process-link/task/{taskId}").hasAuthority(USER)
+                .antMatchers(GET, "/api/v1/process-definition/{processDefinitionId}/start-form").hasAuthority(USER)
+        } catch(e: Exception) {
             throw HttpConfigurerConfigurationException(e)
         }
-    }
-
-    companion object {
-        private const val PROCESS_LINK_URL = "/api/v1/process-link"
     }
 }

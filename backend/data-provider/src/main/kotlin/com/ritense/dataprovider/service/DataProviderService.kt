@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,7 @@ package com.ritense.dataprovider.service
 
 import com.ritense.dataprovider.domain.DataProvider
 import com.ritense.dataprovider.exception.ProviderNotFoundException
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.springframework.stereotype.Service
 
-@Service
-@SkipComponentScan
 class DataProviderService(
     private val dataProviders: Map<String, DataProvider<*>>
 ) {

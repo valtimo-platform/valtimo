@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,16 @@
 
 package com.ritense.documentenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.documentenapi.client.DocumentenApiClient
-import com.ritense.documentenapi.service.DocumentDeleteHandler
-import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
-import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -44,15 +41,11 @@ internal class DocumentenApiPluginFactoryTest {
         val pluginService: PluginService = mock()
         val client: DocumentenApiClient = mock()
         val storageService: TemporaryResourceStorageService = mock()
+        val applicationEventPublisher = mock<ApplicationEventPublisher>()
         val authentication = mock<DocumentenApiAuthentication>()
-        val applicationEventPublisher: ApplicationEventPublisher = mock()
-        val objectMapper = MapperSingleton.get()
-        val documentDeleteHandlers: List<DocumentDeleteHandler> = mock()
-        val documentenApiVersionService: DocumentenApiVersionService = mock()
-        val processDocumentAssociationService: ProcessDocumentAssociationService = mock ()
-        val runtimeService: OperatonRuntimeService = mock()
+
         whenever(pluginService.createInstance(any<PluginConfigurationId>())).thenReturn(authentication)
-        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+        whenever(pluginService.getObjectMapper()).thenReturn(jacksonObjectMapper())
 
         val propertyString = """
           {
@@ -81,7 +74,7 @@ internal class DocumentenApiPluginFactoryTest {
         val configuration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get().readTree(propertyString) as ObjectNode,
+            ObjectMapper().readTree(propertyString) as ObjectNode,
             pluginDefinition
         )
 
@@ -90,10 +83,7 @@ internal class DocumentenApiPluginFactoryTest {
             client,
             storageService,
             applicationEventPublisher,
-            objectMapper,
-            documentDeleteHandlers,
-            documentenApiVersionService,
-            runtimeService,
+            jacksonObjectMapper()
         )
 
         val plugin = factory.create(configuration)

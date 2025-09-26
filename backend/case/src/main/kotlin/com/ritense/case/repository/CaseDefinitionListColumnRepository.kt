@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import com.ritense.case.domain.CaseListColumnId
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface CaseDefinitionListColumnRepository : JpaRepository<CaseListColumn, CaseListColumnId> {
-    fun existsByIdCaseDefinitionKeyAndIdKey(caseDefinitionKey: String, key: String): Boolean
-    fun findByIdCaseDefinitionKeyOrderByOrderAsc(caseDefinitionKey: String): List<CaseListColumn>
-    fun deleteByIdCaseDefinitionKeyAndIdKey(caseDefinitionKey: String, key: String)
-    fun deleteByIdCaseDefinitionKey(caseDefinitionKey: String)
-    fun countByIdCaseDefinitionKey(caseDefinitionKey: String): Int
+    fun existsByIdCaseDefinitionNameAndIdKey(caseDefinitionName: String, key: String): Boolean
+    fun findByIdCaseDefinitionNameOrderByOrderAsc(caseDefinitionName: String): List<CaseListColumn>
+    fun deleteByIdCaseDefinitionNameAndIdKey(caseDefinitionName: String, key: String)
+    fun countByIdCaseDefinitionName(caseDefinitionName: String): Int
 }

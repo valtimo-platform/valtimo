@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package com.ritense.portaaltaak
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath
 import com.jayway.jsonpath.matchers.JsonPathMatchers.hasNoJsonPath
 import com.ritense.BaseIntegrationTest
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.notificatiesapi.NotificatiesApiAuthentication
 import com.ritense.objectenapi.ObjectenApiAuthentication
@@ -32,6 +32,7 @@ import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.objecttypenapi.ObjecttypenApiAuthentication
+import com.ritense.plugin.domain.ActivityType
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginProcessLink
@@ -40,18 +41,17 @@ import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.portaaltaak.exception.CompleteTaakProcessVariableNotFoundException
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byActive
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byId
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceId
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.contract.json.Mapper
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.TaskService
+import org.camunda.bpm.engine.task.Task
+import org.camunda.community.mockito.delegate.DelegateExecutionFake
 import org.hamcrest.CoreMatchers.anyOf
 import org.hamcrest.CoreMatchers.endsWith
 import org.hamcrest.CoreMatchers.equalTo
@@ -66,16 +66,14 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
@@ -87,6 +85,7 @@ import java.util.Optional
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 @Transactional
 class PortaaltaakPluginIT : BaseIntegrationTest() {
@@ -107,10 +106,7 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
     lateinit var procesDocumentService: ProcessDocumentService
 
     @Autowired
-    lateinit var taskService: OperatonTaskService
-
-    @Autowired
-    lateinit var objectMapper: ObjectMapper
+    lateinit var taskService: TaskService
 
     lateinit var server: MockWebServer
 
@@ -127,6 +123,8 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
     lateinit var objectManagement: ObjectManagement
 
     protected var executedRequests: MutableList<RecordedRequest> = mutableListOf()
+
+    private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
     @BeforeEach
     internal fun setUp() {
@@ -226,8 +224,7 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
                 "receiveData": [],
                 "receiver": "${TaakReceiver.OTHER.key}",
                 "identificationKey": "${TaakIdentificatie.TYPE_KVK}",
-                "identificationValue": "569312863",
-                "verloopDurationInDays": null
+                "identificationValue": "569312863"
             }
         """.trimIndent()
 
@@ -266,71 +263,19 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
     }
 
     @Test
-    fun `should create portaal taak with verloopdatum from BPMN user task due-date`() {
-        val actionPropertiesJson = """
-            {
-                "formType" : "${TaakFormType.ID.key}",
-                "formTypeId": "some-form",
-                "sendData": [
-                    {
-                        "key": "/lastname",
-                        "value": "test"
-                    }
-                ],
-                "receiveData": [],
-                "receiver": "${TaakReceiver.OTHER.key}",
-                "identificationKey": "${TaakIdentificatie.TYPE_KVK}",
-                "identificationValue": "569312863",
-                "verloopDurationInDays": null
-            }
-        """.trimIndent()
-
-        createProcessLink(actionPropertiesJson, "portaaltaak-due-date-process")
-        val task = startPortaalTaakProcess("{}", "portaaltaak-due-date-process")
-
-        val recordedRequest = findRequest(HttpMethod.POST, "/objects")!!
-        val body = recordedRequest.body.readUtf8()
-
-        assertThat(body, hasJsonPath("$.type", endsWith("/objecttypes/object-type-id")))
-        assertThat(body, jsonPathMissingOrNull("$.record.index"))
-        assertThat(body, hasJsonPath("$.record.typeVersion", equalTo(1)))
-        assertThat(body, hasJsonPath("$.record.data.identificatie.type", equalTo("kvk")))
-        assertThat(body, hasJsonPath("$.record.data.identificatie.value", equalTo("569312863")))
-        assertThat(body, hasJsonPath("$.record.data.data.lastname", equalTo("test")))
-        assertThat(body, hasJsonPath("$.record.data.title", equalTo("user_task")))
-        assertThat(body, hasJsonPath("$.record.data.status", equalTo("open")))
-        assertThat(body, hasJsonPath("$.record.data.formulier.type", equalTo("id")))
-        assertThat(body, hasJsonPath("$.record.data.formulier.value", equalTo("some-form")))
-        assertThat(body, hasJsonPath("$.record.data.verwerker_taak_id", equalTo(task.id)))
-        assertThat(body, hasJsonPath("$.record.data.zaak", equalTo(ZAAK_URL.toString())))
-        assertThat(body, hasJsonPath("$.record.data.verloopdatum", equalTo("2040-02-03T12:34:56.000Z")))
-        assertThat(body, hasJsonPath("$.record.startAt", equalTo(LocalDate.now().toString())))
-        assertThat(body, jsonPathMissingOrNull("$.record.endAt"))
-        assertThat(body, jsonPathMissingOrNull("$.record.registrationAt"))
-        assertThat(body, jsonPathMissingOrNull("$.record.correctionFor"))
-        assertThat(body, jsonPathMissingOrNull("$.record.correctedBy"))
-    }
-
-    @Test
-    fun `should complete Operaton Task`() {
-        val task = startPortaalTaakProcess(
-            """
+    fun `should complete Camunda Task`() {
+        val task = startPortaalTaakProcess("""
             {
                 "lastname": "test"
             }
-        """.trimIndent()
-        )
-        assertNotNull(runWithoutAuthorization { taskService.findTaskById(task.id) })
+        """.trimIndent())
+        assertNotNull(taskService.createTaskQuery().taskId(task.id).singleResult())
 
         val portaaltaakPlugin = spy(pluginService.createInstance(portaalTaakPluginDefinition.id) as PortaaltaakPlugin)
-        val delegateExecution = mockExecution(
-            mapOf(
-                "verwerkerTaakId" to task.id,
-                "objectenApiPluginConfigurationId" to objectenPlugin.id.id.toString(),
-                "portaalTaakObjectUrl" to "http://some.resource/url"
-            )
-        )
-
+        val delegateExecution = DelegateExecutionFake()
+        delegateExecution.setVariable("verwerkerTaakId",task.id)
+        delegateExecution.setVariable("objectenApiPluginConfigurationId",objectenPlugin.id.id.toString())
+        delegateExecution.setVariable("portaalTaakObjectUrl","http://some.resource/url")
         val objectenApiPlugin: ObjectenApiPlugin = mock()
         val objectWrapperCaptor = argumentCaptor<ObjectWrapper>()
         val jsonNodeCaptor = argumentCaptor<JsonNode>()
@@ -342,11 +287,11 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
 
         portaaltaakPlugin.completePortaalTaak(delegateExecution)
 
-        verify(portaaltaakPlugin).changeDataInPortalTaakObject(objectWrapperCaptor.capture(), jsonNodeCaptor.capture())
+        verify(portaaltaakPlugin).changeDataInPortalTaakObject(objectWrapperCaptor.capture(),jsonNodeCaptor.capture())
 
-        val sentTaakObject: TaakObject = objectMapper.treeToValue(jsonNodeCaptor.firstValue, TaakObject::class.java)
+        val sentTaakObject: TaakObject = objectMapper.treeToValue(jsonNodeCaptor.firstValue,TaakObject::class.java)
         assertEquals(TaakStatus.VERWERKT, sentTaakObject.status)
-        assertEquals(0, taskService.countTasks(byId(task.id)))
+        assertNull(taskService.createTaskQuery().taskId(task.id).singleResult())
     }
 
     private fun getObjectWrapper(): ObjectWrapper {
@@ -366,64 +311,42 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
     @Test
     fun `should throw exception due to missing verwerkerTaakId`() {
         val portaaltaakPlugin = pluginService.createInstance(portaalTaakPluginDefinition.id) as PortaaltaakPlugin
-        val delegateExecution = mock<DelegateExecution>()
+        val delegateExecution = DelegateExecutionFake()
         val result =
-            assertThrows<CompleteTaakProcessVariableNotFoundException> {
-                portaaltaakPlugin.completePortaalTaak(
-                    delegateExecution
-                )
-            }
-        assertEquals("verwerkerTaakId is required but was not provided", result.message)
+            assertThrows<CompleteTaakProcessVariableNotFoundException>{ portaaltaakPlugin.completePortaalTaak(delegateExecution) }
+        assertEquals("verwerkerTaakId is required but was not provided",result.message)
     }
 
     @Test
     fun `should throw exception due to missing objectenApiPluginConfigurationId`() {
-        val task = startPortaalTaakProcess(
-            """
+        val task = startPortaalTaakProcess("""
             {
                 "lastname": "test"
             }
-        """.trimIndent()
-        )
+        """.trimIndent())
         val portaaltaakPlugin = pluginService.createInstance(portaalTaakPluginDefinition.id) as PortaaltaakPlugin
-        val delegateExecution = mockExecution(
-            mapOf("verwerkerTaakId" to task.id)
-        )
-
+        val delegateExecution = DelegateExecutionFake()
+        delegateExecution.setVariable("verwerkerTaakId",task.id)
         val result =
-            assertThrows<CompleteTaakProcessVariableNotFoundException> {
-                portaaltaakPlugin.completePortaalTaak(
-                    delegateExecution
-                )
-            }
-        assertEquals("objectenApiPluginConfigurationId is required but was not provided", result.message)
+            assertThrows<CompleteTaakProcessVariableNotFoundException>{ portaaltaakPlugin.completePortaalTaak(delegateExecution) }
+        assertEquals("objectenApiPluginConfigurationId is required but was not provided",result.message)
     }
 
     @Test
     fun `should throw exception due to missing portaalTaakObjectUrl`() {
-        val task = startPortaalTaakProcess(
-            """
+        val task = startPortaalTaakProcess("""
             {
                 "lastname": "test"
             }
-        """.trimIndent()
-        )
+        """.trimIndent())
         val portaaltaakPlugin = pluginService.createInstance(portaalTaakPluginDefinition.id) as PortaaltaakPlugin
-        val delegateExecution = mockExecution(
-            mapOf(
-                "verwerkerTaakId" to task.id,
-                "objectenApiPluginConfigurationId" to objectenPlugin.id.id.toString()
-            )
-        )
-
+        val delegateExecution = DelegateExecutionFake()
+        delegateExecution.setVariable("verwerkerTaakId",task.id)
+        delegateExecution.setVariable("objectenApiPluginConfigurationId",objectenPlugin.id.id.toString())
 
         val result =
-            assertThrows<CompleteTaakProcessVariableNotFoundException> {
-                portaaltaakPlugin.completePortaalTaak(
-                    delegateExecution
-                )
-            }
-        assertEquals("portaalTaakObjectUrl is required but was not provided", result.message)
+            assertThrows<CompleteTaakProcessVariableNotFoundException>{ portaaltaakPlugin.completePortaalTaak(delegateExecution) }
+        assertEquals("portaalTaakObjectUrl is required but was not provided",result.message)
     }
 
 
@@ -434,28 +357,18 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
         )
     }
 
-    private fun startPortaalTaakProcess(
-        content: String,
-        processDefinitionKey: String = PROCESS_DEFINITION_KEY
-    ): OperatonTask {
-        return runWithoutAuthorization {
-            val newDocumentRequest =
-                NewDocumentRequest(
-                    DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
-                    objectMapper.readTree(content)
-                )
-            val request = NewDocumentAndStartProcessRequest(processDefinitionKey, newDocumentRequest)
-            val processResult = procesDocumentService.newDocumentAndStartProcess(request)
-            taskService.findTask(
-                byActive().and(
-                    byProcessInstanceId(
-                        processResult.resultingProcessInstanceId().get().toString()
-                    )
-                )
-            )
-        }
+    private fun startPortaalTaakProcess(content: String): Task {
+        val newDocumentRequest = NewDocumentRequest(
+            DOCUMENT_DEFINITION_KEY,
+            Mapper.INSTANCE.get().readTree(content)
+        ).withTenantId( "1")
+        val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
+        val processResult = procesDocumentService.newDocumentAndStartProcess(request)
+        return taskService
+            .createTaskQuery()
+            .active()
+            .processInstanceId(processResult.resultingProcessInstanceId().get().toString())
+            .singleResult()
     }
 
     private fun createObjectManagement(
@@ -482,7 +395,7 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
 
         val configuration = pluginService.createPluginConfiguration(
             "Notificaties API plugin configuration",
-            objectMapper.readTree(
+            Mapper.INSTANCE.get().readTree(
                 pluginPropertiesJson
             ) as ObjectNode,
             "notificatiesapi"
@@ -505,7 +418,7 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
 
         val configuration = pluginService.createPluginConfiguration(
             "Portaaltaak plugin configuration",
-            objectMapper.readTree(
+            Mapper.INSTANCE.get().readTree(
                 pluginPropertiesJson
             ) as ObjectNode,
             "portaaltaak"
@@ -523,7 +436,7 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
 
         val configuration = pluginService.createPluginConfiguration(
             "Objecten plugin configuration",
-            objectMapper.readTree(
+            Mapper.INSTANCE.get().readTree(
                 pluginPropertiesJson
             ) as ObjectNode,
             "objecttypenapi"
@@ -541,7 +454,7 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
 
         val configuration = pluginService.createPluginConfiguration(
             "Objecttype plugin configuration",
-            objectMapper.readTree(
+            Mapper.INSTANCE.get().readTree(
                 pluginPropertiesJson
             ) as ObjectNode,
             "objectenapi"
@@ -549,9 +462,9 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
         return configuration
     }
 
-    private fun createProcessLink(propertiesConfig: String, processDefinitionKey: String = PROCESS_DEFINITION_KEY) {
+    private fun createProcessLink(propertiesConfig: String) {
         processDefinitionId = repositoryService.createProcessDefinitionQuery()
-            .processDefinitionKey(processDefinitionKey)
+            .processDefinitionKey(PROCESS_DEFINITION_KEY)
             .latestVersion()
             .singleResult()
             .id
@@ -561,10 +474,10 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
                 PluginProcessLinkId(UUID.randomUUID()),
                 processDefinitionId,
                 "user_task",
-                objectMapper.readTree(propertiesConfig) as ObjectNode,
+                Mapper.INSTANCE.get().readTree(propertiesConfig) as ObjectNode,
                 portaalTaakPluginDefinition.id,
                 "create-portaaltaak",
-                activityType = ActivityTypeWithEventName.USER_TASK_CREATE
+                activityType = ActivityType.USER_TASK_CREATE
             )
         )
     }
@@ -670,28 +583,15 @@ class PortaaltaakPluginIT : BaseIntegrationTest() {
                     "name" to "Luis",
                     "phone" to "999999999"
                 )
+
             )
         )
+
     }
 
     class TestAuthentication : ObjectenApiAuthentication, ObjecttypenApiAuthentication, NotificatiesApiAuthentication {
-        override val configurationId: PluginConfigurationId
-            get() = PluginConfigurationId.newId()
-
-        override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-            return builder
-        }
-
         override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
             return next.exchange(request)
-        }
-    }
-
-    private fun mockExecution(variables: Map<String, Any>): DelegateExecution {
-        return mock<DelegateExecution> {
-            on { variables }.thenReturn(variables)
-            on { processInstanceId }.thenReturn(UUID.randomUUID().toString())
-            on { getVariable(any()) }.thenAnswer { variables.get(it.arguments[0]) }
         }
     }
 

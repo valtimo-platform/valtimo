@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,40 +16,38 @@
 
 package com.ritense.valtimo.mapper
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.BaseIntegrationTest
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 internal class PluginProcessLinkAutodeploymentIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var processLinkService: ProcessLinkService
 
-    @Autowired
-    lateinit var objectMapper: ObjectMapper
-
     @Test
     fun `should deploy plugin process link on startup`() {
-        val pluginProcessLink = runWithoutAuthorization {
-            processLinkService.getProcessLinksByProcessDefinitionKey("simple-process")
-        }.firstOrNull()
+        val processLinks = processLinkService.getProcessLinks(
+            "TestTask",
+            SERVICE_TASK_START,
+            PROCESS_LINK_TYPE_PLUGIN
+        )
 
-        assertNotNull(pluginProcessLink)
-        assertTrue(pluginProcessLink is PluginProcessLink)
+        assertEquals(1, processLinks.size)
+        assertTrue(processLinks[0] is PluginProcessLink)
+        val pluginProcessLink = processLinks[0] as PluginProcessLink
         assertEquals("TestTask", pluginProcessLink.activityId)
         assertEquals(SERVICE_TASK_START, pluginProcessLink.activityType)
         assertEquals(PROCESS_LINK_TYPE_PLUGIN, pluginProcessLink.processLinkType)
         assertEquals("0a750334-a065-48fa-bb02-293d21df2213", pluginProcessLink.pluginConfigurationId.id.toString())
         assertEquals("test-action", pluginProcessLink.pluginActionDefinitionKey)
-        assertEquals("""{"attachmentIds":"pv:attachmentIds"}""", objectMapper.writeValueAsString(pluginProcessLink.actionProperties))
+        assertEquals("""{"testActionProperty":"test-value"}""", jacksonObjectMapper().writeValueAsString(pluginProcessLink.actionProperties))
     }
 }

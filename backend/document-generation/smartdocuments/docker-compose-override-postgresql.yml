@@ -1,6 +1,0 @@
-services:
-  db:
-    ports:
-      - "3317:5432"
-    environment:
-      - POSTGRES_DB=smartdocuments-test

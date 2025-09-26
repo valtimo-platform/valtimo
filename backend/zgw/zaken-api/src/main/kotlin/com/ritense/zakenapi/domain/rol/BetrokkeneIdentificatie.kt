@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 @JsonSubTypes(
     value = [
         JsonSubTypes.Type(value = RolNatuurlijkPersoon::class, name = "natuurlijk_persoon"),
-        JsonSubTypes.Type(value = RolNietNatuurlijkPersoon::class, name = "niet_natuurlijk_persoon"),
-        JsonSubTypes.Type(value = RolMedewerker::class, name = "medewerker"),
-        JsonSubTypes.Type(value = RolOrganisatorischeEenheid::class, name = "organisatorische_eenheid"),
-        JsonSubTypes.Type(value = RolVestiging::class, name = "vestiging"),
+        JsonSubTypes.Type(value = RolNietNatuurlijkPersoon::class, name = "niet_natuurlijk_persoon")
     ])
-sealed class BetrokkeneIdentificatie
+sealed class BetrokkeneIdentificatie()

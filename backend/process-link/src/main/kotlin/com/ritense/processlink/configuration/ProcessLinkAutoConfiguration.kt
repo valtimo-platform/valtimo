@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,52 +17,38 @@
 package com.ritense.processlink.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationService
-import com.ritense.document.service.DocumentService
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.autodeployment.ProcessLinkDeploymentApplicationReadyEventListener
 import com.ritense.processlink.domain.SupportedProcessLinkTypeHandler
-import com.ritense.processlink.exporter.ProcessLinkExporter
-import com.ritense.processlink.importer.ProcessLinkImporter
-import com.ritense.processlink.listener.ProcessDefinitionDeletedEventListener
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.repository.ProcessLinkRepository
 import com.ritense.processlink.security.config.ProcessLinkHttpSecurityConfigurer
 import com.ritense.processlink.service.CopyProcessLinkOnProcessDeploymentListener
-import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkActivityHandler
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.ProcessLinkResource
 import com.ritense.processlink.web.rest.ProcessLinkTaskResource
-import com.ritense.valtimo.autoconfiguration.ValtimoOperatonAutoConfiguration
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.tenancy.TenantResolver
 import com.ritense.valtimo.event.ProcessDefinitionDeployedEvent
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.OperatonTaskService
-import org.operaton.bpm.engine.RepositoryService
-import org.springframework.boot.autoconfigure.AutoConfiguration
-import org.springframework.boot.autoconfigure.AutoConfigureAfter
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.TaskService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
-import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
-@AutoConfiguration
+@Configuration
 @EnableJpaRepositories(
     basePackageClasses = [
         ProcessLinkRepository::class,
     ]
 )
 @EntityScan(basePackages = ["com.ritense.processlink.domain"])
-@AutoConfigureAfter(ValtimoOperatonAutoConfiguration::class)
 class ProcessLinkAutoConfiguration {
 
     @Order(420)
@@ -77,50 +63,33 @@ class ProcessLinkAutoConfiguration {
     fun processLinkService(
         processLinkRepository: ProcessLinkRepository,
         processLinkMappers: List<ProcessLinkMapper>,
-        processLinkTypes: List<SupportedProcessLinkTypeHandler>,
-        operatonRepositoryService: OperatonRepositoryService,
-        caseDefinitionChecker: CaseDefinitionChecker,
+        processLinkTypes: List<SupportedProcessLinkTypeHandler>
     ): ProcessLinkService {
-        return ProcessLinkService(
-            processLinkRepository,
-            processLinkMappers,
-            processLinkTypes,
-            operatonRepositoryService,
-            caseDefinitionChecker
-        )
+        return ProcessLinkService(processLinkRepository, processLinkMappers, processLinkTypes)
     }
 
     @Bean
     @ConditionalOnMissingBean(ProcessLinkActivityService::class)
+    @ConditionalOnBean(TaskService::class)
     fun processLinkTaskService(
         processLinkService: ProcessLinkService,
-        taskService: OperatonTaskService,
+        taskService: TaskService,
         processLinkActivityHandlers: List<ProcessLinkActivityHandler<*>>,
-        authorizationService: AuthorizationService,
-        operatonRepositoryService: OperatonRepositoryService,
-        documentService: DocumentService,
-        operatonTaskService: OperatonTaskService,
-        operatonProcessService: OperatonProcessService
     ): ProcessLinkActivityService {
-        return ProcessLinkActivityService(
-            processLinkService,
-            taskService,
-            processLinkActivityHandlers,
-            authorizationService,
-            operatonRepositoryService,
-            documentService,
-            operatonTaskService,
-            operatonProcessService
-        )
+        return ProcessLinkActivityService(processLinkService, taskService, processLinkActivityHandlers)
     }
 
     @Bean
     @ConditionalOnMissingBean(ProcessLinkTaskResource::class)
     @ConditionalOnBean(ProcessLinkActivityService::class)
     fun processLinkTaskResource(
-        processLinkActivityService: ProcessLinkActivityService
+        processLinkActivityService: ProcessLinkActivityService,
+        tenantResolver: TenantResolver
     ): ProcessLinkTaskResource {
-        return ProcessLinkTaskResource(processLinkActivityService)
+        return ProcessLinkTaskResource(
+            processLinkActivityService,
+            tenantResolver
+        )
     }
 
     @Bean
@@ -128,19 +97,8 @@ class ProcessLinkAutoConfiguration {
     fun processLinkProcessLinkResource(
         processLinkService: ProcessLinkService,
         processLinkMappers: List<ProcessLinkMapper>,
-        operatonProcessService: OperatonProcessService,
-        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-        repositoryService: RepositoryService,
-        processDeploymentService: ProcessDeploymentService
     ): ProcessLinkResource {
-        return ProcessLinkResource(
-            processLinkService,
-            processLinkMappers,
-            operatonProcessService,
-            processDefinitionCaseDefinitionService,
-            repositoryService,
-            processDeploymentService
-        )
+        return ProcessLinkResource(processLinkService, processLinkMappers)
     }
 
     @Bean
@@ -148,72 +106,22 @@ class ProcessLinkAutoConfiguration {
     @ConditionalOnClass(ProcessDefinitionDeployedEvent::class)
     fun copyProcessLinkOnProcessDeploymentListener(
         processLinkRepository: ProcessLinkRepository,
-        applicationEventPublisher: ApplicationEventPublisher
     ): CopyProcessLinkOnProcessDeploymentListener {
         return CopyProcessLinkOnProcessDeploymentListener(
             processLinkRepository,
-            applicationEventPublisher
         )
     }
 
     @Bean
+    @ConditionalOnBean(RepositoryService::class)
     @ConditionalOnMissingBean(ProcessLinkDeploymentApplicationReadyEventListener::class)
     fun processLinkDeploymentApplicationReadyEventListener(
         resourceLoader: ResourceLoader,
-        processLinkImporter: ProcessLinkImporter,
-        objectMapper: ObjectMapper,
-        environment: Environment
-    ): ProcessLinkDeploymentApplicationReadyEventListener {
-        return ProcessLinkDeploymentApplicationReadyEventListener(
-            resourceLoader,
-            processLinkImporter,
-            objectMapper,
-            environment
-        )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ProcessLinkExporter::class)
-    fun processLinkExporter(
-        objectMapper: ObjectMapper,
+        repositoryService: RepositoryService,
         processLinkService: ProcessLinkService,
-        repositoryService: OperatonRepositoryService
-    ) = ProcessLinkExporter(
-        objectMapper,
-        processLinkService,
-        repositoryService
-    )
-
-    @Bean
-    @ConditionalOnMissingBean(ProcessLinkImporter::class)
-    fun processLinkImporter(
-        processLinkService: ProcessLinkService,
-        repositoryService: OperatonRepositoryService,
-        objectMapper: ObjectMapper
-    ) = ProcessLinkImporter(
-        processLinkService,
-        repositoryService,
-        objectMapper
-    )
-
-    @Bean
-    @ConditionalOnMissingBean(ProcessDefinitionDeletedEventListener::class)
-    fun processDefinitionDeletedEventListener(
-        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-        processLinkService: ProcessLinkService
-    ) = ProcessDefinitionDeletedEventListener(processDefinitionCaseDefinitionService, processLinkService)
-
-    @Bean
-    @ConditionalOnMissingBean(ProcessDeploymentService::class)
-    fun processDeploymentService(
-        operatonProcessService: OperatonProcessService,
-        processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
-        processLinkService: ProcessLinkService,
-    ): ProcessDeploymentService {
-        return ProcessDeploymentService(
-            operatonProcessService,
-            processDefinitionCaseDefinitionService,
-            processLinkService
-        )
+        objectMapper: ObjectMapper): ProcessLinkDeploymentApplicationReadyEventListener {
+        return ProcessLinkDeploymentApplicationReadyEventListener(resourceLoader,
+            repositoryService,
+            processLinkService, objectMapper)
     }
 }

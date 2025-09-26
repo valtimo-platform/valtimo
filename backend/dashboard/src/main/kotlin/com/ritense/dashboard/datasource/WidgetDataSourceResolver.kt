@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,18 @@
 
 package com.ritense.dashboard.datasource
 
-import com.ritense.valtimo.contract.annotation.AnnotatedClassResolver
-import com.ritense.valtimo.contract.dashboard.WidgetDataSource
 import com.ritense.valtimo.contract.dashboard.feature.WidgetDataFeature
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.context.ApplicationContext
+import com.ritense.valtimo.contract.dashboard.WidgetDataSource
 import java.lang.reflect.Method
+import mu.KLogger
+import mu.KotlinLogging
 
-class WidgetDataSourceResolver(
-    context: ApplicationContext
-) : AnnotatedClassResolver(context) {
+class WidgetDataSourceResolver : AnnotatedClassResolver() {
 
     val dataSourceMethodMap: Map<WidgetDataSource, Method> = findMethodsWithAnnotation<WidgetDataSource>()
         .associateBy { it.getAnnotation(WidgetDataSource::class.java) }
 
     val dataFeatureClassMap: Map<Class<*>, List<WidgetDataFeature>> = findClassesWithAnnotation<WidgetDataFeature>()
-        .keys
         .associateWith { it.getAnnotationsByType(WidgetDataFeature::class.java).toList() }
 
     init {
@@ -48,6 +44,6 @@ class WidgetDataSourceResolver(
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
     }
 }

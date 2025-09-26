@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,22 +23,22 @@ import com.ritense.notificatiesapi.domain.NotificatiesApiAbonnementLink
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.domain.PluginConfigurationId
+import java.net.URI
+import java.util.Optional
+import java.util.UUID
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentCaptor
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyBlocking
 import org.mockito.kotlin.whenever
-import java.net.URI
-import java.util.Optional
-import java.util.UUID
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
 
 internal class NotificatiesApiPluginTest {
     lateinit var notificatiesApiClient: NotificatiesApiClient
@@ -49,6 +49,7 @@ internal class NotificatiesApiPluginTest {
 
     @BeforeEach
     fun setup() {
+
         notificatiesApiClient = mock()
         abonnementLinkRepository = mock()
         pluginConfigurationId = PluginConfigurationId(UUID.randomUUID())
@@ -64,7 +65,7 @@ internal class NotificatiesApiPluginTest {
 
 
     @Test
-    fun `ensure kanaal exists creates kanaal when kanaal doesnt exist`() {
+    fun `ensure kanaal exists creates kanaal when kanaal doesnt exist`(): Unit = runBlocking {
 
         whenever(notificatiesApiClient.getKanalen(any(), any()))
             .thenReturn(
@@ -80,7 +81,7 @@ internal class NotificatiesApiPluginTest {
     }
 
     @Test
-    fun `ensure kanaal exists doesnt create kanaal when kanaal exists`() {
+    fun `ensure kanaal exists doesnt create kanaal when kanaal exists`(): Unit = runBlocking {
 
         whenever(notificatiesApiClient.getKanalen(any(), any()))
             .thenReturn(
@@ -95,5 +96,79 @@ internal class NotificatiesApiPluginTest {
 
         verify(notificatiesApiClient, times(1)).getKanalen(any(), any())
         verify(notificatiesApiClient, never()).createKanaal(any(), any(), any())
+    }
+
+    @Test
+    fun `createAbonnement should create abonnement and save entity`(): Unit = runBlocking {
+
+        val abonnementId = UUID.randomUUID()
+        val abonnement = Abonnement(
+            url = "http://example.com/abonnement/$abonnementId",
+            callbackUrl = "http://example.com/callback",
+            auth = "some-key",
+            kanalen = listOf(
+                Abonnement.Kanaal(
+                    naam = "test-kanaal"
+                )
+            )
+        )
+        val linkCaptor = ArgumentCaptor.forClass(NotificatiesApiAbonnementLink::class.java)
+
+        whenever(notificatiesApiClient.createAbonnement(any(), any(), any()))
+            .thenReturn(abonnement)
+        whenever(notificatiesApiClient.getKanalen(any(), any()))
+            .thenReturn(
+                listOf(
+                    Kanaal(naam = "test-kanaal")
+                )
+            )
+
+        plugin.createAbonnement()
+
+        verify(abonnementLinkRepository, times(1)).save(linkCaptor.capture())
+        assertContains(linkCaptor.value.url, abonnementId.toString())
+        assertEquals("some-key", linkCaptor.value.auth)
+    }
+
+    @Test
+    fun `deleteAbonnement should delete abonnement in Notificaties API and repository`() {
+
+        val abonnementId = UUID.randomUUID()
+        val notificatiesApiConfigurationIdCaptor = ArgumentCaptor.forClass(NotificatiesApiConfigurationId::class.java)
+        val abonnementLink = NotificatiesApiAbonnementLink(
+            notificatiesApiConfigurationId = notificatiesApiConfigurationId,
+            url = "http://example.com/abonnement/$abonnementId",
+            auth = "some-key"
+        )
+
+        whenever(abonnementLinkRepository.findById(notificatiesApiConfigurationIdCaptor.capture()))
+            .thenReturn(
+                Optional.of(abonnementLink)
+            )
+
+        plugin.deleteAbonnement()
+
+        verifyBlocking(notificatiesApiClient, times(1)) {
+            deleteAbonnement(
+                plugin.authenticationPluginConfiguration, plugin.url, abonnementId.toString()
+            )
+        }
+        verify(abonnementLinkRepository, times(1)).deleteById(notificatiesApiConfigurationIdCaptor.value)
+    }
+
+    @Test
+    fun `deleteAbonnement should do nothing if abonnement link does not exist`() {
+
+        whenever(abonnementLinkRepository.findById(any()))
+            .thenReturn(
+                Optional.empty()
+            )
+
+        plugin.deleteAbonnement()
+
+        verifyBlocking(notificatiesApiClient, never()) {
+            deleteAbonnement(any(), any(), any())
+        }
+        verify(abonnementLinkRepository, never()).deleteById(any())
     }
 }

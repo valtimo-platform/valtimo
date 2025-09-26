@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,8 @@
 
 package com.ritense.valtimo.contract.config;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.stream.Stream;
-import javax.sql.DataSource;
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.Scope;
-import liquibase.command.CommandFactory;
-import liquibase.command.core.AbstractUpdateCommandStep;
-import liquibase.command.core.UpdateCommandStep;
-import liquibase.command.core.UpdateSqlCommandStep;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
@@ -37,6 +27,10 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 
 public class LiquibaseRunner {
 
@@ -61,17 +55,16 @@ public class LiquibaseRunner {
         Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcConnection);
         try {
             for (LiquibaseMasterChangeLogLocation changeLogLocation : liquibaseMasterChangeLogLocations) {
-                disableFastCheckCaching();
                 runChangeLog(database, changeLogLocation.getFilePath());
             }
-        } catch (LiquibaseException liquibaseException) {
-            throw new DatabaseException(liquibaseException);
+        } catch (LiquibaseException e) {
+            throw new DatabaseException(e);
         } finally {
             try {
                 connection.rollback();
                 connection.close();
-            } catch (SQLException sqlException) {
-                logger.error("Error closing connection ", sqlException);
+            } catch (SQLException e) {
+                logger.error("Error closing connection ", e);
             }
         }
         logger.info("Finished running liquibase");
@@ -82,13 +75,5 @@ public class LiquibaseRunner {
         Liquibase liquibase = new Liquibase(filePath, new ClassLoaderResourceAccessor(), database);
         logger.info("Running liquibase master changelog: {}", liquibase.getChangeLogFile());
         liquibase.update(context);
-    }
-
-    private void disableFastCheckCaching() {
-        CommandFactory commandFactory = Scope.getCurrentScope().getSingleton(CommandFactory.class);
-        Stream.of(UpdateSqlCommandStep.COMMAND_NAME, UpdateCommandStep.COMMAND_NAME)
-            .flatMap(command -> commandFactory.getCommandDefinition(command).getPipeline().stream())
-            .filter(AbstractUpdateCommandStep.class::isInstance)
-            .forEach(it -> ((AbstractUpdateCommandStep) it).setFastCheckEnabled(false));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,70 +15,19 @@
  */
 package com.ritense.form.security.config
 
-import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
-import org.springframework.http.HttpMethod.DELETE
-import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
-import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class FormHttpSecurityConfigurerKotlin : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
-            http.authorizeHttpRequests { requests ->
-                requests
-                    .requestMatchers(
-                        antMatcher(POST, "$PROCESS_LINK_BASE_URL/{processLinkId}/form/submission"),
-                        antMatcher(GET, "$PROCESS_LINK_BASE_URL/form-definition/{formKey}"),
-                        antMatcher(GET, INTERMEDIATE_BASE_URL),
-                        antMatcher(POST, INTERMEDIATE_BASE_URL),
-                        antMatcher(DELETE, INTERMEDIATE_BASE_URL)
-                    ).authenticated()
-                    .requestMatchers(
-                        antMatcher(GET, "/api/management/v1/form-option"),
-                        antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form-option"),
-                        antMatcher(
-                            GET,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form"
-                        ),
-                        antMatcher(
-                            POST,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form"
-                        ),
-                        antMatcher(
-                            PUT,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form"
-                        ),
-                        antMatcher(
-                            DELETE,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{formDefinitionId}"
-                        ),
-                        antMatcher(
-                            GET,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{formDefinitionId}"
-                        ),
-                        antMatcher(
-                            GET,
-                            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/form/{name}/exists"
-                        ),
-                        antMatcher(GET, "/api/management/v1/form"),
-                        antMatcher(GET, "/api/management/v1/form/{formDefinitionId}"),
-                        antMatcher(POST, "/api/management/v1/form"),
-                        antMatcher(PUT, "/api/management/v1/form"),
-                        antMatcher(DELETE, "/api/management/v1/form/{formDefinitionId}"),
-                        antMatcher(GET, "/api/management/v1/form/exists/{name}")
-                    ).hasAuthority(ADMIN)
-            }
+            http.authorizeRequests()
+                .antMatchers(POST, "/api/v1/process-link/{processLinkId}/form/submission").hasAuthority(USER)
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
         }
-    }
-
-    companion object {
-        const val PROCESS_LINK_BASE_URL = "/api/v1/process-link"
-        const val INTERMEDIATE_BASE_URL = "/api/v1/form/intermediate/submission"
     }
 }

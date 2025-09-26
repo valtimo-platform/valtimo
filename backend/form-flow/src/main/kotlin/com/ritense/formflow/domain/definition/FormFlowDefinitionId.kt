@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,9 @@
 package com.ritense.formflow.domain.definition
 
 import com.ritense.formflow.domain.AbstractId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
-import jakarta.persistence.Embedded
 import java.util.Objects
+import javax.persistence.Column
+import javax.persistence.Embeddable
 
 @Embeddable
 data class FormFlowDefinitionId(
@@ -29,13 +27,13 @@ data class FormFlowDefinitionId(
     @Column(name = "form_flow_definition_key")
     val key: String,
 
-    @Embedded
-    val caseDefinitionId: CaseDefinitionId
+    @Column(name = "form_flow_definition_version")
+    val version: Long
 
 ) : AbstractId<FormFlowDefinitionId>() {
 
     override fun toString(): String {
-        return key
+        return "$key:$version"
     }
 
     override fun hashCode(): Int {
@@ -54,16 +52,16 @@ data class FormFlowDefinitionId(
     }
 
     companion object {
-        fun newId(key: String, caseDefinitionId: CaseDefinitionId): FormFlowDefinitionId {
-            return FormFlowDefinitionId(key, caseDefinitionId).newIdentity()
+        fun newId(key: String): FormFlowDefinitionId {
+            return FormFlowDefinitionId(key, 1).newIdentity()
+        }
+
+        fun nextVersion(id: FormFlowDefinitionId): FormFlowDefinitionId {
+            return FormFlowDefinitionId(id.key, id.version!! + 1).newIdentity()
         }
 
         fun existingId(id: FormFlowDefinitionId): FormFlowDefinitionId {
-            return FormFlowDefinitionId(id.key, id.caseDefinitionId)
-        }
-
-        fun existingId(key: String, caseDefinitionId: CaseDefinitionId): FormFlowDefinitionId {
-            return FormFlowDefinitionId(key, caseDefinitionId)
+            return FormFlowDefinitionId(id.key, id.version)
         }
     }
 }

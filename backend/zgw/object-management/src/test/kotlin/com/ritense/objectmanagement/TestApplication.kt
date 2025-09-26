@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import com.ritense.zakenapi.ZaakUrlProvider
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.boot.test.mock.mockito.MockBean
 
 @SpringBootApplication
 class TestApplication {
@@ -33,10 +33,10 @@ class TestApplication {
     @TestConfiguration
     class TestConfig {
 
-        @MockitoBean
+        @MockBean
         lateinit var zaaktypeUrlProvider: ZaaktypeUrlProvider
 
-        @MockitoBean
+        @MockBean
         lateinit var zaakUrlProvider: ZaakUrlProvider
     }
 }

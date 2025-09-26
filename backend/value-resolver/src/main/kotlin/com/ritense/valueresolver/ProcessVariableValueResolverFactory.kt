@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,8 @@
 
 package com.ritense.valueresolver
 
-import com.fasterxml.jackson.core.JsonPointer
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
-import com.flipkart.zjsonpatch.JsonPatch
-import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.RuntimeService
-import org.operaton.bpm.engine.delegate.VariableScope
-import org.operaton.bpm.engine.impl.context.Context
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.function.Function
 
 /**
@@ -34,124 +26,45 @@ import java.util.function.Function
  * The value of the requestedValue should be in the format pv:someProperty
  */
 class ProcessVariableValueResolverFactory(
-    private val runtimeService: RuntimeService,
-    private val objectMapper: ObjectMapper,
+    private val runtimeService: RuntimeService
 ) : ValueResolverFactory {
 
     override fun supportedPrefix(): String {
-        return PREFIX
+        return "pv"
     }
 
     override fun createResolver(
         processInstanceId: String,
         variableScope: VariableScope
     ): Function<String, Any?> {
-        var variablesJson: JsonNode? = null
+
         return Function { requestedValue ->
-            val value = variableScope.getVariable(requestedValue)
-            if (value != null) {
-                return@Function value
-            }
-            if (!isPath(requestedValue)) {
-                return@Function null
-            }
-            if (variablesJson == null) {
-                variablesJson = objectMapper.valueToTree(variableScope.variables)
-            }
-            return@Function getValue(variablesJson!!.at(toJsonPointer(requestedValue)))
+            variableScope.variables[requestedValue]
         }
     }
 
-    override fun createResolver(documentId: String): Function<String, Any?> {
+    override fun createResolver(documentInstanceId: String): Function<String, Any?> {
         val processInstanceIds = runtimeService.createProcessInstanceQuery()
-            .processInstanceBusinessKey(documentId)
+            .processInstanceBusinessKey(documentInstanceId)
             .list()
             .map { it.id }
             .toTypedArray()
 
         return Function { requestedValue ->
-            val jsonPointer = toJsonPointer(requestedValue)
-            val variables = runtimeService.createVariableInstanceQuery()
+            runtimeService.createVariableInstanceQuery()
                 .processInstanceIdIn(*processInstanceIds)
-                .variableName(jsonPointer.matchingProperty)
+                .variableName(requestedValue)
                 .list()
-
-            val values = variables
-                .map {
-                    logger.info {it }
-                    logger.info { it.value }
-                    getValue(objectMapper.valueToTree<JsonNode>(it.value).at(jsonPointer.tail()))
-                }
+                .map { it.value }
                 .distinct()
-            if (values.size > 1) {
-                throw RuntimeException(
-                    "Cannot infer a unique process variable value for key `$requestedValue` using the document id as businessKey. " +
-                        "Please provide a variable scope, use a unique key, or use a different value resolver."
-                )
-            }
-            values.singleOrNull()
         }
     }
 
     override fun handleValues(
         processInstanceId: String,
         variableScope: VariableScope?,
-        values: Map<String, Any?>
+        values: Map<String, Any>
     ) {
-        val variableNames = values.keys
-            .map { variablePath -> toJsonPointer(variablePath).matchingProperty }
-            .distinct()
-        val existingValues = if (variableScope != null) {
-            variableNames.associateWith { variableName -> variableScope.getVariable(variableName) }
-        } else {
-            runtimeService.getVariables(processInstanceId, variableNames)
-        }
-
-        val root = objectMapper.valueToTree<JsonNode>(existingValues)
-        buildJsonPatch(root, values)
-        val newValues = objectMapper.treeToValue<Map<String, Any?>>(root)
-
-        runtimeService.setVariables(processInstanceId, newValues)
-    }
-
-    override fun preProcessValuesForNewCase(values: Map<String, Any?>): Map<String, Any> {
-        val jsonNode = objectMapper.createObjectNode()
-        buildJsonPatch(jsonNode, values)
-        return objectMapper.treeToValue(jsonNode)
-    }
-
-    private fun buildJsonPatch(jsonNode: JsonNode, values: Map<String, Any?>) {
-        values.forEach {
-            val jsonPointer = toJsonPointer(it.key.substringAfter(":"))
-            val valueNode = objectMapper.valueToTree<JsonNode>(it.value)
-            val jsonPatchBuilder = JsonPatchBuilder()
-            jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, valueNode)
-            JsonPatch.applyInPlace(jsonPatchBuilder.build().toJson(), jsonNode)
-        }
-    }
-
-    private fun getValue(valueNode: JsonNode): Any? {
-        return if (valueNode.isMissingNode) {
-            null
-        } else {
-            objectMapper.treeToValue(valueNode)
-        }
-    }
-
-    private fun toJsonPointer(path: String): JsonPointer {
-        var newPath: String = path
-        if (!path.startsWith('/')) {
-            newPath = "/${path}"
-        }
-        return JsonPointer.valueOf(newPath.replace('.', '/'))
-    }
-
-    private fun isPath(path: String): Boolean {
-        return path.contains('.') || path.contains('/')
-    }
-
-    companion object {
-        const val PREFIX = "pv"
-        private val logger = KotlinLogging.logger {}
+        runtimeService.setVariables(processInstanceId, values)
     }
 }

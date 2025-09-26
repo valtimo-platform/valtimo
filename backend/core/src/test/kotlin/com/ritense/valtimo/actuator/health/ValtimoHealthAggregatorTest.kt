@@ -24,6 +24,16 @@ class ValtimoHealthAggregatorTest {
     }
 
     @Test
+    fun `should return unknown when one of the components is unknown`(){
+        val statusSet = HashSet<Status>()
+        statusSet.add(Status.UP)
+        statusSet.add(Status.UP)
+        statusSet.add(Status.UNKNOWN)
+
+        Assertions.assertEquals(Status.UNKNOWN, aggregator.getAggregateStatus(statusSet))
+    }
+
+    @Test
     fun `should return down when one of the components is down`(){
         val statusSet = HashSet<Status>()
         statusSet.add(Status.UP)
@@ -44,11 +54,11 @@ class ValtimoHealthAggregatorTest {
     }
 
     @Test
-    fun `should return restricted when an unknown status is used`(){
+    fun `should return unknown when an unknown status is used`(){
         val statusSet = HashSet<Status>()
         statusSet.add(Status.UP)
         statusSet.add(Status("NOT_EXISTING"))
 
-        Assertions.assertEquals(Status("RESTRICTED"), aggregator.getAggregateStatus(statusSet))
+        Assertions.assertEquals(Status.UNKNOWN, aggregator.getAggregateStatus(statusSet))
     }
 }

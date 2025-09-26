@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.notificatiesapi
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.domain.PluginConfiguration
@@ -23,12 +24,11 @@ import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.json.MapperSingleton
+import java.net.URI
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.net.URI
 
 internal class NotificatiesApiPluginFactoryTest {
 
@@ -38,7 +38,7 @@ internal class NotificatiesApiPluginFactoryTest {
         val client = mock<NotificatiesApiClient>()
         val abonnementLinkRepository = mock<NotificatiesApiAbonnementLinkRepository>()
 
-        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+        whenever(pluginService.getObjectMapper()).thenReturn(jacksonObjectMapper())
 
         val factory = NotificatiesApiPluginFactory(
             pluginService,
@@ -56,7 +56,7 @@ internal class NotificatiesApiPluginFactoryTest {
         val pluginConfiguration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get()
+            jacksonObjectMapper()
                 .readTree(notificatiesApiPluginProperties)
                 .deepCopy(),
             pluginDefinition
