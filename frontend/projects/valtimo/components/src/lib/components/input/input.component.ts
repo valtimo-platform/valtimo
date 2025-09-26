@@ -43,7 +43,14 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public type: InputType = 'text';
   @Input() public title = '';
   @Input() public titleTranslationKey = '';
-  @Input() public defaultValue = '';
+  private _defaultValue = '';
+  @Input() public set defaultValue(value: string) {
+    this._defaultValue = value;
+    this.setDefaultValue(this.defaultValue);
+  }
+  public get defaultValue(): string {
+    return this._defaultValue;
+  }
   @Input() public widthPx!: number;
   @Input() public set fullWidth(value: boolean) {
     this.fullWidthClass = value;

@@ -34,7 +34,10 @@ import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
-import {CreateZaakExtraProperties, CreateZaakExtraPropertyOptions} from '../../models/create-zaak-properties';
+import {
+  CreateZaakExtraProperties,
+  CreateZaakExtraPropertyOptions,
+} from '../../models/create-zaak-properties';
 import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 @Component({
@@ -149,8 +152,8 @@ export class CreateZaakConfigurationComponent
     this.openSaveSubscription();
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property]).forEach(property =>
-        this.addCaseProperty(property)
+      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property]).forEach(
+        property => this.addCaseProperty(property)
       );
     });
   }

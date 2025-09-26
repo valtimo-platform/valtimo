@@ -44,12 +44,23 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
   @Input() public setValuesSubject$!: Observable<SearchFieldValues>;
   @Input() public clearValuesSubject$!: Observable<null>;
-  @Input() public defaultValues!: SearchFieldValues;
+  private _defaultValues: SearchFieldValues;
+  @Input() public set defaultValues(value: SearchFieldValues) {
+    console.log({value});
+    this._defaultValues = value;
+    this.setDefaultValues();
+  }
+  public get defaultValues(): SearchFieldValues {
+    return this._defaultValues;
+  }
   @Input() public inputDisabled = false;
   @Input() public externalSearchField = false;
+  @Input() public canSaveSearch = false;
 
-  @Output() public doSearch: EventEmitter<SearchFieldValues> =
+  @Output() public readonly doSearch: EventEmitter<SearchFieldValues> =
     new EventEmitter<SearchFieldValues>();
+  @Output() public readonly saveSearchEvent = new EventEmitter<SearchFieldValues>();
+  @Output() public readonly clearEvent = new EventEmitter();
 
   public readonly searchFields$ = new BehaviorSubject<Array<SearchField>>([]);
   public readonly values$ = new BehaviorSubject<SearchFieldValues>({});
@@ -160,6 +171,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   public clear(): void {
     this.clear$.next(null);
     this.doSearch.emit({});
+    this.clearEvent.emit();
   }
 
   public getDefaultBooleanSelectionId(
@@ -174,6 +186,10 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
       return this.BOOLEAN_NEGATIVE;
     }
     return null;
+  }
+
+  public saveSearch(): void {
+    this.values$.pipe(take(1)).subscribe(values => this.saveSearchEvent.emit(values));
   }
 
   private getSingleValue(value: any, isDateTime?: boolean): any {
@@ -266,11 +282,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   private setDefaultValues(): void {
-    if (
-      this.defaultValues &&
-      typeof this.defaultValues === 'object' &&
-      Object.keys(this.defaultValues).length > 0
-    ) {
+    if (this.defaultValues && typeof this.defaultValues === 'object') {
       this.values$.next(this.defaultValues);
       this.search();
       this.expand();

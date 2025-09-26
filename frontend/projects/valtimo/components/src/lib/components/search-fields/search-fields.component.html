@@ -616,6 +616,19 @@
       </button>
 
       <button
+        *ngIf="obs.expanded && canSaveSearch"
+        cdsButton="secondary"
+        data-testid="search-fields-save-button"
+        (click)="saveSearch()"
+        type="button"
+        id="save"
+      >
+        <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+
+        {{ 'searchFields.saveButtonText' | translate }}
+      </button>
+
+      <button
         *ngIf="obs.expanded"
         cdsButton="primary"
         data-testid="search-fields-search-button"

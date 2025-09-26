@@ -1489,6 +1489,7 @@
     "collapseButtonText": "Ausblenden",
     "searchButtonText": "Suche",
     "clearButtonText": "Löschen",
+    "saveButtonText": "Suche speichern",
     "downloadButtonText": "Konfiguration herunterladen",
     "to": "bis",
     "text": "Text",
@@ -1923,5 +1924,12 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "quickSearch": {
+    "addItem": "Schnellsuche-Element hinzufügen",
+    "deleteModalTitle": "Schnellsuche-Element löschen",
+    "deleteModalContent": "Sind Sie sicher, dass Sie dieses Schnellsuche-Element löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
+    "rightClickTooltip": "Rechtsklick für Optionen",
+    "deleteHelperText": "Nachdem Sie ein Schnellsuchelement erstellt haben, können Sie es mit einem Rechtsklick darauf löschen"
   }
 }
