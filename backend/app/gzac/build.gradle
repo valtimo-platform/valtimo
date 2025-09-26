@@ -1,3 +1,11 @@
+plugins {
+    id 'war'
+}
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     implementation(platform(project(":dependencies:valtimo-dependency-versions")))
 
