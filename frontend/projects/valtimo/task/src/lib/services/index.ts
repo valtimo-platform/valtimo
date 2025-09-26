@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,4 +20,3 @@ export * from './task-list-column.service';
 export * from './task-list-pagination.service';
 export * from './task-list-search.service';
 export * from './task-list-query-param.service';
-export * from './task-intermediate-save.service';

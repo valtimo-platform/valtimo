@@ -1,0 +1,85 @@
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+.valtimo-dossier-management-widget-field-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__item,
+  &__cotainer {
+    background: var(--cds-layer-01);
+  }
+
+  &__item .cds--accordion__content {
+    padding-inline-end: 20px;
+  }
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr 180px;
+    align-items: flex-end;
+    gap: 16px;
+
+    &--collection {
+      grid-template-columns: 1fr 1fr 180px 180px;
+    }
+  }
+
+  &__title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 8px;
+  }
+
+  &__delete-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    align-self: center;
+
+    &.enum {
+      align-self: flex-end;
+    }
+  }
+
+  &__options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  &__enum {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    &-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      align-items: flex-end;
+      gap: 16px;
+    }
+  }
+}

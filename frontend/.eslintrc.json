@@ -73,17 +73,13 @@
             "selector": "objectLiteralProperty"
           }
         ],
-        "no-else-return": "error",
-        "@angular-eslint/prefer-standalone": "warn",
-        "@angular-eslint/no-output-native": "warn"
+        "no-else-return": "error"
       }
     },
     {
       "files": ["*.html"],
       "extends": ["plugin:@angular-eslint/template/recommended", "prettier"],
-      "rules": {
-        "@angular-eslint/template/no-negated-async": "off"
-      }
+      "rules": {}
     }
   ]
 }

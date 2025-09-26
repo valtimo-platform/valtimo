@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,19 @@ import {BehaviorSubject, Observable} from 'rxjs';
 import {delay} from 'rxjs/operators';
 import {v4 as uuidv4} from 'uuid';
 import {ModalService} from '../../services/modal.service';
-import {IconService} from 'carbon-components-angular';
-import {Close16} from '@carbon/icons';
 
+/**
+ * @deprecated Migrate old design to Carbon
+ */
 @Component({
   selector: 'v-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
-  standalone: false,
 })
 export class VModalComponent implements OnInit {
   @Input() appearingDelayMs = 140;
   @Input() maxWidthPx!: number;
   @Input() hideFooter = false;
-  @Input() parentId: string;
 
   @Output() closeEvent: EventEmitter<any> = new EventEmitter();
 
@@ -44,12 +43,7 @@ export class VModalComponent implements OnInit {
   readonly disappearing$ = this.modalService.disappearing$;
   readonly mouseInsideModal$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private readonly modalService: ModalService,
-    private readonly iconService: IconService
-  ) {
-    this.iconService.register(Close16);
-  }
+  constructor(private readonly modalService: ModalService) {}
 
   ngOnInit(): void {
     this.setAppearingDelayInService();

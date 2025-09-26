@@ -1,0 +1,106 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  *ngIf="{steps: steps$ | async} as obs"
+  [open]="open"
+  [title]="'widgetTabManagement.wizard.title' | translate"
+  showFooter="true"
+  size="lg"
+  valtimoCdsModal
+  class="valtimo-dossier-management-widget-wizard"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'widgetTabManagement.wizard.title' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <section cdsModalContent class="valtimo-dossier-management-widget-wizard__content">
+    <cds-progress-indicator
+      [current]="currentStep()"
+      [skeleton]="!obs.steps"
+      [spacing]="'equal'"
+      [steps]="obs.steps"
+      (stepSelected)="onStepSelected($event)"
+    >
+    </cds-progress-indicator>
+
+    @switch (currentStep()) {
+      @case (WidgetWizardSteps.TYPE) {
+        <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
+
+        <valtimo-widget-wizard-type-step
+          class="valtimo-widget-wizard-step"
+        ></valtimo-widget-wizard-type-step>
+      }
+      @case (WidgetWizardSteps.WIDTH) {
+        <p>{{ 'widgetTabManagement.width.description' | translate }}</p>
+
+        <valtimo-widget-wizard-width-step
+          class="valtimo-widget-wizard-step"
+        ></valtimo-widget-wizard-width-step>
+      }
+      @case (WidgetWizardSteps.STYLE) {
+        <p>{{ 'widgetTabManagement.style.description' | translate }}</p>
+
+        <valtimo-widget-wizard-style-step
+          class="valtimo-widget-wizard-step"
+        ></valtimo-widget-wizard-style-step>
+      }
+      @case (WidgetWizardSteps.CONTENT) {
+        <valtimo-widget-wizard-content-step
+          (contentValidEvent)="onContentValidEvent($event)"
+        ></valtimo-widget-wizard-content-step>
+      }
+      @default {
+        <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
+
+        <valtimo-widget-wizard-type-step></valtimo-widget-wizard-type-step>
+      }
+    }
+  </section>
+
+  <cds-modal-footer class="valtimo-dossier-management-widget-wizard__footer">
+    <button
+      class="valtimo-dossier-management-widget-wizard__cancel"
+      cdsButton="ghost"
+      (click)="onClose()"
+    >
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button
+      class="valtimo-dossier-management-widget-wizard__back"
+      cdsButton="secondary"
+      [disabled]="backButtonDisabled()"
+      (click)="onBackButtonClick()"
+    >
+      {{ 'interface.back' | translate }}
+    </button>
+
+    <button
+      class="valtimo-dossier-management-widget-wizard__next"
+      cdsButton="primary"
+      [disabled]="nextButtonDisabled()"
+      (click)="onNextButtonClick()"
+    >
+      {{
+        'interface.' + (currentStep() === WidgetWizardSteps.CONTENT ? 'save' : 'next') | translate
+      }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

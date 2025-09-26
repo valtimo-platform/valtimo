@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ enum ViewType {
   BOOLEAN = 'boolean',
   CURRENCY = 'currency',
   DATE = 'date',
-  DATE_TIME = 'datetime',
   ENUM = 'enum',
   NUMBER = 'number',
   PERCENT = 'percent',
@@ -30,7 +29,6 @@ enum ViewType {
   TEMPLATE = 'template',
   TEXT = 'text',
   UNDERSCORES_TO_SPACES = 'underscoresToSpaces',
-  HIDDEN = 'hidden',
 }
 interface CarbonListSelectTranslations {
   single: string;
@@ -68,7 +66,7 @@ interface ActionItem {
 }
 
 interface ColumnConfig extends ListField {
-  viewType?: string | ViewType;
+  viewType: string | ViewType;
   className?: string;
   currencyCode?: string;
   digitsInfo?: string;
@@ -77,8 +75,6 @@ interface ColumnConfig extends ListField {
   format?: string;
   template?: TemplateRef<any>;
   templateData?: object;
-  tooltipCharLimit?: number;
-  tagAmount?: number;
 }
 
 enum MoveRowDirection {
@@ -106,7 +102,6 @@ interface ListField {
   viewType?: string;
   default?: string | boolean;
   sortable?: boolean;
-  tagAmount?: number;
 }
 
 interface CarbonListNoResultsMessage {

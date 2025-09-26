@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import {
   TableItem,
   TableModel,
 } from 'carbon-components-angular';
-import {get as _get, isArray} from 'lodash';
+import {get as _get} from 'lodash';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -69,13 +69,13 @@ import {
   MoveRowDirection,
   MoveRowEvent,
   Pagination,
+  TAG_ELLIPSIS_LIMIT,
   ViewType,
 } from '../../models';
 import {KeyStateService} from '../../services/key-state.service';
 import {ViewContentService} from '../view-content/view-content.service';
 import {CarbonListFilterPipe} from './CarbonListFilterPipe.directive';
 import {CarbonListDragAndDropService} from './services';
-import {EllipsisPipe} from '../../pipes';
 
 @Component({
   selector: 'valtimo-carbon-list',
@@ -83,7 +83,6 @@ import {EllipsisPipe} from '../../pipes';
   styleUrls: ['./carbon-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CarbonListFilterPipe, CarbonListDragAndDropService],
-  standalone: false,
 })
 export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('actionsMenuTemplate') actionsMenuTemplate: TemplateRef<OverflowMenu>;
@@ -99,11 +98,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _completeDataSource: TableItem[][];
 
   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
-
   private get _items(): CarbonListItem[] {
     return this._items$.getValue();
   }
-
   public get items(): CarbonListItem[] {
     return this._items;
   }
@@ -115,7 +112,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public currentOpenActionId: string | null = null;
 
   private readonly _fields$ = new BehaviorSubject<ColumnConfig[]>([]);
-
   @Input() set fields(value: ColumnConfig[]) {
     this._fields$.next(value);
   }
@@ -123,17 +119,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   private _tableTranslations$: BehaviorSubject<CarbonListTranslations> = new BehaviorSubject(
     DEFAULT_LIST_TRANSLATIONS
   );
-
   @Input() set tableTranslations(value: Partial<CarbonListTranslations>) {
     this._tableTranslations$.next({...DEFAULT_LIST_TRANSLATIONS, ...value});
   }
 
   @Input() paginatorConfig: CarbonPaginatorConfig = DEFAULT_PAGINATOR_CONFIG;
   private _pagination: Pagination;
-  private _isPaginationInit = false;
-
-  @Input()
-  public set pagination(value: Partial<Pagination> | false) {
+  @Input() public set pagination(value: Partial<Pagination> | false) {
     if (!value) {
       return;
     }
@@ -144,13 +136,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._pagination = {...this._pagination, ...value};
     this.buildPaginationModel();
-
-    if (this._isPaginationInit || !value.size) return;
-
-    this.setPaginationSize(value.size.toString());
-    this._isPaginationInit = true;
   }
-
   public get pagination(): Pagination {
     return this._pagination;
   }
@@ -162,22 +148,13 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   @Input() actions: any[] = [];
   @Input() actionItems: ActionItem[];
-  @Input() showActionItems: boolean = true;
   @Input() header: boolean;
   @Input() hideColumnHeader: boolean;
-  private _isSortInit = false;
-  @Input() set initialSortState(value: SortState) {
-    if (!value || this._isSortInit) return;
-
-    this._isSortInit = true;
-    this.sort$.next(value);
-  }
-
+  @Input() initialSortState: SortState;
   @Input() set sortState(value: SortState) {
     if (!value) return;
     this.sort$.next(value);
   }
-
   @Input() isSearchable = false;
   @Input() enableSingleSelection = false;
   /**
@@ -273,7 +250,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   constructor(
-    private readonly ellipsisPipe: EllipsisPipe,
     private readonly filterPipe: CarbonListFilterPipe,
     private readonly iconService: IconService,
     private readonly logger: NGXLogger,
@@ -289,6 +265,10 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
   public ngOnInit(): void {
     if (this.pagination) {
       this.loadPaginationSize();
+    }
+
+    if (this.initialSortState) {
+      this.sort$.next(this.initialSortState);
     }
 
     this._subscriptions.add(
@@ -341,8 +321,9 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (firstItem) firstItem.ctrlClick = this.keyStateService.getCtrlOrCmdState();
 
-    if (!firstItem || firstItem?.locked) return;
-
+    if (!firstItem || firstItem?.locked) {
+      return;
+    }
     this.rowClicked.emit(firstItem);
   }
 
@@ -454,7 +435,6 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
             case ViewType.TEMPLATE:
               return new TableItem({
                 data: {item, index, length: items.length, ...field.templateData},
-                item,
                 template: field.template,
               });
             case ViewType.BOOLEAN:
@@ -467,22 +447,12 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                 template: this.booleanTemplate,
               });
             case ViewType.TAGS: {
-              return new TableItem({
-                data: {
-                  tags: this.resolveTagObject(item, field.key),
-                  tagAmount: field?.tagAmount || 1,
-                },
-                template: this.tagTemplate,
-              });
+              return this.resolveTagObject(item.tags);
             }
             default:
-              const resolvedObject: string = this.resolveObject(field, item);
               return new TableItem({
-                title: resolvedObject ?? '-',
-                data:
-                  (field.tooltipCharLimit
-                    ? this.ellipsisPipe.transform(resolvedObject, field.tooltipCharLimit)
-                    : resolvedObject) ?? '-',
+                title: this.resolveObject(field, item) ?? '-',
+                data: this.resolveObject(field, item) ?? '-',
                 template: this.defaultTemplate,
                 item,
               });
@@ -713,26 +683,27 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
     return filteredItems;
   }
 
-  private resolveTagObject(item: CarbonListItem, key: string): CarbonTag[] | null {
-    const object: string | string[] | CarbonTag | CarbonTag[] = item[key];
+  private resolveTagObject(itemTags: CarbonTag[] | undefined): TableItem {
+    if (!itemTags || itemTags.length === 0)
+      return new TableItem({
+        data: {tags: []},
+        template: this.tagTemplate,
+      });
 
-    if (!object) return null;
+    const tags = itemTags.map((tag: CarbonTag, index: number) =>
+      index === 0 ? {...tag, ellipsisContent: this.transformTagEllipsis(tag.content)} : tag
+    );
 
-    if (isArray(object) && typeof object[0] !== 'string') return object as CarbonTag[];
+    return new TableItem({
+      data: {tags},
+      template: this.tagTemplate,
+    });
+  }
 
-    if (!isArray(object) && typeof object !== 'string') return [object as CarbonTag];
-
-    if (typeof object === 'string')
-      return [
-        {
-          content: object,
-          type: 'blue',
-        },
-      ];
-
-    return (object as string[]).map((content: string) => ({
-      content,
-      type: 'blue',
-    }));
+  private transformTagEllipsis(tagContent: string): string {
+    return (
+      tagContent.substring(0, TAG_ELLIPSIS_LIMIT - 1) +
+      (tagContent.length > TAG_ELLIPSIS_LIMIT ? '...' : '')
+    );
   }
 }

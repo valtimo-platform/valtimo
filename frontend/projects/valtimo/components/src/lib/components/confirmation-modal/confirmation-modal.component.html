@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -25,9 +25,8 @@
     contentTranslation: contentTranslationKey | translate,
     confirmButtonTranslation: confirmButtonTextTranslationKey | translate,
     cancelButtonTranslation: cancelButtonTextTranslationKey | translate,
-    optionalButtonTranslation: optionalButtonTextTranslationKey | translate,
+    optionalButtonTranslation: optionalButtonTextTranslationKey | translate
   } as obs"
-  (close)="closeModal()"
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>
@@ -38,23 +37,16 @@
       }}
     </h3>
   </cds-modal-header>
-
   <section cdsModalContent>
     {{
       (contentTranslationKey !== obs.contentTranslation ? obs.contentTranslation : '') ||
         content ||
         obs.deleteConfirmationTranslation
     }}
-
-    <div class="modal-body-content">
-      <ng-content></ng-content>
-    </div>
   </section>
-
   <cds-modal-footer>
     <ng-container>
       <button
-        data-testid="confirmation-modal-close"
         [attr.modal-primary-focus]="true"
         [cdsButton]="cancelButtonType"
         (click)="closeModal()"
@@ -70,7 +62,6 @@
       <div *ngIf="spacerAfterCancelButton" class="modal-spacer"></div>
       <button
         *ngIf="showOptionalButton"
-        data-testid="confirmation-modal-optional"
         [attr.modal-primary-focus]="true"
         [cdsButton]="optionalButtonType"
         (click)="onOptional()"
@@ -84,7 +75,6 @@
         }}
       </button>
       <button
-        data-testid="confirmation-modal-confirm"
         [attr.modal-primary-focus]="true"
         [cdsButton]="confirmButtonType"
         (click)="onConfirm()"

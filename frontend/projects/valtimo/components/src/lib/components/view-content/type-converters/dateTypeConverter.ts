@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,18 @@
 import moment from 'moment';
 import {TypeConverter} from './type-converters.model';
 
+moment.locale(localStorage.getItem('langKey') ?? 'nl-NL');
+
 export class DateTypeConverter implements TypeConverter {
   public getTypeString(): string {
     return 'date';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
   public convert(value: any, definition: any): string {
-    if (!value) return '-';
+    if (!value) {
+      return '-';
+    }
 
-    const dateValue = moment(value);
-    return (dateValue.isValid() ? dateValue : moment(value, 'DD-MM-YYYY'))
-      .locale(localStorage.getItem('langKey') ?? 'nl')
-      .format(definition?.format || 'DD-MM-YYYY');
+    return moment(value).format(definition?.format || 'DD-MM-YYYY');
   }
 }

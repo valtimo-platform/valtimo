@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -79,9 +79,9 @@
 <ng-template #tableEditButtonCell let-item="item">
   <td *ngIf="showEditButtons" class="v-table__cell v-table__cell--with-button">
     <span class="v-table__cell-button-container">
-      <button cdsButton="secondary" (click)="editButtonClicked.emit(item)">
-        {{ editButtonTranslationKey || 'interface.edit' | translate }}
-      </button>
+      <v-button type="secondary" (clickEvent)="editButtonClicked.emit(item)">{{
+        editButtonTranslationKey || 'interface.edit' | translate
+      }}</v-button>
     </span>
   </td>
 </ng-template>
@@ -104,7 +104,7 @@
           width: 'var(--v-table-loading-skeleton-width)',
           height: 'var(--v-table-loading-skeleton-line-height)',
           margin: '0',
-          'background-color': 'var(--v-table-loading-skeleton-bg-color)',
+          'background-color': 'var(--v-table-loading-skeleton-bg-color)'
         }"
       ></ngx-skeleton-loader
     ></span>
@@ -114,9 +114,9 @@
 <ng-template #tableEditButtonCellLoading>
   <td *ngIf="showEditButtons" class="v-table__cell v-table__cell--with-button">
     <span class="v-table__cell-button-container">
-      <button cdsButton="secondary" [disabled]="true">
-        {{ editButtonTranslationKey || 'interface.edit' | translate }}
-      </button>
+      <v-button type="secondary" [disabled]="true">{{
+        editButtonTranslationKey || 'interface.edit' | translate
+      }}</v-button>
     </span>
   </td>
 </ng-template>
@@ -189,7 +189,7 @@
         width: 'var(--v-table-loading-skeleton-width)',
         height: 'var(--v-table-loading-skeleton-line-height)',
         margin: '0',
-        'background-color': 'var(--v-table-loading-skeleton-pagination-size-bg-color)',
+        'background-color': 'var(--v-table-loading-skeleton-pagination-size-bg-color)'
       }"
     ></ngx-skeleton-loader
   ></span>
@@ -201,15 +201,14 @@
     *ngIf="paginationObject && paginationObject.collectionSize > paginationObject.size"
   >
     <span *ngIf="paginationObject.page > 1">
-      <button cdsButton="ghost" (click)="setPage('previous')" [disabled]="loading">
-        {{ 'interface.previous' | translate }}
-      </button>
+      <v-button (clickEvent)="setPage('previous')" type="text" [disabled]="loading">{{
+        'interface.previous' | translate
+      }}</v-button>
     </span>
-
     <span *ngIf="paginationObject.page * paginationObject.size < paginationObject.collectionSize">
-      <button cdsButton="ghost" (click)="setPage('next')" [disabled]="loading">
-        {{ 'interface.nextArrow' | translate }}
-      </button>
+      <v-button (clickEvent)="setPage('next')" type="text" [disabled]="loading">{{
+        'interface.nextArrow' | translate
+      }}</v-button>
     </span>
   </div>
 </ng-template>

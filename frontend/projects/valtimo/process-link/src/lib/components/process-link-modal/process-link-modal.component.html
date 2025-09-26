@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -29,10 +29,10 @@
     enableNextButton: enableNextButton$ | async,
     saving: saving$ | async,
     hideProgressIndicator: hideProgressIndicator$ | async,
-    typeOfSelectedProgressLink: typeOfSelectedProcessLink$ | async,
+    typeOfSelectedProgressLink: typeOfSelectedProcessLink$ | async
   } as obs"
 >
-  <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg" (close)="closeModal()">
+  <cds-modal valtimoCdsModal [open]="obs.showModal" size="lg">
     <cds-modal-header (closeSelect)="closeModal()">
       <h2 cdsModalHeaderLabel>{{ 'processLinkConfiguration.configureStep' | translate }}</h2>
       <h3 cdsModalHeaderHeading>
@@ -45,7 +45,7 @@
         <ng-container *ngTemplateOutlet="progressIndicator; context: {obs: obs}"></ng-container>
       </div>
     </cds-modal-header>
-    <section cdsModalContent [cdsLayer]="1">
+    <section cdsModalContent>
       <ng-container *ngTemplateOutlet="stepContent; context: {obs: obs}"></ng-container>
     </section>
     <ng-template *ngTemplateOutlet="footer; context: {obs: obs}"></ng-template>
@@ -91,33 +91,20 @@
       >
         <valtimo-select-form-flow></valtimo-select-form-flow>
       </ng-container>
-
       <ng-container *ngIf="obs.currentStepId === 'choosePluginConfiguration'">
         <valtimo-select-plugin-configuration></valtimo-select-plugin-configuration>
       </ng-container>
-
       <ng-container *ngIf="obs.currentStepId === 'choosePluginAction'">
         <valtimo-select-plugin-action></valtimo-select-plugin-action>
       </ng-container>
-
       <ng-container
         *ngIf="
           obs.currentStepId === 'configurePluginAction' ||
           obs.typeOfSelectedProgressLink === 'plugin'
         "
       >
-        <valtimo-plugin-action-configuration
-          [selectedPluginConfiguration$]="selectedPluginConfiguration$"
-        ></valtimo-plugin-action-configuration>
+        <valtimo-plugin-action-configuration></valtimo-plugin-action-configuration>
       </ng-container>
-    </ng-container>
-
-    <ng-container
-      *ngIf="
-        obs.currentStepId === 'uiComponent' || obs.typeOfSelectedProgressLink === 'ui-component'
-      "
-    >
-      <valtimo-select-ui-component></valtimo-select-ui-component>
     </ng-container>
   </div>
 </ng-template>
@@ -140,7 +127,7 @@
       <button
         cdsButton="primary"
         *ngIf="obs.showNextButton && !obs.saving"
-        [disabled]="!obs.enableNextButton"
+        [disabled]="obs.enableNextButton === false"
         (click)="nextButtonClick()"
       >
         {{ 'processLinkConfiguration.next' | translate }}
@@ -155,7 +142,7 @@
       <button
         cdsButton="primary"
         *ngIf="(obs.showSaveButton && !obs.saving) || obs.typeOfSelectedProgressLink"
-        [disabled]="!obs.enableSaveButton"
+        [disabled]="obs.enableSaveButton === false"
         (click)="saveButtonClick()"
       >
         {{ 'processLinkConfiguration.complete' | translate }}

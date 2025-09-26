@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,10 +33,8 @@ import {WidgetService} from '../../services';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {WIDGET_1X_HEIGHT} from '../../constants';
 import Muuri from 'muuri';
-import {Router} from '@angular/router';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-widget-dashboard-content',
   templateUrl: './widget-dashboard-content.component.html',
   styleUrls: ['./widget-dashboard-content.component.scss'],
@@ -91,8 +89,7 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
   constructor(
     private readonly layoutService: WidgetLayoutService,
     private readonly widgetService: WidgetService,
-    private readonly renderer: Renderer2,
-    private readonly router: Router
+    private readonly renderer: Renderer2
   ) {}
 
   public ngAfterViewInit(): void {
@@ -107,16 +104,6 @@ export class WidgetDashboardContentComponent implements AfterViewInit, OnDestroy
   public ngOnDestroy(): void {
     this._observer?.disconnect();
     this._subscriptions?.unsubscribe();
-  }
-
-  public navigateToRoute(
-    widgetConfiguration: DashboardWidgetConfiguration,
-    event: MouseEvent
-  ): void {
-    if (widgetConfiguration.url) {
-      event.preventDefault();
-      this.router.navigateByUrl(widgetConfiguration.url);
-    }
   }
 
   private setWidgetConfigurations(dashboard: Dashboard): void {

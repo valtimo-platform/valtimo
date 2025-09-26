@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,19 +20,17 @@
     disabled: disabled$ | async,
     valid: valid$ | async,
     modalType: modalType$ | async,
-    prefillObject: prefillObject$ | async,
+    prefillObject: prefillObject$ | async
   } as obs"
 >
   <div role="header">
     <div class="add-title">
-      <h4>
-        {{
-          (obs.modalType === 'add'
-            ? 'objectManagement.createObjecttype'
-            : 'objectManagement.editObjecttype'
-          ) | translate
-        }}
-      </h4>
+      <v-title [margin]="false">{{
+        (obs.modalType === 'add'
+          ? 'objectManagement.createObjecttype'
+          : 'objectManagement.editObjecttype'
+        ) | translate
+      }}</v-title>
     </div>
   </div>
   <div role="content">
@@ -45,15 +43,19 @@
   </div>
   <div role="footer">
     <div class="buttons">
-      <button cdsButton="secondary" (click)="cancel()" [disabled]="obs.disabled">
+      <v-button (clickEvent)="cancel()" [disabled]="obs.disabled" type="secondary">
         {{ 'objectManagement.cancel' | translate }}
-      </button>
-
-      <button cdsButton="primary" (click)="save()" [disabled]="obs.disabled || !obs.valid">
+      </v-button>
+      <v-button
+        (clickEvent)="save()"
+        [disabled]="obs.disabled || !obs.valid"
+        mdiIcon="plus"
+        type="success"
+      >
         {{
           (obs.modalType === 'add' ? 'objectManagement.add' : 'objectManagement.edit') | translate
         }}
-      </button>
+      </v-button>
     </div>
   </div>
 </v-modal>
@@ -83,7 +85,7 @@
         *ngIf="{
           connectionInstances: configurationInstances$ | async,
           objectsApiConfigurations: objectsApiConfigurations$ | async,
-          objecttypesApiConfigurations: objecttypesApiConfigurations$ | async,
+          objecttypesApiConfigurations: objecttypesApiConfigurations$ | async
         } as objectObs"
       >
         <v-select

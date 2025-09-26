@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,4 +24,3 @@ export * from './lib/services/open-zaak.service';
 export * from './lib/services/upload-provider.service';
 export * from './lib/services/s3.service';
 export * from './lib/services/download.service';
-export * from './lib/resource-permissions';

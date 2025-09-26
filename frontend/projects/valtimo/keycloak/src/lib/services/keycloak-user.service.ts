@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 
 import {Injectable, OnDestroy} from '@angular/core';
-import {combineLatest, ReplaySubject, Subject, Subscription, switchMap, timer} from 'rxjs';
+import {combineLatest, map, ReplaySubject, Subject, Subscription, switchMap, timer} from 'rxjs';
 import {NGXLogger} from 'ngx-logger';
-import {KeycloakEventTypeLegacy, KeycloakService} from 'keycloak-angular';
-import {ConfigService, UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/shared';
+import {KeycloakEventType, KeycloakService} from 'keycloak-angular';
+import {ConfigService, UserIdentity, UserService, ValtimoUserIdentity} from '@valtimo/config';
 import {KeycloakOptionsService} from './keycloak-options.service';
 import {jwtDecode} from 'jwt-decode';
 import {TranslateService} from '@ngx-translate/core';
@@ -41,7 +41,7 @@ export class KeycloakUserService implements UserService, OnDestroy {
 
   private readonly _refreshToken$ = new Subject<string>();
 
-  private _tokenExp!: number;
+  private _expiryTimeMs!: number;
 
   private readonly FIVE_MINUTES_MS = 300000;
   private readonly EXPIRE_TOKEN_CONFIRMATION = 'EXPIRE_TOKEN_CONFIRMATION';
@@ -80,8 +80,7 @@ export class KeycloakUserService implements UserService, OnDestroy {
         user.firstName,
         user.lastName,
         roles,
-        user.username,
-        user.id
+        user.username
       );
       this.logger.debug('KeycloakUserService: loaded user identity', valtimoUserIdentity);
       this.userIdentity.next(valtimoUserIdentity);
@@ -112,22 +111,20 @@ export class KeycloakUserService implements UserService, OnDestroy {
   private openTokenRefreshSubscription(): void {
     this.tokenRefreshSubscription = this.keycloakService.keycloakEvents$.subscribe(
       keycloakEvent => {
-        if (keycloakEvent.type === KeycloakEventTypeLegacy.OnAuthRefreshSuccess) {
+        if (keycloakEvent.type === KeycloakEventType.OnAuthRefreshSuccess) {
           this.setRefreshToken();
         }
       }
     );
   }
 
-  private get _expiryTimeMs() {
-    return this._tokenExp - Date.now() - 1000;
-  }
-
   private openRefreshTokenSubscription(): void {
     this.refreshTokenSubscription = this._refreshToken$.subscribe(refreshToken => {
       const decodedRefreshToken = jwtDecode(refreshToken);
-      this._tokenExp = decodedRefreshToken.exp * 1000;
+      const tokenExp = decodedRefreshToken.exp * 1000;
+      const expiryTimeMs = tokenExp - Date.now() - 1000;
 
+      this._expiryTimeMs = expiryTimeMs;
       this.closeExpiryTimerSubscription();
       this.openExpiryTimerSubscription();
     });
@@ -141,10 +138,14 @@ export class KeycloakUserService implements UserService, OnDestroy {
   private openExpiryTimerSubscription(): void {
     this.expiryTimerSubscription = timer(0, 1000)
       .pipe(
-        switchMap(() => {
-          if (this._expiryTimeMs <= this.FIVE_MINUTES_MS) {
+        map(() => {
+          this._expiryTimeMs = this._expiryTimeMs - 1000;
+          return this._expiryTimeMs;
+        }),
+        switchMap(expiryTimeMs => {
+          if (expiryTimeMs <= this.FIVE_MINUTES_MS) {
             this._counter = new Date(0, 0, 0, 0, 0, 0);
-            this._counter.setSeconds(this._expiryTimeMs / 1000);
+            this._counter.setSeconds(expiryTimeMs / 1000);
           }
 
           return combineLatest([
@@ -195,6 +196,8 @@ export class KeycloakUserService implements UserService, OnDestroy {
       bodyText,
       cancelButtonText,
       confirmButtonText,
+      cancelMdiIcon: 'logout',
+      confirmMdiIcon: 'check',
       closeOnConfirm: true,
       closeOnCancel: false,
       cancelCallbackFunction: () => {

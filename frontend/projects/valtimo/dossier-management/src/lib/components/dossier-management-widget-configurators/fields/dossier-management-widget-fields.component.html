@@ -1,0 +1,84 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<p>{{ 'widgetTabManagement.content.description' | translate }}</p>
+
+<form [formGroup]="form">
+  <cds-text-label
+    [attr.data-carbon-theme]="theme$ | async"
+    class="valtimo-dossier-management-widget-field__input"
+  >
+    {{ 'widgetTabManagement.content.widgetTitle' | translate }}
+
+    <input
+      formControlName="widgetTitle"
+      cdsText
+      [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+      type="text"
+    />
+  </cds-text-label>
+</form>
+
+<ng-container>
+  <cds-tabs type="contained">
+    @for (column of columns(); track $index) {
+      <cds-tab
+        [active]="activeTab() === $index"
+        [heading]="columnHeading"
+        [context]="{index: $index, count: $count}"
+        (selected)="onTabSelected($index)"
+      >
+        <valtimo-dossier-management-widget-fields-column
+          *ngIf="activeTab() === $index"
+          [columnData]="selectedWidgetContent()?.[$index]"
+          (columnUpdateEvent)="onColumnUpdateEvent($event, $index)"
+        ></valtimo-dossier-management-widget-fields-column>
+      </cds-tab>
+    }
+    <cds-tab
+      *ngIf="columns().length < widgetWidth"
+      [heading]="addColumn"
+      [id]="'addColumn'"
+      class="valtimo-dossier-management-widget-field__add"
+    ></cds-tab>
+  </cds-tabs>
+</ng-container>
+
+<ng-template #addColumn>
+  <button
+    cdsButton="ghost"
+    [iconOnly]="true"
+    (click)="$event.stopImmediatePropagation(); onAddColumnClick()"
+  >
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #columnHeading let-data>
+  <div class="valtimo-dossier-management-widget-field__heading">
+    {{ 'widgetTabManagement.content.column' | translate: {number: data.index + 1} }}
+
+    <button
+      cdsButton="ghost"
+      [disabled]="data.count === 1"
+      [iconOnly]="true"
+      size="sm"
+      (click)="onDeleteColumnClick(data.index)"
+    >
+      <svg class="cds--btn__icon" cdsIcon="close" size="16"></svg>
+    </button>
+  </div>
+</ng-template>

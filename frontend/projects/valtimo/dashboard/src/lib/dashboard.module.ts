@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import {
   AlertModule,
   BpmnJsDiagramModule,
   CarbonListModule,
+  ListModule,
   SpinnerModule,
   WidgetModule,
 } from '@valtimo/components';
@@ -33,8 +34,6 @@ import {WidgetDashboardComponent} from './components/widget-dashboard/widget-das
 import {DATA_SOURCE_TOKEN, DISPLAY_TYPE_TOKEN} from './constants';
 import {DashboardRoutingModule} from './dashboard-routing.module';
 import {WidgetTranslatePipeModule} from './pipes';
-import {DisplayWidgetTypesModule} from './display-types/display-widget-types.module';
-import {DataSourcesModule} from './data-sources/data-sources.module';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -47,6 +46,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     CommonModule,
     DashboardRoutingModule,
     WidgetModule,
+    ListModule,
     BpmnJsDiagramModule,
     TranslateModule.forRoot({
       loader: {
@@ -63,8 +63,6 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     WidgetTranslatePipeModule,
     LoadingModule,
     CarbonListModule,
-    DisplayWidgetTypesModule,
-    DataSourcesModule,
   ],
   exports: [DashboardComponent, WidgetDashboardComponent],
   providers: [

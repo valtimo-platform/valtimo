@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,15 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListModule,
   ConfirmationModalModule,
-  JsonEditorComponent,
-  RenderInPageHeaderDirective,
+  ListModule,
+  RenderInPageHeaderDirectiveModule,
   SpinnerModule,
-  ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {
   ButtonModule,
   DropdownModule,
   IconModule,
   InputModule,
-  LayerModule,
   ModalModule,
   NotificationModule,
 } from 'carbon-components-angular';
@@ -56,19 +54,17 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     DashboardManagementRoutingModule,
     DropdownModule,
     InputModule,
+    ListModule,
     ModalModule,
     ReactiveFormsModule,
     SpinnerModule,
     TranslateModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     ConfirmationModalModule,
     NotificationModule,
     IconModule,
     WidgetTranslatePipeModule,
     CarbonListModule,
-    LayerModule,
-    ValtimoCdsModalDirective,
-    JsonEditorComponent,
   ],
   exports: [],
 })

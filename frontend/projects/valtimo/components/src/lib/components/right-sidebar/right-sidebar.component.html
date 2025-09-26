@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -140,7 +140,7 @@
         </cds-list-column>
       </cds-list-row>
 
-      <cds-list-row *ngIf="showPlantATreeButton">
+      <cds-list-row *ngIf="showPlantATreeButton$ | async">
         <cds-list-column>
           <a
             class="text-success"
@@ -242,7 +242,7 @@
       </cds-list-column>
     </cds-list-row>
 
-    <cds-list-row *ngIf="allowUserThemeSwitching">
+    <cds-list-row *ngIf="allowUserThemeSwitching$ | async">
       <cds-list-column>
         <cds-dropdown
           [label]="'settings.interface.themePreference' | translate"
@@ -256,7 +256,7 @@
       </cds-list-column>
     </cds-list-row>
 
-    <cds-list-row *ngIf="enableCompactModeToggle">
+    <cds-list-row *ngIf="enableCompactModeToggle$ | async">
       <cds-list-column>
         <cds-toggle
           [label]="'settings.interface.compactMode' | translate"

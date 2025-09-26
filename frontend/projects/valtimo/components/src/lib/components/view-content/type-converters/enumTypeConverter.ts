@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,7 @@ export class EnumTypeConverter implements TypeConverter {
     return 'enum';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
   public convert(value: any, definition: any): string {
-    if (!value) return '-';
-
-    return (definition?.values ?? definition?.enum)?.[value] ?? value;
+    return definition?.values?.[value] ?? '-';
   }
 }

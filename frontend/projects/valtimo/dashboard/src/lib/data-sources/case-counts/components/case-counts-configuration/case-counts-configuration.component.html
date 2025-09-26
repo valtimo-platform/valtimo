@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,8 +19,7 @@
   *ngIf="{
     documentItems: documentItems$ | async,
     operatorItems: operatorItems$,
-    queryItemsValue: queryItemsValue$ | async,
-    selectedDocumentDefinition: selectedDocumentDefinition$ | async,
+    queryItemsValue: queryItemsValue$ | async
   } as obs"
   [formGroup]="form"
 >
@@ -47,8 +46,8 @@
   </p>
 
   @for (_ of queryItemsList$ | async; track $index; let i = $index) {
-    <cds-tile class="count-tile" [cdsLayer]="1">
-      <div class="count-tile__input" [cdsLayer]="0">
+    <cds-tile class="count-tile" cdsLayer="1">
+      <div class="count-tile__input">
         <v-input
           [title]="'countTitle' | widgetTranslate: dataSourceKey | async"
           [margin]="true"
@@ -61,7 +60,6 @@
         </v-input>
 
         <valtimo-carbon-multi-input
-          type="valuePathSelectorDropdownValue"
           [disabled]="formDisabled"
           [addRowText]="'addCondition' | widgetTranslate: dataSourceKey | async"
           [defaultValues]="obs.queryItemsValue[i]?.queryConditions"
@@ -72,13 +70,7 @@
           [keyColumnTitle]="'path' | widgetTranslate: dataSourceKey | async"
           [minimumAmountOfRows]="1"
           [valueColumnTitle]="'value' | widgetTranslate: dataSourceKey | async"
-          valuePathSelectorNotation="dots"
-          [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
-          [valuePathSelectorShowCaseDefinitionSelector]="false"
-          [valuePathSelectorCaseDefinitionKey]="obs.selectedDocumentDefinition"
-          [keyColumnFlex]="2"
-          [dropdownColumnFlex]="1"
-          [valueColumnFlex]="1"
+          type="keyDropdownValue"
           (valueChange)="conditionsValueChange(i, $event)"
         ></valtimo-carbon-multi-input>
       </div>

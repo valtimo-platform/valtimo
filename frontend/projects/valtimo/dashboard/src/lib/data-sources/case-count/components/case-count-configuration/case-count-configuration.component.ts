@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +29,11 @@ import {FormBuilder, Validators} from '@angular/forms';
 import {CaseCountConfiguration} from '../../models';
 import {DocumentService} from '@valtimo/document';
 import {ListItem} from 'carbon-components-angular';
-import {
-  ListItemWithId,
-  MultiInputKeyValue,
-  MultiInputValues,
-  ValuePathSelectorPrefix,
-} from '@valtimo/components';
+import {ListItemWithId, MultiInputKeyValue, MultiInputValues} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {WidgetTranslationService} from '../../../../services';
 
 @Component({
-  standalone: false,
   templateUrl: './case-count-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./case-count-configuration.component.scss'],
@@ -62,11 +56,11 @@ export class CaseCountConfigurationComponent
     }
   }
 
-  public readonly selectedDocumentDefinition$ = new BehaviorSubject<string>('');
+  private readonly _selectedDocumentDefinition$ = new BehaviorSubject<string>('');
 
   public readonly documentItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentService.getAllDefinitions(),
-    this.selectedDocumentDefinition$,
+    this._selectedDocumentDefinition$,
   ]).pipe(
     map(([documentDefinitions, selectedDocumentDefintion]) =>
       documentDefinitions.content.map(definition => ({
@@ -129,8 +123,6 @@ export class CaseCountConfigurationComponent
     ConfigurationOutput<CaseCountConfiguration>
   >();
 
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
-
   private _subscriptions = new Subscription();
 
   constructor(
@@ -153,7 +145,7 @@ export class CaseCountConfigurationComponent
       return;
     }
 
-    this.selectedDocumentDefinition$.next(documentDefinitionItem?.item?.content);
+    this._selectedDocumentDefinition$.next(documentDefinitionItem?.item?.content);
     this.documentDefinition.setValue(documentDefinitionItem?.item?.content);
   }
 

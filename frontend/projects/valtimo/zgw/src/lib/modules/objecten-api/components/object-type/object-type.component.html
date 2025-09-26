@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
     objects: objects$ | async,
     columns: columns$ | async,
     loading: loading$ | async,
-    hasData: hasData$ | async,
+    hasData: hasData$ | async
   } as obs"
 >
   <v-table
@@ -28,7 +28,7 @@
     [items]="obs.objects"
     [columns]="obs.columns"
     [showEditButtons]="true"
-    editButtonTranslationKey="case.zaakobjecten.objectType.viewObject"
+    editButtonTranslationKey="dossier.zaakobjecten.objectType.viewObject"
     [amountOfLoadingRows]="2"
     [itemsTranslationKey]="'pluginManagement.tableItemsText'"
     [showPagination]="false"
@@ -36,13 +36,15 @@
   ></v-table>
 
   <v-paragraph *ngIf="!obs.hasData && !obs.loading" [center]="true">{{
-    'case.zaakobjecten.noObjectType' | translate
+    'dossier.zaakobjecten.noObjectType' | translate
   }}</v-paragraph>
 </ng-container>
 
 <v-modal #viewObjectModal (closeEvent)="hide()" [hideFooter]="true" [maxWidthPx]="750">
   <div role="header">
-    <h4>{{ objectName$ | async }}</h4>
+    <v-title [margin]="false" type="h2" [fullWidth]="true" [center]="true">{{
+      objectName$ | async
+    }}</v-title>
   </div>
 
   <div role="content">
@@ -51,7 +53,7 @@
       [form]="objectForm$ | async"
     ></valtimo-form-io>
     <v-paragraph *ngIf="noFormDefinitionComponent$ | async" [center]="true">{{
-      'case.zaakobjecten.noFormDefinitionComponent' | translate
+      'dossier.zaakobjecten.noFormDefinitionComponent' | translate
     }}</v-paragraph>
   </div>
 </v-modal>

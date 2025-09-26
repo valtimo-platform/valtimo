@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-tile
+  *ngIf="{
+    fields: fields$ | async,
+    widgetData: widgetData$ | async
+  } as obs"
+  class="valtimo-widget-table"
+>
+  <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+
+  @if (obs.widgetData && obs.fields && obs.widgetData.length) {
+    <section class="valtimo-widget-table__content">
+      <valtimo-carbon-list
+        [header]="false"
+        [hideToolbar]="true"
+        [fields]="obs.fields"
+        [items]="obs.widgetData"
+      >
+      </valtimo-carbon-list>
+
+      <cds-pagination-nav
+        *ngIf="paginationModel()"
+        class="valtimo-widget-table__pagination"
+        [model]="paginationModel()"
+        (selectPage)="onSelectPage($event)"
+      >
+      </cds-pagination-nav>
+    </section>
+  } @else {
+    <valtimo-no-results
+      [collapseVertically]="true"
+      [description]="'dossier.widgets.noData' | translate"
+      [smallPadding]="true"
+    ></valtimo-no-results>
+  }
+</cds-tile>

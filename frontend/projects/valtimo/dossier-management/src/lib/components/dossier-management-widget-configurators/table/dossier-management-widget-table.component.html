@@ -1,0 +1,78 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form
+  *ngIf="{theme: theme$ | async} as obs"
+  [formGroup]="form"
+  class="valtimo-dossier-management-widget-table__form"
+>
+  <cds-text-label [attr.data-carbon-theme]="obs.theme">
+    {{ 'widgetTabManagement.content.widgetTitle' | translate }}
+
+    <input
+      formControlName="title"
+      cdsText
+      [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+      type="text"
+    />
+  </cds-text-label>
+
+  <cds-text-label [attr.data-carbon-theme]="obs.theme">
+    {{ 'widgetTabManagement.content.table.defaultPageSize' | translate }}
+
+    <input
+      formControlName="defaultPageSize"
+      cdsText
+      [placeholder]="'widgetTabManagement.content.table.defaultPageSizePlaceholder' | translate"
+      type="text"
+    />
+  </cds-text-label>
+
+  <cds-text-label [attr.data-carbon-theme]="obs.theme">
+    {{ 'widgetTabManagement.content.table.collection' | translate }}
+
+    <input
+      formControlName="collection"
+      cdsText
+      [placeholder]="'widgetTabManagement.content.table.collectionPlaceholder' | translate"
+      type="text"
+    />
+  </cds-text-label>
+</form>
+
+<span class="valtimo-dossier-management-widget-table__subtitle">
+  {{ 'widgetTabManagement.content.table.columns' | translate }}
+</span>
+
+<valtimo-dossier-management-widget-fields-column
+  [addTranslateKey]="'widgetTabManagement.content.table.addColumn'"
+  [columnData]="content()?.columns"
+  (columnUpdateEvent)="onColumnUpdateEvent($event)"
+></valtimo-dossier-management-widget-fields-column>
+
+<section class="valtimo-dossier-management-widget-table__toggle">
+  <span class="valtimo-dossier-management-widget-table__subtitle">
+    {{ 'widgetTabManagement.content.table.options' | translate }}
+  </span>
+
+  <cds-toggle
+    [checked]="checked()"
+    [label]="'widgetTabManagement.content.table.firstColumnAsTitle' | translate"
+    [onText]="'interface.yes' | translate"
+    [offText]="'interface.no' | translate"
+    (checkedChange)="onCheckedChange($event)"
+  ></cds-toggle>
+</section>

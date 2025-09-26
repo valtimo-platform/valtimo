@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,20 @@ import {NgModule} from '@angular/core';
 import {FormLinkProcessDiagramComponent} from './components/form-link-process-diagram/form-link-process-diagram.component';
 import {CommonModule} from '@angular/common';
 import {ProcessLinkRoutingModule} from './process-link-routing.module';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule} from '@angular/forms';
 import {
-  CarbonMultiInputModule,
+  ButtonModule,
   FormIoModule,
   ModalModule,
   ParagraphModule,
-  RemoveClassnamesDirective,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   StepperModule,
+  TitleModule,
   TooltipIconModule,
   TooltipModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
+  VCardModule,
   VModalModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
@@ -45,7 +46,6 @@ import {
   ComboBoxModule,
   IconModule,
   InputModule,
-  LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
   ProgressIndicatorModule,
@@ -53,18 +53,12 @@ import {
   StructuredListModule,
   TilesModule,
   ToggleModule,
-  ToggletipModule,
 } from 'carbon-components-angular';
 import {ChooseProcessLinkTypeComponent} from './components/choose-process-link-type';
 import {SelectFormComponent} from './components/select-form';
 import {FormFlowComponent} from './components/form-flow/form-flow.component';
 import {SelectFormFlowComponent} from './components/select-form-flow';
 import {FormFlowConfigurationContainerComponent} from './components/form-flow-configuration-container';
-import {UrlValidatorService} from './services/url-validator.service';
-import {UrlResolverService} from './services/url-resolver.service';
-import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
-import {ImportPluginConfigurationComponent} from './components/import-plugin-configuration/import-plugin-configuration.component';
-import {SelectUIComponentComponent} from './components/select-ui-component/select-ui-component.component';
 
 @NgModule({
   declarations: [
@@ -79,23 +73,22 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     FormFlowComponent,
     SelectFormFlowComponent,
     FormFlowConfigurationContainerComponent,
-    FormDisplayConfigurationComponent,
-    SelectUIComponentComponent,
-    ImportPluginConfigurationComponent,
   ],
   imports: [
     CommonModule,
     ProcessLinkRoutingModule,
     FormsModule,
-    ReactiveFormsModule,
     ModalModule,
     SearchableDropdownSelectModule,
     TranslateModule,
     StepperModule,
     VModalModule,
+    VCardModule,
     PluginTranslatePipeModule,
     ParagraphModule,
     PluginConfigurationContainerModule,
+    ButtonModule,
+    TitleModule,
     CarbonModalModule,
     ProgressIndicatorModule,
     CarbonButtonModule,
@@ -106,21 +99,12 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     TooltipIconModule,
     LoadingModule,
     FormIoModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     StructuredListModule,
     TilesModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     SelectModule,
     ToggleModule,
-    CarbonMultiInputModule,
-    LayerModule,
-    ToggletipModule,
-    ComboBoxModule,
-    TranslateModule,
-    LayerModule,
-    ToggletipModule,
-    RemoveClassnamesDirective,
-    ReactiveFormsModule,
   ],
   exports: [
     ProcessLinkComponent,
@@ -130,6 +114,5 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     ProcessLinkModalComponent,
     FormFlowComponent,
   ],
-  providers: [UrlValidatorService, UrlResolverService],
 })
 export class ProcessLinkModule {}

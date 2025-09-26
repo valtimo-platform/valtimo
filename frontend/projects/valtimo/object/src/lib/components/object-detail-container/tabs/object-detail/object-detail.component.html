@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 <ng-container
   *ngIf="{
     formioFormSummary: formioFormSummary$ | async,
-    disableInput: disableInput$ | async,
+    disableInput: disableInput$ | async
   } as obs"
 >
   <div class="container-fluid pr-0 pl-0">
@@ -64,10 +64,9 @@
       show: showModal$ | async,
       formValid: formValid$ | async,
       disableInput: disableInput$ | async,
-      formioFormEdit: formioFormEdit$ | async,
+      formioFormEdit: formioFormEdit$ | async
     } as modalObs"
     [open]="modalObs.show"
-    (close)="closeModal()"
   >
     <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
       <h3 cdsModalHeaderHeading>

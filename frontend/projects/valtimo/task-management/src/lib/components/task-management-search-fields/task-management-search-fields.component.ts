@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@ import {
 } from 'rxjs';
 import {TaskManagementSearchFieldsService} from '../../services';
 import {TaskManagementSearchFieldsModalComponent} from '../task-management-search-fields-modal/task-management-search-fields-modal.component';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-task-management-search-fields',
@@ -62,19 +61,16 @@ import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/share
   ],
 })
 export class TaskManagementSearchFieldsComponent {
-  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    map((params: CaseManagementParams | undefined) => (!params ? '' : params.caseDefinitionKey)),
-    tap((caseDefinitionKey: string) =>
-      this.searchFieldsService.setCaseDefinitionKey(caseDefinitionKey)
-    )
+  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params.name || ''),
+    filter(docDefName => !!docDefName),
+    tap((docDefName: string) => this.searchFieldsService.setDocumentDefinitionName(docDefName))
   );
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
 
   public readonly searchFields$: Observable<TaskListSearchField[]> = combineLatest([
-    this.caseDefinitionKey$,
+    this.documentDefinitionName$,
     this._refresh$,
     this.trasnlateService.stream('key'),
   ]).pipe(
@@ -200,13 +196,20 @@ export class TaskManagementSearchFieldsComponent {
   public onDeleteFieldConfirm(item: TaskListSearchField | null): void {
     if (!item) return;
 
-    combineLatest([
-      this.searchFieldsService.deleteTaskListSearchField(item.key),
-      item.dropdownDataProvider
-        ? this.documentService.deleteDropdownData(item.dropdownDataProvider, item.ownerId, item.key)
-        : of(null),
-    ])
-      .pipe(take(1))
+    this.searchFieldsService
+      .deleteTaskListSearchField(item.key)
+      .pipe(
+        take(1),
+        switchMap(() =>
+          item.dropdownDataProvider
+            ? this.documentService.deleteDropdownData(
+                item.dropdownDataProvider,
+                item.ownerId,
+                item.key
+              )
+            : of()
+        )
+      )
       .subscribe(() => this._refresh$.next(null));
   }
 
@@ -231,12 +234,14 @@ export class TaskManagementSearchFieldsComponent {
 
   private fieldTypeTranslation(fieldType: TaskListSearchFieldFieldType): string {
     switch (fieldType) {
+      case TaskListSearchFieldFieldType.TEXT_CONTAINS:
+        return 'textContains';
       case TaskListSearchFieldFieldType.SINGLE_SELECT_DROPDOWN:
         return 'single-select-dropdown';
       case TaskListSearchFieldFieldType.MULTI_SELECT_DROPDOWN:
         return 'multi-select-dropdown';
       default:
-        return fieldType.toLowerCase();
+        return fieldType;
     }
   }
 }

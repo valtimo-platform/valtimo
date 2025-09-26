@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,71 +20,53 @@ import {
   Directive,
   ElementRef,
   Inject,
-  Input,
   OnDestroy,
   Renderer2,
   RendererStyleFlags2,
 } from '@angular/core';
 
-@Directive({
-  selector: '[valtimoCdsModal]',
-  standalone: true,
-})
+@Directive({selector: '[valtimoCdsModal]'})
 export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
-  @Input() public readonly minContentHeight = 0;
-
   private _mutationObserver: MutationObserver;
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
     private readonly elementRef: ElementRef,
     private readonly renderer: Renderer2
-  ) {}
-
-  public ngAfterViewInit(): void {
+  ) {
     this._mutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
-      this.handleMutations(mutations);
+      mutations.forEach((mutation: MutationRecord) => this.attributeMutation(mutation));
     });
-
-    this._mutationObserver.observe(this.elementRef.nativeElement, {
-      attributes: true,
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-
-    const open = this.elementRef.nativeElement.getAttribute('ng-reflect-open');
-    if (open === 'true') {
-      this.applyDocumentOverflowHidden();
-    }
-
-    this.applyStyleToModalElements();
-
-    setTimeout(() => this.applyStyleToModalElements(), 0);
   }
 
-  public ngOnDestroy(): void {
+  ngAfterViewInit(): void {
+    this._mutationObserver.observe(this.elementRef.nativeElement, {
+      attributes: true,
+    });
+  }
+
+  ngOnDestroy(): void {
     this._mutationObserver.disconnect();
   }
 
-  private handleMutations(mutations: MutationRecord[]): void {
+  private attributeMutation = (mutation: MutationRecord): void => {
     const OPEN_ATTRIBUTE_NAME = 'ng-reflect-open';
 
-    for (const mutation of mutations) {
-      if (mutation.type === 'attributes' && mutation.attributeName === OPEN_ATTRIBUTE_NAME) {
-        const open = this.elementRef.nativeElement.getAttribute(OPEN_ATTRIBUTE_NAME);
+    if (mutation.attributeName === OPEN_ATTRIBUTE_NAME) {
+      const open: 'true' | 'false' =
+        this.elementRef.nativeElement.getAttribute(OPEN_ATTRIBUTE_NAME);
+
+      if (typeof open === 'string') {
         if (open === 'true') {
-          this.applyDocumentOverflowHidden();
+          this.setStyle();
         } else if (open === 'false') {
-          this.removeDocumentOverflowHidden();
+          this.removeStyle();
         }
       }
     }
+  };
 
-    this.applyStyleToModalElements();
-  }
-
-  private applyDocumentOverflowHidden(): void {
+  private setStyle(): void {
     this.renderer.setStyle(this.document.body, 'overflow', 'hidden', RendererStyleFlags2.Important);
     this.renderer.setStyle(
       this.document.documentElement,
@@ -92,49 +74,10 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
       'hidden',
       RendererStyleFlags2.Important
     );
-    this.preventModalCloseButtonTooltip();
   }
 
-  private removeDocumentOverflowHidden(): void {
+  private removeStyle(): void {
     this.renderer.removeStyle(this.document.body, 'overflow');
     this.renderer.removeStyle(this.document.documentElement, 'overflow');
-  }
-
-  private applyStyleToModalElements(): void {
-    if (this.minContentHeight <= 0) return;
-
-    const contentElements = Array.from(this.document.querySelectorAll('.cds--modal-content'));
-
-    for (const element of contentElements) {
-      this.renderer.setStyle(
-        element,
-        'min-height',
-        `${this.minContentHeight}px`,
-        RendererStyleFlags2.Important
-      );
-    }
-  }
-
-  private preventModalCloseButtonTooltip(): void {
-    const modalElement = this.elementRef.nativeElement as HTMLElement;
-    const closeButton = modalElement.querySelector('.cds--modal-close') as HTMLElement;
-
-    let attempts = 0;
-    const maxAttempts = 100;
-
-    const blurIfFocused = () => {
-      if (!closeButton || attempts >= maxAttempts) {
-        return;
-      }
-
-      if (this.document.activeElement === closeButton) {
-        closeButton.blur();
-      } else {
-        attempts++;
-        requestAnimationFrame(blurIfFocused);
-      }
-    };
-
-    requestAnimationFrame(blurIfFocused);
   }
 }

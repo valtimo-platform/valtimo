@@ -1,0 +1,76 @@
+/*!
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.valtimo-dossier-management-widget-wizard {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  &__footer footer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas: 'cancel . back next';
+
+    button {
+      width: 100%;
+    }
+  }
+
+  &__cancel {
+    grid-area: cancel;
+  }
+
+  &__back {
+    grid-area: back;
+  }
+
+  &__next {
+    grid-area: next;
+  }
+
+  .cds--modal-container {
+    height: 88%;
+    background: var(--cds-layer-02);
+  }
+
+  .valtimo-widget-wizard-step {
+    &__content fieldset {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    &__tile {
+      .cds--tile {
+        height: 100%;
+      }
+
+      .cds--tile-content {
+        display: flex;
+        flex-direction: column;
+        max-width: 260px;
+        gap: 16px;
+        justify-content: space-between;
+      }
+
+      .cds--tile:not(.cds--tile--disabled) .cds--tile-content {
+        color: var(--cds-text-primary);
+      }
+    }
+  }
+}

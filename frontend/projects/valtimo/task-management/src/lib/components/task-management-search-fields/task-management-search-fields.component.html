@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
     fields: fields$ | async,
     itemToDelete: itemToDelete$ | async,
     prefillData: prefillData$ | async,
-    searchFields: searchFields$ | async,
+    searchFields: searchFields$ | async
   } as obs"
 >
   <valtimo-carbon-list
@@ -32,18 +32,16 @@
     (rowClicked)="editField($event)"
   >
     <ng-container carbonToolbarContent>
-      <ng-container [ngTemplateOutlet]="addButton"></ng-container>
-    </ng-container>
+      <button cdsButton="primary" (click)="onAddButtonClick()">
+        <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
 
-    <valtimo-no-results
-      [action]="addButton"
-      [description]="'searchFieldsOverview.noSearchfieldsDescription' | translate"
-      [title]="'searchFieldsOverview.noSearchfieldsTitle' | translate"
-    ></valtimo-no-results>
+        {{ 'searchFieldsOverview.add' | translate }}
+      </button>
+    </ng-container>
   </valtimo-carbon-list>
 
   <valtimo-task-management-search-fields-modal
-    [caseDefinitionKey]="caseDefinitionKey$ | async"
+    [documentDefinitionName]="documentDefinitionName$ | async"
     [open]="obs.fieldModalOpen"
     [prefillData]="obs.prefillData"
     (closeEvent)="onCloseEvent($event, obs.prefillData)"
@@ -59,11 +57,3 @@
     (confirmEvent)="onDeleteFieldConfirm($event)"
   ></valtimo-confirmation-modal>
 </ng-container>
-
-<ng-template #addButton>
-  <button cdsButton="primary" (click)="onAddButtonClick()">
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
-
-    {{ 'searchFieldsOverview.add' | translate }}
-  </button>
-</ng-template>

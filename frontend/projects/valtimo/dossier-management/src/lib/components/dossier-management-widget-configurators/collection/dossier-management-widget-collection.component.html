@@ -1,0 +1,244 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="{theme: theme$ | async} as obs">
+  <form [formGroup]="widgetForm" class="valtimo-dossier-management-widget-collection__form">
+    <cds-text-label [attr.data-carbon-theme]="obs.theme">
+      {{ 'widgetTabManagement.content.widgetTitle' | translate }}
+
+      <input
+        formControlName="title"
+        cdsText
+        [placeholder]="'widgetTabManagement.content.widgetTitlePlaceholder' | translate"
+        type="text"
+      />
+    </cds-text-label>
+
+    <cds-text-label [attr.data-carbon-theme]="obs.theme">
+      {{ 'widgetTabManagement.content.collection.defaultPageSize' | translate }}
+
+      <input
+        formControlName="defaultPageSize"
+        cdsText
+        [placeholder]="
+          'widgetTabManagement.content.collection.defaultPageSizePlaceholder' | translate
+        "
+        type="text"
+      />
+    </cds-text-label>
+
+    <cds-text-label [attr.data-carbon-theme]="obs.theme">
+      {{ 'widgetTabManagement.content.collection.collection' | translate }}
+
+      <input
+        formControlName="collection"
+        cdsText
+        [placeholder]="'widgetTabManagement.content.collection.collectionPlaceholder' | translate"
+        type="text"
+      />
+    </cds-text-label>
+  </form>
+
+  <span class="valtimo-dossier-management-widget-collection__subtitle">
+    {{ 'widgetTabManagement.content.collection.cardTitle' | translate }}
+  </span>
+
+  <form [formGroup]="cardForm" class="valtimo-dossier-management-widget-collection__card">
+    <section class="valtimo-dossier-management-widget-collection__card-title">
+      <cds-text-label>
+        {{ 'widgetTabManagement.content.fields.value' | translate }}
+
+        <input
+          cdsText
+          [attr.data-carbon-theme]="obs.theme"
+          [placeholder]="'widgetTabManagement.content.fields.valuePlaceholder' | translate"
+          type="text"
+          formControlName="value"
+        />
+      </cds-text-label>
+
+      <cds-dropdown
+        [attr.data-carbon-theme]="obs.theme"
+        [label]="'widgetTabManagement.content.fields.type' | translate"
+        [dropUp]="false"
+        [placeholder]="'widgetTabManagement.content.fields.typePlaceholder' | translate"
+        (selected)="onTypeSelected(cardForm, $event)"
+        formControlName="type"
+      >
+        <cds-dropdown-list [items]="getDisplayItemsSelected(cardForm)"></cds-dropdown-list>
+      </cds-dropdown>
+    </section>
+
+    <section class="valtimo-dossier-management-widget-collection__card-options">
+      @switch (cardForm.get('type').value.id) {
+        @case (CaseWidgetDisplayTypeKey.CURRENCY) {
+          <cds-text-label>
+            {{ 'widgetTabManagement.content.fields.currencyCode' | translate }}
+
+            <input
+              cdsText
+              [attr.data-carbon-theme]="obs.theme"
+              [placeholder]="
+                'widgetTabManagement.content.fields.currencyCodePlaceholder' | translate
+              "
+              type="text"
+              formControlName="currencyCode"
+            />
+          </cds-text-label>
+
+          <cds-text-label>
+            {{ 'widgetTabManagement.content.fields.display' | translate }}
+
+            <input
+              cdsText
+              [attr.data-carbon-theme]="obs.theme"
+              [placeholder]="'widgetTabManagement.content.fields.displayPlaceholder' | translate"
+              type="text"
+              formControlName="display"
+            />
+          </cds-text-label>
+
+          <cds-text-label>
+            {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+
+            <input
+              cdsText
+              [attr.data-carbon-theme]="obs.theme"
+              [placeholder]="'widgetTabManagement.content.fields.digitsInfoPlaceholder' | translate"
+              type="text"
+              formControlName="digitsInfo"
+            />
+          </cds-text-label>
+        }
+        @case (CaseWidgetDisplayTypeKey.DATE) {
+          <cds-text-label>
+            {{ 'widgetTabManagement.content.fields.format' | translate }}
+
+            <input
+              cdsText
+              [attr.data-carbon-theme]="obs.theme"
+              [placeholder]="'widgetTabManagement.content.fields.formatPlaceholder' | translate"
+              type="text"
+              formControlName="format"
+            />
+          </cds-text-label>
+        }
+        @case (CaseWidgetDisplayTypeKey.ENUM) {
+          <div class="valtimo-dossier-management-widget-collection__enum" formArrayName="values">
+            @for (rowValue of cardForm.get('values')?.controls; track $index) {
+              <form
+                [formGroup]="rowValue"
+                class="valtimo-dossier-management-widget-collection__enum-form"
+              >
+                <cds-text-label>
+                  {{ 'widgetTabManagement.content.fields.key' | translate }}
+
+                  <input
+                    [attr.data-carbon-theme]="obs.theme"
+                    cdsText
+                    [placeholder]="'widgetTabManagement.content.fields.key' | translate"
+                    type="text"
+                    formControlName="key"
+                  />
+                </cds-text-label>
+
+                <cds-text-label>
+                  {{ 'widgetTabManagement.content.fields.value' | translate }}
+
+                  <input
+                    cdsText
+                    [attr.data-carbon-theme]="obs.theme"
+                    [placeholder]="'widgetTabManagement.content.fields.value' | translate"
+                    type="text"
+                    formControlName="value"
+                  />
+                </cds-text-label>
+
+                <button
+                  cdsButton="danger--ghost"
+                  [disabled]="$count === 1"
+                  [iconOnly]="true"
+                  class="valtimo-dossier-management-widget-field-column__delete-button enum"
+                  (click)="onDeleteRowClick(cardForm.get('values'), $index)"
+                >
+                  <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+                </button>
+              </form>
+            }
+
+            <button
+              cdsButton="primary"
+              size="sm"
+              (click)="onAddEnumValueClick(cardForm.get('values'))"
+            >
+              {{ 'widgetTabManagement.content.fields.addEnum' | translate }}
+
+              <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+            </button>
+          </div>
+        }
+        @case (CaseWidgetDisplayTypeKey.NUMBER) {
+          <cds-text-label>
+            {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+
+            <input
+              cdsText
+              [attr.data-carbon-theme]="obs.theme"
+              [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+              type="text"
+              formControlName="digitsInfo"
+            />
+          </cds-text-label>
+        }
+        @case (CaseWidgetDisplayTypeKey.PERCENT) {
+          <cds-text-label>
+            {{ 'widgetTabManagement.content.fields.digitsInfo' | translate }}
+
+            <input
+              cdsText
+              [attr.data-carbon-theme]="obs.theme"
+              [placeholder]="'widgetTabManagement.content.fields.digitsInfo' | translate"
+              type="text"
+              formControlName="digitsInfo"
+            />
+          </cds-text-label>
+        }
+      }
+    </section>
+  </form>
+
+  <span class="valtimo-dossier-management-widget-collection__subtitle">
+    {{ 'widgetTabManagement.content.collection.cardFields' | translate }}
+  </span>
+
+  <valtimo-dossier-management-widget-fields-column
+    [columnData]="content()?.fields"
+    [fieldWidthDropdown]="fieldWidthDropdown"
+    (columnUpdateEvent)="onColumnUpdateEvent($event)"
+  >
+  </valtimo-dossier-management-widget-fields-column>
+
+  <ng-template #fieldWidthDropdown let-index="index">
+    <cds-dropdown
+      [label]="'widgetTabManagement.content.collection.fieldWidth' | translate"
+      [dropUp]="false"
+      [placeholder]="'widgetTabManagement.content.collection.fieldWidthPlaceholder' | translate"
+      (selected)="onWidthSelected($event, index)"
+    >
+      <cds-dropdown-list [items]="getSelectedWidthItem(index)"></cds-dropdown-list>
+    </cds-dropdown>
+  </ng-template>
+</ng-container>

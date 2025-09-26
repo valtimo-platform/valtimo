@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,13 +15,12 @@
   -->
 
 <p
-  [attr.data-testid]="dataTestId"
   class="v-paragraph"
   [ngClass]="{
     'v-paragraph--center': center,
     'v-paragraph--full-width': fullWidth,
     'v-paragraph--margin': margin,
-    'v-paragraph--italic': italic,
+    'v-paragraph--italic': italic
   }"
 >
   <ng-container *ngIf="loading">
@@ -31,7 +30,7 @@
         width: 'var(--v-paragraph-skeleton-loading-width)',
         height: 'var(--v-paragraph-font-size)',
         margin: '0',
-        'background-color': 'var(--v-paragraph-loading-skeleton-bg-color)',
+        'background-color': 'var(--v-paragraph-loading-skeleton-bg-color)'
       }"
     ></ngx-skeleton-loader>
   </ng-container>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,82 +18,67 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {
-  FormFlowBreadcrumbs,
   FormFlowCreateRequest,
   FormFlowCreateResult,
   FormFlowDefinition,
   FormFlowInstance,
 } from '../models';
-import {ConfigService, BaseApiService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
 })
-export class FormFlowService extends BaseApiService {
+export class FormFlowService {
+  private valtimoEndpointUri!: string;
+
   constructor(
-    protected readonly httpClient: HttpClient,
-    protected readonly configService: ConfigService
+    private http: HttpClient,
+    private configService: ConfigService
   ) {
-    super(httpClient, configService);
+    this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  public createInstanceForNewProcess(
+  getFormFlowDefinitions(): Observable<FormFlowDefinition[]> {
+    return this.http.get<FormFlowDefinition[]>(`${this.valtimoEndpointUri}v1/form-flow/definition`);
+  }
+
+  createInstanceForNewProcess(
     processDefinitionKey: string,
     request: FormFlowCreateRequest
   ): Observable<FormFlowCreateResult> {
-    return this.httpClient.post<FormFlowCreateResult>(
-      this.getApiUrl(`v1/process-definition/${processDefinitionKey}/form-flow`),
+    return this.http.post<FormFlowCreateResult>(
+      `${this.valtimoEndpointUri}v1/process-definition/${processDefinitionKey}/form-flow`,
       request
     );
   }
 
-  public getFormFlowStep(formFlowInstanceId: string): Observable<FormFlowInstance> {
-    return this.httpClient.get<FormFlowInstance>(
-      this.getApiUrl(`v1/form-flow/instance/${formFlowInstanceId}`)
+  getFormFlowStep(formFlowInstanceId: string): Observable<FormFlowInstance> {
+    return this.http.get<FormFlowInstance>(
+      `${this.valtimoEndpointUri}v1/form-flow/instance/${formFlowInstanceId}`
     );
   }
 
-  public submitStep(
+  submitStep(
     formFlowInstanceId: string,
     stepInstanceId: string,
     submissionData: any
   ): Observable<FormFlowInstance> {
-    return this.httpClient.post<FormFlowInstance>(
-      this.getApiUrl(`v1/form-flow/instance/${formFlowInstanceId}/step/instance/${stepInstanceId}`),
+    return this.http.post<FormFlowInstance>(
+      `${this.valtimoEndpointUri}v1/form-flow/instance/${formFlowInstanceId}/step/instance/${stepInstanceId}`,
       submissionData
     );
   }
 
-  public back(formFlowInstanceId: string, submissionData: any): Observable<FormFlowInstance> {
-    return this.httpClient.post<FormFlowInstance>(
-      this.getApiUrl(`v1/form-flow/instance/${formFlowInstanceId}/back`),
+  back(formFlowInstanceId: string, submissionData: any): Observable<FormFlowInstance> {
+    return this.http.post<FormFlowInstance>(
+      `${this.valtimoEndpointUri}v1/form-flow/instance/${formFlowInstanceId}/back`,
       submissionData
     );
   }
 
-  public save(formFlowInstanceId: string, submissionData: any): Observable<null> {
-    return this.httpClient.post<null>(
-      this.getApiUrl(`v1/form-flow/instance/${formFlowInstanceId}/save`),
-      submissionData
-    );
-  }
-
-  public getBreadcrumbs(formFlowInstanceId: string): Observable<FormFlowBreadcrumbs> {
-    return this.httpClient.get<FormFlowBreadcrumbs>(
-      this.getApiUrl(`v1/form-flow/instance/${formFlowInstanceId}/breadcrumbs`)
-    );
-  }
-
-  public navigateToStep(
-    instanceId: string,
-    currentStepInstanceId: string,
-    targetStepInstanceId,
-    submissionData: any
-  ): Observable<FormFlowInstance> {
-    return this.httpClient.post<FormFlowInstance>(
-      this.getApiUrl(
-        `v1/form-flow/instance/${instanceId}/step/instance/${currentStepInstanceId}/to/step/instance/${targetStepInstanceId}`
-      ),
+  save(formFlowInstanceId: string, submissionData: any): Observable<null> {
+    return this.http.post<null>(
+      `${this.valtimoEndpointUri}v1/form-flow/instance/${formFlowInstanceId}/save`,
       submissionData
     );
   }

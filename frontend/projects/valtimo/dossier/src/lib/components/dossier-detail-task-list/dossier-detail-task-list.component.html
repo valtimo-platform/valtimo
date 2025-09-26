@@ -1,0 +1,79 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="task-list"
+  *ngIf="{loadingTasks: loadingTasks$ | async, tasks: processInstanceTasks$ | async} as obs"
+>
+  <h2 class="task-list__title">{{ 'summary.userTasks' | translate }}</h2>
+
+  <div
+    class="task-list__tasks-container"
+    cdsLayer="1"
+    *ngIf="!obs.loadingTasks && obs.tasks; else loadingTasksTemplate"
+  >
+    @if (obs.tasks.length === 0) {
+      <ng-container *ngTemplateOutlet="noTasksTemplate"></ng-container>
+    } @else {
+      @for (task of obs.tasks; track task.id) {
+        <ng-container *ngTemplateOutlet="taskTemplate; context: {task: task}"></ng-container>
+      }
+    }
+  </div>
+
+  <valtimo-task-detail-modal
+    #taskDetail
+    (formSubmit)="refresh()"
+    (assignmentOfTaskChanged)="refresh()"
+  ></valtimo-task-detail-modal>
+</div>
+
+<ng-template #taskTemplate let-task="task">
+  <cds-clickable-tile (click)="rowTaskClick(task)">
+    <div class="task">
+      <div class="task__header">
+        <span class="task__title">{{ task.name }}</span>
+
+        <cds-tag class="cds-tag--no-margin" [type]="task.locked ? 'cool-gray' : 'green'">
+          @if (!task.locked) {
+            {{ 'summary.taskOpen' | translate }}
+          } @else {
+            <i class="icon mdi mdi-lock"></i>
+          }
+        </cds-tag>
+      </div>
+
+      <div class="task__description">
+        {{ 'summary.taskCreated' | translate }} {{ task.created }}
+      </div>
+    </div>
+  </cds-clickable-tile>
+</ng-template>
+
+<ng-template #noTasksTemplate>
+  <valtimo-no-results
+    [alwaysRenderVertically]="true"
+    illustration="valtimo-layout/img/emptystate-success.svg"
+    [description]="'summary.userTasksDoneState' | translate"
+    [smallPadding]="true"
+  ></valtimo-no-results>
+</ng-template>
+
+<ng-template #loadingTasksTemplate>
+  <div class="loading-container">
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>

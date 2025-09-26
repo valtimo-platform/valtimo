@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {ROLE_USER} from '@valtimo/shared';
+import {ROLE_USER} from '@valtimo/config';
 import {ObjectListComponent} from './components/object-list/object-list.component';
 import {ObjectDetailContainerComponent} from './components/object-detail-container/object-detail-container.component';
 
@@ -33,7 +33,7 @@ const routes: Routes = [
     path: 'objects/:objectManagementId/:objectId',
     canActivate: [AuthGuardService],
     component: ObjectDetailContainerComponent,
-    data: {title: 'object.header', roles: [ROLE_USER]},
+    data: {title: 'Object details', roles: [ROLE_USER], customPageTitle: true},
   },
 ];
 

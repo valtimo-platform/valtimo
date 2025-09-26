@@ -1,0 +1,10 @@
+30b7405 - Updated version to 5.14.0
+9e90ec1 - Updated version to 5.14.0-122.RC-SNAPSHOT
+35c5cba - feat: implement document search (#274)
+4ce90c8 - Merge branch 'main' into development
+82526d2 - feat: add missing search fields (#273)
+567b421 - feat: add case search field title (#271)
+369d215 - save query params on redirect (#270)
+665fa54 - feat: configure search fields (#268)
+2635fea - bugfix/boolean-converter-enum-missing-in-lists (#269)
+50134e8 - feat: download search field configuration (#265)

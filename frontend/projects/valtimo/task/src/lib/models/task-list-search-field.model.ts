@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,25 @@
  */
 
 enum TaskListSearchFieldDataType {
-  TEXT = 'text',
-  NUMBER = 'number',
-  DATE = 'date',
-  DATETIME = 'datetime',
-  TIME = 'time',
-  BOOLEAN = 'boolean',
+  TEXT = 'TEXT',
+  NUMBER = 'NUMBER',
+  DATE = 'DATE',
+  DATETIME = 'DATETIME',
+  TIME = 'TIME',
+  BOOLEAN = 'BOOLEAN',
 }
 
 enum TaskListSearchFieldFieldType {
-  SINGLE = 'single',
-  RANGE = 'range',
-  SINGLE_SELECT_DROPDOWN = 'single_select_dropdown',
-  MULTI_SELECT_DROPDOWN = 'multi_select_dropdown',
+  TEXT_CONTAINS = 'TEXT_CONTAINS',
+  SINGLE = 'SINGLE',
+  RANGE = 'RANGE',
+  SINGLE_SELECT_DROPDOWN = 'SINGLE_SELECT_DROPDOWN',
+  MULTI_SELECT_DROPDOWN = 'MULTI_SELECT_DROPDOWN',
 }
 
 enum TaskListSearchFieldMatchType {
-  LIKE = 'like',
-  EXACT = 'exact',
+  LIKE = 'LIKE',
+  EXACT = 'EXACT',
 }
 
 enum TaskListSearchDropdownDataProvider {

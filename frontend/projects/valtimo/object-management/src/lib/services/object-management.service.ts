@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService, SearchField} from '@valtimo/shared';
+import {ConfigService, SearchField} from '@valtimo/config';
 import {Objecttype, SearchListColumn} from '../models/object-management.model';
 
 @Injectable({
@@ -101,7 +101,7 @@ export class ObjectManagementService {
 
   getSearchField(ownerId: string): Observable<Array<SearchField>> {
     return this.http.get<Array<SearchField>>(
-      `${this.valtimoEndpointUri}v1/search/field/Legacy/${ownerId}`
+      `${this.valtimoEndpointUri}v1/search/field/${ownerId}`
     );
   }
 
@@ -132,7 +132,7 @@ export class ObjectManagementService {
 
   deleteSearchField(ownerId: string, key: string): Observable<SearchField> {
     return this.http.delete<SearchField>(
-      `${this.valtimoEndpointUri}v1/search/field/Legacy/${ownerId}/${key}`
+      `${this.valtimoEndpointUri}v1/search/field/${ownerId}/${key}`
     );
   }
 }

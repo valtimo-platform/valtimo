@@ -1,0 +1,84 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-tile-group
+  [multiple]="false"
+  (selected)="onSelectedEvent($event)"
+  class="valtimo-widget-wizard-step__content"
+>
+  <cds-selection-tile
+    class="valtimo-widget-wizard-step__tile"
+    [value]="1"
+    [selected]="widgetWidth() === 1"
+    [disabled]="fieldsColumnsLength() > 1"
+  >
+    <h3>{{ 'widgetTabManagement.width.quarter.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.width.quarter.description' | translate }}</span>
+
+    <img
+      src="valtimo-layout/img/widget-management/width/quarter.svg"
+      [alt]="'widgetTabManagement.width.quarter.title' | translate"
+    />
+  </cds-selection-tile>
+
+  <cds-selection-tile
+    class="valtimo-widget-wizard-step__tile"
+    [value]="2"
+    [selected]="widgetWidth() === 2"
+    [disabled]="fieldsColumnsLength() > 2"
+  >
+    <h3>{{ 'widgetTabManagement.width.half.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.width.half.description' | translate }}</span>
+
+    <img
+      src="valtimo-layout/img/widget-management/width/half.svg"
+      [alt]="'widgetTabManagement.width.half.title' | translate"
+    />
+  </cds-selection-tile>
+
+  <cds-selection-tile
+    class="valtimo-widget-wizard-step__tile"
+    [value]="3"
+    [selected]="widgetWidth() === 3"
+    [disabled]="fieldsColumnsLength() > 3"
+  >
+    <h3>{{ 'widgetTabManagement.width.threeQuarters.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.width.threeQuarters.description' | translate }}</span>
+
+    <img
+      src="valtimo-layout/img/widget-management/width/three-quarters.svg"
+      [alt]="'widgetTabManagement.width.threeQuarters.title' | translate"
+    />
+  </cds-selection-tile>
+
+  <cds-selection-tile
+    class="valtimo-widget-wizard-step__tile"
+    [value]="4"
+    [selected]="widgetWidth() === 4"
+  >
+    <h3>{{ 'widgetTabManagement.width.fullWidth.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.width.fullWidth.description' | translate }}</span>
+
+    <img
+      src="valtimo-layout/img/widget-management/width/full-width.svg"
+      [alt]="'widgetTabManagement.width.fullWidth.title' | translate"
+    />
+  </cds-selection-tile>
+</cds-tile-group>

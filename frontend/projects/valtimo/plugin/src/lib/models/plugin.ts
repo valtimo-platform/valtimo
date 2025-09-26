@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import {EventEmitter, Type} from '@angular/core';
+import {Component, EventEmitter, Input, Type} from '@angular/core';
 import {Observable} from 'rxjs';
 import {SafeResourceUrl} from '@angular/platform-browser';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 interface PluginConfigurationData {
   configurationId: string;
@@ -38,7 +37,6 @@ interface ConfigurationComponent {
   disabled$: Observable<boolean>;
   pluginId: string;
   valid: EventEmitter<boolean>;
-  context$?: Observable<[ManagementContext, CaseManagementParams]>;
 }
 
 interface PluginConfigurationComponent extends ConfigurationComponent {
@@ -48,7 +46,6 @@ interface PluginConfigurationComponent extends ConfigurationComponent {
 
 interface FunctionConfigurationComponent extends ConfigurationComponent {
   prefillConfiguration$?: Observable<FunctionConfigurationData>;
-  selectedPluginConfigurationData$?: Observable<PluginConfigurationData>;
   configuration: EventEmitter<FunctionConfigurationData>;
 }
 

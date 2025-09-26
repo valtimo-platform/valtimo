@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  QueryList,
-  ViewChildren,
-} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {PluginConfigurationComponent} from '../../../../models';
 import {
   BehaviorSubject,
@@ -39,21 +30,12 @@ import {
 import {CopyStrategy, VerzoekConfig, VerzoekType} from '../../models';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
-import {
-  ModalService,
-  MultiInputValues,
-  RadioValue,
-  SelectItem,
-  ValuePathSelectorPrefix,
-  VModalComponent,
-} from '@valtimo/components';
+import {MultiInputValues, RadioValue, SelectItem} from '@valtimo/components';
 import {VerzoekPluginService} from '../../services';
 import {ProcessService} from '@valtimo/process';
-import {DataTable16} from '@carbon/icons';
-import {IconService} from 'carbon-components-angular';
+import {DocumentService} from '@valtimo/document';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-verzoek-configuration',
   templateUrl: './verzoek-configuration.component.html',
   styleUrls: ['./verzoek-configuration.component.scss'],
@@ -61,8 +43,6 @@ import {IconService} from 'carbon-components-angular';
 export class VerzoekConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy
 {
-  @ViewChildren(VModalComponent) mappingModals: QueryList<VModalComponent>;
-
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -71,6 +51,8 @@ export class VerzoekConfigurationComponent
   @Output() configuration: EventEmitter<VerzoekConfig> = new EventEmitter<VerzoekConfig>();
 
   mappedPrefill$: Observable<VerzoekConfig>;
+
+  private mappingSet!: boolean;
 
   readonly notificatiePluginSelectItems$: Observable<Array<SelectItem>> = combineLatest([
     this.pluginManagementService.getPluginConfigurationsByPluginDefinitionKey('notificatiesapi'),
@@ -109,13 +91,13 @@ export class VerzoekConfigurationComponent
       )
     );
 
-  readonly caseSelectItems$: Observable<Array<SelectItem>> = this.verzoekPluginService
-    .getCaseDefinitions({active: true})
+  readonly documentSelectItems$: Observable<Array<SelectItem>> = this.documentService
+    .getAllDefinitions()
     .pipe(
-      map(caseDefinitions =>
-        caseDefinitions.content.map(caseDefinition => ({
-          id: caseDefinition.caseDefinitionKey,
-          text: caseDefinition.caseDefinitionKey,
+      map(documentDefinitions =>
+        documentDefinitions.content.map(documentDefinition => ({
+          id: documentDefinition.id.name,
+          text: documentDefinition.id.name,
         }))
       )
     );
@@ -130,16 +112,13 @@ export class VerzoekConfigurationComponent
     )
   );
 
-  readonly caseVersionTagSelectItemsObservables: {
-    [uuid: string]: {caseDefinitionKey: string; items: Observable<Array<SelectItem>>};
-  } = {};
-
   readonly rolTypeSelectItemsObservables: {
-    [uuid: string]: {caseDefinitionId: string; items: Observable<Array<SelectItem>>};
+    [uuid: string]: {caseDefinitionName: string; items: Observable<Array<SelectItem>>};
   } = {};
 
   readonly showMappingButtons: {[uuid: string]: boolean} = {};
 
+  readonly showMappingModals: {[uuid: string]: boolean} = {};
   readonly showMappingModalsDelay: {[uuid: string]: boolean} = {};
 
   readonly tempMappings: {[uuid: string]: MultiInputValues} = {};
@@ -151,29 +130,14 @@ export class VerzoekConfigurationComponent
   private readonly formValue$ = new BehaviorSubject<VerzoekConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
 
-  public getSelectedCaseDefinitionKeyForIndex(index: number): Observable<string> {
-    return this.formValue$.pipe(
-      map(
-        formValue =>
-          Array.isArray(formValue.verzoekProperties) &&
-          formValue.verzoekProperties[index]?.caseDefinitionKey
-      )
-    );
-  }
-
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
-
   constructor(
     private readonly pluginManagementService: PluginManagementService,
     private readonly translateService: TranslateService,
     private readonly pluginTranslationService: PluginTranslationService,
     private readonly verzoekPluginService: VerzoekPluginService,
     private readonly processService: ProcessService,
-    private readonly modalService: ModalService,
-    private readonly iconService: IconService
-  ) {
-    this.iconService.registerAll([DataTable16]);
-  }
+    private readonly documentService: DocumentService
+  ) {}
 
   ngOnInit(): void {
     this.openSaveSubscription();
@@ -190,72 +154,44 @@ export class VerzoekConfigurationComponent
   }
 
   verzoekTypeFormChange(formValue: VerzoekType, uuid: string): void {
-    const caseDefinitionKey = formValue?.caseDefinitionKey;
-    const caseDefinitionVersionTag = formValue?.caseDefinitionVersionTag;
-    const caseDefinitionId = `${caseDefinitionKey}:${caseDefinitionVersionTag}`;
+    const caseDefinitionName = formValue?.caseDefinitionName;
     const rolTypeSelectItemsObservables = this.rolTypeSelectItemsObservables;
-    const caseVersionTagSelectItemsObservables = this.caseVersionTagSelectItemsObservables;
 
     this.showMappingButtons[uuid] = formValue.copyStrategy === 'specified';
 
-    if (caseDefinitionKey) {
-      if (
-        !caseVersionTagSelectItemsObservables[uuid] ||
-        caseVersionTagSelectItemsObservables[uuid].caseDefinitionKey !== caseDefinitionKey
-      ) {
-        caseVersionTagSelectItemsObservables[uuid] = {
-          caseDefinitionKey,
-          items: this.verzoekPluginService.getCaseDefinitions({caseDefinitionKey}).pipe(
-            map(caseDefinitions =>
-              [{text: 'Active version', id: ''}].concat(
-                caseDefinitions.content.map(caseDefinition => ({
-                  text: caseDefinition.caseDefinitionVersionTag,
-                  id: caseDefinition.caseDefinitionVersionTag,
-                }))
-              )
-            )
-          ),
-        };
-      }
+    if (caseDefinitionName) {
       if (
         !rolTypeSelectItemsObservables[uuid] ||
-        rolTypeSelectItemsObservables[uuid].caseDefinitionId !== caseDefinitionId
+        rolTypeSelectItemsObservables[uuid].caseDefinitionName !== caseDefinitionName
       ) {
         rolTypeSelectItemsObservables[uuid] = {
-          caseDefinitionId,
+          caseDefinitionName,
           items: this.verzoekPluginService
-            .getRoltypesByCaseDefinition(caseDefinitionKey, {caseDefinitionVersionTag})
+            .getRoltypesByDocumentDefinitionName(caseDefinitionName)
             .pipe(
               map(rolTypes => rolTypes.map(rolType => ({text: rolType.name, id: rolType.url})))
             ),
         };
       }
     } else {
-      caseVersionTagSelectItemsObservables[uuid] = {
-        caseDefinitionKey,
-        items: of([]),
-      };
       rolTypeSelectItemsObservables[uuid] = {
-        caseDefinitionId,
+        caseDefinitionName,
         items: of([]),
       };
     }
   }
 
   deleteRow(uuid: string): void {
-    delete this.caseVersionTagSelectItemsObservables[uuid];
     delete this.rolTypeSelectItemsObservables[uuid];
   }
 
   openMappingModal(uuid: string): void {
+    this.showMappingModals[uuid] = true;
     this.showMappingModalsDelay[uuid] = true;
-    this.modalService.openModal(
-      this.mappingModals.find(mappingModal => mappingModal.parentId === uuid)
-    );
   }
 
-  closeMappingModal(uuid): void {
-    this.modalService.closeModal();
+  closeMappingModal(uuid: string): void {
+    this.showMappingModals[uuid] = false;
 
     setTimeout(() => {
       this.showMappingModalsDelay[uuid] = false;
@@ -284,7 +220,7 @@ export class VerzoekConfigurationComponent
       type =>
         !!(
           type.type &&
-          type.caseDefinitionKey &&
+          type.caseDefinitionName &&
           type.objectManagementId &&
           type.initiatorRoltypeUrl &&
           type.processDefinitionKey &&
@@ -306,10 +242,6 @@ export class VerzoekConfigurationComponent
             verzoekProperties: formValue.verzoekProperties.map(verzoek => {
               const verzoekToReturn: VerzoekType = {...verzoek};
               delete verzoekToReturn.uuid;
-
-              if (!verzoek.caseDefinitionVersionTag) {
-                verzoekToReturn.caseDefinitionVersionTag = null;
-              }
 
               if (this.mappings[verzoek.uuid] && verzoek.copyStrategy === 'specified') {
                 verzoekToReturn.mapping = this.mappings[verzoek.uuid];
@@ -352,17 +284,21 @@ export class VerzoekConfigurationComponent
       tap(prefill => {
         setTimeout(() => {
           this.formValue$.pipe(take(1)).subscribe(formValue => {
-            const prefillVerzoeken = prefill?.verzoekProperties;
-            const formValueVerzoeken = formValue?.verzoekProperties;
+            if (!this.mappingSet) {
+              const prefillVerzoeken = prefill?.verzoekProperties;
+              const formValueVerzoeken = formValue?.verzoekProperties;
 
-            prefillVerzoeken.forEach((verzoek, index) => {
-              const mappingForVerzoek = verzoek?.mapping;
-              const uuidForMapping = formValueVerzoeken[index].uuid;
+              prefillVerzoeken.forEach((verzoek, index) => {
+                const mappingForVerzoek = verzoek?.mapping;
+                const uuidForMapping = formValueVerzoeken[index].uuid;
 
-              if (mappingForVerzoek && uuidForMapping) {
-                this.mappings[uuidForMapping] = mappingForVerzoek;
-              }
-            });
+                if (mappingForVerzoek && uuidForMapping) {
+                  this.mappings[uuidForMapping] = mappingForVerzoek;
+                }
+              });
+
+              this.mappingSet = true;
+            }
           });
         }, 250);
       })

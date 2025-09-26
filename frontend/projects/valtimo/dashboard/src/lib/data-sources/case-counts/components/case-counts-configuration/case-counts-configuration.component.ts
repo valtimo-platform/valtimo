@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,14 +43,13 @@ import {
 import {CaseCountsConfiguration, CaseCountsQueryItem, CaseCountsQueryItemForm} from '../../models';
 import {DocumentService} from '@valtimo/document';
 import {IconService, ListItem} from 'carbon-components-angular';
-import {ListItemWithId, MultiInputValues, ValuePathSelectorPrefix} from '@valtimo/components';
+import {ListItemWithId, MultiInputValues} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
 import {WidgetTranslationService} from '../../../../services';
 import {isEqual} from 'lodash';
 import {Add16, TrashCan16} from '@carbon/icons';
 
 @Component({
-  standalone: false,
   templateUrl: './case-counts-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./case-counts-configuration.component.scss'],
@@ -121,11 +120,11 @@ export class CaseCountsConfigurationComponent
     ConfigurationOutput<CaseCountsConfiguration>
   >();
 
-  public readonly selectedDocumentDefinition$ = new BehaviorSubject<string>('');
+  private readonly _selectedDocumentDefinition$ = new BehaviorSubject<string>('');
 
   public readonly documentItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentService.getAllDefinitions(),
-    this.selectedDocumentDefinition$,
+    this._selectedDocumentDefinition$,
   ]).pipe(
     map(([documentDefinitions, selectedDocumentDefintion]) =>
       documentDefinitions.content.map(definition => ({
@@ -156,8 +155,6 @@ export class CaseCountsConfigurationComponent
       )
     );
 
-  public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
-
   private _subscriptions = new Subscription();
 
   constructor(
@@ -179,14 +176,11 @@ export class CaseCountsConfigurationComponent
   }
 
   public documentDefinitionSelected(documentDefinitionItem: ListItem): void {
-    const documentDefinitionName = documentDefinitionItem?.item?.content;
-
-    if (!documentDefinitionName) {
+    if (!documentDefinitionItem) {
       return;
     }
 
-    this.selectedDocumentDefinition$.next(documentDefinitionName);
-    this.documentDefinition.setValue(documentDefinitionName);
+    this._selectedDocumentDefinition$.next(documentDefinitionItem?.item?.content);
   }
 
   public conditionsValueChange(index: number, values: MultiInputValues): void {
@@ -229,7 +223,7 @@ export class CaseCountsConfigurationComponent
         this.configurationEvent.emit({
           valid: this.form.valid,
           data: {
-            documentDefinition: formValue?.documentDefinition,
+            ...formValue,
             queryItems: this.multiInputValuesToQueryItems(formValue.queryItems),
           } as CaseCountsConfiguration,
         });

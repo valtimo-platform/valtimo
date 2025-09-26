@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import {DocumentenApiService} from '../../services';
 @Component({
   selector: 'valtimo-documenten-api-configuration',
   templateUrl: './documenten-api-configuration.component.html',
-  standalone: false,
+  styleUrls: ['./documenten-api-configuration.component.scss'],
 })
 export class DocumentenApiConfigurationComponent
   implements PluginConfigurationComponent, OnInit, OnDestroy

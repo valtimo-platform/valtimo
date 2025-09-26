@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {InjectionToken} from '@angular/core';
 
+import {StringTypeConverter} from './stringTypeConverter';
 import {BooleanTypeConverter} from './booleanTypeConverter';
-import {CurrencyTypeConverter} from './currencyTypeConverter';
-import {DateTimeTypeConverter} from './dateTimeTypeConverter';
 import {DateTypeConverter} from './dateTypeConverter';
 import {EnumTypeConverter} from './enumTypeConverter';
-import {NumberTypeConverter} from './numberTypeConverter';
-import {PercentTypeConverter} from './percentTypeConverter';
-import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
 import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
-import {StringTypeConverter} from './stringTypeConverter';
-import {LinkTypeConverter} from './linkTypeConverter';
+import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
+import {NumberTypeConverter} from './numberTypeConverter';
+import {InjectionToken} from '@angular/core';
+import {PercentTypeConverter} from './percentTypeConverter';
+import {CurrencyTypeConverter} from './currencyTypeConverter';
 
 export const TYPE_CONVERTER_TOKEN = new InjectionToken<TypeConverter[]>('Type Converter');
 
@@ -43,11 +41,6 @@ export const TYPE_PROVIDERS = [
   {
     provide: TYPE_CONVERTER_TOKEN,
     useClass: DateTypeConverter,
-    multi: true,
-  },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: DateTimeTypeConverter,
     multi: true,
   },
   {
@@ -80,19 +73,10 @@ export const TYPE_PROVIDERS = [
     useClass: CurrencyTypeConverter,
     multi: true,
   },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: LinkTypeConverter,
-    multi: true,
-  },
 ];
 
 export interface TypeConverter {
   getTypeString(): string;
-  /*
-   * Returns true if the converter returns a raw value, meaning it should be treated as HTML.
-   */
-  isRawValue(): boolean;
 
   convert(value: any, definition: any): string;
 }
