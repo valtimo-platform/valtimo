@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {User} from '@valtimo/shared';
+import {User} from '@valtimo/config';
 
 interface Task {
   assignee: string;
@@ -78,15 +78,4 @@ interface MappedSpecifiedTask {
   [key: string]: any;
 }
 
-interface SetTaskDueDateRequest {
-  dueDate: string | null;
-}
-
-export {
-  AssigneeRequest,
-  ListItemField,
-  Task,
-  SpecifiedTask,
-  MappedSpecifiedTask,
-  SetTaskDueDateRequest,
-};
+export {AssigneeRequest, ListItemField, Task, SpecifiedTask, MappedSpecifiedTask};

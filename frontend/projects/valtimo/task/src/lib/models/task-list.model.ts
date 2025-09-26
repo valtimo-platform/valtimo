@@ -15,7 +15,7 @@
  */
 
 import {ListItem} from 'carbon-components-angular';
-import {SearchFilter, SearchFilterRange, TaskListTab} from '@valtimo/shared';
+import {SearchFilter, SearchFilterRange, TaskListTab} from '@valtimo/config';
 
 interface TaskPageParams {
   page: number;
@@ -66,7 +66,7 @@ type TaskListOtherFilters = Array<SearchFilter | SearchFilterRange>;
 interface TaskListQueryParams {
   selectedTaskType: TaskListTab;
   params: TaskPageParams;
-  caseDefinitionKey?: string;
+  caseDefinitionName?: string;
   otherFilters?: TaskListOtherFilters;
 }
 

@@ -18,10 +18,9 @@ import {AfterViewInit, Component, ElementRef, ViewEncapsulation} from '@angular/
 import {UserProviderService} from '@valtimo/security';
 import SwaggerUI from 'swagger-ui';
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-swagger',
   templateUrl: './swagger.component.html',
   styleUrls: ['./swagger.component.scss'],

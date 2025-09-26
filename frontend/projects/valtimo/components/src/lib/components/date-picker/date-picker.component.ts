@@ -42,7 +42,6 @@ import CustomLocale = flatpickr.CustomLocale;
   selector: 'v-date-picker',
   templateUrl: './date-picker.component.html',
   styleUrls: ['./date-picker.component.scss'],
-  standalone: false,
 })
 export class DatePickerComponent implements AfterViewInit, OnDestroy {
   @HostBinding('class.full-width') fullWidthClass = false;
@@ -72,7 +71,6 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   public readonly dateValue$ = new BehaviorSubject<string>('');
 
   private _flatpickrInstance!: flatpickr.Instance;
-
   private readonly _subscriptions = new Subscription();
 
   constructor(private readonly translateService: TranslateService) {}

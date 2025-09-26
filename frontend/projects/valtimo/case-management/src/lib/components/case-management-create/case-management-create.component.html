@@ -18,7 +18,6 @@
   *ngIf="{
     editDisabled: editDisabled$ | async,
     idError: idError$ | async,
-    versionError: versionError$ | async,
     editActive: editActive$ | async,
   } as obs"
   [open]="open"
@@ -35,6 +34,25 @@
 
   <form [formGroup]="formGroup" cdsModalContent class="valtimo-definition-create__content">
     <cds-label>
+      {{ 'caseManagement.createDefinition.title' | translate }}
+
+      <cds-tooltip
+        [caret]="true"
+        [description]="'caseManagement.createDefinition.titleTooltip' | translate"
+      >
+        <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
+      </cds-tooltip>
+
+      <input
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'caseManagement.createDefinition.titlePlaceholder' | translate }}"
+        [attr.modal-primary-focus]="true"
+        (focusout)="onFocusOut()"
+      />
+    </cds-label>
+
+    <cds-label [invalid]="!!obs.idError" [invalidText]="obs.idError | translate">
       {{ 'caseManagement.createDefinition.name' | translate }}
 
       <cds-tooltip
@@ -44,31 +62,12 @@
         <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
       </cds-tooltip>
 
-      <input
-        formControlName="name"
-        cdsText
-        placeholder="{{ 'caseManagement.createDefinition.namePlaceholder' | translate }}"
-        [attr.modal-primary-focus]="true"
-        (focusout)="onFocusOut()"
-      />
-    </cds-label>
-
-    <cds-label [invalid]="!!obs.idError" [invalidText]="obs.idError | translate">
-      {{ 'caseManagement.createDefinition.key' | translate }}
-
-      <cds-tooltip
-        [caret]="true"
-        [description]="'caseManagement.createDefinition.keyTooltip' | translate"
-      >
-        <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
-      </cds-tooltip>
-
       <div class="valtimo-definition-create__name">
         <input
           cdsText
-          formControlName="caseDefinitionKey"
+          formControlName="name"
           [invalid]="!!obs.idError"
-          [placeholder]="'caseManagement.createDefinition.keyPlaceholder' | translate"
+          [placeholder]="'caseManagement.createDefinition.namePlaceholder' | translate"
           [attr.modal-primary-focus]="true"
         />
 
@@ -80,51 +79,10 @@
           size="md"
           (click)="enableEdit()"
         >
-          <svg cdsIcon="edit" size="16"></svg>
+          <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
         </button>
       </div>
     </cds-label>
-
-    <cds-label [invalid]="!!obs.versionError" [invalidText]="obs.versionError | translate">
-      {{ 'caseManagement.createDefinition.version' | translate }}
-
-      <cds-tooltip
-        [caret]="true"
-        [description]="'caseManagement.createDefinition.versionTooltip' | translate"
-      >
-        <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
-      </cds-tooltip>
-
-      <input
-        formControlName="caseDefinitionVersion"
-        cdsText
-        placeholder="{{ 'caseManagement.createDefinition.versionPlaceholder' | translate }}"
-        [invalid]="!!obs.versionError"
-        [attr.modal-primary-focus]="true"
-        (focusout)="onFocusOut()"
-      />
-    </cds-label>
-
-    <cds-textarea-label>
-      {{ 'caseManagement.createDefinition.description' | translate }}
-
-      <cds-tooltip
-        [caret]="true"
-        [description]="'caseManagement.createDefinition.descriptionTooltip' | translate"
-      >
-        <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
-      </cds-tooltip>
-
-      <textarea
-        cdsTextArea
-        formControlName="description"
-        placeholder="{{ 'caseManagement.createDefinition.descriptionPlaceholder' | translate }}"
-        [rows]="3"
-        [cols]="150"
-        [attr.modal-primary-focus]="true"
-        (focusout)="onFocusOut()"
-      ></textarea>
-    </cds-textarea-label>
   </form>
 
   <cds-modal-footer>

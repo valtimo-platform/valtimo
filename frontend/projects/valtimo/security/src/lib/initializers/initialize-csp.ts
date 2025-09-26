@@ -15,7 +15,7 @@
  */
 
 import {NGXLogger} from 'ngx-logger';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {CSP_HTTP_EQUIV, CSP_META_ID} from '../constants';
 import {DomSanitizer} from '@angular/platform-browser';
 import {CSPHeaderParams, getCSP} from 'csp-header';

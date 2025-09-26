@@ -23,7 +23,7 @@ import {
   PluginDefinition,
   PluginFunction,
 } from '../models';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {map} from 'rxjs/operators';
 import {PluginService} from './plugin.service';
 import {DomSanitizer} from '@angular/platform-browser';

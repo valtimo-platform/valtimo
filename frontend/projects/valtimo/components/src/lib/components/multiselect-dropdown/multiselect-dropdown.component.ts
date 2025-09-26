@@ -20,7 +20,6 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
   selector: 'valtimo-multiselect-dropdown',
   templateUrl: './multiselect-dropdown.component.html',
   styleUrls: ['./multiselect-dropdown.component.scss'],
-  standalone: false,
 })
 export class MultiselectDropdownComponent {
   @Input() selectedItems: Array<string>;

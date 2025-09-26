@@ -20,7 +20,6 @@ import {DashboardService} from '../../services';
 import {WidgetApiService} from '../../services/widget-api.service';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-widget-dashboard',
   templateUrl: './widget-dashboard.component.html',
   styleUrls: ['./widget-dashboard.component.scss'],

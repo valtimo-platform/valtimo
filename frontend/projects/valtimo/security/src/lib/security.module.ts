@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HTTP_INTERCEPTORS} from '@angular/common/http';
+
 import {NgModule} from '@angular/core';
+import {ErrorComponent} from './error/error.component';
 import {ErrorRoutingModule} from './error/error-routing.module';
 import {AuthGuardService} from './guard/auth-guard.service';
+import {HTTP_INTERCEPTORS} from '@angular/common/http';
 import {ZoneOffsetInterceptor} from './interceptors';
 
 @NgModule({
+  declarations: [ErrorComponent],
   imports: [ErrorRoutingModule],
+  exports: [ErrorComponent],
   providers: [
     AuthGuardService,
     {provide: HTTP_INTERCEPTORS, useClass: ZoneOffsetInterceptor, multi: true},

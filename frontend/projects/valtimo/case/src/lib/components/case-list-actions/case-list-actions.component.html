@@ -31,7 +31,7 @@
       *ngFor="let processDocumentDefinition of associatedProcessDocumentDefinitions"
       (click)="selectProcess(processDocumentDefinition)"
     >
-      {{ processDocumentDefinition.processDefinitionName }}
+      {{ processDocumentDefinition.processName }}
     </cds-clickable-tile>
   </section>
 </cds-modal>
@@ -39,5 +39,5 @@
 <valtimo-case-process-start-modal
   #processStartModal
   (formFlowComplete)="onFormFlowComplete()"
-  (noProcessLinked)="onNoProcessLinked($event)"
+  (noProcessLinked)="onNoProcessLinked()"
 ></valtimo-case-process-start-modal>

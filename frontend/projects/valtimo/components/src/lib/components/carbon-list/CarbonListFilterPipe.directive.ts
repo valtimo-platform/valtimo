@@ -19,7 +19,6 @@ import {TableItem} from 'carbon-components-angular';
 
 @Pipe({
   name: 'listFilter',
-  standalone: false,
 })
 export class CarbonListFilterPipe implements PipeTransform {
   transform(list: TableItem[][], filterText: string): TableItem[][] {

@@ -18,53 +18,35 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {ROLE_ADMIN} from '@valtimo/shared';
+import {DecisionComponent} from './decision.component';
+import {ROLE_ADMIN} from '@valtimo/config';
 import {DecisionModelerComponent} from './decision-modeler/decision-modeler.component';
 import {DecisionDisplayComponent} from './decision-display/decision-display.component';
-import {DecisionManagementRouteData} from './models/decision-management.model';
-import {DecisionListComponent} from './decision-list/decision-list.component';
 
 const routes: Routes = [
   {
     path: 'decision-tables',
-    component: DecisionListComponent,
+    component: DecisionComponent,
     canActivate: [AuthGuardService],
-    data: {
-      title: 'Decision tables',
-      roles: [ROLE_ADMIN],
-      context: 'independent',
-    } as DecisionManagementRouteData,
+    data: {title: 'Decision tables', roles: [ROLE_ADMIN]},
   },
   {
     path: 'decision-tables/:id',
     component: DecisionDisplayComponent,
     canActivate: [AuthGuardService],
-    data: {
-      title: 'Decision tables',
-      roles: [ROLE_ADMIN],
-      context: 'independent',
-    } as DecisionManagementRouteData,
+    data: {title: 'Decision tables', roles: [ROLE_ADMIN]},
   },
   {
     path: 'decision-tables/edit/:id',
     component: DecisionModelerComponent,
     canActivate: [AuthGuardService],
-    data: {
-      title: 'Edit decision table',
-      roles: [ROLE_ADMIN],
-      customPageTitle: true,
-      context: 'independent',
-    } as DecisionManagementRouteData,
+    data: {title: 'Edit decision table', roles: [ROLE_ADMIN], customPageTitle: true},
   },
   {
     path: 'decision-tables/edit/create',
     component: DecisionModelerComponent,
     canActivate: [AuthGuardService],
-    data: {
-      title: 'Create decision table',
-      roles: [ROLE_ADMIN],
-      context: 'independent',
-    } as DecisionManagementRouteData,
+    data: {title: 'Create decision table', roles: [ROLE_ADMIN]},
   },
 ];
 

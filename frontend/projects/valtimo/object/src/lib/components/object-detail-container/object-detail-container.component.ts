@@ -17,14 +17,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {map, Observable, Subscription} from 'rxjs';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {ObjectStateService} from '../../services/object-state.service';
 import {ObjectService} from '../../services/object.service';
 import {TabEnum} from '../../services/tab.enum';
 import {TabService} from '../../services/tab.service';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-object-detail-container',
   templateUrl: './object-detail-container.component.html',
   styleUrls: ['./object-detail-container.component.scss'],

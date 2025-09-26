@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 import {LoadingModule, NotificationModule} from 'carbon-components-angular';
-import {isEqual} from 'lodash';
-import {BehaviorSubject, combineLatest, startWith, Subscription, switchMap} from 'rxjs';
-import {distinctUntilChanged, filter} from 'rxjs/operators';
-import {ProcessDefinitionResult} from '../../models';
+import {BehaviorSubject} from 'rxjs';
+import {CaseProcessInstance, ProcessManagementParams} from '../../models';
 import {ProcessManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
 import {ProcessManagementBuilderComponent} from '../process-management-builder/process-management-builder.component';
 import {ProcessManagementListComponent} from '../process-management-list/process-management-list.component';
 import {ProcessManagementUploadComponent} from '../process-management-upload/process-management-upload.component';
+import {ManagementContext} from '@valtimo/config';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-process-management',
@@ -45,58 +43,44 @@ import {ProcessManagementUploadComponent} from '../process-management-upload/pro
   ],
   providers: [TranslateService],
 })
-export class ProcessManagementComponent implements OnInit, OnDestroy {
-  public readonly context$ = getContextObservable(this.route);
+export class ProcessManagementComponent {
+  public readonly selectedProcess$ = new BehaviorSubject<CaseProcessInstance | null>(null);
 
-  public readonly params$ = this.context$.pipe(
-    filter(context => context === 'case'),
-    switchMap(() => getCaseManagementRouteParams(this.route)),
-    distinctUntilChanged((previous, current) => isEqual(previous, current))
-  );
-
+  @Input() public set context(value: ManagementContext) {
+    this.processManagementService.context = value;
+  }
   public readonly paramsAreSet$ = new BehaviorSubject<boolean>(false);
+  @Input() public set params(value: ProcessManagementParams | null) {
+    if (!value) return;
 
-  private readonly _subscriptions = new Subscription();
+    this.processManagementService.setParams(
+      value.caseDefinitionKey,
+      value.caseDefinitionVersionTag
+    );
+    this.paramsAreSet$.next(true);
+  }
 
   constructor(
+    private readonly notificationService: GlobalNotificationService,
     private readonly processManagementService: ProcessManagementService,
-    private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly translateService: TranslateService
   ) {}
 
-  public ngOnInit(): void {
-    this.openParamsAndContextSubscription();
-  }
+  public navigateBack(notification: null | 'success' | 'error'): void {
+    this.selectedProcess$.next(null);
 
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-  }
+    if (!notification) return;
 
-  public onProcessSelected(selectedProcessEvent: ProcessDefinitionResult | 'create'): void {
-    const editParam =
-      selectedProcessEvent === 'create' ? 'create' : selectedProcessEvent?.processDefinition?.key;
-
-    this.router.navigate([editParam], {
-      relativeTo: this.route,
+    this.notificationService.showToast({
+      caption: this.translateService.instant(`processManagement.${notification}Notification`),
+      type: notification,
+      duration: CARBON_CONSTANTS.notificationDuration,
+      showClose: true,
+      title: this.translateService.instant(`interface.${notification}`),
     });
   }
 
-  private openParamsAndContextSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([this.context$, this.params$.pipe(startWith(null))]).subscribe(
-        ([context, params]) => {
-          if (context) this.processManagementService.context = context;
-
-          if (params) {
-            this.processManagementService.setParams(
-              params.caseDefinitionKey,
-              params.caseDefinitionVersionTag
-            );
-          }
-
-          this.paramsAreSet$.next(true);
-        }
-      )
-    );
+  public onProcessSelected(process: CaseProcessInstance): void {
+    this.selectedProcess$.next(process);
   }
 }

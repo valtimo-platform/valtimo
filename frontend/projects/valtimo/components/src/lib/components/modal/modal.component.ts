@@ -34,7 +34,6 @@ declare var $;
   selector: 'valtimo-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
-  standalone: false,
 })
 export class ModalComponent implements AfterViewInit, OnInit, OnDestroy {
   @Input() elementId: string;

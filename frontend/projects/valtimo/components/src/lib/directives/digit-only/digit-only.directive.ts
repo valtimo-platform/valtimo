@@ -18,7 +18,6 @@ import {Directive, ElementRef, HostListener, Input, OnChanges, SimpleChanges} fr
 
 @Directive({
   selector: '[digitOnly]',
-  standalone: false,
 })
 export class DigitOnlyDirective implements OnChanges {
   private hasDecimalPoint = false;

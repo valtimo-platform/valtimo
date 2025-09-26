@@ -20,7 +20,6 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService, ChoiceFieldService, ChoiceField, ChoiceFieldValue} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-choice-field-value-detail',
   templateUrl: './choice-field-value-detail.component.html',
   styleUrls: ['./choice-field-value-detail.component.css'],

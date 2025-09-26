@@ -20,10 +20,8 @@ import {CARBON_CONSTANTS} from '@valtimo/components';
 import {DocumentService, TemplatePayload} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import {BehaviorSubject, take, tap} from 'rxjs';
-import * as semver from 'semver';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-case-management-create',
   styleUrls: ['./case-management-create.component.scss'],
   templateUrl: './case-management-create.component.html',
@@ -34,33 +32,30 @@ export class CaseManagementCreateComponent {
   @Output() closeModal = new EventEmitter<TemplatePayload | null>();
 
   public formGroup: FormGroup = this.fb.group({
-    name: this.fb.control('', Validators.required),
-    caseDefinitionKey: this.fb.control({value: '', disabled: true}, [
+    title: this.fb.control('', Validators.required),
+    name: this.fb.control({value: '', disabled: true}, [
       Validators.required,
       Validators.pattern('[A-Za-z0-9-]*'),
     ]),
-    caseDefinitionVersion: this.fb.control('', Validators.required),
-    description: this.fb.control(''),
   });
 
   private readonly _editActive$ = new BehaviorSubject<boolean>(false);
   public readonly editActive$ = this._editActive$.pipe(
     tap((editActive: boolean) => {
-      const caseDefinitionKey: AbstractControl | null = this.formGroup.get('caseDefinitionKey');
-      if (!caseDefinitionKey) {
+      const name: AbstractControl | null = this.formGroup.get('name');
+      if (!name) {
         return;
       }
 
       if (editActive) {
-        caseDefinitionKey.enable();
+        name.enable();
         return;
       }
-      caseDefinitionKey.disable();
+      name.disable();
     })
   );
   public readonly editDisabled$ = new BehaviorSubject<boolean>(true);
   public readonly idError$ = new BehaviorSubject<string | null>(null);
-  public readonly versionError$ = new BehaviorSubject<string | null>(null);
 
   constructor(
     private readonly documentService: DocumentService,
@@ -77,18 +72,13 @@ export class CaseManagementCreateComponent {
       return;
     }
 
-    const {caseDefinitionKey, name, caseDefinitionVersion, description} = this.formGroup.controls;
-    if (!caseDefinitionKey || !name || !caseDefinitionVersion) {
-      return;
-    }
-
-    if (!semver.valid(caseDefinitionVersion.value)) {
-      this.versionError$.next('caseManagement.createDefinition.versionError');
+    const {name, title} = this.formGroup.controls;
+    if (!name || !title) {
       return;
     }
 
     this.documentService
-      .getDocumentDefinition(caseDefinitionKey.value, true)
+      .getDocumentDefinition(name.value, true)
       .pipe(take(1))
       .subscribe({
         next: () => {
@@ -98,10 +88,8 @@ export class CaseManagementCreateComponent {
         },
         error: () => {
           this.closeModal.emit({
-            name: name.value,
-            caseDefinitionKey: caseDefinitionKey.value,
-            caseDefinitionVersion: caseDefinitionVersion.value,
-            description: description.value,
+            documentDefinitionId: name.value,
+            documentDefinitionTitle: title.value,
           });
           this.resetForm();
         },
@@ -113,12 +101,16 @@ export class CaseManagementCreateComponent {
   }
 
   public onFocusOut(): void {
-    const {caseDefinitionKey, name, caseDefinitionVersion} = this.formGroup.controls;
-    if (!caseDefinitionKey || !name || !caseDefinitionVersion) {
+    const {name, title} = this.formGroup.controls;
+    if (!name || !title) {
       return;
     }
 
-    caseDefinitionKey.patchValue(name.value.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase());
+    if (!title.value) {
+      return;
+    }
+
+    name.patchValue(title.value.replace(/\W+/g, '-').replace(/\-$/, '').toLowerCase());
     this.editDisabled$.next(false);
   }
 

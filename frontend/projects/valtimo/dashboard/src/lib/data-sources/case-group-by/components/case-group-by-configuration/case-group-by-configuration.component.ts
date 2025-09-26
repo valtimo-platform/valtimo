@@ -50,7 +50,6 @@ import {WidgetTranslationService} from '../../../../services';
 import {isEqual} from 'lodash';
 
 @Component({
-  standalone: false,
   templateUrl: './case-group-by-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./case-group-by-configuration.component.scss'],

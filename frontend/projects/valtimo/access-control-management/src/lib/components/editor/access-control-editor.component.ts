@@ -18,14 +18,18 @@ import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/co
 import {AccessControlService} from '../../services/access-control.service';
 import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, tap} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  EditorModel,
+  PageHeaderService,
+  PageTitleService,
+} from '@valtimo/components';
 import {Role} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
-  standalone: false,
   templateUrl: './access-control-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./access-control-editor.component.scss'],
@@ -49,7 +53,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
-    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly notificationService: GlobalNotificationService,
     private readonly translateService: TranslateService,
     private readonly accessControlExportService: AccessControlExportService,
     private readonly pageHeaderService: PageHeaderService
@@ -219,12 +223,14 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(roleKey: string): void {
-    this.globalNotificationService.showToast({
-      title: this.translateService.instant('accessControl.roles.savedSuccessTitle'),
+    this.notificationService.showToast({
       caption: this.translateService.instant('accessControl.roles.savedSuccessTitleMessage', {
         roleKey,
       }),
       type: 'success',
+      duration: CARBON_CONSTANTS.notificationDuration,
+      showClose: true,
+      title: this.translateService.instant('accessControl.roles.savedSuccessTitle'),
     });
   }
 }

@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpHeaders, HttpResponse} from '@angular/common/http';
+import {HttpClient, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {
-  BaseApiService,
-  ConfigService,
-  InterceptorSkip,
-  InterceptorSkipHeader,
-} from '@valtimo/shared';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 import {Page} from '@valtimo/document';
-import {map, Observable} from 'rxjs';
+import {InterceptorSkipHeader} from '@valtimo/security';
+import {Observable} from 'rxjs';
 import {CaseListItem} from '../models';
 import {CaseVersionListItem} from '../models/case-version-list.model';
-import {CaseDefinition, DraftVersion} from '../models/case-deployment.model';
 
 @Injectable({
   providedIn: 'root',
@@ -47,34 +42,8 @@ export class CaseManagementService extends BaseApiService {
 
   public getCaseDefinitionVersions(caseDefinitionKey: string): Observable<any[]> {
     return this.httpClient.get<any[]>(
-      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}/version`),
-      {
-        params: {size: 100},
-      }
+      this.getApiUrl(`management/v1/case-definition/${caseDefinitionKey}/version`)
     );
-  }
-
-  public createDraftVersion(payload: DraftVersion): Observable<any[]> {
-    return this.httpClient.post<any[]>(
-      this.getApiUrl(`management/v1/case-definition/draft`),
-      payload
-    );
-  }
-
-  public isDraftVersion(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
-  ): Observable<boolean> {
-    return this.httpClient
-      .get<CaseDefinition>(
-        this.getApiUrl(
-          `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
-        ),
-        {
-          headers: new HttpHeaders().set(InterceptorSkip, '403'),
-        }
-      )
-      .pipe(map(caseDefinition => !caseDefinition.final));
   }
 
   public getGlobalActiveCase(caseDefinitionKey: string): Observable<any> {
@@ -102,43 +71,6 @@ export class CaseManagementService extends BaseApiService {
     );
   }
 
-  public finalizeDraftCaseVersion(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
-  ): Observable<any[]> {
-    return this.httpClient.post<any[]>(
-      this.getApiUrl(
-        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/finalize`
-      ),
-      {}
-    );
-  }
-
-  public deleteDraftCaseVersion(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
-  ): Observable<null> {
-    return this.httpClient.delete<null>(
-      this.getApiUrl(
-        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
-      )
-    );
-  }
-
-  public getCaseDefinition(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
-  ): Observable<CaseDefinition> {
-    return this.httpClient.get<CaseDefinition>(
-      this.getApiUrl(
-        `management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}`
-      ),
-      {
-        headers: new HttpHeaders().set(InterceptorSkip, '403'),
-      }
-    );
-  }
-
   public importDocumentDefinitionZip(file: FormData): Observable<HttpResponse<Blob>> {
     return this.httpClient.post<HttpResponse<Blob>>(
       this.getApiUrl(`management/v1/case/import`),
@@ -147,13 +79,11 @@ export class CaseManagementService extends BaseApiService {
   }
 
   public exportDocumentDefinition(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag = '0'
+    documentDefinitionName: string,
+    version = 1
   ): Observable<HttpResponse<Blob>> {
     return this.httpClient.get<Blob>(
-      this.getApiUrl(
-        `management/v1/case/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/export`
-      ),
+      this.getApiUrl(`management/v1/case/${documentDefinitionName}/${version}/export`),
       {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
     );
   }

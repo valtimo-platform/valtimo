@@ -60,12 +60,13 @@
           *ngIf="obs?.supportedDocumentenApiFeatures?.supportsFilterableColumns"
           [cdsOverflowMenu]="overflowFilter"
           [customPane]="true"
+          [iconOnly]="true"
           [flip]="true"
           [offset]="{x: 0, y: 47}"
           cdsButton="ghost"
           placement="bottom"
         >
-          <svg cdsIcon="filter" size="16"></svg>
+          <svg class="cds--btn__icon" cdsIcon="filter" size="16"></svg>
         </button>
 
         <ng-container *ngTemplateOutlet="uploadButton"></ng-container>

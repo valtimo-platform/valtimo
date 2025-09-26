@@ -21,7 +21,6 @@ import {StartHersteltermijnConfig} from '../../models';
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-start-hersteltermijn-configuration',
   templateUrl: './start-hersteltermijn-configuration.component.html',
   providers: [PluginTranslatePipe],

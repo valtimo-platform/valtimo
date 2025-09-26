@@ -29,7 +29,6 @@ import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
 import {BigNumberDisplayTypeProperties} from '../../models';
 
 @Component({
-  standalone: false,
   templateUrl: './big-number-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -18,7 +18,8 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {FormioForm} from '@formio/angular';
-import {ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
 import {FormDefinitionOption} from './models';
 
 @Injectable({
@@ -52,18 +53,9 @@ export class FormService {
     );
   }
 
-  getAllUnlinkedFormDefinitions(): Observable<Array<FormDefinitionOption>> {
+  getAllFormDefinitions(): Observable<Array<FormDefinitionOption>> {
     return this.http.get<Array<FormDefinitionOption>>(
-      `${this.valtimoApiConfig.endpointUri}management/v1/form-option`
-    );
-  }
-
-  getAllFormDefinitionsForCaseDefinition(
-    caseDefinitionKey: string,
-    versionTag: string
-  ): Observable<Array<FormDefinitionOption>> {
-    return this.http.get<Array<FormDefinitionOption>>(
-      `${this.valtimoApiConfig.endpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/form-option`
+      `${this.valtimoApiConfig.endpointUri}v1/form-definition`
     );
   }
 }

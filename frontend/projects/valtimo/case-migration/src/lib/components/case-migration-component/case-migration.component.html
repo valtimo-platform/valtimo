@@ -17,14 +17,14 @@
 <ng-container
   class="case-count-configuration-form"
   *ngIf="{
-    sourceCaseDefinitionKeyItems: sourceCaseDefinitionKeyItems$ | async,
-    sourceCaseDefinitionVersionTagItems: sourceCaseDefinitionVersionTagItems$ | async,
-    targetCaseDefinitionKeyItems: targetCaseDefinitionKeyItems$ | async,
-    targetCaseDefinitionVersionTagItems: targetCaseDefinitionVersionTagItems$ | async,
-    sourceCaseDefinitionKeySelected: sourceCaseDefinitionKeySelected$ | async,
-    sourceCaseDefinitionVersionTagSelected: sourceCaseDefinitionVersionTagSelected$ | async,
-    targetCaseDefinitionKeySelected: targetCaseDefinitionKeySelected$ | async,
-    targetCaseDefinitionVersionTagSelected: targetCaseDefinitionVersionTagSelected$ | async,
+    sourceDocumentDefinitionNameItems: sourceDocumentDefinitionNameItems$ | async,
+    sourceDocumentDefinitionVersionItems: sourceDocumentDefinitionVersionItems$ | async,
+    targetDocumentDefinitionNameItems: targetDocumentDefinitionNameItems$ | async,
+    targetDocumentDefinitionVersionItems: targetDocumentDefinitionVersionItems$ | async,
+    sourceDocumentDefinitionNameSelected: sourceDocumentDefinitionNameSelected$ | async,
+    sourceDocumentDefinitionVersionSelected: sourceDocumentDefinitionVersionSelected$ | async,
+    targetDocumentDefinitionNameSelected: targetDocumentDefinitionNameSelected$ | async,
+    targetDocumentDefinitionVersionSelected: targetDocumentDefinitionVersionSelected$ | async,
     patchItems: patchItems$ | async,
     errors: errors$ | async,
     showConfirmationModal: showConfirmationModal$,
@@ -53,30 +53,30 @@
     <div class="row m-0">
       <cds-dropdown
         class="pr-2 pb-2"
-        [label]="'caseMigration.sourceCaseDefinitionKey' | translate"
+        [label]="'caseMigration.sourceDocumentDefinitionName' | translate"
         [style.width.px]="350"
-        [disabled]="obs.sourceCaseDefinitionKeyItems.isLoading"
+        [disabled]="obs.sourceDocumentDefinitionNameItems.isLoading"
         [dropUp]="false"
-        [skeleton]="obs.sourceCaseDefinitionKeyItems.isLoading"
-        (selected)="sourceCaseDefinitionKeySelected$.next($event.item.caseDefinitionKey)"
+        [skeleton]="obs.sourceDocumentDefinitionNameItems.isLoading"
+        (selected)="sourceDocumentDefinitionNameSelected$.next($event.item.documentDefinitionName)"
       >
         <cds-dropdown-list
-          [items]="obs.sourceCaseDefinitionKeyItems.value || []"
+          [items]="obs.sourceDocumentDefinitionNameItems.value || []"
         ></cds-dropdown-list>
       </cds-dropdown>
       <cds-dropdown
         class="pr-2 pb-2"
-        [label]="'caseMigration.sourceCaseDefinitionVersionTag' | translate"
+        [label]="'caseMigration.sourceDocumentDefinitionVersion' | translate"
         [style.width.px]="300"
-        [disabled]="obs.targetCaseDefinitionKeyItems.isLoading"
+        [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
         [dropUp]="false"
-        [skeleton]="obs.targetCaseDefinitionKeyItems.isLoading"
+        [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
         (selected)="
-          sourceCaseDefinitionVersionTagSelected$.next($event.item.caseDefinitionVersionTag)
+          sourceDocumentDefinitionVersionSelected$.next($event.item.documentDefinitionVersion)
         "
       >
         <cds-dropdown-list
-          [items]="obs.sourceCaseDefinitionVersionTagItems || []"
+          [items]="obs.sourceDocumentDefinitionVersionItems || []"
         ></cds-dropdown-list>
       </cds-dropdown>
     </div>
@@ -86,30 +86,30 @@
     <div class="row m-0">
       <cds-dropdown
         class="pr-2 pb-2"
-        [label]="'caseMigration.targetCaseDefinitionKey' | translate"
+        [label]="'caseMigration.targetDocumentDefinitionName' | translate"
         [style.width.px]="350"
-        [disabled]="obs.targetCaseDefinitionKeyItems.isLoading"
+        [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
         [dropUp]="false"
-        [skeleton]="obs.targetCaseDefinitionKeyItems.isLoading"
-        (selected)="targetCaseDefinitionKeySelected$.next($event.item.caseDefinitionKey)"
+        [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
+        (selected)="targetDocumentDefinitionNameSelected$.next($event.item.documentDefinitionName)"
       >
         <cds-dropdown-list
-          [items]="obs.targetCaseDefinitionKeyItems.value || []"
+          [items]="obs.targetDocumentDefinitionNameItems.value || []"
         ></cds-dropdown-list>
       </cds-dropdown>
       <cds-dropdown
         class="pr-2 pb-2"
-        [label]="'caseMigration.targetCaseDefinitionVersionTag' | translate"
+        [label]="'caseMigration.targetDocumentDefinitionVersion' | translate"
         [style.width.px]="300"
-        [disabled]="obs.targetCaseDefinitionKeyItems.isLoading"
+        [disabled]="obs.targetDocumentDefinitionNameItems.isLoading"
         [dropUp]="false"
-        [skeleton]="obs.targetCaseDefinitionKeyItems.isLoading"
+        [skeleton]="obs.targetDocumentDefinitionNameItems.isLoading"
         (selected)="
-          targetCaseDefinitionVersionTagSelected$.next($event.item.caseDefinitionVersionTag)
+          targetDocumentDefinitionVersionSelected$.next($event.item.documentDefinitionVersion)
         "
       >
         <cds-dropdown-list
-          [items]="obs.targetCaseDefinitionVersionTagItems || []"
+          [items]="obs.targetDocumentDefinitionVersionItems || []"
         ></cds-dropdown-list>
       </cds-dropdown>
     </div>
@@ -137,11 +137,6 @@
 
   <ng-container>
     <div class="pt-2">
-      <div *ngIf="obs.errors?.length === 0" class="input-group mt-4 mb-2 align-items-center">
-        <div>
-          {{ 'caseMigration.noErrors' | translate }}
-        </div>
-      </div>
       <div *ngIf="obs.errors?.length >= 1" class="input-group mt-4 mb-2 align-items-center">
         <div>
           <h2>{{ 'caseMigration.errors' | translate }}</h2>
@@ -168,10 +163,10 @@
       size="md"
       (click)="checkPatches()"
       [disabled]="
-        !obs.sourceCaseDefinitionKeySelected ||
-        !obs.sourceCaseDefinitionVersionTagSelected ||
-        !obs.targetCaseDefinitionKeySelected ||
-        !obs.targetCaseDefinitionVersionTagSelected
+        !obs.sourceDocumentDefinitionNameSelected ||
+        !obs.sourceDocumentDefinitionVersionSelected ||
+        !obs.targetDocumentDefinitionNameSelected ||
+        !obs.targetDocumentDefinitionVersionSelected
       "
     >
       {{ 'caseMigration.checkPatches' | translate }}
@@ -182,10 +177,10 @@
       size="md"
       (click)="showConfirmationModal$.next(true)"
       [disabled]="
-        !obs.sourceCaseDefinitionKeySelected ||
-        !obs.sourceCaseDefinitionVersionTagSelected ||
-        !obs.targetCaseDefinitionKeySelected ||
-        !obs.targetCaseDefinitionVersionTagSelected
+        !obs.sourceDocumentDefinitionNameSelected ||
+        !obs.sourceDocumentDefinitionVersionSelected ||
+        !obs.targetDocumentDefinitionNameSelected ||
+        !obs.targetDocumentDefinitionVersionSelected
       "
     >
       {{ 'caseMigration.migrate' | translate }}

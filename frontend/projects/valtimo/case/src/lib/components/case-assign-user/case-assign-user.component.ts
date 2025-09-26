@@ -17,11 +17,10 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {DropdownItem} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {BehaviorSubject, filter, map, Observable, of, switchMap} from 'rxjs';
-import {NamedUser} from '@valtimo/shared';
+import {NamedUser} from '@valtimo/config';
 import {tap} from 'rxjs/operators';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-case-assign-user',
   templateUrl: './case-assign-user.component.html',
   styleUrls: ['./case-assign-user.component.scss'],

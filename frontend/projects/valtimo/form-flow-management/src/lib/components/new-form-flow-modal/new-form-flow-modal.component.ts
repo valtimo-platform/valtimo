@@ -20,7 +20,6 @@ import {FormFlowDefinition} from '../../models';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-new-form-flow-modal',
   templateUrl: './new-form-flow-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,7 +49,8 @@ export class NewFormFlowModalComponent {
     }
 
     this.closeEvent.emit({
-      key: this.key.value ?? '',
+      key: this.key.value,
+      version: 1,
       startStep: 'start-step',
       steps: [],
     });

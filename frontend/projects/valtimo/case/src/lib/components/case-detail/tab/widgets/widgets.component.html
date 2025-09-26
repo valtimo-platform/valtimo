@@ -14,7 +14,37 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-container
-  [widgets]="(widgetConfiguration$ | async)?.widgets"
-  [widgetComponentMap]="widgetComponentMap"
-></valtimo-widget-container>
+<ng-container
+  *ngIf="{
+    loadingWidgetConfiguration: loadingWidgetConfiguration$ | async,
+    widgetConfiguration: widgetConfiguration$ | async,
+    loaded: loaded$ | async,
+  } as obs"
+>
+  <ng-container
+    *ngIf="{
+      noWidgetsConfigured:
+        obs.widgetConfiguration?.widgets && obs.widgetConfiguration.widgets.length === 0,
+    } as vars"
+  >
+    @if (!obs.loaded && !vars.noWidgetsConfigured) {
+      <div class="loading-container">
+        <cds-loading></cds-loading>
+      </div>
+    }
+
+    @if (vars.noWidgetsConfigured) {
+      <valtimo-no-results
+        [title]="'case.widgets.noWidgets' | translate"
+        [description]="'case.widgets.noWidgetsDescription' | translate"
+        illustration="valtimo-layout/img/no-widgets.svg"
+      ></valtimo-no-results>
+    }
+
+    <div [style.visibility]="!obs.loaded ? 'hidden' : 'visible'">
+      <valtimo-case-widgets-container
+        [widgets]="obs.widgetConfiguration?.widgets || []"
+      ></valtimo-case-widgets-container>
+    </div>
+  </ng-container>
+</ng-container>

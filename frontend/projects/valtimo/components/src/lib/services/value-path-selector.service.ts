@@ -16,7 +16,7 @@
 
 import {HttpClient} from '@angular/common/http';
 import {Injectable, OnDestroy} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 import {BehaviorSubject, Observable, Subscription, interval, map, of, take, tap} from 'rxjs';
 import {
   ValuePathItem,
@@ -24,21 +24,22 @@ import {
   ValuePathSelectorCache,
   ValuePathSelectorPrefix,
   ValuePathType,
+  ValuePathVersionArgument,
 } from '../models';
 import {deepmerge} from 'deepmerge-ts';
-import {CaseDefinition} from '@valtimo/document';
+import {DocumentDefinitions} from '@valtimo/document';
 import {isEqual} from 'lodash';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ValuePathSelectorService extends BaseApiService implements OnDestroy {
-  private _prefixes: (ValuePathSelectorPrefix | string)[];
-  private _caseDefinitionKey: string;
-  private _caseDefinitionVersionTag: string;
+  private _prefixes: ValuePathSelectorPrefix[];
+  private _documentDefinitionName: string;
+  private _version: ValuePathVersionArgument;
 
   private _cache: ValuePathSelectorCache = {};
-  private _caseDefinitionCache$ = new BehaviorSubject<CaseDefinition[] | null>(null);
+  private _documentDefinitionCache$ = new BehaviorSubject<DocumentDefinitions | null>(null);
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -53,36 +54,37 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     this._subscriptions.unsubscribe();
   }
 
-  public setCaseDefinitionCache(cache: CaseDefinition[]): void {
-    this._caseDefinitionCache$.pipe(take(1)).subscribe(currentCache => {
-      if (!isEqual(cache, currentCache)) this._caseDefinitionCache$.next(cache);
+  public setDocumentDefinitionCache(cache: DocumentDefinitions): void {
+    this._documentDefinitionCache$.pipe(take(1)).subscribe(currentCache => {
+      if (!isEqual(cache, currentCache)) this._documentDefinitionCache$.next(cache);
     });
   }
 
-  public getCaseDefinitionCache(): Observable<CaseDefinition[] | null> {
-    return this._caseDefinitionCache$.asObservable();
+  public getDocumentDefinitionCache(): Observable<DocumentDefinitions | null> {
+    return this._documentDefinitionCache$.asObservable();
   }
 
   public getResolvableKeys(
     prefixes: ValuePathSelectorPrefix[],
-    caseDefinitionKey: string,
+    documentDefinitionName: string,
     type: ValuePathType = ValuePathType.FIELD,
-    caseDefinitionVersionTag: string = null
+    version: ValuePathVersionArgument = 'latest'
   ): Observable<ValuePathItem[]> {
     this._prefixes = prefixes;
-    this._caseDefinitionKey = caseDefinitionKey;
-    this._caseDefinitionVersionTag = caseDefinitionVersionTag;
+    this._documentDefinitionName = documentDefinitionName;
+    this._version = version;
 
-    const url = !caseDefinitionVersionTag
-      ? `/management/v1/value-resolver/case-definition/${caseDefinitionKey}/keys`
-      : `/management/v1/value-resolver/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/keys`;
+    const url =
+      typeof version !== 'number'
+        ? `/management/v2/value-resolver/document-definition/${documentDefinitionName}/keys`
+        : `/management/v2/value-resolver/document-definition/${documentDefinitionName}/version/${version}/keys`;
 
-    const prefixesWithoutCache: (ValuePathSelectorPrefix | string)[] = this._prefixes.filter(
+    const prefixesWithoutCache: ValuePathSelectorPrefix[] = prefixes.filter(
       (prefix: ValuePathSelectorPrefix) => !this.getCacheResult(prefix, type)
     );
 
     return (
-      prefixesWithoutCache.length > 0 || this._prefixes.length === 0
+      prefixesWithoutCache.length > 0
         ? this.httpClient.post<ValuePathResponse[]>(this.getApiUrl(url), {
             prefixes: prefixesWithoutCache,
             type,
@@ -90,8 +92,6 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
         : of([])
     ).pipe(
       tap((results: ValuePathResponse[]) => {
-        if (this._prefixes.length === 0) this._prefixes = this.getPrefixesFromResults(results);
-
         if (type === ValuePathType.FIELD)
           this.cacheMapping(
             results.map((result: ValuePathResponse) => ({path: result.path})),
@@ -104,10 +104,7 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
           );
       }),
       map(() =>
-        this._prefixes.reduce(
-          (acc, curr) => [...acc, ...(this.getCacheResult(curr, type) ?? [])],
-          []
-        )
+        prefixes.reduce((acc, curr) => [...acc, ...(this.getCacheResult(curr, type) ?? [])], [])
       )
     );
   }
@@ -116,16 +113,16 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     this._subscriptions.add(
       interval(60 * 1000).subscribe(() => {
         this._cache = {};
-        this._caseDefinitionCache$.next(null);
+        this._documentDefinitionCache$.next(null);
       })
     );
   }
 
   private getCacheResult(
-    prefix: ValuePathSelectorPrefix | string,
+    prefix: ValuePathSelectorPrefix,
     type: ValuePathType
   ): ValuePathItem[] | undefined {
-    return this._cache[this._caseDefinitionKey]?.[this._caseDefinitionVersionTag]?.[prefix]?.[type];
+    return this._cache[this._documentDefinitionName]?.[this._version]?.[prefix]?.[type];
   }
 
   private mapCollectionItem(item: ValuePathResponse, parentPath?: string): ValuePathItem[] {
@@ -155,25 +152,19 @@ export class ValuePathSelectorService extends BaseApiService implements OnDestro
     const prefixResults = this._prefixes.reduce(
       (acc, curr) => ({
         ...acc,
-        ...(!this.getCacheResult(curr, type) && {
-          [curr]: {
-            [type]: results.filter((result: ValuePathItem) => result.path.split(':')[0] === curr),
-          },
-        }),
+        [curr]: {
+          [type]: results.filter((result: ValuePathItem) => result.path.split(':')[0] === curr),
+        },
       }),
       {}
     );
 
     const tempCache: ValuePathSelectorCache = {
-      [this._caseDefinitionKey]: {
-        [this._caseDefinitionVersionTag]: prefixResults,
+      [this._documentDefinitionName]: {
+        [this._version]: prefixResults,
       },
     };
 
     this._cache = deepmerge(this._cache, tempCache);
-  }
-
-  private getPrefixesFromResults(results: ValuePathResponse[]): string[] {
-    return [...new Set(results.map((result: ValuePathResponse) => result.path.split(':')[0]))];
   }
 }

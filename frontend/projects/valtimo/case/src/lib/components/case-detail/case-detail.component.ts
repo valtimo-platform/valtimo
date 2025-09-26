@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,14 @@ import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {
   BreadcrumbService,
+  CARBON_CONSTANTS,
   CdsThemeService,
   CurrentCarbonTheme,
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
 } from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {
   CaseStatusService,
   CaseTag,
@@ -53,6 +54,7 @@ import {UserProviderService} from '@valtimo/security';
 import {IntermediateSubmission} from '@valtimo/task';
 import {IconService} from 'carbon-components-angular';
 import {KeycloakService} from 'keycloak-angular';
+import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
 import {
   BehaviorSubject,
@@ -68,12 +70,6 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {
-  CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
-  CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
-  CASE_DETAIL_GUTTER_SIZE,
-  CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
-} from '../../constants';
 import {TabImpl, TabLoaderImpl} from '../../models';
 import {
   CAN_ASSIGN_CASE_PERMISSION,
@@ -82,12 +78,18 @@ import {
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
+import {WidgetsService} from './tab/widgets/widgets.service';
+import {
+  CASE_DETAIL_DEFAULT_DISPLAY_SIZE,
+  CASE_DETAIL_DEFAULT_DISPLAY_TYPE,
+  CASE_DETAIL_GUTTER_SIZE,
+  CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH,
+} from '../../constants';
 import {CaseDetailLayoutService, CaseService, CaseTabService} from '../../services';
 import {CaseSupportingProcessStartModalComponent} from '../case-supporting-process-start-modal/case-supporting-process-start-modal.component';
-import {WidgetsService} from './tab/widgets/widgets.service';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
-  standalone: false,
   templateUrl: './case-detail.component.html',
   styleUrls: ['./case-detail.component.scss'],
   providers: [CaseTabService, CaseDetailLayoutService],
@@ -105,6 +107,7 @@ export class CaseDetailComponent
   @ViewChild('tabContentContainer')
   private readonly _tabContentContainer!: ElementRef<HTMLDivElement>;
 
+  public customCaseHeaderItems: Array<any> = [];
   public document: ValtimoDocument | null = null;
   public caseDefinitionKey: string;
   public documentDefinitionTitle: string;
@@ -164,6 +167,17 @@ export class CaseDetailComponent
         this.document = document;
         this._caseStatusKey$.next(document?.internalStatus || 'NOT_AVAILABLE');
         this._caseTags$.next(document?.caseTags || null);
+
+        if (
+          this.configService.config.customCaseHeader?.hasOwnProperty(
+            this.caseDefinitionKey.toLowerCase()
+          ) &&
+          this.customCaseHeaderItems.length === 0
+        ) {
+          this.configService.config.customCaseHeader[this.caseDefinitionKey.toLowerCase()]?.forEach(
+            item => this.getCustomCaseHeaderItem(item)
+          );
+        }
       }
     })
   );
@@ -204,10 +218,6 @@ export class CaseDetailComponent
           tagType: CaseTagsUtils.getTagTypeFromCaseTagColor(caseTag.color),
         }))
     )
-  );
-
-  public readonly hasCaseTags$: Observable<boolean> = this._caseTags$.pipe(
-    map(caseTags => Array.isArray(caseTags) && caseTags.length > 0)
   );
 
   public readonly userId$: Observable<string | undefined> = of(
@@ -270,9 +280,7 @@ export class CaseDetailComponent
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  public readonly $tabHorizontalOverflowDisabled =
-    this.caseTabService.$tabHorizontalOverflowDisabled;
-  public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
+  public readonly tabHorizontalOverflowDisabled = this.caseTabService.tabHorizontalOverflowDisabled;
 
   public readonly showTaskList$ = this.caseTabService.showTaskList$;
 
@@ -302,7 +310,6 @@ export class CaseDetailComponent
   private _pendingTab: TabImpl;
   private _observer!: ResizeObserver;
   private _tabsInit = false;
-
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -310,6 +317,7 @@ export class CaseDetailComponent
     private readonly caseStatusService: CaseStatusService,
     private readonly cdsThemeService: CdsThemeService,
     private readonly componentFactoryResolver: ComponentFactoryResolver,
+    private readonly configService: ConfigService,
     private readonly documentService: DocumentService,
     private readonly caseDetailLayoutService: CaseDetailLayoutService,
     private readonly caseService: CaseService,
@@ -333,7 +341,6 @@ export class CaseDetailComponent
     this._snapshot = this.route.snapshot.paramMap;
     this.caseDefinitionKey = this._snapshot.get('caseDefinitionKey') || '';
     this.documentId = this._snapshot.get('documentId') || '';
-    this.widgetsService.documentId = this.documentId;
   }
 
   public ngAfterViewInit(): void {
@@ -345,7 +352,6 @@ export class CaseDetailComponent
     this.setDocumentStyle();
     this.enableResetOnBackNavigation();
     this.openWidgetProcessSubscription();
-    this.openSmallTitleSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -353,7 +359,6 @@ export class CaseDetailComponent
     this.pageTitleService.enableReset();
     this.removeDocumentStyle();
     this._subscriptions.unsubscribe();
-    this.pageHeaderService.disableSmallTitle();
   }
 
   public getAllAssociatedProcessDefinitions(): void {
@@ -388,7 +393,7 @@ export class CaseDetailComponent
       this.widgetsService.startProcessEvent
         .pipe(switchMap(() => this.widgetsService.activeProcess$))
         .subscribe(processDefinitionCaseDefinition => {
-          this.startProcess(processDefinitionCaseDefinition);
+          this.startProcess(processDefinitionCaseDefinition[0]);
         })
     );
   }
@@ -515,8 +520,9 @@ export class CaseDetailComponent
 
   public onFormSubmitEvent(): void {
     this.caseDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
-    this.caseDetailLayoutService.refreshTasks();
-    this.tabLoader?.refreshView();
+
+    if (!this.tabLoader) return;
+    this.tabLoader.refreshView();
   }
 
   protected onConfirmRedirect(): void {
@@ -572,6 +578,40 @@ export class CaseDetailComponent
 
   public assignmentOfDocumentChanged(): void {
     this.caseService.refresh();
+  }
+
+  private getCustomCaseHeaderItem(item): void {
+    this.customCaseHeaderItems.push({
+      label: item['labelTranslationKey'] || '',
+      columnSize: item['columnSize'] || 3,
+      textSize: item['textSize'] || 'md',
+      customClass: item['customClass'] || '',
+      modifier: item['modifier'] || '',
+      value: item['propertyPaths']?.reduce(
+        (prev, curr) => prev + this.getStringFromDocumentPath(item, curr),
+        ''
+      ),
+    });
+  }
+
+  private getStringFromDocumentPath(item, path): string {
+    const prefix = item['propertyPaths'].indexOf(path) > 0 ? ' ' : '';
+    let string = this.getNestedProperty(this.document.content, path, item['noValueText']) || '';
+    const dateFormats = [moment.ISO_8601, 'MM-DD-YYYY', 'DD-MM-YYYY', 'YYYY-MM-DD'];
+    switch (item['modifier']) {
+      case 'age': {
+        if (moment(string, dateFormats, true).isValid()) {
+          string = moment().diff(string, 'years');
+        }
+        break;
+      }
+      default: {
+        if (moment(string, dateFormats, true).isValid()) {
+          string = moment(string).format('DD-MM-YYYY');
+        }
+      }
+    }
+    return prefix + string;
   }
 
   private getNestedProperty(obj: any, path: string, defaultValue: any): any {
@@ -640,6 +680,7 @@ export class CaseDetailComponent
           },
         ],
       }),
+      duration: CARBON_CONSTANTS.notificationDuration,
     });
   }
 
@@ -671,20 +712,6 @@ export class CaseDetailComponent
         : longestName < 40
           ? CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH.medium
           : CASE_DETAIL_START_PROCESS_DROPDOWN_WIDTH.large
-    );
-  }
-
-  private openSmallTitleSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([this.hasCaseTags$, this.compactMode$]).subscribe(
-        ([hasCaseTags, compactMode]) => {
-          if (!compactMode && hasCaseTags) {
-            this.pageHeaderService.enableSmallTitle();
-          } else {
-            this.pageHeaderService.disableSmallTitle();
-          }
-        }
-      )
     );
   }
 }

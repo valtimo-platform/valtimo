@@ -1,58 +1,16 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import {CommonModule} from '@angular/common';
 import {
   Component,
   EventEmitter,
   HostBinding,
-  Injector,
   OnDestroy,
   OnInit,
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {ArrowLeft16} from '@carbon/icons';
-import {FormioForm} from '@formio/angular';
+import {BehaviorSubject, combineLatest, map, Observable, of, Subscription} from 'rxjs';
+import {distinctUntilChanged, filter, switchMap, take, tap} from 'rxjs/operators';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {
-  BreadcrumbService,
-  CarbonListModule,
-  ConfirmationModalModule,
-  EditorModel,
-  EditorModule,
-  FormIoModule,
-  FormIoTagsService,
-  PageHeaderService,
-  PageTitleService,
-  RenderInPageHeaderDirective,
-  ShellService,
-  SpinnerModule,
-  ValtimoCdsModalDirective,
-  WidgetModule,
-} from '@valtimo/components';
-import {
-  DraftVersionService,
-  EnvironmentService,
-  getCaseManagementRouteParams,
-  getCaseManagementRouteParamsAndContext,
-  GlobalNotificationService,
-} from '@valtimo/shared';
 import {
   ButtonModule,
   DialogModule,
@@ -65,13 +23,33 @@ import {
   TabsModule,
   TagModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, of, Subscription} from 'rxjs';
-import {distinctUntilChanged, filter, switchMap, take, tap} from 'rxjs/operators';
-import {EDIT_TABS, FormDefinition, ModifyFormDefinitionRequest} from '../../models';
+import {
+  BreadcrumbService,
+  CARBON_CONSTANTS,
+  CarbonListModule,
+  ConfirmationModalModule,
+  EditorModel,
+  EditorModule,
+  FormIoModule,
+  PageHeaderService,
+  PageTitleService,
+  PendingChangesComponent,
+  RenderInPageHeaderDirectiveModule,
+  ShellService,
+  SpinnerModule,
+  ValtimoCdsModalDirectiveModule,
+  WidgetModule,
+} from '@valtimo/components';
 import {FormManagementService} from '../../services';
-import {getContextObservable} from '../../utils';
+import {EDIT_TABS, FormDefinition, ModifyFormDefinitionRequest} from '../../models';
+import {FormioForm} from '@formio/angular';
+import {CommonModule} from '@angular/common';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {FormManagementDuplicateComponent} from '../form-management-duplicate';
 import {FormManagementUploadComponent} from '../form-management-upload';
+import {ArrowLeft16} from '@carbon/icons';
+import {GlobalNotificationService} from '@valtimo/layout';
+import {getCaseManagementRouteParams, getContextObservable} from '../../utils';
 
 @Component({
   selector: 'valtimo-form-management-edit',
@@ -89,11 +67,11 @@ import {FormManagementUploadComponent} from '../form-management-upload';
     FormsModule,
     WidgetModule,
     CarbonListModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     TabsModule,
     EditorModule,
     FormIoModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     DialogModule,
     TagModule,
     ConfirmationModalModule,
@@ -104,7 +82,10 @@ import {FormManagementUploadComponent} from '../form-management-upload';
     LoadingModule,
   ],
 })
-export class FormManagementEditComponent implements OnInit, OnDestroy {
+export class FormManagementEditComponent
+  extends PendingChangesComponent
+  implements OnInit, OnDestroy
+{
   @HostBinding('class') public readonly class = 'valtimo-form-management-edit';
 
   @Output() public readonly deleteEvent = new EventEmitter<void>();
@@ -128,25 +109,10 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   public readonly context$ = getContextObservable(this.route);
 
   public readonly caseManagementRouteParams$ = this.context$.pipe(
-    filter(context => context === 'case'),
-    switchMap(() => getCaseManagementRouteParams(this.route))
+    switchMap(context => getCaseManagementRouteParams(context, this.route))
   );
 
   private readonly _formDefinition$ = new BehaviorSubject<FormDefinition | null>(null);
-
-  public readonly canUpdateGlobalConfiguration$ =
-    this.environmentService.canUpdateGlobalConfiguration();
-
-  public readonly isDraftVersion$: Observable<boolean> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    switchMap(params =>
-      this.draftVersionService.isDraftVersion(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag
-      )
-    )
-  );
 
   private get _formDefinition(): FormDefinition {
     return this._formDefinition$.getValue();
@@ -164,6 +130,8 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
         this._editorInitialized = true;
         return;
       }
+
+      this.pendingChanges = true;
     })
   );
 
@@ -190,18 +158,14 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly translateService: TranslateService,
     private readonly notificationService: GlobalNotificationService,
-    private readonly breadcrumbService: BreadcrumbService,
-    private readonly environmentService: EnvironmentService,
-    private readonly draftVersionService: DraftVersionService,
-    private readonly formIoTagsService: FormIoTagsService,
-    private readonly injector: Injector
+    private readonly breadcrumbService: BreadcrumbService
   ) {
+    super();
     this.iconService.registerAll([ArrowLeft16]);
-    this.formIoTagsService.reregisterTags(this.injector);
   }
 
   public ngOnInit(): void {
-    this.loadFormDefinition().subscribe();
+    this.loadFormDefinition();
     this.checkToOpenUploadModal();
     this.pageTitleService.disableReset();
     this.initBreadcrumbs();
@@ -231,14 +195,16 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   }
 
   public deleteFormDefinition(definition: FormDefinition): void {
-    getCaseManagementRouteParamsAndContext(this.route)
+    this.pendingChanges = false;
+
+    combineLatest([this.context$, this.caseManagementRouteParams$])
       .pipe(
         switchMap(([context, caseManagementRouteParams]) => {
           switch (context) {
             case 'case':
               return this.formManagementService.deleteFormDefinitionCase(
-                caseManagementRouteParams?.caseDefinitionKey,
-                caseManagementRouteParams?.caseDefinitionVersionTag,
+                caseManagementRouteParams.caseDefinitionKey,
+                caseManagementRouteParams.caseDefinitionVersionTag,
                 definition.id
               );
 
@@ -252,6 +218,8 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
         next: () => {
           this.notificationService.showToast({
             type: 'success',
+            duration: CARBON_CONSTANTS.notificationDuration,
+            showClose: true,
             title: this.translateService.instant('formManagement.notifications.deleted'),
           });
           this.navigateBack();
@@ -259,6 +227,8 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
         error: () => {
           this.notificationService.showToast({
             type: 'error',
+            duration: CARBON_CONSTANTS.notificationDuration,
+            showClose: true,
             title: this.translateService.instant('formManagement.notifications.deletionError'),
           });
         },
@@ -270,91 +240,87 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   }
 
   public modifyFormDefinition(definition: FormDefinition): void {
-    combineLatest([this.pageTitleService.customPageTitle$, this.editParam$])
-      .pipe(take(1))
-      .subscribe(([customPageTitle, formDefinitionId]) => {
-        if (!customPageTitle || !formDefinitionId) return;
+    this.pendingChanges = true;
 
-        const form = JSON.stringify(
-          this.modifiedFormDefinition !== null
-            ? this.modifiedFormDefinition
-            : definition.formDefinition
-        );
+    const form = JSON.stringify(
+      this.modifiedFormDefinition !== null ? this.modifiedFormDefinition : definition.formDefinition
+    );
 
-        const request: ModifyFormDefinitionRequest = {
-          id: formDefinitionId,
-          name: customPageTitle,
-          formDefinition: form,
-        };
+    const request: ModifyFormDefinitionRequest = {
+      id: definition.id,
+      name: definition.name,
+      formDefinition: form,
+    };
 
-        getCaseManagementRouteParamsAndContext(this.route)
-          .pipe(
-            switchMap(([context, caseManagementRouteParams]) => {
-              switch (context) {
-                case 'case':
-                  return this.formManagementService.modifyFormDefinitionCase(
-                    caseManagementRouteParams.caseDefinitionKey,
-                    caseManagementRouteParams.caseDefinitionVersionTag,
-                    request
-                  );
+    combineLatest([this.context$, this.caseManagementRouteParams$])
+      .pipe(
+        switchMap(([context, caseManagementRouteParams]) => {
+          switch (context) {
+            case 'case':
+              return this.formManagementService.modifyFormDefinitionCase(
+                caseManagementRouteParams.caseDefinitionKey,
+                caseManagementRouteParams.caseDefinitionVersionTag,
+                request
+              );
 
-                case 'independent':
-                default:
-                  return this.formManagementService.modifyFormDefinition(request);
-              }
-            })
-          )
-          .subscribe({
-            next: () => {
-              this.notificationService.showToast({
-                type: 'success',
-                title: this.translateService.instant('formManagement.notifications.deployed'),
-              });
-
-              this.navigateBack();
-            },
-            error: () => {
-              this.notificationService.showToast({
-                type: 'error',
-                title: this.translateService.instant(
-                  'formManagement.notifications.deploymentError'
-                ),
-              });
-            },
+            case 'independent':
+            default:
+              return this.formManagementService.modifyFormDefinition(request);
+          }
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.notificationService.showToast({
+            type: 'success',
+            duration: CARBON_CONSTANTS.notificationDuration,
+            showClose: true,
+            title: this.translateService.instant('formManagement.notifications.deployed'),
           });
+
+          this.pendingChanges = false;
+          this.navigateBack();
+        },
+        error: () => {
+          this.notificationService.showToast({
+            type: 'error',
+            duration: CARBON_CONSTANTS.notificationDuration,
+            showClose: true,
+            title: this.translateService.instant('formManagement.notifications.deploymentError'),
+          });
+        },
       });
   }
 
-  private loadFormDefinition(setDefinition = true): Observable<FormDefinition> {
-    return getCaseManagementRouteParamsAndContext(this.route).pipe(
-      switchMap(([context, params]) => combineLatest([of(context), of(params), this.editParam$])),
-      switchMap(([context, caseManagementRouteParams, formDefinitionId]) => {
-        if (!formDefinitionId) return of(null);
+  private loadFormDefinition(): void {
+    combineLatest([this.context$, this.caseManagementRouteParams$, this.editParam$])
+      .pipe(
+        switchMap(([context, caseManagementRouteParams, formDefinitionId]) => {
+          if (!formDefinitionId) return of(null);
 
-        switch (context) {
-          case 'case':
-            return this.formManagementService.getFormDefinitionCase(
-              caseManagementRouteParams.caseDefinitionKey,
-              caseManagementRouteParams.caseDefinitionVersionTag,
-              formDefinitionId
-            );
-          case 'independent':
-          default:
-            return this.formManagementService.getFormDefinition(formDefinitionId);
-        }
-      }),
-      tap((definition: FormDefinition | null) => {
+          switch (context) {
+            case 'case':
+              return this.formManagementService.getFormDefinitionCase(
+                caseManagementRouteParams.caseDefinitionKey,
+                caseManagementRouteParams.caseDefinitionVersionTag,
+                formDefinitionId
+              );
+            case 'independent':
+            default:
+              return this.formManagementService.getFormDefinition(formDefinitionId);
+          }
+        })
+      )
+      .subscribe((definition: FormDefinition | null) => {
         if (!definition) return;
 
-        if (setDefinition) this._formDefinition$.next(definition);
-        if (setDefinition)
-          this.jsonFormDefinition$.next({
-            value: JSON.stringify(definition.formDefinition),
-            language: 'json',
-          });
+        this._formDefinition$.next(definition);
         this.pageTitleService.setCustomPageTitle(definition.name);
-      })
-    );
+        this.jsonFormDefinition$.next({
+          value: JSON.stringify(definition.formDefinition),
+          language: 'json',
+        });
+      });
   }
 
   public downloadFormDefinition(definition: FormDefinition): void {
@@ -371,7 +337,6 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
 
   public onSelectedTab(tab: EDIT_TABS): void {
     this.activeTab = tab;
-    this.formIoTagsService.reregisterTags(this.injector);
 
     if (tab === EDIT_TABS.BUILDER) {
       return;
@@ -423,13 +388,14 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
   }
 
   public showDuplicateModal(definition: FormDefinition): void {
-    getCaseManagementRouteParamsAndContext(this.route)
+    combineLatest([this.context$, this.caseManagementRouteParams$])
       .pipe(take(1))
       .subscribe(([context, params]) => {
         this.modalService.create({
           component: FormManagementDuplicateComponent,
           inputs: {
             formToDuplicate: definition,
+            disabledPendingChangesCallback: this.disablePendingChanges,
             context,
             params,
           },
@@ -452,14 +418,11 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
 
     this.modifiedFormDefinition = newDefinition;
     definition.formDefinition = newDefinition;
-    this._formDefinition$.next(definition);
 
     this.jsonFormDefinition$.next({
       value: JSON.stringify(newDefinition),
       language: 'json',
     });
-
-    this.loadFormDefinition(false).subscribe(() => this.reloading$.next(false));
   }
 
   protected onConfirmRedirect(): void {
@@ -483,8 +446,12 @@ export class FormManagementEditComponent implements OnInit, OnDestroy {
     this.router.navigate(['../'], {relativeTo: this.route});
   }
 
+  private disablePendingChanges = () => {
+    this.pendingChanges = false;
+  };
+
   private initBreadcrumbs(): void {
-    getCaseManagementRouteParamsAndContext(this.route)
+    combineLatest([this.context$, this.caseManagementRouteParams$])
       .pipe(take(1))
       .subscribe(([context, params]) => {
         if (context === 'independent') return;

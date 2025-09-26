@@ -15,11 +15,10 @@
  */
 
 import {TestBed} from '@angular/core/testing';
-import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
+import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {ProcessService} from './process.service';
-import {VALTIMO_CONFIG} from '@valtimo/shared';
+import {VALTIMO_CONFIG} from '@valtimo/config';
 import {environment} from '@src/environments/environment';
-import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 
 describe('ProcessService', () => {
   let mockConfig;
@@ -30,13 +29,8 @@ describe('ProcessService', () => {
     mockConfig = {endpointUri: '/api/v1/'};
 
     TestBed.configureTestingModule({
-      imports: [],
-      providers: [
-        ProcessService,
-        {provide: VALTIMO_CONFIG, useValue: environment},
-        provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting(),
-      ],
+      imports: [HttpClientTestingModule],
+      providers: [ProcessService, {provide: VALTIMO_CONFIG, useValue: environment}],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);

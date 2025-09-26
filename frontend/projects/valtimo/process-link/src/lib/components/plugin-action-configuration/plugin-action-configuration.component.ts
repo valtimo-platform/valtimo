@@ -33,7 +33,6 @@ import {
 } from '../../models';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-plugin-action-configuration',
   templateUrl: './plugin-action-configuration.component.html',
   styleUrls: ['./plugin-action-configuration.component.scss'],
@@ -85,8 +84,11 @@ export class PluginActionConfigurationComponent implements OnInit, OnDestroy {
   }
 
   onValid(valid: boolean): void {
-    if (valid) this.buttonService.enableSaveButton();
-    else this.buttonService.disableSaveButton();
+    if (valid) {
+      this.buttonService.enableSaveButton();
+    } else {
+      this.buttonService.disableSaveButton();
+    }
   }
 
   onConfiguration(configuration: PluginConfigurationData): void {

@@ -18,11 +18,9 @@ import {ProcessDocumentDefinition} from '@valtimo/document';
 import {ProcessDefinition} from '@valtimo/process';
 import {ProcessLink} from '@valtimo/process-link';
 
-interface ProcessDefinitionResult {
+export interface CaseProcessInstance {
   bpmn20Xml: string;
-  processCaseLink?: ProcessDocumentDefinition;
+  processCaseLink: ProcessDocumentDefinition;
   processDefinition: ProcessDefinition;
   processLinks: ProcessLink[];
 }
-
-export {ProcessDefinitionResult};

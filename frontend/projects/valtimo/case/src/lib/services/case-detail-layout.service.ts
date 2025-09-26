@@ -1,19 +1,3 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import {Injectable} from '@angular/core';
 import {FormDisplayType, FormSize, TaskWithProcessLink} from '@valtimo/process-link';
 import {BehaviorSubject, combineLatest, filter, map, Observable, startWith} from 'rxjs';
@@ -40,11 +24,6 @@ export class CaseDetailLayoutService {
   private readonly _formDisplaySize$ = new BehaviorSubject<FormSize>(
     CASE_DETAIL_DEFAULT_DISPLAY_SIZE
   );
-  private readonly _refreshTasks$ = new BehaviorSubject<null>(null);
-
-  public get refreshTasks$(): Observable<null> {
-    return this._refreshTasks$.asObservable();
-  }
 
   public get tabContentContainerWidth$(): Observable<number | null> {
     return this._tabContentContainerWidth$.pipe(filter(width => typeof width === 'number'));
@@ -107,10 +86,6 @@ export class CaseDetailLayoutService {
 
   public setFormDisplaySize(size: FormSize): void {
     this._formDisplaySize$.next(size);
-  }
-
-  public refreshTasks(): void {
-    this._refreshTasks$.next(null);
   }
 
   private getInitialLayout(): CaseDetailLayout {

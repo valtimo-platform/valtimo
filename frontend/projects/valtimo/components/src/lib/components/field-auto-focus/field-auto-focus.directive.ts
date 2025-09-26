@@ -18,7 +18,6 @@ import {AfterContentInit, Directive, ElementRef} from '@angular/core';
 
 @Directive({
   selector: '[valtimoFieldAutoFocus]',
-  standalone: false,
 })
 export class FieldAutoFocusDirective implements AfterContentInit {
   constructor(private el: ElementRef) {}

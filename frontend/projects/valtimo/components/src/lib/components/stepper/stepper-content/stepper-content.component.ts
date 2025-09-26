@@ -25,7 +25,6 @@ import {StepperService} from '../../../services/stepper.service';
   selector: 'v-stepper-content',
   templateUrl: './stepper-content.component.html',
   styleUrls: ['./stepper-content.component.scss'],
-  standalone: false,
 })
 export class StepperContentComponent implements AfterContentInit {
   @ContentChildren(StepperStepComponent) stepComponents!: QueryList<StepperStepComponent>;

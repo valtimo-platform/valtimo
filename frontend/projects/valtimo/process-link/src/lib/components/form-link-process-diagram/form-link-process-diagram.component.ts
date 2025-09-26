@@ -32,7 +32,6 @@ import {map} from 'rxjs/operators';
 import {PageTitleService} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-form-link-process-diagram',
   templateUrl: './form-link-process-diagram.component.html',
   styleUrls: ['./form-link-process-diagram.component.scss'],

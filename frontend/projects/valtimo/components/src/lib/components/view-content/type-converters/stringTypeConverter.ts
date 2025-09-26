@@ -21,10 +21,6 @@ export class StringTypeConverter implements TypeConverter {
     return 'string';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
   public convert(value: any): string {
     if (!value) return '-';
 

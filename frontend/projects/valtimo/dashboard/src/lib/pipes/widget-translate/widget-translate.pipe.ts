@@ -19,7 +19,6 @@ import {Observable} from 'rxjs';
 import {WidgetTranslationService} from '../../services';
 
 @Pipe({
-  standalone: false,
   name: 'widgetTranslate',
 })
 export class WidgetTranslatePipe implements PipeTransform {

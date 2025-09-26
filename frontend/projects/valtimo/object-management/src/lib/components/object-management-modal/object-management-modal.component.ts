@@ -25,7 +25,6 @@ import {FormService} from '@valtimo/form';
 import {VModalComponent, ModalService} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-object-management-modal',
   templateUrl: './object-management-modal.component.html',
   styleUrls: ['./object-management-modal.component.scss'],
@@ -46,7 +45,7 @@ export class ObjectManagementModalComponent implements AfterViewInit, OnDestroy 
   readonly selectedObjecttype$ = new BehaviorSubject<string | null>(null);
 
   readonly formDefinitions$: Observable<Array<{id: string; text: string}>> = this.formService
-    .getAllUnlinkedFormDefinitions()
+    .getAllFormDefinitions()
     .pipe(
       map(results =>
         results?.map(configuration => ({

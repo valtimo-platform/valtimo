@@ -15,11 +15,11 @@
  */
 
 import {Pipe, PipeTransform} from '@angular/core';
-import {MenuItem} from '@valtimo/shared';
+import {MenuItem} from '@valtimo/config';
 import {combineLatest, map, Observable} from 'rxjs';
 import {TranslateService} from '@ngx-translate/core';
 
-@Pipe({name: 'menuItemTranslate', standalone: false})
+@Pipe({name: 'menuItemTranslate'})
 export class MenuItemTranslationPipe implements PipeTransform {
   constructor(private readonly translateService: TranslateService) {}
 

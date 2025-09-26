@@ -32,7 +32,6 @@ import heatmap from 'heatmap.js-fixed/build/heatmap.js';
   selector: 'valtimo-bpmn-js-diagram',
   templateUrl: './bpmn-js-diagram.component.html',
   styleUrls: ['./bpmn-js-diagram.component.css'],
-  standalone: false,
 })
 export class BpmnJsDiagramComponent implements OnInit, AfterContentInit, OnDestroy {
   private bpmnViewer: BpmnViewer;

@@ -38,7 +38,7 @@ import {
   SearchField,
   SearchFieldValues,
   SortState,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,
@@ -50,7 +50,7 @@ import {
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
-import {Tab, Tabs, TagType} from 'carbon-components-angular';
+import {Tab, Tabs} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
@@ -76,14 +76,12 @@ import {
 } from '../../constants';
 import {
   CAN_CREATE_CASE_PERMISSION,
-  CAN_EXPORT_CASE_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
 import {
   CaseBulkAssignService,
   CaseColumnService,
-  CaseExportService,
   CaseListAssigneeService,
   CaseListCaseTagService,
   CaseListPaginationService,
@@ -95,7 +93,6 @@ import {
 import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.component';
 
 @Component({
-  standalone: false,
   templateUrl: './case-list.component.html',
   styleUrls: ['./case-list.component.scss'],
   providers: [
@@ -107,7 +104,6 @@ import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.c
     CaseListSearchService,
     CaseListStatusService,
     CaseListCaseTagService,
-    CaseExportService,
   ],
 })
 export class CaseListComponent implements OnInit, OnDestroy {
@@ -125,7 +121,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public pagination!: Pagination;
   public canHaveAssignee!: boolean;
   public visibleCaseTabs: Array<CaseListTab> | null = null;
-  public loadingExport = false;
 
   public readonly defaultTabs = DEFAULT_CASE_LIST_TABS;
   public readonly tableTranslations = CASE_LIST_TABLE_TRANSLATIONS;
@@ -137,7 +132,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
-  public readonly disableExportButton$ = new BehaviorSubject<boolean>(false);
 
   public readonly searchFields$: Observable<Array<SearchField> | null> =
     this.searchService.documentSearchFields$.pipe(tap(() => (this.loadingSearchFields = false)));
@@ -173,22 +167,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
     )
   );
 
-  public readonly canExportCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
-    switchMap(caseDefinitionKey =>
-      combineLatest([
-        this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
-          resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-          identifier: caseDefinitionKey,
-        }),
-        this.documentService.getCaseList(caseDefinitionKey),
-      ])
-    ),
-    switchMap(([canExportPermission, caseList]) => {
-      const isExportableColumns = caseList.some(caseListitem => caseListitem.exportable);
-      return of(canExportPermission && isExportableColumns);
-    })
-  );
-
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
   public readonly assigneeFilter$: Observable<AssigneeFilter> =
     this.assigneeService.assigneeFilter$.pipe(
@@ -202,6 +180,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
       this.loadingPagination = false;
     })
   );
+  private readonly _hasEnvColumnConfig$: Observable<boolean> = this.listService.hasEnvColumnConfig$;
   private readonly _hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
   private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
   private readonly _columns$: Observable<Array<DefinitionColumn>> =
@@ -236,6 +215,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly fields$: Observable<Array<ListField>> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
+    this._hasEnvColumnConfig$,
     this._hasApiColumnConfig$,
     this.statuses$,
     this.translateService.stream('key'),
@@ -243,7 +223,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     tap(([canHaveAssignee]) => {
       this.canHaveAssignee = canHaveAssignee;
     }),
-    map(([canHaveAssignee, columns, hasApiConfig, statuses]) => {
+    map(([canHaveAssignee, columns, hasEnvConfig, hasApiConfig, statuses]) => {
       this._internalStatusKeys$.next([
         ...this._internalStatusKeys$.getValue(),
         ...columns.reduce(
@@ -266,6 +246,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
       );
       const listFields = this.columnService.mapDefinitionColumnsToListFields(
         filteredAssigneeColumns,
+        hasEnvConfig,
         hasApiConfig
       );
       const fieldsToReturn = this.assigneeService.addAssigneeListField(
@@ -325,6 +306,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.statusService.selectedCaseStatuses$,
         this.caseListCaseTagService.selectedCaseTags$,
         this.listService.forceRefresh$,
+        this._hasEnvColumnConfig$,
         this._hasApiColumnConfig$,
         this.statusService.caseStatuses$,
         this.caseListCaseTagService.caseTags$,
@@ -376,9 +358,11 @@ export class CaseListComponent implements OnInit, OnDestroy {
         selectedStatuses,
         selectedCaseTags,
         _,
+        hasEnvColumnConfig,
         hasApiColumnConfig,
         allStatuses,
       ]) => {
+        const obsEnv: Observable<boolean> = of(hasEnvColumnConfig);
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
         const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
           status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
@@ -386,23 +370,25 @@ export class CaseListComponent implements OnInit, OnDestroy {
         const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
-            documents: !hasApiColumnConfig
-              ? this.documentService.getDocumentsSearch(
-                  documentSearchRequest,
-                  'AND',
-                  assigneeFilter,
-                  this.searchService.mapSearchValuesToFilters(searchValues),
-                  statusKeys,
-                  caseTagsKeys
-                )
-              : this.documentService.getSpecifiedDocumentsSearch(
-                  documentSearchRequest,
-                  'AND',
-                  assigneeFilter,
-                  this.searchService.mapSearchValuesToFilters(searchValues),
-                  statusKeys,
-                  caseTagsKeys
-                ),
+            documents:
+              hasEnvColumnConfig || !hasApiColumnConfig
+                ? this.documentService.getDocumentsSearch(
+                    documentSearchRequest,
+                    'AND',
+                    assigneeFilter,
+                    this.searchService.mapSearchValuesToFilters(searchValues),
+                    statusKeys,
+                    caseTagsKeys
+                  )
+                : this.documentService.getSpecifiedDocumentsSearch(
+                    documentSearchRequest,
+                    'AND',
+                    assigneeFilter,
+                    this.searchService.mapSearchValuesToFilters(searchValues),
+                    statusKeys,
+                    caseTagsKeys
+                  ),
+            hasEnvColumnConfig: obsEnv,
             hasApiColumnConfig: obsApi,
             isSearchResult: of(true),
             allStatuses: of(allStatuses),
@@ -410,23 +396,25 @@ export class CaseListComponent implements OnInit, OnDestroy {
         }
 
         return forkJoin({
-          documents: !hasApiColumnConfig
-            ? this.documentService.getDocumentsSearch(
-                documentSearchRequest,
-                'AND',
-                assigneeFilter,
-                undefined,
-                statusKeys,
-                caseTagsKeys
-              )
-            : this.documentService.getSpecifiedDocumentsSearch(
-                documentSearchRequest,
-                'AND',
-                assigneeFilter,
-                undefined,
-                statusKeys,
-                caseTagsKeys
-              ),
+          documents:
+            hasEnvColumnConfig || !hasApiColumnConfig
+              ? this.documentService.getDocumentsSearch(
+                  documentSearchRequest,
+                  'AND',
+                  assigneeFilter,
+                  undefined,
+                  statusKeys,
+                  caseTagsKeys
+                )
+              : this.documentService.getSpecifiedDocumentsSearch(
+                  documentSearchRequest,
+                  'AND',
+                  assigneeFilter,
+                  undefined,
+                  statusKeys,
+                  caseTagsKeys
+                ),
+          hasEnvColumnConfig: obsEnv,
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
           allStatuses: of(allStatuses),
@@ -465,6 +453,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     map(
       (res: {
         documents: Documents | SpecifiedDocuments;
+        hasEnvColumnConfig: boolean;
         hasApiColumnConfig: boolean;
         isSearchResult: boolean;
         selectedStatuses: InternalCaseStatus[];
@@ -477,7 +466,11 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.updateNoResultsMessage(res.isSearchResult);
 
         return {
-          data: this.listService.mapDocuments(res.documents, res.hasApiColumnConfig),
+          data: this.listService.mapDocuments(
+            res.documents,
+            res.hasEnvColumnConfig,
+            res.hasApiColumnConfig
+          ),
           statuses: res.allStatuses,
           statusColumnKeys: res.statusColumnKeys,
           caseTagsKeys: res.caseTagsKeys,
@@ -486,7 +479,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
     ),
     map(res => {
       if (!Array.isArray(res.data)) return res.data;
-      this.disableExportButton$.next(res.data.length === 0 ? true : false);
       return res.data.map(item => {
         const mappedInternalStatusColumns = res.statusColumnKeys.reduce((acc, curr) => {
           const status = res.statuses.find(
@@ -548,8 +540,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly permissionService: PermissionService,
     private readonly statusService: CaseListStatusService,
-    private readonly caseListCaseTagService: CaseListCaseTagService,
-    private readonly caseExportService: CaseExportService
+    private readonly caseListCaseTagService: CaseListCaseTagService
   ) {}
 
   public ngOnInit(): void {
@@ -576,12 +567,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         `/cases/${caseDefinitionKey}`,
         this.route.snapshot.queryParams
       );
-
-      if (item.ctrlClick) {
-        window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
-      } else {
-        this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
-      }
+      this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
     });
   }
 
@@ -686,12 +672,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.listActionsComponent.startCase();
   }
 
-  public export(): void {
-    this.caseExportService
-      .downloadExport()
-      .subscribe(data => (this.loadingExport = data.isLoading));
-  }
-
   public forceRefresh(): void {
     this.listService.forceRefresh();
   }
@@ -750,9 +730,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
             title: 'case.noResults.search.title',
           }
         : {
-            description: `case.noResults.${this.activeTab ?? 'ALL'}.description`,
+            description: `dossier.noResults.${this.activeTab ?? 'ALL'}.description`,
             isSearchResult,
-            title: `case.noResults.${this.activeTab ?? 'ALL'}.title`,
+            title: `dossier.noResults.${this.activeTab ?? 'ALL'}.title`,
           }
     );
   }

@@ -26,7 +26,6 @@ import {Step} from '../../../models';
   selector: 'v-stepper-header',
   templateUrl: './stepper-header.component.html',
   styleUrls: ['./stepper-header.component.scss'],
-  standalone: false,
 })
 export class StepperHeaderComponent {
   steps$: Observable<Array<Step>> = this.stepperService.steps$;

@@ -22,12 +22,10 @@ import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
   selector: 'v-input-label',
   templateUrl: './input-label.component.html',
   styleUrls: ['./input-label.component.scss'],
-  standalone: false,
 })
 export class InputLabelComponent {
   @Input() public name = '';
   @Input() public tooltip = '';
-  @Input() public tooltipTranslationKey = '';
   @Input() public largeMargin = false;
   @Input() public small = false;
   @Input() public noMargin = false;

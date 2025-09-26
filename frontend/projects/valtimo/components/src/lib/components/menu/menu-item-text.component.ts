@@ -15,14 +15,13 @@
  */
 
 import {Component, EventEmitter, Input, Output, ViewEncapsulation} from '@angular/core';
-import {MenuItem} from '@valtimo/shared';
+import {MenuItem} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-menu-item-text',
   templateUrl: './menu-item-text.component.html',
   styleUrls: ['./menu-item-text.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
 })
 export class MenuItemTextComponent {
   @Input() menuItem: MenuItem;

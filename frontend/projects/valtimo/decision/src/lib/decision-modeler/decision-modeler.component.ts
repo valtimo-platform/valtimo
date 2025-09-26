@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {DecisionService} from '../services/decision.service';
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
+import {DecisionService} from '../decision.service';
+import {AfterViewInit, Component} from '@angular/core';
 import DmnJS from 'dmn-js/dist/dmn-modeler.development.js';
-import {ActivatedRoute, Router, RouterModule} from '@angular/router';
-import {DecisionXml} from '../models';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Decision, DecisionXml} from '../models';
 import {migrateDiagram} from '@bpmn-io/dmn-migrate';
+import {LayoutService} from '@valtimo/layout';
 import {
   BehaviorSubject,
   catchError,
@@ -33,220 +34,166 @@ import {
   take,
   tap,
 } from 'rxjs';
-import {
-  BreadcrumbService,
-  FitPageDirective,
-  PageHeaderService,
-  PageTitleService,
-  PendingChangesComponent,
-  RenderInPageHeaderDirective,
-  SelectedValue,
-  SelectModule as ValtimoSelectModule,
-  WidgetModule,
-} from '@valtimo/components';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {AlertService, PageTitleService, SelectedValue, SelectItem} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
 import {EMPTY_DECISION} from './empty-decision';
-import {CommonModule} from '@angular/common';
-import {
-  ButtonModule,
-  DialogModule,
-  IconModule,
-  IconService,
-  ModalModule,
-  SelectModule,
-} from 'carbon-components-angular';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-  getContextObservable,
-  GlobalNotificationService,
-  ManagementContext,
-} from '@valtimo/shared';
-import {ArrowLeft16, Deploy16, Download16} from '@carbon/icons';
 
 declare const $: any;
 
 @Component({
   selector: 'valtimo-decision-modeler',
-  standalone: true,
   templateUrl: './decision-modeler.component.html',
   styleUrls: ['./decision-modeler.component.scss'],
-  imports: [
-    CommonModule,
-    RouterModule,
-    ModalModule,
-    SelectModule,
-    WidgetModule,
-    ValtimoSelectModule,
-    TranslateModule,
-    RenderInPageHeaderDirective,
-    ButtonModule,
-    IconModule,
-    FitPageDirective,
-    DialogModule,
-  ],
 })
-export class DecisionModelerComponent
-  extends PendingChangesComponent
-  implements OnInit, OnDestroy, AfterViewInit
-{
+export class DecisionModelerComponent implements AfterViewInit {
   private CLASS_NAMES = {
     drd: 'dmn-icon-lasso-tool',
     decisionTable: 'dmn-icon-decision-table',
     literalExpression: 'dmn-icon-literal-expression',
   };
-
   private $container!: any;
   private $tabs!: any;
   private dmnModeler!: DmnJS;
 
-  public readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
-  public readonly isCreating$ = new BehaviorSubject<boolean>(false);
-  public readonly selectionId$ = new BehaviorSubject<string>('');
+  readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
 
-  private _fileName!: string;
+  readonly isCreating$ = new BehaviorSubject<boolean>(false);
 
-  public readonly caseManagementRouteParams$: Observable<CaseManagementParams | undefined> =
-    getCaseManagementRouteParams(this.route);
-
-  public readonly context$: Observable<ManagementContext | null> = getContextObservable(this.route);
-  public readonly isIndependent$ = this.context$.pipe(map(context => context === 'independent'));
-
-  public readonly compactMode$ = this.pageHeaderService.compactMode$;
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.caseManagementRouteParams$,
-    this.context$,
-  ]).pipe(
-    switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey ?? '',
-        params?.caseDefinitionVersionTag ?? '',
-        context ?? ''
-      )
-    )
-  );
-
-  private readonly decisionId$ = this.route.params.pipe(
+  private readonly decisionId$: Observable<string | null> = this.route.params.pipe(
     map(params => params?.id),
-    tap(id => {
-      this.isCreating$.next(id === 'create');
-      this.versionSelectionDisabled$.next(true);
-    }),
-    filter(id => !!id && id !== 'create')
+    tap(decisionId => this.isCreating$.next(decisionId === 'create')),
+    filter(decisionId => !!decisionId && decisionId !== 'create'),
+    tap(() => this.versionSelectionDisabled$.next(true))
   );
 
-  public readonly decision$ = this.decisionId$.pipe(
-    switchMap(id => this.decisionService.getDecisionById(id)),
+  readonly selectionId$ = new BehaviorSubject<string>('');
+
+  private readonly decision$: Observable<Decision> = this.decisionId$.pipe(
+    switchMap(decisionId => this.decisionService.getDecisionById(decisionId)),
     tap(decision => {
-      this._fileName = decision.resource;
-      if (decision) this.selectionId$.next(decision.id);
+      if (decision) {
+        this.selectionId$.next(decision.id);
+      }
     })
   );
 
-  public readonly decisionTitle$ = this.decision$.pipe(
-    map(d => d?.name || d?.key || '-'),
-    tap(title => this.pageTitleService.setCustomPageTitle(title))
+  readonly decisionTitle$: Observable<string> = this.decision$.pipe(
+    map(decision => decision?.key || ''),
+    tap(decisionTitle => {
+      this.pageTitleService.setCustomPageTitle(decisionTitle);
+    })
   );
 
-  private readonly _refreshDecisionSelectItems$ = new BehaviorSubject<null>(null);
-  public readonly decisionVersionSelectItems$ = this._refreshDecisionSelectItems$.pipe(
-    switchMap(() => combineLatest([this.decision$, this.decisionService.getDecisions()])),
-    map(([current, list]) => {
-      const filtered = list.filter(d => d.key === current.key);
-      return [...filtered.map(d => ({id: d.id, text: d.version.toString()}))].sort(
-        (a, b) => +(b.text ?? '') - +(a.text ?? '')
-      );
+  readonly createdDecisionVersionSelectItems$ = new BehaviorSubject<Array<SelectItem>>([]);
+
+  readonly decisionVersionSelectItems$: Observable<Array<SelectItem>> = combineLatest([
+    this.decision$,
+    this.decisionService.getDecisions(),
+    this.createdDecisionVersionSelectItems$,
+  ]).pipe(
+    map(([currentDecision, decisions, createdDecisionVersionSelectItems]) => {
+      const decisionsWithKey = decisions.filter(decision => decision.key === currentDecision.key);
+
+      return [
+        ...decisionsWithKey.map(decision => ({
+          id: decision.id,
+          text: decision.version.toString(),
+        })),
+        ...createdDecisionVersionSelectItems,
+      ].sort((a, b) => Number(b.text) - Number(a.text));
     }),
     tap(() => this.versionSelectionDisabled$.next(false))
   );
 
-  public readonly decisionXml$ = this.decisionId$.pipe(
-    switchMap(id => this.decisionService.getDecisionXml(id)),
-    tap(xml => xml && this.loadDecisionXml(xml))
+  readonly decisionXml$ = this.decisionId$.pipe(
+    switchMap(decisionId => this.decisionService.getDecisionXml(decisionId)),
+    tap(decisionXml => {
+      if (decisionXml) {
+        this.loadDecisionXml(decisionXml);
+      }
+    })
   );
 
   constructor(
     private readonly decisionService: DecisionService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
+    private readonly alertService: AlertService,
     private readonly translateService: TranslateService,
-    private readonly pageTitleService: PageTitleService,
-    private readonly breadcrumbService: BreadcrumbService,
-    private readonly iconService: IconService,
-    private readonly pageHeaderService: PageHeaderService,
-    private readonly notificationService: GlobalNotificationService,
-    private readonly editPermissionsService: EditPermissionsService
-  ) {
-    super();
-    this.iconService.registerAll([Deploy16, Download16, ArrowLeft16]);
-  }
+    public readonly layoutService: LayoutService,
+    private readonly pageTitleService: PageTitleService
+  ) {}
 
-  public ngOnInit(): void {
-    this.pageTitleService.disableReset();
-  }
-
-  public ngOnDestroy(): void {
-    this.pageTitleService.enableReset();
-  }
-
-  public ngAfterViewInit(): void {
+  ngAfterViewInit(): void {
     this.setProperties();
     this.setTabEvents();
     this.setModelerEvents();
-
-    combineLatest([this.caseManagementRouteParams$, this.context$])
-      .pipe(take(1))
-      .subscribe(([params, context]) => {
-        if (!params || !context) return;
-
-        this.initBreadcrumbs(params, context);
-      });
   }
 
-  public switchVersion(decisionId: string | SelectedValue): void {
-    if (!decisionId) return;
-
-    this.router.navigate(['../', decisionId], {relativeTo: this.route});
-    this._refreshDecisionSelectItems$.next(null);
+  switchVersion(decisionId: string | SelectedValue): void {
+    if (decisionId) {
+      this.router.navigate(['/decision-tables/edit', decisionId]);
+    }
   }
 
-  public deploy(): void {
+  deploy(): void {
     from(this.dmnModeler.saveXML({format: true}))
       .pipe(
-        map(result => new File([(result as any).xml], this._fileName, {type: 'text/xml'})),
-        switchMap(file => combineLatest([of(file), this.context$])),
-        switchMap(([file, context]) =>
-          context === 'independent'
-            ? this.decisionService.deployDmn(file)
-            : this.caseManagementRouteParams$.pipe(
-                switchMap(params =>
-                  this.decisionService.deployCaseDecisionDefinition(
-                    params?.caseDefinitionKey ?? '',
-                    params?.caseDefinitionVersionTag ?? '',
-                    file
-                  )
-                )
-              )
+        map(result => (result as any).xml),
+        map(
+          xml =>
+            new File([xml], 'decision.dmn', {
+              type: 'text/xml',
+            })
         ),
-        tap((res: {identifier: string}) => {
-          this.switchVersion(res.identifier);
-          this.showNotification('success', 'decisions.deploySuccess');
+        switchMap(file => this.decisionService.deployDmn(file)),
+        tap(res => {
+          const deployedDefinitions = res.deployedDecisionDefinitions;
+          const deployedDecisionDefinition =
+            deployedDefinitions[Object.keys(deployedDefinitions)[0]];
+          const deployedId = deployedDecisionDefinition.id;
+
+          this.createdDecisionVersionSelectItems$
+            .pipe(take(1))
+            .subscribe(createdDecisionVersionSelectItems => {
+              if (deployedDecisionDefinition) {
+                this.createdDecisionVersionSelectItems$.next([
+                  ...createdDecisionVersionSelectItems,
+                  {
+                    id: deployedId,
+                    text: deployedDecisionDefinition.version.toString(),
+                  },
+                ]);
+              }
+
+              if (deployedId) {
+                setTimeout(() => {
+                  this.switchVersion(deployedId);
+                  this.alertService.success(
+                    this.translateService.instant('decisions.deploySuccess')
+                  );
+                });
+              }
+            });
         }),
         catchError(() => {
-          this.showNotification('error', 'decisions.deployFailure');
-
+          this.alertService.error(this.translateService.instant('decisions.deployFailure'));
           return of(null);
         })
       )
       .subscribe();
   }
 
-  public download(): void {
+  download(): void {
     from(this.dmnModeler.saveXML({format: true}))
       .pipe(
-        map(result => new File([(result as any).xml], 'decision.dmn', {type: 'text/xml'})),
+        map(result => (result as any).xml),
+        map(
+          xml =>
+            new File([xml], 'decision.dmn', {
+              type: 'text/xml',
+            })
+        ),
         tap(file => {
           const link = document.createElement('a');
           link.download = 'diagram.dmn';
@@ -259,71 +206,82 @@ export class DecisionModelerComponent
       .subscribe();
   }
 
-  public navigateBack(notification: null | 'success' | 'error', message: string): void {
-    this.router.navigate(['../'], {relativeTo: this.route});
-
-    if (!notification) return;
-
-    this.showNotification(notification, message);
-  }
-
-  private showNotification(notification: null | 'success' | 'error', message: string): void {
-    if (!notification) return;
-
-    this.notificationService.showToast({
-      caption: this.translateService.instant(message),
-      type: notification,
-      title: this.translateService.instant(`interface.${notification}`),
-    });
-  }
-
   private setProperties(): void {
     const isCreating = this.isCreating$.getValue();
+
     this.$container = $('.editor-container');
     this.$tabs = $('.editor-tabs');
     this.dmnModeler = new DmnJS({
       container: this.$container,
       height: 500,
       width: '100%',
-      keyboard: {bindTo: window},
+      keyboard: {
+        bindTo: window,
+      },
     });
-    if (isCreating) this.loadEmptyDecisionTable();
+
+    if (isCreating) {
+      this.loadEmptyDecisionTable();
+    }
   }
 
   private loadEmptyDecisionTable(): void {
     this.loadDecisionXml(EMPTY_DECISION);
   }
 
-  private setTabEvents(): void {
-    this.$tabs.delegate('.tab', 'click', async (event: any) => {
-      const index = +event.currentTarget.getAttribute('data-id');
-      const view = this.dmnModeler.getViews()[index];
+  private setTabEvents = (): void => {
+    const $tabs = this.$tabs;
+    const dmnModeler = this.dmnModeler;
+
+    $tabs.delegate('.tab', 'click', async function (e) {
+      // get index of view from clicked tab
+      const viewIdx = parseInt(this.getAttribute('data-id'), 10);
+
+      // get view using index
+      const view = dmnModeler.getViews()[viewIdx];
+
+      // open view
       try {
-        await this.dmnModeler.open(view);
+        await dmnModeler.open(view);
       } catch (err) {
-        console.error('tab open error', err);
+        console.error('error opening tab', err);
       }
     });
-  }
+  };
 
-  private setModelerEvents(): void {
-    this.dmnModeler.on('views.changed', event => {
+  private setModelerEvents = (): void => {
+    const $tabs = this.$tabs;
+    const CLASS_NAMES = this.CLASS_NAMES;
+
+    this.dmnModeler.on('views.changed', function (event) {
+      // get views from event
       const {views, activeView} = event;
-      this.$tabs.empty();
-      views.forEach((v, i) => {
-        const className = this.CLASS_NAMES[v.type];
-        const tab = $(
-          `<div class="tab ${v === activeView ? 'active' : ''}" data-id="${i}"><span class="${className}"></span>${v.element.name || v.element.id}</div>`
-        );
-        this.$tabs.append(tab);
+
+      // clear tabs
+      $tabs.empty();
+
+      // create a new tab for each view
+      views.forEach(function (v, idx) {
+        const className = CLASS_NAMES[v.type];
+
+        const tab = $(`
+            <div class="tab ${v === activeView ? 'active' : ''}" data-id="${idx}">
+              <span class="${className}"></span>
+              ${v.element.name || v.element.id}
+            </div>
+          `);
+
+        $tabs.append(tab);
       });
     });
-  }
+  };
 
   private loadDecisionXml(decision: DecisionXml): void {
     from(this.dmnModeler.importXML(decision.dmnXml))
       .pipe(
-        tap(() => this.setEditor()),
+        tap(() => {
+          this.setEditor();
+        }),
         catchError(() => {
           this.migrateAndLoadDecisionXml(decision);
           return of(null);
@@ -335,10 +293,12 @@ export class DecisionModelerComponent
   private migrateAndLoadDecisionXml(decision: DecisionXml): void {
     from(migrateDiagram(decision.dmnXml))
       .pipe(
-        switchMap(xml => this.dmnModeler.importXML(xml)),
-        tap(() => this.setEditor()),
+        switchMap(decisionXml => this.dmnModeler.importXML(decisionXml)),
+        tap(() => {
+          this.setEditor();
+        }),
         catchError(() => {
-          this.showNotification('error', 'decisions.loadFailure');
+          this.alertService.error(this.translateService.instant('decisions.loadFailure'));
           return of(null);
         })
       )
@@ -346,30 +306,19 @@ export class DecisionModelerComponent
   }
 
   private setEditor(): void {
-    const view = this.dmnModeler.getActiveView();
-    if (view?.type === 'drd') {
-      const canvas = this.dmnModeler.getActiveViewer().get('canvas');
+    const dmnModeler = this.dmnModeler;
+
+    const activeView = dmnModeler.getActiveView();
+
+    // apply initial logic in DRD view
+    if (activeView.type === 'drd') {
+      const activeEditor = dmnModeler.getActiveViewer();
+
+      // access active editor components
+      const canvas = activeEditor.get('canvas');
+
+      // zoom to fit full viewport
       canvas.zoom('fit-viewport');
     }
-  }
-
-  private initBreadcrumbs(params: CaseManagementParams, context: ManagementContext): void {
-    if (context === 'independent') return;
-
-    const route = `/case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}`;
-
-    this.breadcrumbService.setThirdBreadcrumb({
-      route: [route],
-      content: `${params.caseDefinitionKey} (${params.caseDefinitionVersionTag})`,
-      href: route,
-    });
-
-    const routeWithDecisions = `${route}/decisions`;
-
-    this.breadcrumbService.setFourthBreadcrumb({
-      route: [routeWithDecisions],
-      content: this.translateService.instant('caseManagement.tabs.decision'),
-      href: routeWithDecisions,
-    });
   }
 }

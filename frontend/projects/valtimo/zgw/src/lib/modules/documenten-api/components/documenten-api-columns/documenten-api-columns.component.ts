@@ -30,11 +30,6 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
 import {ButtonModule, IconModule, TagModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
 import {
@@ -44,7 +39,6 @@ import {
 } from '../../models';
 import {DocumentenApiColumnService} from '../../services';
 import {DocumentenApiColumnModalComponent} from '../documenten-api-column-modal/documenten-api-column-modal.component';
-import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-documenten-api-columns',
@@ -69,37 +63,26 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
 
   private readonly _reload$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
-  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    map((params: CaseManagementParams | undefined) => params?.caseDefinitionKey ?? ''),
-    filter((caseDefinitionKey: string) => !!caseDefinitionKey)
+  private readonly _documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params?.name),
+    filter(docDefName => !!docDefName)
   );
 
-  public readonly caseDefinitionVersionTag$: Observable<string> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(map((params: CaseManagementParams | undefined) => params?.caseDefinitionVersionTag ?? ''));
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$,
-  ]).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
-    )
-  );
+  public get documentDefinitionName$(): Observable<string> {
+    return this._documentDefinitionName$;
+  }
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   public readonly configuredColumns$: Observable<ConfiguredColumn[]> = combineLatest([
-    this.caseDefinitionKey$,
+    this._documentDefinitionName$,
     this._reload$,
   ]).pipe(
     tap(([_, reload]) => {
       if (reload === null) this.loading$.next(true);
     }),
-    switchMap(([caseDefinitionKey]) =>
-      this.zgwDocumentColumnService.getAdminConfiguredColumns(caseDefinitionKey)
+    switchMap(([documentDefinitionName]) =>
+      this.zgwDocumentColumnService.getAdminConfiguredColumns(documentDefinitionName)
     ),
     tap(() => {
       this.loading$.next(false);
@@ -107,10 +90,10 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
   );
 
   public readonly configurableColumns$: Observable<ConfiguredColumn[]> =
-    this.caseDefinitionKey$.pipe(
-      switchMap((caseDefinitionKey: string) =>
+    this.documentDefinitionName$.pipe(
+      switchMap((documentDefinitionName: string) =>
         combineLatest([
-          this.zgwDocumentColumnService.getAdminConfigurableColumns(caseDefinitionKey),
+          this.zgwDocumentColumnService.getAdminConfigurableColumns(documentDefinitionName),
           this.configuredColumns$,
         ])
       ),
@@ -140,6 +123,8 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
     },
   ];
 
+  public readonly CARBON_THEME = 'g10';
+
   public readonly columnModalType$ = new BehaviorSubject<DocumentenApiColumnModalType>('closed');
   public readonly prefillColumn$ = new BehaviorSubject<ConfiguredColumn | undefined>(undefined);
 
@@ -148,8 +133,7 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly zgwDocumentColumnService: DocumentenApiColumnService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly zgwDocumentColumnService: DocumentenApiColumnService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -175,15 +159,8 @@ export class DocumentenApiColumnsComponent implements AfterViewInit {
   }
 
   public openEditModal(column: ConfiguredColumn): void {
-    this.hasEditPermissions$
-      .pipe(
-        filter(hasPermission => hasPermission),
-        take(1)
-      )
-      .subscribe(() => {
-        this.prefillColumn$.next(column);
-        this.columnModalType$.next('edit');
-      });
+    this.prefillColumn$.next(column);
+    this.columnModalType$.next('edit');
   }
 
   public openAddModal(): void {

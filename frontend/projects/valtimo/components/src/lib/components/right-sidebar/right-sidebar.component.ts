@@ -34,7 +34,7 @@ import {
   UserSettingsService,
   ValtimoConfig,
   VERSIONS,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {UserProviderService} from '@valtimo/security';
 import {BehaviorSubject, combineLatest, Observable, Subscription, switchMap, take} from 'rxjs';
 import {VersionService} from '../version/version.service';
@@ -47,7 +47,6 @@ import {ListItem} from 'carbon-components-angular';
   templateUrl: './right-sidebar.component.html',
   styleUrls: ['./right-sidebar.component.scss'],
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
 })
 export class RightSidebarComponent implements OnInit, OnDestroy {
   @HostListener('document:click', ['$event.target'])

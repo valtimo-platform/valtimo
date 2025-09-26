@@ -58,7 +58,7 @@ import {DocumentenApiTagService} from '../../services/documenten-api-tag.service
   ],
 })
 export class DocumentenApiTagModalComponent implements OnDestroy {
-  @Input() public caseDefinitionKey!: string;
+  @Input() public documentDefinitionName!: string;
   @Input() public open = false;
 
   @Output() public closeModalEvent = new EventEmitter<DocumentenApiColumnModalTypeCloseEvent>();
@@ -99,16 +99,18 @@ export class DocumentenApiTagModalComponent implements OnDestroy {
   public addTag(): void {
     this.disable();
 
-    this.documentenApiTagService.createTag(this.caseDefinitionKey, this.value.value).subscribe({
-      next: () => {
-        this.enable();
-        this.closeAndRefresh();
-        this.resetForm();
-      },
-      error: () => {
-        this.enable(false);
-      },
-    });
+    this.documentenApiTagService
+      .createTag(this.documentDefinitionName, this.value.value)
+      .subscribe({
+        next: () => {
+          this.enable();
+          this.closeAndRefresh();
+          this.resetForm();
+        },
+        error: () => {
+          this.enable(false);
+        },
+      });
   }
 
   private resetForm(): void {

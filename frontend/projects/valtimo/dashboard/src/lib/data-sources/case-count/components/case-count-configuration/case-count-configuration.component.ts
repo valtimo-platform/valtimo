@@ -39,7 +39,6 @@ import {TranslateService} from '@ngx-translate/core';
 import {WidgetTranslationService} from '../../../../services';
 
 @Component({
-  standalone: false,
   templateUrl: './case-count-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./case-count-configuration.component.scss'],

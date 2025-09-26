@@ -15,8 +15,8 @@
  */
 
 import {
-  CaseListTab,
   DefinitionColumn,
+  CaseListTab,
   IncludeFunction,
   Language,
   ROLE_ADMIN,
@@ -25,7 +25,7 @@ import {
   TaskListTab,
   UploadProvider,
   ValtimoConfig,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {cspHeaderParamsDev} from './csp';
@@ -118,35 +118,29 @@ export const environment: ValtimoConfig = {
         iconClass: 'icon mdi mdi-tune',
         sequence: 5,
         children: [
-          {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
-          {link: ['/case-management'], title: 'Cases', sequence: 2},
-          {link: ['/plugins'], title: 'Plugins', sequence: 3},
-          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 4},
-          {link: ['/access-control'], title: 'Access Control', sequence: 5},
-          {link: ['/translation-management'], title: 'Translations', sequence: 6},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 7},
-
+          {title: 'Basics', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
+          {link: ['/processes'], title: 'Processes', sequence: 2},
+          {link: ['/form-management'], title: 'Forms', sequence: 3},
+          {link: ['/form-flow-management'], title: 'Form Flows', sequence: 4},
+          {link: ['/decision-tables'], title: 'Decision tables', sequence: 5},
+          {link: ['/case-management'], title: 'Cases', sequence: 6},
+          {link: ['/task-management'], title: 'Tasks', sequence: 7},
           {
-            title: 'Object management',
-            textClass: 'text-dark font-weight-bold c-default',
+            link: ['/object-management'],
+            title: 'Objects',
             sequence: 8,
+            includeFunction: IncludeFunction.ObjectManagementEnabled,
           },
-          {link: ['/object-management'], title: 'Objects', sequence: 9},
-          {link: ['/form-management'], title: 'Forms', sequence: 10},
-
-          {
-            title: 'System processes',
-            textClass: 'text-dark font-weight-bold c-default',
-            sequence: 11,
-          },
-          {link: ['/processes'], title: 'Processes', sequence: 12},
-          {link: ['/decision-tables'], title: 'Decision tables', sequence: 13},
-
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 14},
-          {link: ['/logging'], title: 'Logs', sequence: 15},
+          {link: ['/plugins'], title: 'Plugins', sequence: 9},
+          {link: ['/process-links'], title: 'Process links', sequence: 10},
+          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 11},
+          {link: ['/access-control'], title: 'Access Control', sequence: 12},
+          {link: ['/translation-management'], title: 'Translations', sequence: 13},
+          {link: ['/logging'], title: 'Logs', sequence: 14},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 15},
           {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 16},
           {link: ['/process-migration'], title: 'Process migration', sequence: 17},
-          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 18},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 18},
         ],
       },
       {
@@ -187,6 +181,24 @@ export const environment: ValtimoConfig = {
   caseFileSizeUploadLimitMB: 100,
   supportedDocumentFileTypesToViewInBrowser: ['pdf', 'jpg', 'png', 'svg'],
   defaultDefinitionTable: defaultDefinitionColumns,
+  customDefinitionTables: {
+    leningen: [
+      ...defaultDefinitionColumns,
+      {propertyName: '$.voornaam', translationKey: 'firstName', sortable: false},
+      {
+        propertyName: 'relatedFiles',
+        translationKey: 'files',
+        sortable: true,
+        viewType: 'relatedFiles',
+      },
+      {
+        propertyName: '$.lening-akkoord',
+        translationKey: 'accepted',
+        sortable: false,
+        viewType: 'boolean',
+      },
+    ],
+  },
   caseFileUploadAcceptedFiles:
     'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
@@ -249,6 +261,15 @@ export const environment: ValtimoConfig = {
     enableTaskPanel: true,
     enablePbacDocumentenApiDocuments: true,
     enableSuppressDocumentError: false,
+  },
+  customCaseHeader: {
+    leningen: [
+      {
+        propertyPaths: ['voornaam'],
+        columnSize: 3,
+        textSize: 'sm',
+      },
+    ],
   },
   csp: cspHeaderParamsDev,
   formioOptions: {

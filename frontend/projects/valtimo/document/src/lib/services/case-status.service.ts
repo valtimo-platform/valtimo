@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {InternalCaseStatus} from '../models';
@@ -31,12 +31,6 @@ export class CaseStatusService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getInternalCaseStatuses(caseDefinitionKey: string): Observable<InternalCaseStatus[]> {
-    return this.httpClient.get<InternalCaseStatus[]>(
-      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/internal-status`)
-    );
-  }
-
   public getInternalCaseStatusesManagement(
     caseDefinitionKey: string
   ): Observable<InternalCaseStatus[]> {
@@ -45,47 +39,50 @@ export class CaseStatusService extends BaseApiService {
     );
   }
 
-  public createInternalCaseStatus(
-    caseDefinitionKey: string,
-    internalCaseStatus: InternalCaseStatus
-  ): Observable<InternalCaseStatus> {
-    return this.httpClient.post<InternalCaseStatus>(
-      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionKey}/internal-status`),
-      internalCaseStatus
+  public getInternalCaseStatuses(caseDefinitionKey: string): Observable<InternalCaseStatus[]> {
+    return this.httpClient.get<InternalCaseStatus[]>(
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/internal-status`)
     );
   }
 
-  public updateInternalCaseStatuses(
+  public saveInternalCaseStatus(
     caseDefinitionKey: string,
-    internalCaseStatuses: InternalCaseStatus[]
-  ): Observable<InternalCaseStatus[]> {
-    return this.httpClient.put<InternalCaseStatus[]>(
+    status: InternalCaseStatus
+  ): Observable<InternalCaseStatus> {
+    return this.httpClient.post<InternalCaseStatus>(
       this.getApiUrl(`/management/v1/case-definition/${caseDefinitionKey}/internal-status`),
-      internalCaseStatuses
+      status
+    );
+  }
+
+  public deleteInternalCaseStatus(caseDefinitionKey: string, statusKey: string): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(
+        `/management/v1/case-definition/${caseDefinitionKey}/internal-status/${statusKey}`
+      )
     );
   }
 
   public updateInternalCaseStatus(
-    caseDefinitionKey: string,
-    internalStatusKey: string,
-    internalCaseStatus: InternalCaseStatus
-  ): Observable<void> {
-    return this.httpClient.put<void>(
+    caseDefinitionName: string,
+    currentStatusKey: string,
+    updatedStatus: InternalCaseStatus
+  ): Observable<InternalCaseStatus> {
+    return this.httpClient.put<InternalCaseStatus>(
       this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/internal-status/${internalStatusKey}`
+        `/management/v1/case-definition/${caseDefinitionName}/internal-status/${currentStatusKey}`
       ),
-      internalCaseStatus
+      updatedStatus
     );
   }
 
-  public deleteInternalCaseStatus(
-    caseDefinitionKey: string,
-    internalStatusKey: string
-  ): Observable<void> {
-    return this.httpClient.delete<void>(
-      this.getApiUrl(
-        `/management/v1/case-definition/${caseDefinitionKey}/internal-status/${internalStatusKey}`
-      )
+  public updateInternalCaseStatuses(
+    caseDefinitionName: string,
+    reorderedStatus: InternalCaseStatus[]
+  ): Observable<InternalCaseStatus[]> {
+    return this.httpClient.put<InternalCaseStatus[]>(
+      this.getApiUrl(`/management/v1/case-definition/${caseDefinitionName}/internal-status`),
+      reorderedStatus
     );
   }
 }

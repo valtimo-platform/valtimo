@@ -1,19 +1,3 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import {Component, Inject, OnInit} from '@angular/core';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
@@ -30,9 +14,9 @@ import {CreateFormDefinitionRequest, FormDefinition, FormManagementParams} from 
 import {FormManagementService} from '../../services';
 import {noDuplicateFormValidator} from '../../validators/no-duplicate-form.validator';
 import {CommonModule} from '@angular/common';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {ValtimoCdsModalDirective} from '@valtimo/components';
-import {GlobalNotificationService, ManagementContext} from '@valtimo/shared';
+import {TranslateModule} from '@ngx-translate/core';
+import {ValtimoCdsModalDirectiveModule} from '@valtimo/components';
+import {ManagementContext} from '@valtimo/config';
 
 @Component({
   selector: 'valtimo-form-management-duplicate-modal',
@@ -48,7 +32,7 @@ import {GlobalNotificationService, ManagementContext} from '@valtimo/shared';
     ReactiveFormsModule,
     FormsModule,
     LayerModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
   ],
 })
 export class FormManagementDuplicateComponent extends BaseModal implements OnInit {
@@ -64,14 +48,14 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
 
   constructor(
     @Inject('formToDuplicate') public readonly formToDuplicate: FormDefinition,
+    @Inject('disabledPendingChangesCallback')
+    public readonly disablePendingChangesCallback: () => void,
     @Inject('context') public readonly context: ManagementContext,
     @Inject('params') public readonly params: FormManagementParams,
     protected modalService: ModalService,
     protected formManagementService: FormManagementService,
     protected route: ActivatedRoute,
-    private router: Router,
-    private readonly notificationService: GlobalNotificationService,
-    private readonly translateService: TranslateService
+    private router: Router
   ) {
     super();
   }
@@ -93,7 +77,7 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
 
   public duplicate(): void {
     const control = this.duplicateFormName;
-    this.formToDuplicate.name = this.duplicateForm.controls['duplicateFormName'].value;
+
     const request: CreateFormDefinitionRequest = {
       name: control.value.toString(),
       formDefinition: JSON.stringify(this.formToDuplicate.formDefinition),
@@ -110,13 +94,8 @@ export class FormManagementDuplicateComponent extends BaseModal implements OnIni
       .pipe(take(1))
       .subscribe({
         next: formDefinition => {
-          this.navigateWithNewId(formDefinition.id).then(() => {
-            this.closeModal();
-            this.notificationService.showToast({
-              type: 'success',
-              title: this.translateService.instant('formManagement.notifications.duplicated'),
-            });
-          });
+          this.disablePendingChangesCallback();
+          this.navigateWithNewId(formDefinition.id).then(() => window.location.reload());
         },
         error: err => {
           if (err.toString().includes('Duplicate name')) {

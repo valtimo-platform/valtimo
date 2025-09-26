@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {WidgetComponent} from './widget.component';
 
@@ -22,7 +22,7 @@ describe('WidgetComponent', () => {
   let component: WidgetComponent;
   let fixture: ComponentFixture<WidgetComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [WidgetComponent],
     }).compileComponents();

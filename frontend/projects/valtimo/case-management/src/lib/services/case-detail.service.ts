@@ -22,8 +22,6 @@ import {
   filter,
   map,
   Observable,
-  startWith,
-  Subject,
   Subscription,
   switchMap,
   tap,
@@ -34,11 +32,9 @@ import {EditorModel, PageTitleService} from '@valtimo/components';
 @Injectable()
 export class CaseDetailService implements OnDestroy {
   private readonly _loadingDocumentDefinition$ = new BehaviorSubject<boolean>(true);
-  private readonly _previousSelectedCaseDefinitionVersionTag$ = new BehaviorSubject<string | null>(
-    null
-  );
-  private readonly _selectedCaseDefinitionVersionTag$ = new BehaviorSubject<string | null>(null);
-  private readonly _selectedCaseDefinitionKey$ = new BehaviorSubject<string>('');
+  private readonly _previousSelectedVersionNumber$ = new BehaviorSubject<number | null>(null);
+  private readonly _selectedVersionNumber$ = new BehaviorSubject<number | null>(null);
+  private readonly _selectedDocumentDefinitionName$ = new BehaviorSubject<string>('');
   private readonly _documentDefinition$ = new BehaviorSubject<DocumentDefinition | null>(null);
   private readonly _documentDefinitionModel$: Observable<EditorModel> =
     this.documentDefinition$.pipe(
@@ -47,24 +43,17 @@ export class CaseDetailService implements OnDestroy {
         language: 'json',
       }))
     );
-  private readonly _reloadDocumentDefinition$ = new Subject<void>();
 
-  public get selectedCaseDefinitionVersionTag$(): Observable<string | null> {
-    return this._selectedCaseDefinitionVersionTag$.pipe(
-      filter(version => typeof version === 'string'),
-      distinctUntilChanged()
-    );
+  public get selectedVersionNumber$(): Observable<number | null> {
+    return this._selectedVersionNumber$.pipe(filter(version => typeof version === 'number'));
   }
 
-  public get previousSelectedCaseDefinitionVersionTag$(): Observable<string | null> {
-    return this._previousSelectedCaseDefinitionVersionTag$.asObservable();
+  public get previousSelectedVersionNumber$(): Observable<number | null> {
+    return this._previousSelectedVersionNumber$.asObservable();
   }
 
-  public get selectedCaseDefinitionKey$(): Observable<string> {
-    return this._selectedCaseDefinitionKey$.pipe(
-      filter(name => !!name),
-      distinctUntilChanged()
-    );
+  public get selectedDocumentDefinitionName$(): Observable<string> {
+    return this._selectedDocumentDefinitionName$.pipe(filter(name => !!name));
   }
 
   public get selectedDocumentDefinitionIsReadOnly$(): Observable<boolean> {
@@ -75,18 +64,15 @@ export class CaseDetailService implements OnDestroy {
   }
 
   public get loadingDocumentDefinition$(): Observable<boolean> {
-    return this._loadingDocumentDefinition$.pipe(distinctUntilChanged());
+    return this._loadingDocumentDefinition$.asObservable();
   }
 
   public get documentDefinition$(): Observable<DocumentDefinition | null> {
-    return this._documentDefinition$.pipe(
-      filter(def => !!def),
-      distinctUntilChanged()
-    );
+    return this._documentDefinition$.pipe(filter(def => !!def));
   }
 
   public get documentDefinitionModel$(): Observable<EditorModel> {
-    return this._documentDefinitionModel$.pipe(distinctUntilChanged());
+    return this._documentDefinitionModel$;
   }
 
   private _subscriptions = new Subscription();
@@ -102,40 +88,36 @@ export class CaseDetailService implements OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public setSelectedCaseDefinitionVersionTag(versionTag: string): void {
-    this._selectedCaseDefinitionVersionTag$.next(versionTag);
+  public setSelectedVersionNumber(versionNumber: number): void {
+    this._selectedVersionNumber$.next(versionNumber);
   }
 
-  public setPreviousSelectedCaseDefinitionVersionTag(versionTag: string | null): void {
-    this._previousSelectedCaseDefinitionVersionTag$.next(versionTag);
+  public setPreviousSelectedVersionNumber(versionNumber: number | null): void {
+    this._previousSelectedVersionNumber$.next(versionNumber);
   }
 
-  public setSelectedCaseDefinitionKey(key: string): void {
-    this._selectedCaseDefinitionKey$.next(key);
+  public setSelectedDocumentDefinitionName(name: string): void {
+    this._selectedDocumentDefinitionName$.next(name);
   }
 
   public setLoadingDocumentDefinition(loading: boolean): void {
     this._loadingDocumentDefinition$.next(loading);
   }
 
-  public reloadDocumentDefinition(): void {
-    this._reloadDocumentDefinition$.next(null);
-  }
-
   private openDocumentDefinitionSubscription(): void {
     this._subscriptions.add(
-      combineLatest([
-        this.selectedCaseDefinitionVersionTag$,
-        this.selectedCaseDefinitionKey$,
-        this._reloadDocumentDefinition$.pipe(startWith(null)),
-      ])
+      combineLatest([this.selectedVersionNumber$, this.selectedDocumentDefinitionName$])
         .pipe(
           tap(() => {
+            console.log('hi');
             this.pageTitleService.setCustomPageTitleSet(false);
             this.setLoadingDocumentDefinition(true);
           }),
-          switchMap(([selectedVersionTag, selectedKey]) =>
-            this.documentService.getDocumentDefinitionByVersion(selectedKey, selectedVersionTag)
+          switchMap(([selectedVersion, selectedDocumentDefinitionName]) =>
+            this.documentService.getDocumentDefinitionByVersion(
+              selectedDocumentDefinitionName,
+              selectedVersion ?? 0
+            )
           ),
           tap(res => {
             this._documentDefinition$.next(res);

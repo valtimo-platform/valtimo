@@ -25,7 +25,7 @@ import {
   Subscription,
 } from 'rxjs';
 import {debounceTime, take} from 'rxjs/operators';
-import {ConfigService, ValtimoConfig} from '@valtimo/shared';
+import {ConfigService, ValtimoConfig} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',

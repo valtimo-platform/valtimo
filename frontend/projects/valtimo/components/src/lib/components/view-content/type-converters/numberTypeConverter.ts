@@ -32,10 +32,6 @@ export class NumberTypeConverter implements TypeConverter {
     return 'number';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
   public convert(value: any, definition: any): string {
     if (!value) return '-';
 

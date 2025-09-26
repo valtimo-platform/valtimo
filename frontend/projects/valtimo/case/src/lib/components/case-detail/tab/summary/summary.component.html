@@ -14,21 +14,16 @@
   ~ limitations under the License.
   -->
 
-<ng-container
-  *ngIf="{
-    formDefinition: formDefinition$ | async,
-    document: document$ | async,
-    loading: loading$ | async,
-    notificationObj: notificationObj$ | async,
-  } as obs"
->
-  @if (!obs.loading && obs.document && obs.formDefinition) {
-    <valtimo-form-io
-      class="valtimo-summary-form"
-      [form]="obs.formDefinition"
-      [options]="options"
-    ></valtimo-form-io>
-  } @else if (obs.notificationObj) {
-    <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
-  }
-</ng-container>
+<div class="container-fluid">
+  <div class="row py-4">
+    <div class="col-12">
+      <div *ngIf="document">
+        <div *ngIf="formDefinition" class="summaryForm">
+          <div class="mb-4">
+            <valtimo-form-io [form]="formDefinition" [options]="options"></valtimo-form-io>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

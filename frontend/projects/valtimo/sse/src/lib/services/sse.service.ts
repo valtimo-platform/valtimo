@@ -22,7 +22,7 @@ import {
   SseEventListener,
   SseEventType,
 } from '../models/sse-events.model';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {
   SseErrorBucket,
   SseEventSubscriptionBucket,

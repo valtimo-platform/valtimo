@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {TopbarComponent} from './topbar.component';
 import {RouterTestingModule} from '@angular/router/testing';
 import {KeycloakService} from 'keycloak-angular';
-import {MockIconService, MockKeycloakService, VALTIMO_CONFIG} from '@valtimo/shared';
+import {MockIconService, MockKeycloakService, VALTIMO_CONFIG} from '@valtimo/config';
 import {environment} from '@src/environments/environment';
 import {IconService} from 'carbon-components-angular';
 
@@ -26,7 +26,7 @@ describe('TopbarComponent', () => {
   let component: TopbarComponent;
   let fixture: ComponentFixture<TopbarComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [TopbarComponent],
       imports: [RouterTestingModule],

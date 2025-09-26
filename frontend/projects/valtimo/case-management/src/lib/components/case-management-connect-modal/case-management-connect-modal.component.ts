@@ -16,7 +16,6 @@
 import {Component, EventEmitter, OnInit, Output, ViewChild} from '@angular/core';
 import {TranslateService} from '@ngx-translate/core';
 import {ModalComponent} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
 import {
   DocumentDefinition,
   DocumentService,
@@ -26,9 +25,9 @@ import {
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {switchMap, take} from 'rxjs';
 import {CaseDetailService} from '../../services';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-case-management-connect-modal',
   templateUrl: './case-management-connect-modal.component.html',
   styleUrls: ['./case-management-connect-modal.component.scss'],
@@ -56,10 +55,10 @@ export class CaseManagementConnectModalComponent implements OnInit {
     if (!this.documentDefinition) {
       return;
     }
-    const {key, versionTag} = this.documentDefinition.id.caseDefinitionId;
+    const {name, version} = this.documentDefinition.id;
     this.processDocumentDefinitionExists = {};
     this.documentService
-      .findProcessDocumentDefinitionsByVersion(key, versionTag)
+      .findProcessDocumentDefinitionsByVersion(name, version)
       .subscribe((processDocumentDefinitions: ProcessDocumentDefinition[]) => {
         processDocumentDefinitions.forEach(
           (processDocumentDefinition: ProcessDocumentDefinition) => {
@@ -99,18 +98,18 @@ export class CaseManagementConnectModalComponent implements OnInit {
 
     const request: ProcessDocumentDefinitionRequest = {
       canInitializeDocument: this.newDocumentProcessDefinitionInit,
-      caseDefinitionKey: this.documentDefinition.id.caseDefinitionId.key,
-      caseDefinitionVersionTag: `${this.documentDefinition.id.caseDefinitionId.key}`,
+      documentDefinitionName: this.documentDefinition.id.name,
+      documentDefinitionVersion: this.documentDefinition.id.version,
       processDefinitionKey: this.newDocumentProcessDefinition.key,
       startableByUser: this.newDocumentProcessDefinitionStartableByUser,
     };
 
-    this.caseDetailService.selectedCaseDefinitionVersionTag$
+    this.caseDetailService.selectedVersionNumber$
       .pipe(
-        switchMap((caseDefinitionVersionTag: string) =>
+        switchMap((documentDefinitionVersion: number) =>
           this.documentService.createProcessDocumentDefinition({
             ...request,
-            caseDefinitionVersionTag,
+            documentDefinitionVersion,
           })
         ),
         take(1)

@@ -26,15 +26,13 @@ import {
   ConfirmationModalModule,
   FormIoModule,
   PageHeaderModule,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SpinnerModule,
-  ValtimoCdsModalDirective,
   WidgetModule,
-  TooltipModule as ValtimoTooltipModule
 } from '@valtimo/components';
-import {HttpLoaderFactory} from '@valtimo/shared';
+import {HttpLoaderFactory} from '@valtimo/config';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {
   ButtonModule,
@@ -46,13 +44,14 @@ import {
   TabsModule,
   TooltipModule,
 } from 'carbon-components-angular';
+import {ToastrModule} from 'ngx-toastr';
 import {AssignUserToTaskComponent} from './components/assign-user-to-task/assign-user-to-task.component';
-import {SetTaskDueDateComponent} from './components/set-task-due-date/set-task-due-date.component';
-import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
-import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
 import {TaskDetailModalComponent} from './components/task-detail-modal/task-detail-modal.component';
 import {TaskListComponent} from './components/task-list/task-list.component';
 import {TaskRoutingModule} from './task-routing.module';
+import {TaskDetailContentComponent} from './components/task-detail-content/task-detail-content.component';
+import {TaskDetailIntermediateSaveComponent} from './components/task-detail-intermediate-save/task-detail-intermediate-save.component';
+import {UrlResolverService} from '@valtimo/process-link';
 
 @NgModule({
   declarations: [TaskListComponent, TaskDetailModalComponent],
@@ -67,6 +66,10 @@ import {TaskRoutingModule} from './task-routing.module';
     CamundaFormModule,
     BrowserAnimationsModule,
     FormsModule,
+    ToastrModule.forRoot({
+      positionClass: 'toast-bottom-full-width',
+      preventDuplicates: true,
+    }),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -81,19 +84,16 @@ import {TaskRoutingModule} from './task-routing.module';
     ProcessLinkModule,
     TabsModule,
     ContentSwitcherModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     DropdownModule,
     ButtonModule,
     IconModule,
     TooltipModule,
-    ValtimoTooltipModule,
     ConfirmationModalModule,
     SearchFieldsModule,
     AssignUserToTaskComponent,
     TaskDetailContentComponent,
     TaskDetailIntermediateSaveComponent,
-    SetTaskDueDateComponent,
-    ValtimoCdsModalDirective,
   ],
   exports: [TaskListComponent, TaskDetailModalComponent],
 })

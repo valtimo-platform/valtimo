@@ -22,7 +22,6 @@ import {take} from 'rxjs/operators';
   selector: 'valtimo-webcam',
   templateUrl: './webcam.component.html',
   styleUrls: ['./webcam.component.scss'],
-  standalone: false,
 })
 export class WebcamComponent implements AfterViewInit {
   @Output() imageSaved = new EventEmitter<File>();

@@ -20,17 +20,18 @@ import {FormioModule} from '@formio/angular';
 import {TranslateModule} from '@ngx-translate/core';
 import {DropzoneModule, FileSizeModule} from '@valtimo/components';
 import {
-  CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   CASE_MANAGEMENT_TAB_TOKEN,
+  ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
   ZGW_DOCUMENTEN_API_DOCUMENTS_COMPONENT_TOKEN,
   ZGW_OBJECT_TYPE_COMPONENT_TOKEN,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {DocumentModule} from '@valtimo/document';
 import {ResourceModule} from '@valtimo/resource';
 import {
   CaseDetailTabDocumentenApiDocumentsComponent,
   CaseDetailTabObjectTypeComponent,
   CaseManagementLinkProcessComponent,
+  CustomerModule,
   DocumentenApiMetadataModalComponent,
   DocumentenApiUploaderComponent,
 } from './modules';
@@ -47,6 +48,7 @@ import {CaseManagementZgwComponent} from './components';
     ResourceModule,
     RouterModule,
     DocumentenApiMetadataModalComponent,
+    CustomerModule,
   ],
   declarations: [DocumentenApiUploaderComponent],
   exports: [DocumentenApiUploaderComponent],
@@ -56,7 +58,6 @@ import {CaseManagementZgwComponent} from './components';
       useValue: {
         translationKey: 'caseManagement.tabs.zgw',
         component: CaseManagementZgwComponent,
-        tabRoute: 'zgw',
       },
       multi: true,
     },
@@ -69,8 +70,14 @@ import {CaseManagementZgwComponent} from './components';
       useValue: CaseDetailTabDocumentenApiDocumentsComponent,
     },
     {
-      provide: CASE_CONFIGURATION_EXTENSIONS_TOKEN,
-      useValue: [CaseManagementLinkProcessComponent],
+      provide: ZGW_CASE_CONFIGURATION_EXTENSIONS_TOKEN,
+      useValue: [
+        CaseManagementLinkProcessComponent,
+        // CaseManagementLinkUploadProcessComponent
+        // DocumentenApiVersionComponent,
+        // DocumentObjectenApiSyncComponent,
+        // ZakenApiZaaktypeLinkComponent,
+      ],
     },
   ],
 })

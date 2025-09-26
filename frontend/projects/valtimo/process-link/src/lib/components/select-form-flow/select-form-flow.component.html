@@ -23,7 +23,6 @@
   <p class="step-description">
     {{ 'processLinkConfiguration.chooseFormFlowDescription' | translate }}
   </p>
-
   <div class="select-form-flow">
     <cds-combo-box
       [appendInline]="true"
@@ -34,11 +33,10 @@
       [label]="'processLinkSteps.selectFormFlow' | translate"
       ><cds-dropdown-list></cds-dropdown-list
     ></cds-combo-box>
-
     <br />
 
     <valtimo-form-display-configuration
-      [selectedFormDefinition]="selectedFormFlowDefinitionId"
+      [selectedFormDefinition]="selectedFormFlowDefinition"
       (formDisplayValue)="selectedFormDisplayValue($event)"
       (formSizeValue)="selectedFormSizeValue($event)"
       (subtitlesValue)="selectedSubtitlesValue($event)"

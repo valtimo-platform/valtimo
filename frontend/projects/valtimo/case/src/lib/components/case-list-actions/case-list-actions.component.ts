@@ -16,8 +16,8 @@
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 import {CaseSettings, DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
-import {GlobalNotificationService} from '@valtimo/shared';
 import {
   BehaviorSubject,
   combineLatest,
@@ -30,11 +30,11 @@ import {
 } from 'rxjs';
 import {CaseListService} from '../../services';
 import {CaseProcessStartModalComponent} from '../case-process-start-modal/case-process-start-modal.component';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 declare const $;
 
 @Component({
-  standalone: false,
   selector: 'valtimo-case-list-actions',
   templateUrl: './case-list-actions.component.html',
   styleUrls: ['./case-list-actions.component.scss'],
@@ -50,7 +50,7 @@ export class CaseListActionsComponent implements OnInit {
   @Output() public readonly formFlowComplete = new EventEmitter();
   @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
 
-  private readonly _caseSettings$ = new BehaviorSubject<CaseSettings | null>(null);
+  private readonly _caseSettings$: BehaviorSubject<CaseSettings> = new BehaviorSubject(null);
 
   public readonly caseSettings$ = this._caseSettings$.pipe(filter(settings => !!settings));
 
@@ -76,7 +76,7 @@ export class CaseListActionsComponent implements OnInit {
     map(([processDocumentDefinitions, loading, caseSettings]) => {
       this._cachedAssociatedProcessDocumentDefinitions = processDocumentDefinitions;
       this.startButtonDisableEvent.emit(
-        loading || (processDocumentDefinitions.length === 0 && !caseSettings?.hasExternalStartForm)
+        loading || (processDocumentDefinitions.length === 0 && !caseSettings.hasExternalStartForm)
       );
       return processDocumentDefinitions.filter(definition => definition.canInitializeDocument);
     })
@@ -117,17 +117,24 @@ export class CaseListActionsComponent implements OnInit {
     const associatedProcessDocumentDefinitions = this._cachedAssociatedProcessDocumentDefinitions;
     const hasExternalStartForm = this._caseSettings?.hasExternalStartForm;
 
-    if (hasExternalStartForm && associatedProcessDocumentDefinitions.length === 0) {
-      this.openExternalCaseStartForm();
-    } else if (associatedProcessDocumentDefinitions.length === 1 && !hasExternalStartForm) {
-      this.selectProcess(associatedProcessDocumentDefinitions[0]);
-    } else {
+    if (associatedProcessDocumentDefinitions.length > 1) {
       this.startSelectionModalOpen$.next(true);
+    } else {
+      this.selectedProcessDefinitionCaseDefinition = associatedProcessDocumentDefinitions[0];
+      this.showStartProcessModal();
+      if (hasExternalStartForm && associatedProcessDocumentDefinitions.length === 0) {
+        this.openExternalCaseStartForm();
+      } else if (associatedProcessDocumentDefinitions.length === 1 && !hasExternalStartForm) {
+        this.selectedProcessDefinitionCaseDefinition = associatedProcessDocumentDefinitions[0];
+        this.showStartProcessModal();
+      } else if (associatedProcessDocumentDefinitions.length > 0) {
+        this.startSelectionModalOpen$.next(true);
+      }
     }
   }
 
   public selectProcess(processDefinitionCaseDefinition: ProcessDefinitionCaseDefinition): void {
-    this.selectedProcessDefinitionCaseDefinition = processDefinitionCaseDefinition;
+    this.selectedProcessDefinitionCaseDefinition = processDefinitionCaseDefinition[0];
     this.startSelectionModalOpen$.next(false);
     this.showStartProcessModal();
   }
@@ -136,7 +143,7 @@ export class CaseListActionsComponent implements OnInit {
     this.formFlowComplete.emit(null);
   }
 
-  public onNoProcessLinked(processDefinitionKey: string): void {
+  public onNoProcessLinked(): void {
     this.notificationService.ngOnDestroy();
 
     this.notificationService.showActionable({
@@ -146,12 +153,10 @@ export class CaseListActionsComponent implements OnInit {
       actions: [
         {
           text: this.translateService.instant('case.configure'),
-          click: () =>
-            this.router.navigate([
-              `/case-management/case/${this._caseSettings?.caseDefinitionKey}/version/${this._caseSettings?.caseDefinitionVersionTag}/processes/${processDefinitionKey}`,
-            ]),
+          click: () => this.router.navigate(['/process-links']),
         },
       ],
+      duration: CARBON_CONSTANTS.notificationDuration,
     });
   }
 

@@ -15,50 +15,77 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService, Page} from '@valtimo/shared';
+import {ConfigService, ConnectorModal, Page} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, Observable, Subject} from 'rxjs';
-import {Note, NoteCreateRequest, NoteModal, NoteUpdateRequest} from '../models/notes.model';
+import {Note, NoteCreateRequest, NoteUpdateRequest} from '../models/notes.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotesService {
   private readonly VALTIMO_API_ENDPOINT_URI = this.configService.config.valtimoApi.endpointUri;
+  private readonly _showModal$ = new Subject();
+  private readonly _hideModal$ = new Subject();
   private readonly _refresh$ = new BehaviorSubject<null>(null);
+  private readonly _modalType$ = new BehaviorSubject<ConnectorModal>('add');
 
   constructor(
     private readonly configService: ConfigService,
     private readonly http: HttpClient
   ) {}
 
-  public get refresh$(): Observable<any> {
-    return this._refresh$.asObservable();
-  }
-
-  public getDocumentNotes(documentId: string, params?: any): Observable<Page<Note>> {
+  getDocumentNotes(documentId: string, params?: any): Observable<Page<Note>> {
     return this.http.get<Page<Note>>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/document/${documentId}/note`,
       {params}
     );
   }
 
-  public createDocumentNote(documentId: string, request: NoteCreateRequest): Observable<Note> {
+  createDocumentNote(documentId: string, request: NoteCreateRequest): Observable<Note> {
     return this.http.post<Note>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/document/${documentId}/note`,
       request
     );
   }
 
-  public updateNote(noteId: string, request: NoteUpdateRequest): Observable<Note> {
+  updateNote(noteId: string, request: NoteUpdateRequest): Observable<Note> {
     return this.http.put<Note>(`${this.VALTIMO_API_ENDPOINT_URI}v1/note/${noteId}`, request);
   }
 
-  public deleteNote(noteId: string): Observable<Note> {
+  deleteNote(noteId: string): Observable<Note> {
     return this.http.delete<Note>(`${this.VALTIMO_API_ENDPOINT_URI}v1/note/${noteId}`);
   }
 
-  public refresh(): void {
+  get showModal$(): Observable<any> {
+    return this._showModal$.asObservable();
+  }
+
+  get hideModal$(): Observable<any> {
+    return this._hideModal$.asObservable();
+  }
+
+  get refresh$(): Observable<any> {
+    return this._refresh$.asObservable();
+  }
+
+  get modalType$(): Observable<ConnectorModal> {
+    return this._modalType$.asObservable();
+  }
+
+  showModal(): void {
+    this._showModal$.next(null);
+  }
+
+  hideModal(): void {
+    this._hideModal$.next(null);
+  }
+
+  refresh(): void {
     this._refresh$.next(null);
+  }
+
+  setModalType(type: ConnectorModal): void {
+    this._modalType$.next(type);
   }
 }

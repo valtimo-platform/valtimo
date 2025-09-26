@@ -17,41 +17,30 @@ import {Component} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search20, TrashCan20, Upload16} from '@carbon/icons';
 import {ColumnConfig, MenuService, Pagination} from '@valtimo/components';
-import {Page, TemplatePayload} from '@valtimo/document';
-import {EnvironmentService} from '@valtimo/shared';
+import {
+  CreateDocumentDefinitionResponse,
+  DocumentService,
+  Page,
+  TemplatePayload,
+} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
 import moment from 'moment';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, take} from 'rxjs';
+import {BehaviorSubject, map, Observable, switchMap, take} from 'rxjs';
 import {CaseListItem} from '../../models';
 import {CaseManagementService} from '../../services';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
-  standalone: false,
   selector: 'valtimo-case-management-list',
   templateUrl: './case-management-list.component.html',
   styleUrls: ['./case-management-list.component.scss'],
 })
 export class CaseManagementListComponent {
-  private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly pagination$ = new BehaviorSubject<Pagination | null>(null);
 
-  public readonly canUpdateGlobalConfiguration$ =
-    this.environmentService.canUpdateGlobalConfiguration();
-
-  public readonly caseListItems$: Observable<CaseListItem[]> = combineLatest([
-    this.route.queryParams,
-    this.canUpdateGlobalConfiguration$,
-    this._refresh$,
-  ]).pipe(
-    switchMap(([params, canUpdate]) =>
-      this.caseManagementService.getCaseDefinitions({
-        ...params,
-        active: true,
-        final: canUpdate ? '' : true,
-      })
-    ),
+  public readonly caseListItems$: Observable<CaseListItem[]> = this.route.queryParams.pipe(
+    switchMap(params => this.caseManagementService.getCaseDefinitions(params)),
     map((page: Page<CaseListItem>) => {
       this.pagination$.next({
         size: page.size,
@@ -80,11 +69,11 @@ export class CaseManagementListComponent {
   private _paginationInitialized = false;
   constructor(
     private readonly caseManagementService: CaseManagementService,
+    private readonly documentService: DocumentService,
     private readonly iconService: IconService,
     private readonly menuService: MenuService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly environmentService: EnvironmentService
+    private readonly router: Router
   ) {
     this.iconService.registerAll([Search20, TrashCan20, Upload16]);
   }
@@ -95,7 +84,6 @@ export class CaseManagementListComponent {
     if (!definitionUploaded) {
       return;
     }
-    this._refresh$.next(null);
     this.menuService.reload();
   }
 
@@ -105,18 +93,12 @@ export class CaseManagementListComponent {
       return;
     }
 
-    this.caseManagementService
-      .createDraftVersion(templatePayload)
+    this.documentService
+      .createDocumentDefinitionTemplate(templatePayload)
       .pipe(take(1))
-      .subscribe((response: any) => {
-        this.router.navigate([
-          '/case-management/case',
-          response.caseDefinitionKey,
-          'version',
-          response.caseDefinitionVersionTag,
-        ]);
-        this._refresh$.next(null);
-        this.menuService.reload();
+      .subscribe((response: CreateDocumentDefinitionResponse) => {
+        //TODO: resolve this when DocumentDefinition is reintroduced
+        // this.redirectToDetails(response.documentDefinition);
       });
   }
 

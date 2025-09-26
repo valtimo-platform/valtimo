@@ -14,40 +14,21 @@
  * limitations under the License.
  */
 
-import {ChangeDetectorRef, Component, ViewChild} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {ActivatedRoute, Router, RouterModule} from '@angular/router';
-import {BehaviorSubject, combineLatest, map, Observable, switchMap, take, tap} from 'rxjs';
+import {Component, ViewChild} from '@angular/core';
 import {Decision} from '../models';
-import {DecisionService} from '../services/decision.service';
-import {
-  ConfigService,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-  getContextObservable,
-} from '@valtimo/shared';
+import {DecisionService} from '../decision.service';
+import {Router} from '@angular/router';
+import {BehaviorSubject, map, switchMap, tap} from 'rxjs';
+import {ConfigService} from '@valtimo/config';
 import {DecisionStateService} from '../services';
 import {DecisionDeployComponent} from '../decision-deploy/decision-deploy.component';
-import {CarbonListModule, WidgetModule} from '@valtimo/components';
-import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
+import {IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
-import {TranslateModule} from '@ngx-translate/core';
 
 @Component({
   selector: 'valtimo-decision-list',
-  standalone: true,
   templateUrl: './decision-list.component.html',
   styleUrls: ['./decision-list.component.scss'],
-  imports: [
-    CommonModule,
-    RouterModule,
-    CarbonListModule,
-    IconModule,
-    WidgetModule,
-    DecisionDeployComponent,
-    TranslateModule,
-    ButtonModule,
-  ],
 })
 export class DecisionListComponent {
   @ViewChild('decisionDeploy') deploy: DecisionDeployComponent;
@@ -59,79 +40,44 @@ export class DecisionListComponent {
   ];
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
+
   readonly experimentalEditing!: boolean;
 
-  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
-  public readonly context$ = getContextObservable(this.route);
-
   readonly decisionsLatestVersions$ = this.stateService.refreshDecisions$.pipe(
-    switchMap(() => this.context$),
-    switchMap(context =>
-      context === 'case'
-        ? this.caseManagementRouteParams$.pipe(
-            switchMap(params =>
-              this.decisionService.listCaseDecisionDefinitions(
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag
-              )
-            )
-          )
-        : this.decisionService.getDecisions()
-    ),
+    switchMap(() => this.decisionService.getDecisions()),
     map(decisions =>
       decisions.reduce((acc, curr) => {
-        const existing = acc.find(d => d.key === curr.key);
-        if (existing && existing.version > curr.version) return acc;
-        if (existing && existing.version < curr.version)
-          return [...acc.filter(d => d.key !== curr.key), curr];
+        const findInAcc = acc.find(decision => decision.key === curr.key);
+
+        if (findInAcc && findInAcc.version > curr.version) {
+          return acc;
+        } else if (findInAcc && findInAcc.version < curr.version) {
+          const newAcc = acc.filter(decision => decision.key !== curr.key);
+          return [...newAcc, curr];
+        }
+
         return [...acc, curr];
       }, [])
     ),
-    tap(() => {
-      this.loading$.next(false);
-      this.cdr.detectChanges();
-    })
-  );
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.caseManagementRouteParams$,
-    this.context$,
-  ]).pipe(
-    switchMap(([params, context]) => {
-      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      );
-    })
+    tap(() => this.loading$.next(false))
   );
 
   constructor(
-    private readonly decisionService: DecisionService,
+    private decisionService: DecisionService,
     private readonly iconService: IconService,
-    private readonly router: Router,
+    private router: Router,
     private readonly configService: ConfigService,
-    private readonly stateService: DecisionStateService,
-    private readonly route: ActivatedRoute,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly stateService: DecisionStateService
   ) {
     this.iconService.registerAll([Upload16]);
     this.experimentalEditing = this.configService.config.featureToggles.experimentalDmnEditing;
   }
 
-  public viewDecisionTable(decision: Decision): void {
-    this.context$.pipe(take(1)).subscribe(context => {
-      if (context === 'independent') {
-        const basePath = this.experimentalEditing ? '/decision-tables/edit/' : '/decision-tables/';
-        this.router.navigate([basePath + decision.id]);
-      } else {
-        this.caseManagementRouteParams$.pipe(take(1)).subscribe(params => {
-          this.router.navigateByUrl(
-            `case-management/case/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}/decisions/${decision.id}`
-          );
-        });
-      }
-    });
+  viewDecisionTable(decision: Decision) {
+    if (this.experimentalEditing) {
+      this.router.navigate(['/decision-tables/edit', decision.id]);
+    } else {
+      this.router.navigate(['/decision-tables', decision.id]);
+    }
   }
 }

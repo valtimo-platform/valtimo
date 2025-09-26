@@ -15,22 +15,16 @@
  */
 
 import {TestBed} from '@angular/core/testing';
-import {provideHttpClientTesting} from '@angular/common/http/testing';
+import {HttpClientTestingModule} from '@angular/common/http/testing';
 import {TaskService} from './task.service';
-import {VALTIMO_CONFIG} from '@valtimo/shared';
+import {VALTIMO_CONFIG} from '@valtimo/config';
 import {environment} from '@src/environments/environment';
-import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 
 describe('TaskService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [],
-      providers: [
-        TaskService,
-        {provide: VALTIMO_CONFIG, useValue: environment},
-        provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting(),
-      ],
+      providers: [TaskService, {provide: VALTIMO_CONFIG, useValue: environment}],
+      imports: [HttpClientTestingModule],
     });
   });
 

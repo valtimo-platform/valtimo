@@ -21,7 +21,6 @@ import {BehaviorSubject} from 'rxjs';
   selector: 'valtimo-expansion-panel-component',
   templateUrl: './expansion-panel.component.html',
   styleUrls: ['./expansion-panel.component.scss'],
-  standalone: false,
 })
 export class ExpansionPanelComponent {
   @Input() hideAboveFoldWhenExpanded = false;

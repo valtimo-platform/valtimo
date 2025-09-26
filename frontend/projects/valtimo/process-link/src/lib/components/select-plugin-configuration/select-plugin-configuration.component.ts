@@ -31,7 +31,6 @@ import {
 } from '../../services';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-select-plugin-configuration',
   templateUrl: './select-plugin-configuration.component.html',
   styleUrls: ['./select-plugin-configuration.component.scss'],

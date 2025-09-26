@@ -31,6 +31,4 @@ interface NoteUpdateRequest {
   content: string;
 }
 
-type NoteModal = 'add' | 'modify';
-
-export {Note, NoteCreateRequest, NoteUpdateRequest, NoteModal};
+export {Note, NoteCreateRequest, NoteUpdateRequest};

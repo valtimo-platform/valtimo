@@ -25,7 +25,6 @@ import {Page} from '@valtimo/document';
 import {CaseVersionListItem} from '../../models/case-version-list.model';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-case-management-select-version-modal',
   templateUrl: './case-management-select-version-modal.component.html',
   styleUrls: ['./case-management-select-version-modal.component.scss'],
@@ -64,26 +63,13 @@ export class CaseManagementSelectVersionModalComponent {
         page: page.number + 1,
         collectionSize: +page.totalElements,
       });
-
-      return page.content.map((version: any) => ({
-        ...version,
-        versionTags: [
-          {
-            content: version.final
-              ? version.caseDefinitionVersionTag
-              : `DRAFT: ${version.caseDefinitionVersionTag}`,
-            type: version.final ? 'green' : 'red',
-          },
-        ],
-      }));
-
       return page.content;
     })
   );
 
   public readonly FIELDS: ColumnConfig[] = [
     {
-      key: 'versionTags',
+      key: 'caseDefinitionVersionTag',
       label: 'caseManagement.allVersionsModal.columns.version',
       viewType: ViewType.TAGS,
     },

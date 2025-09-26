@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
   AfterViewInit,
   Component,
@@ -22,9 +23,10 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
-import {PlaceholderService} from 'carbon-components-angular';
-import {Subscription} from 'rxjs';
 import {filter} from 'rxjs/operators';
+import {Subscription} from 'rxjs';
+import {NotificationService, PlaceholderService} from 'carbon-components-angular';
+import {GlobalNotificationService} from '../../services';
 
 // eslint-disable-next-line no-var
 declare var App: any;
@@ -32,7 +34,7 @@ declare var App: any;
 @Component({
   selector: 'valtimo-layout',
   templateUrl: './layout.component.html',
-  standalone: false,
+  providers: [NotificationService],
 })
 export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('carbonPlaceHolder', {static: true, read: ViewContainerRef})
@@ -43,13 +45,16 @@ export class LayoutComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly _DEFAULT_LAYOUT = 'internal';
 
   constructor(
-    private readonly placeHolderService: PlaceholderService,
+    private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly placeHolderService: PlaceholderService,
+    private readonly notificationService: NotificationService,
+    private readonly globalNotificationService: GlobalNotificationService
   ) {}
 
   public ngOnInit() {
     this.openRouterSubscription();
+    this.globalNotificationService.setNotificationService(this.notificationService);
   }
 
   public ngAfterViewInit(): void {

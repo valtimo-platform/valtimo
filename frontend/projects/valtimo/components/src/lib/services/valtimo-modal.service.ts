@@ -23,21 +23,23 @@ import {filter, tap} from 'rxjs/operators';
 })
 export class ValtimoModalService {
   private readonly _scrollToTop$ = new Subject<null>();
-  private readonly _caseDefinitionKey$ = new BehaviorSubject<string>('');
+  private readonly _documentDefinitionName$ = new BehaviorSubject<string>('');
 
-  public get scrollToTop$(): Observable<null> {
+  get scrollToTop$(): Observable<null> {
     return this._scrollToTop$.asObservable();
   }
 
-  public get caseDefinitionKey$(): Observable<string> {
-    return this._caseDefinitionKey$.pipe(filter(caseDefinitionKey => !!caseDefinitionKey));
+  get documentDefinitionName$(): Observable<string> {
+    return this._documentDefinitionName$.pipe(
+      filter(documentDefinitionName => !!documentDefinitionName)
+    );
   }
 
-  public scrollToTop(): void {
+  scrollToTop(): void {
     this._scrollToTop$.next(null);
   }
 
-  public setCaseDefinitionKey(caseDefinitionKey: string): void {
-    this._caseDefinitionKey$.next(caseDefinitionKey);
+  setDocumentDefinitionName(documentDefinitionName: string): void {
+    this._documentDefinitionName$.next(documentDefinitionName);
   }
 }

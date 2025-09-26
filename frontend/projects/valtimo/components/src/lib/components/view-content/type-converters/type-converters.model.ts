@@ -25,7 +25,6 @@ import {PercentTypeConverter} from './percentTypeConverter';
 import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
 import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
 import {StringTypeConverter} from './stringTypeConverter';
-import {LinkTypeConverter} from './linkTypeConverter';
 
 export const TYPE_CONVERTER_TOKEN = new InjectionToken<TypeConverter[]>('Type Converter');
 
@@ -80,19 +79,10 @@ export const TYPE_PROVIDERS = [
     useClass: CurrencyTypeConverter,
     multi: true,
   },
-  {
-    provide: TYPE_CONVERTER_TOKEN,
-    useClass: LinkTypeConverter,
-    multi: true,
-  },
 ];
 
 export interface TypeConverter {
   getTypeString(): string;
-  /*
-   * Returns true if the converter returns a raw value, meaning it should be treated as HTML.
-   */
-  isRawValue(): boolean;
 
   convert(value: any, definition: any): string;
 }

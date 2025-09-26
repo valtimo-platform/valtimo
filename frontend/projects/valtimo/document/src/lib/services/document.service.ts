@@ -18,25 +18,25 @@ import {Injectable} from '@angular/core';
 import {
   AssigneeFilter,
   ConfigService,
-  InterceptorSkip,
   NamedUser,
   SearchField,
   SearchFilter,
   SearchFilterRange,
   SearchOperator,
-} from '@valtimo/shared';
+} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
 import {catchError, Observable, of, switchMap} from 'rxjs';
 
 import {
   AssignHandlerToDocumentResult,
   AuditRecord,
-  CaseDefinition,
   CaseListColumn,
   CaseSettings,
   CreateDocumentDefinitionResponse,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
+  DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
   Documents,
@@ -90,8 +90,8 @@ export class DocumentService {
   }
 
   // Document-calls
-  public getAllDefinitions(): Observable<Page<DocumentDefinition>> {
-    return this.http.get<Page<DocumentDefinition>>(
+  public getAllDefinitions(): Observable<DocumentDefinitions> {
+    return this.http.get<DocumentDefinitions>(
       `${this.valtimoEndpointUri}v1/document-definition?size=1000`
     );
   }
@@ -328,25 +328,9 @@ export class DocumentService {
     );
   }
 
-  // Case definition calls
-  public getCaseDefinitions(params: any): Observable<CaseDefinition[]> {
-    return this.http.get<CaseDefinition[]>(`${this.valtimoEndpointUri}v1/case-definition`, {
-      params,
-    });
-  }
-
-  public getCaseDefinitionsManagement(params: any): Observable<Page<CaseDefinition>> {
-    return this.http.get<Page<CaseDefinition>>(
-      `${this.valtimoEndpointUri}management/v1/case-definition`,
-      {
-        params,
-      }
-    );
-  }
-
   public findProcessDocumentDefinitionsByVersion(
     documentDefinitionName: string,
-    version: string
+    version: number
   ): Observable<ProcessDocumentDefinition[]> {
     return this.http.get<ProcessDocumentDefinition[]>(
       `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}/version/${version}`
@@ -426,28 +410,9 @@ export class DocumentService {
         'Content-Type': 'application/json',
       }),
     };
-
     return this.http.post<CreateDocumentDefinitionResponse>(
       `${this.valtimoEndpointUri}management/v1/document-definition`,
       documentDefinitionCreateRequest,
-      options
-    );
-  }
-
-  public updateDocumentDefinitionForManagement(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    request: DocumentDefinitionCreateRequest
-  ): Observable<DocumentDefinition> {
-    const options = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json',
-      }),
-    };
-
-    return this.http.put<DocumentDefinition>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/document-definition`,
-      request,
       options
     );
   }
@@ -504,18 +469,9 @@ export class DocumentService {
     return this.http.post(`${this.valtimoEndpointUri}v1/document/${documentId}/message`, request);
   }
 
-  public getDocumentTypesForCase(
-    caseDefinitionKey: string,
-    versionTag: string
-  ): Observable<DocumentType[]> {
-    return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`
-    );
-  }
-
-  public getDocumentTypesForDocument(documentId: string): Observable<DocumentType[]> {
-    return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`
+  public getDocumentTypes(caseDefinitionKey: string): Observable<Array<DocumentType>> {
+    return this.http.get<Array<DocumentType>>(
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/documenttype`
     );
   }
 
@@ -638,11 +594,11 @@ export class DocumentService {
   }
 
   public getDocumentDefinitionByVersion(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
+    documentDefinitionName: string,
+    version: number
   ): Observable<DocumentDefinition> {
     return this.http.get<DocumentDefinition>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/document-definition`
+      `${this.valtimoEndpointUri}management/v1/document-definition/${documentDefinitionName}/version/${version}`
     );
   }
 }

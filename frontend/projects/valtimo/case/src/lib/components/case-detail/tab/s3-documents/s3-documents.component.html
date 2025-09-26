@@ -26,11 +26,12 @@
 ></valtimo-dropzone>
 
 <valtimo-widget>
-  <valtimo-carbon-list
+  <valtimo-list
     [fields]="fields"
     [items]="relatedFiles$ | async"
     [header]="true"
     [isSearchable]="true"
+    [viewMode]="true"
     [actions]="actions"
   >
     <div header>
@@ -40,5 +41,5 @@
         {{ 'Overview of all documents in this case' | translate }}
       </h5>
     </div>
-  </valtimo-carbon-list>
+  </valtimo-list>
 </valtimo-widget>

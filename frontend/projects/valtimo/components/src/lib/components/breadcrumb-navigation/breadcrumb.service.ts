@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {Injectable} from '@angular/core';
-import {Params, Router, UrlSerializer} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
-import {BreadcrumbItem} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, Observable, startWith} from 'rxjs';
+import {BreadcrumbItem} from 'carbon-components-angular';
 import {map} from 'rxjs/operators';
-import {MenuService} from '../menu/services/menu.service';
+import {ActivatedRoute, Params, Router, UrlSerializer} from '@angular/router';
+import {ConfigService} from '@valtimo/config';
+import {MenuService} from '../menu/menu.service';
+import {TranslateService} from '@ngx-translate/core';
 
 @Injectable({
   providedIn: 'root',
@@ -75,6 +77,8 @@ export class BreadcrumbService {
 
   constructor(
     private readonly router: Router,
+    private readonly route: ActivatedRoute,
+    private readonly configService: ConfigService,
     private readonly menuService: MenuService,
     private readonly translateService: TranslateService,
     private readonly serializer: UrlSerializer

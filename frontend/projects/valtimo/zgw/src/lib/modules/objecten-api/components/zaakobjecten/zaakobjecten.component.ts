@@ -28,6 +28,7 @@ import {
   SelectModule,
   TableColumn,
   TableModule,
+  TitleModule,
   VModalComponent,
   VModalModule,
 } from '@valtimo/components';
@@ -48,6 +49,7 @@ import {TranslateModule} from '@ngx-translate/core';
     ParagraphModule,
     TableModule,
     VModalModule,
+    TitleModule,
     FormIoModule,
     TranslateModule,
   ],

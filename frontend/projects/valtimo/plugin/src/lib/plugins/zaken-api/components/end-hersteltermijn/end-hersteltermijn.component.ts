@@ -19,7 +19,6 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {PluginTranslatePipe} from '../../../../pipes';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-end-hersteltermijn',
   templateUrl: './end-hersteltermijn.component.html',
   providers: [PluginTranslatePipe],

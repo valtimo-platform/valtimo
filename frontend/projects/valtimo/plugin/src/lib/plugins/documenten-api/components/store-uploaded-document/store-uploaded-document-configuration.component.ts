@@ -21,7 +21,6 @@ import {Observable, Subscription} from 'rxjs';
 @Component({
   selector: 'valtimo-store-uploaded-document-configuration',
   templateUrl: './store-uploaded-document-configuration.component.html',
-  standalone: false,
 })
 export class StoreUploadedDocumentConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy

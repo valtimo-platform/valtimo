@@ -21,7 +21,7 @@ import {
   SearchFieldValues,
   SearchFilter,
   SearchFilterRange,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {BehaviorSubject, map, Observable, of, switchMap, tap} from 'rxjs';
 import {TaskListService} from './task-list.service';
 import {TaskListOtherFilters, TaskListSearchField} from '../models';
@@ -41,7 +41,7 @@ export class TaskListSearchService {
   }
 
   public readonly searchFields$: Observable<SearchField[]> =
-    this.taskListService.caseDefinitionKey$.pipe(
+    this.taskListService.caseDefinitionName$.pipe(
       tap(() => this._loadingSearchFields$.next(true)),
       switchMap(caseDefinitionName =>
         caseDefinitionName

@@ -18,7 +18,6 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
 import {
   ButtonModule,
   FileUploaderModule,
@@ -27,6 +26,7 @@ import {
 } from 'carbon-components-angular';
 import {map, startWith} from 'rxjs';
 import {ProcessManagementService, ProcessManagementStateService} from '../../services';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-process-management-upload',
@@ -59,10 +59,10 @@ export class ProcessManagementUploadComponent {
   );
 
   constructor(
+    private readonly processManagementStateService: ProcessManagementStateService,
+    private readonly processManagementService: ProcessManagementService,
     private readonly formBuilder: FormBuilder,
     private readonly notificationService: GlobalNotificationService,
-    private readonly processManagementService: ProcessManagementService,
-    private readonly processManagementStateService: ProcessManagementStateService,
     private readonly translateService: TranslateService
   ) {}
 
@@ -84,6 +84,7 @@ export class ProcessManagementUploadComponent {
         this.notificationService.showNotification({
           type: 'success',
           title: this.translateService.instant('processManagement.upload.success'),
+          duration: CARBON_CONSTANTS.notificationDuration,
         });
         this.closeModal();
         this.processManagementStateService.reloadDefinitions();
@@ -92,6 +93,7 @@ export class ProcessManagementUploadComponent {
         this.notificationService.showNotification({
           type: 'error',
           title: this.translateService.instant('processManagement.upload.failure'),
+          duration: CARBON_CONSTANTS.notificationDuration,
         });
       },
     });

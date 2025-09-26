@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-.case-list-tabs cds-tab {
+.dossier-list-tabs cds-tab {
   display: none;
-}
-
-:host {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.loading-spinner {
-  margin: 24px 24px 0px 10px;
 }

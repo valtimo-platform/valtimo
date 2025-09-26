@@ -26,7 +26,6 @@ declare var $;
   selector: 'valtimo-alert',
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.css'],
-  standalone: false,
 })
 export class AlertComponent implements AfterContentInit, OnDestroy {
   alerts: Alert[] = [];

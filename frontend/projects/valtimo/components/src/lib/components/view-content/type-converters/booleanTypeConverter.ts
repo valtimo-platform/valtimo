@@ -26,10 +26,6 @@ export class BooleanTypeConverter implements TypeConverter {
     return 'boolean';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
   public convert(value: any, definition: any): string {
     if (value === null || value === undefined) return '-';
     const enumeration = definition?.enum;

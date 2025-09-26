@@ -19,7 +19,6 @@ import {Router} from '@angular/router';
 import {ChoiceFieldService, ChoiceField} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-choice-field-list',
   templateUrl: './choice-field-list.component.html',
   styleUrls: ['./choice-field-list.component.css'],

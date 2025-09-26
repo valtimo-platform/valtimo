@@ -21,7 +21,6 @@ import {CdsThemeService} from '@valtimo/components';
 import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-meter-display',
   templateUrl: './meter-display.component.html',
   styleUrls: ['./meter-display.component.scss'],

@@ -18,7 +18,6 @@ import {Directive, EventEmitter, HostListener, Output} from '@angular/core';
 
 @Directive({
   selector: '[valtimoUploaderDragDrop]',
-  standalone: false,
 })
 export class UploaderDragDropDirective {
   @Output() fileDropped = new EventEmitter<any>();

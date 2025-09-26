@@ -23,12 +23,14 @@ import {
   QueryFormsResponse,
 } from '../models';
 import {Observable, of} from 'rxjs';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FormManagementService extends BaseApiService {
+  private valtimoApiConfig: any;
+
   constructor(
     protected readonly httpClient: HttpClient,
     protected readonly configService: ConfigService
@@ -38,7 +40,7 @@ export class FormManagementService extends BaseApiService {
 
   public getFormDefinition(formDefinitionId: string): Observable<FormDefinition> {
     return this.httpClient.get<FormDefinition>(
-      this.getApiUrl(`/management/v1/form/${formDefinitionId}`)
+      this.getApiUrl(`v1/form-management/${formDefinitionId}`)
     );
   }
 
@@ -58,7 +60,7 @@ export class FormManagementService extends BaseApiService {
     if (!formDefinitionName) return of(false);
 
     return this.httpClient.get<boolean>(
-      this.getApiUrl(`/management/v1/form/exists/${formDefinitionName}`)
+      this.getApiUrl(`v1/form-management/exists/${formDefinitionName}`)
     );
   }
 
@@ -67,7 +69,7 @@ export class FormManagementService extends BaseApiService {
     caseDefinitionVersionTag: string,
     formDefinitionName: string
   ): Observable<boolean> {
-    if (!formDefinitionName || !caseDefinitionKey || !caseDefinitionVersionTag) return of(false);
+    if (!formDefinitionName) return of(false);
 
     return this.httpClient.get<boolean>(
       this.getApiUrl(
@@ -77,7 +79,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public queryFormDefinitions(params?: any): Observable<QueryFormsResponse> {
-    return this.httpClient.get<QueryFormsResponse>(this.getApiUrl(`/management/v1/form`), {
+    return this.httpClient.get<QueryFormsResponse>(this.getApiUrl(`v1/form-management`), {
       params,
     });
   }
@@ -98,7 +100,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public createFormDefinition(request: CreateFormDefinitionRequest): Observable<FormDefinition> {
-    return this.httpClient.post<FormDefinition>(this.getApiUrl(`/management/v1/form`), request);
+    return this.httpClient.post<FormDefinition>(this.getApiUrl(`/v1/form-management`), request);
   }
 
   public createFormDefinitionsCase(
@@ -115,7 +117,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public modifyFormDefinition(request: ModifyFormDefinitionRequest): Observable<FormDefinition> {
-    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/management/v1/form`), request);
+    return this.httpClient.put<FormDefinition>(this.getApiUrl(`/v1/form-management`), request);
   }
 
   public modifyFormDefinitionCase(
@@ -132,7 +134,7 @@ export class FormManagementService extends BaseApiService {
   }
 
   public deleteFormDefinition(formDefinitionId: string): Observable<void> {
-    return this.httpClient.delete<void>(this.getApiUrl(`/management/v1/form/${formDefinitionId}`));
+    return this.httpClient.delete<void>(this.getApiUrl(`/v1/form-management/${formDefinitionId}`));
   }
 
   public deleteFormDefinitionCase(

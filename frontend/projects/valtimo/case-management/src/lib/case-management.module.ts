@@ -24,27 +24,23 @@ import {
   ConfirmationModalModule,
   DropzoneModule,
   EditorModule,
-  EllipsisPipe,
   FormModule,
   InputModule,
+  ListModule,
   ModalModule,
   MultiselectDropdownModule,
-  MuuriDirectiveModule,
   ParagraphModule,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
   SelectModule,
   SpinnerModule,
   TableModule,
   TooltipIconModule,
-  ValtimoCdsModalDirective,
-  ValtimoCdsOverflowButtonDirective,
+  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsOverflowButtonDirectiveModule,
   ValuePathSelectorComponent,
   WidgetModule,
-  ReadOnlyDirective,
-  JsonEditorComponent,
 } from '@valtimo/components';
-import {FormManagementComponent} from '@valtimo/form-management';
-import {ConfigModule} from '@valtimo/shared';
+import {ConfigModule} from '@valtimo/config';
 import {
   ButtonModule,
   CheckboxModule,
@@ -59,60 +55,59 @@ import {
   LoadingModule,
   ModalModule as CarbonModalModule,
   NotificationModule,
-  NumberModule,
   ProgressBarModule,
   TabsModule,
   TagModule,
   ToggleModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {CaseManagementRoutingModule} from './case-management-routing.module';
+
 import {CaseManagementAssigneeComponent} from './components/case-management-assignee/case-management-assignee.component';
-import {CaseManagementCaseDetailComponent} from './components/case-management-case-detail/case-management-case-detail.component';
-import {CaseManagementCaseListComponent} from './components/case-management-case-list/case-management-case-list.component';
 import {CaseManagementConnectModalComponent} from './components/case-management-connect-modal/case-management-connect-modal.component';
-import {CaseManagementCreateDraftVersionComponent} from './components/case-management-create-draft-version/case-management-create-draft-version.component';
-import {CaseManagementCreateComponent} from './components/case-management-create/case-management-create.component';
-import {CaseManagementDeploymentComponent} from './components/case-management-deployment/case-management-deployment.component';
-import {CaseManagementDetailActionsComponent} from './components/case-management-detail-actions/case-management-detail-actions.component';
+import {CaseManagementDetailContainerActionsComponent} from './components/case-management-detail-container-actions/case-management-detail-container-actions.component';
+import {CaseManagementDetailContainerComponent} from './components/case-management-detail-container/case-management-detail-container.component';
 import {CaseManagementDetailComponent} from './components/case-management-detail/case-management-detail.component';
-import {CaseManagementDocumentDefinitionComponent} from './components/case-management-detail/tabs/case-management-document-definition/case-management-document-definition.component';
-import {CaseManagementGeneralComponent} from './components/case-management-detail/tabs/case-management-general/case-management-general.component';
-import {CaseManagementCaseHandlerComponent} from './components/case-management-detail/tabs/case-management-general/components/case-management-case-handler/case-management-case-handler.component';
-import {CaseManagementExternalStartFormComponent} from './components/case-management-detail/tabs/case-management-general/components/case-management-external-start-form/case-management-external-start-form.component';
-import {CaseManagementListColumnsComponent} from './components/case-management-detail/tabs/case-management-list-columns/case-management-list-columns.component';
-import {CaseManagementSearchFieldsComponent} from './components/case-management-detail/tabs/case-management-search-fields/case-management-search-fields.component';
-import {CaseManagementStatusModalComponent} from './components/case-management-detail/tabs/case-management-statuses/case-management-status-modal/case-management-status-modal.component';
-import {CaseManagementStatusesComponent} from './components/case-management-detail/tabs/case-management-statuses/case-management-statuses.component';
-import {CaseManagementAddTabModalComponent} from './components/case-management-detail/tabs/case-management-tabs/case-management-add-tab-modal/case-management-add-tab-modal.component';
-import {CaseManagementEditTabModalComponent} from './components/case-management-detail/tabs/case-management-tabs/case-management-edit-tab-modal/case-management-edit-tab-modal.component';
-import {CaseManagementTabsComponent} from './components/case-management-detail/tabs/case-management-tabs/case-management-tabs.component';
-import {TabFormComponent} from './components/case-management-detail/tabs/case-management-tabs/tab-form/tab-form.component';
-import {CaseManagementWidgetsEditorComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/editor/case-management-widgets-editor.component';
-import {CaseManagementTagsModalComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags-modal/case-management-tags-modal.component';
-import {CaseManagementTagsComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags.component';
+import {CaseManagementDocumentDefinitionComponent} from './components/case-management-document-definition/case-management-document-definition.component';
+import {CaseManagementListColumnsComponent} from './components/case-management-list-columns/case-management-list-columns.component';
 import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
-import {CaseManagementSelectVersionModalComponent} from './components/case-management-select-version-modal/case-management-select-version-modal.component';
+import {CaseManagementRemoveModalComponent} from './components/case-management-remove-modal/case-management-remove-modal.component';
+import {CaseManagementSearchFieldsComponent} from './components/case-management-search-fields/case-management-search-fields.component';
+import {CaseManagementAddTabModalComponent} from './components/case-management-tabs/case-management-add-tab-modal/case-management-add-tab-modal.component';
+import {CaseManagementEditTabModalComponent} from './components/case-management-tabs/case-management-edit-tab-modal/case-management-edit-tab-modal.component';
+import {CaseManagementTabsComponent} from './components/case-management-tabs/case-management-tabs.component';
+import {TabFormComponent} from './components/case-management-tabs/tab-form/tab-form.component';
 import {CaseManagementUploadComponent} from './components/case-management-upload/case-management-upload.component';
 import {CaseManagementUploadStepComponent} from './components/case-management-upload/step/case-management-upload-step.component';
+import {CaseManagementRoutingModule} from './case-management-routing.module';
 import {TabManagementService} from './services';
-import {CaseManagementDraftWarningComponent} from './components/case-management-draft-warning/case-management-draft-warning.component';
+import {CaseManagementStatusesComponent} from './components/case-management-statuses/case-management-statuses.component';
+import {CaseManagementStatusModalComponent} from './components/case-management-statuses/case-management-status-modal/case-management-status-modal.component';
+import {CaseManagementCreateComponent} from './components/case-management-create/case-management-create.component';
+import {CaseManagementWidgetsEditorComponent} from './components/case-management-widget-tab/editor/case-management-widgets-editor.component';
+import {CaseManagementGeneralComponent} from './components/case-management-general/case-management-general.component';
+import {CaseManagementCaseHandlerComponent} from './components/case-management-general/components/case-management-case-handler/case-management-case-handler.component';
+import {CaseManagementProcessesComponent} from './components/case-management-processes/case-management-processes.component';
+import {FormManagementComponent} from '@valtimo/form-management';
+import {CaseManagementExternalStartFormComponent} from './components/case-management-external-start-form/case-management-external-start-form.component';
+import {CaseManagementSelectVersionModalComponent} from './components/case-management-select-version-modal/case-management-select-version-modal.component';
 
 @NgModule({
   declarations: [
     CaseManagementListComponent,
+    CaseManagementDetailComponent,
     CaseManagementConnectModalComponent,
+    CaseManagementRemoveModalComponent,
     CaseManagementSelectVersionModalComponent,
     CaseManagementUploadComponent,
     CaseManagementSearchFieldsComponent,
-    CaseManagementDetailComponent,
+    CaseManagementDetailContainerComponent,
     CaseManagementAssigneeComponent,
     CaseManagementListColumnsComponent,
     CaseManagementTabsComponent,
     CaseManagementAddTabModalComponent,
     TabFormComponent,
     CaseManagementEditTabModalComponent,
-    CaseManagementDetailActionsComponent,
+    CaseManagementDetailContainerActionsComponent,
     CaseManagementDocumentDefinitionComponent,
     CaseManagementUploadStepComponent,
     CaseManagementStatusesComponent,
@@ -121,17 +116,12 @@ import {CaseManagementDraftWarningComponent} from './components/case-management-
     CaseManagementGeneralComponent,
     CaseManagementCaseHandlerComponent,
     CaseManagementExternalStartFormComponent,
-    CaseManagementDeploymentComponent,
-    CaseManagementTagsComponent,
-    CaseManagementTagsModalComponent,
-    CaseManagementCreateDraftVersionComponent,
-    CaseManagementCaseListComponent,
-    CaseManagementCaseDetailComponent,
   ],
   imports: [
     CommonModule,
     WidgetModule,
     DropzoneModule,
+    ListModule,
     CaseManagementRoutingModule,
     FormsModule,
     TranslateModule,
@@ -159,12 +149,12 @@ import {CaseManagementDraftWarningComponent} from './components/case-management-
     LinkModule,
     ConfirmationModalModule,
     TableModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     CarbonListModule,
     ComboBoxModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     DialogModule,
-    ValtimoCdsOverflowButtonDirective,
+    ValtimoCdsOverflowButtonDirectiveModule,
     EditorModule,
     CarbonListModule,
     TabsModule,
@@ -176,14 +166,10 @@ import {CaseManagementDraftWarningComponent} from './components/case-management-
     TooltipModule,
     CaseManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
+    CaseManagementProcessesComponent,
     LayerModule,
+    CaseManagementProcessesComponent,
     FormManagementComponent,
-    EllipsisPipe,
-    MuuriDirectiveModule,
-    NumberModule,
-    ReadOnlyDirective,
-    CaseManagementDraftWarningComponent,
-    JsonEditorComponent,
   ],
   providers: [TabManagementService],
 })

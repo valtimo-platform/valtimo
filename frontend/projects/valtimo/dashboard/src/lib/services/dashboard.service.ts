@@ -18,7 +18,7 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {Dashboard} from '../models';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',

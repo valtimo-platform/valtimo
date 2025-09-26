@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DOCUMENT} from '@angular/common';
+
 import {
   Component,
   EventEmitter,
@@ -24,18 +24,6 @@ import {
   Output,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormBuilder, Validators} from '@angular/forms';
-import {TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS} from '@valtimo/components';
-import {GlobalNotificationService} from '@valtimo/shared';
-import {
-  ConfigurationOutput,
-  DashboardWidgetConfiguration,
-  DisplayTypeSpecification,
-  WidgetService,
-  WidgetTranslationService,
-} from '@valtimo/dashboard';
-import {ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -48,10 +36,22 @@ import {
   tap,
 } from 'rxjs';
 import {DashboardItem, WidgetDataSource, WidgetModalType} from '../../models';
+import {FormBuilder, Validators} from '@angular/forms';
+import {ListItem} from 'carbon-components-angular';
+import {TranslateService} from '@ngx-translate/core';
+import {DOCUMENT} from '@angular/common';
 import {DashboardManagementService} from '../../services/dashboard-management.service';
+import {CARBON_CONSTANTS} from '@valtimo/components';
+import {
+  ConfigurationOutput,
+  DashboardWidgetConfiguration,
+  DisplayTypeSpecification,
+  WidgetService,
+  WidgetTranslationService,
+} from '@valtimo/dashboard';
+import {GlobalNotificationService} from '@valtimo/layout';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-widget-modal',
   templateUrl: './widget-modal.component.html',
   styleUrls: ['./widget-modal.component.scss'],

@@ -18,7 +18,6 @@ import {Component, Input} from '@angular/core';
 import {animate, style, transition, trigger} from '@angular/animations';
 
 @Component({
-  standalone: false,
   selector: 'v-tooltip',
   styleUrls: ['./tooltip.component.scss'],
   templateUrl: './tooltip.component.html',

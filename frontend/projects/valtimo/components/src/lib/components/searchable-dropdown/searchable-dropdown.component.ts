@@ -37,7 +37,6 @@ import {debounceTime, take} from 'rxjs/operators';
   selector: 'valtimo-searchable-dropdown',
   templateUrl: './searchable-dropdown.component.html',
   styleUrls: ['./searchable-dropdown.component.scss'],
-  standalone: false,
 })
 export class SearchableDropdownComponent implements OnInit, OnDestroy, OnChanges {
   @Input() style: DropdownButtonStyle;

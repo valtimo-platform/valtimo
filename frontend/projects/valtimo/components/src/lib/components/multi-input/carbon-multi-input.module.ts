@@ -24,6 +24,7 @@ import {
   IconModule,
   InputModule as CarbonInputModule,
 } from 'carbon-components-angular';
+import {ButtonModule} from '../button/button.module';
 import {InputLabelModule} from '../input-label/input-label.module';
 import {InputModule} from '../input/input.module';
 import {
@@ -42,6 +43,7 @@ import {
     CommonModule,
     InputLabelModule,
     InputModule,
+    ButtonModule,
     TranslateModule,
     CarbonButtonModule,
     IconModule,

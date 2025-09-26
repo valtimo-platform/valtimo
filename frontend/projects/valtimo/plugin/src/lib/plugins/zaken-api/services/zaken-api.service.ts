@@ -17,7 +17,7 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {ResultaatType, StatusType} from '../models';
 import {Eigenschap} from '../models/eigenschap';
 
@@ -34,29 +34,25 @@ export class ZakenApiService {
     this.valtimoEndpointUri = configService.config.valtimoApi.endpointUri;
   }
 
-  public getStatusTypesByCaseAndVersion(
-    caseDefinitionKey: string,
-    versionTag: string
-  ): Observable<Array<StatusType>> {
+  public getStatusTypesByCaseDefinition(caseDefinitionKey: string): Observable<Array<StatusType>> {
     return this.http.get<Array<StatusType>>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/statustype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/statustype`
     );
   }
 
-  public getResultaatTypesByCaseAndVersion(
-    caseDefinitionKey: string,
-    versionTag: string
+  public getResultaatTypesByCaseDefinition(
+    caseDefinitionKey: string
   ): Observable<Array<ResultaatType>> {
     return this.http.get<Array<ResultaatType>>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/resultaattype`
+      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/zaaktype/resultaattype`
     );
   }
-  public getEigenschappenByCaseAndVersion(
-    caseDefinitionKey: string,
-    versionTag: string
+
+  public getEigenschappenByCaseDefinition(
+    caseDefinitionKey: string
   ): Observable<Array<Eigenschap>> {
     return this.http.get<Array<Eigenschap>>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/catalogi-eigenschappen`
+      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/catalogi-eigenschappen`
     );
   }
 }

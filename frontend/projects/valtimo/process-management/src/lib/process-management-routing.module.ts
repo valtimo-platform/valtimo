@@ -18,44 +18,27 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
-import {ROLE_ADMIN} from '@valtimo/shared';
+import {ROLE_ADMIN} from '@valtimo/config';
 import {ProcessManagementBuilderComponent, ProcessManagementComponent} from './components';
-import {ProcessManagementRouteData} from './models';
-import {pendingChangesGuard} from '@valtimo/components';
 
 const routes: Routes = [
   {
     path: 'processes',
     component: ProcessManagementComponent,
     canActivate: [AuthGuardService],
-    data: {
-      title: 'Processes',
-      roles: [ROLE_ADMIN],
-      context: 'independent',
-    } as ProcessManagementRouteData,
+    data: {title: 'Processes', roles: [ROLE_ADMIN]},
   },
   {
     path: 'processes/create',
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
-    data: {
-      title: 'Create new Process',
-      roles: [ROLE_ADMIN],
-      context: 'independent',
-    } as ProcessManagementRouteData,
+    data: {title: 'Create new Process', roles: [ROLE_ADMIN]},
   },
   {
-    path: 'processes/:processDefinitionKey',
+    path: 'processes/process/:key',
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
-    data: {
-      title: 'Process details',
-      roles: [ROLE_ADMIN],
-      customPageTitle: true,
-      context: 'independent',
-    } as ProcessManagementRouteData,
+    data: {title: 'Process details', roles: [ROLE_ADMIN], customPageTitle: true},
   },
 ];
 

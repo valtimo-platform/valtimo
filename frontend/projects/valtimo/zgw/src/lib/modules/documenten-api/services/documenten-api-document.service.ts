@@ -15,7 +15,7 @@
  */
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
+import {BaseApiService, ConfigService, Page} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {DocumentenApiRelatedFile} from '../models';
 import {DocumentenApiUploadField} from '../models/documenten-api-upload-field.model';

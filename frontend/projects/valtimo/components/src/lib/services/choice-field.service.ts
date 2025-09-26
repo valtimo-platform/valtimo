@@ -15,7 +15,7 @@
  */
 import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {ConfigService, Page} from '@valtimo/shared';
+import {ConfigService, Page} from '@valtimo/config';
 import {Observable} from 'rxjs';
 import {ChoiceField, ChoiceFieldValue, ChoicefieldValue} from '../models';
 

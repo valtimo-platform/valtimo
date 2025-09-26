@@ -23,7 +23,6 @@ declare var $;
   selector: 'valtimo-filter-sidebar',
   templateUrl: './filter-sidebar.component.html',
   styleUrls: ['./filter-sidebar.component.css'],
-  standalone: false,
 })
 export class FilterSidebarComponent implements OnInit, OnDestroy {
   public filterSidebar: string;

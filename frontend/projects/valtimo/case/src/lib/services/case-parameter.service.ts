@@ -26,7 +26,7 @@ import {
   take,
 } from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
-import {AssigneeFilter, Direction, SearchFieldValues} from '@valtimo/shared';
+import {AssigneeFilter, Direction, SearchFieldValues} from '@valtimo/config';
 import {Pagination} from '@valtimo/components';
 
 @Injectable()

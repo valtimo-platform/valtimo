@@ -19,7 +19,6 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {Observable, Subscription} from 'rxjs';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-complete-portal-task',
   templateUrl: './complete-portal-task.component.html',
   styleUrls: ['./complete-portal-task.component.scss'],

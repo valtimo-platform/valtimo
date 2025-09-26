@@ -26,7 +26,6 @@ import {PromptService} from '../../services/prompt.service';
   selector: 'v-prompt',
   templateUrl: './prompt.component.html',
   styleUrls: ['./prompt.component.scss'],
-  standalone: false,
 })
 export class PromptComponent implements OnInit {
   @Input() appearingDelayMs = 140;
@@ -43,6 +42,10 @@ export class PromptComponent implements OnInit {
   readonly bodyText$ = this.promptService.bodyText$;
   readonly cancelText$ = this.promptService.cancelText$;
   readonly confirmText$ = this.promptService.confirmText$;
+  readonly cancelMdiIcon$ = this.promptService.cancelMdiIcon$;
+  readonly confirmMdiIcon$ = this.promptService.confirmMdiIcon$;
+  readonly cancelButtonType$ = this.promptService.cancelButtonType$;
+  readonly confirmButtonType$ = this.promptService.confirmButtonType$;
   readonly closeButtonVisible$ = this.promptService.closeButtonVisible$;
 
   constructor(private readonly promptService: PromptService) {}

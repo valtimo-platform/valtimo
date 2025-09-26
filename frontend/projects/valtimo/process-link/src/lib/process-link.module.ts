@@ -20,17 +20,19 @@ import {CommonModule} from '@angular/common';
 import {ProcessLinkRoutingModule} from './process-link-routing.module';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {
+  ButtonModule,
   CarbonMultiInputModule,
   FormIoModule,
   ModalModule,
   ParagraphModule,
-  RemoveClassnamesDirective,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   StepperModule,
+  TitleModule,
   TooltipIconModule,
   TooltipModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
+  VCardModule,
   VModalModule,
 } from '@valtimo/components';
 import {TranslateModule} from '@ngx-translate/core';
@@ -60,11 +62,12 @@ import {SelectFormComponent} from './components/select-form';
 import {FormFlowComponent} from './components/form-flow/form-flow.component';
 import {SelectFormFlowComponent} from './components/select-form-flow';
 import {FormFlowConfigurationContainerComponent} from './components/form-flow-configuration-container';
+import {SelectUrlComponent} from './components/select-url/select-url.component';
 import {UrlValidatorService} from './services/url-validator.service';
 import {UrlResolverService} from './services/url-resolver.service';
 import {FormDisplayConfigurationComponent} from './components/form-display-configuration/form-display-configuration.component';
+import {SelectUIComponent} from './components/select-ui/select-ui.component';
 import {ImportPluginConfigurationComponent} from './components/import-plugin-configuration/import-plugin-configuration.component';
-import {SelectUIComponentComponent} from './components/select-ui-component/select-ui-component.component';
 
 @NgModule({
   declarations: [
@@ -79,8 +82,9 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     FormFlowComponent,
     SelectFormFlowComponent,
     FormFlowConfigurationContainerComponent,
+    SelectUrlComponent,
     FormDisplayConfigurationComponent,
-    SelectUIComponentComponent,
+    SelectUIComponent,
     ImportPluginConfigurationComponent,
   ],
   imports: [
@@ -93,9 +97,12 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     TranslateModule,
     StepperModule,
     VModalModule,
+    VCardModule,
     PluginTranslatePipeModule,
     ParagraphModule,
     PluginConfigurationContainerModule,
+    ButtonModule,
+    TitleModule,
     CarbonModalModule,
     ProgressIndicatorModule,
     CarbonButtonModule,
@@ -106,10 +113,10 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     TooltipIconModule,
     LoadingModule,
     FormIoModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     StructuredListModule,
     TilesModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     SelectModule,
     ToggleModule,
     CarbonMultiInputModule,
@@ -117,10 +124,6 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     ToggletipModule,
     ComboBoxModule,
     TranslateModule,
-    LayerModule,
-    ToggletipModule,
-    RemoveClassnamesDirective,
-    ReactiveFormsModule,
   ],
   exports: [
     ProcessLinkComponent,
@@ -129,6 +132,7 @@ import {SelectUIComponentComponent} from './components/select-ui-component/selec
     PluginActionConfigurationComponent,
     ProcessLinkModalComponent,
     FormFlowComponent,
+    SelectUrlComponent,
   ],
   providers: [UrlValidatorService, UrlResolverService],
 })

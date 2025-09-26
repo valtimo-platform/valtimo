@@ -21,7 +21,6 @@ import {KeycloakOptionsService, KeycloakStorageService} from './services';
 import {STORAGE_KEYS} from './constants';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-keycloak-callback',
   template: '',
 })

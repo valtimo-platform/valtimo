@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {DisplayType} from '@valtimo/shared';
 import {CaseTag} from './case-tags.model';
 
 interface SortResult {
@@ -44,16 +43,29 @@ interface Page<T> {
   number: number;
 }
 
+interface DocumentDefinitions {
+  content: DocumentDefinition[];
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+  size: number;
+  sort: any;
+  totalElements: number;
+  totalPages: number;
+}
+
 interface DocumentDefinition {
-  id: DocumentDefinitionId;
+  id: DefinitionId;
   schema: any;
   createdOn: string;
   readOnly: boolean;
 }
 
-interface DocumentDefinitionId {
+interface DefinitionId {
   name: string;
-  caseDefinitionId: CaseDefinitionId;
+  version: number;
 }
 
 interface CreateDocumentDefinitionResponse {
@@ -108,9 +120,14 @@ interface Document {
   caseTags?: CaseTag[];
 }
 
+interface DocumentDefinitionId {
+  name: string;
+  version: number;
+}
+
 interface ProcessDocumentDefinitionId {
   processDefinitionKey: string;
-  documentDefinitionId: DocumentDefinitionId;
+  documentDefinitionId: DefinitionId;
 }
 
 interface ProcessDocumentDefinition {
@@ -270,8 +287,8 @@ class ModifyDocumentAndStartProcessRequestImpl
 
 interface ProcessDocumentDefinitionRequest {
   processDefinitionKey: string;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
+  documentDefinitionName: string;
+  documentDefinitionVersion: number;
   canInitializeDocument: boolean;
   startableByUser: boolean;
 }
@@ -314,8 +331,7 @@ interface ExternalStartFormConfiguration {
 }
 
 interface CaseSettings extends ExternalStartFormConfiguration {
-  caseDefinitionKey?: string;
-  caseDefinitionVersionTag?: string;
+  name?: string;
   canHaveAssignee?: boolean;
   autoAssignTasks?: boolean;
 }
@@ -333,7 +349,6 @@ interface CaseListColumn {
   sortable: boolean;
   defaultSort: string;
   uuid?: string;
-  exportable?: boolean;
 }
 
 interface CaseListColumnView {
@@ -345,7 +360,19 @@ interface CaseListColumnView {
   sortable: boolean;
   defaultSort: string;
   uuid?: string;
-  exportable?: boolean;
+}
+
+interface DisplayType {
+  type: string;
+  displayTypeParameters: DisplayTypeParameters;
+}
+
+interface DisplayTypeParameters {
+  enum?: {
+    [key: string]: string;
+  };
+  dateFormat?: string;
+  tagAmount?: number;
 }
 
 interface DocumentDefinitionVersionsResult {
@@ -359,10 +386,8 @@ interface LoadedValue<T> {
 }
 
 interface TemplatePayload {
-  name: string;
-  caseDefinitionKey: string;
-  caseDefinitionVersion: string;
-  description: string;
+  documentDefinitionId: string;
+  documentDefinitionTitle: string;
 }
 
 interface TemplateResponse {
@@ -374,27 +399,21 @@ interface TemplateResponse {
   type: string;
 }
 
-interface CaseDefinition {
-  name: string;
-  active: boolean;
-  caseDefinitionKey: string;
-  caseDefinitionVersionTag: string;
-  canHaveAssignee: boolean;
-  autoAssignTasks: boolean;
-}
-
 export {
   AssignHandlerToDocumentResult,
-  CaseDefinition,
   CaseDefinitionId,
   CaseListColumn,
   CaseListColumnView,
   CaseSettings,
   CreateDocumentDefinitionResponse,
-  DocumentDefinitionId,
+  DefinitionId,
+  DisplayType,
+  DisplayTypeParameters,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
+  DocumentDefinitionId,
+  DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
   DocumentRole,
@@ -402,7 +421,6 @@ export {
   Documents,
   DocumentSendMessageRequest,
   DocumentType,
-  ExternalStartFormConfiguration,
   LoadedValue,
   ModifyDocumentAndCompleteTaskRequest,
   ModifyDocumentAndCompleteTaskRequestImpl,
@@ -434,4 +452,5 @@ export {
   TemplatePayload,
   TemplateResponse,
   UndeployDocumentDefinitionResult,
+  ExternalStartFormConfiguration,
 };

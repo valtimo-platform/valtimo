@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {ConfigService, DefinitionColumn} from '@valtimo/shared';
+import {ConfigService, DefinitionColumn} from '@valtimo/config';
 import {map, Observable} from 'rxjs';
 import {CaseListColumn, DocumentService} from '@valtimo/document';
 import {ListField} from '@valtimo/components';
@@ -33,6 +33,7 @@ export class CaseColumnService {
     caseDefinitionKey: string
   ): Observable<{columns: Array<DefinitionColumn>; hasApiConfig: boolean}> {
     const config = this.configService.config;
+    const customDefinitionTable = config.customDefinitionTables[caseDefinitionKey];
     const defaultDefinitionTable = config.defaultDefinitionTable;
 
     return this.documentService.getCaseList(caseDefinitionKey).pipe(
@@ -45,15 +46,20 @@ export class CaseColumnService {
           this.mapCaseListColumnsToDefinitionColumns(caseListColumns);
 
         return {
-          columns: apiCaseListColumns || defaultDefinitionTable,
+          columns: customDefinitionTable || apiCaseListColumns || defaultDefinitionTable,
           hasApiConfig: !!apiCaseListColumns,
         };
       })
     );
   }
 
+  public hasEnvironmentConfig(caseDefinitionKey: string): boolean {
+    return !!this.configService.config?.customDefinitionTables[caseDefinitionKey];
+  }
+
   public mapDefinitionColumnsToListFields(
     columns: Array<DefinitionColumn>,
+    hasEnvColumnConfig: boolean,
     hasApiColumnConfig: boolean
   ): Array<ListField> {
     return columns.map(column => {
@@ -61,7 +67,8 @@ export class CaseColumnService {
       const translation = this.translateService.instant(translationKey);
       const validTranslation = translation !== translationKey && translation;
       return {
-        key: !hasApiColumnConfig ? column.propertyName : column.translationKey,
+        key:
+          hasEnvColumnConfig || !hasApiColumnConfig ? column.propertyName : column.translationKey,
         label: column.title || validTranslation || column.translationKey,
         sortable: column.sortable,
         ...(column.viewType && {viewType: column.viewType}),

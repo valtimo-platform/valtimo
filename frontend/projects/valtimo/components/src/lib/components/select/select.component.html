@@ -23,12 +23,8 @@
     notFoundText: notFoundText || ('interface.noItemsFound' | translate),
     items: listItems$ | async,
   } as vars"
+  [ngClass]="{'--margin': margin, '--small-margin': smallMargin}"
   class="v-select-container"
-  [ngClass]="{
-    'v-select-container--margin': margin,
-    'v-select-container--small-margin': smallMargin,
-    'v-select-container--not-clearable': !clearable,
-  }"
   [style.width.px]="widthInPx"
 >
   <v-input-label
@@ -40,19 +36,17 @@
     [tooltip]="tooltip"
   >
   </v-input-label>
-
   <cds-combo-box
     [attr.data-testid]="dataTestId"
     [appendInline]="appendInline"
     [clearSelectionTitle]="vars.clearText"
     [clearSelectionsTitle]="vars.clearAllText"
-    [disabled]="$disabled() || loading || (vars?.items || []).length === 0"
+    [disabled]="disabled || loading || vars.items.length === 0"
     [dropUp]="dropUp"
-    [invalid]="invalid"
     [placeholder]="
       loading
         ? vars.loadingText
-        : (vars?.items || []).length === 0
+        : vars.items.length === 0
           ? vars.notFoundText
           : vars.placeholderText
     "
@@ -60,6 +54,6 @@
     (clear)="clear()"
     (selected)="setSelected($event)"
   >
-    <cds-dropdown-list [items]="vars?.items || []"></cds-dropdown-list>
+    <cds-dropdown-list [items]="vars.items"></cds-dropdown-list>
   </cds-combo-box>
 </div>

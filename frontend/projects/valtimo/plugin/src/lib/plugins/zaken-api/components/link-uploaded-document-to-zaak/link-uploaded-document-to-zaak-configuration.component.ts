@@ -19,7 +19,6 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {Observable, Subscription} from 'rxjs';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-link-uploaded-document-to-zaak-configuration',
   templateUrl: './link-uploaded-document-to-zaak-configuration.component.html',
   styleUrls: ['./link-uploaded-document-to-zaak-configuration.component.scss'],

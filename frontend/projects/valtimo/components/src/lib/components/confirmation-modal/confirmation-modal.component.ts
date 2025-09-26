@@ -21,7 +21,6 @@ import {BehaviorSubject, Observable, Subscription} from 'rxjs';
   selector: 'valtimo-confirmation-modal',
   templateUrl: './confirmation-modal.component.html',
   styleUrls: ['./confirmation-modal.component.scss'],
-  standalone: false,
 })
 export class ConfirmationModalComponent implements OnInit, OnDestroy {
   @Input() public titleTranslationKey = '';

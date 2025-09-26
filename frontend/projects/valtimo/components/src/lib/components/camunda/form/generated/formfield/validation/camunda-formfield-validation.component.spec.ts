@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {CamundaFormfieldValidationComponent} from './camunda-formfield-validation.component';
 import {
-  FormsModule,
-  ReactiveFormsModule,
   UntypedFormBuilder,
   UntypedFormControl,
   UntypedFormGroup,
+  FormsModule,
+  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import {FormField} from '../formfield.model';
@@ -48,7 +48,7 @@ describe('CamundaFormfieldValidationComponent', () => {
   let component: CamundaFormfieldValidationComponent;
   let fixture: ComponentFixture<CamundaFormfieldValidationComponent>;
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, FormsModule],
       declarations: [CamundaFormfieldValidationComponent],

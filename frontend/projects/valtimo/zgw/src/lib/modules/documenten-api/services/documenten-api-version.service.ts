@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService} from '@valtimo/shared';
+import {BaseApiService, ConfigService} from '@valtimo/config';
 import {HttpClient} from '@angular/common/http';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {DocumentenApiManagementVersion, SupportedDocumentenApiFeatures} from '../models';
@@ -46,10 +46,10 @@ export class DocumentenApiVersionService extends BaseApiService {
   }
 
   public getSupportedApiFeatures(
-    caseDefinitionKey: string
+    caseDefinitionName: string
   ): Observable<SupportedDocumentenApiFeatures> {
     return this.httpClient.get<SupportedDocumentenApiFeatures>(
-      this.getApiUrl(`/v1/case-definition/${caseDefinitionKey}/documenten-api/version`)
+      this.getApiUrl(`/v1/case-definition/${caseDefinitionName}/documenten-api/version`)
     );
   }
 

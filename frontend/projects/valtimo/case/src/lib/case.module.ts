@@ -26,9 +26,9 @@ import {
 import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {
   BpmnJsDiagramModule,
+  ButtonModule,
   CamundaFormModule,
   CarbonListModule,
-  CaseTagsSelectorComponent,
   ConfirmationModalModule,
   DataListModule,
   DropzoneModule,
@@ -38,24 +38,27 @@ import {
   InputLabelModule,
   InputModule,
   IsArrayPipe,
-  MenuService,
+  ListModule,
   ModalModule,
+  PageModule,
   ParagraphModule,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
   SearchableDropdownSelectModule,
   SearchFieldsModule,
   SelectModule,
   SpinnerModule,
   StatusSelectorComponent,
+  CaseTagsSelectorComponent,
   TableModule,
   TimelineModule,
+  TitleModule,
   UploaderModule,
-  ValtimoCdsModalDirective,
-  ValtimoCdsOverflowButtonDirective,
+  ValtimoCdsModalDirectiveModule,
+  ValtimoCdsOverflowButtonDirectiveModule,
   VModalModule,
   WidgetModule,
 } from '@valtimo/components';
-import {ConfigModule, HttpLoaderFactory} from '@valtimo/shared';
+import {ConfigModule, HttpLoaderFactory} from '@valtimo/config';
 import {FormModule} from '@valtimo/form';
 import {ProcessLinkModule} from '@valtimo/process-link';
 import {ProcessModule} from '@valtimo/process';
@@ -66,17 +69,14 @@ import {
   DialogModule,
   DropdownModule,
   IconModule,
-  InputModule as CarbonInputModule,
   LayerModule,
   LoadingModule,
   ModalModule as CarbonModalModule,
-  NotificationModule,
   SelectModule as CarbonSelectModule,
   SkeletonModule,
   TabsModule,
   TagModule,
   TilesModule,
-  TooltipModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {CaseAssignUserComponent} from './components/case-assign-user/case-assign-user.component';
@@ -95,7 +95,7 @@ import {CaseRoutingModule} from './case-routing.module';
 import {CaseSupportingProcessStartModalComponent} from './components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
 import {TAB_MAP} from './constants';
-import {CaseBulkAssignService, CaseMenuService, CaseService} from './services';
+import {CaseBulkAssignService, CaseService} from './services';
 import {CaseDetailTabFormioComponent} from './components/case-detail/tab/formio/formio.component';
 import {TabTranslatePipeModule} from './pipes';
 import {CaseDetailTabNotFoundComponent} from './components/case-detail/tab/not-found/not-found.component';
@@ -129,6 +129,7 @@ export type TabsFactory = () => Map<string, object>;
   imports: [
     CommonModule,
     CaseRoutingModule,
+    ListModule,
     WidgetModule,
     BpmnJsDiagramModule,
     TimelineModule,
@@ -144,7 +145,11 @@ export type TabsFactory = () => Map<string, object>;
     ModalModule,
     SpinnerModule,
     TranslateModule.forRoot({
-      loader: {provide: TranslateLoader, useFactory: HttpLoaderFactory, deps: [HttpClient]},
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient],
+      },
     }),
     TaskModule,
     ModalModule,
@@ -158,8 +163,11 @@ export type TabsFactory = () => Map<string, object>;
     ParagraphModule,
     TableModule,
     VModalModule,
+    TitleModule,
+    ButtonModule,
     SearchableDropdownSelectModule,
     SearchFieldsModule,
+    PageModule,
     FormModule,
     InputModule,
     VFormModule,
@@ -179,21 +187,18 @@ export type TabsFactory = () => Map<string, object>;
     IsArrayPipe,
     SkeletonModule,
     StatusSelectorComponent,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     TagModule,
     DialogModule,
-    ValtimoCdsOverflowButtonDirective,
+    ValtimoCdsOverflowButtonDirectiveModule,
     CaseDetailWidgetsComponent,
     CaseDetailTaskListComponent,
     CaseDetailsTaskDetailComponent,
     AngularSplitModule,
     CaseTagsSelectorComponent,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     TilesModule,
     LayerModule,
-    NotificationModule,
-    CarbonInputModule,
-    TooltipModule,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
 })
@@ -201,14 +206,14 @@ export class CaseModule {
   static forRoot(tabsFactory: TabsFactory): ModuleWithProviders<CaseModule> {
     return {
       ngModule: CaseModule,
-      providers: [CaseService, CaseBulkAssignService, {provide: TAB_MAP, useFactory: tabsFactory}],
+      providers: [
+        CaseService,
+        CaseBulkAssignService,
+        {
+          provide: TAB_MAP,
+          useFactory: tabsFactory,
+        },
+      ],
     };
-  }
-
-  constructor(
-    private readonly caseMenuService: CaseMenuService,
-    private readonly menuService: MenuService
-  ) {
-    this.menuService.registerAppendMenuItemsFunction(this.caseMenuService.appendCaseMenuItems);
   }
 }

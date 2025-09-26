@@ -13,9 +13,10 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-@if (timelineItems) {
+
+<div *ngIf="timelineItems">
   <valtimo-timeline [items]="timelineItems"></valtimo-timeline>
-}
+</div>
 
 <valtimo-spinner
   [useBootstrapSpinner]="false"
@@ -27,10 +28,10 @@
 </valtimo-spinner>
 
 <div
-  class="valtimo-audit-pagination"
+  class="pagination-holder audit-pagination bg-light px-4 pt-4 pb-2 overflow-auto row mr-0 ml-0"
   *ngIf="pagination && pagination.totalElements > pagination.size"
 >
-  <div>
+  <div class="float-left page-count col-4">
     <strong>{{
       'list.currentPage' | translate: {current: pagination.number, total: pagination.totalPages}
     }}</strong>
@@ -45,14 +46,16 @@
     }}
   </div>
 
-  <ngb-pagination
-    *ngIf="pagination.totalElements > pagination.size"
-    class="float-right"
-    [collectionSize]="pagination.totalElements"
-    [(page)]="pagination.number"
-    [pageSize]="pagination.size"
-    [maxSize]="pagination.size"
-    [rotate]="true"
-    (pageChange)="onChangePagination(pagination.number)"
-  ></ngb-pagination>
+  <div class="col-8">
+    <ngb-pagination
+      *ngIf="pagination.totalElements > pagination.size"
+      class="float-right"
+      [collectionSize]="pagination.totalElements"
+      [(page)]="pagination.number"
+      [pageSize]="pagination.size"
+      [maxSize]="pagination.size"
+      [rotate]="true"
+      (pageChange)="onChangePagination(pagination.number)"
+    ></ngb-pagination>
+  </div>
 </div>

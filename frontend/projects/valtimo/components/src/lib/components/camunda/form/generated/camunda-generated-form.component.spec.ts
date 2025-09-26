@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {ComponentFixture, TestBed, waitForAsync} from '@angular/core/testing';
+import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 import {CamundaGeneratedFormComponent} from './camunda-generated-form.component';
 import {FormField} from './formfield/formfield.model';
-import {FormsModule, ReactiveFormsModule, UntypedFormGroup} from '@angular/forms';
+import {UntypedFormGroup, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {Directive, Input} from '@angular/core';
 import {CamundaFormfieldService} from './formfield/camunda-formfield.service';
@@ -53,14 +53,13 @@ describe('CamundaGeneratedFormComponent', () => {
 
   @Directive({
     selector: '[valtimoCamundaFormfieldGenerator]',
-    standalone: false,
   })
   class CamundaFormfieldGeneratorDirective {
     @Input() formField: FormField;
     @Input() formGroup: UntypedFormGroup;
   }
 
-  beforeEach(waitForAsync(() => {
+  beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [ReactiveFormsModule, FormsModule, CommonModule],
       declarations: [CamundaGeneratedFormComponent, CamundaFormfieldGeneratorDirective],

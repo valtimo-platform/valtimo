@@ -15,12 +15,15 @@
  */
 
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {combineLatest, Subscription} from 'rxjs';
+import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
+import {ConnectorProperties, ConnectorType} from '@valtimo/config';
+import {take, map} from 'rxjs/operators';
+import {AlertService} from '@valtimo/components';
+import {TranslateService} from '@ngx-translate/core';
 import {PluginManagementStateService} from '../../services';
-import {PluginDefinition, PluginManagementService} from '@valtimo/plugin';
+import {PluginManagementService, PluginDefinition} from '@valtimo/plugin';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-plugin-add-select',
   templateUrl: './plugin-add-select.component.html',
   styleUrls: ['./plugin-add-select.component.scss'],
@@ -34,7 +37,8 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly pluginManagementService: PluginManagementService,
-    private readonly stateService: PluginManagementStateService
+    private readonly stateService: PluginManagementStateService,
+    private readonly translateService: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -46,8 +50,8 @@ export class PluginAddSelectComponent implements OnInit, OnDestroy {
     this.refreshSubscription?.unsubscribe();
   }
 
-  selectPluginDefinition(event: {value: PluginDefinition}): void {
-    this.stateService.selectPluginDefinition(event.value);
+  selectPluginDefinition(pluginDefinition: PluginDefinition): void {
+    this.stateService.selectPluginDefinition(pluginDefinition);
   }
 
   deselectPluginDefinition(): void {

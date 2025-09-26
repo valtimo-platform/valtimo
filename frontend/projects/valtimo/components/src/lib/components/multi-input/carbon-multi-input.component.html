@@ -52,7 +52,7 @@
           <valtimo-single-value
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
+            [disabled]="disabled"
             (valueChange)="onValueChange($event.value, $event.inputValue, 'value')"
           ></valtimo-single-value>
         }
@@ -63,7 +63,7 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
+            [disabled]="disabled"
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
             (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
@@ -79,7 +79,7 @@
             [dropdownItems$]="getDropdownItemsForRow(i)"
             [dropdownWidth]="dropdownWidth"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
+            [disabled]="disabled"
             [keyColumnFlex]="keyColumnFlex"
             [dropdownColumnFlex]="dropdownColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
@@ -91,7 +91,7 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
+            [disabled]="disabled"
             [arbitraryAmountTitles]="arbitraryAmountTitles"
             [amountOfArbitraryValuesArray$]="amountOfArbitraryValuesArray$"
             (valueChange)="
@@ -106,10 +106,10 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
-            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
             [prefixes]="valuePathSelectorPrefixes"
-            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
@@ -123,10 +123,10 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
-            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
             [prefixes]="valuePathSelectorPrefixes"
-            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
             [keyColumnFlex]="keyColumnFlex"
             [valueColumnFlex]="valueColumnFlex"
@@ -141,12 +141,12 @@
             [index]="i"
             [value]="value"
             [fullWidth]="fullWidth"
-            [disabled]="$disabled()"
-            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [disabled]="disabled"
+            [documentDefinitionName]="valuePathSelectorDocumentDefinitionName"
             [prefixes]="valuePathSelectorPrefixes"
             [dropdownItems$]="getDropdownItemsForRow(i)"
             [dropdownWidth]="dropdownWidth"
-            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [showDocumentDefinitionSelector]="valuePathSelectorShowDocumentDefinitionSelector"
             [notation]="valuePathSelectorNotation"
             [keyColumnFlex]="keyColumnFlex"
             [dropdownColumnFlex]="dropdownColumnFlex"
@@ -159,13 +159,13 @@
       <button
         *ngIf="!hideDeleteButton"
         cdsButton="danger"
-        [disabled]="values?.length <= this.minimumAmountOfRows || $disabled()"
+        [disabled]="values?.length <= this.minimumAmountOfRows || disabled"
         [iconOnly]="true"
         size="md"
         (click)="deleteRow(value.uuid)"
         [title]="vars.deleteRowText"
       >
-        <svg cdsIcon="trash-can" size="16"></svg>
+        <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
       </button>
     </div>
 
@@ -174,7 +174,7 @@
         *ngIf="!hideAddButton"
         cdsButton="primary"
         size="md"
-        [disabled]="(addRowEnabled$ | async) === false || $disabled()"
+        [disabled]="(addRowEnabled$ | async) === false || disabled"
         (click)="addRow()"
       >
         {{ vars.addRowText }}

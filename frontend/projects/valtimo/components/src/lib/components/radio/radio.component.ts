@@ -31,7 +31,6 @@ import {RadioValue} from '../../models';
   selector: 'v-radio',
   templateUrl: './radio.component.html',
   styleUrls: ['./radio.component.scss'],
-  standalone: false,
 })
 export class RadioComponent implements OnInit, OnChanges, OnDestroy {
   @Input() name = '';

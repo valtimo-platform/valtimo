@@ -23,7 +23,6 @@ import {Location} from '@angular/common';
 @Component({
   selector: 'valtimo-camunda-generated-form',
   templateUrl: './camunda-generated-form.component.html',
-  standalone: false,
 })
 export class CamundaGeneratedFormComponent implements OnInit {
   @Output() submitted: EventEmitter<any> = new EventEmitter<any>();

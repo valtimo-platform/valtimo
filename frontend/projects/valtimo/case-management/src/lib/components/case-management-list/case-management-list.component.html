@@ -48,17 +48,13 @@
 
 <ng-template #importCaseDefinitionButton>
   <div class="valtimo-case-management-list__actions">
-    <button cdsButton="ghost" (click)="showUploadModal()">
+    <button cdsButton="ghost" disabled="true" (click)="showUploadModal()">
       {{ 'Upload' | translate }}
 
       <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
     </button>
 
-    <button
-      *ngIf="canUpdateGlobalConfiguration$ | async"
-      cdsButton="primary"
-      (click)="showCreateModal()"
-    >
+    <button cdsButton="primary" disabled="true" (click)="showCreateModal()">
       {{ 'interface.create' | translate }}
 
       <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

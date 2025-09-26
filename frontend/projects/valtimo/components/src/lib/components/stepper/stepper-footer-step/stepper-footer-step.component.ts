@@ -25,7 +25,6 @@ import {BehaviorSubject, Observable} from 'rxjs';
   selector: 'v-stepper-footer-step',
   templateUrl: './stepper-footer-step.component.html',
   styleUrls: ['./stepper-footer-step.component.scss'],
-  standalone: false,
 })
 export class StepperFooterStepComponent {
   @Input() nextButtonEnabled = false;

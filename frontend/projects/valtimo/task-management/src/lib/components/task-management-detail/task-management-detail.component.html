@@ -14,24 +14,28 @@
   ~ limitations under the License.
   -->
 
-@if (activeTab$ | async; as activeTab) {
-  <cds-tabs type="contained">
+<div
+  *ngIf="{
+    activeTab: activeTab$ | async,
+    documentDefinitionName: setDocumentDefinitionName$ | async,
+  } as obs"
+  class="task-management-detail"
+>
+  <cds-tabs class="dossier-management-tabs" type="contained">
     <cds-tab
-      [active]="activeTab === TaskManagementTab.COLUMNS"
+      [active]="obs.activeTab === TAB_ENUM.COLUMNS"
       [heading]="'taskManagement.columns' | translate"
-      (selected)="setActiveTab(TaskManagementTab.COLUMNS)"
+      (selected)="setActiveTab(TAB_ENUM.COLUMNS)"
     >
-      <valtimo-task-management-columns *ngIf="activeTab === TaskManagementTab.COLUMNS">
-      </valtimo-task-management-columns>
+      <valtimo-task-management-columns> </valtimo-task-management-columns>
     </cds-tab>
 
     <cds-tab
-      [active]="activeTab === TaskManagementTab.SEARCH_FIELDS"
+      [active]="obs.activeTab === TAB_ENUM.SEARCH_FIELDS"
       [heading]="'taskManagement.searchFields' | translate"
-      (selected)="setActiveTab(TaskManagementTab.SEARCH_FIELDS)"
+      (selected)="setActiveTab(TAB_ENUM.SEARCH_FIELDS)"
     >
-      <valtimo-task-management-search-fields *ngIf="activeTab === TaskManagementTab.SEARCH_FIELDS">
-      </valtimo-task-management-search-fields>
+      <valtimo-task-management-search-fields> </valtimo-task-management-search-fields>
     </cds-tab>
   </cds-tabs>
-}
+</div>
