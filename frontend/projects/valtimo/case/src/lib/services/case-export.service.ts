@@ -15,7 +15,6 @@ import {CaseListService} from './case-list.service';
 import {CaseParameterService} from './case-parameter.service';
 import {CaseListSearchService} from './case-list-search.service';
 import {GlobalNotificationService, InterceptorSkip} from '@valtimo/shared';
-import {CASES_WITHOUT_STATUS_KEY} from '@valtimo/components';
 
 @Injectable()
 export class CaseExportService {
@@ -41,9 +40,7 @@ export class CaseExportService {
           documentDefinitionName: data[0],
           searchOperator: 'AND',
           assigneeFilter: data[2],
-          statusFilter: data[3].map((statusKey: string) =>
-            statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
-          ),
+          statusFilter: data[3],
           caseTagsFilter: data[4],
           otherFilters: this.caseListSearchService.mapSearchValuesToFilters(data[1]),
         };

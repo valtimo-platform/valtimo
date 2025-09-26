@@ -151,15 +151,6 @@ export class CasManagementWidgetWizardComponent {
     this.$currentStep.set(event.index);
   }
 
-  public isDefaultStep(): boolean {
-    return (
-      this.$currentStep() !== WidgetWizardStep.CONTENT &&
-      this.$currentStep() !== WidgetWizardStep.TYPE &&
-      this.$currentStep() !== WidgetWizardStep.STYLE &&
-      this.$currentStep() !== WidgetWizardStep.WIDTH
-    );
-  }
-
   public onNextButtonClick(): void {
     if (this.$currentStep() === WidgetWizardStep.CONTENT) {
       this.closeEvent.emit(this.widgetWizardService.$widgetsConfig());
