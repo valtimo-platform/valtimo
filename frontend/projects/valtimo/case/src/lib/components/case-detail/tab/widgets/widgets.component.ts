@@ -27,6 +27,13 @@ import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
+import {
+  BasicCaseWidget,
+  CaseWidget,
+  CaseWidgetGroup,
+  CaseWidgetType,
+  DividerCaseWidget,
+} from '../../../../models';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -53,10 +60,14 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
 
-  public readonly widgetConfiguration$ = combineLatest([this._documentId$, this._tabKey$]).pipe(
+  private readonly _widgetConfiguration$ = combineLatest([this._documentId$, this._tabKey$]).pipe(
     switchMap(([documentId, tabKey]) =>
       this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey)
     )
+  );
+
+  public readonly widgetGroups$: Observable<CaseWidgetGroup[]> = this._widgetConfiguration$.pipe(
+    map(res => this.toCaseWidgetGroups(res.widgets))
   );
 
   public readonly widgetComponentMap: WidgetComponentMap = {
@@ -79,5 +90,24 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.caseTabService.enableTabHorizontalOverflow();
+  }
+
+  private toCaseWidgetGroups(widgets: BasicCaseWidget[]): CaseWidgetGroup[] {
+    const groups = widgets.reduce<CaseWidgetGroup[]>((acc, widget) => {
+      if (widget.type === CaseWidgetType.DIVIDER) {
+        acc.push({divider: widget as DividerCaseWidget, widgets: []});
+      } else {
+        if (acc.length === 0) acc.push({divider: null, widgets: []});
+        acc[acc.length - 1].widgets.push(widget as CaseWidget);
+      }
+      return acc;
+    }, []);
+
+    // if there is more than one group and the last group has only a divider and no widgets, don't render this last group
+    if (groups.length > 1 && groups[groups.length - 1].widgets.length === 0) {
+      groups.pop();
+    }
+
+    return groups;
   }
 }

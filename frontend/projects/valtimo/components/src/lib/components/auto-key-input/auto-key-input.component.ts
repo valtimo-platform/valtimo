@@ -79,6 +79,8 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
 
   public value = '';
 
+  private duplicateInitialized: boolean = false;
+
   public readonly editingKey$ = new BehaviorSubject<boolean>(true);
 
   private onChange = (_: any) => {};
@@ -92,16 +94,18 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
     this.subscription.add(
       this.mode$.subscribe(mode => {
         this.editingKey$.next(mode === 'edit');
+
+        if (mode === 'duplicate') {
+          this.duplicateInitialized = false;
+        }
       })
     );
 
     this.subscription.add(
       combineLatest([this.mode$, this.editingKey$, this._usedKeys$, this._sourceText$]).subscribe(
         ([mode, editingKey, usedKeys, sourceText]) => {
-          if (mode === 'add' && !editingKey) {
-            const newKey = sourceText ? this.getUniqueKey(sourceText, usedKeys) : '';
-            this.value = newKey;
-            this.onChange(newKey);
+          if (mode === 'add' || mode === 'duplicate') {
+            this.updateKey(mode, editingKey, usedKeys, sourceText);
           }
         }
       )
@@ -110,6 +114,7 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
 
   public ngOnDestroy(): void {
     this.subscription.unsubscribe();
+    this.duplicateInitialized = false;
   }
 
   public setDisabledState(disabled: boolean): void {
@@ -162,5 +167,26 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
     }
 
     return newKey;
+  }
+
+  private updateKey(
+    mode: ModalMode,
+    editingKey: boolean,
+    usedKeys: string[],
+    sourceText: string
+  ): void {
+    if (editingKey) {
+      return;
+    }
+
+    let newKey = sourceText ? this.getUniqueKey(sourceText, usedKeys) : '';
+
+    if (mode === 'duplicate' && !this.duplicateInitialized && newKey) {
+      newKey = `${newKey}-duplicate`;
+      this.duplicateInitialized = true;
+    }
+
+    this.value = newKey;
+    this.onChange(newKey);
   }
 }

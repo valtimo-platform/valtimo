@@ -30,6 +30,7 @@ enum CaseWidgetType {
   CUSTOM = 'custom',
   COLLECTION = 'collection',
   FORMIO = 'formio',
+  DIVIDER = 'divider',
 }
 
 type CaseWidgetWidth = 1 | 2 | 3 | 4;
@@ -46,7 +47,7 @@ interface BasicCaseWidget {
   width: CaseWidgetWidth;
   highContrast: boolean;
   key: string;
-  properties: WidgetContentProperties;
+  properties?: WidgetContentProperties;
   actions?: CaseWidgetAction[];
 }
 
@@ -85,20 +86,17 @@ interface FormioCaseWidget extends BasicCaseWidget {
   };
 }
 
+interface DividerCaseWidget extends BasicCaseWidget {
+  type: CaseWidgetType.DIVIDER;
+}
+
 type CaseWidget =
   | FieldsCaseWidget
   | CollectionCaseWidget
   | CustomCaseWidget
   | TableCaseWidget
-  | FormioCaseWidget;
-
-type CaseWidgetWithUuid = CaseWidget & {
-  uuid: string;
-};
-
-type FormioCaseWidgetWidgetWithUuid = FormioCaseWidget & {
-  uuid: string;
-};
+  | FormioCaseWidget
+  | DividerCaseWidget;
 
 interface CaseWidgetsRes {
   caseDefinitionKey: string;
@@ -106,73 +104,23 @@ interface CaseWidgetsRes {
   key: string;
   widgets: BasicCaseWidget[];
 }
-interface CaseWidgetWidthsPx {
-  [uuid: string]: number;
-}
-
-interface CaseWidgetContentHeightsPx {
-  [uuid: string]: number;
-}
-
-interface CaseWidgetContentHeightsPxWithContainerWidth {
-  [uuid: string]: {
-    containerWidth: number;
-    height: number;
-  };
-}
-
-interface CaseWidgetConfigurationBin {
-  configurationKey: string;
-  width: number;
-  height: number;
-}
-
-interface CaseWidgetPackResultItem {
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-  item: CaseWidgetConfigurationBin;
-}
-
-interface CaseWidgetPackResult {
-  height: number;
-  width: number;
-  items: CaseWidgetPackResultItem[];
-}
-
-interface MaxRectsResult extends CaseWidgetConfigurationBin {
-  x: number;
-  y: number;
-}
-
-interface CaseWidgetPackResultItemsByRow {
-  [rowY: string]: CaseWidgetPackResultItem[];
-}
-
-interface CaseWidgetXY {
-  x: number;
-  y: number;
-}
 
 interface CustomCaseWidgetConfig {
   [componentKey: string]: Type<any>;
+}
+
+interface CaseWidgetGroup {
+  divider: DividerCaseWidget | null;
+  widgets: CaseWidget[];
 }
 
 export {
   BasicCaseWidget,
   CaseWidget,
   CaseWidgetAction,
-  CaseWidgetConfigurationBin,
-  CaseWidgetContentHeightsPx,
-  CaseWidgetContentHeightsPxWithContainerWidth,
-  CaseWidgetPackResult,
   CaseWidgetsRes,
   CaseWidgetType,
   CaseWidgetWidth,
-  CaseWidgetWidthsPx,
-  CaseWidgetWithUuid,
-  CaseWidgetXY,
   CollectionFieldWidth,
   FieldsCaseWidget,
   FieldsCaseWidgetValue,
@@ -180,8 +128,6 @@ export {
   CustomCaseWidgetConfig,
   CustomCaseWidget,
   TableCaseWidget,
-  CaseWidgetPackResultItem,
-  CaseWidgetPackResultItemsByRow,
-  FormioCaseWidgetWidgetWithUuid,
-  MaxRectsResult,
+  CaseWidgetGroup,
+  DividerCaseWidget,
 };

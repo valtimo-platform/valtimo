@@ -33,7 +33,7 @@
     />
 
     <cds-icon-button
-      *ngIf="(mode$ | async) === 'add' && !(editingKey$ | async)"
+      *ngIf="((mode$ | async) === 'add'|| (mode$ | async) === 'duplicate') && !(editingKey$ | async)"
       [disabled]="$disabled()"
       (click)="enableKeyEditing()"
       kind="secondary"

@@ -27,10 +27,10 @@ import {
   take,
 } from 'rxjs';
 import Muuri from 'muuri';
-import {WidgetWithUuid} from '../models';
-import {WIDGET_WIDTH_1X} from '../constants';
+import {WidgetWithUuid} from '../models/widget.model';
+import {WIDGET_WIDTH_1X} from '../constants/widget.constants';
 
-@Injectable({providedIn: 'root'})
+@Injectable()
 export class WidgetLayoutService implements OnDestroy {
   private readonly _containerWidthSubject$ = new BehaviorSubject<number | null>(null);
   private readonly _widgetsSubject$ = new BehaviorSubject<WidgetWithUuid[] | null>(null);

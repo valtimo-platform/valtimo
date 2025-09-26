@@ -23,7 +23,7 @@ import {FormioForm} from '@formio/angular';
 import {FormIoModule} from '@valtimo/components';
 import {ButtonModule} from 'carbon-components-angular';
 import {FormioWidgetWidgetWithUuid} from '../../models';
-import {WidgetLayoutService} from '../../services';
+import {WidgetLayoutService} from '../../services/widget-layout.service';
 
 @Component({
   selector: 'valtimo-widget-formio',

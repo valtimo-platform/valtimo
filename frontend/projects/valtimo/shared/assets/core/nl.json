@@ -826,7 +826,21 @@
     },
     "columns": {"highContrast": "Hoog contrast", "type": "Type", "width": "Breedte"},
     "list": {
+      "dividerModal": {
+        "addDividerTitle": "Nieuwe widget-scheiding toevoegen",
+        "editDividerTitle": "Widget-scheiding bewerken",
+        "duplicateDividerTitle": "Widget-scheiding dupliceren",
+        "dividerTitleLabel": "Scheider-titel (optioneel)",
+        "dividerTitlePlaceholder": "Scheider-titel",
+        "dividerKeyLabel": "Scheider-sleutel (automatisch gegenereerd)",
+        "dividerKeyPlaceholder": "Scheidingssleutel",
+        "add": "Aanmaken",
+        "duplicate": "Dupliceren",
+        "edit": "Bewerken",
+        "idError": "Deze scheidingssleutel is al in gebruik. Kies een unieke sleutel.",
+      },
       "add": "Widget toevoegen",
+      "addDivider": "Scheiding toevoegen",
       "noResults": {
         "title": "Er zijn geen widgets geconfigureerd",
         "description": "Klik hier om widgets te configureren"
@@ -852,7 +866,8 @@
       "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},
       "formio": {"title": "Form.io", "description": "Ingevuld Form.io-formulier"},
       "table": {"title": "Tabel", "description": "Maak een tabel aan"},
-      "collection": {"title": "Collectie", "description": "Maak een collectie aan"}
+      "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
+      "divider": {"title": "Scheiding"}
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
