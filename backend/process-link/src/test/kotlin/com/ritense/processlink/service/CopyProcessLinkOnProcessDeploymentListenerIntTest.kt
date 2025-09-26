@@ -20,12 +20,12 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.processlink.BaseIntegrationTest
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.TestProcessLinkCreateRequestDto
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byKey
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.Companion.byLatestVersion
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper.Companion.byKey
+import com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper.Companion.byLatestVersion
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.CamundaProcessService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,12 +39,12 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
     lateinit var processLinkService: ProcessLinkService
 
     @Autowired
-    lateinit var repositoryService: OperatonRepositoryService
+    lateinit var repositoryService: CamundaRepositoryService
 
     @Autowired
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
-    private lateinit var processDefinition: OperatonProcessDefinition
+    private lateinit var processDefinition: CamundaProcessDefinition
 
     @BeforeEach
     fun beforeEach() {
@@ -57,7 +57,7 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
         val changedProcessBpmn = readFileAsString("/config/case/autodeploy/1-0-0/bpmn/service-task-process.bpmn")
             .replace("My service task", "My service task changed")
         runWithoutAuthorization {
-            operatonProcessService.deploy(
+            camundaProcessService.deploy(
                 CaseDefinitionId("autodeploy", "1.0.0"),
                 "service-task-process.bpmn",
                 changedProcessBpmn.byteInputStream()
@@ -69,7 +69,7 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
 
         // when
         runWithoutAuthorization {
-            operatonProcessService.deploy(
+            camundaProcessService.deploy(
                 CaseDefinitionId("autodeploy", "1.0.0"),
                 "service-task-process.bpmn",
                 changedAgainProcessBpmn.byteInputStream()
@@ -84,7 +84,7 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
         assertEquals(0, processLinkService.getProcessLinks(latestProcessDefinition.id, SERVICE_TASK_ID).count())
     }
 
-    private fun createProcessLink(processDefinition: OperatonProcessDefinition) {
+    private fun createProcessLink(processDefinition: CamundaProcessDefinition) {
         processLinkService.createProcessLink(
             TestProcessLinkCreateRequestDto(
                 processDefinition.id,
@@ -95,7 +95,7 @@ internal class CopyProcessLinkOnProcessDeploymentListenerIntTest : BaseIntegrati
         )
     }
 
-    private fun getLatestProcessDefinition(): OperatonProcessDefinition {
+    private fun getLatestProcessDefinition(): CamundaProcessDefinition {
         return runWithoutAuthorization {
             repositoryService.findProcessDefinition(byKey(PROCESS_DEFINITION_KEY).and(byLatestVersion()))!!
         }

@@ -23,5 +23,4 @@ data class CaseDefinitionCreatedEvent(
     val caseDefinitionName: String,
     val basedOnCaseDefinitionId: CaseDefinitionId? = null,
     val duplicate: Boolean = false,
-    val copyFormDefinitionsAfterProcessLinks: Boolean? = false,
 )

@@ -21,7 +21,7 @@ import com.ritense.outbox.domain.BaseEvent
 
 class TaskUnassigned(taskId: String, task: ObjectNode) : BaseEvent(
     type = "com.ritense.valtimo.task.unassigned",
-    resultType = "com.ritense.valtimo.operaton.domain.OperatonTask",
+    resultType = "com.ritense.valtimo.camunda.domain.CamundaTask",
     resultId = taskId,
     result = task
 )

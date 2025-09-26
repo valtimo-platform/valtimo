@@ -21,22 +21,20 @@ import com.ritense.authorization.request.AuthorizationResourceContext
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.domain.UpdateProcessDefinitionCaseDefinitionRequest
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.repository.ProcessDefinitionCaseDefinitionRepository
+import com.ritense.valtimo.camunda.authorization.CamundaExecutionActionProvider
+import com.ritense.valtimo.camunda.domain.CamundaExecution
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.operaton.authorization.OperatonExecutionActionProvider
-import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import org.operaton.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.RuntimeService
 import java.util.UUID
 
 class ProcessDefinitionCaseDefinitionService(
@@ -44,7 +42,6 @@ class ProcessDefinitionCaseDefinitionService(
     private val processDefinitionCaseDefinitionRepository: ProcessDefinitionCaseDefinitionRepository,
     private val documentService: JsonSchemaDocumentService,
     private val runtimeService: RuntimeService,
-    private val repositoryService: OperatonRepositoryService,
     private val caseDefinitionChecker: CaseDefinitionChecker,
 ) {
     fun findById(id: ProcessDefinitionCaseDefinitionId): ProcessDefinitionCaseDefinition? {
@@ -59,29 +56,12 @@ class ProcessDefinitionCaseDefinitionService(
         return processDefinitionCaseDefinitionRepository.findByIdCaseDefinitionId(caseDefinitionId)
     }
 
-    fun findProcessDefinitionCaseDefinition(operatonProcessInstanceId: OperatonProcessInstanceId): ProcessDefinitionCaseDefinition {
+    fun findProcessDefinitionCaseDefinition(camundaProcessInstanceId: CamundaProcessInstanceId): ProcessDefinitionCaseDefinition {
         val processInstance = (runtimeService.createProcessInstanceQuery()
-            .processInstanceId(operatonProcessInstanceId.toString())
+            .processInstanceId(camundaProcessInstanceId.toString())
             .singleResult()
             ?: throw IllegalArgumentException("Process instance not found"))
-
-        try {
-            return findByProcessDefinitionId(ProcessDefinitionId(processInstance.processDefinitionId))
-        } catch (e: Exception) {
-            val document = documentService.getDocumentBy(JsonSchemaDocumentId.existingId(processInstance.businessKey))
-            val processDefinitionCaseDefinition = ProcessDefinitionCaseDefinition(
-                id = ProcessDefinitionCaseDefinitionId(
-                    ProcessDefinitionId(processInstance.processDefinitionId),
-                    document.definitionId().caseDefinitionId()
-                )
-            )
-
-            val processDefinition = repositoryService.findProcessDefinitionById(processInstance.processDefinitionId)!!
-            processDefinitionCaseDefinition.processDefinitionName = processDefinition.name
-            processDefinitionCaseDefinition.processDefinitionKey = processDefinition.key
-
-            return processDefinitionCaseDefinition
-        }
+        return findByProcessDefinitionId(ProcessDefinitionId(processInstance.processDefinitionId))
     }
 
     fun findProcessDefinitionCaseDefinitions(
@@ -95,10 +75,10 @@ class ProcessDefinitionCaseDefinitionService(
         return definitions
             .filter {
                 authorizationService.hasPermission(
-                    RelatedEntityAuthorizationRequest<OperatonExecution>(
-                        OperatonExecution::class.java,
-                        OperatonExecutionActionProvider.CREATE,
-                        OperatonProcessDefinition::class.java,
+                    RelatedEntityAuthorizationRequest<CamundaExecution>(
+                        CamundaExecution::class.java,
+                        CamundaExecutionActionProvider.CREATE,
+                        CamundaProcessDefinition::class.java,
                         it.id.processDefinitionId.id
                     )
                 )
@@ -121,10 +101,10 @@ class ProcessDefinitionCaseDefinitionService(
         return definitions
             .filter {
                 authorizationService.hasPermission(
-                    RelatedEntityAuthorizationRequest<OperatonExecution>(
-                        OperatonExecution::class.java,
-                        OperatonExecutionActionProvider.CREATE,
-                        OperatonProcessDefinition::class.java,
+                    RelatedEntityAuthorizationRequest<CamundaExecution>(
+                        CamundaExecution::class.java,
+                        CamundaExecutionActionProvider.CREATE,
+                        CamundaProcessDefinition::class.java,
                         it.id.processDefinitionId.id
                     ).withContext(
                         AuthorizationResourceContext(
@@ -136,10 +116,7 @@ class ProcessDefinitionCaseDefinitionService(
             }
     }
 
-    fun deleteProcessDefinitionCaseDefinition(
-        processDefinitionId: ProcessDefinitionId,
-        caseDefinitionId: CaseDefinitionId
-    ) {
+    fun deleteProcessDefinitionCaseDefinition(processDefinitionId: ProcessDefinitionId, caseDefinitionId: CaseDefinitionId) {
         denyAuthorization()
         caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
 
@@ -176,11 +153,10 @@ class ProcessDefinitionCaseDefinitionService(
     ) {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
 
-        val processDefinitionCaseDefinition =
-            processDefinitionCaseDefinitionRepository.findAllByIdCaseDefinitionIdAndIdProcessDefinitionIdId(
-                caseDefinitionId = caseDefinitionId,
-                processDefinitionId = processDefinitionId
-            )
+        val processDefinitionCaseDefinition = processDefinitionCaseDefinitionRepository.findAllByIdCaseDefinitionIdAndIdProcessDefinitionIdId(
+            caseDefinitionId = caseDefinitionId,
+            processDefinitionId = processDefinitionId
+        )
 
         val originalProcessDefinitionCaseDefinition = processDefinitionCaseDefinition.firstOrNull()
             ?: error("No ProcessDefinitionCaseDefinition found for case definition key '$caseDefinitionKey', case definition version tag '$caseDefinitionVersionTag', and process definition id '$processDefinitionId'.")

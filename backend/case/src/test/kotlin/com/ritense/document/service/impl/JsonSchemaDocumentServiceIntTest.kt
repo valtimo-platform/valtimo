@@ -114,14 +114,14 @@ internal class JsonSchemaDocumentServiceIntTest : BaseIntegrationTest() {
             Permission(
                 UUID.randomUUID(),
                 JsonSchemaDocument::class.java,
-                mutableListOf(JsonSchemaDocumentActionProvider.ASSIGN),
+                JsonSchemaDocumentActionProvider.ASSIGN,
                 ConditionContainer(),
                 adminRole
             ),
             Permission(
                 UUID.randomUUID(),
                 JsonSchemaDocument::class.java,
-                mutableListOf(JsonSchemaDocumentActionProvider.ASSIGNABLE),
+                JsonSchemaDocumentActionProvider.ASSIGNABLE,
                 ConditionContainer(),
                 userRole
             )

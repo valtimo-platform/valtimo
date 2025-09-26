@@ -21,7 +21,7 @@ import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.DecisionDefinitionExportRequest
 import org.apache.commons.io.IOUtils
-import org.operaton.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.RepositoryService
 
 class DecisionDefinitionExporter(
     private val repositoryService: RepositoryService

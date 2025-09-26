@@ -48,20 +48,25 @@ class DashboardService(
     private val widgetConfigurationRepository: WidgetConfigurationRepository,
     private val userManagementService: UserManagementService,
     private val widgetDataSourceResolver: WidgetDataSourceResolver,
-    private val authorizationService: AuthorizationService
+    private val authorizationService: AuthorizationService,
+    private val authorizationEnabled: Boolean
 ) {
 
     @Transactional(readOnly = true)
     fun getDashboards(): List<Dashboard> {
-        val spec = authorizationService.getAuthorizationSpecification(
-            EntityAuthorizationRequest(
-                Dashboard::class.java,
-                DashboardActionProvider.VIEW_LIST
-            ),
-            null
-        )
+        return if(authorizationEnabled) {
+            val spec = authorizationService.getAuthorizationSpecification(
+                EntityAuthorizationRequest(
+                    Dashboard::class.java,
+                    DashboardActionProvider.VIEW_LIST
+                ),
+                null
+            )
 
-        return dashboardRepository.findAll(SpecificationHelper.orderByOrder(spec))
+            dashboardRepository.findAll(SpecificationHelper.orderByOrder(spec))
+        } else {
+            dashboardRepository.findAllByOrderByOrder()
+        }
     }
 
     @Transactional(readOnly = true)
@@ -156,12 +161,16 @@ class DashboardService(
         )
     }
 
-    @Transactional
     fun updateWidgetConfigurations(
         dashboardKey: String,
         widgetConfigurationUpdateDtos: List<WidgetConfigurationUpdateRequestDto>
     ): List<WidgetConfiguration> {
         denyAuthorization()
+        widgetConfigurationUpdateDtos.forEach {
+            if (!widgetConfigurationRepository.existsByDashboardKeyAndKey(dashboardKey, it.key)) {
+                throw RuntimeException("Failed to update widget configuration. Widget configuration with key '${it.key}' and dashboard '$dashboardKey' doesn't exist.")
+            }
+        }
 
         val dashboard = getDashboard(dashboardKey)
         val widgetConfigurations = widgetConfigurationUpdateDtos.mapIndexed { index, widgetConfigurationUpdateDto ->
@@ -177,8 +186,6 @@ class DashboardService(
                 url = widgetConfigurationUpdateDto.url
             )
         }
-
-        widgetConfigurationRepository.deleteByDashboardKeyAndKeyNotIn(dashboard.key, widgetConfigurations.map { it.key  })
 
         return widgetConfigurationRepository.saveAll(widgetConfigurations)
     }
@@ -303,13 +310,15 @@ class DashboardService(
     }
 
     private fun checkAuthorization(dashboard: Dashboard) {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Dashboard::class.java,
-                DashboardActionProvider.VIEW,
-                dashboard
+        if(authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Dashboard::class.java,
+                    DashboardActionProvider.VIEW,
+                    dashboard
+                )
             )
-        )
+        }
     }
 
     companion object {

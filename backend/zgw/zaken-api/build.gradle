@@ -44,7 +44,6 @@ dependencies {
     implementation project(":outbox")
     implementation project(":logging")
     implementation project(":importer")
-    implementation project(":exporter")
 
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
@@ -66,6 +65,7 @@ dependencies {
     testImplementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
+    testImplementation "org.camunda.community.mockito:camunda-platform-7-mockito:${camundaMockitoVersion}"
 
     testImplementation project(":test-utils-common")
 

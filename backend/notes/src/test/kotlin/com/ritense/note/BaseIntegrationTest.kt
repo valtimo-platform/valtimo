@@ -76,19 +76,19 @@ abstract class BaseIntegrationTest {
             Permission(
                 UUID.randomUUID(),
                 Note::class.java,
-                mutableListOf(VIEW_LIST),
+                VIEW_LIST,
                 ConditionContainer(listOf()),
                 role1
             ),
             Permission(
                 resourceType = Note::class.java,
-                actions = mutableListOf(CREATE),
+                action = CREATE,
                 conditionContainer = ConditionContainer(listOf()),
                 role = role2
             ),
             Permission(
                 resourceType = Note::class.java,
-                actions = mutableListOf(MODIFY),
+                action = MODIFY,
                 conditionContainer = ConditionContainer(
                     listOf(
                         FieldPermissionCondition("createdByUserId", PermissionConditionOperator.EQUAL_TO, "\${currentUsername}")
@@ -98,7 +98,7 @@ abstract class BaseIntegrationTest {
             ),
             Permission(
                 resourceType = Note::class.java,
-                actions = mutableListOf(DELETE),
+                action = DELETE,
                 conditionContainer = ConditionContainer(
                     listOf(
                         FieldPermissionCondition("createdByUserId", PermissionConditionOperator.EQUAL_TO, "\${currentUsername}")
