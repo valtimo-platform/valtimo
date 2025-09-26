@@ -74,7 +74,6 @@ export class TaskIntermediateSaveService extends BaseApiService {
   public setSubmission(value: any): void {
     this._submission$.next(value);
   }
-
   public setFormIoFormData(value: any): void {
     this._formIoFormData$.next(value);
   }

@@ -21,10 +21,6 @@ export class RelatedFilesTypeConverter implements TypeConverter {
     return 'relatedFiles';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
   public convert(value: any, definition: any): string {
     return value?.length || '-';
   }

@@ -25,7 +25,7 @@ import {
 } from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {CUSTOM_WIDGET_TOKEN, LayoutModule, TranslationManagementModule} from '@valtimo/layout';
+import {LayoutModule, TranslationManagementModule} from '@valtimo/layout';
 import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
@@ -51,6 +51,7 @@ import {
   CaseDetailTabProgressComponent,
   CaseDetailTabSummaryComponent,
   CaseModule,
+  CUSTOM_CASE_WIDGET_TOKEN,
   DefaultTabs,
 } from '@valtimo/case';
 import {ProcessModule} from '@valtimo/process';
@@ -97,8 +98,6 @@ import {
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
-  KlantinteractiesApiPluginModule,
-  klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
   notificatiesApiPluginSpecification,
   ObjectenApiPluginModule,
@@ -107,8 +106,6 @@ import {
   objectTokenAuthenticationPluginSpecification,
   ObjecttypenApiPluginModule,
   objecttypenApiPluginSpecification,
-  OpenKlantTokenAuthenticationPluginModule,
-  openKlantTokenAuthenticationPluginSpecification,
   OpenNotificatiesPluginModule,
   openNotificatiesPluginSpecification,
   OpenZaakPluginModule,
@@ -204,9 +201,7 @@ export function tabsFactory() {
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
-    KlantinteractiesApiPluginModule,
     ObjecttypenApiPluginModule,
-    OpenKlantTokenAuthenticationPluginModule,
     ZakenApiPluginModule,
     ObjectenApiPluginModule,
     BesluitenApiPluginModule,
@@ -241,12 +236,10 @@ export function tabsFactory() {
         besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
-        klantinteractiesApiPluginSpecification,
         notificatiesApiPluginSpecification,
         objectenApiPluginSpecification,
         objectTokenAuthenticationPluginSpecification,
         objecttypenApiPluginSpecification,
-        openKlantTokenAuthenticationPluginSpecification,
         openNotificatiesPluginSpecification,
         openZaakPluginSpecification,
         portaaltaakPluginSpecification,
@@ -272,7 +265,7 @@ export function tabsFactory() {
       ],
     },
     {
-      provide: CUSTOM_WIDGET_TOKEN,
+      provide: CUSTOM_CASE_WIDGET_TOKEN,
       useValue: {
         caseWidgetComponent: CustomCaseTabComponent,
       },
