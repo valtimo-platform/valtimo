@@ -15,7 +15,7 @@ Valtimo is the low-code platform for Business Process Automation. Our goal is to
 
 More information about the backend and frontend can be found in their respective README files:
 - [Valtimo backend](backend/README.md)
-- [Valtimo frontend libraries](frontend/README.md)
+- [Valtimo frontend](frontend/README.md)
 
 ### Contributing
 Contributions are welcome! To get you in the right direction, please consult the [Valtimo documentation](https://docs.valtimo.nl/contributing-to-valtimo/contributing-to-valtimo) for guidelines on how to contribute.
