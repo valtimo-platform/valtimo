@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-tile-group
+  [multiple]="false"
+  (selected)="onSelectedEvent($event)"
+  class="valtimo-widget-wizard-step__content"
+>
+  <cds-selection-tile
+    class="valtimo-widget-wizard-step__tile"
+    [value]="WidgetStyle.DEFAULT"
+    [selected]="widgetStyle() === WidgetStyle.DEFAULT"
+  >
+    <h3>{{ 'widgetTabManagement.style.default.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.style.default.description' | translate }}</span>
+
+    <img
+      src="valtimo-layout/img/widget-management/style/default.svg"
+      [alt]="'widgetTabManagement.style.default.title' | translate"
+    />
+  </cds-selection-tile>
+
+  <cds-selection-tile
+    class="valtimo-widget-wizard-step__tile"
+    [value]="WidgetStyle.HIGH_CONTRAST"
+    [selected]="widgetStyle() === WidgetStyle.HIGH_CONTRAST"
+  >
+    <h3>{{ 'widgetTabManagement.style.highContrast.title' | translate }}</h3>
+
+    <span>{{ 'widgetTabManagement.style.highContrast.description' | translate }}</span>
+
+    <img
+      src="valtimo-layout/img/widget-management/style/high-contrast.svg"
+      [alt]="'widgetTabManagement.style.highContrast.title' | translate"
+    />
+  </cds-selection-tile>
+</cds-tile-group>

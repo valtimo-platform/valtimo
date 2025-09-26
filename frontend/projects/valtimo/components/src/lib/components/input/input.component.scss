@@ -1,5 +1,5 @@
 /*!
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,19 +97,4 @@
   height: 20px;
 
   margin-block-end: var(--v-input-margin);
-}
-
-div.v-input--preset-options {
-  margin-top: 3px;
-  font-size: var(--v-input-font-size);
-  color: var(--v-input-color);
-
-  span:first-child {
-    padding-right: 3px;
-  }
-
-  a.v-input--preset-option {
-    cursor: pointer;
-    font-style: italic;
-  }
 }
