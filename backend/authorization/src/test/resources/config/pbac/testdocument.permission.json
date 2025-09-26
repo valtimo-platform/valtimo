@@ -1,0 +1,31 @@
+{
+    "changesetId": "testdocument-v1",
+    "permissions": [
+        {
+            "resourceType": "com.ritense.authorization.testimpl.TestDocument",
+            "action": "view",
+            "roleKey": "ROLE_USER",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "document.name",
+                    "operator": "in",
+                    "value": ["loan", "gift"]
+                }
+            ]
+        },
+        {
+            "resourceType": "com.ritense.authorization.testimpl.TestDocument",
+            "action": "view",
+            "roleKey": "TO_REMOVE_ROLE_2",
+            "conditions": [
+                {
+                    "type": "field",
+                    "field": "document.name",
+                    "operator": "==",
+                    "value": "loan"
+                }
+            ]
+        }
+    ]
+}

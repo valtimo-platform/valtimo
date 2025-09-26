@@ -1,0 +1,352 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.processdocument.service
+
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
+import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.service.DocumentService
+import com.ritense.processdocument.BaseIntegrationTest
+import com.ritense.processdocument.domain.ProcessDocumentInstance
+import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.all
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byName
+import com.ritense.valtimo.service.CamundaProcessService
+import com.ritense.valtimo.service.CamundaTaskService
+import org.camunda.bpm.engine.RuntimeService
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.transaction.annotation.Transactional
+import java.util.function.Consumer
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+
+@Transactional
+class CorrelationServiceIntTest: BaseIntegrationTest() {
+
+    @Autowired
+    lateinit var runtimeService: RuntimeService
+
+    @Autowired
+    lateinit var processDocumentInstanceRepository: ProcessDocumentInstanceRepository
+
+    @Autowired
+    lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
+
+    @Autowired
+    lateinit var documentService: DocumentService
+
+    @Autowired
+    lateinit var taskService: CamundaTaskService
+
+    @Autowired
+    lateinit var objectMapper: ObjectMapper
+
+    @Autowired
+    lateinit var camundaProcessService: CamundaProcessService
+
+    lateinit var documentJson: String
+    lateinit var document: Document
+
+    @BeforeEach
+    fun init() {
+        documentJson =
+            """
+            {
+                "street": "aStreet",
+                "houseNumber": 1
+            }
+            """.trimIndent()
+    }
+
+    @Test
+    @Throws(JsonProcessingException::class)
+    fun `should correlate start event`() {
+        val variables = HashMap<String, Any>()
+        variables["variable"] = "start-event-test"
+        document = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest("house", objectMapper.readTree(documentJson))
+            ).resultingDocument().orElseThrow()
+        }
+        val processInstance = runtimeService.startProcessInstanceByKey(
+            "start-correlation-test-id",
+            document.id().toString(),
+            variables
+        )
+        runWithoutAuthorization {
+            processDocumentAssociationService.createProcessDocumentInstance(
+                processInstance.id,
+                document.id().id,
+                "start-correlation-test-process"
+            )
+        }
+        val task = runWithoutAuthorization {
+            taskService.findTask(byName("message-start-event-user-task"))
+        }
+        assertNotNull(task)
+        val startedProcessId = task.getProcessInstanceId()
+        val associatedProcessDocuments =
+            processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(JsonSchemaDocumentId.existingId(document.id().id))
+        val resultProcessInstance = runWithoutAuthorization {
+            camundaProcessService.findProcessInstanceById(startedProcessId).get()
+        }
+        assertEquals(document.id().toString(),resultProcessInstance.businessKey)
+        assertEquals(associatedProcessDocuments.size,2)
+        assertNotNull(associatedProcessDocuments.firstOrNull { it.processName().equals("start-correlation-test-process")})
+        assertNotNull(associatedProcessDocuments.firstOrNull { it.processName().equals("message-start-event-name")})
+        assertEquals(document.id(), associatedProcessDocuments.first {
+            it.processName().equals("start-correlation-test-process")
+        }.id!!.documentId()
+        )
+        assertEquals(document.id(), associatedProcessDocuments.first {
+            it.processName().equals("message-start-event-name")
+        }.id!!.documentId()
+        )
+        val newProcess = associatedProcessDocuments.first { it.processName().equals("message-start-event-name")}
+        assertEquals(
+            mapOf("varName1" to "varValue1", "varName2" to "varValue2"),
+            getVariables(newProcess, listOf("varName1", "varName2"))
+        )
+    }
+
+    @Test
+    @Throws(JsonProcessingException::class)
+    fun `should correlate only the process that matches provided business key`() {
+        val variables = HashMap<String, Any>()
+        variables["variable"] = "multiple-intermediate-catch-event-test-with-business-key"
+
+        document = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest("house", objectMapper.readTree(documentJson))
+            ).resultingDocument().orElseThrow()
+        }
+        variables["businessKey"] = document.id()
+        val documentTwo = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    "house", objectMapper.readTree(documentJson)
+                )
+            ).resultingDocument().orElseThrow()
+        }
+        runtimeService.startProcessInstanceByKey(
+            "intermediate-catch-event-sample-one-id",
+            document.id().toString(),
+            emptyMap()
+        )
+        var taskOne = runWithoutAuthorization {
+            taskService.findTask(byName("intermediate-catch-event-1-user-task"))
+        }
+        assertNull(taskOne)
+        runtimeService.startProcessInstanceByKey(
+            "intermediate-catch-event-sample-two-id",
+            documentTwo.id().toString(),
+            emptyMap()
+        )
+        var taskTwo = runWithoutAuthorization {
+            taskService.findTask(byName("intermediate-catch-event-2-user-task"))
+        }
+        assertNull(taskTwo)
+
+        val processInstance = runtimeService.startProcessInstanceByKey(
+            "start-correlation-test-id",
+            document.id().toString(),
+            variables
+        )
+
+        runWithoutAuthorization {
+            processDocumentAssociationService.createProcessDocumentInstance(
+                processInstance.id,
+                document.id().id,
+                "start-correlation-test-process"
+            )
+        }
+        taskOne = runWithoutAuthorization {
+            taskService.findTask(byName("intermediate-catch-event-1-user-task"))
+        }
+        assertNotNull(taskOne)
+        taskTwo = runWithoutAuthorization {
+            taskService.findTask(byName("intermediate-catch-event-2-user-task"))
+        }
+        assertNull(taskTwo)
+        val startedProcessOneId = taskOne.getProcessInstanceId()
+        val resultProcessOneInstance = runWithoutAuthorization {
+            camundaProcessService.findProcessInstanceById(startedProcessOneId).get()
+        }
+
+        val associatedProcessDocumentsForDocumentOne =
+            processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(JsonSchemaDocumentId.existingId(document.id().id))
+        val associatedProcessDocumentsForDocumentTwo =
+            processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(JsonSchemaDocumentId.existingId(documentTwo.id().id))
+        assertEquals(document.id().toString(),resultProcessOneInstance.businessKey)
+        assertEquals(associatedProcessDocumentsForDocumentOne.size,2)
+        assertNotNull(associatedProcessDocumentsForDocumentOne.firstOrNull { it.processName().equals("start-correlation-test-process")})
+        assertNotNull(associatedProcessDocumentsForDocumentOne.firstOrNull { it.processName().equals("intermediate-catch-event-sample-one")})
+        assertNull(associatedProcessDocumentsForDocumentOne.firstOrNull {it.processName().equals("intermediate-catch-event-sample-two") })
+        assertNull(associatedProcessDocumentsForDocumentTwo.firstOrNull {it.processName().equals("intermediate-catch-event-sample-two") })
+        assertEquals(document.id(), associatedProcessDocumentsForDocumentOne.first {
+            it.processName().equals("start-correlation-test-process")
+        }.id!!.documentId()
+        )
+        assertEquals(document.id(),associatedProcessDocumentsForDocumentOne.first {
+            it.processName().equals("intermediate-catch-event-sample-one")
+        }.id!!.documentId()
+        )
+        val catchProcess = associatedProcessDocumentsForDocumentOne.first { it.processName().equals("intermediate-catch-event-sample-one")}
+        assertEquals(
+            mapOf("varName1" to "varValue1", "varName2" to "varValue2"),
+            getVariables(catchProcess, listOf("varName1", "varName2"))
+        )
+    }
+
+    @Test
+    @Throws(JsonProcessingException::class)
+    fun `should correlate event to a process definition key`() {
+        val variables = HashMap<String, Any>()
+        variables["variable"] = "process-definition-start-event-test"
+        document = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest("house", objectMapper.readTree(documentJson))
+            ).resultingDocument().orElseThrow()
+        }
+        val processInstance = runtimeService.startProcessInstanceByKey(
+            "start-correlation-test-id",
+            document.id().toString(),
+            variables
+        )
+        runWithoutAuthorization {
+            processDocumentAssociationService.createProcessDocumentInstance(
+                processInstance.id,
+                document.id().id,
+                "start-correlation-test-process"
+            )
+        }
+        val task = runWithoutAuthorization {
+            taskService.findTask(byName("target-process-definition-user-task"))
+        }
+        assertNotNull(task)
+        val startedProcessId = task.getProcessInstanceId()
+        val associatedProcessDocuments =
+            processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(JsonSchemaDocumentId.existingId(document.id().id))
+        val resultProcessInstance = runWithoutAuthorization {
+            camundaProcessService.findProcessInstanceById(startedProcessId).get()
+        }
+        assertEquals(document.id().toString(),resultProcessInstance.businessKey)
+        assertEquals(associatedProcessDocuments.size,2)
+        assertNotNull(associatedProcessDocuments.firstOrNull { it.processName().equals("start-correlation-test-process")})
+        assertNotNull(associatedProcessDocuments.firstOrNull { it.processName().equals("targetProcessDefinitionName")})
+        assertEquals(document.id(), associatedProcessDocuments.first {
+            it.processName().equals("start-correlation-test-process")
+        }.id!!.documentId()
+        )
+        assertEquals(document.id(), associatedProcessDocuments.first {
+            it.processName().equals("targetProcessDefinitionName")
+        }.id!!.documentId()
+        )
+        val newProcess = associatedProcessDocuments.first { it.processName().equals("targetProcessDefinitionName")}
+        assertEquals(
+            mapOf("varName1" to "varValue1", "varName2" to "varValue2"),
+            getVariables(newProcess, listOf("varName1", "varName2"))
+        )
+    }
+
+    @Test
+    @Throws(JsonProcessingException::class)
+    fun `should correlate a process for message ref with business key`() {
+        val variables = HashMap<String, Any>()
+        variables["variable"] = "intermediate-catch-event-test-with-business-key"
+        document = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest("house", objectMapper.readTree(documentJson))
+            ).resultingDocument().orElseThrow()
+        }
+        variables["businessKey"] = document.id()
+        runtimeService.startProcessInstanceByKey(
+            "intermediate-catch-event-sample-one-id",
+            document.id().toString(),
+            emptyMap()
+        )
+        var taskOne = taskService.findTask(byName("intermediate-catch-event-1-user-task"))
+        assertNull(taskOne)
+
+        val processInstance = runtimeService.startProcessInstanceByKey(
+            "start-correlation-test-id",
+            document.id().toString(),
+            variables
+        )
+        runWithoutAuthorization {
+            processDocumentAssociationService.createProcessDocumentInstance(
+                processInstance.id,
+                document.id().id,
+                "start-correlation-test-process"
+            )
+        }
+        taskOne = runWithoutAuthorization {
+            taskService.findTask(byName("intermediate-catch-event-1-user-task"))
+        }
+        assertNotNull(taskOne)
+        val startedProcessOneId = taskOne.getProcessInstanceId()
+        val resultProcessOneInstance = runWithoutAuthorization {
+            camundaProcessService.findProcessInstanceById(startedProcessOneId).get()
+        }
+        val associatedProcessDocumentsForDocumentOne =
+            processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(JsonSchemaDocumentId.existingId(document.id().id))
+        assertEquals(resultProcessOneInstance.businessKey,document.id().toString())
+        assertEquals(2,associatedProcessDocumentsForDocumentOne.size)
+        assertNotNull(associatedProcessDocumentsForDocumentOne.firstOrNull { it.processName().equals("start-correlation-test-process")})
+        assertNotNull(associatedProcessDocumentsForDocumentOne.firstOrNull { it.processName().equals("intermediate-catch-event-sample-one")})
+        assertNull(associatedProcessDocumentsForDocumentOne.firstOrNull {it.processName().equals("intermediate-catch-event-sample-two") })
+        assertEquals(document.id(), associatedProcessDocumentsForDocumentOne.first {
+            it.processName().equals("start-correlation-test-process")
+        }.id!!.documentId()
+        )
+        assertEquals(document.id(),associatedProcessDocumentsForDocumentOne.first {
+            it.processName().equals("intermediate-catch-event-sample-one")
+        }.id!!.documentId()
+        )
+        val catchProcess = associatedProcessDocumentsForDocumentOne.first { it.processName().equals("intermediate-catch-event-sample-one")}
+        assertEquals(
+            mapOf("varName1" to "varValue1", "varName2" to "varValue2"),
+            getVariables(catchProcess, listOf("varName1", "varName2"))
+        )
+    }
+
+    @AfterEach
+    fun destroy() {
+        val tasks = taskService.findTasks(all())
+        tasks.forEach(Consumer { task ->
+            taskService.complete(
+                task.id
+            )
+        })
+    }
+
+    private fun getVariables(processDocumentInstance: ProcessDocumentInstance, variableNames: List<String>): Map<String, Any> {
+        return runWithoutAuthorization {
+            camundaProcessService.getProcessInstanceVariables(
+                processDocumentInstance.processDocumentInstanceId().processInstanceId().toString(),
+                variableNames
+            )
+        }
+    }
+}
