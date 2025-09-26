@@ -46,6 +46,7 @@ spring:
                 elideSetAutoCommits: true
                 maintainTimeStats: false
                 serverTimezone: UTC
+                stringtype: unspecified
                 allowPublicKeyRetrieval: true
     security:
         oauth2:
@@ -99,26 +100,27 @@ spring:
             max-file-size: 10MB
             max-request-size: 10MB
     jersey:
-        application-path: /api/operaton-rest
+        application-path: /api/camunda-rest
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
     cloud:
-        function:
-            definition: kotlinInboxCloudEventConsumer
         stream:
+            function:
+                definition: createExternalCaseConsumer;completeTaskConsumer;updatedExternalIdConsumer;externalDomainMessageSupplier
             bindings:
-                kotlinInboxCloudEventConsumer-in-0:
-                    destination: valtimo-events
-                    group: valtimo-inbox
+                createExternalCaseConsumer-in-0:
+                    destination: create-external-case
                     binder: rabbit
-            rabbit:
-                bindings:
-                    kotlinInboxCloudEventConsumer-in-0:
-                        consumer:
-                            bindQueue: false
-                            declareExchange: false
-                            queueNameGroupOnly: true
+                    group: Q1
+                completeTaskConsumer-in-0:
+                    destination: complete-task
+                    binder: rabbit
+                    group: Q2
+                updatedExternalIdConsumer-in-0:
+                    destination: external-id-portal-case-updated
+                    binder: rabbit
+                    group: Q3
             binders:
                 rabbit:
                     type: rabbit
@@ -130,6 +132,7 @@ spring:
                                 username: guest
                                 password: guest
                                 virtual-host: /
+            source: externalDomainMessageSupplier
     rabbitmq:
         host: localhost
         port: 5672
@@ -173,6 +176,7 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     oauth:
         tokenValidityInSeconds: 3600 # Token is valid 1 hour
+        identifier-field: username
 
     hardening:
         allowStacktraceOnIps:
@@ -207,6 +211,10 @@ valtimo:
                     - "*"
             paths:
                 - "/**"
+    openklant:
+        url: "http://localhost:8006"
+        clientId: "valtimo_client"
+        rsin: "051845623"
 
     genericTemplateName: "template-name"
     besluitDocumentRequired: true
@@ -221,21 +229,27 @@ valtimo:
     changelog:
         pbac:
             clear-tables: false
+        case-tabs:
+            clear-tables: false
+        zgw-document-list-column:
+            clear-tables: false
+        task-search-fields:
+            clear-tables: false
 
     outbox:
         enabled: true
         publisher:
             cloudevent-source: "com.ritense.gzac"
             rabbitmq:
-                exchange: valtimo-events
+                routing-key: valtimo-audit
                 delivery-timeout: "PT0.5S"
-            polling.rate: "PT15M"
+            polling.rate: "PT1M"
 
+    authorization:
+        dashboard:
+            enabled: true
     logging:
         retentionInMinutes: 1440
-    docker:
-        filter:
-            enabled: true
 
 spring-actuator:
     username: admin
@@ -254,7 +268,7 @@ scheduling:
         cron:
             cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
             taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
-operaton:
+camunda:
     bpm:
         history-level: AUDIT
         history-level-default: AUDIT

@@ -28,12 +28,12 @@ spring-actuator:
     password: test
 
 valtimo:
+    connector-encryption:
+        secret: "abcdefghijklmnop"
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    import:
-        whitelistedPaths: "example.properties.*"
 
-operaton:
+camunda:
     bpm:
         history-level: audit
         generic-properties:

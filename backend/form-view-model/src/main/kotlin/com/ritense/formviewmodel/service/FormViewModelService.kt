@@ -21,19 +21,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
-import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.formviewmodel.viewmodel.ViewModel
 import com.ritense.formviewmodel.viewmodel.ViewModelLoaderFactory
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider.Companion.VIEW
-import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.camunda.authorization.CamundaTaskActionProvider.Companion.VIEW
+import com.ritense.valtimo.camunda.domain.CamundaTask
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.CamundaTaskService
 import org.springframework.stereotype.Service
-import java.util.UUID
 import kotlin.reflect.KClass
 
 @Service
@@ -41,11 +38,10 @@ import kotlin.reflect.KClass
 class FormViewModelService(
     private val objectMapper: ObjectMapper,
     private val viewModelLoaderFactory: ViewModelLoaderFactory,
-    private val operatonTaskService: OperatonTaskService,
+    private val camundaTaskService: CamundaTaskService,
     private val authorizationService: AuthorizationService,
     private val processAuthorizationService: ProcessAuthorizationService,
     private val processLinkService: ProcessLinkService,
-    private val documentService: JsonSchemaDocumentService,
 ) {
 
     @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("getStartFormViewModel(processDefinitionKey)"))
@@ -55,30 +51,15 @@ class FormViewModelService(
     ) = getStartFormViewModel(processDefinitionKey)
 
     fun getStartFormViewModel(
-        processDefinitionKey: String,
+        processDefinitionKey: String
     ): ViewModel? {
-        return getStartFormViewModel(processDefinitionKey, null)
-    }
+        processAuthorizationService.checkAuthorization(processDefinitionKey)
 
-    fun getStartFormViewModel(
-        processDefinitionKey: String,
-        documentId: UUID?,
-    ): ViewModel? {
-        val document = documentId?.let {
-            runWithoutAuthorization {
-                documentService.getDocumentBy(JsonSchemaDocumentId.existingId(documentId))
-            }
+        return runWithoutAuthorization {
+            val processLink = getStartEventProcessLink(processDefinitionKey) ?: return@runWithoutAuthorization null
+
+            viewModelLoaderFactory.getViewModelLoader(processLink)?.load()
         }
-
-        processAuthorizationService.checkStartProcessAuthorization(processDefinitionKey, document)
-
-        val processLink = runWithoutAuthorization {
-             getStartEventProcessLink(processDefinitionKey)
-        } ?: return null
-
-        val modelLoader = viewModelLoaderFactory.getViewModelLoader(processLink)
-
-        return modelLoader?.load(task = null, document = document)
     }
 
     @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("getUserTaskFormViewModel(taskInstanceId)"))
@@ -90,19 +71,16 @@ class FormViewModelService(
     fun getUserTaskFormViewModel(
         taskInstanceId: String
     ): ViewModel? {
-        val task = operatonTaskService.findTaskById(taskInstanceId)
+        val task = camundaTaskService.findTaskById(taskInstanceId)
         authorizationService.requirePermission(
-            EntityAuthorizationRequest(OperatonTask::class.java, VIEW, task)
+            EntityAuthorizationRequest(CamundaTask::class.java, VIEW, task)
         )
 
-        val processLink = runWithoutAuthorization {
-            getUserTaskProcessLink(task)
-        }?: return null
+        return runWithoutAuthorization {
+            val processLink = getUserTaskProcessLink(task) ?: return@runWithoutAuthorization null
 
-        val loader = viewModelLoaderFactory.getViewModelLoader(processLink)
-
-        return loader?.load(task = task, document = null)
-
+            viewModelLoaderFactory.getViewModelLoader(processLink)?.load(task)
+        }
     }
 
     @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("updateStartFormViewModel(processDefinitionKey, submission, page)"))
@@ -125,25 +103,21 @@ class FormViewModelService(
         processDefinitionKey: String,
         submission: ObjectNode,
         page: Int?,
-        documentId: UUID? = null,
     ): ViewModel? {
+        processAuthorizationService.checkAuthorization(processDefinitionKey)
 
-        val document = documentId?.let {
-            runWithoutAuthorization {
-                documentService.getDocumentBy(JsonSchemaDocumentId.existingId(documentId))
+        return runWithoutAuthorization {
+            val processLink = getStartEventProcessLink(processDefinitionKey) ?: return@runWithoutAuthorization null
+
+            val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return@runWithoutAuthorization null
+            val viewModelType = viewModelLoader.getViewModelType()
+
+            if (page != null) {
+                parseViewModel(submission, viewModelType).update(page = page)
+            } else {
+                parseViewModel(submission, viewModelType).update()
             }
         }
-
-        processAuthorizationService.checkStartProcessAuthorization(processDefinitionKey, document)
-
-        val processLink =  runWithoutAuthorization {
-            getStartEventProcessLink(processDefinitionKey)
-        } ?: return null
-
-        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return null
-        val viewModel = parseViewModel(submission, viewModelLoader.getViewModelType())
-
-        return viewModel.update(page = page, document = document)
     }
 
     @Deprecated("Deprecated since 12.6.0", replaceWith = ReplaceWith("updateStartFormViewModel(taskInstanceId, submission, page)"))
@@ -167,19 +141,23 @@ class FormViewModelService(
         submission: ObjectNode,
         page: Int?
     ): ViewModel? {
-        val task = operatonTaskService.findTaskById(taskInstanceId)
+        val task = camundaTaskService.findTaskById(taskInstanceId)
         authorizationService.requirePermission(
-            EntityAuthorizationRequest(OperatonTask::class.java, VIEW, task)
+            EntityAuthorizationRequest(CamundaTask::class.java, VIEW, task)
         )
 
-        val processLink = runWithoutAuthorization {
-            getUserTaskProcessLink(task)
-        } ?: return null
+        return runWithoutAuthorization {
+            val processLink = getUserTaskProcessLink(task) ?: return@runWithoutAuthorization null
 
-        val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return null
-        val viewModel = parseViewModel(submission, viewModelLoader.getViewModelType())
+            val viewModelLoader = viewModelLoaderFactory.getViewModelLoader(processLink) ?: return@runWithoutAuthorization null
+            val viewModelType = viewModelLoader.getViewModelType()
 
-        return viewModel.update(task = task, page = page, document = null)
+            if (page != null) {
+                parseViewModel(submission, viewModelType).update(task = task, page = page)
+            } else {
+                parseViewModel(submission, viewModelType).update(task)
+            }
+        }
     }
 
     fun <T : ViewModel> parseViewModel(
@@ -194,7 +172,7 @@ class FormViewModelService(
         processDefinitionKey
     ).firstOrNull { it.activityType === ActivityTypeWithEventName.START_EVENT_START }
 
-    private fun getUserTaskProcessLink(task: OperatonTask): ProcessLink? {
+    private fun getUserTaskProcessLink(task: CamundaTask): ProcessLink? {
         return task.processDefinition?.let { processDefinition ->
             processLinkService.getProcessLinksByProcessDefinitionKey(
                 processDefinition.key,

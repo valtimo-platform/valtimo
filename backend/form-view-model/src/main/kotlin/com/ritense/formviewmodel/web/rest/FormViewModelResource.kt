@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.formviewmodel.service.FormViewModelService
 import com.ritense.formviewmodel.service.FormViewModelSubmissionService
 import com.ritense.formviewmodel.viewmodel.ViewModel
-import com.ritense.formviewmodel.web.rest.dto.StartFormSubmissionResult
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.http.ResponseEntity
@@ -31,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @SkipComponentScan
@@ -44,12 +42,10 @@ class FormViewModelResource(
 
     @GetMapping("/start-form")
     fun getStartFormViewModel(
-        @RequestParam processDefinitionKey: String,
-        @RequestParam(required = false) documentId: UUID?
+        @RequestParam processDefinitionKey: String
     ): ResponseEntity<ViewModel?> {
         val viewModel = formViewModelService.getStartFormViewModel(
-            processDefinitionKey = processDefinitionKey,
-            documentId = documentId
+            processDefinitionKey = processDefinitionKey
         )
         return if (viewModel != null) {
             ResponseEntity.ok(viewModel)
@@ -73,14 +69,12 @@ class FormViewModelResource(
     fun updateStartFormViewModel(
         @RequestParam processDefinitionKey: String,
         @RequestParam(required = false) page: Int? = null,
-        @RequestParam(required = false) documentId: UUID? = null,
         @RequestBody submission: ObjectNode
     ): ResponseEntity<ViewModel> {
         return formViewModelService.updateStartFormViewModel(
             processDefinitionKey = processDefinitionKey,
             submission = submission,
             page = page,
-            documentId = documentId,
         )?.let {
             ResponseEntity.ok(it)
         } ?: ResponseEntity.notFound().build()
@@ -117,16 +111,14 @@ class FormViewModelResource(
     fun submitStartForm(
         @RequestParam processDefinitionKey: String,
         @RequestParam documentDefinitionName: String,
-        @RequestParam(required = false) documentId: UUID?,
         @RequestBody submission: ObjectNode
-    ): ResponseEntity<StartFormSubmissionResult> {
-        val result = formViewModelSubmissionService.handleStartFormSubmission(
+    ): ResponseEntity<Void> {
+        formViewModelSubmissionService.handleStartFormSubmission(
             processDefinitionKey = processDefinitionKey,
             documentDefinitionName = documentDefinitionName,
             submission = submission,
-            documentId = documentId,
         )
-        return ResponseEntity.ok(result)
+        return ResponseEntity.noContent().build()
     }
 
 }

@@ -17,9 +17,7 @@
 package com.ritense.verzoek.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.objectmanagement.service.ObjectManagementService
@@ -38,16 +36,9 @@ class VerzoekAutoConfiguration {
     @ConditionalOnMissingBean(VerzoekPluginFactory::class)
     fun verzoekPluginFactory(
         pluginService: PluginService,
-        caseDefinitionService: CaseDefinitionService,
         documentDefinitionService: JsonSchemaDocumentDefinitionService,
-        objectManagementService: ObjectManagementService
     ): VerzoekPluginFactory {
-        return VerzoekPluginFactory(
-            pluginService,
-            caseDefinitionService,
-            documentDefinitionService,
-            objectManagementService
-        )
+        return VerzoekPluginFactory(pluginService, documentDefinitionService)
     }
 
     @Bean
@@ -56,8 +47,6 @@ class VerzoekAutoConfiguration {
         pluginService: PluginService,
         objectManagementService: ObjectManagementService,
         documentService: DocumentService,
-        documentDefinitionService: DocumentDefinitionService,
-        caseDefinitionService: CaseDefinitionService,
         zaaktypeUrlProvider: ZaaktypeUrlProvider,
         processDocumentService: ProcessDocumentService,
         objectMapper: ObjectMapper,
@@ -66,8 +55,6 @@ class VerzoekAutoConfiguration {
             pluginService,
             objectManagementService,
             documentService,
-            documentDefinitionService,
-            caseDefinitionService,
             zaaktypeUrlProvider,
             processDocumentService,
             objectMapper,

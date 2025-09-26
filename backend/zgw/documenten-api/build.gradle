@@ -30,11 +30,11 @@ dockerCompose {
 }
 
 dependencies {
-    implementation project(":authorization")
     implementation project(":case")
     implementation project(":changelog")
     implementation project(":contract")
     implementation project(":core")
+    implementation project(":document")
     implementation project(":exporter")
     implementation project(":importer")
     implementation project(":logging")
@@ -42,20 +42,19 @@ dependencies {
     implementation project(":plugin")
     implementation project(":plugin-valtimo")
     implementation project(":process-document")
-    implementation project(":resource")
     implementation project(":resource:temporary-resource-storage")
     implementation project(":value-resolver")
     implementation project(":zgw")
     implementation project(":zgw:catalogi-api")
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310"
 
-    testImplementation project(':case')
+    testImplementation project(':document')
     testImplementation project(':resource')
     testImplementation project(':test-utils-common')
 

@@ -16,7 +16,6 @@
 
 package com.ritense.formviewmodel.viewmodel
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.processlink.domain.ProcessLink
@@ -28,8 +27,7 @@ class ViewModelLoaderFactory(
 
     fun getViewModelLoader(processLink: ProcessLink): ViewModelLoader<out ViewModel>? {
         val formName = (processLink as? FormProcessLink)?.let {
-            runWithoutAuthorization { formDefinitionService.getFormDefinitionById(processLink.formDefinitionId) }
-                .orElse(null)?.name
+            formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElse(null)?.name
         }
 
         return viewModelLoaders.find { loader ->

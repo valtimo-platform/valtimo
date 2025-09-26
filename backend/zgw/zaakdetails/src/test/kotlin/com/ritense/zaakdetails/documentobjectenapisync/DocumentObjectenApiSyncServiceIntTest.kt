@@ -16,13 +16,14 @@
 
 package com.ritense.zaakdetails.documentobjectenapisync
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
-import com.ritense.objectenapi.client.ObjectWrapper
-import com.ritense.objectenapi.client.ObjectsList
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.objectenapi.client.dto.TypedObjectRecord
+import com.ritense.objectenapi.client.dto.TypedObjectWrapper
+import com.ritense.objectenapi.client.dto.TypedObjectsPage
 import com.ritense.zaakdetails.BaseIntegrationTest
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.service.ZaakTypeLinkService
@@ -30,7 +31,7 @@ import com.ritense.zakenapi.web.rest.request.CreateZaakTypeLinkRequest
 import com.ritense.zgw.Rsin
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
@@ -63,27 +64,26 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
     @Autowired
     lateinit var zaakTypeLinkService: ZaakTypeLinkService
 
-    val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-
     @Test
     fun `should create zaakdetails object and link to the zaak when zaak exists`() {
-        val objectWrapper = ObjectWrapper(
+        val objectWrapper = TypedObjectWrapper<JsonNode>(
             URI.create("http://localhost:56273/objecten/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
             UUID.randomUUID(),
             URI.create("http://localhost:56273/objecttypen/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
-            mock()
+            TypedObjectRecord(typeVersion = 1, startAt = LocalDate.now())
         )
 
         documentObjectenApiSyncManagementService.saveSyncConfiguration(
             DocumentObjectenApiSync(
-                caseDefinitionId = caseDefinitionId,
+                documentDefinitionName = "profile",
+                documentDefinitionVersion = 1,
                 objectManagementConfigurationId = UUID.fromString("462ef788-f7db-4701-9b87-0400fc79ad7e")
             )
         )
 
         zaakTypeLinkService.createZaakTypeLink(
-            caseDefinitionId,
             CreateZaakTypeLinkRequest(
+                "profile",
                 URI("http://localhost:56273/zaaktype/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
                 UUID.fromString("3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"),
                 true,
@@ -91,10 +91,10 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             )
         )
 
-        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(ObjectsList(0, null, null, listOf()))
+        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java)))
+            .thenReturn(TypedObjectsPage(0, null, null, listOf()))
 
-        whenever(objectenApiClient.createObject(any(), any(), any()))
+        whenever(objectenApiClient.createObject(any(), any(), any(), eq(JsonNode::class.java)))
             .thenReturn(objectWrapper)
 
         whenever(zakenApiClient.createZaak(any(), any(), any()))
@@ -104,8 +104,6 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""{"lastname":"Doe"}""")
                 )
             )
@@ -114,31 +112,32 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
         assertTrue { result.errors().isEmpty() }
 
         verify(zakenApiClient, times(1)).createZaak(any(), any(), any())
-        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any())
-        verify(objectenApiClient, times(1)).createObject(any(), any(), any())
+        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java))
+        verify(objectenApiClient, times(1)).createObject(any(), any(), any(), eq(JsonNode::class.java))
         verifyNoMoreInteractions(objectenApiClient)
         verify(zakenApiClient, times(1)).createZaakObject(any(), any(), any())
     }
 
     @Test
     fun `should update zaakdetails object and link to the zaak when zaak exists`() {
-        val objectWrapper = ObjectWrapper(
+        val objectWrapper = TypedObjectWrapper<JsonNode>(
             URI.create("http://localhost:56273/objecten/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
             UUID.randomUUID(),
             URI.create("http://localhost:56273/objecttypen/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
-            mock()
+            TypedObjectRecord(typeVersion = 1, startAt = LocalDate.now())
         )
 
         documentObjectenApiSyncManagementService.saveSyncConfiguration(
             DocumentObjectenApiSync(
-                caseDefinitionId = caseDefinitionId,
+                documentDefinitionName = "profile",
+                documentDefinitionVersion = 1,
                 objectManagementConfigurationId = UUID.fromString("462ef788-f7db-4701-9b87-0400fc79ad7e")
             )
         )
 
         zaakTypeLinkService.createZaakTypeLink(
-            caseDefinitionId,
             CreateZaakTypeLinkRequest(
+                "profile",
                 URI("http://localhost:56273/zaaktype/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
                 UUID.fromString("3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"),
                 true,
@@ -146,10 +145,13 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             )
         )
 
-        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(ObjectsList(0, null, null, listOf()))
+        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java)))
+            .thenReturn(TypedObjectsPage(0, null, null, listOf()))
 
-        whenever(objectenApiClient.createObject(any(), any(), any()))
+        whenever(objectenApiClient.createObject(any(), any(), any(), eq(JsonNode::class.java)))
+            .thenReturn(objectWrapper)
+
+        whenever(objectenApiClient.updateObject(any(), any(), any(), eq(JsonNode::class.java)))
             .thenReturn(objectWrapper)
 
         whenever(zakenApiClient.createZaak(any(), any(), any()))
@@ -159,8 +161,6 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""{"lastname":"Doe"}""")
                 )
             )
@@ -173,9 +173,9 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
         }
 
         verify(zakenApiClient, times(1)).createZaak(any(), any(), any())
-        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any())
-        verify(objectenApiClient, times(1)).createObject(any(), any(), any())
-        verify(objectenApiClient, times(1)).objectUpdate(any(), any(), any())
+        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java))
+        verify(objectenApiClient, times(1)).createObject(any(), any(), any(), eq(JsonNode::class.java))
+        verify(objectenApiClient, times(1)).updateObject(any(), any(), any(), eq(JsonNode::class.java))
         verifyNoMoreInteractions(objectenApiClient)
         verify(zakenApiClient, times(1)).createZaakObject(any(), any(), any())
     }
@@ -183,8 +183,8 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
     @Test
     fun `should not create zaakdetails object when no configuration exists`() {
         zaakTypeLinkService.createZaakTypeLink(
-            caseDefinitionId,
             CreateZaakTypeLinkRequest(
+                "profile",
                 URI("http://localhost:56273/zaaktype/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
                 UUID.fromString("3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"),
                 false,
@@ -196,8 +196,6 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""{"lastname":"Doe"}""")
                 )
             )
@@ -210,39 +208,41 @@ class DocumentObjectenApiSyncServiceIntTest : BaseIntegrationTest() {
 
     @Test
     fun `should create zaakdetails object and not link to the zaak when zaak does not exist`() {
-        val objectWrapper = ObjectWrapper(
+        val objectWrapper = TypedObjectWrapper<JsonNode>(
             URI.create("http://localhost:56273/objecten/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
             UUID.randomUUID(),
             URI.create("http://localhost:56273/objecttypen/98d703e3-4afa-47fe-9787-e3d1ab0ab42c"),
-            mock()
+            TypedObjectRecord(
+                typeVersion = 1,
+                startAt = LocalDate.now()
+            )
         )
 
         documentObjectenApiSyncManagementService.saveSyncConfiguration(
             DocumentObjectenApiSync(
-                caseDefinitionId = caseDefinitionId,
+                documentDefinitionName = "profile",
+                documentDefinitionVersion = 1,
                 objectManagementConfigurationId = UUID.fromString("462ef788-f7db-4701-9b87-0400fc79ad7e")
             )
         )
 
-        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(ObjectsList(0, null, null, listOf()))
+        whenever(objectenApiClient.getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java)))
+            .thenReturn(TypedObjectsPage(0, null, null, listOf()))
 
-        whenever(objectenApiClient.createObject(any(), any(), any()))
+        whenever(objectenApiClient.createObject(any(), any(), any(), eq(JsonNode::class.java)))
             .thenReturn(objectWrapper)
 
         val result = runWithoutAuthorization {
             documentService.createDocument(
                 NewDocumentRequest(
                     "profile",
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""{"lastname":"Doe"}""")
                 )
             )
         }
 
-        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any())
-        verify(objectenApiClient, times(1)).createObject(any(), any(), any())
+        verify(objectenApiClient, times(1)).getObjectsByObjecttypeUrlWithSearchParams(any(), any(), any(), any(), any(), any(), any(), eq(JsonNode::class.java))
+        verify(objectenApiClient, times(1)).createObject(any(), any(), any(), eq(JsonNode::class.java))
         verifyNoInteractions(zakenApiClient)
     }
 

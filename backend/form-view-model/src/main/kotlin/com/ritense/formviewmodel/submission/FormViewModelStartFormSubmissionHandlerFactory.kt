@@ -16,7 +16,6 @@
 
 package com.ritense.formviewmodel.submission
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.formviewmodel.viewmodel.Submission
@@ -35,9 +34,7 @@ class FormViewModelStartFormSubmissionHandlerFactory(
     }
 
     fun getHandler(processLink: ProcessLink): FormViewModelStartFormSubmissionHandler<out Submission>? {
-        val formName = (processLink as? FormProcessLink)?.let { runWithoutAuthorization {
-            formDefinitionService.getFormDefinitionById(processLink.formDefinitionId)
-        }.orElse(null)?.name }
+        val formName = (processLink as? FormProcessLink)?.let { formDefinitionService.getFormDefinitionById(processLink.formDefinitionId).orElse(null)?.name }
 
         return handlers.find { handler ->
             handler.supports(processLink) ||

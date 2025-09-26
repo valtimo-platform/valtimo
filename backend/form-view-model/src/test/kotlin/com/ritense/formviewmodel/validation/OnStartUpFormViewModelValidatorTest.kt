@@ -70,7 +70,7 @@ class OnStartUpFormViewModelValidatorTest(
 
     @Test
     fun `should not find missing fields when all Submission fields match form`() {
-        val testSubmissionHandler = TestStartFormSubmissionHandler(formDefinitionService = formIoFormDefinitionService)
+        val testSubmissionHandler = TestStartFormSubmissionHandler()
         val missingFields = onStartUpViewModelValidator.validateStartFormSubmission(
             testSubmissionHandler,
             formDefinitionOf("user-task-1")
@@ -80,7 +80,7 @@ class OnStartUpFormViewModelValidatorTest(
 
     @Test
     fun `should find missing fields when Submission has extra fields`() {
-        val testSubmissionHandler = TestStartFormSubmissionHandler(formDefinitionService = formIoFormDefinitionService)
+        val testSubmissionHandler = TestStartFormSubmissionHandler()
         val missingFields = onStartUpViewModelValidator.validateStartFormSubmission(
             testSubmissionHandler,
             formDefinitionOf("user-task-2")
@@ -143,7 +143,7 @@ class OnStartUpFormViewModelValidatorTest(
         whenever(viewModelLoader.getFormName()).thenReturn(formName)
         whenever(viewModelLoader.getViewModelType()).thenReturn(viewModel::class as KClass<ViewModel>)
         whenever(formViewModelStartFormSubmissionHandlerFactory.getHandlerForFormValidation(formName)).thenReturn(
-            TestStartFormSubmissionHandler(formDefinitionService = formIoFormDefinitionService)
+            TestStartFormSubmissionHandler()
         )
         return viewModelLoader
     }

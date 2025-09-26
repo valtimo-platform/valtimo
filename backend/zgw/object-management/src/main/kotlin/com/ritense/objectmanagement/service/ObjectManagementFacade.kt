@@ -17,17 +17,20 @@
 package com.ritense.objectmanagement.service
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.objectenapi.ObjectenApiPlugin
-import com.ritense.objectenapi.client.ObjectRecord
-import com.ritense.objectenapi.client.ObjectRequest
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.client.ObjectsList
+import com.ritense.objectenapi.client.dto.TypedObjectRecord
+import com.ritense.objectenapi.client.dto.TypedObjectRequest
+import com.ritense.objectenapi.client.dto.TypedObjectWrapper
+import com.ritense.objectenapi.client.dto.TypedObjectsPage
+import com.ritense.objectenapi.client.toObjectWrapper
+import com.ritense.objectenapi.client.toObjectsList
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.service.PluginService
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.web.client.HttpClientErrorException
@@ -40,39 +43,78 @@ class ObjectManagementFacade(
     private val objectManagementRepository: ObjectManagementRepository,
     private val pluginService: PluginService
 ) {
-    fun getObjectByUuid(objectName: String, uuid: UUID): ObjectWrapper {
+    fun getObjectByUuid(
+        objectName: String,
+        uuid: UUID
+    ): ObjectWrapper {
+        return getObjectByUuid(objectName = objectName, uuid = uuid, type = JsonNode::class.java).toObjectWrapper()
+    }
+
+    fun <T> getObjectByUuid(
+        objectName: String,
+        uuid: UUID,
+        type: Class<T>
+    ): TypedObjectWrapper<T> {
         logger.debug { "Get object by UUID objectName=$objectName uuid=$uuid" }
         val accessObject = getAccessObject(objectName)
-        return findObjectByUuid(accessObject = accessObject, uuid = uuid)
+        return findObjectByUuid(accessObject = accessObject, uuid = uuid, type = type)
     }
 
-    fun getObjectByUuidAndIndex(objectName: String, uuid: UUID, index: Int): ObjectRecord {
-        logger.debug { "Get object by UUID and index objectName=$objectName uuid=$uuid index=$index" }
-        val accessObject = getAccessObject(objectName)
-        return findObjectByUuidAndIndex(accessObject = accessObject, uuid = uuid, index = index)
+    fun getObjectsByUuids(
+        objectName: String,
+        uuids: List<UUID>
+    ): ObjectsList {
+        return getObjectsByUuids(objectName = objectName, uuids = uuids, type = JsonNode::class.java).toObjectsList()
     }
 
-    fun getObjectsByUuids(objectName: String, uuids: List<UUID>): ObjectsList {
+    fun <T> getObjectsByUuids(
+        objectName: String,
+        uuids: List<UUID>,
+        type: Class<T>
+    ): TypedObjectsPage<T> {
         logger.debug { "Get object by UUIDs objectName=$objectName uuids=$uuids" }
         val accessObject = getAccessObject(objectName)
-        val objects = uuids.map { findObjectByUuid(accessObject = accessObject, uuid = it) }
-        return ObjectsList(count = objects.size, results = objects)
+        val objects = uuids.map {
+            findObjectByUuid(accessObject = accessObject, uuid = it, type = type)
+        }
+        return TypedObjectsPage(count = objects.size, results = objects)
     }
 
-    fun getObjectByUri(objectName: String, objectUrl: URI): ObjectWrapper {
+    fun getObjectByUri(
+        objectName: String,
+        objectUrl: URI
+    ): ObjectWrapper {
+        return getObjectByUri(objectName = objectName, objectUrl = objectUrl, JsonNode::class.java).toObjectWrapper()
+    }
+
+    fun <T> getObjectByUri(
+        objectName: String,
+        objectUrl: URI,
+        type: Class<T>
+    ): TypedObjectWrapper<T> {
         logger.debug { "Get object by URI objectName=$objectName objectUrl=$objectUrl" }
         val accessObject = getAccessObject(objectName)
-        return findObjectByUri(accessObject = accessObject, objectUrl = objectUrl)
+        return findObjectByUri(accessObject = accessObject, objectUrl = objectUrl, type = type)
     }
 
-    fun getObjectsByUris(objectName: String, objectUrls: List<URI>): ObjectsList {
+    fun getObjectsByUris(
+        objectName: String,
+        objectUrls: List<URI>
+    ): ObjectsList {
+        return getObjectsByUris(objectName = objectName, objectUrls = objectUrls, type = JsonNode::class.java).toObjectsList()
+    }
+
+    fun <T> getObjectsByUris(
+        objectName: String,
+        objectUrls: List<URI>,
+        type: Class<T>
+    ): TypedObjectsPage<T> {
         logger.debug { "Get object by URIs objectName=$objectName objectUrls=$objectUrls" }
         val accessObject = getAccessObject(objectName)
-        val objects = mutableListOf<ObjectWrapper>()
-        objectUrls.forEach {
-            objects.add(findObjectByUri(accessObject = accessObject, objectUrl = it))
+        val objects = objectUrls.map {
+            findObjectByUri(accessObject = accessObject, objectUrl = it, type = type)
         }
-        return ObjectsList(count = objects.size, results = objects)
+        return TypedObjectsPage(count = objects.size, results = objects)
     }
 
     fun getObjectsPaged(
@@ -82,6 +124,17 @@ class ObjectManagementFacade(
         ordering: String?,
         pageSize: Int
     ): ObjectsList {
+        return getObjectsPaged(objectName, searchString, pageNumber, ordering, pageSize, JsonNode::class.java).toObjectsList()
+    }
+
+    fun <T> getObjectsPaged(
+        objectName: String,
+        searchString: String?,
+        pageNumber: Int,
+        ordering: String?,
+        pageSize: Int,
+        type: Class<T>
+    ): TypedObjectsPage<T> {
         logger.debug {
             "get objects paged objectName=$objectName " +
                 "searchString=$searchString, pageNumber=$pageNumber, pageSize=$pageSize"
@@ -93,7 +146,8 @@ class ObjectManagementFacade(
             searchString = searchString,
             ordering = ordering,
             pageNumber = pageNumber,
-            pageSize = pageSize
+            pageSize = pageSize,
+            type = type
         )
     }
 
@@ -104,36 +158,33 @@ class ObjectManagementFacade(
         searchString: String?,
         ordering: String?
     ): ObjectsList {
+        return getObjectsUnpaged(objectName = objectName, searchString = searchString, ordering = ordering, type = JsonNode::class.java).toObjectsList()
+    }
+
+    // Please use this function with caution, as it could result in poor application performance.
+    // It is advised to use getObjectsPaged() instead, where possible.
+    fun <T> getObjectsUnpaged(
+        objectName: String,
+        searchString: String?,
+        ordering: String?,
+        type: Class<T>
+    ): TypedObjectsPage<T> {
         logger.debug { "get objects unpaged objectName=$objectName searchString=$searchString" }
         val accessObject = getAccessObject(objectName)
 
-        var pageNumber = 0
-        var totalResults = ObjectsList(
-            results = listOf(),
-            count = 0
-        )
-
-        do {
-            val iterationResult = findObjectsPaged(
+        val all = TypedObjectsPage.getAll { pageNumber ->
+            findObjectsPaged(
                 accessObject = accessObject,
                 objectName = objectName,
                 searchString = searchString,
                 ordering = ordering,
                 pageNumber = pageNumber,
-                pageSize = 500
+                pageSize = 500,
+                type = type
             )
+        }
 
-            var combinedResults = totalResults.results
-            combinedResults += iterationResult.results
-            totalResults = ObjectsList(
-                results = combinedResults,
-                count = combinedResults.size
-            )
-
-            pageNumber++
-        } while (iterationResult.next != null)
-
-        return totalResults
+        return TypedObjectsPage(count = all.size, results = all)
     }
 
     fun createObject(
@@ -141,16 +192,25 @@ class ObjectManagementFacade(
         data: JsonNode,
         objectId: UUID? = null
     ): ObjectWrapper {
+        return createObject(objectName, data, objectId, JsonNode::class.java).toObjectWrapper()
+    }
+
+    fun <T> createObject(
+        objectName: String,
+        data: T,
+        objectId: UUID? = null,
+        type: Class<T>
+    ): TypedObjectWrapper<T> {
         logger.info { "Create object objectName=$objectName objectId=$objectId" }
         val accessObject = getAccessObject(objectName)
         val objectTypeUrl = accessObject.objectTypenApiPlugin.getObjectTypeUrlById(
             accessObject.objectManagement.objecttypeId
         )
 
-        val objectRequest = ObjectRequest(
-            objectId,
-            objectTypeUrl,
-            ObjectRecord(
+        val objectRequest = TypedObjectRequest(
+            uuid = objectId,
+            type = objectTypeUrl,
+            record = TypedObjectRecord(
                 typeVersion = accessObject.objectManagement.objecttypeVersion,
                 data = data,
                 startAt = LocalDate.now()
@@ -158,7 +218,7 @@ class ObjectManagementFacade(
         )
 
         try {
-            return accessObject.objectenApiPlugin.createObject(objectRequest)
+            return accessObject.objectenApiPlugin.createObject(objectRequest, type)
         } catch (ex: RestClientResponseException) {
             throw Exception("Exception thrown while making a call to the Objects API. Response from the API: ${ex.responseBodyAsString}")
         }
@@ -169,15 +229,24 @@ class ObjectManagementFacade(
         objectName: String,
         data: JsonNode,
     ): ObjectWrapper {
+        return updateObject(objectId, objectName, data, JsonNode::class.java).toObjectWrapper()
+    }
+
+    fun <T> updateObject(
+        objectId: UUID,
+        objectName: String,
+        data: T,
+        type: Class<T>
+    ): TypedObjectWrapper<T> {
         logger.info { "Update object objectId=$objectId objectName=$objectName" }
         val accessObject = getAccessObject(objectName)
         val objectTypeUrl = accessObject.objectTypenApiPlugin.getObjectTypeUrlById(
             accessObject.objectManagement.objecttypeId
         )
 
-        val objectRequest = ObjectRequest(
+        val objectRequest = TypedObjectRequest(
             objectTypeUrl,
-            ObjectRecord(
+            TypedObjectRecord(
                 typeVersion = accessObject.objectManagement.objecttypeVersion,
                 data = data,
                 startAt = LocalDate.now()
@@ -185,10 +254,12 @@ class ObjectManagementFacade(
         )
 
         try {
+            val objectUrl = accessObject.objectenApiPlugin.getObjectUrl(objectId)
             return accessObject.objectenApiPlugin
-                .objectUpdate(
-                    accessObject.objectenApiPlugin.getObjectUrl(objectId),
-                    objectRequest
+                .updateObject(
+                    objectUrl = objectUrl,
+                    objectRequest = objectRequest,
+                    type = type
                 )
         } catch (ex: RestClientResponseException) {
             throw Exception("Error while updating object ${objectId}. Response from Objects API: ${ex.responseBodyAsString}")
@@ -227,57 +298,58 @@ class ObjectManagementFacade(
         )
     }
 
-    private fun findObjectByUuid(accessObject: ObjectManagementAccessObject, uuid: UUID): ObjectWrapper {
+    private fun <T> findObjectByUuid(
+        accessObject: ObjectManagementAccessObject,
+        uuid: UUID,
+        type: Class<T>
+    ): TypedObjectWrapper<T> {
         logger.debug { "Find object by uuid accessObject=$accessObject uuid=$uuid" }
         val objectUrl = accessObject.objectenApiPlugin.getObjectUrl(uuid)
 
         logger.trace { "Getting object $objectUrl" }
-        return runWithoutAuthorization { accessObject.objectenApiPlugin.getObject(objectUrl) }
+        return accessObject.objectenApiPlugin.getObject(objectUrl = objectUrl, type = type)
     }
 
-    private fun findObjectByUuidAndIndex(accessObject: ObjectManagementAccessObject, uuid: UUID, index: Int): ObjectRecord {
-        logger.debug { "Find object by uuid and index accessObject=$accessObject uuid=$uuid index=$index" }
-        val objectUrl = accessObject.objectenApiPlugin.getObjectUrl(uuid)
-
-        logger.trace { "Getting object $objectUrl" }
-        return runWithoutAuthorization { accessObject.objectenApiPlugin.getObjectRecord(objectUrl, index) }
-    }
-
-    private fun findObjectByUri(accessObject: ObjectManagementAccessObject, objectUrl: URI): ObjectWrapper {
+    private fun <T> findObjectByUri(
+        accessObject: ObjectManagementAccessObject,
+        objectUrl: URI,
+        type: Class<T>
+    ): TypedObjectWrapper<T> {
         logger.debug { "Getting object $objectUrl" }
-        return runWithoutAuthorization { accessObject.objectenApiPlugin.getObject(objectUrl) }
+        return accessObject.objectenApiPlugin.getObject(objectUrl = objectUrl, type = type)
     }
 
-    private fun findObjectsPaged(
+    private fun <T> findObjectsPaged(
         accessObject: ObjectManagementAccessObject,
         objectName: String,
         searchString: String?,
         ordering: String? = "",
         pageNumber: Int,
-        pageSize: Int
-    ): ObjectsList {
-        return runWithoutAuthorization {
-            if (!searchString.isNullOrBlank()) {
-                logger.debug { "Getting object page for object type $objectName with search string $searchString" }
+        pageSize: Int,
+        type: Class<T>,
+    ): TypedObjectsPage<T> {
+        return if (!searchString.isNullOrBlank()) {
+            logger.debug { "Getting object page for object type $objectName with search string $searchString" }
 
-                accessObject.objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
-                    accessObject.objectTypenApiPlugin.url,
-                    accessObject.objectManagement.objecttypeId,
-                    searchString,
-                    ordering,
-                    PageRequest.of(pageNumber, pageSize)
-                )
-            } else {
-                logger.debug { "Getting object page for object type $objectName" }
+            accessObject.objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
+                objecttypesApiUrl = accessObject.objectTypenApiPlugin.url,
+                objecttypeId = accessObject.objectManagement.objecttypeId,
+                searchString = searchString,
+                ordering = ordering,
+                pageable = PageRequest.of(pageNumber, pageSize),
+                type = type
+            )
+        } else {
+            logger.debug { "Getting object page for object type $objectName" }
 
-                accessObject.objectenApiPlugin.getObjectsByObjectTypeId(
-                    accessObject.objectTypenApiPlugin.url,
-                    accessObject.objectenApiPlugin.url,
-                    accessObject.objectManagement.objecttypeId,
-                    ordering,
-                    PageRequest.of(pageNumber, pageSize)
-                )
-            }
+            accessObject.objectenApiPlugin.getObjectsByObjectTypeId(
+                objecttypesApiUrl = accessObject.objectTypenApiPlugin.url,
+                objectsApiUrl = accessObject.objectenApiPlugin.url,
+                objecttypeId = accessObject.objectManagement.objecttypeId,
+                ordering = ordering,
+                pageable = PageRequest.of(pageNumber, pageSize),
+                type = type
+            )
         }
     }
 
