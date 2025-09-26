@@ -81,7 +81,7 @@ class ValtimoAuthorizationService(
     }
 
     override fun getPermissions(resourceType: Class<*>, action: Action<*>): List<Permission> {
-        return permissionRepository.findAllByResourceTypeAndActions_Key(resourceType, action.key)
+        return permissionRepository.findAllByResourceTypeAndAction(resourceType, action)
     }
 
     override fun <FROM, TO> getMapper(
@@ -129,7 +129,7 @@ class ValtimoAuthorizationService(
         return permissionRepository.findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(userRoles)
             .filter { permission ->
                 context.resourceType == permission.resourceType
-                    && permission.actions.contains(context.action)
+                    && context.action == permission.action
                     && if (context is EntityAuthorizationRequest) {
                         permission.appliesInContext(context.context?.resourceType, context.context?.entity)
                     } else if (context is RelatedEntityAuthorizationRequest)

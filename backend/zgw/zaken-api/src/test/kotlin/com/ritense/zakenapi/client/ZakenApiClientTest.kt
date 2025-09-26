@@ -1248,7 +1248,7 @@ internal class ZakenApiClientTest {
                 "betalingsindicatieWeergave": "test",
                 "selectielijstklasse": "test",
                 "deelzaken": ["test"],
-                "relevanteAndereZaken": [{"url": "https://example.com", "aardRelatie": "overig"}],
+                "relevanteAndereZaken": [{"url": "https://example.com", "aardRelatie": "test"}],
                 "eigenschappen": ["test"],
                 "kenmerken": [{"kenmerk": "test", "bron": "test"}],
                 "archiefstatus": "gearchiveerd",

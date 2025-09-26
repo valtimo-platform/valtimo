@@ -41,7 +41,6 @@ import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
-import java.net.URI
 
 @Transactional
 class ZaakValueResolverValueIT @Autowired constructor(
@@ -99,7 +98,7 @@ class ZaakValueResolverValueIT @Autowired constructor(
             @Throws(InterruptedException::class)
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val response = when (request.requestLine) {
-                    "GET $ZAKEN_API_PATH/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609 HTTP/1.1" -> getZaakRequest()
+                    "GET /zaken/57f66ff6-db7f-43bc-84ef-6847640d3609 HTTP/1.1" -> getZaakRequest()
                     else -> MockResponse().setResponseCode(404)
                 }
                 return response
@@ -159,7 +158,20 @@ class ZaakValueResolverValueIT @Autowired constructor(
         return mockResponse(body)
     }
 
-    companion object {
-        private const val ZAKEN_API_PATH = "/zaken/api/v1"
+    class TestAuthentication : ZakenApiAuthentication {
+        override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
+            return builder
+        }
+
+        override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
+            return next.exchange(request)
+        }
     }
+
+    companion object {
+        private const val PROCESS_DEFINITION_KEY = "zaken-api-plugin"
+        private const val DOCUMENT_DEFINITION_KEY = "profile"
+        private const val INFORMATIE_OBJECT_URL = "http://informatie.object.url"
+    }
+
 }

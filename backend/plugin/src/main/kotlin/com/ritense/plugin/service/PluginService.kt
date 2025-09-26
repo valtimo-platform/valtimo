@@ -55,7 +55,6 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
-import com.ritense.valtimo.contract.event.PluginsDeployedEvent
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ConstraintViolationException
@@ -151,8 +150,6 @@ class PluginService(
             pluginConfigurationRepository.deleteById(pluginConfiguration.id)
             throw PluginEventInvocationException(pluginConfiguration, e)
         }
-
-        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
 
         return pluginConfiguration
     }
@@ -261,9 +258,7 @@ class PluginService(
             throw PluginEventInvocationException(pluginConfiguration, e)
         }
 
-        val savedPluginConfiguration = pluginConfigurationRepository.save(pluginConfiguration)
-        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
-        return savedPluginConfiguration
+        return pluginConfigurationRepository.save(pluginConfiguration)
     }
 
     fun deletePluginConfiguration(

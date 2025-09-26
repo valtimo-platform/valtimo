@@ -29,17 +29,13 @@ import com.ritense.objectenapi.event.ObjectsListed
 import com.ritense.objectenapi.security.Object
 import com.ritense.objectenapi.security.ObjectActionProvider
 import com.ritense.outbox.OutboxService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 
-@SkipComponentScan
-@Component
 class ObjectenApiClient(
     private val restClientBuilder: RestClient.Builder,
     private val outboxService: OutboxService,
@@ -215,7 +211,7 @@ class ObjectenApiClient(
 
         val result = buildRestClient(authentication, objectsApiUrl.toASCIIString())
             .post()
-            .uri { it.pathSegment("objects").build() }
+            .uri("objects")
             .header(ACCEPT_CRS, EPSG_4326)
             .header(CONTENT_CRS, EPSG_4326)
             .body(objectRequest)

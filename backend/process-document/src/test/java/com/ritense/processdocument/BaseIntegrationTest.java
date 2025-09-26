@@ -33,7 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@SpringBootTest(classes = {ProcessDocumentTestConfiguration.class})
+@SpringBootTest
 @Tag("integration")
 @ExtendWith(SpringExtension.class)
 public abstract class BaseIntegrationTest extends BaseTest {

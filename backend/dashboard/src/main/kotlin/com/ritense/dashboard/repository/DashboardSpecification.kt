@@ -45,7 +45,7 @@ class DashboardSpecification(
         val predicates = permissions.stream()
             .filter { permission: Permission ->
                 Dashboard::class.java == permission.resourceType
-                    && permission.actions.contains(authRequest.action)
+                    && authRequest.action == permission.action
             }
             .map { permission: Permission ->
                 permission.toPredicate(

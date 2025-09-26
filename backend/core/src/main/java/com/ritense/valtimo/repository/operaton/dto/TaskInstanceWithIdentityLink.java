@@ -39,23 +39,18 @@ public class TaskInstanceWithIdentityLink {
     @JsonProperty
     private final List<OperatonIdentityLinkDto> identityLinks;
 
-    @JsonProperty
-    private final List<String> subtitles;
-
     public TaskInstanceWithIdentityLink(
         String businessKey,
         OperatonTaskDto taskDto,
         boolean external,
         String processDefinitionKey,
-        List<OperatonIdentityLinkDto> identityLinks,
-        List<String> subtitles
+        List<OperatonIdentityLinkDto> identityLinks
     ) {
         this.businessKey = businessKey;
         this.taskDto = taskDto;
         this.external = external;
         this.processDefinitionKey = processDefinitionKey;
         this.identityLinks = identityLinks;
-        this.subtitles = subtitles;
     }
 
     public String getBusinessKey() {
@@ -76,9 +71,5 @@ public class TaskInstanceWithIdentityLink {
 
     public String getProcessDefinitionKey() {
         return processDefinitionKey;
-    }
-
-    public List<String> getSubtitles() {
-        return subtitles;
     }
 }

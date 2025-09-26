@@ -54,11 +54,6 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
                 startable_by_user
             FROM
                 camunda_process_json_schema_document_definition
-            WHERE
-            	camunda_process_definition_key in (
-            		select distinct key_
-            		from act_re_procdef
-            	)
         """.trimIndent()
         val statement = connection.prepareStatement(linkQuery)
         val result = statement.executeQuery()
@@ -250,10 +245,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
     ): UUID? {
         return if (database.databaseProductName == "MySQL") {
             val bytesResult = results.getBytes(columnName)
-            bytesResult?.let {
-                val byteBuffer = ByteBuffer.wrap(it)
-                UUID(byteBuffer.long, byteBuffer.long)
-            }
+            bytesResult?.let { UUID.nameUUIDFromBytes(it) }
         } else {
             val stringResult = results.getString(columnName)
             stringResult?.let { UUID.fromString(it) }
@@ -996,7 +988,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             join act_re_procdef pd on pd.id_ = pdcd.process_definition_id
             where pdcd.case_definition_key = ?
             and pdcd.case_definition_version_tag = ?
-            and pd.key_ = ?
+            and pd.name_ = ?
         """.trimIndent()
 
         val statement = connection.prepareStatement(existingProcDefQuery)
@@ -1014,30 +1006,29 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         val referencedProcesses = mutableListOf<String>()
         val referencedDecisions = mutableListOf<String>()
 
-        bpmnModel.getDefinitions().getChildElementsByType<Process?>(Process::class.java).forEach { process: Process? ->
-            process!!.setOperatonVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
-        }
-
-        bpmnModel.getModelElementsByType<CallActivity>(CallActivity::class.java).forEach {callActivity ->
-            val elementBinding = callActivity.getOperatonCalledElementBinding()
-            // when the element binding is null, it means it's set to latest
-            if (elementBinding == null || callActivity.operatonCalledElementVersionTag?.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
-                callActivity.setOperatonCalledElementBinding("versionTag")
-                callActivity.setOperatonCalledElementVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
-                referencedProcesses.add(callActivity.calledElement)
+        bpmnModel.getDefinitions().getChildElementsByType<Process?>(Process::class.java).forEach(
+            Consumer { process: Process? ->
+                process!!.setOperatonVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
+                process.getChildElementsByType<CallActivity>(CallActivity::class.java).forEach {callActivity ->
+                    val elementBinding = callActivity.getOperatonCalledElementBinding()
+                    // when the element binding is null, it means it's set to latest
+                    if (elementBinding == null) {
+                        callActivity.setOperatonCalledElementBinding("versionTag")
+                        callActivity.setOperatonCalledElementVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
+                        referencedProcesses.add(callActivity.calledElement)
+                    }
+                }
+                process.getChildElementsByType(BusinessRuleTask::class.java).forEach { businessRuleTask ->
+                    val elementBinding = businessRuleTask.getOperatonDecisionRefBinding()
+                    // when the element binding is null, it means it's set to latest
+                    if (elementBinding == null) {
+                        businessRuleTask.setOperatonDecisionRefBinding("versionTag")
+                        businessRuleTask.setOperatonDecisionRefVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
+                        referencedDecisions.add(businessRuleTask.operatonDecisionRef)
+                    }
+                }
             }
-        }
-
-        bpmnModel.getModelElementsByType(BusinessRuleTask::class.java).forEach { businessRuleTask ->
-            val elementBinding = businessRuleTask.getOperatonDecisionRefBinding()
-            // when the element binding is null, it means it's set to latest
-            if (elementBinding == null || businessRuleTask.operatonDecisionRefVersionTag?.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
-                businessRuleTask.setOperatonDecisionRefBinding("versionTag")
-                businessRuleTask.setOperatonDecisionRefVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
-                referencedDecisions.add(businessRuleTask.operatonDecisionRef)
-            }
-        }
-
+        )
         return ReferencedEntities(referencedProcesses, referencedDecisions)
     }
 
@@ -1064,12 +1055,12 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
     data class ProcessDefinition(
         val id: String,
         val rev: Int,
-        val category: String?,
-        val name: String?,
+        val category: String,
+        val name: String,
         val key: String,
         val version: Int,
         val deploymentId: String,
-        val resourceName: String?,
+        val resourceName: String,
         val dgrmResourceName: String?,
         val hasStartFormKey: Boolean,
         val suspensionState: Int,
@@ -1092,7 +1083,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
     data class CamundaByteArray(
         val id: String,
         val rev: Int,
-        val name: String?,
+        val name: String,
         val deploymentId: String?,
         val bytes: ByteArray,
         val generated: Boolean?,
@@ -1138,7 +1129,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         val id: String,
         val rev: Int,
         val category: String?,
-        val name: String?,
+        val name: String,
         val key: String,
         val version: Int,
         val deploymentId: String,

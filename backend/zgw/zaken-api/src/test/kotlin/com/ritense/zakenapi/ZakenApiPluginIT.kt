@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.catalogiapi.CatalogiApiAuthentication
-import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.domain.PluginConfiguration
@@ -34,7 +33,6 @@ import com.ritense.processdocument.service.impl.result.NewDocumentAndStartProces
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.resource.Resource
 import com.ritense.zakenapi.domain.CreateZaakRequest
-import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zgw.Rsin
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -49,12 +47,10 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
@@ -102,28 +98,25 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         sleep(2000) // Needed to fix connection refused error
 
         // Since we do not have an actual authentication plugin in this context we will mock one
-        val mockedId = PluginConfigurationId.existingId(UUID.fromString(AUTHENTICATION_PLUGIN_ID))
-        doReturn(Optional.of(mock<PluginConfiguration>()))
-            .whenever(pluginConfigurationRepository).findById(mockedId)
-        doReturn(TestAuthentication())
-            .whenever(pluginService).createInstance(mockedId)
-        doCallRealMethod()
-            .whenever(pluginService).createPluginConfiguration(any(), any(), any())
+        val mockedId = PluginConfigurationId.existingId(UUID.fromString("27a399c7-9d70-4833-a651-57664e2e9e09"))
+        doReturn(Optional.of(mock<PluginConfiguration>())).whenever(pluginConfigurationRepository).findById(mockedId)
+        doReturn(TestAuthentication()).whenever(pluginService).createInstance(mockedId)
+        doCallRealMethod().whenever(pluginService).createPluginConfiguration(any(), any(), any())
 
         // Setting up plugin
         val pluginPropertiesJson = """
             {
-              "url": "${server.url("${ZAKEN_API_PATH}/")}",
-              "authenticationPluginConfiguration": "$AUTHENTICATION_PLUGIN_ID"
+              "url": "${server.url("/")}",
+              "authenticationPluginConfiguration": "27a399c7-9d70-4833-a651-57664e2e9e09"
             }
         """.trimIndent()
 
         val configuration = pluginService.createPluginConfiguration(
-            title = "Zaken API plugin configuration",
-            properties = objectMapper.readTree(
+            "Zaken API plugin configuration",
+            objectMapper.readTree(
                 pluginPropertiesJson
             ) as ObjectNode,
-            pluginDefinitionKey = "zakenapi"
+            "zakenapi"
         )
 
         val actionPropertiesJson = """
@@ -160,77 +153,78 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
     @Test
     fun `should create zaak with uiterlijkeEinddatumAfdoening`() {
-        val zakenApiPlugin = zakenApiPlugin()
-        val document = createDocument()
+        val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
+        val document = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    DOCUMENT_DEFINITION_KEY,
+                    "profile",
+                    "1.0.0",
+                    objectMapper.createObjectNode()
+                )
+            ).resultingDocument().get()
+        }
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
-            rsin = Rsin("155539620"),
-            zaaktypeUrl = ZAAKTYPE_URL
+            document.id().id,
+            Rsin("155539620"),
+            URI("http://localhost:56273/catalogi/my-zaaktype-id")
         )
 
-        val requestBody = createZaakRequestBody()
+        val requestBody = getRequestBody(POST, "/zaken/zaken", CreateZaakRequest::class.java)
         assertEquals(requestBody.uiterlijkeEinddatumAfdoening, LocalDate.now().plusDays(84))
     }
 
     @Test
     fun `should create zaak with description and plannedEndDate`() {
-        val zakenApiPlugin = zakenApiPlugin()
-        val document = createDocument()
+        val zakenApiPlugin = pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
+        val document = runWithoutAuthorization {
+            documentService.createDocument(
+                NewDocumentRequest(
+                    DOCUMENT_DEFINITION_KEY,
+                    "profile",
+                    "1.0.0",
+                    objectMapper.createObjectNode()
+                )
+            ).resultingDocument().get()
+        }
         val description = "omschrijving"
         val plannedEndDate = LocalDate.now().plusDays(10)
 
         zakenApiPlugin.createZaak(
-            documentId = document.id().id,
-            rsin = Rsin("155539620"),
-            zaaktypeUrl = ZAAKTYPE_URL,
-            description = description,
-            plannedEndDate = plannedEndDate,
-            finalDeliveryDate = null
+            document.id().id,
+            Rsin("155539620"),
+            URI("http://localhost:56273/catalogi/my-zaaktype-id"),
+            description,
+            plannedEndDate,
+            null
         )
 
-        val requestBody = createZaakRequestBody()
+        val requestBody = getRequestBody(POST, "/zaken/zaken", CreateZaakRequest::class.java)
         assertEquals(requestBody.omschrijving, description)
         assertEquals(requestBody.einddatumGepland, plannedEndDate)
     }
 
-    private fun createZaakRequestBody() =
-        getRequestBody(POST, "${ZAKEN_API_PATH}/zaken", CreateZaakRequest::class.java)
-
-    @Test
-    fun `should patch zaak with description and finalDeliveryDate`() {
-        // given
-        val zakenApiPlugin = zakenApiPlugin()
-        val document = createDocument()
-
-        zakenApiPlugin.createZaak(
-            documentId = document.id().id,
-            rsin = Rsin("155539620"),
-            zaaktypeUrl = ZAAKTYPE_URL,
-        )
-
-        val description = "omschrijving na patch"
-        val finalDeliveryDate = LocalDate.now().plusDays(10)
-
-        // when
-        zakenApiPlugin.patchZaak(
-            documentId = document.id().id,
-            description = description,
-            finalDeliveryDate = finalDeliveryDate
-        )
-
-        val requestBody = getRequestBody(PATCH, "${ZAKEN_API_PATH}/zaken/$ZAAK_ID", PatchZaakRequest::class.java)
-        assertEquals(requestBody.omschrijving, description)
-        assertEquals(requestBody.uiterlijkeEinddatumAfdoening, finalDeliveryDate)
-    }
-
     @Test
     fun `should link document to zaak`() {
-        val newDocumentRequest = newDocumentRequest()
+        val newDocumentRequest = NewDocumentRequest(
+            DOCUMENT_DEFINITION_KEY,
+            "profile",
+            "1.0.0",
+            objectMapper.createObjectNode()
+        )
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
 
         // Make a record in the database about a document that is matched to the open zaak
-        setupResourceMock()
+        val resource = mock<Resource>()
+        whenever(resource.id()).thenReturn(UUID.randomUUID())
+        whenever(resource.name()).thenReturn("name")
+        whenever(resource.sizeInBytes()).thenReturn(1L)
+        whenever(resource.extension()).thenReturn("ext")
+        whenever(resource.createdOn()).thenReturn(LocalDateTime.now())
+
+        whenever(resourceService.getResource(resource.id())).thenReturn(resource)
+        whenever(resourceProvider.getResource(any())).thenReturn(resource)
 
         // Start the process
         val response = runWithoutAuthorization { procesDocumentService.newDocumentAndStartProcess(request) }
@@ -257,11 +251,24 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
     @Test
     fun `should link uploaded document to zaak`() {
-        val newDocumentRequest = newDocumentRequest()
+        val newDocumentRequest = NewDocumentRequest(
+            DOCUMENT_DEFINITION_KEY,
+            "profile",
+            "1.0.0",
+            objectMapper.createObjectNode()
+        )
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
 
         // Make a record in1 the database about a document that is matched to the open zaak
-        setupResourceMock()
+        val resource = mock<Resource>()
+        whenever(resource.id()).thenReturn(UUID.randomUUID())
+        whenever(resource.name()).thenReturn("name")
+        whenever(resource.sizeInBytes()).thenReturn(1L)
+        whenever(resource.extension()).thenReturn("ext")
+        whenever(resource.createdOn()).thenReturn(LocalDateTime.now())
+
+        whenever(resourceService.getResource(resource.id())).thenReturn(resource)
+        whenever(resourceProvider.getResource(any())).thenReturn(resource)
 
         // Start the process
         val response = runWithoutAuthorization { procesDocumentService.newDocumentAndStartProcess(request) }
@@ -286,59 +293,17 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         assertNotNull(runWithoutAuthorization { documentService.get(processDocumentId.toString()) })
     }
 
-    private fun setupResourceMock() {
-        val resource = mock<Resource>()
-        whenever(resource.id())
-            .thenReturn(UUID.randomUUID())
-        whenever(resource.name())
-            .thenReturn("name")
-        whenever(resource.sizeInBytes())
-            .thenReturn(1L)
-        whenever(resource.extension())
-            .thenReturn("ext")
-        whenever(resource.createdOn())
-            .thenReturn(LocalDateTime.now())
-
-        whenever(resourceService.getResource(eq(resource.id())))
-            .thenReturn(resource)
-        whenever(resourceProvider.getResource(any()))
-            .thenReturn(resource)
-    }
-
-    private fun zakenApiPlugin() =
-        pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
-
-    private fun createDocument(): Document =
-        runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
-                    objectMapper.createObjectNode()
-                )
-            ).resultingDocument().get()
-        }
-
-    private fun newDocumentRequest() = NewDocumentRequest(
-        DOCUMENT_DEFINITION_KEY,
-        "profile",
-        "1.0.0",
-        objectMapper.createObjectNode()
-    )
-
     private fun setupMockZakenApiServer() {
         val dispatcher: Dispatcher = object : Dispatcher() {
             @Throws(InterruptedException::class)
             override fun dispatch(request: RecordedRequest): MockResponse {
                 executedRequests.add(request)
                 val response = when (request.method + " " + request.path?.substringBefore('?')) {
-                    "GET ${CATALOGI_API_PATH}/zaaktypen/${ZAAKTYPE_ID}" -> zaaktypeResponse()
-                    "GET ${CATALOGI_API_PATH}/informatieobjecttypen" -> MockResponse().setResponseCode(200)
-                    "POST ${ZAKEN_API_PATH}/zaakinformatieobjecten" -> handleZaakInformatieObjectRequest()
-                    "GET ${ZAKEN_API_PATH}/zaakinformatieobjecten" -> mockResponse("[]")
-                    "POST ${ZAKEN_API_PATH}/zaken" -> zaakResponse()
-                    "PATCH ${ZAKEN_API_PATH}/zaken/${ZAAK_ID}" -> zaakResponse()
+                    "POST /zaakinformatieobjecten" -> handleZaakInformatieObjectRequest()
+                    "GET /zaakinformatieobjecten" -> mockResponse("[]")
+                    "GET /catalogi/my-zaaktype-id" -> getZaaktypeResponse()
+                    "POST /zaken/zaken" -> createZaakResponse()
+                    "GET /catalogi/informatieobjecttypen?status=definitief&page=1" -> MockResponse().setResponseCode(200)
                     else -> MockResponse().setResponseCode(404)
                 }
                 return response
@@ -354,7 +319,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
               "url": "http://example.com",
               "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
               "informatieobject": "$INFORMATIE_OBJECT_URL",
-              "zaak": "$ZAAK_URL",
+              "zaak": "http://example.com",
               "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
               "titel": "string",
               "beschrijving": "string",
@@ -364,16 +329,16 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         return mockResponse(body)
     }
 
-    private fun zaakResponse(): MockResponse {
+    private fun createZaakResponse(): MockResponse {
         val body = """
             {
-                "url": "$ZAAK_URL",
-                "uuid": "$ZAAK_ID",
+                "url": "http://localhost/zaken/api/v1/zaken/95b9a6a8-978c-40f7-93d0-eb4b46597355",
+                "uuid": "95b9a6a8-978c-40f7-93d0-eb4b46597355",
                 "identificatie": "ZAAK-2023-0000000001",
                 "bronorganisatie": "419071349",
                 "omschrijving": "",
                 "toelichting": "",
-                "zaaktype": "$ZAAKTYPE_URL",
+                "zaaktype": "http://localhost/catalogi/api/v1/zaaktypen/744ca059-f412-49d4-8963-5800e4afd486",
                 "registratiedatum": "2024-02-13",
                 "verantwoordelijkeOrganisatie": "420936440",
                 "startdatum": "2023-01-23",
@@ -410,10 +375,10 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         return mockResponse(body)
     }
 
-    private fun zaaktypeResponse(): MockResponse {
+    private fun getZaaktypeResponse(): MockResponse {
         val body = """
             {
-                "url": "$ZAAKTYPE_URL",
+                "url": "http://localhost/catalogi/api/v1/zaaktypen/744ca059-f412-49d4-8963-5800e4afd486",
                 "identificatie": "example-case",
                 "omschrijving": "Example case",
                 "omschrijvingGeneriek": "Example case",
@@ -444,19 +409,19 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
                     "naam": "Example case",
                     "link": "http://ritense.com"
                 },
-                "catalogus": "${CATALOGI_API_URL}catalogussen/8225508a-6840-413e-acc9-6422af120db1",
+                "catalogus": "http://localhost/catalogi/api/v1/catalogussen/8225508a-6840-413e-acc9-6422af120db1",
                 "statustypen": [
-                    "${CATALOGI_API_URL}statustypen/12345678-3f25-4716-5432-49ea8e954fd0"
+                    "http://localhost/catalogi/api/v1/statustypen/12345678-3f25-4716-5432-49ea8e954fd0"
                 ],
                 "resultaattypen": [],
                 "eigenschappen": [
-                    "${CATALOGI_API_URL}eigenschappen/12345678-b04b-424b-ab02-c4102b562633"
+                    "http://localhost/catalogi/api/v1/eigenschappen/12345678-b04b-424b-ab02-c4102b562633"
                 ],
                 "informatieobjecttypen": [
-                    "${CATALOGI_API_URL}informatieobjecttypen/12345678-be3b-4bad-9e3c-49a6219c92ad"
+                    "http://localhost/catalogi/api/v1/informatieobjecttypen/12345678-be3b-4bad-9e3c-49a6219c92ad"
                 ],
                 "roltypen": [
-                    "${CATALOGI_API_URL}roltypen/12345678-c38d-47b8-bed5-994db88ead61"
+                    "http://localhost/catalogi/api/v1/roltypen/12345678-c38d-47b8-bed5-994db88ead61"
                 ],
                 "besluittypen": [],
                 "deelzaaktypen": [],
@@ -497,17 +462,6 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
         private const val DOCUMENT_DEFINITION_KEY = "profile"
         private const val INFORMATIE_OBJECT_URL = "http://informatie.object.url"
         private const val ZAKEN_API_PLUGIN_ID = "3079d6fe-42e3-4f8f-a9db-52ce2507b7ee"
-        private const val AUTHENTICATION_PLUGIN_ID = "27a399c7-9d70-4833-a651-57664e2e9e09"
-
-        private const val ZAAKTYPE_ID = "21c0946a-9058-11ee-b9d1-0242ac120002"
-        private const val ZAAK_ID = "57f66ff6-db7f-43bc-84ef-6847640d3609"
-
-        private const val CATALOGI_API_PATH = "/catalogi/api/v1"
-        private const val CATALOGI_API_URL = "http://localhost:56273$CATALOGI_API_PATH"
-        private const val ZAKEN_API_PATH = "/zaken/api/v1"
-        private const val ZAKEN_API_URL = "http://localhost:56273$ZAKEN_API_PATH"
-
-        private val ZAAKTYPE_URL = URI("${CATALOGI_API_URL}/zaaktypen/$ZAAKTYPE_ID")
-        private val ZAAK_URL = URI("${ZAKEN_API_URL}/zaken/$ZAAK_ID")
+        private val ZAAK_URL = URI("http://localhost:56273/zaken/57f66ff6-db7f-43bc-84ef-6847640d3609")
     }
 }

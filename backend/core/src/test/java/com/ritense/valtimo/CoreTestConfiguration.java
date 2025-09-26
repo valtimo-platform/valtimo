@@ -19,7 +19,6 @@ package com.ritense.valtimo;
 import static org.mockito.Mockito.mock;
 
 import com.ritense.authorization.AuthorizationService;
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation;
 import com.ritense.valtimo.operaton.authorization.UnauthorizedProcessBean;
 import com.ritense.valtimo.contract.annotation.ProcessBean;
 import com.ritense.valtimo.contract.mail.MailSender;
@@ -38,11 +37,6 @@ public class CoreTestConfiguration {
 
     @TestConfiguration
     public static class TestConfig {
-
-        @Bean
-        public LiquibaseMasterChangeLogLocation coreTestLiquibaseMasterChangeLogLocation() {
-            return new LiquibaseMasterChangeLogLocation("config/liquibase/core-test-only-master.xml");
-        }
 
         @Bean
         public FakeUserRepository fakeUserRepository() {

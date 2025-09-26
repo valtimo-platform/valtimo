@@ -43,7 +43,7 @@ class OperatonIdentityLinkSpecification(
         val predicates = permissions
             .filter { permission ->
                 OperatonIdentityLink::class.java == permission.resourceType
-                    && permission.actions.contains(authRequest.action)
+                    && authRequest.action == permission.action
             }
             .map { permission ->
                 permission.toPredicate(

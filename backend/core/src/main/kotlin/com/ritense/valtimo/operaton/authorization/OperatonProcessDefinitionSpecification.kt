@@ -41,7 +41,7 @@ class OperatonProcessDefinitionSpecification(
         val predicates = permissions
             .filter { permission ->
                 OperatonProcessDefinition::class.java == permission.resourceType
-                    && permission.actions.contains(authRequest.action)
+                    && authRequest.action == permission.action
             }
             .map { permission ->
                 permission.toPredicate(

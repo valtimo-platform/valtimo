@@ -34,10 +34,8 @@ import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.Vertrouwelijkheid
 import org.apache.commons.io.IOUtils
@@ -65,8 +63,6 @@ internal class DocumentenApiPluginTest {
 
     lateinit var pluginService: PluginService
     lateinit var client: DocumentenApiClient
-    lateinit var runtimeService: OperatonRuntimeService
-
 
     @BeforeEach
     fun setUp() {
@@ -86,7 +82,6 @@ internal class DocumentenApiPluginTest {
         whenever(pluginService.findPluginConfiguration(any(), any())).thenReturn(pluginConfiguration)
 
         client = mock()
-        runtimeService = mock()
     }
 
     @Test
@@ -124,8 +119,7 @@ internal class DocumentenApiPluginTest {
             objectMapper,
             mutableListOf(),
             documentenApiVersionService,
-            pluginService,
-            runtimeService,
+            pluginService
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -246,8 +240,7 @@ internal class DocumentenApiPluginTest {
             MapperSingleton.get(),
             mutableListOf(),
             documentenApiVersionService,
-            pluginService,
-            runtimeService,
+            pluginService
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -320,8 +313,7 @@ internal class DocumentenApiPluginTest {
             MapperSingleton.get(),
             listOf(),
             documentenApiVersionService,
-            pluginService,
-            runtimeService,
+            pluginService
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -376,8 +368,7 @@ internal class DocumentenApiPluginTest {
             MapperSingleton.get(),
             listOf(),
             documentenApiVersionService,
-            pluginService,
-            runtimeService,
+            pluginService
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
@@ -408,8 +399,7 @@ internal class DocumentenApiPluginTest {
             MapperSingleton.get(),
             listOf(),
             documentenApiVersionService,
-            pluginService,
-            runtimeService,
+            pluginService
         )
         plugin.url = URI("http://some-url")
         plugin.bronorganisatie = "123456789"
