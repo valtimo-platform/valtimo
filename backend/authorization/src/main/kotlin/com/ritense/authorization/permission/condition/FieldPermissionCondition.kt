@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,31 +18,29 @@ package com.ritense.authorization.permission.condition
 
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.annotation.JsonView
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.ritense.authorization.jackson.ComparableDeserializer
 import com.ritense.authorization.permission.PermissionView
 import com.ritense.authorization.permission.condition.FieldPermissionCondition.Companion.FIELD
-import com.ritense.valtimo.contract.authorization.CurrentUserExpressionHandler
 import com.ritense.valtimo.contract.database.QueryDialectHelper
-import jakarta.persistence.criteria.AbstractQuery
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.Predicate
-import jakarta.persistence.criteria.Root
+import javax.persistence.criteria.AbstractQuery
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
 
 @JsonTypeName(FIELD)
-data class FieldPermissionCondition<V>(
+data class FieldPermissionCondition<V : Comparable<V>>(
     @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
     val field: String,
     @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
     val operator: PermissionConditionOperator,
     @field:JsonView(value = [PermissionView.RoleManagement::class, PermissionView.PermissionManagement::class])
-    val value: V? = null,
+    @JsonDeserialize(using = ComparableDeserializer::class)
+    val value: V?
 ) : ReflectingPermissionCondition(PermissionConditionType.FIELD) {
-    init {
-        require(value == null || value is Comparable<*> || value is List<*>)
-    }
-
     override fun <T : Any> isValid(entity: T): Boolean {
         val fieldValue = findEntityFieldValue(entity, field)
-        val resolvedValue = resolveValue()
+        val resolvedValue = PermissionConditionValueResolver.resolveValue(this.value)
         return operator.evaluate(fieldValue, resolvedValue)
     }
 
@@ -54,19 +52,9 @@ data class FieldPermissionCondition<V>(
         queryDialectHelper: QueryDialectHelper
     ): Predicate {
         val path = createDatabaseObjectPath(field, root)!!
-        val resolvedValue = resolveValue()
+        val resolvedValue = PermissionConditionValueResolver.resolveValue(this.value)
 
         return operator.toPredicate<Comparable<Any>>(criteriaBuilder, path, resolvedValue)
-    }
-
-    private fun resolveValue(): Any? {
-        return if (this.value is List<*>) {
-            this.value.map {
-                CurrentUserExpressionHandler.resolveValue(it)
-            }
-        } else {
-            CurrentUserExpressionHandler.resolveValue(this.value)
-        }
     }
 
     companion object {

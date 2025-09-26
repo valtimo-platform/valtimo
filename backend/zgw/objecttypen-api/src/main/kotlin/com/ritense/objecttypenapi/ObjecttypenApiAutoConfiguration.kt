@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,25 @@ package com.ritense.objecttypenapi
 
 import com.ritense.objecttypenapi.client.ObjecttypenApiClient
 import com.ritense.plugin.service.PluginService
-import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
-import org.springframework.web.client.RestClient
+import org.springframework.context.annotation.Configuration
+import org.springframework.web.reactive.function.client.WebClient
 
-@AutoConfiguration
+@Configuration
 class ObjecttypenApiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ObjecttypenApiClient::class)
-    fun objecttypenApiClient(restClientBuilder: RestClient.Builder) = ObjecttypenApiClient(restClientBuilder)
+    fun objecttypenApiClient(webclientBuilder: WebClient.Builder): ObjecttypenApiClient {
+        return ObjecttypenApiClient(webclientBuilder)
+    }
 
     @Bean
     fun objecttypenApiPluginFactory(
         pluginService: PluginService,
         objecttypenApiClient: ObjecttypenApiClient
-    ) = ObjecttypenApiPluginFactory(
-        pluginService,
-        objecttypenApiClient
-    )
+    ): ObjecttypenApiPluginFactory {
+        return ObjecttypenApiPluginFactory(pluginService, objecttypenApiClient)
+    }
 }

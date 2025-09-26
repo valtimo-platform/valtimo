@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package com.ritense.form.web.rest.impl;
 
 import com.ritense.form.web.rest.FormFileResource;
-import com.ritense.logging.LoggableResource;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.resource.Resource;
 import org.springframework.http.MediaType;
@@ -41,7 +40,7 @@ public class FormIoFormFileResource implements FormFileResource {
     @Override
     @PostMapping(value = "/v1/form-file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<? extends Resource> uploadFile(
-        @LoggableResource(resourceTypeName = "jsonSchemaDocumentName") @RequestParam("documentDefinitionName") String documentDefinitionName,
+        @RequestParam("documentDefinitionName") String documentDefinitionName,
         @RequestParam("name") String fileName,
         @RequestParam("file") MultipartFile file
     ) {

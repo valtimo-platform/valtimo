@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,43 +17,33 @@
 package com.ritense.objecttypenapi.client
 
 import com.ritense.objecttypenapi.ObjecttypenApiAuthentication
-import org.springframework.web.client.RestClient
-import org.springframework.web.client.body
+import org.springframework.web.reactive.function.client.WebClient
 import java.net.URI
 
 class ObjecttypenApiClient(
-    private val restClientBuilder: RestClient.Builder,
+    private val webclientBuilder: WebClient.Builder
 ) {
+
 
     fun getObjecttype(
         authentication: ObjecttypenApiAuthentication,
         objecttypeUrl: URI
     ): Objecttype {
-        return restClientBuilder
+        val url = if (objecttypeUrl.host == "host.docker.internal") {
+            URI.create(objecttypeUrl.toString().replace("host.docker.internal", "localhost"))
+        } else {
+            objecttypeUrl
+        }
+        val result = webclientBuilder
             .clone()
-            .apply {
-                authentication.applyAuth(it)
-            }
+            .filter(authentication)
             .build()
             .get()
-            .uri(objecttypeUrl)
+            .uri(url)
             .retrieve()
-            .body(Objecttype::class.java)!!
-    }
+            .toEntity(Objecttype::class.java)
+            .block()
 
-    fun getObjecttypes(
-        authentication: ObjecttypenApiAuthentication,
-        objecttypesUrl: URI
-    ): List<Objecttype> {
-        return restClientBuilder
-            .clone()
-            .apply {
-                authentication.applyAuth(it)
-            }
-            .build()
-            .get()
-            .uri(objecttypesUrl)
-            .retrieve()
-            .body<List<Objecttype>>()!!
+        return result?.body!!
     }
 }

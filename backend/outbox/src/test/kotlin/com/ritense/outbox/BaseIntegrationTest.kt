@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +17,25 @@
 package com.ritense.outbox
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.outbox.config.condition.OnOutboxEnabledCondition
 import com.ritense.outbox.publisher.MessagePublisher
-import com.ritense.outbox.repository.OutboxMessageRepository
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
-@SpringBootTest(properties = ["${OnOutboxEnabledCondition.PROPERTY_NAME}=true"])
+@SpringBootTest
 @ExtendWith(SpringExtension::class)
 @Tag("integration")
 class BaseIntegrationTest {
 
-    @MockitoBean
+    @MockBean
     lateinit var messagePublisher: MessagePublisher
 
-    @MockitoSpyBean
+    @SpyBean
     lateinit var outboxMessageRepository: OutboxMessageRepository
 
     @Autowired

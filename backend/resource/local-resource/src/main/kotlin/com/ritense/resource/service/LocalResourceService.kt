@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,62 +29,66 @@ import java.util.UUID
 class LocalResourceService : ResourceService {
 
     override fun store(key: String, multipartFile: MultipartFile): Resource {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun store(key: String, multipartFile: MultipartFile, fileStatus: FileStatus): Resource {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun store(documentDefinitionName: String, name: String, multipartFile: MultipartFile): Resource {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun store(key: String, fileUploadRequest: FileUploadRequest): Resource {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun store(key: String, fileUploadRequest: FileUploadRequest, fileStatus: FileStatus): Resource {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun getResourceUrl(id: UUID): ObjectUrlDTO {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun getResourceUrl(fileName: String): URL {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun getResourceContent(id: UUID): ObjectContentDTO {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun removeResource(id: UUID) {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun removeResource(key: String) {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun registerResource(resourceDTO: ResourceDTO): ResourceDTO {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun getResource(id: UUID): Resource {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun getResourceByKey(fileName: String): Resource {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun activate(id: UUID) {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
     }
 
     override fun pending(id: UUID) {
-        throw NotImplementedError()
+        TODO(NOT_YET_IMPLEMENTED_MSG)
+    }
+
+    companion object {
+        private const val NOT_YET_IMPLEMENTED_MSG = "Not yet implemented"
     }
 }

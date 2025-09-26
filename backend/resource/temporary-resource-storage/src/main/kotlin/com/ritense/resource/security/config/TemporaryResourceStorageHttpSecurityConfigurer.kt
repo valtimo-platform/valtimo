@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,15 @@ package com.ritense.resource.security.config
 
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
-import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class TemporaryResourceStorageHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
-            http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(POST, "/api/v1/resource/temp")).authenticated()
-                requests.requestMatchers(antMatcher(GET, "/api/v1/resource-storage/{resourceStorageFieldId}/metadata/{metadataKey}")).authenticated()
-            }
+            http.authorizeRequests()
+                .antMatchers(POST, "/api/v1/resource/temp").authenticated()
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
         }

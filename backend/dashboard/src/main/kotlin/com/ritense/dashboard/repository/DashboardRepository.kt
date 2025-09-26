@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@ package com.ritense.dashboard.repository
 
 import com.ritense.dashboard.domain.Dashboard
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Repository
 
 @Repository
-interface DashboardRepository : JpaRepository<Dashboard, String>, JpaSpecificationExecutor<Dashboard> {
+interface DashboardRepository : JpaRepository<Dashboard, String> {
 
     fun findAllByOrderByOrder(): List<Dashboard>
 

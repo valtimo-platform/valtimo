@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 
 dependencies {
-    api project(':inbox')
-
     implementation project(':contract')
-    implementation project(':logging')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
+    api "javax.inject:javax.inject:${javaxInjectVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-web"
@@ -31,7 +29,6 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-validation"
 
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "com.fasterxml.jackson.module:jackson-module-blackbird"
     implementation "com.fasterxml.jackson.module:jackson-module-parameter-names"
     implementation "com.fasterxml.jackson.module:jackson-module-jaxb-annotations"
@@ -40,7 +37,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
@@ -51,7 +48,9 @@ dependencies {
 
     api "com.google.guava:guava:${guavaVersion}"
 
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-api:${springDocVersion}"
+    implementation "org.springdoc:springdoc-openapi-webmvc-core:${springDocVersion}"
+    implementation "org.springdoc:springdoc-openapi-kotlin:${springDocVersion}"
+    implementation "org.springdoc:springdoc-openapi-security:${springDocVersion}"
 
     implementation "org.zalando:problem-spring-web:${problemSpringWebVersion}"
     implementation "org.zalando:jackson-datatype-problem:${jacksonDatatypeProblemVersion}"

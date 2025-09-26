@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,9 @@
 package com.ritense.formflow.domain
 
 import com.ritense.formflow.BaseIntegrationTest
-import com.ritense.formflow.domain.definition.FormFlowDefinitionId
 import com.ritense.formflow.domain.instance.FormFlowInstance
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.repository.FormFlowInstanceRepository
-import com.ritense.formflow.service.FormFlowService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -40,14 +37,10 @@ internal class FormFlowInstanceIT : BaseIntegrationTest() {
     @Autowired
     lateinit var formFlowDefinitionRepository: FormFlowDefinitionRepository
 
-    @Autowired
-    lateinit var formFlowService: FormFlowService
-
     @Test
     fun `create form flow instance successfully`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val formFlowDefinition =
-            formFlowDefinitionRepository.getReferenceById(FormFlowDefinitionId("inkomens_loket" ,caseDefinitionId))
+            formFlowDefinitionRepository.findFirstByIdKeyOrderByIdVersionDesc("inkomens_loket")
 
         val formFlowInstance = FormFlowInstance(
             formFlowDefinition = formFlowDefinition!!
@@ -61,9 +54,8 @@ internal class FormFlowInstanceIT : BaseIntegrationTest() {
 
     @Test
     fun `update form flow instance successfully`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val formFlowDefinition =
-            formFlowDefinitionRepository.getReferenceById(FormFlowDefinitionId("inkomens_loket" ,caseDefinitionId))
+            formFlowDefinitionRepository.findFirstByIdKeyOrderByIdVersionDesc("inkomens_loket")
 
         val formFlowInstance = FormFlowInstance(
             formFlowDefinition = formFlowDefinition!!
@@ -82,9 +74,8 @@ internal class FormFlowInstanceIT : BaseIntegrationTest() {
 
     @Test
     fun `complete goes through the entire flow`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val formFlowDefinition =
-            formFlowDefinitionRepository.getReferenceById(FormFlowDefinitionId("inkomens_loket" ,caseDefinitionId))
+            formFlowDefinitionRepository.findFirstByIdKeyOrderByIdVersionDesc("inkomens_loket")
         val submissionData = """
             {
                 "inkomen": {
@@ -120,9 +111,8 @@ internal class FormFlowInstanceIT : BaseIntegrationTest() {
 
     @Test
     fun `complete goes through the entire flow, back and then through again`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val formFlowDefinition =
-            formFlowDefinitionRepository.getReferenceById(FormFlowDefinitionId("inkomens_loket" ,caseDefinitionId))
+            formFlowDefinitionRepository.findFirstByIdKeyOrderByIdVersionDesc("inkomens_loket")
         val submissionData = """
             {
                 "inkomen": {
@@ -173,9 +163,8 @@ internal class FormFlowInstanceIT : BaseIntegrationTest() {
 
     @Test
     fun `navigate to next step removes previous steps`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
         val formFlowDefinition =
-            formFlowDefinitionRepository.getReferenceById(FormFlowDefinitionId("inkomens_loket" ,caseDefinitionId))
+            formFlowDefinitionRepository.findFirstByIdKeyOrderByIdVersionDesc("inkomens_loket")
         val submissionData = """
             {
                 "inkomen": {
@@ -239,154 +228,5 @@ internal class FormFlowInstanceIT : BaseIntegrationTest() {
         storedInstance2.getHistory().forEach{
             assertEquals(it.submissionData, submissionData2.replace("[ \\n]".toRegex(), ""))
         }
-    }
-
-    @Test
-    fun `should partially override current step with newly submitted previous step`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        val formFlowDefinition = formFlowService.findDefinition("aandachtspunten", caseDefinitionId)
-        var formFlowInstance = FormFlowInstance(formFlowDefinition = formFlowDefinition!!)
-        formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        val submissionData1a = """
-            {
-                "aandachtspunten": [
-                    {
-                        "code": 1
-                    }
-                ]
-            }"""
-        formFlowInstance.getCurrentStep().open()
-        formFlowInstance.complete(formFlowInstance.currentFormFlowStepInstanceId!!, JSONObject(submissionData1a))
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        val submissionData2 = """
-            {
-                "aandachtspunten": [
-                    {
-                        "code": 1,
-                        "subdoelen": [
-                            {
-                                "code": "A"
-                            }
-                        ]
-                    }
-                ],
-                "voornaam": "Henk"
-            }"""
-        formFlowInstance.getCurrentStep().open()
-        formFlowInstance.saveTemporary(JSONObject(submissionData2))
-        formFlowInstance.back()
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        val submissionData1b = """
-            {
-                "aandachtspunten": [
-                    {
-                        "code": 1
-                    },
-                    {
-                        "code": 2
-                    }
-                ]
-            }"""
-        formFlowInstance.getCurrentStep().open()
-        formFlowInstance.complete(formFlowInstance.currentFormFlowStepInstanceId!!, JSONObject(submissionData1b))
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        assertEquals(
-            """{"aandachtspunten":[{"code":1},{"code":2}],"voornaam":"Henk"}""",
-            formFlowInstance.getSubmissionDataContext()
-        )
-    }
-
-    @Test
-    fun `should not override current step with newly submitted, but unchanged, previous step`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        val formFlowDefinition = formFlowService.findDefinition("aandachtspunten", caseDefinitionId)
-        var formFlowInstance = FormFlowInstance(formFlowDefinition = formFlowDefinition!!)
-        formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        val submissionData1a = """
-            {
-                "aandachtspunten": [
-                    {
-                        "code": 1
-                    }
-                ]
-            }"""
-        formFlowInstance.getCurrentStep().open()
-        formFlowInstance.complete(formFlowInstance.currentFormFlowStepInstanceId!!, JSONObject(submissionData1a))
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        val submissionData2 = """
-            {
-                "aandachtspunten": [
-                    {
-                        "code": 1,
-                        "subdoelen": [
-                            {
-                                "code": "A"
-                            }
-                        ]
-                    }
-                ],
-                "voornaam": "Henk"
-            }"""
-        formFlowInstance.getCurrentStep().open()
-        formFlowInstance.saveTemporary(JSONObject(submissionData2))
-        formFlowInstance.back()
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        val submissionData1b = """
-            {
-                "aandachtspunten": [
-                    {
-                        "code": 1
-                    }
-                ]
-            }"""
-        formFlowInstance.getCurrentStep().open()
-        formFlowInstance.complete(formFlowInstance.currentFormFlowStepInstanceId!!, JSONObject(submissionData1b))
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        assertEquals(
-            """{"aandachtspunten":[{"subdoelen":[{"code":"A"}],"code":1}],"voornaam":"Henk"}""",
-            formFlowInstance.getSubmissionDataContext()
-        )
-    }
-
-    @Test
-    fun `should set submissionData with SpEL expression`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        val formFlowDefinition =
-            formFlowDefinitionRepository.getReferenceById(FormFlowDefinitionId("form-flow-with-expressions" ,caseDefinitionId))
-        var formFlowInstance = FormFlowInstance(formFlowDefinition = formFlowDefinition!!)
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-
-        val submissionData = """{"firstName":"Asha","lastName":"Miller","person":{"birthDate":"1990"}}"""
-
-        formFlowInstance.getCurrentStep().open()
-        formFlowInstance.complete(formFlowInstance.currentFormFlowStepInstanceId!!, JSONObject(submissionData))
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-        assertEquals(
-            """{"firstName":"Henk","lastName":null,"person":{"birthDate":"1990","fullName":"Asha Miller"}}""",
-            formFlowInstance.getHistory()[0].submissionData
-        )
-
-        formFlowInstance.getCurrentStep().open()
-        assertEquals(
-            """{"person":{"username":"henkthebest"}}""",
-            formFlowInstance.getHistory()[1].submissionData
-        )
-
-        formFlowInstance.complete(formFlowInstance.currentFormFlowStepInstanceId!!, JSONObject(submissionData))
-        formFlowInstance = formFlowInstanceRepository.saveAndFlush(formFlowInstance)
-        assertNull(formFlowInstance.getHistory()[1].submissionData)
-
-        assertEquals(
-            """{"firstName":"Henk","lastName":null,"person":{"fullName":"Asha Miller","birthDate":"1990"}}""",
-            formFlowInstance.getSubmissionDataContext()
-        )
     }
 }

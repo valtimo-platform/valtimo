@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.objecttypenapi.client.Objecttype
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
@@ -53,11 +53,13 @@ internal class ZaakObjectResourceTest {
     lateinit var mockMvc: MockMvc
     lateinit var zaakObjectService: ZaakObjectService
     lateinit var zaakObjectResource: ZaakObjectResource
+    lateinit var pluginService: PluginService
 
     @BeforeEach
     fun init() {
         zaakObjectService = mock()
-        zaakObjectResource = ZaakObjectResource(zaakObjectService)
+        pluginService = mock()
+        zaakObjectResource = ZaakObjectResource(zaakObjectService, pluginService)
 
         mockMvc = MockMvcBuilders
             .standaloneSetup(zaakObjectResource)
@@ -151,7 +153,6 @@ internal class ZaakObjectResourceTest {
             formId,
             "form-name",
             "{\"content\":\"test\"}",
-            CaseDefinitionId("test", "1.0.0"),
             false
         )
 

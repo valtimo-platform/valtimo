@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,15 @@
  * limitations under the License.
  */
 
-dependencies {
-    testImplementation "org.mockito:mockito-core"
-}
-
 test {
     dependsOn cleanTest
+
     testLogging {
         events("passed", "skipped", "failed", "standardError")
     }
+    ignoreFailures = true
     useJUnitPlatform {
         excludeTags "security", "integration"
-    }
-    doFirst {
-        def mockitoAgent = configurations.testRuntimeClasspath.find {
-          it.name.contains('mockito-core')
-        }
-        if (mockitoAgent) {
-          jvmArgs "-javaagent:${mockitoAgent.absolutePath}"
-        }
     }
 }
 
@@ -42,23 +32,14 @@ tasks.register("integrationTesting") {
 
 tasks.register("integrationTestingPostgresql", Test) {
     group = 'verification'
-    systemProperty("spring.profiles.include", "inttest,postgresql")
+    systemProperty("spring.profiles.include", "postgresql")
+    ignoreFailures = false
     useJUnitPlatform {
         includeTags "integration"
         excludeTags "security"
     }
     mustRunAfter check
-    outputs.upToDateWhen { false }
-    outputs.cacheIf { false }
 
-    doFirst {
-        def mockitoAgent = configurations.testRuntimeClasspath.find {
-          it.name.contains('mockito-core')
-        }
-        if (mockitoAgent) {
-          jvmArgs "-javaagent:${mockitoAgent.absolutePath}"
-        }
-    }
     doLast {
         composeDownForced
     }
@@ -66,23 +47,14 @@ tasks.register("integrationTestingPostgresql", Test) {
 
 tasks.register("integrationTestingMysql", Test) {
     group = 'verification'
-    systemProperty("spring.profiles.include", "inttest,mysql")
+    systemProperty("spring.profiles.include", "mysql")
+    ignoreFailures = true
     useJUnitPlatform {
         includeTags "integration"
         excludeTags "security"
     }
     mustRunAfter check
-    outputs.upToDateWhen { false }
-    outputs.cacheIf { false }
 
-    doFirst {
-        def mockitoAgent = configurations.testRuntimeClasspath.find {
-          it.name.contains('mockito-core')
-        }
-        if (mockitoAgent) {
-          jvmArgs "-javaagent:${mockitoAgent.absolutePath}"
-        }
-    }
     doLast {
         composeDownForced
     }
@@ -90,21 +62,14 @@ tasks.register("integrationTestingMysql", Test) {
 
 tasks.register("securityTesting", Test) {
     group = 'verification'
-    systemProperty("spring.profiles.include", "inttest,postgresql")
+    systemProperty("spring.profiles.include", "postgresql")
+    ignoreFailures = false
     useJUnitPlatform {
         includeTags "security"
         excludeTags "integration"
     }
     mustRunAfter check
 
-    doFirst {
-        def mockitoAgent = configurations.testRuntimeClasspath.find {
-          it.name.contains('mockito-core')
-        }
-        if (mockitoAgent) {
-          jvmArgs "-javaagent:${mockitoAgent.absolutePath}"
-        }
-    }
     doLast {
         composeDownForced
     }

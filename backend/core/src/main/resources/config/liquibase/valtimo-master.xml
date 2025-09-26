@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -49,14 +49,9 @@
     <include file="camunda/20220928-camunda-upgrade-7-17-0-changelog.xml" relativeToChangelogFile="true"/>
     <include file="camunda/20221031-camunda-upgrade-7-18-0-changelog.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20230511-add-user-settings.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20230821-remove-context.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20230901-remove-authority.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20230904-choice-field-values-change-deprecated-datatype.xml" relativeToChangelogFile="true"/>
-    <include file="camunda/20240607-camunda-upgrade-7-21-0-changelog.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20241007-applicationproperties.xml" relativeToChangelogFile="true"/>
-    <include file="camunda/20250428-camunda-upgrade-7-23-0-changelog.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20250515-camunda-process-version-tag.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20250424-major-13-drop-deprecated-tables.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20250812-operaton-migration.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20240126-add-global-settings.xml" relativeToChangelogFile="true"/>
+
 
 </databaseChangeLog>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,41 +22,38 @@ import com.ritense.audit.service.AuditSearchService;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.mail.MailSender;
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import javax.inject.Inject;
 
 @SpringBootTest
 @Tag("integration")
 @ExtendWith(SpringExtension.class)
 public abstract class BaseIntegrationTest extends AbstractTestHelper {
 
-    @Autowired
+    @Inject
     protected AuditRecordRepository auditRecordRepository;
 
-    @Autowired
+    @Inject
     protected AuditEventProcessor auditEventProcessor;
 
-    @Autowired
+    @Inject
     protected AuditSearchService auditSearchService;
 
-    @MockitoBean
-    protected ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker;
-
-    @MockitoBean
+    @MockBean
     protected UserManagementService userManagementService;
 
-    @MockitoBean
+    @MockBean
     protected ResourceService resourceService;
 
-    @MockitoBean
+    @MockBean
     protected MailSender mailSender;
 
 

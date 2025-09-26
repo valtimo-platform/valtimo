@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.ritense.processlink.importer
 
 import com.ritense.importer.ValtimoImportTypes.Companion.PROCESS_DEFINITION
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -31,7 +31,7 @@ import org.mockito.kotlin.whenever
 @ExtendWith(MockitoExtension::class)
 class ProcessLinkImporterTest(
     @Mock private val processLinkService: ProcessLinkService,
-    @Mock private val repositoryService: OperatonRepositoryService
+    @Mock private val repositoryService: CamundaRepositoryService
 ) {
     private lateinit var importer: ProcessLinkImporter
 
@@ -63,11 +63,11 @@ class ProcessLinkImporterTest(
 
     @Test
     fun `should not support non-processlink fileName`() {
-        assertThat(importer.supports("/process-link/my-process-link.json")).isFalse()
-        assertThat(importer.supports("/process-link/test.process-link.xml")).isFalse()
+        assertThat(importer.supports("my-processlink.json")).isFalse()
+        assertThat(importer.supports("test.xml")).isFalse()
     }
 
     private companion object {
-        const val FILENAME = "/process-link/my.process-link.json"
+        const val FILENAME = "config/x/y/z/my.processlink.json"
     }
 }

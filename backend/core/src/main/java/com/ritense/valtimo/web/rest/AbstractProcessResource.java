@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,20 @@
 
 package com.ritense.valtimo.web.rest;
 
-import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byProcessInstanceId;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
-import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byVersion;
-import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byCreateTimeAfter;
-import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byCreateTimeBefore;
-import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byName;
-import static com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.byProcessDefinitionId;
-
 import com.ritense.authorization.AuthorizationContext;
-import com.ritense.valtimo.operaton.domain.OperatonHistoricProcessInstance;
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
-import com.ritense.valtimo.operaton.domain.OperatonTask;
-import com.ritense.valtimo.operaton.service.OperatonHistoryService;
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
-import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.camunda.domain.CamundaHistoricProcessInstance;
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition;
+import com.ritense.valtimo.camunda.domain.CamundaTask;
+import com.ritense.valtimo.camunda.service.CamundaHistoryService;
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService;
+import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valtimo.web.rest.dto.HeatmapTaskCountDTO;
+import org.apache.commons.lang3.StringUtils;
+import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.impl.util.IoUtil;
+import org.camunda.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
+import org.camunda.bpm.model.bpmn.instance.FlowNode;
+import org.camunda.bpm.model.bpmn.instance.Task;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -43,36 +41,32 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
-import org.operaton.bpm.engine.RepositoryService;
-import org.operaton.bpm.engine.impl.util.IoUtil;
-import org.operaton.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
-import org.operaton.bpm.model.bpmn.instance.FlowNode;
-import org.operaton.bpm.model.bpmn.instance.Task;
+import static com.ritense.valtimo.camunda.repository.CamundaHistoricProcessInstanceSpecificationHelper.byProcessInstanceId;
+import static com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper.byKey;
+import static com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper.byVersion;
+import static com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.byCreateTimeAfter;
+import static com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.byCreateTimeBefore;
+import static com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.byName;
+import static com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.byProcessDefinitionId;
 
 public abstract class AbstractProcessResource {
 
-    private final OperatonHistoryService historyService;
+    private final CamundaHistoryService historyService;
     private final RepositoryService repositoryService;
-    private final OperatonRepositoryService operatonRepositoryService;
-    private final OperatonTaskService taskService;
+    private final CamundaRepositoryService camundaRepositoryService;
+    private final CamundaTaskService taskService;
 
-    public AbstractProcessResource(
-            OperatonHistoryService historyService,
-            RepositoryService repositoryService,
-            OperatonRepositoryService operatonRepositoryService,
-            OperatonTaskService taskService
-    ) {
+    public AbstractProcessResource(CamundaHistoryService historyService, RepositoryService repositoryService, CamundaRepositoryService camundaRepositoryService, CamundaTaskService taskService) {
         this.historyService = historyService;
         this.repositoryService = repositoryService;
-        this.operatonRepositoryService = operatonRepositoryService;
+        this.camundaRepositoryService = camundaRepositoryService;
         this.taskService = taskService;
     }
 
-    public OperatonProcessDefinition getProcessDefinition(String processDefinitionKey, Integer version) {
+    public CamundaProcessDefinition getProcessDefinition(String processDefinitionKey, Integer version) {
         return AuthorizationContext
             .runWithoutAuthorization(
-                () -> operatonRepositoryService
+                () -> camundaRepositoryService
                     .findProcessDefinition(byKey(processDefinitionKey).and(byVersion(version)))
             );
     }
@@ -81,10 +75,7 @@ public abstract class AbstractProcessResource {
         InputStream processModelIn = repositoryService.getProcessModel(processDefinitionId);
         if (processModelIn != null) {
             byte[] processModel = IoUtil.readInputStream(processModelIn, "processModelBpmn20Xml");
-            return ProcessDefinitionDiagramDto.create(
-                processDefinitionId,
-                new String(processModel, StandardCharsets.UTF_8)
-            );
+            return ProcessDefinitionDiagramDto.create(processDefinitionId, new String(processModel, StandardCharsets.UTF_8));
         } else {
             return null;
         }
@@ -110,10 +101,7 @@ public abstract class AbstractProcessResource {
         return flowNodeMap;
     }
 
-    public Map<String, String> getUniqueFlowNodeMap(
-        Map<String, String> sourceFlowNodeMap,
-        Map<String, String> targetFlowNodeMap
-    ) {
+    public Map<String, String> getUniqueFlowNodeMap(Map<String, String> sourceFlowNodeMap, Map<String, String> targetFlowNodeMap) {
         Map<String, String> uniqueFlowNodeMap = new HashMap<>();
         for (Map.Entry<String, String> flowNode : sourceFlowNodeMap.entrySet()) {
             if (!targetFlowNodeMap.containsKey(flowNode.getKey())) {
@@ -123,8 +111,8 @@ public abstract class AbstractProcessResource {
         return uniqueFlowNodeMap;
     }
 
-    public List<OperatonTask> getAllActiveTasks(
-        OperatonProcessDefinition processDefinition,
+    public List<CamundaTask> getAllActiveTasks(
+        CamundaProcessDefinition processDefinition,
         String searchStatus,
         LocalDateTime fromDate,
         LocalDateTime toDate,
@@ -153,7 +141,7 @@ public abstract class AbstractProcessResource {
     }
 
     public Map<String, HeatmapTaskCountDTO> getActiveTasksCounts(
-        OperatonProcessDefinition processDefinition,
+        CamundaProcessDefinition processDefinition,
         String searchStatus,
         LocalDateTime fromDate,
         LocalDateTime toDate,
@@ -165,7 +153,7 @@ public abstract class AbstractProcessResource {
             .getModelElementsByType(Task.class);
 
         // Get, group and count all task instances
-        List<OperatonTask> taskList = getAllActiveTasks(
+        List<CamundaTask> taskList = getAllActiveTasks(
             processDefinition,
             searchStatus,
             fromDate,
@@ -173,7 +161,7 @@ public abstract class AbstractProcessResource {
             duration
         );
         Map<String, Long> groupedList = taskList.stream()
-            .collect(Collectors.groupingBy(OperatonTask::getTaskDefinitionKey, Collectors.counting()));
+            .collect(Collectors.groupingBy(CamundaTask::getTaskDefinitionKey, Collectors.counting()));
 
         // Map all tasks/counts for json output
         Map<String, HeatmapTaskCountDTO> returnList = new HashMap<>();
@@ -204,7 +192,7 @@ public abstract class AbstractProcessResource {
             })).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
-    public OperatonHistoricProcessInstance getHistoricProcessInstance(String processInstanceId) {
+    public CamundaHistoricProcessInstance getHistoricProcessInstance(String processInstanceId) {
         return historyService.findHistoricProcessInstance(byProcessInstanceId(processInstanceId));
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package com.ritense.form.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.ExportFile
-import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.request.FormDefinitionExportRequest
 import org.springframework.transaction.annotation.Transactional
 
@@ -32,23 +32,17 @@ class FormDefinitionExporter(
     override fun supports() = FormDefinitionExportRequest::class.java
 
     override fun export(request: FormDefinitionExportRequest): ExportResult {
-        val formDefinition =
-            formDefinitionService.getFormDefinitionByName(request.formDefinitionName, request.caseDefinitionId)
-                .orElseThrow()
-
-        val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
-            "${it.major}-${it.minor}-${it.patch}"
-        }
+        val formDefinition = formDefinitionService.getFormDefinitionByName(request.formDefinitionName).orElseThrow()
 
         return ExportResult(
             ExportFile(
-                PATH.format(request.caseDefinitionId.key, formattedCaseDefinitionVersion, formDefinition.name),
+                PATH.format(formDefinition.name),
                 objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(formDefinition.formDefinition)
             )
         )
     }
 
     companion object {
-        private const val PATH = "config/case/%s/%s/form/%s.form.json"
+        private const val PATH = "config/form/%s.json"
     }
 }

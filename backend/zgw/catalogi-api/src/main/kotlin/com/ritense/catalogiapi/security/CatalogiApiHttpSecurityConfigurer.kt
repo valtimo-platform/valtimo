@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,21 @@
 
 package com.ritense.catalogiapi.security
 
-import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
 class CatalogiApiHttpSecurityConfigurer : HttpSecurityConfigurer {
 
     override fun configure(http: HttpSecurity) {
         try {
-            http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaaktype/documenttype")).authenticated()
-                requests.requestMatchers(antMatcher(GET, "/api/v1/document/{documentId}/zaaktype/documenttype")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionKey}/zaaktype/roltype")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaaktype/statustype")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaaktype/resultaattype")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/zaaktype/besluittype")).authenticated()
-
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/zgw/zaaktype")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/catalogi-eigenschappen")).hasAuthority(ADMIN)
-            }
+            http.authorizeRequests()
+                .antMatchers(GET, "/api/v1/documentdefinition/{documentDefinitionName}/zaaktype/documenttype").authenticated()
+                .antMatchers(GET, "/api/v1/case-definition/{caseDefinitionName}/zaaktype/roltype").authenticated()
+                .antMatchers(GET, "/api/v1/case-definition/{caseDefinitionName}/zaaktype/statustype").authenticated()
+                .antMatchers(GET, "/api/v1/case-definition/{caseDefinitionName}/zaaktype/resultaattype").authenticated()
+                .antMatchers(GET, "/api/v1/case-definition/{caseDefinitionName}/zaaktype/besluittype").authenticated()
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
         }

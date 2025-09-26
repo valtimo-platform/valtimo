@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ internal class ObjecttypenApiPluginTest{
     }
 
     @Test
-    fun `should call client on get objecttype`() {
+    fun `should call client on get object`() {
         val objecttypeUrl = URI("http://example.com")
         val objecttypeMock = mock<Objecttype>()
         whenever(client.getObjecttype(plugin.authenticationPluginConfiguration, objecttypeUrl)).thenReturn(objecttypeMock)
@@ -48,17 +48,5 @@ internal class ObjecttypenApiPluginTest{
 
         assertEquals(objecttypeMock, result)
         verify(client).getObjecttype(any(), any())
-    }
-
-    @Test
-    fun `should call client on get objecttypes`() {
-        val objecttypeUrl = URI("http://example.com")
-        val objecttypesMock = mock<List<Objecttype>>()
-        whenever(client.getObjecttypes(plugin.authenticationPluginConfiguration, objecttypeUrl)).thenReturn(objecttypesMock)
-
-        val result = plugin.getObjecttypes(objecttypeUrl)
-
-        assertEquals(objecttypesMock, result)
-        verify(client).getObjecttypes(any(), any())
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,7 @@
 package com.ritense.notificatiesapi
 
 import com.ritense.plugin.annotation.PluginCategory
-import com.ritense.plugin.domain.PluginConfigurationId
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction
 
 @PluginCategory("notificaties-api-authentication")
-// TODO remove ExchangeFilterFunction next major version
-interface NotificatiesApiAuthentication : ExchangeFilterFunction {
-    val configurationId: PluginConfigurationId
-
-    fun applyAuth(builder: RestClient.Builder): RestClient.Builder
-}
+interface NotificatiesApiAuthentication : ExchangeFilterFunction

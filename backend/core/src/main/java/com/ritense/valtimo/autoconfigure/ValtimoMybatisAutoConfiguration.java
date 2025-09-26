@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,24 @@
 
 package com.ritense.valtimo.autoconfigure;
 
+import org.apache.ibatis.logging.slf4j.Slf4jImpl;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.camunda.bpm.engine.impl.db.sql.DbSqlSessionFactory;
+import org.camunda.bpm.engine.spring.SpringProcessEngineConfiguration;
+import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.transaction.SpringManagedTransactionFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.ibatis.logging.slf4j.Slf4jImpl;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.operaton.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.operaton.bpm.engine.impl.db.sql.DbSqlSessionFactory;
-import org.operaton.bpm.engine.spring.SpringProcessEngineConfiguration;
-import org.mybatis.spring.SqlSessionFactoryBean;
-import org.mybatis.spring.transaction.SpringManagedTransactionFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.ClassPathResource;
 
-@AutoConfiguration
+@Configuration
 public class ValtimoMybatisAutoConfiguration {
 
     @Value("${valtimo.database:mysql}")
@@ -50,6 +50,7 @@ public class ValtimoMybatisAutoConfiguration {
         databaseSpecificTruncDatepart2.put(DbSqlSessionFactory.ORACLE, ",')");
         for (String mysqlLikeDatabase : Arrays.asList(
             DbSqlSessionFactory.MYSQL,
+            DbSqlSessionFactory.MARIADB,
             DbSqlSessionFactory.POSTGRES
         )) {
             databaseSpecificTruncDatepart1.put(mysqlLikeDatabase, "date(");
@@ -74,8 +75,8 @@ public class ValtimoMybatisAutoConfiguration {
         sqlSessionFactoryBean.setDataSource(springProcessEngineConfiguration.getDataSource());
         sqlSessionFactoryBean.setMapperLocations(
             new ClassPathResource("common.xml"),
-            new ClassPathResource("operaton-queries.xml"),
-            new ClassPathResource("operaton-process-instance-v2.xml")
+            new ClassPathResource("camunda-queries.xml"),
+            new ClassPathResource("camunda-process-instance-v2.xml")
         );
         org.apache.ibatis.session.Configuration configuration = new org.apache.ibatis.session.Configuration();
         configuration.setLazyLoadingEnabled(false);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,23 +17,23 @@
 
 package com.ritense.valtimo.autoconfiguration
 
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.exporter.DecisionDefinitionExporter
-import com.ritense.valtimo.exporter.ProcessDefinitionExporter
-import org.operaton.bpm.engine.RepositoryService
-import org.springframework.boot.autoconfigure.AutoConfiguration
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
+import com.ritense.valtimo.export.DecisionDefinitionExporter
+import com.ritense.valtimo.export.ProcessDefinitionExporter
+import org.camunda.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
-@AutoConfiguration
+@Configuration
 class ExportAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(ProcessDefinitionExporter::class)
     fun processDefinitionExporter(
-        operatonRepositoryService: OperatonRepositoryService,
+        camundaRepositoryService: CamundaRepositoryService,
         repositoryService: RepositoryService
-    ) = ProcessDefinitionExporter(operatonRepositoryService, repositoryService)
+    ) = ProcessDefinitionExporter(camundaRepositoryService, repositoryService)
 
     @Bean
     @ConditionalOnMissingBean(DecisionDefinitionExporter::class)

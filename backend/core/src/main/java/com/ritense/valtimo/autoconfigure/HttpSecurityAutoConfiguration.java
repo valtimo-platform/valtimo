@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,23 @@
 
 package com.ritense.valtimo.autoconfigure;
 
-import com.ritense.valtimo.contract.hardening.service.HardeningService;
+import com.ritense.valtimo.contract.security.config.AuthenticationSecurityConfigurer;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
-import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
-import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator;
-import com.ritense.valtimo.security.ActuatorSecurityFilterChainFactory;
-import com.ritense.valtimo.security.CoreSecurityFactory;
 import com.ritense.valtimo.security.Http401UnauthorizedEntryPoint;
 import com.ritense.valtimo.security.SpringSecurityAuditorAware;
-import com.ritense.valtimo.security.ValtimoCoreSecurityFactory;
+import com.ritense.valtimo.security.adapter.CoreHttpSecurityConfigurerAdapter;
 import com.ritense.valtimo.security.config.AccountHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.ActuatorHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ApiLoginHttpSecurityConfigurer;
-import com.ritense.valtimo.security.config.OperatonCockpitHttpSecurityConfigurer;
-import com.ritense.valtimo.security.config.OperatonRestHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.CamundaCockpitHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.CamundaHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.CamundaRestHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ChoiceFieldHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.CsrfHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.DenyAllHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.EmailNotificationSettingsSecurityConfigurer;
 import com.ritense.valtimo.security.config.ErrorHttpSecurityConfigurer;
+import com.ritense.valtimo.security.config.GlobalHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.JwtHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.OpenApiHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.PingHttpSecurityConfigurer;
@@ -45,32 +44,26 @@ import com.ritense.valtimo.security.config.StaticResourcesHttpSecurityConfigurer
 import com.ritense.valtimo.security.config.TaskHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.UserHttpSecurityConfigurer;
 import com.ritense.valtimo.security.config.ValtimoVersionHttpSecurityConfigurer;
+import com.ritense.valtimo.security.interceptor.SecurityWhitelistProperties;
+import com.ritense.valtimo.security.interceptor.WhitelistIpRequest;
 import com.ritense.valtimo.security.jwt.authentication.TokenAuthenticationService;
-import com.ritense.valtimo.security.matcher.SecurityWhitelistProperties;
-import com.ritense.valtimo.security.matcher.WhitelistIpRequestMatcher;
-import java.util.List;
-import java.util.Optional;
-import org.operaton.bpm.engine.IdentityService;
+import org.camunda.bpm.engine.IdentityService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
-import org.springframework.boot.actuate.autoconfigure.health.HealthEndpointProperties;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.core.Ordered;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 
-@AutoConfiguration
+import java.util.List;
+
+@Configuration
 @EnableWebSecurity
 @EnableConfigurationProperties(SecurityWhitelistProperties.class)
 public class HttpSecurityAutoConfiguration {
@@ -94,10 +87,10 @@ public class HttpSecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(WhitelistIpRequestMatcher.class)
-    public WhitelistIpRequestMatcher whitelistIpRequest(
+    @ConditionalOnMissingBean(WhitelistIpRequest.class)
+    public WhitelistIpRequest whitelistIpRequest(
         SecurityWhitelistProperties properties) {
-        return new WhitelistIpRequestMatcher(properties.getHosts());
+        return new WhitelistIpRequest(properties.getHosts());
     }
 
     @Bean
@@ -142,6 +135,13 @@ public class HttpSecurityAutoConfiguration {
         return new UserHttpSecurityConfigurer();
     }
 
+    @Order(315)
+    @Bean
+    @ConditionalOnMissingBean(GlobalHttpSecurityConfigurer.class)
+    public GlobalHttpSecurityConfigurer globalHttpSecurityConfigurer() {
+        return new GlobalHttpSecurityConfigurer();
+    }
+
     @Order(320)
     @Bean
     @ConditionalOnMissingBean(TaskHttpSecurityConfigurer.class)
@@ -184,6 +184,13 @@ public class HttpSecurityAutoConfiguration {
         return new AccountHttpSecurityConfigurer();
     }
 
+    @Order(391)
+    @Bean
+    @ConditionalOnMissingBean(CamundaHttpSecurityConfigurer.class)
+    public CamundaHttpSecurityConfigurer camundaHttpSecurityConfigurer() {
+        return new CamundaHttpSecurityConfigurer();
+    }
+
 
     //DEFAULTS SECURITY CHAIN
 
@@ -222,9 +229,19 @@ public class HttpSecurityAutoConfiguration {
         return new ErrorHttpSecurityConfigurer(http403ForbiddenEntryPoint);
     }
 
+    @Order(430)
+    @Bean
+    @ConditionalOnMissingBean(ActuatorHttpSecurityConfigurer.class)
+    public ActuatorHttpSecurityConfigurer actuatorHttpSecurityConfigurer(
+        @Value("${spring-actuator.username}") String username,
+        @Value("${spring-actuator.password}") String password,
+        PasswordEncoder passwordEncoder
+    ) {
+        return new ActuatorHttpSecurityConfigurer(username, password, passwordEncoder);
+    }
+
     @Order(440)
     @Bean
-    @Conditional(NoOAuth2ClientsConfiguredCondition.class)
     @ConditionalOnMissingBean(JwtHttpSecurityConfigurer.class)
     public JwtHttpSecurityConfigurer jwtHttpSecurityConfigurer(
         IdentityService identityService,
@@ -242,19 +259,16 @@ public class HttpSecurityAutoConfiguration {
 
     @Order(460)
     @Bean
-    @ConditionalOnMissingBean(OperatonRestHttpSecurityConfigurer.class)
-    public OperatonRestHttpSecurityConfigurer operatonRestHttpSecurityConfigurer() {
-        return new OperatonRestHttpSecurityConfigurer();
+    @ConditionalOnMissingBean(CamundaRestHttpSecurityConfigurer.class)
+    public CamundaRestHttpSecurityConfigurer camundaRestHttpSecurityConfigurer() {
+        return new CamundaRestHttpSecurityConfigurer();
     }
 
     @Order(470)
     @Bean
-    @ConditionalOnMissingBean(OperatonCockpitHttpSecurityConfigurer.class)
-    public OperatonCockpitHttpSecurityConfigurer operatonCockpitHttpSecurityConfigurer(
-        SecurityWhitelistProperties whitelistProperties
-    ) {
-        WhitelistIpRequestMatcher whitelistIpRequestMatcher = new WhitelistIpRequestMatcher(whitelistProperties.getHosts());
-        return new OperatonCockpitHttpSecurityConfigurer(whitelistIpRequestMatcher);
+    @ConditionalOnMissingBean(CamundaCockpitHttpSecurityConfigurer.class)
+    public CamundaCockpitHttpSecurityConfigurer camundaCockpitHttpSecurityConfigurer() {
+        return new CamundaCockpitHttpSecurityConfigurer();
     }
 
     @Order(500)
@@ -264,59 +278,20 @@ public class HttpSecurityAutoConfiguration {
         return new DenyAllHttpSecurityConfigurer();
     }
 
-
-    @Bean
-    @ConditionalOnMissingBean(CoreSecurityFactory.class)
-    public CoreSecurityFactory coreSecurityFactory(
-        List<? extends HttpSecurityConfigurer> httpSecurityConfigurers
-    ) {
-        return new ValtimoCoreSecurityFactory(httpSecurityConfigurers);
-    }
-
     @Order(100)
     @Bean
-    public SecurityFilterChain coreSecurityFilterChain(
-        CoreSecurityFactory coreSecurityFactory,
-        HttpSecurity httpSecurity
+    @ConditionalOnMissingBean(CoreHttpSecurityConfigurerAdapter.class)
+    public CoreHttpSecurityConfigurerAdapter coreHttpSecurityConfigurerAdapter(
+        List<HttpSecurityConfigurer> httpSecurityConfigurers,
+        List<AuthenticationSecurityConfigurer> authenticationSecurityConfigurers
     ) {
-        return coreSecurityFactory.createSecurityFilterChain(httpSecurity);
+        return new CoreHttpSecurityConfigurerAdapter(httpSecurityConfigurers, authenticationSecurityConfigurers);
     }
 
-    @Order(50)
     @Bean
-    public SecurityFilterChain actuatorSecurityFilterChain(
-        HttpSecurity httpSecurity,
-        WebEndpointProperties webEndpointProperties,
-        HealthEndpointProperties healthEndpointProperties,
-        PasswordEncoder passwordEncoder,
-        @Value("${spring-actuator.username}") String username,
-        @Value("${spring-actuator.password}") String password
-    ) {
-        return new ActuatorSecurityFilterChainFactory().createFilterChain(
-            httpSecurity,
-            webEndpointProperties,
-            healthEndpointProperties,
-            passwordEncoder,
-            username,
-            password
-        );
-    }
-
-    @Order(100)
-    @Bean
-    public WebSecurityCustomizer coreWebSecurityCustomizer(
-        CoreSecurityFactory coreSecurityFactory
-    ) {
-        return coreSecurityFactory.createWebSecurityCustomizer();
-    }
-
-    @Order(Ordered.LOWEST_PRECEDENCE)
-    @Bean
-    @ConditionalOnMissingBean(ExceptionTranslator.class)
-    public ExceptionTranslator defaultCoreExceptionTranslator(
-        Optional<HardeningService> hardeningService
-    ) {
-        return new ExceptionTranslator(hardeningService);
+    @ConditionalOnMissingBean(AuthenticationManager.class)
+    public AuthenticationManager authenticationManager(CoreHttpSecurityConfigurerAdapter configurerAdapter) throws Exception {
+        return configurerAdapter.authenticationManagerBean();
     }
 
 }

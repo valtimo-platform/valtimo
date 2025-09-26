@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.outbox.domain.BaseEvent
 import com.ritense.outbox.domain.CloudEventData
 import com.ritense.outbox.exception.OutboxTransactionReadOnlyException
-import com.ritense.outbox.repository.OutboxMessageRepository
 import io.cloudevents.core.builder.CloudEventBuilder
 import io.cloudevents.core.provider.EventFormatProvider
 import io.cloudevents.jackson.JsonFormat
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionSynchronizationManager
@@ -33,6 +32,7 @@ import java.time.ZonedDateTime
 import java.util.UUID
 import java.util.function.Supplier
 import kotlin.text.Charsets.UTF_8
+
 
 open class ValtimoOutboxService(
     private val outboxMessageRepository: OutboxMessageRepository,
@@ -47,8 +47,7 @@ open class ValtimoOutboxService(
 
         val userId = baseEvent.userId ?: userProvider.getCurrentUserLogin() ?: "System"
         val roles = baseEvent.roles.ifEmpty { userProvider.getCurrentUserRoles() }
-        val cloudEventData =
-            CloudEventData(userId, roles.toSet(), baseEvent.resultType, baseEvent.resultId, baseEvent.result)
+        val cloudEventData = CloudEventData(userId, roles.toSet(), baseEvent.resultType, baseEvent.resultId, baseEvent.result)
         val cloudEvent = CloudEventBuilder.v1()
             .withId(baseEvent.id.toString())
             .withSource(URI(cloudEventSource))
@@ -91,7 +90,7 @@ open class ValtimoOutboxService(
         outboxMessageRepository.save(outboxMessage)
     }
 
-    open fun getOldestMessage() = outboxMessageRepository.findOutboxMessage()
+    open fun getOldestMessage() = outboxMessageRepository.findTopByOrderByCreatedOnAsc()
 
     open fun deleteMessage(id: UUID) = outboxMessageRepository.deleteById(id)
 

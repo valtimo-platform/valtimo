@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,27 @@
 
 package com.ritense.authorization
 
+import com.ritense.authorization.testimpl.TestAuthorizationAutoConfiguration
 import com.ritense.testutilscommon.junit.extension.LiquibaseRunnerExtension
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.config.LiquibaseRunnerAutoConfiguration
 import com.ritense.valtimo.contract.mail.MailSender
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Import
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest
+@Import(LiquibaseRunnerAutoConfiguration::class, TestAuthorizationAutoConfiguration::class)
 @ExtendWith(SpringExtension::class, LiquibaseRunnerExtension::class)
 @Tag("integration")
 abstract class BaseIntegrationTest {
 
-    @MockitoBean
-    lateinit var processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
-
-    @MockitoBean
+    @MockBean
     lateinit var userManagementService: UserManagementService
 
-    @MockitoBean
+    @MockBean
     lateinit var mailSender: MailSender
 }

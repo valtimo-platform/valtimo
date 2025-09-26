@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,16 @@
 
 package com.ritense.verzoek
 
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
-import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
 
 class VerzoekPluginFactory(
     pluginService: PluginService,
-    private val caseDefinitionService: CaseDefinitionService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
-    private val objectManagementService: ObjectManagementService
 ) : PluginFactory<VerzoekPlugin>(pluginService) {
 
     override fun create(): VerzoekPlugin {
-        return VerzoekPlugin(
-            caseDefinitionService, documentDefinitionService,
-            objectManagementService = objectManagementService,
-            pluginService
-        )
+        return VerzoekPlugin(documentDefinitionService)
     }
 }

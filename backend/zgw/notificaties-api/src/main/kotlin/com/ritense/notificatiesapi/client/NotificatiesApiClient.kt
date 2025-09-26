@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,116 +19,71 @@ package com.ritense.notificatiesapi.client
 import com.ritense.notificatiesapi.NotificatiesApiAuthentication
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.springframework.http.MediaType
-import org.springframework.stereotype.Component
-import org.springframework.web.client.RestClient
-import org.springframework.web.client.body
 import java.net.URI
+import org.springframework.http.MediaType
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.awaitBodilessEntity
+import org.springframework.web.reactive.function.client.awaitBody
 
-@SkipComponentScan
-@Component
+
 class NotificatiesApiClient(
-    private val restClientBuilder: RestClient.Builder
+    private val webclientBuilder: WebClient.Builder
 ) {
 
-    fun getAbonnementen(
-        authentication: NotificatiesApiAuthentication,
-        baseUrl: URI
-    ): List<Abonnement> {
-        return buildNotificatiesRestClient(authentication, baseUrl)
-            .get()
-            .uri { it.pathSegment("abonnement").build() }
-            .retrieve()
-            .body<List<Abonnement>>()!!
-    }
-
-    fun getAbonnement(
-        authentication: NotificatiesApiAuthentication,
-        baseUrl: URI,
-        abonnementId: String,
-    ): Abonnement {
-        return buildNotificatiesRestClient(authentication, baseUrl)
-            .get()
-            .uri { it.pathSegment("abonnement", "{abonnementId}").build(abonnementId) }
-            .retrieve()
-            .body<Abonnement>()!!
-    }
-
-    fun updateAbonnement(
-        authentication: NotificatiesApiAuthentication,
-        baseUrl: URI,
-        abonnementId: String,
-        abonnement: Abonnement
-    ): Abonnement {
-        return buildNotificatiesRestClient(authentication, baseUrl)
-            .put()
-            .uri { it.pathSegment("abonnement", "{abonnementId}").build(abonnementId) }
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(abonnement)
-            .retrieve()
-            .body<Abonnement>()!!
-    }
-
-    fun createAbonnement(
+    internal suspend fun createAbonnement(
         authentication: NotificatiesApiAuthentication,
         baseUrl: URI,
         abonnement: Abonnement
     ): Abonnement {
-        return buildNotificatiesRestClient(authentication, baseUrl)
+
+        return buildNotificatiesWebClient(authentication, baseUrl)
             .post()
-            .uri { it.pathSegment("abonnement").build() }
+            .uri("abonnement")
             .contentType(MediaType.APPLICATION_JSON)
-            .body(abonnement)
+            .bodyValue(abonnement)
             .retrieve()
-            .body<Abonnement>()!!
+            .awaitBody()
     }
 
-    fun deleteAbonnement(
+    internal suspend fun deleteAbonnement(
         authentication: NotificatiesApiAuthentication,
         baseUrl: URI,
         abonnementId: String
     ) {
-        buildNotificatiesRestClient(authentication, baseUrl)
+
+        buildNotificatiesWebClient(authentication, baseUrl)
             .delete()
-            .uri { it.pathSegment("abonnement", "{abonnementId}").build(abonnementId) }
+            .uri("abonnement/$abonnementId")
             .retrieve()
-            .toBodilessEntity()
+            .awaitBodilessEntity()
     }
 
-    fun createKanaal(
+    internal suspend fun createKanaal(
         authentication: NotificatiesApiAuthentication,
         baseUrl: URI,
         kanaal: Kanaal
     ): Kanaal {
-        return buildNotificatiesRestClient(authentication, baseUrl)
+        return buildNotificatiesWebClient(authentication, baseUrl)
             .post()
-            .uri { it.pathSegment("kanaal").build() }
-            .body(kanaal)
+            .uri("kanaal")
             .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(kanaal)
             .retrieve()
-            .body<Kanaal>()!!
+            .awaitBody()
     }
 
-    fun getKanalen(
-        authentication: NotificatiesApiAuthentication,
-        baseUrl: URI
-    ): List<Kanaal> {
-        return buildNotificatiesRestClient(authentication, baseUrl)
+    internal suspend fun getKanalen(authentication: NotificatiesApiAuthentication, baseUrl: URI): List<Kanaal> {
+        return buildNotificatiesWebClient(authentication, baseUrl)
             .get()
-            .uri { it.pathSegment("kanaal").build() }
+            .uri("kanaal")
             .retrieve()
-            .body<List<Kanaal>>()!!
+            .awaitBody()
     }
 
-    private fun buildNotificatiesRestClient(
-        authentication: NotificatiesApiAuthentication,
-        baseUrl: URI
-    ): RestClient = restClientBuilder
-        .clone()
-        .apply {
-            authentication.applyAuth(it)
-        }
-        .baseUrl(baseUrl.toASCIIString())
-        .build()
+    private fun buildNotificatiesWebClient(authentication: NotificatiesApiAuthentication, baseUrl: URI): WebClient =
+        webclientBuilder
+            .clone()
+            .filter(authentication)
+            .baseUrl(baseUrl.toASCIIString())
+            .build()
 }

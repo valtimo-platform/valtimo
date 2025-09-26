@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,13 @@ dockerCompose {
 
 dependencies {
     implementation project(':authorization')
-    implementation project(':case')
     implementation project(':contract')
+    implementation project(':document')
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
+    api "javax.inject:javax.inject:${javaxInjectVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-web"
@@ -59,16 +60,23 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation project(':test-utils-common')
+    testImplementation("com.mysql:mysql-connector-j")
 
     implementation "org.springframework.boot:spring-boot-autoconfigure"
 
-    implementation "org.liquibase:liquibase-core:${liquibaseVersion}"
-    implementation "org.liquibase.ext:liquibase-hibernate6:${liquibaseVersion}"
+    implementation "org.liquibase:liquibase-core"
+    implementation "org.liquibase.ext:liquibase-hibernate5:${liquibaseVersion}"
+    implementation "com.mattbertolini:liquibase-slf4j:${liquibaseSlf4jVersion}"
 
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    implementation "com.vladmihalcea:hibernate-types-55:${hibernateTypesVersion}"
 
-    implementation "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
+    implementation "org.hibernate:hibernate-core"
 
     annotationProcessor "org.springframework.boot:spring-boot-autoconfigure-processor"
 
@@ -78,10 +86,6 @@ dependencies {
 
     testImplementation project(':resource')
     testImplementation project(':core')
-    testImplementation "org.jetbrains.kotlin:kotlin-test"
-    testImplementation "org.junit.jupiter:junit-jupiter"
-    testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation project(':test-utils-common')
 
     jar {
         enabled = true

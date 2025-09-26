@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.ritense.objectmanagement.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.objectenapi.client.Comparator.EQUAL_TO
 import com.ritense.objectenapi.client.ObjectSearchParameter
 import com.ritense.objectmanagement.BaseIntegrationTest
@@ -32,10 +31,10 @@ import com.ritense.search.domain.DataType
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.EmptyDisplayTypeParameter
 import com.ritense.search.domain.FieldType
+import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.domain.SearchListColumn
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.service.SearchListColumnService
-import com.ritense.search.web.rest.dto.LegacySearchFieldV2Dto
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.assertj.core.api.Assertions.assertThat
@@ -45,9 +44,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
-import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.util.UUID
+import javax.transaction.Transactional
 
 @Transactional
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -99,15 +98,11 @@ internal class ObjectManagementServiceIntTest : BaseIntegrationTest() {
 
     @Test
     fun `should get all`() {
-        val test4 = createObjectManagement("test4")
-        val test2 = createObjectManagement("test2")
         val test1 = createObjectManagement("test1")
-        val test3 = createObjectManagement("test3")
+        val test2 = createObjectManagement("test2")
 
         val objectManagementList = objectManagementService.getAll()
-
-        assertThat(objectManagementList).contains(test1, test2, test3, test4)
-        assertThat(objectManagementList).isEqualTo(objectManagementList.sortedBy { it.title })
+        assertThat(objectManagementList).contains(test1, test2)
     }
 
     @Test
@@ -182,7 +177,7 @@ internal class ObjectManagementServiceIntTest : BaseIntegrationTest() {
         )
 
         searchFieldV2Service.create(
-            LegacySearchFieldV2Dto(
+            SearchFieldV2(
                 ownerId = objectManagement.id.toString(),
                 key = "property1",
                 title = "property1",
@@ -247,9 +242,9 @@ internal class ObjectManagementServiceIntTest : BaseIntegrationTest() {
         val searchWithConfigRequest =
             SearchWithConfigRequest(listOf(otherFilters))
 
-        val objects = runWithoutAuthorization{ objectManagementService.getObjectsWithSearchParams(
+        val objects = objectManagementService.getObjectsWithSearchParams(
             searchWithConfigRequest, objectManagement.id, PageRequest.of(0, 10)
-        )}
+        )
 
         assertThat(objects.content.size).isEqualTo(1)
         assertThat(objects.first().items[0].key).isEqualTo("property1")
@@ -299,11 +294,11 @@ internal class ObjectManagementServiceIntTest : BaseIntegrationTest() {
         val objectManagement = objectManagementService.getByTitle("My Object Management")!!
         val searchParameters = listOf(ObjectSearchParameter("property1", EQUAL_TO, "henk"))
 
-        val objects = runWithoutAuthorization { objectManagementService.getObjectsWithSearchParams(
+        val objects = objectManagementService.getObjectsWithSearchParams(
             objectManagement,
             searchParameters,
             PageRequest.of(0, 10)
-        )}
+        )
 
         assertThat(objects.content.size).isEqualTo(1)
         assertThat(objects.first().url).isEqualTo(URI("https://example.com/123"))

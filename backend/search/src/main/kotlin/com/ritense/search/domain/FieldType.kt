@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,10 @@
 
 package com.ritense.search.domain
 
-import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonValue
-
-enum class FieldType(@JsonValue val key: String) {
-    @Deprecated("This is not a field type, but a match type. Please do not use.", replaceWith = ReplaceWith("SINGLE"))
-    TEXT_CONTAINS ("text_contains"),
-    SINGLE("single"),
-    RANGE("range"),
-    SINGLE_SELECT_DROPDOWN("single-select-dropdown"),
-    MULTI_SELECT_DROPDOWN("multi-select-dropdown");
-
-    companion object {
-        /**
-         * This creator allows for null, empty or non-matching keys to result in a null value.
-         */
-        @JvmStatic
-        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-        fun create(key: String?): FieldType? {
-            return FieldType.entries.find { it.key.equals(key, true) }
-        }
-    }
+enum class FieldType {
+    TEXT_CONTAINS,
+    SINGLE,
+    RANGE,
+    SINGLE_SELECT_DROPDOWN,
+    MULTI_SELECT_DROPDOWN
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,25 @@
 
 package com.ritense.form;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.ritense.document.domain.impl.JsonSchema;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.domain.FormSpringContextHelper;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.form.FormFieldDataResolver;
+import org.apache.commons.io.IOUtils;
+import org.springframework.context.ApplicationContext;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
-import org.apache.commons.io.IOUtils;
-import org.springframework.context.ApplicationContext;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class BaseTest {
 
@@ -48,32 +49,28 @@ public abstract class BaseTest {
     }
 
     protected FormIoFormDefinition formDefinition() {
-        return new FormIoFormDefinition(UUID.randomUUID(), DEFAULT_FORM_DEFINITION_NAME, "{}", CaseDefinitionId.of("person", "1.0.0"), false);
+        return new FormIoFormDefinition(UUID.randomUUID(), DEFAULT_FORM_DEFINITION_NAME, "{}", false);
     }
 
     protected FormIoFormDefinition formDefinition(UUID id, String formName) {
-        return formDefinition(id, formName, CaseDefinitionId.of("person", "1.0.0"));
-    }
-
-    protected FormIoFormDefinition formDefinition(UUID id, String formName, CaseDefinitionId caseDefinitionId) {
-        return new FormIoFormDefinition(id, formName, "{}", caseDefinitionId, false);
+        return new FormIoFormDefinition(id, formName, "{}", false);
     }
 
     protected FormIoFormDefinition formDefinitionOf(String formDefinitionId) throws IOException {
         var s = IOUtils.toString(
-            Thread.currentThread().getContextClassLoader().getResourceAsStream("config/case/person/1-0-0/form/" + formDefinitionId + ".form.json"),
+            Thread.currentThread().getContextClassLoader().getResourceAsStream("config/form/" + formDefinitionId + ".json"),
             StandardCharsets.UTF_8
         );
-        return new FormIoFormDefinition(UUID.randomUUID(), "form-example", s, CaseDefinitionId.of("person", "1.0.0"), false);
+        return new FormIoFormDefinition(UUID.randomUUID(), "form-example", s, false);
     }
 
     protected JsonSchemaDocumentDefinition definition() {
-        final JsonSchemaDocumentDefinitionId jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("person", CaseDefinitionId.of("person", "1.0.0"));
+        final JsonSchemaDocumentDefinitionId jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.newId("person");
         final JsonSchema jsonSchema = JsonSchema.fromResourceUri(path(jsonSchemaDocumentDefinitionId.name()));
         return new JsonSchemaDocumentDefinition(jsonSchemaDocumentDefinitionId, jsonSchema);
     }
 
     public URI path(String name) {
-        return URI.create(String.format("config/case/person/1-0-0/document/definition/%s.json", name + ".schema.document-definition"));
+        return URI.create(String.format("config/document/definition/%s.json", name + ".schema"));
     }
 }

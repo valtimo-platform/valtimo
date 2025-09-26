@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,41 +19,24 @@ package com.ritense.form.domain
 import com.ritense.form.mapper.FormProcessLinkMapper.Companion.PROCESS_LINK_TYPE_FORM
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
-import io.hypersistence.utils.hibernate.type.json.JsonType
-import jakarta.persistence.Column
-import jakarta.persistence.DiscriminatorValue
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import org.hibernate.annotations.Type
 import java.util.UUID
+import javax.persistence.Column
+import javax.persistence.DiscriminatorValue
+import javax.persistence.Entity
 
 @Entity
 @DiscriminatorValue(PROCESS_LINK_TYPE_FORM)
-class FormProcessLink(
-    id: UUID,
-    processDefinitionId: String,
-    activityId: String,
-    activityType: ActivityTypeWithEventName,
+data class FormProcessLink(
+    override val id: UUID,
 
-    @Type(value = JsonType::class)
-    @Column(name = "subtitles", columnDefinition = "JSON", nullable = true)
-    val subtitles: List<String>? = null,
+    override val processDefinitionId: String,
+
+    override val activityId: String,
+
+    override val activityType: ActivityTypeWithEventName,
 
     @Column(name = "form_definition_id")
-    val formDefinitionId: UUID,
-
-    @Column(name = "view_model_enabled")
-    val viewModelEnabled: Boolean = false,
-
-    @Column(name = "form_display_type")
-    @Enumerated(EnumType.STRING)
-    val formDisplayType: FormDisplayType = FormDisplayType.modal,
-
-    @Column(name = "form_size")
-    @Enumerated(EnumType.STRING)
-    val formSize: FormSizes = FormSizes.medium
-
+    val formDefinitionId: UUID
 
 ) : ProcessLink(
     id,
@@ -69,54 +52,8 @@ class FormProcessLink(
     ) = copy(
         id = id,
         processDefinitionId = processDefinitionId,
-        activityId = activityId
-    )
-
-    fun copy(
-        id: UUID = this.id,
-        processDefinitionId: String = this.processDefinitionId,
-        activityId: String = this.activityId,
-        activityType: ActivityTypeWithEventName = this.activityType,
-        formDefinitionId: UUID = this.formDefinitionId,
-        viewModelEnabled: Boolean = this.viewModelEnabled,
-        formDisplayType: FormDisplayType = this.formDisplayType,
-        formSize: FormSizes = this.formSize,
-        subtitles: List<String>? = this.subtitles,
-    ) = FormProcessLink(
-        id = id,
-        processDefinitionId = processDefinitionId,
         activityId = activityId,
         activityType = activityType,
-        formDefinitionId = formDefinitionId,
-        viewModelEnabled = viewModelEnabled,
-        formDisplayType = formDisplayType,
-        formSize = formSize,
-        subtitles = subtitles,
+        formDefinitionId = formDefinitionId
     )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        if (!super.equals(other)) return false
-
-        other as FormProcessLink
-
-        if (formDefinitionId != other.formDefinitionId) return false
-        if (viewModelEnabled != other.viewModelEnabled) return false
-        if (formDisplayType != other.formDisplayType) return false
-        if (formSize != other.formSize) return false
-        if (subtitles != other.subtitles) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + formDefinitionId.hashCode()
-        result = 31 * result + viewModelEnabled.hashCode()
-        result = 31 * result + formDisplayType.hashCode()
-        result = 31 * result + formSize.hashCode()
-        result = 31 * result + subtitles.hashCode()
-        return result
-    }
 }

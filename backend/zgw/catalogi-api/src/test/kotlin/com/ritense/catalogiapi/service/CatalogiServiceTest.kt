@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,9 @@
 
 package com.ritense.catalogiapi.service
 
-import com.ritense.catalogiapi.BaseTest
 import com.ritense.catalogiapi.CatalogiApiPlugin
 import com.ritense.catalogiapi.domain.Informatieobjecttype
-import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -31,19 +27,18 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.net.URI
 
-internal class CatalogiServiceTest : BaseTest() {
+internal class CatalogiServiceTest {
 
     val zaaktypeUrlProvider = mock<ZaaktypeUrlProvider>()
     val pluginService = mock<PluginService>()
     val catalogiService = CatalogiService(zaaktypeUrlProvider, pluginService)
 
-    val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
-
     @Test
     fun `should get informatieobjecttypes for document definition`() {
+        val documentDefinitionName = "case-name"
         val zaaktypeUrl = URI("http://example.com/zaaktype")
 
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(zaaktypeUrl)
+        whenever(zaaktypeUrlProvider.getZaaktypeUrl(documentDefinitionName)).thenReturn(zaaktypeUrl)
 
         val catalogiApiPlugin = mock<CatalogiApiPlugin>()
         whenever(pluginService.createInstance(eq(CatalogiApiPlugin::class.java), any()))
@@ -54,7 +49,7 @@ internal class CatalogiServiceTest : BaseTest() {
         whenever(catalogiApiPlugin.getInformatieobjecttypes(zaaktypeUrl))
             .thenReturn(listOf(informatieobjecttype1, informatieobjecttype2))
 
-        val informatieobjecttypes = catalogiService.getInformatieobjecttypes(caseDefinitionId)
+        val informatieobjecttypes = catalogiService.getInformatieobjecttypes(documentDefinitionName)
 
         assertEquals(informatieobjecttype1, informatieobjecttypes[0])
         assertEquals(informatieobjecttype2, informatieobjecttypes[1])
@@ -62,39 +57,14 @@ internal class CatalogiServiceTest : BaseTest() {
 
     @Test
     fun `should return empty list if no plugin is found for zaak`() {
+        val documentDefinitionName = "case-name"
         val zaaktypeUrl = URI("http://example.com/zaaktype")
 
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(zaaktypeUrl)
+        whenever(zaaktypeUrlProvider.getZaaktypeUrl(documentDefinitionName)).thenReturn(zaaktypeUrl)
 
-        val result = catalogiService.getInformatieobjecttypes(caseDefinitionId)
+        val result = catalogiService.getInformatieobjecttypes(documentDefinitionName)
 
         assertEquals(emptyList<Informatieobjecttype>(), result)
-    }
-
-    @Test
-    fun `should get zaaktypen using plugins`() {
-        val pluginConfigurations = IntRange(0, 1).map {
-            mock<PluginConfiguration>()
-        }
-        whenever(pluginService.findPluginConfigurations(CatalogiApiPlugin::class.java)).thenReturn(pluginConfigurations)
-
-        val plugins = pluginConfigurations.mapIndexed { index, pluginConfiguration ->
-            val plugin: CatalogiApiPlugin = mock()
-            whenever(pluginService.createInstance(pluginConfiguration)).thenReturn(plugin)
-            whenever(plugin.getZaaktypen()).thenReturn(listOf(newZaaktype(
-                URI("example.com/$index"),
-                "Zaak $index"
-            )))
-            plugin
-        }
-
-        val zaakTypen = catalogiService.getZaakTypen()
-
-        assertThat(zaakTypen).hasSize(plugins.size)
-        zaakTypen.forEachIndexed { index, zaaktype ->
-            assertThat(zaaktype.url).isEqualTo(URI("example.com/$index"))
-            assertThat(zaaktype.omschrijving).isEqualTo("Zaak $index")
-        }
     }
 
 }

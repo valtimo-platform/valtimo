@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.net.URI
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -44,14 +43,9 @@ data class Rol(
         property = "betrokkeneType",
         visible = true
     )
-    val betrokkeneIdentificatie: BetrokkeneIdentificatie? = null,
-    val beginGeldigheid: LocalDate? = null,
-    val eindeGeldigheid: LocalDate? = null,
-    val afwijkendeNaamBetrokkene: String? = null,
-    val contactpersoonRol: ContactpersoonRol? = null,
-    val statussen: List<URI>? = null,
+    val betrokkeneIdentificatie: BetrokkeneIdentificatie?
 ) {
-    val indicatieMachtiging = indicatieMachtigingString?.let { indicatieMachtiging ->
-        IndicatieMachtiging.entries.find { it.key == indicatieMachtiging }
+    val indicatieMachtiging = indicatieMachtigingString?.let {indicatieMachtiging ->
+        IndicatieMachtiging.values().find {it.key == indicatieMachtiging}
     }
 }

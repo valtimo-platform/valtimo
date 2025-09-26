@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.ritense.processdocument.domain.config;
 
-import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition;
 import com.ritense.processdocument.domain.ProcessDocumentDefinition;
 
 public class ProcessDocumentLinkConfigItem {
@@ -67,13 +66,6 @@ public class ProcessDocumentLinkConfigItem {
         return processDocumentDefinition.processDocumentDefinitionId().processDefinitionKey().toString().equals(getProcessDefinitionKey())
                 && processDocumentDefinition.startableByUser() == isStartableByUser()
                 && processDocumentDefinition.canInitializeDocument() == canInitializeDocument();
-    }
-
-    public boolean equalsProcessDocumentDefinition(ProcessDefinitionCaseDefinition processDefinitionCaseDefinition) {
-        //TODO: how to get key
-        return true //processDefinitionCaseDefinition.getId().equals()
-            && processDefinitionCaseDefinition.getStartableByUser() == isStartableByUser()
-            && processDefinitionCaseDefinition.getCanInitializeDocument() == canInitializeDocument();
     }
 
     @Override

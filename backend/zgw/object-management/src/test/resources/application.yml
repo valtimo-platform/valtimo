@@ -22,22 +22,17 @@ spring:
           provider_disables_autocommit: true
     hibernate:
       ddl-auto: none
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+      use-new-id-generator-mappings: false
 
 spring-actuator:
   username: test
   password: test
 
 valtimo:
+    connector-encryption:
+        secret: "abcdefghijklmnop"
     plugin:
         encryption-secret: "abcdefghijklmnop"
-
-operaton:
-    bpm:
-        history-level: audit
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false
-
-objectmanagement:
-    objecttype:
-        uuid: "4416cbef-dda3-41f4-bf5c-633f7fe14847"

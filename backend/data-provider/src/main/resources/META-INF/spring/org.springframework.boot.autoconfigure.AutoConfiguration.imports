@@ -1,3 +1,0 @@
-com.ritense.dataprovider.autoconfigure.DataProviderAutoConfiguration
-com.ritense.dataprovider.defaultdataproviders.autoconfigure.DefaultDataProviderAutoConfiguration
-com.ritense.dataprovider.defaultdataproviders.autoconfigure.DefaultDataProviderLiquibaseAutoConfiguration

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,12 @@ package com.ritense.dashboard.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.dashboard.BaseIntegrationTest
 import com.ritense.dashboard.TestDataSourceProperties
 import com.ritense.dashboard.domain.WidgetConfiguration
 import com.ritense.dashboard.repository.DashboardRepository
 import com.ritense.dashboard.repository.WidgetConfigurationRepository
 import com.ritense.dashboard.service.DashboardService
-import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import org.hamcrest.collection.IsCollectionWithSize.hasSize
 import org.junit.jupiter.api.AfterEach
@@ -33,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -77,11 +74,8 @@ class DashboardResourceIT @Autowired constructor(
     }
 
     @Test
-    @WithMockUser(username = "user@ritense.com", authorities = [USER])
     fun `should get dashboards`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
+        val dashboard = dashboardService.createDashboard("Test dashboard", "Test description")
         widgetConfigurationRepository.save(
             WidgetConfiguration(
                 key = "doorlooptijd",
@@ -111,11 +105,8 @@ class DashboardResourceIT @Autowired constructor(
 
     @Test
     @Transactional
-    @WithMockUser(username = "user@ritense.com", authorities = [USER])
     fun `should get dashboards widget data`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Widget dashboard", "Test description")
-        }
+        val dashboard = dashboardService.createDashboard("Widget dashboard", "Test description")
         widgetConfigurationRepository.save(
             WidgetConfiguration(
                 key = "single-test",

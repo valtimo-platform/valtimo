@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package com.ritense.form.web.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.ritense.form.domain.FormDisplayType
-import com.ritense.form.domain.FormSizes
 import com.ritense.form.mapper.FormProcessLinkMapper.Companion.PROCESS_LINK_TYPE_FORM
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import java.util.UUID
@@ -27,10 +25,6 @@ import java.util.UUID
 data class FormProcessLinkUpdateRequestDto(
     override val id: UUID,
     val formDefinitionId: UUID,
-    val viewModelEnabled: Boolean? = false,
-    val formDisplayType: FormDisplayType? = FormDisplayType.modal,
-    val formSize: FormSizes? = FormSizes.medium,
-    val subtitles: List<String>? = null
 ) : ProcessLinkUpdateRequestDto {
     override val processLinkType: String
         get() = PROCESS_LINK_TYPE_FORM

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package com.ritense.valtimo.web.rest.dto;
 
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
-import org.operaton.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition;
+import org.camunda.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
 
 public class ProcessDefinitionWithPropertiesDto extends ProcessDefinitionDto {
 
@@ -31,7 +31,7 @@ public class ProcessDefinitionWithPropertiesDto extends ProcessDefinitionDto {
         return isReadOnly;
     }
 
-    public static ProcessDefinitionWithPropertiesDto fromProcessDefinition(OperatonProcessDefinition definition) {
+    public static ProcessDefinitionWithPropertiesDto fromProcessDefinition(CamundaProcessDefinition definition) {
         ProcessDefinitionWithPropertiesDto dto = new ProcessDefinitionWithPropertiesDto();
         dto.id = definition.getId();
         dto.key = definition.getKey();
