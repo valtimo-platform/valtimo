@@ -49,7 +49,7 @@ import com.ritense.search.domain.SearchFieldV2
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.service.SearchListColumnService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
@@ -104,7 +104,7 @@ class ObjectManagementService(
 
     fun getByTitle(title: String): ObjectManagement? = objectManagementRepository.findByTitle(title)
 
-    fun getAll(): List<ObjectManagement> = objectManagementRepository.findAll().sortedBy { it.title }
+    fun getAll(): List<ObjectManagement> = objectManagementRepository.findAll()
 
     @Transactional
     fun deleteById(id: UUID) {

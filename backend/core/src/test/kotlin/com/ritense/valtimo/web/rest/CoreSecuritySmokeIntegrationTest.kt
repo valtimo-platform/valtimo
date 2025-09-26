@@ -16,16 +16,8 @@
 
 package com.ritense.valtimo.web.rest
 
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-
 class CoreSecuritySmokeIntegrationTest : SecuritySmokeIntegrationTest(
     ignoredPathPatterns = setOf(
-        "GET /api/v1/ping",
-        "GET /api/v1/sse",
-        "GET /api/v1/sse/{subscriptionId}"
+        "GET /api/v1/ping"
     )
-) {
-    @MockitoBean
-    lateinit var processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
-}
+)

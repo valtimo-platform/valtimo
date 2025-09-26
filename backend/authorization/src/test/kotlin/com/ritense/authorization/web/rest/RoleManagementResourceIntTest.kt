@@ -38,7 +38,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import kotlin.test.assertContentEquals
 
 class RoleManagementResourceIntTest : BaseIntegrationTest() {
     @Autowired
@@ -224,7 +223,7 @@ class RoleManagementResourceIntTest : BaseIntegrationTest() {
                     listOf(
                         UpdateRolePermissionRequest(
                             oldRolePermissions[0].resourceType,
-                            oldRolePermissions[0].actions.map { it.key },
+                            oldRolePermissions[0].action.key,
                             oldRolePermissions[0].conditionContainer.conditions
                         )
                     )
@@ -262,7 +261,7 @@ class RoleManagementResourceIntTest : BaseIntegrationTest() {
                     listOf(
                         UpdateRolePermissionRequest(
                             oldRolePermissions[0].resourceType,
-                            oldRolePermissions[0].actions.map { it.key },
+                            oldRolePermissions[0].action.key,
                             oldRolePermissions[0].conditionContainer.conditions
                         )
                     )
