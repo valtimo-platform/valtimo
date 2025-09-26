@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,12 @@ import {
   PluginConfigurationComponent,
   PluginConfigurationData,
 } from '../../models';
-import {ActivatedRoute} from '@angular/router';
-import {getCaseManagementRouteParamsAndContext} from '@valtimo/shared';
+import {NGXLogger} from 'ngx-logger';
 
 @Component({
   selector: 'valtimo-plugin-configuration-container',
   templateUrl: './plugin-configuration-container.component.html',
   styleUrls: ['./plugin-configuration-container.component.scss'],
-  standalone: false,
 })
 export class PluginConfigurationContainerComponent
   implements OnInit, OnDestroy, Omit<PluginConfigurationComponent, 'pluginId'>
@@ -91,10 +89,7 @@ export class PluginConfigurationContainerComponent
     tap(isTypeConfiguration => this._validDefaultConfiguration.next(!isTypeConfiguration))
   );
 
-  constructor(
-    private readonly pluginService: PluginService,
-    private readonly route: ActivatedRoute
-  ) {}
+  constructor(private readonly pluginService: PluginService) {}
 
   ngOnInit(): void {
     this.openPluginSubscription();
@@ -168,7 +163,6 @@ export class PluginConfigurationContainerComponent
         instance.save$ = this.save$;
         instance.disabled$ = this.disabled$;
         instance.pluginId = pluginDefinitionKey;
-        instance.context$ = getCaseManagementRouteParamsAndContext(this.route);
 
         if (this.prefillConfiguration$) {
           instance.prefillConfiguration$ = this.prefillConfiguration$;

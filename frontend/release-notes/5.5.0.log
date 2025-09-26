@@ -1,0 +1,13 @@
+f73f027 - Updated version to 5.5.0
+313f8e2 - Updated version to 5.5.0-60.RC-SNAPSHOT
+72c9e42 - Merge branch 'main' into development
+0aa2291 - Fixed icon that is no longer in the current mdi package (#142)
+86d88f7 - fix: improve fe plugin interfaces (#141)
+1ee6d91 - feat: add warning to generate document (#140)
+062a815 - feat: implement documenten api plugin (#139)
+4b3eadc - feat: address FE comments on saving plugin actions (#138)
+2cbb274 - feat: add smartdocuments result process variable input with tooltip (#137)
+88a88de - feat: save plugin actions (#135)
+a22a1e0 - fix escaping contact moments breaking other functionality (#136)
+4e246f2 - feat: gen new package lock moment (#134)
+07ad4a3 - upgrade moment (#133)

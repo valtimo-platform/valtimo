@@ -1,0 +1,14 @@
+5bece6c - Updated version to 5.13.0
+d2805d1 - Merge branch 'main' into rc/5.13.0-119.RC
+599886b - Updated version to 5.13.0-119.RC-SNAPSHOT
+c894baf - style: change search fields layout (#263)
+dd1d965 - Exact plugin (#245)
+ec43d66 - feat - add tab search fields (#259)
+80a7ccf - Changed 'eigenaar' to 'behandelaar' (#262)
+0335810 - feat: component for showing configured case search fields (#260)
+2a77a11 - - Changed plug-in to plugin, to create 1 conform spelling of plugin. (#257)
+004261f - remove extra slash (#258)
+455d837 - Updated formiojs version also in the dependencies of the components package (#256)
+cbb6d59 - Downgrade formiojs from 4.14.9 to 4.14.8 since it breaks existings forms with a new bug (#254)
+e03c242 - Added default language setting (#252)
+6f7c0d7 - Feature/37410 assign assignee to case (#251)

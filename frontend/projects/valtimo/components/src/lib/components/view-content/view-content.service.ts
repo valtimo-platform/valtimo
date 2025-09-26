@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,19 +50,7 @@ export class ViewContentService {
     return this.converters[0].convert(value, definition);
   }
 
-  public isRawValue(definition: any): boolean {
-    const converter: TypeConverter | undefined = this.converters.find(
-      converter => converter.getTypeString() === definition.viewType
-    );
-
-    if (!!converter) {
-      return converter.isRawValue();
-    }
-
-    return this.converters[0].isRawValue();
-  }
-
-  public getSeparatorIndex(definition, separator): number {
+  getSeparatorIndex(definition, separator) {
     return definition.viewType.indexOf(separator);
   }
 }

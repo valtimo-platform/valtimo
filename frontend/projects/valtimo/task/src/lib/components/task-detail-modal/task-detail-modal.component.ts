@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 import {
-  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
-  OnDestroy,
   OnInit,
   Output,
   ViewChild,
@@ -28,12 +26,12 @@ import {Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
 import {CarbonModalSize} from '@valtimo/components';
-import {SseService} from '@valtimo/sse';
 import {FormSize, formSizeToCarbonModalSizeMap, TaskWithProcessLink} from '@valtimo/process-link';
+import {Modal} from 'carbon-components-angular';
 import moment from 'moment';
 import {NGXLogger} from 'ngx-logger';
-import {BehaviorSubject, combineLatest, Subscription} from 'rxjs';
-import {IntermediateSubmission, Task, TaskUpdateSseEvent} from '../../models';
+import {BehaviorSubject, Subscription} from 'rxjs';
+import {IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService} from '../../services';
 import {
   CAN_ASSIGN_TASK_PERMISSION,
@@ -41,22 +39,17 @@ import {
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {filter, take} from 'rxjs/operators';
-import {IconService} from 'carbon-components-angular';
-import {DocumentService} from '@valtimo/document';
-import {TaskService} from '../../services/task.service';
-import {FolderDetailsReference16} from '@carbon/icons';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
 @Component({
-  standalone: false,
   selector: 'valtimo-task-detail-modal',
   templateUrl: './task-detail-modal.component.html',
   styleUrls: ['./task-detail-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TaskDetailModalComponent implements OnInit, OnDestroy {
+export class TaskDetailModalComponent implements OnInit {
+  @ViewChild('taskDetailModal') private readonly _modal: Modal;
   @ViewChild(TaskDetailIntermediateSaveComponent)
   private readonly _intermediateSaveComponent: TaskDetailIntermediateSaveComponent;
 
@@ -65,10 +58,6 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
 
   @Input() set modalSize(value: FormSize) {
     if (value) this.size$.next(formSizeToCarbonModalSizeMap[value]);
-  }
-
-  @Input() set openFromCaseManagement(value: boolean) {
-    if (value) this.openFromCaseManagement$.next(value);
   }
 
   public currentIntermediateSave$ = new BehaviorSubject<IntermediateSubmission | null>(null);
@@ -80,17 +69,13 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly submission$ = new BehaviorSubject<any>({});
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
-  public readonly businessKey$ = new BehaviorSubject<string>('');
 
   public readonly size$ = new BehaviorSubject<CarbonModalSize>('md');
-  public readonly openFromCaseManagement$ = new BehaviorSubject<boolean>(false);
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
   public readonly canModifyTask$ = new BehaviorSubject<boolean>(false);
 
   public readonly modalCloseEvent$ = new BehaviorSubject<boolean>(false);
-
-  public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
   private readonly _subscriptions = new Subscription();
 
@@ -99,42 +84,14 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     private readonly translateService: TranslateService,
     private readonly permissionService: PermissionService,
     private readonly logger: NGXLogger,
-    private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
-    private readonly sseService: SseService,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly iconService: IconService,
-    private readonly documentService: DocumentService,
-    private readonly taskService: TaskService,
-  ) {
-    this.iconService.registerAll([FolderDetailsReference16]);
-  }
+    private readonly taskIntermediateSaveService: TaskIntermediateSaveService
+  ) {}
 
   public ngOnInit(): void {
-    this.openTaskSubscription();
-    this.openTaskUpdateSseEventSubscription();
-  }
-
-  public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-  }
-
-  public openRelatedCase(): void {
-    const businessKey = this.businessKey$.getValue();
-
-    this.documentService
-      .getDocument(businessKey)
-      .pipe(take(1))
-      .subscribe(document => {
-        window.open(`/cases/${document.definitionId?.name}/document/${businessKey}`, '_blank');
-      });
-  }
-
-  private openTaskSubscription(): void {
     this._subscriptions.add(
       this.task$.subscribe(task => {
         if (task) {
           this.logger.debug('Checking if user allowed to assign a user to Task with id:', task.id);
-          this.businessKey$.next(task.businessKey);
 
           this.permissionService
             .requestPermission(CAN_ASSIGN_TASK_PERMISSION, {
@@ -158,17 +115,6 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
           this.canAssignUserToTask$.next(false);
         }
       })
-    );
-  }
-
-  private openTaskUpdateSseEventSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([
-        this.task$,
-        this.sseService.getSseEventObservable<TaskUpdateSseEvent>('TASK_UPDATE'),
-      ])
-        .pipe(filter(([task, event]) => task?.id === event.taskId))
-        .subscribe(() => this.closeModal())
     );
   }
 
@@ -216,17 +162,12 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   }
 
   public closeModal(): void {
-    this.modalOpen$.next(false);
+    this._modal.open = false;
     this.taskIntermediateSaveService.setSubmission({});
     this.modalCloseEvent$.next(!this.modalCloseEvent$.getValue());
   }
 
   private openModal(): void {
-    this.modalOpen$.next(false);
-
-    setTimeout(() => {
-      this.modalOpen$.next(true);
-      this.cdr.detectChanges();
-    });
+    this._modal.open = true;
   }
 }

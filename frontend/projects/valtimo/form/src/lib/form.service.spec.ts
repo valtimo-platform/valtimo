@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,9 @@
 import {TestBed} from '@angular/core/testing';
 
 import {FormService} from './form.service';
-import {HttpTestingController, provideHttpClientTesting} from '@angular/common/http/testing';
-import {VALTIMO_CONFIG} from '@valtimo/shared';
+import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
+import {VALTIMO_CONFIG} from '@valtimo/config';
 import {environment} from '@src/environments/environment';
-import {provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 
 describe('FormService', () => {
   let mockConfig;
@@ -31,13 +30,8 @@ describe('FormService', () => {
     mockConfig = {endpointUri: '/api/'};
 
     TestBed.configureTestingModule({
-      imports: [],
-      providers: [
-        FormService,
-        {provide: VALTIMO_CONFIG, useValue: environment},
-        provideHttpClient(withInterceptorsFromDi()),
-        provideHttpClientTesting(),
-      ],
+      imports: [HttpClientTestingModule],
+      providers: [FormService, {provide: VALTIMO_CONFIG, useValue: environment}],
     });
 
     httpTestingController = TestBed.inject(HttpTestingController);
