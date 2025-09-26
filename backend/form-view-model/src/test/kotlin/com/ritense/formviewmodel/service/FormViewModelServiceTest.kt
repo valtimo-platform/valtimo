@@ -3,7 +3,6 @@ package com.ritense.formviewmodel.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationService
-import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.domain.FormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.service.FormDefinitionService
@@ -14,10 +13,10 @@ import com.ritense.formviewmodel.viewmodel.ViewModel
 import com.ritense.formviewmodel.viewmodel.ViewModelLoaderFactory
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.domain.OperatonTask
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.domain.CamundaTask
 import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.CamundaTaskService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -39,14 +38,13 @@ import java.util.UUID
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FormViewModelServiceTest(
     @Mock private val viewModelLoaderFactory: ViewModelLoaderFactory,
-    @Mock private val operatonTaskService: OperatonTaskService,
+    @Mock private val camundaTaskService: CamundaTaskService,
     @Mock private val authorizationService: AuthorizationService,
-    @Mock private val operatonTask: OperatonTask,
+    @Mock private val camundaTask: CamundaTask,
     @Mock private val processAuthorizationService: ProcessAuthorizationService,
     @Mock private val processLinkService: ProcessLinkService,
     @Mock private val formDefinitionService: FormDefinitionService,
     @Mock private val userTaskProcessLink: FormProcessLink,
-    @Mock private val documentService: JsonSchemaDocumentService,
 ) : BaseTest() {
 
     private lateinit var objectMapper: ObjectMapper
@@ -60,20 +58,18 @@ class FormViewModelServiceTest(
         formViewModelService = FormViewModelService(
             objectMapper = objectMapper,
             viewModelLoaderFactory = viewModelLoaderFactory,
-            operatonTaskService = operatonTaskService,
+            camundaTaskService = camundaTaskService,
             authorizationService = authorizationService,
             processAuthorizationService = processAuthorizationService,
-            processLinkService = processLinkService,
-            documentService = documentService,
-
+            processLinkService = processLinkService
         )
 
         val formDefinitionId = UUID.randomUUID()
-        val processDefinition = mock<OperatonProcessDefinition>().apply {
+        val processDefinition = mock<CamundaProcessDefinition>().apply {
             whenever(this.key).thenReturn(PROCESS_DEF_KEY)
         }
-        whenever(operatonTask.processDefinition).thenReturn(processDefinition)
-        whenever(operatonTaskService.findTaskById(any())).thenReturn(operatonTask)
+        whenever(camundaTask.processDefinition).thenReturn(processDefinition)
+        whenever(camundaTaskService.findTaskById(any())).thenReturn(camundaTask)
         whenever(authorizationService.hasPermission<Boolean>(any())).thenReturn(true)
         whenever(userTaskProcessLink.formDefinitionId).thenReturn(formDefinitionId)
         whenever(userTaskProcessLink.activityType).thenReturn(ActivityTypeWithEventName.USER_TASK_CREATE)
@@ -149,7 +145,7 @@ class FormViewModelServiceTest(
     data class RandomViewModel(
         val custom: String
     ) : ViewModel {
-        override fun update(task: OperatonTask?, page: Int?): ViewModel {
+        override fun update(task: CamundaTask?, page: Int?): ViewModel {
             return this
         }
     }

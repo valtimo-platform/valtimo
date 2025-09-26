@@ -26,7 +26,6 @@ import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.authorization.request.RelatedEntityAuthorizationRequest
 import com.ritense.authorization.role.Role
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.criteria.AbstractQuery
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.CriteriaQuery
@@ -47,11 +46,13 @@ abstract class AuthorizationSpecification<T : Any>(
     }
 
     private fun isAuthorizedForEntity(entityAuthorizationRequest: EntityAuthorizationRequest<T>): Boolean {
-        val entities = entityAuthorizationRequest.entities.ifEmpty { listOf(null) }
-        val permissions = permissions.filter { permission ->
-            entityAuthorizationRequest.resourceType == permission.resourceType && permission.actions.contains(entityAuthorizationRequest.action)
+        if (entityAuthorizationRequest.entities.isEmpty()) {
+            return false
         }
-        return entities.all { entity ->
+        val permissions = permissions.filter { permission ->
+            entityAuthorizationRequest.resourceType == permission.resourceType && entityAuthorizationRequest.action == permission.action
+        }
+        return entityAuthorizationRequest.entities.all { entity ->
             permissions.any { permission ->
                 permission
                     .appliesTo(
@@ -69,19 +70,12 @@ abstract class AuthorizationSpecification<T : Any>(
     ): Boolean {
 
         if (relatedEntityAuthorizationRequest.resourceType == relatedEntityAuthorizationRequest.relatedResourceType) {
-            val entity = try {
-                identifierToEntity(relatedEntityAuthorizationRequest.relatedResourceId)
-            } catch (e: NotImplementedError) {
-                null
-            } catch (e: Throwable) {
-                logger.error { e }
-                null
-            }
+
             return isAuthorizedForEntity(
                 EntityAuthorizationRequest(
                     relatedEntityAuthorizationRequest.resourceType,
                     relatedEntityAuthorizationRequest.action,
-                    entity
+                    identifierToEntity(relatedEntityAuthorizationRequest.relatedResourceId)
                 ).apply {
                     relatedEntityAuthorizationRequest.context?.let { context -> this.withContext(context) }
                 }
@@ -91,7 +85,7 @@ abstract class AuthorizationSpecification<T : Any>(
         return permissions
             .filter { permission ->
                 relatedEntityAuthorizationRequest.resourceType == permission.resourceType
-                    && permission.actions.contains(relatedEntityAuthorizationRequest.action)
+                    && relatedEntityAuthorizationRequest.action == permission.action
             }
             .firstOrNull { permission ->
                 permission.appliesInContext(
@@ -141,7 +135,7 @@ abstract class AuthorizationSpecification<T : Any>(
             listOf(
                 Permission(
                     resourceType = container.resourceType,
-                    actions = mutableListOf(Action<Any>(Action.IGNORE)),
+                    action = Action<Any>(Action.IGNORE),
                     conditionContainer = ConditionContainer(container.conditions),
                     role = Role(key = "")
                 )
@@ -164,12 +158,10 @@ abstract class AuthorizationSpecification<T : Any>(
      */
     override fun toPredicate(
         root: Root<T>,
-        query: CriteriaQuery<*>?,
+        query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder
-    ): Predicate? {
-        return query?.let {
-            toPredicate(root, it as AbstractQuery<*>, criteriaBuilder)
-        }
+    ): Predicate {
+        return toPredicate(root, query as AbstractQuery<*>, criteriaBuilder)
     }
 
     /**
@@ -187,8 +179,4 @@ abstract class AuthorizationSpecification<T : Any>(
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
-    }
 }

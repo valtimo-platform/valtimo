@@ -35,10 +35,11 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
@@ -189,9 +190,9 @@ class ZaakObjectService(
             objectManagementInfoProvider.getObjectManagementInfo(objectManagementId)
         val objectsApiPlugin =
             pluginService.createInstance(PluginConfigurationId(objectManagement.objectenApiPluginConfigurationId)) as ObjectenApiPlugin
-        val objectUrl = objectsApiPlugin.getObjectUrl(objectId)
+        val objectUrl = "${objectsApiPlugin.url}objects/$objectId"
         logger.debug { "Getting object for url $objectUrl" }
-        return objectsApiPlugin.getObject(objectUrl)
+        return objectsApiPlugin.getObject(URI.create(objectUrl))
     }
 
     private fun findZakenApiPlugin(zaakUrl: URI): ZakenApiPlugin {
@@ -245,7 +246,7 @@ class ZaakObjectService(
             )
         ) as ObjectenApiPlugin
 
-        return objectenApiPlugin.objectUpdate(
+        return objectenApiPlugin.updateObject(
             objectUrl,
             updateObjectRequest
         ).url
@@ -265,7 +266,13 @@ class ZaakObjectService(
             throw IllegalStateException("The objectUrl and objectId can not both be null.")
         }
 
-        val objectUri = objectUrl ?: objectenApiPlugin.getObjectUrl(objectId!!)
+        val objectUri = objectUrl ?: URI.create(
+                    UriComponentsBuilder.newInstance()
+                        .uri(objectenApiPlugin.url)
+                        .pathSegment("objects")
+                        .pathSegment(objectId.toString())
+                        .toUriString()
+                )
 
         return objectenApiPlugin.deleteObject(objectUri)
     }
@@ -282,7 +289,12 @@ class ZaakObjectService(
             PluginConfigurationId.existingId(objectManagement.objecttypenApiPluginConfigurationId)
         ) as ObjecttypenApiPlugin
 
-        val objectTypeUrl = objectTypenApiPlugin.getObjectTypeUrlById(objectManagement.objecttypeId)
+        val objectTypeUrl = UriComponentsBuilder.newInstance()
+            .uri(objectTypenApiPlugin.url)
+            .pathSegment("objecttypes")
+            .pathSegment(objectManagement.objecttypeId)
+            .build()
+            .toUri()
 
         val objectRequest = ObjectRequest(
             objectTypeUrl,
@@ -293,9 +305,15 @@ class ZaakObjectService(
             )
         )
 
-        val objectUrl = objectenApiPlugin.getObjectUrl(objectId)
+        val objectUrl = URI.create(
+            UriComponentsBuilder.newInstance()
+                .uri(objectenApiPlugin.url)
+                .pathSegment("objects")
+                .pathSegment(objectId.toString())
+                .toUriString()
+        )
 
-        return objectenApiPlugin.objectPatch(objectUrl, objectRequest).url
+        return objectenApiPlugin.patchObject(objectUrl, objectRequest).url
     }
 
     companion object {

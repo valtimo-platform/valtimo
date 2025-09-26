@@ -16,25 +16,48 @@
 
 package com.ritense.objectenapi.client
 
-import com.fasterxml.jackson.annotation.JsonFormat
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.objectenapi.client.dto.TypedObjectRecord
 import java.time.LocalDate
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-class ObjectRecord(
+data class ObjectRecord(
     val index: Int? = null,
     val typeVersion: Int,
     val data: JsonNode? = null,
     val geometry: ObjectGeometry? = null,
-    @JsonFormat(pattern = "yyyy-MM-dd")
     val startAt: LocalDate,
-    @JsonFormat(pattern = "yyyy-MM-dd")
     val endAt: LocalDate? = null,
-    @JsonFormat(pattern = "yyyy-MM-dd")
     val registrationAt: LocalDate? = null,
     val correctionFor: String? = null,
     val correctedBy: String? = null
+) {
+    companion object {
+        fun toTyped(objectRecord: ObjectRecord): TypedObjectRecord<JsonNode> {
+            return TypedObjectRecord(
+                index = objectRecord.index,
+                typeVersion = objectRecord.typeVersion,
+                data = objectRecord.data,
+                geometry = objectRecord.geometry,
+                startAt = objectRecord.startAt,
+                endAt = objectRecord.endAt,
+                registrationAt = objectRecord.registrationAt,
+                correctionFor = objectRecord.correctionFor,
+                correctedBy = objectRecord.correctedBy
+            )
+        }
+    }
+}
+
+fun TypedObjectRecord<JsonNode>.toObjectRecord() = ObjectRecord(
+    index = index,
+    typeVersion = typeVersion,
+    data = data,
+    geometry = geometry,
+    startAt = startAt,
+    endAt = endAt,
+    registrationAt = registrationAt,
+    correctionFor = correctionFor,
+    correctedBy = correctedBy
 )
 
 class ObjectGeometry(

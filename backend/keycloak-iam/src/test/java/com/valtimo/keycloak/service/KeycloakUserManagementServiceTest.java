@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
+import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
 import jakarta.ws.rs.NotFoundException;
 import java.util.List;
@@ -46,14 +47,12 @@ import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
 
 class KeycloakUserManagementServiceTest {
 
     private KeycloakService keycloakService;
     private KeycloakUserManagementService userManagementService;
-    private CacheManager cacheManager;
-    private CacheManagerUserCache cacheManagerUserCache;
 
     private UserRepresentation jamesVance;
     private UserRepresentation johnDoe;
@@ -67,9 +66,8 @@ class KeycloakUserManagementServiceTest {
     @BeforeEach
     public void before() {
         keycloakService = mock(KeycloakService.class, RETURNS_DEEP_STUBS);
-        cacheManager = new ConcurrentMapCacheManager();
-        cacheManagerUserCache = new CacheManagerUserCache(cacheManager);
-        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManagerUserCache);
+        CacheManager cacheManager = mock();
+        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManager);
 
         jamesVance = newUser("James", "Vance", List.of(USER));
         johnDoe = newUser("John", "Doe", List.of(USER, ADMIN));
@@ -85,6 +83,8 @@ class KeycloakUserManagementServiceTest {
             .thenReturn(Set.of());
         when(keycloakService.clientRolesResource(any()).get(any()).getRoleGroupMembers())
             .thenReturn(Set.of());
+
+        when(cacheManager.getCache("userRepresentationByEmail")).thenReturn(new ConcurrentMapCache("userRepresentationByEmail"));
     }
 
     @AfterEach
@@ -188,45 +188,52 @@ class KeycloakUserManagementServiceTest {
     }
 
     @Test
-    void shouldNotfindByUsernameShouldReturnUserWhenSearchingOnUserId() {
+    void findByUserIdentifierShouldReturnUserWhenSearchingOnUserId() {
+        OauthConfigHolder.getCurrentInstance().setIdentifierField(ValtimoProperties.IdentifierField.USERID);
+
         when(keycloakService.usersResource(any()).get(eq(johnDoe.getId())).toRepresentation())
             .thenReturn(johnDoe);
 
-        var user = userManagementService.findByUsername(johnDoe.getId());
+        var user = userManagementService.findByUserIdentifier(johnDoe.getId());
 
-        assertThat(user).isNull();
-    }
-
-    @Test
-    void findByUsernameShouldReturnUserWhenSearchingOnUsername() {
-        when(keycloakService.usersResource(any()).searchByUsername(eq(johnDoe.getUsername()), eq(true)))
-            .thenReturn(List.of(johnDoe));
-
-        var user = userManagementService.findByUsername(johnDoe.getUsername());
-
-        verify(keycloakService.usersResource(any())).searchByUsername(eq(johnDoe.getUsername()), eq(true));
+        verify(keycloakService.usersResource(any()).get(eq(johnDoe.getId()))).toRepresentation();
         assertThat(user).isNotNull();
     }
 
     @Test
-    void shouldRetrieveManageableUserFromCache() {
+    void findByUserIdentifierShouldReturnUserWhenSearchingOnUsername() {
+        OauthConfigHolder.getCurrentInstance().setIdentifierField(ValtimoProperties.IdentifierField.USERNAME);
+
+        when(keycloakService.usersResource(any()).search(eq(johnDoe.getUsername())))
+            .thenReturn(List.of(johnDoe));
+
+        var user = userManagementService.findByUserIdentifier(johnDoe.getUsername());
+
+        verify(keycloakService.usersResource(any())).search(eq(johnDoe.getUsername()));
+        assertThat(user).isNotNull();
+    }
+
+    @Test
+    void shouldRetrieveUserInfoFromCache() {
         String email = "test@example.com";
 
         userManagementService.findByEmail(email);
         userManagementService.findByEmail(email);
+        userManagementService.findNamedUserByEmail(email);
 
-        verify(keycloakService.usersResource(any()), times(1))
-            .searchByEmail(email, true);
+        verify(keycloakService.usersResource(any()), times(1)).search(null, null, null, email, 0, 1, true, true);
     }
 
     @Test
-    void findByUsernameShouldNotThrowAnExceptionWhenSearchingOnUsernameAndNoUserIsNotFound() {
-        when(keycloakService.usersResource(any()).searchByUsername(eq(johnDoe.getUsername()), eq(true)))
+    void findByUserIdentifierShouldNotThrowAnExceptionWhenSearchingOnUsernameAndNoUserIsNotFound() {
+        OauthConfigHolder.getCurrentInstance().setIdentifierField(ValtimoProperties.IdentifierField.USERNAME);
+
+        when(keycloakService.usersResource(any()).search(eq(johnDoe.getUsername())))
             .thenReturn(List.of());
 
-        var user = userManagementService.findByUsername(johnDoe.getUsername());
+        var user = userManagementService.findByUserIdentifier(johnDoe.getUsername());
 
-        verify(keycloakService.usersResource(any())).searchByUsername(eq(johnDoe.getUsername()), eq(true));
+        verify(keycloakService.usersResource(any())).search(eq(johnDoe.getUsername()));
         assertThat(user).isNull();
     }
 

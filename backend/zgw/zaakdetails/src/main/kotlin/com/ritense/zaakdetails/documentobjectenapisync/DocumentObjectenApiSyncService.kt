@@ -37,7 +37,7 @@ import com.ritense.zaakdetails.service.ZaakdetailsObjectService
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -69,8 +69,23 @@ class DocumentObjectenApiSyncService(
         sync(documentService.get(event.documentId().id.toString()))
     }
 
+    @Deprecated("Since 12.6.0", ReplaceWith("com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementServic.getSyncConfiguration"))
+    fun getSyncConfiguration(documentDefinitionName: String, documentDefinitionVersion: Long): DocumentObjectenApiSync? {
+        return documentObjectenApiSyncManagementService.getSyncConfiguration(documentDefinitionName, documentDefinitionVersion)
+    }
+
+    @Deprecated("Since 12.6.0", ReplaceWith("com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementService.saveSyncConfiguration"))
+    fun saveSyncConfiguration(sync: DocumentObjectenApiSync) {
+        documentObjectenApiSyncManagementService.saveSyncConfiguration(sync)
+    }
+
+    @Deprecated("Since 12.6.0", ReplaceWith("com.ritense.zaakdetails.documentobjectenapisync.DocumentObjectenApiSyncManagementService.deleteSyncConfigurationByDocumentDefinition"))
+    fun deleteSyncConfigurationByDocumentDefinition(documentDefinitionName: String, documentDefinitionVersion: Long) {
+        documentObjectenApiSyncManagementService.deleteSyncConfigurationByDocumentDefinition(documentDefinitionName, documentDefinitionVersion)
+    }
+
     private fun sync(document: Document) {
-        val syncConfiguration = documentObjectenApiSyncManagementService.getSyncConfiguration(document.definitionId().caseDefinitionId())
+        val syncConfiguration = documentObjectenApiSyncManagementService.getSyncConfiguration(document.definitionId().name(), document.definitionId().version())
         if (syncConfiguration?.enabled == true) {
             logger.debug { "Sync configuration found for document ${document.id()}" }
             val objectManagementConfiguration =
@@ -91,7 +106,7 @@ class DocumentObjectenApiSyncService(
                 logger.debug { "Zaakdetails object already exists: update." }
                 zaakdetailsObject = zaakdetailsObjectOptional.get()
 
-                objectenApiPlugin.objectUpdate(zaakdetailsObject.objectURI, objectRequest)
+                objectenApiPlugin.updateObject(zaakdetailsObject.objectURI, objectRequest)
 
                 checkExistingZaakObjectBeforeCreating = false
             } else {
@@ -99,7 +114,7 @@ class DocumentObjectenApiSyncService(
                 val existingObjectWrapper = getObjectWithCaseId(document, objectenApiPlugin, objectManagementConfiguration, objecttypenApiPlugin)
 
                 if(existingObjectWrapper != null) { //Zaakdetails object exists, but reference has not been stored: update and store reference
-                    objectenApiPlugin.objectUpdate(existingObjectWrapper.url, objectRequest)
+                    objectenApiPlugin.updateObject(existingObjectWrapper.url, objectRequest)
 
                     zaakdetailsObject = ZaakdetailsObject(
                         documentId = document.id().id,
@@ -151,20 +166,18 @@ class DocumentObjectenApiSyncService(
         objectenApiPlugin: ObjectenApiPlugin,
         objectManagementConfiguration: ObjectManagementInfo,
         objecttypenApiPlugin: ObjecttypenApiPlugin
-    ): ObjectWrapper? {
+        ): ObjectWrapper? {
 
         val searchString = ObjectSearchParameter.toQueryParameter(
             ObjectSearchParameter("caseId", EQUAL_TO, document.id().toString())
         )
 
-        val results = objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
+        return objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
             objecttypesApiUrl = objecttypenApiPlugin.url,
             objecttypeId = objectManagementConfiguration.objecttypeId,
             searchString = searchString,
             pageable = PageRequest.of(0, 2)
-        ).results
-        require(results.size <= 1) { "Failed to Sync document to Objecten API: Found multiple sync targets" }
-        return results.firstOrNull()
+        ).results.firstOrNull()
     }
 
     private fun createZaakObjectIfNotExisting(
@@ -180,12 +193,12 @@ class DocumentObjectenApiSyncService(
                 ZakenApiPlugin.findConfigurationByUrl(zaakUri)
             )
 
-            if (zakenApiPlugin == null) {
+            if(zakenApiPlugin == null) {
                 logger.debug { "Zaken API plugin has not been configured: can't link the Zaakdetails object to the Zaak" }
                 return
             }
 
-            if (checkExistingZaakObjectBeforeCreating) {
+            if(checkExistingZaakObjectBeforeCreating) {
                 val zaakobjectExists = zakenApiPlugin.getZaakObject(zaakUri, zaakdetailsObject.objectURI) != null
                 if (!zaakobjectExists) {
                     logger.debug { "Zaakdetails object has not been linked to the Zaak yet" }
@@ -198,7 +211,7 @@ class DocumentObjectenApiSyncService(
             zaakdetailsObject.linkedToZaak = true
             zaakdetailsObjectService.save(zaakdetailsObject)
         } catch (e: ZaakInstanceLinkNotFoundException) {
-            logger.debug(e) { "Zaak does not exist yet: can't link the Zaakdetails object to the Zaak" }
+            logger.debug { "Zaak does not exist yet: can't link the Zaakdetails object to the Zaak" }
             return
         }
     }

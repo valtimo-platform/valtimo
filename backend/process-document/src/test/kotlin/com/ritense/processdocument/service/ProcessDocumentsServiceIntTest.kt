@@ -24,13 +24,12 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.BaseIntegrationTest
-import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byName
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.OperatonTaskService
-import org.operaton.bpm.engine.ProcessEngineException
-import org.operaton.bpm.engine.RuntimeService
+import com.ritense.valtimo.camunda.repository.CamundaTaskSpecificationHelper.Companion.byName
+import com.ritense.valtimo.service.CamundaProcessService
+import com.ritense.valtimo.service.CamundaTaskService
+import org.camunda.bpm.engine.ProcessEngineException
+import org.camunda.bpm.engine.RuntimeService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -53,19 +52,16 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
     lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
 
     @Autowired
-    lateinit var processDocumentService: ProcessDocumentService
-
-    @Autowired
     lateinit var documentService: DocumentService
 
     @Autowired
-    lateinit var taskService: OperatonTaskService
+    lateinit var taskService: CamundaTaskService
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
     @Autowired
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
     lateinit var documentJson: String
     lateinit var document: Document
@@ -83,35 +79,10 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
 
     @Test
     @Throws(JsonProcessingException::class)
-    fun `should delete processes for a document`() {
-        val request = NewDocumentAndStartProcessRequest(
-            "delete-processes",
-            NewDocumentRequest(
-                "house",
-                "house",
-                "1.0.0",
-                objectMapper.readTree(documentJson)
-            )
-        )
-
-        val result = runWithoutAuthorization {
-            processDocumentService.newDocumentAndStartProcess(request)
-        }
-
-        assertEquals(0, result.errors().size)
-    }
-
-    @Test
-    @Throws(JsonProcessingException::class)
     fun `should start process by process definition key`() {
         document = runWithoutAuthorization {
             documentService.createDocument(
-                NewDocumentRequest(
-                    "house",
-                    "house",
-                    "1.0.0",
-                    objectMapper.readTree(documentJson)
-                )
+                NewDocumentRequest("house", objectMapper.readTree(documentJson))
             ).resultingDocument().orElseThrow()
         }
         val processInstance = runtimeService.startProcessInstanceByKey(
@@ -131,13 +102,9 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
         assertNotNull(task)
         val startedProcessId = task.getProcessInstanceId()
         val associatedProcessDocuments =
-            processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(
-                JsonSchemaDocumentId.existingId(
-                    document.id().id
-                )
-            )
+            processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(JsonSchemaDocumentId.existingId(document.id().id))
         val resultProcessInstance = runWithoutAuthorization {
-            operatonProcessService.findProcessInstanceById(startedProcessId).get()
+            camundaProcessService.findProcessInstanceById(startedProcessId).get()
         }
         assertEquals(document.id().toString(), resultProcessInstance.businessKey)
         assertEquals(associatedProcessDocuments.size, 2)
@@ -160,12 +127,7 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
     fun `should fail to start process with non existing process definition key`() {
         document = runWithoutAuthorization {
             documentService.createDocument(
-                NewDocumentRequest(
-                    "house",
-                    "house",
-                    "1.0.0",
-                    objectMapper.readTree(documentJson)
-                )
+                NewDocumentRequest("house", objectMapper.readTree(documentJson))
             ).resultingDocument().orElseThrow()
         }
         val exception = assertThrows<ProcessEngineException> {

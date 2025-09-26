@@ -32,15 +32,14 @@ import com.ritense.document.exception.ModifyDocumentException
 import com.ritense.document.exception.UnknownDocumentDefinitionException
 import com.ritense.document.service.DocumentService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.exception.ValueResolverValidationException
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.UUID
 import java.util.function.Function
 
@@ -64,12 +63,12 @@ class DocumentJsonValueResolverFactory(
         processInstanceId: String,
         variableScope: VariableScope
     ): Function<String, Any?> {
-        val document = processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+        val document = processDocumentService.getDocument(CamundaProcessInstanceId(processInstanceId), variableScope)
         return createResolver(document)
     }
 
     override fun createValidator(documentDefinitionName: String): Function<String, Unit> {
-        val documentDefinition = documentDefinitionService.findActiveByName(documentDefinitionName)
+        val documentDefinition = documentDefinitionService.findLatestByName(documentDefinitionName)
             .orElseThrow { UnknownDocumentDefinitionException(documentDefinitionName) }
 
         return Function { requestedValue ->
@@ -93,7 +92,7 @@ class DocumentJsonValueResolverFactory(
         values: Map<String, Any?>
     ) {
         val document = AuthorizationContext.runWithoutAuthorization {
-            processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+            processDocumentService.getDocument(CamundaProcessInstanceId(processInstanceId), variableScope)
         }
         val documentContent = document.content().asJson()
         buildJsonPatch(documentContent, values)
@@ -132,37 +131,42 @@ class DocumentJsonValueResolverFactory(
         return emptyDocumentContent
     }
 
-    override fun getResolvableKeyOptions(caseDefinitionId: CaseDefinitionId): List<ValueResolverOption> {
-        val documentDefinition = documentDefinitionService.findByCaseDefinitionId(caseDefinitionId).orElseThrow()
-        val schemaAsNode = documentDefinition.schema
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions(documentDefinitionName: String, version: Long) instead")
+    override fun getResolvableKeys(documentDefinitionName: String, version: Long): List<String> {
+        val documentDefinition = documentDefinitionService.findByNameAndVersion(documentDefinitionName, version).orElseThrow()
+        return documentDefinitionService.getPropertyNames(documentDefinition)
+    }
+
+    @Deprecated("Deprecated since 12.6.0, Use getResolvableKeyOptions(documentDefinitionName: String) instead")
+    override fun getResolvableKeys(documentDefinitionName: String): List<String> {
+        val documentDefinition = documentDefinitionService.findLatestByName(documentDefinitionName).orElseThrow()
+        return documentDefinitionService.getPropertyNames(documentDefinition)
+    }
+
+    override fun getResolvableKeyOptions(documentDefinitionName: String, version: Long): List<ValueResolverOption> {
+        val documentDefinition = documentDefinitionService.findByNameAndVersion(documentDefinitionName, version).orElseThrow()
+        val schemaAsNode = documentDefinition.getSchema()
             .asJson() as ObjectNode
         return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
     }
 
-    override fun getResolvableKeyOptions(caseDefinitionKey: String): List<ValueResolverOption> {
-        val documentDefinitionName = caseDefinitionKey
-        val documentDefinition = documentDefinitionService.findActiveByName(documentDefinitionName).orElseThrow()
-        val schemaAsNode = documentDefinition.schema
+    override fun getResolvableKeyOptions(documentDefinitionName: String): List<ValueResolverOption> {
+        val documentDefinition = documentDefinitionService.findLatestByName(documentDefinitionName).orElseThrow()
+        val schemaAsNode = documentDefinition.getSchema()
             .asJson() as ObjectNode
         return getPropertyNamesFromObjectNode(documentDefinition, schemaAsNode, "$PREFIX:")
     }
 
     private fun buildJsonPatch(jsonNode: JsonNode, values: Map<String, Any?>) {
-        values.forEach {
-            val jsonPointer = toJsonPointer(it.key.substringAfter(":"))
-            val valueNode = toValueNode(it.value)
-            val jsonPatchBuilder = JsonPatchBuilder()
-            jsonPatchBuilder.addJsonNodeValue(jsonNode, jsonPointer, valueNode)
-            JsonPatchService.apply(jsonPatchBuilder.build(), jsonNode)
-        }
-    }
+        val jsonPatchBuilder = JsonPatchBuilder()
 
-    private fun toJsonPointer(path: String): JsonPointer {
-        var newPath: String = path
-        if (!path.startsWith('/')) {
-            newPath = "/${path}"
+        values.forEach {
+            val path = JsonPointer.valueOf(it.key.substringAfter(":"))
+            val valueNode = toValueNode(it.value)
+            jsonPatchBuilder.addJsonNodeValue(jsonNode, path, valueNode)
         }
-        return JsonPointer.valueOf(newPath.replace('.', '/'))
+
+        JsonPatchService.apply(jsonPatchBuilder.build(), jsonNode)
     }
 
     private fun validateJsonPointer(documentDefinition: JsonSchemaDocumentDefinition, jsonPointer: String) {
@@ -240,7 +244,7 @@ class DocumentJsonValueResolverFactory(
             if (isSimpleObject(propertyType)) {
                 options += ValueResolverOption(path, ValueResolverOptionType.FIELD)
             } else if (propertyType == "object") {
-                node["properties"]?.fields()?.forEach { jsonNode ->
+                node["properties"].fields().forEach { jsonNode ->
                     options += getPropertyNamesFromObjectNode(
                         definition,
                         jsonNode.value as ObjectNode,

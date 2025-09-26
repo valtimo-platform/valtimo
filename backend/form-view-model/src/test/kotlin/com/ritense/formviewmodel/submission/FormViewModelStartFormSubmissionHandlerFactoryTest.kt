@@ -1,6 +1,5 @@
 package com.ritense.formviewmodel.submission
 
-import com.ritense.form.domain.FormDefinition
 import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.formviewmodel.BaseTest
@@ -12,7 +11,6 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.whenever
-import java.util.Optional
 import java.util.UUID
 
 @ExtendWith(MockitoExtension::class)
@@ -21,7 +19,7 @@ class FormViewModelStartFormSubmissionHandlerFactoryTest(
 ) : BaseTest() {
 
     private lateinit var formViewModelStartFormSubmissionHandlerFactory: FormViewModelStartFormSubmissionHandlerFactory
-    private val testStartFormSubmissionHandler = TestStartFormSubmissionHandler(formDefinitionService = formDefinitionService)
+    private val testStartFormSubmissionHandler = TestStartFormSubmissionHandler()
 
     @BeforeEach
     fun setUp() {
@@ -33,7 +31,7 @@ class FormViewModelStartFormSubmissionHandlerFactoryTest(
 
     @Test
     fun `should create submission handler for form validation`() {
-        val handler = formViewModelStartFormSubmissionHandlerFactory.getHandlerForFormValidation(testStartFormSubmissionHandler.userTaskFormName)
+        val handler = formViewModelStartFormSubmissionHandlerFactory.getHandlerForFormValidation(testStartFormSubmissionHandler.formName)
         assertThat(handler).isInstanceOf(TestStartFormSubmissionHandler::class.java)
     }
 
@@ -45,15 +43,9 @@ class FormViewModelStartFormSubmissionHandlerFactoryTest(
 
     @Test
     fun `should create submission handler for processLink`() {
-        val formDefinitionId = UUID.randomUUID()
         val processsLink = mock<FormProcessLink?>().apply {
-            whenever(this.formDefinitionId).thenReturn(formDefinitionId)
+            whenever(this.formDefinitionId).thenReturn(testStartFormSubmissionHandler.formDefinitionId)
         }
-        val formDefinition = mock<FormDefinition?>().apply {
-            whenever(this.name).thenReturn(testStartFormSubmissionHandler.userTaskFormName)
-        }
-        whenever(formDefinitionService.getFormDefinitionById(formDefinitionId)).thenReturn(Optional.of(formDefinition))
-
         val handler = formViewModelStartFormSubmissionHandlerFactory.getHandler(processsLink)
         assertThat(handler).isInstanceOf(TestStartFormSubmissionHandler::class.java)
     }

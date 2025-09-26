@@ -55,12 +55,8 @@ class TestApplication {
         )
 
         @Bean
-        fun testStartFormSubmissionHandler(commandDispatcher: CommandDispatcher?, formDefinitionService: FormDefinitionService) = spy(
-            TestStartFormSubmissionHandler(
-                userTaskFormName = "fvm-user-task",
-                startFormName = "fvm-start-event",
-                formDefinitionService = formDefinitionService,
-            )
+        fun testStartFormSubmissionHandler(commandDispatcher: CommandDispatcher?) = spy(
+            TestStartFormSubmissionHandler(formName = "fvm-user-task",)
         )
 
         @Bean
