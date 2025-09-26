@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,10 @@ import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
   selector: 'v-input-label',
   templateUrl: './input-label.component.html',
   styleUrls: ['./input-label.component.scss'],
-  standalone: false,
 })
 export class InputLabelComponent {
   @Input() public name = '';
   @Input() public tooltip = '';
-  @Input() public tooltipTranslationKey = '';
   @Input() public largeMargin = false;
   @Input() public small = false;
   @Input() public noMargin = false;

@@ -6,6 +6,7 @@
     "entryFile": "src/public_api.ts"
   },
   "allowedNonPeerDependencies": [
+    "ngx-toastr",
     "@foxythemes/bootstrap-datetime-picker-bs4",
     "bpmn-js",
     "jquery",
@@ -34,8 +35,6 @@
     "deepmerge-ts",
     "@carbon/charts-angular",
     "@types/topojson",
-    "@tadashi/currency",
-    "semver",
-    "muuri"
+    "@tadashi/currency"
   ]
 }

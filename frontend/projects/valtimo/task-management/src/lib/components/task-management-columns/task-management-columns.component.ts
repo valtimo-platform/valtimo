@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   CARBON_CONSTANTS,
@@ -27,16 +25,28 @@ import {
   MoveRowDirection,
   MoveRowEvent,
 } from '@valtimo/components';
-import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
+import {CommonModule} from '@angular/common';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
+import {TaskManagementApiService, TaskManagementService} from '../../services';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subject,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
 import {
   TaskListColumn,
   TaskListColumnDisplayTypeParameters,
   TaskListColumnModalCloseEvent,
   TaskListColumnModalType,
 } from '@valtimo/task';
-import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, map, Observable, Subject, switchMap, take, tap} from 'rxjs';
-import {TaskManagementApiService, TaskManagementService} from '../../services';
 import {TaskManagementColumnModalComponent} from '../task-management-column-modal/task-management-column-modal.component';
 
 @Component({
@@ -61,28 +71,27 @@ export class TaskManagementColumnsComponent {
 
   private readonly _refreshColumns$ = new BehaviorSubject<null | 'noAnimation'>(null);
 
-  public readonly caseDefinitionKey$: Observable<string> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    map((params: CaseManagementParams | undefined) => (!params ? '' : params.caseDefinitionKey))
+  public readonly documentDefinitionName$: Observable<string> = this.route.params.pipe(
+    map(params => params?.name),
+    filter(name => !!name)
   );
 
   public readonly loadingColumns$ = new BehaviorSubject<boolean>(true);
 
-  public readonly selectedTaskListColumn$ = new Subject<TaskListColumn | null>();
+  public readonly selectedTaskListColumn$ = new Subject<TaskListColumn>();
 
   public readonly cachedTaskListColumns$ = new BehaviorSubject<TaskListColumn[]>([]);
 
   public readonly taskListColumns$: Observable<TaskListColumn[]> = combineLatest([
-    this.caseDefinitionKey$,
+    this.documentDefinitionName$,
     this._refreshColumns$,
     this.translateService.stream('key'),
   ]).pipe(
     tap(([_, refresh]) => {
       if (refresh !== 'noAnimation') this.loadingColumns$.next(true);
     }),
-    switchMap(([caseDefinitionKey]) =>
-      this.taskManagementApiService.getTaskListColumns(caseDefinitionKey)
+    switchMap(([documentDefinitionName]) =>
+      this.taskManagementApiService.getTaskListColumns(documentDefinitionName)
     ),
     tap(columns => {
       this.cachedTaskListColumns$.next(columns);
@@ -104,7 +113,7 @@ export class TaskManagementColumnsComponent {
           `listColumnDisplayType.${column?.displayType?.type}`
         ),
         displayTypeParameters: this.getDisplayTypeParametersView(
-          column?.displayType?.displayTypeParameters
+          column.displayType.displayTypeParameters
         ),
       }))
     ),
@@ -115,7 +124,7 @@ export class TaskManagementColumnsComponent {
   );
 
   public readonly showDeleteModal$ = new Subject<boolean>();
-  public readonly deleteColumnKey$ = new BehaviorSubject<string>('');
+  public readonly deleteRowKey$ = new BehaviorSubject<string>('');
 
   public readonly disabled$ = new BehaviorSubject<boolean>(true);
 
@@ -166,12 +175,8 @@ export class TaskManagementColumnsComponent {
 
   public readonly actionItems: ActionItem[] = [
     {
-      label: 'interface.edit',
-      callback: this.editColumn.bind(this),
-    },
-    {
       label: 'interface.delete',
-      callback: this.deleteColumn.bind(this),
+      callback: this.deleteRow.bind(this),
       type: 'danger',
     },
   ];
@@ -189,18 +194,26 @@ export class TaskManagementColumnsComponent {
     this._refreshColumns$.next(noAnimation ? 'noAnimation' : null);
   }
 
-  public deleteColumn(taskListColumn: TaskListColumn): void {
+  public deleteRow(taskListColumn: TaskListColumn): void {
     this.showDeleteModal$.next(true);
-    this.deleteColumnKey$.next(taskListColumn.key);
+    this.deleteRowKey$.next(taskListColumn.key);
   }
 
-  public onItemsReordered(reorderedItems: TaskListColumn[], caseDefinitionKey: string): void {
+  public onMoveRowClick(event: MoveRowEvent, documentDefinitionName: string): void {
+    const {direction, index} = event;
+
     this.disable();
 
-    this.taskManagementApiService
-      .updateTaskListColumnOrder(
-        caseDefinitionKey,
-        reorderedItems.map((column: TaskListColumn) => column.key)
+    this.cachedTaskListColumns$
+      .pipe(
+        take(1),
+        switchMap(taskListColumns =>
+          this.taskManagementApiService.swapTaskListColumns(
+            documentDefinitionName,
+            taskListColumns[index],
+            taskListColumns[direction === MoveRowDirection.UP ? index - 1 : index + 1]
+          )
+        )
       )
       .subscribe({
         next: () => {
@@ -210,13 +223,10 @@ export class TaskManagementColumnsComponent {
       });
   }
 
-  public editColumn(columnItem: TaskListColumn): void {
+  public columnRowClicked(row: {key: string}): void {
     this.cachedTaskListColumns$.pipe(take(1)).subscribe(cachedTaskListColumns => {
-      const selectedTaskListColumn = cachedTaskListColumns.find(
-        column => column.key === columnItem.key
-      );
-
-      this.selectedTaskListColumn$.next(selectedTaskListColumn ?? null);
+      const selectedTaskListColumn = cachedTaskListColumns.find(column => column.key === row.key);
+      this.selectedTaskListColumn$.next(selectedTaskListColumn);
       this.showModal('edit');
     });
   }
@@ -239,29 +249,30 @@ export class TaskManagementColumnsComponent {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public deleteColumnConfirmation(columnKey: string, caseDefinitionKey: string): void {
+  public deleteRowConfirmation(columnKey: string, documentDefinitionName: string): void {
     this.disable();
 
-    this.taskManagementApiService.deleteTaskListColumn(caseDefinitionKey, columnKey).subscribe({
-      next: () => {
-        this.refreshColumns(true);
-      },
-      error: () => this.enable(),
-    });
+    this.taskManagementApiService
+      .deleteTaskListColumn(documentDefinitionName, columnKey)
+      .subscribe({
+        next: () => {
+          this.refreshColumns(true);
+        },
+        error: () => this.enable(),
+      });
   }
 
   private getDisplayTypeParametersView(
-    displayTypeParameters: TaskListColumnDisplayTypeParameters | undefined
+    displayTypeParameters: TaskListColumnDisplayTypeParameters
   ): string {
-    if (!displayTypeParameters) return '-';
-
     if (displayTypeParameters?.dateFormat) {
       return displayTypeParameters.dateFormat;
     } else if (displayTypeParameters?.enum) {
       return Object.keys(displayTypeParameters.enum).reduce((acc, curr) => {
-        const keyValuePairString = `${curr}: ${displayTypeParameters?.enum?.[curr]}`;
-
-        if (!acc) return `${keyValuePairString}`;
+        const keyValuePairString = `${curr}: ${displayTypeParameters.enum[curr]}`;
+        if (!acc) {
+          return `${keyValuePairString}`;
+        }
 
         return `${acc}, ${keyValuePairString}`;
       }, '');

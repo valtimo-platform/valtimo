@@ -1,0 +1,13 @@
+8c4b631 - Updated version to 5.9.0
+a568ba5 - Updated the nxt-skeleton-loader to version 6.0.0 in the user-interface module
+91433d6 - Updated version to 5.9.0-86.RC-SNAPSHOT
+9b52d77 - Merge branch 'main' into development
+c2021e5 - feat: delete process link (#193)
+9ff2253 - Delete process link (#190)
+c48be37 - Replaced hardcoded start text for translation (#188)
+160b12c - feat: experimental editing of dmn tables in ui (#191)
+7c9ebbc - feat: configure tab object data (#187)
+6fd848d - feature 336693 - Added an extra tooltip (#189)
+e20db31 - Add empty state if no documentInstance have been started yet (#185)
+17e57ce - style: change select and input border to outline (#183)
+a182b5f - style: fix table border to keep it rounded (#182)

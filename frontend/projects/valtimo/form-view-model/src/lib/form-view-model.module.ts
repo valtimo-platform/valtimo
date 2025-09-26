@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
-import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/shared';
+import {FormioModule} from '@formio/angular';
+import {FORM_VIEW_MODEL_TOKEN} from '@valtimo/config';
+import {LayerModule} from 'carbon-components-angular';
 import {FormViewModelComponent} from './components/form-view-model';
 
 @NgModule({
+  declarations: [FormViewModelComponent],
+  imports: [CommonModule, FormioModule, LayerModule],
   providers: [
     {
       provide: FORM_VIEW_MODEL_TOKEN,
       useValue: {component: FormViewModelComponent},
     },
   ],
+  exports: [FormViewModelComponent],
 })
 export class FormViewModelModule {}

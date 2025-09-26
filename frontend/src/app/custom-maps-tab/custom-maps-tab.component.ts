@@ -20,7 +20,6 @@ import {Component, OnInit} from '@angular/core';
   selector: 'app-custom-maps-tab',
   templateUrl: './custom-maps-tab.component.html',
   styleUrls: ['./custom-maps-tab.component.scss'],
-  standalone: false,
 })
 export class CustomMapsTabComponent implements OnInit {
   constructor() {}

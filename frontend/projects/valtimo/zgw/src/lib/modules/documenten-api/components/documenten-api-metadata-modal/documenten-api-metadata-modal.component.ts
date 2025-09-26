@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,6 @@ import {
   Validators,
 } from '@angular/forms';
 import {
-  FormIoStateService,
   InputLabelModule,
   InputModule,
   ModalService,
@@ -363,13 +362,13 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   public readonly tagItems$: Observable<Array<ListItem>> = combineLatest([
-    this.valtimoModalService.caseDefinitionKey$,
+    this.valtimoModalService.documentDefinitionName$,
     this.tagFormControl.valueChanges.pipe(startWith(this.tagFormControl.value)),
   ]).pipe(
-    filter(([caseDefinitionKey]) => !!caseDefinitionKey),
-    switchMap(([caseDefinitionKey, tagFormControlValue]) =>
+    filter(([documentDefinitionName]) => !!documentDefinitionName),
+    switchMap(([documentDefinitionName, tagFormControlValue]) =>
       combineLatest([
-        this.documentenApiTagService.getTags(caseDefinitionKey),
+        this.documentenApiTagService.getTags(documentDefinitionName),
         of(tagFormControlValue),
       ])
     ),
@@ -399,18 +398,15 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly documentId$ = this.formioStateService.documentId$;
-
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this.documentId$,
+    this.valtimoModalService.documentDefinitionName$,
     this.informatieobjecttypeFormControl.valueChanges.pipe(
       startWith(this.informatieobjecttypeFormControl.value)
     ),
   ]).pipe(
-    filter(([documentId]) => !!documentId),
-    switchMap(([documentId, informatieobjecttypeValue]) =>
+    switchMap(([documentDefinitionName, informatieobjecttypeValue]) =>
       combineLatest([
-        this.documentService.getDocumentTypesForDocument(documentId),
+        this.documentService.getDocumentTypes(documentDefinitionName),
         of(informatieobjecttypeValue),
       ])
     ),
@@ -427,9 +423,9 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
   );
 
   private readonly _supportedDocumentenApiFeatures$: Observable<SupportedDocumentenApiFeatures> =
-    this.valtimoModalService.caseDefinitionKey$.pipe(
-      switchMap(caseDefinitionKey =>
-        this.documentenApiVersionService.getSupportedApiFeatures(caseDefinitionKey)
+    this.valtimoModalService.documentDefinitionName$.pipe(
+      switchMap(documentDefinitionName =>
+        this.documentenApiVersionService.getSupportedApiFeatures(documentDefinitionName)
       )
     );
 
@@ -446,8 +442,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly modalService: ModalService,
     private readonly translateService: TranslateService,
     private readonly valtimoModalService: ValtimoModalService,
-    private readonly documentenApiVersionService: DocumentenApiVersionService,
-    private readonly formioStateService: FormIoStateService
+    private readonly documentenApiVersionService: DocumentenApiVersionService
   ) {}
 
   public ngOnInit(): void {
@@ -474,10 +469,6 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   public tagsSelected(event: Array<ListItem>) {
     this.tagFormControl.patchValue(event.filter(tag => tag.selected).map(tag => tag.id));
-  }
-
-  public setAdditionalDate(value: AdditionalDocumentDate): void {
-    this.additionalDocumentDate$.next(value);
   }
 
   public confidentialityLevelSelected(event: {id: string}) {
@@ -524,8 +515,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       else this.additionalDocumentDate$.next('neither');
 
       const defaultStatus = this.defaultValues.status;
-      const validDefaultStatus =
-        this.STATUSES.includes(defaultStatus as DocumentStatus) && defaultStatus;
+      const validDefaultStatus = this.STATUSES.includes(defaultStatus as DocumentStatus) && defaultStatus;
       const validPrefillStatus = this.STATUSES.includes(status) && status;
 
       this.documentenApiMetadataForm.patchValue({
@@ -673,14 +663,18 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
         .pipe(
           map(
             ([params, firstChildParams]) =>
-              (params?.caseDefinitionKey || firstChildParams?.caseDefinitionKey) as string
+              (params?.documentDefinitionName || firstChildParams?.documentDefinitionName) as string
           ),
-          filter(caseDefinitionKey => !!caseDefinitionKey)
+          filter(documentDefinitionName => !!documentDefinitionName)
         )
-        .subscribe(caseDefinitionKey =>
-          this.valtimoModalService.setCaseDefinitionKey(caseDefinitionKey)
+        .subscribe(documentDefinitionName =>
+          this.valtimoModalService.setDocumentDefinitionName(documentDefinitionName)
         )
     );
+  }
+
+  private setAdditionalDate(value: AdditionalDocumentDate): void {
+    this.additionalDocumentDate$.next(value);
   }
 
   private areAllFieldsHidden(): boolean {

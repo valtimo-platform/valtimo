@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +18,25 @@ import {Injectable} from '@angular/core';
 import {
   AssigneeFilter,
   ConfigService,
-  InterceptorSkip,
   NamedUser,
   SearchField,
   SearchFilter,
   SearchFilterRange,
   SearchOperator,
-} from '@valtimo/shared';
+} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
 import {catchError, Observable, of, switchMap} from 'rxjs';
 
 import {
   AssignHandlerToDocumentResult,
   AuditRecord,
-  CaseDefinition,
   CaseListColumn,
   CaseSettings,
   CreateDocumentDefinitionResponse,
   Document,
   DocumentDefinition,
   DocumentDefinitionCreateRequest,
+  DocumentDefinitions,
   DocumentDefinitionVersionsResult,
   DocumentResult,
   Documents,
@@ -50,7 +50,6 @@ import {
   NewDocumentAndStartProcessResult,
   OpenDocumentCount,
   Page,
-  ProcessDefinitionCaseDefinition,
   ProcessDocumentDefinition,
   ProcessDocumentDefinitionRequest,
   ProcessDocumentDefinitionSearch,
@@ -90,8 +89,8 @@ export class DocumentService {
   }
 
   // Document-calls
-  public getAllDefinitions(): Observable<Page<DocumentDefinition>> {
-    return this.http.get<Page<DocumentDefinition>>(
+  public getAllDefinitions(): Observable<DocumentDefinitions> {
+    return this.http.get<DocumentDefinitions>(
       `${this.valtimoEndpointUri}v1/document-definition?size=1000`
     );
   }
@@ -194,37 +193,40 @@ export class DocumentService {
       .pipe(catchError(() => of(this.EMPTY_DOCUMENTS_RESPONSE as SpecifiedDocuments)));
   }
 
-  public getDocumentSearchFields(caseDefinitionKey: string): Observable<Array<SearchField>> {
+  public getDocumentSearchFields(documentDefinitionName: string): Observable<Array<SearchField>> {
     return this.http.get<Array<SearchField>>(
-      `${this.valtimoEndpointUri}v1/document-search/${caseDefinitionKey}/fields`
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`
     );
   }
 
   public putDocumentSearch(
-    caseDefinitionKey: string,
+    documentDefinitionName: string,
     request: Array<SearchField>
   ): Observable<void> {
     return this.http.put<void>(
-      `${this.valtimoEndpointUri}v1/document-search/${caseDefinitionKey}/fields`,
-      request
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`,
+      [...request]
     );
   }
 
-  public postDocumentSearch(caseDefinitionKey: string, request: SearchField): Observable<void> {
+  public postDocumentSearch(
+    documentDefinitionName: string,
+    request: SearchField
+  ): Observable<void> {
     return this.http.post<void>(
-      `${this.valtimoEndpointUri}v1/document-search/${caseDefinitionKey}/fields`,
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields`,
       {...request}
     );
   }
 
-  public deleteDocumentSearch(caseDefinitionKey: string, key: string): Observable<any> {
+  public deleteDocumentSearch(documentDefinitionName: string, key: string): Observable<any> {
     const options = {
       headers: new HttpHeaders({
         'Content-Type': 'application/json',
       }),
     };
     return this.http.delete(
-      `${this.valtimoEndpointUri}v1/document-search/${caseDefinitionKey}/fields?key=${key}`,
+      `${this.valtimoEndpointUri}v1/document-search/${documentDefinitionName}/fields?key=${key}`,
       options
     );
   }
@@ -235,10 +237,10 @@ export class DocumentService {
 
   public getDropdownData(
     provider: string,
-    caseDefinitionKey: string,
+    documentDefinitionName: string,
     fieldKey: string
   ): Observable<object> {
-    const dropdownListKey = encodeURI(caseDefinitionKey + '_' + fieldKey);
+    const dropdownListKey = encodeURI(documentDefinitionName + '_' + fieldKey);
     return this.http.get<object>(
       `${this.valtimoEndpointUri}v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`
     );
@@ -246,11 +248,11 @@ export class DocumentService {
 
   public postDropdownData(
     provider: string,
-    caseDefinitionKey: string,
+    documentDefinitionName: string,
     fieldKey: string,
     dropdownData: object
   ): Observable<object> {
-    const dropdownListKey = encodeURI(caseDefinitionKey + '_' + fieldKey);
+    const dropdownListKey = encodeURI(documentDefinitionName + '_' + fieldKey);
     return this.http.post<object>(
       `${this.valtimoEndpointUri}v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`,
       dropdownData
@@ -259,10 +261,10 @@ export class DocumentService {
 
   public deleteDropdownData(
     provider: string,
-    caseDefinitionKey: string,
+    documentDefinitionName: string,
     fieldKey: string
   ): Observable<object> {
-    const dropdownListKey = encodeURI(caseDefinitionKey + '_' + fieldKey);
+    const dropdownListKey = encodeURI(documentDefinitionName + '_' + fieldKey);
     return this.http.delete<object>(
       `${this.valtimoEndpointUri}v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`
     );
@@ -280,73 +282,55 @@ export class DocumentService {
     return this.http.delete<void>(`${this.valtimoEndpointUri}v1/document/${documentId}`);
   }
 
-  // ProcessDefinitionCaseDefinition-calls
-  public findProcessDefinitionCaseDefinitions(
-    caseDefinitionKey: string
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link`
+  // ProcessDocument-calls
+  public getProcessDocumentDefinitions(): Observable<ProcessDocumentDefinition> {
+    return this.http.get<ProcessDocumentDefinition>(
+      `${this.valtimoEndpointUri}v1/process-document/definition`
     );
   }
 
-  public findProcessDefinitionCaseDefinitionsByStartableByUser(
-    caseDefinitionKey: string,
+  public findProcessDocumentDefinitions(
+    documentDefinitionName: string
+  ): Observable<ProcessDocumentDefinition[]> {
+    return this.http.get<ProcessDocumentDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}`
+    );
+  }
+
+  public findProcessDocumentDefinitionsByStartableByUser(
+    documentDefinitionName: string,
     startableByUser: boolean
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link?startableByUser=${startableByUser}`
+  ): Observable<ProcessDocumentDefinition[]> {
+    return this.http.get<ProcessDocumentDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}?startableByUser=${startableByUser}`
     );
   }
 
-  public findProcessDefinitionCaseDefinitionsByCanInitializeDocument(
-    caseDefinitionKey: string,
+  public findProcessDocumentDefinitionsByCanInitializeDocument(
+    documentDefinitionName: string,
     canInitializeDocument: boolean
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/case-process-link?canInitializeDocument=${canInitializeDocument}`
+  ): Observable<ProcessDocumentDefinition[]> {
+    return this.http.get<ProcessDocumentDefinition[]>(
+      `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}?canInitializeDocument=${canInitializeDocument}`
     );
   }
 
-  public findProcessDefinitionCaseDefinitionsForDocument(
+  public findProcessDocumentDefinitionsForDocument(
     documentId: string,
     searchRequest: ProcessDocumentDefinitionSearch
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
+  ): Observable<ProcessDocumentDefinition[]> {
     const params = new HttpParams({
       fromObject: searchRequest as any,
     });
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/document-instance/${documentId}/case-process-link`,
+    return this.http.get<ProcessDocumentDefinition[]>(
+      `${this.valtimoEndpointUri}v2/process-document/definition/document/${documentId}`,
       {params}
-    );
-  }
-
-  public findProcessDefinitionCaseDefinitionsByProcessDefinitionKey(
-    processDefinitionKey: string
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/process-document/definition/process/${processDefinitionKey}`
-    );
-  }
-
-  // Case definition calls
-  public getCaseDefinitions(params: any): Observable<CaseDefinition[]> {
-    return this.http.get<CaseDefinition[]>(`${this.valtimoEndpointUri}v1/case-definition`, {
-      params,
-    });
-  }
-
-  public getCaseDefinitionsManagement(params: any): Observable<Page<CaseDefinition>> {
-    return this.http.get<Page<CaseDefinition>>(
-      `${this.valtimoEndpointUri}management/v1/case-definition`,
-      {
-        params,
-      }
     );
   }
 
   public findProcessDocumentDefinitionsByVersion(
     documentDefinitionName: string,
-    version: string
+    version: number
   ): Observable<ProcessDocumentDefinition[]> {
     return this.http.get<ProcessDocumentDefinition[]>(
       `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}/version/${version}`
@@ -426,28 +410,9 @@ export class DocumentService {
         'Content-Type': 'application/json',
       }),
     };
-
     return this.http.post<CreateDocumentDefinitionResponse>(
       `${this.valtimoEndpointUri}management/v1/document-definition`,
       documentDefinitionCreateRequest,
-      options
-    );
-  }
-
-  public updateDocumentDefinitionForManagement(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    request: DocumentDefinitionCreateRequest
-  ): Observable<DocumentDefinition> {
-    const options = {
-      headers: new HttpHeaders({
-        'Content-Type': 'application/json',
-      }),
-    };
-
-    return this.http.put<DocumentDefinition>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/document-definition`,
-      request,
       options
     );
   }
@@ -504,33 +469,24 @@ export class DocumentService {
     return this.http.post(`${this.valtimoEndpointUri}v1/document/${documentId}/message`, request);
   }
 
-  public getDocumentTypesForCase(
-    caseDefinitionKey: string,
-    versionTag: string
-  ): Observable<DocumentType[]> {
-    return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/version/${versionTag}/zaaktype/documenttype`
+  public getDocumentTypes(documentDefinitionName: string): Observable<Array<DocumentType>> {
+    return this.http.get<Array<DocumentType>>(
+      `${this.valtimoEndpointUri}v1/documentdefinition/${documentDefinitionName}/zaaktype/documenttype`
     );
   }
 
-  public getDocumentTypesForDocument(documentId: string): Observable<DocumentType[]> {
-    return this.http.get<DocumentType[]>(
-      `${this.valtimoEndpointUri}v1/document/${documentId}/zaaktype/documenttype`
-    );
-  }
-
-  public getProcessDefinitionCaseDefinitionFromProcessInstanceId(
+  public getProcessDocumentDefinitionFromProcessInstanceId(
     processInstanceId: string
-  ): Observable<ProcessDefinitionCaseDefinition> {
+  ): Observable<ProcessDocumentDefinition> {
     return this.configService.getFeatureToggle('enableSuppressDocumentError')
-      ? this.http.get<ProcessDefinitionCaseDefinition>(
-          `${this.valtimoEndpointUri}v1/process-instance/${processInstanceId}/case-process-link`,
+      ? this.http.get<ProcessDocumentDefinition>(
+          `${this.valtimoEndpointUri}v1/process-document/definition/processinstance/${processInstanceId}`,
           {
             headers: new HttpHeaders().set(InterceptorSkip, '400'),
           }
         )
-      : this.http.get<ProcessDefinitionCaseDefinition>(
-          `${this.valtimoEndpointUri}v1/process-instance/${processInstanceId}/case-process-link`
+      : this.http.get<ProcessDocumentDefinition>(
+          `${this.valtimoEndpointUri}v1/process-document/definition/processinstance/${processInstanceId}`
         );
   }
 
@@ -561,28 +517,24 @@ export class DocumentService {
   }
 
   public patchCaseSettingsForManagement(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
+    documentDefinitionName: string,
     request: CaseSettings
   ): Observable<CaseSettings> {
     return this.http.patch<CaseSettings>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/settings`,
+      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/settings`,
       {...request}
     );
   }
 
-  public getCaseSettings(caseDefinitionKey: string): Observable<CaseSettings> {
+  public getCaseSettings(documentDefinitionName: string): Observable<CaseSettings> {
     return this.http.get<CaseSettings>(
-      `${this.valtimoEndpointUri}v1/case-definition/${caseDefinitionKey}/settings`
+      `${this.valtimoEndpointUri}v1/case/${documentDefinitionName}/settings`
     );
   }
 
-  public getCaseSettingsForManagement(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
-  ): Observable<CaseSettings> {
+  public getCaseSettingsForManagement(documentDefinitionName: string): Observable<CaseSettings> {
     return this.http.get<CaseSettings>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/settings`
+      `${this.valtimoEndpointUri}management/v1/case/${documentDefinitionName}/settings`
     );
   }
 
@@ -638,11 +590,11 @@ export class DocumentService {
   }
 
   public getDocumentDefinitionByVersion(
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string
+    documentDefinitionName: string,
+    version: number
   ): Observable<DocumentDefinition> {
     return this.http.get<DocumentDefinition>(
-      `${this.valtimoEndpointUri}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/document-definition`
+      `${this.valtimoEndpointUri}management/v1/document-definition/${documentDefinitionName}/version/${version}`
     );
   }
 }
