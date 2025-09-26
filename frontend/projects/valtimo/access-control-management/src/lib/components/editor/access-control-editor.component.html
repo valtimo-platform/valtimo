@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@
       *ngIf="{
         model: model$ | async,
         moreDisabled: moreDisabled$ | async,
-        compactMode: compactMode$ | async,
+        compactMode: compactMode$ | async
       } as obs"
       class="buttons-container"
     >
@@ -39,9 +39,11 @@
           'accessControl.roles.editMetadata' | translate
         }}</cds-overflow-menu-option>
 
-        <cds-overflow-menu-option [disabled]="obs.moreDisabled" (selected)="exportPermissions()">{{
-          'interface.export' | translate
-        }}</cds-overflow-menu-option>
+        <cds-overflow-menu-option
+          [disabled]="obs.moreDisabled"
+          (selected)="exportPermissions(obs.model)"
+          >{{ 'interface.export' | translate }}</cds-overflow-menu-option
+        >
 
         <cds-overflow-menu-option
           [disabled]="obs.moreDisabled"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ export const donutSpecification: DisplayTypeSpecification = {
   height: 2,
   translations: {
     nl: {
-      title: 'Donut-diagram',
+      title: 'Graadmeter',
       formTitle: 'Titel (vereist)',
       formTitleHelperText: 'De titel die wordt weergegeven in de widget',
       subtitle: 'Ondertitel',
@@ -35,7 +35,7 @@ export const donutSpecification: DisplayTypeSpecification = {
       labelHelperText: 'Het label dat wordt weergegeven in de widget',
     },
     en: {
-      title: 'Donut chart',
+      title: 'Donut',
       formTitle: 'Title (required)',
       formTitleHelperText: 'The title displayed in the widget',
       subtitle: 'Subtitle',
@@ -44,7 +44,7 @@ export const donutSpecification: DisplayTypeSpecification = {
       labelHelperText: 'The label displayed in the widget',
     },
     de: {
-      title: 'Donut-Diagramm',
+      title: 'Messgerät',
       formTitle: 'Titel (erforderlich)',
       formTitleHelperText: 'Der im Widget angezeigte Titel',
       subtitle: 'Untertitel',

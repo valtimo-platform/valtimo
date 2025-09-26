@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -23,20 +23,10 @@
 </section>
 
 <section class="valtimo-donut-widget__content">
-  <ng-container *ngIf="donutData$ | async as donutData">
-    @if (donutData.length > 0) {
-      <ibm-donut-chart
-        type="donut"
-        class="n-chart"
-        [data]="donutData"
-        [options]="donutChartOptions$ | async"
-      ></ibm-donut-chart>
-    } @else {
-      <valtimo-no-results
-        [collapseVertically]="true"
-        [description]="'case.widgets.noData' | translate"
-        [smallPadding]="true"
-      ></valtimo-no-results>
-    }
-  </ng-container>
+  <ibm-donut-chart
+    type="donut"
+    class="n-chart"
+    [data]="toDonutData()"
+    [options]="donutChartOptions$ | async"
+  ></ibm-donut-chart>
 </section>

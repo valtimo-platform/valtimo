@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
+import {CARBON_THEME, CarbonListModule, PageTitleService} from '@valtimo/components';
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule} from '@valtimo/components';
+import {filter, map, Observable, switchMap, tap} from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
+import {DocumentDefinition, DocumentService} from '@valtimo/document';
 import {TabsModule} from 'carbon-components-angular';
-import {TaskManagementTab} from '../../models';
 import {TaskManagementService} from '../../services';
-import {TaskManagementColumnsComponent} from '../task-management-columns/task-management-columns.component';
-import {TaskManagementSearchFieldsComponent} from '../task-management-search-fields/task-management-search-fields.component';
+import {TaskManagementTab} from '../../models';
+import {TaskManagementColumnsComponent} from '../task-management-columns';
 
 @Component({
   templateUrl: './task-management-detail.component.html',
-  styleUrl: './task-management-detail.component.scss',
+  styleUrls: ['./task-management-detail.component.scss'],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -34,16 +37,35 @@ import {TaskManagementSearchFieldsComponent} from '../task-management-search-fie
     TranslateModule,
     TabsModule,
     TaskManagementColumnsComponent,
-    TaskManagementSearchFieldsComponent,
   ],
   providers: [TaskManagementService],
+  encapsulation: ViewEncapsulation.None,
 })
 export class TaskManagementDetailComponent {
+  @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.G10;
+
+  public readonly setDocumentDefinitionName$: Observable<DocumentDefinition> =
+    this.route.params.pipe(
+      map(params => params.name || ''),
+      filter(docDefName => !!docDefName),
+      switchMap(documentDefinitionName =>
+        this.documentService.getDocumentDefinition(documentDefinitionName)
+      ),
+      tap(documentDefinition => {
+        this.pageTitleService.setCustomPageTitle((documentDefinition as any)?.schema?.title || '-');
+      })
+    );
+
   public readonly activeTab$ = this.taskManagementService.activeTab$;
 
-  public readonly TaskManagementTab = TaskManagementTab;
+  public readonly TAB_ENUM = TaskManagementTab;
 
-  constructor(private readonly taskManagementService: TaskManagementService) {}
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly documentService: DocumentService,
+    private readonly pageTitleService: PageTitleService,
+    private readonly taskManagementService: TaskManagementService
+  ) {}
 
   public setActiveTab(tab: TaskManagementTab): void {
     this.taskManagementService.setActiveTab(tab);

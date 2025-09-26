@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,27 +14,4 @@
   ~ limitations under the License.
   -->
 
-<section class="valtimo-donut-widget__header">
-  <h3 class="valtimo-donut-widget__title">{{ displayTypeProperties.title }}</h3>
-
-  <span *ngIf="displayTypeProperties.subtitle" class="valtimo-donut-widget__subtitle">
-    {{ displayTypeProperties.subtitle }}
-  </span>
-</section>
-
-<section class="valtimo-donut-widget__content">
-  <ng-container *ngIf="barChartData$ | async as barChartData">
-    @if (barChartData.length > 0) {
-      <ibm-bar-chart
-        [data]="barChartData"
-        [options]="barChartChartOptions$ | async"
-      ></ibm-bar-chart>
-    } @else {
-      <valtimo-no-results
-        [collapseVertically]="true"
-        [description]="'case.widgets.noData' | translate"
-        [smallPadding]="true"
-      ></valtimo-no-results>
-    }
-  </ng-container>
-</section>
+bar chart works

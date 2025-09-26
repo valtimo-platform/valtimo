@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,53 +16,29 @@
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {DisplayComponent} from '../../../../models';
 import {GaugeData, GaugeDisplayTypeProperties} from '../../models';
-import {type ChartTabularData, GaugeChartOptions} from '@carbon/charts-angular';
-import {BehaviorSubject, combineLatest, filter, map, Observable} from 'rxjs';
-import {CdsThemeService} from '@valtimo/components';
-import {TranslateService} from '@ngx-translate/core';
+import {type ChartTabularData, DonutChartOptions, GaugeChartOptions} from '@carbon/charts';
+import {map, Observable} from "rxjs";
+import {CdsThemeService} from "@valtimo/components"
 
 @Component({
-  standalone: false,
   selector: 'valtimo-gauge-display',
   templateUrl: './gauge-display.component.html',
   styleUrls: ['./gauge-display.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GaugeDisplayComponent implements DisplayComponent {
-  @Input() public readonly displayTypeKey: string;
-  @Input() public set data(value: GaugeData) {
-    if (!value) return;
-    this._data$.next(value);
-  }
-  @Input() public readonly displayTypeProperties: GaugeDisplayTypeProperties;
+  @Input() displayTypeKey: string;
+  @Input() data: GaugeData;
+  @Input() displayTypeProperties: GaugeDisplayTypeProperties;
 
-  private readonly _DELTA: number = -1.0;
+  private DELTA: number = -1.0;
 
-  private readonly _data$ = new BehaviorSubject<GaugeData | null>(null);
-
-  public readonly chartData$: Observable<ChartTabularData> = this._data$.pipe(
-    filter(data => !!data),
-    map(data => [
-      {
-        group: 'value',
-        value: this.calculatePercentage(data?.value || 0, data?.total || 0),
-      },
-      {
-        group: 'delta',
-        value: this._DELTA,
-      },
-    ])
-  );
-
-  public readonly gaugeChartOptions$: Observable<GaugeChartOptions> = combineLatest([
-    this.themeService.currentTheme$,
-    this.translateService.stream('key'),
-  ]).pipe(
-    map(([currentTheme]) => ({
+  readonly donutChartOptions$: Observable<DonutChartOptions> = this.themeService.currentTheme$.pipe(
+    map(currentTheme => ({
       resizable: true,
       toolbar: {enabled: false},
       height: '110px',
-      theme: currentTheme == 'g10' ? 'white' : 'g100',
+      theme: currentTheme == 'g10' ? 'g20' : 'g100',
       gauge: {
         alignment: 'center',
         numberFormatter: value => this.numberFormatter(this, value),
@@ -72,25 +48,35 @@ export class GaugeDisplayComponent implements DisplayComponent {
         showPercentageSymbol: false,
         type: 'semi',
       },
-    }))
+    })),
   );
 
-  constructor(
-    private readonly themeService: CdsThemeService,
-    private readonly translateService: TranslateService
-  ) {}
+  constructor(private readonly themeService: CdsThemeService) {
+  }
 
-  private calculatePercentage(value: number, total?: number): number {
+  public toGaugeData(): ChartTabularData {
+    return [
+      {
+        group: 'value',
+        value: this.calculatePercentage(this.data.value, this.data.total),
+      },
+      {
+        group: 'delta',
+        value: this.DELTA,
+      },
+    ];
+  }
+
+  public calculatePercentage(value: number, total?: number): number {
     return (value * 100.0) / (total || 100.0);
   }
 
-  private numberFormatter(scope: GaugeDisplayComponent, value: number): string {
-    const scopeData = scope._data$.getValue();
-
-    if (value == scope._DELTA) {
-      return `${this.translateService.instant('dashboard.of')} ${scopeData?.total || 0} ${scope.displayTypeProperties.label} `;
+  public numberFormatter(scope: GaugeDisplayComponent, value: number): string {
+    console.log(value);
+    if (value == scope.DELTA) {
+      return scope.data.total + ' ' + scope.displayTypeProperties.label;
+    } else {
+      return Math.round(value * scope.data.total) / 100.0 + '';
     }
-
-    return Math.round(value * (scopeData?.total || 0)) / 100.0 + '';
   }
 }

@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@
 
 <section class="valtimo-gauge-widget__content">
   <ibm-gauge-chart
-    *ngIf="chartData$ | async as chartData"
     type="gauge"
     class="n-chart"
-    [data]="chartData"
-    [options]="gaugeChartOptions$ | async"
+    [data]="toGaugeData()"
+    [options]="donutChartOptions$ | async"
   ></ibm-gauge-chart>
 </section>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,7 @@
 import {FormOutput} from '../models';
 import {ListItem} from 'carbon-components-angular';
 
-type MultiInputType =
-  | 'keyValue'
-  | 'value'
-  | 'keyDropdownValue'
-  | 'arbitraryAmount'
-  | 'keyValuePathSelector'
-  | 'valuePathSelectorValue'
-  | 'valuePathSelectorDropdownValue';
+type MultiInputType = 'keyValue' | 'value' | 'keyDropdownValue' | 'arbitraryAmount';
 
 interface MultiInputKeyValue {
   uuid?: string;
@@ -54,8 +47,6 @@ interface ArbitraryInputTitles {
   [indexKey: string]: string;
 }
 
-type MultiInputChangeEventType = 'key' | 'value' | 'dropdown' | 'arbitrary';
-
 export {
   MultiInputType,
   MultiInputValues,
@@ -65,5 +56,4 @@ export {
   MultiInputFormsValues,
   ListItemWithId,
   ArbitraryInputTitles,
-  MultiInputChangeEventType,
 };

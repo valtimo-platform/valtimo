@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 import {Component, ViewEncapsulation} from '@angular/core';
-import {BehaviorSubject, Observable, tap} from 'rxjs';
+import {BehaviorSubject, Observable, take, tap} from 'rxjs';
 import {Dashboard, WidgetData} from '../../models';
 import {DashboardService} from '../../services';
 import {WidgetApiService} from '../../services/widget-api.service';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-widget-dashboard',
   templateUrl: './widget-dashboard.component.html',
   styleUrls: ['./widget-dashboard.component.scss'],
@@ -39,19 +38,20 @@ export class WidgetDashboardComponent {
     loading: true,
   });
 
-  public readonly selectedDashboardKey$ = new BehaviorSubject<string>('');
-
   constructor(
     private readonly dashboardService: DashboardService,
     private readonly widgetApiService: WidgetApiService
   ) {}
 
   public onTabSelected(dashboardKey: string): void {
-    this.selectedDashboardKey$.next(dashboardKey);
-    this.activeWidgetData$.next({data: [], loading: true});
-
     this.widgetApiService
       .getWidgetData(dashboardKey)
+      .pipe(
+        tap(() => {
+          this.activeWidgetData$.next({data: [], loading: true});
+        }),
+        take(1)
+      )
       .subscribe((data: WidgetData[]) => this.activeWidgetData$.next({data, loading: false}));
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,14 @@
  * limitations under the License.
  */
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnDestroy, OnInit, Output,} from '@angular/core';
 import {ConfigurationOutput, DisplayTypeConfigurationComponent} from '../../../../models';
 import {startWith, Subscription} from 'rxjs';
-import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
+import {FormBuilder, Validators} from '@angular/forms';
 import {DonutDisplayTypeProperties} from '../../models';
 
+
 @Component({
-  standalone: false,
   templateUrl: './donut-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -43,7 +35,7 @@ export class DonutConfigurationComponent
     useKPI: this.fb.control(false, [Validators.required]),
   });
 
-  @Input() public readonly displayTypeKey: string;
+  @Input() displayTypeKey: string;
   @Input() set disabled(disabledValue: boolean) {
     if (disabledValue) {
       this.form.disable();
@@ -52,15 +44,15 @@ export class DonutConfigurationComponent
     }
   }
 
-  public get title(): AbstractControl<string> {
+  public get title() {
     return this.form.get('title');
   }
 
-  public get subtitle(): AbstractControl<string> {
+  public get subtitle() {
     return this.form.get('subtitle');
   }
 
-  public get label(): AbstractControl<string> {
+  public get label() {
     return this.form.get('label');
   }
 
@@ -72,9 +64,7 @@ export class DonutConfigurationComponent
     }
   }
 
-  @Output() public configurationEvent = new EventEmitter<
-    ConfigurationOutput<DonutDisplayTypeProperties>
-  >();
+  @Output() public configurationEvent = new EventEmitter<ConfigurationOutput>();
 
   private _subscriptions = new Subscription();
 
@@ -91,10 +81,7 @@ export class DonutConfigurationComponent
   private openFormSubscription(): void {
     this._subscriptions.add(
       this.form.valueChanges.pipe(startWith(this.form.value)).subscribe(formValue => {
-        this.configurationEvent.emit({
-          valid: this.form.valid,
-          data: formValue as DonutDisplayTypeProperties,
-        });
+        this.configurationEvent.emit({valid: this.form.valid, data: formValue});
       })
     );
   }

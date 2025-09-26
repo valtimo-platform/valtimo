@@ -12,8 +12,8 @@
     "d3-shape",
     "@ngx-translate/core",
     "@ngx-translate/http-loader",
-    "@carbon/charts-angular",
-    "muuri",
-    "@types/topojson"
+    "bin-pack-with-constraints",
+    "@carbon/charts",
+    "@carbon/charts-angular"
   ]
 }

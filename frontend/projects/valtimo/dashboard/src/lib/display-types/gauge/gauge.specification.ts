@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,5 +53,5 @@ export const gaugeSpecification: DisplayTypeSpecification = {
       labelHelperText: 'Die im Widget angezeigte Beschriftung',
     },
   },
-  requiredDataFeatures: [DATA_FEATURES.NUMBER, DATA_FEATURES.TOTAL],
+  requiredDataFeatures: [DATA_FEATURES.NUMBER],
 };

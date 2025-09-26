@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ import {BehaviorSubject, filter, finalize, map, Subscription, switchMap, take, t
 import {ActivatedRoute, Router} from '@angular/router';
 import {EditorModel, PageHeaderService, PageTitleService} from '@valtimo/components';
 import {Role} from '../../models';
+import {NotificationService} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {AccessControlExportService} from '../../services/access-control-export.service';
-import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
-  standalone: false,
   templateUrl: './access-control-editor.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./access-control-editor.component.scss'],
+  providers: [NotificationService],
 })
 export class AccessControlEditorComponent implements OnInit, OnDestroy {
   public readonly model$ = new BehaviorSubject<EditorModel | null>(null);
@@ -49,7 +49,7 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router,
-    private readonly globalNotificationService: GlobalNotificationService,
+    private readonly notificationService: NotificationService,
     private readonly translateService: TranslateService,
     private readonly accessControlExportService: AccessControlExportService,
     private readonly pageHeaderService: PageHeaderService
@@ -143,10 +143,12 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  public exportPermissions(): void {
-    this.accessControlExportService
-      .exportRoles({type: 'separate', roleKeys: [this._roleKey]})
-      .subscribe();
+  public exportPermissions(model: EditorModel): void {
+    this.accessControlExportService.downloadJson(
+      JSON.parse(model.value),
+      'separate',
+      this._roleKey
+    );
   }
 
   private openRoleKeySubscription(): void {
@@ -219,12 +221,14 @@ export class AccessControlEditorComponent implements OnInit, OnDestroy {
   }
 
   private showSuccessMessage(roleKey: string): void {
-    this.globalNotificationService.showToast({
-      title: this.translateService.instant('accessControl.roles.savedSuccessTitle'),
+    this.notificationService.showToast({
       caption: this.translateService.instant('accessControl.roles.savedSuccessTitleMessage', {
         roleKey,
       }),
       type: 'success',
+      duration: 4000,
+      showClose: true,
+      title: this.translateService.instant('accessControl.roles.savedSuccessTitle'),
     });
   }
 }

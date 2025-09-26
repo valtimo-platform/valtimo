@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
     appearing: appearing$ | async,
     disappearing: disappearing$ | async,
     showBackdrop: showBackdrop$ | async,
-    mouseInsideModal: mouseInsideModal$ | async,
+    mouseInsideModal: mouseInsideModal$ | async
   } as obs"
 >
   <div
@@ -31,8 +31,9 @@
       'v-modal-backdrop--hidden': !obs.visible,
       'v-modal-backdrop--appearing': obs.appearing,
       'v-modal-backdrop--disappearing': obs.disappearing,
-      'v-modal-backdrop--mouse-on-backdrop': !obs.mouseInsideModal,
+      'v-modal-backdrop--mouse-on-backdrop': !obs.mouseInsideModal
     }"
+    (click)="!obs.appearing && !obs.disappearing && !obs.mouseInsideModal && closeModal()"
   >
     <ng-container
       *ngTemplateOutlet="modal; context: {appearing: obs.appearing, disappearing: obs.disappearing}"
@@ -63,9 +64,7 @@
       <div class="v-modal__header-overflow-bg"></div>
     </div>
     <div class="v-modal__header-buttons">
-      <button cdsButton="ghost" iconOnly="true" (click)="closeModal()" size="sm">
-        <svg cdsIcon="close" size="16"></svg>
-      </button>
+      <v-button mdiIcon="close" type="icon-danger" (click)="closeModal()"></v-button>
     </div>
   </div>
 </ng-template>

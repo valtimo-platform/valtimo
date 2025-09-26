@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
  */
 
 import {Injectable} from '@angular/core';
-import {filter, map, Observable, Subject, Subscription} from 'rxjs';
+import {filter, Observable, Subject, Subscription} from 'rxjs';
 import {
   BaseSseEvent,
   EstablishedConnectionSseEvent,
   SseEventListener,
   SseEventType,
 } from '../models/sse-events.model';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {
   SseErrorBucket,
   SseEventSubscriptionBucket,
@@ -85,19 +85,12 @@ export class SseService {
     this.connect();
   }
 
-  public getSseMessagesObservableByEventType(
+  getSseMessagesObservableByEventType(
     eventTypes: Array<SseEventType>
   ): Observable<MessageEvent<BaseSseEvent>> {
     return this._sseMessages$.asObservable().pipe(
       filter(message => !!message),
-      filter(message => eventTypes.includes(message.data?.eventType))
-    );
-  }
-
-  public getSseEventObservable<Event>(eventType: SseEventType): Observable<Event> {
-    return this._sseMessages$.asObservable().pipe(
-      filter(message => eventType === message?.data?.eventType),
-      map(message => message.data as Event)
+      filter(message => eventTypes.includes(message?.data?.eventType))
     );
   }
 

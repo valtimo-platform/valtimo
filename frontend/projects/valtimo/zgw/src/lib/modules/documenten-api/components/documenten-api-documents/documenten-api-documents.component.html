@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -21,12 +21,8 @@
     uploading: uploading$ | async,
     relatedFiles: relatedFiles$ | async,
     fields: fields$ | async,
-    supportedDocumentenApiFeatures: supportedDocumentenApiFeatures$ | async,
-    pagination: pagination$ | async,
-    sortState: sortState$ | async,
-    uploadFields: uploadFields$ | async,
-    defaultValues: defaultValues$ | async,
-    hideFields: hideFields$ | async,
+    initialSortState: initialSortState$ | async,
+    supportedDocumentenApiFeatures: supportedDocumentenApiFeatures$ | async
   } as obs"
 >
   @if ((!obs.fieldsLoading && obs.fields.length) || obs.fieldsLoading) {
@@ -34,17 +30,14 @@
       [actionItems]="actionItems"
       [items]="obs.relatedFiles"
       [fields]="obs.fields"
-      [initialSortState]="obs.sortState"
       [loading]="obs.loading"
-      [pagination]="obs.pagination"
-      [paginatorConfig]="paginatorConfig"
-      paginationIdentifier="documentenApi"
+      [initialSortState]="
+        obs?.supportedDocumentenApiFeatures?.supportsSortableColumns && obs.initialSortState
+      "
       (rowClicked)="onRowClick($event)"
       (sortChanged)="
         obs?.supportedDocumentenApiFeatures?.supportsSortableColumns && onSortChanged($event)
       "
-      (paginationClicked)="onPaginationClicked($event)"
-      (paginationSet)="onPaginationSet($event)"
       hideColumnHeader
     >
       <div carbonToolbarContent>
@@ -60,12 +53,13 @@
           *ngIf="obs?.supportedDocumentenApiFeatures?.supportsFilterableColumns"
           [cdsOverflowMenu]="overflowFilter"
           [customPane]="true"
+          [iconOnly]="true"
           [flip]="true"
           [offset]="{x: 0, y: 47}"
           cdsButton="ghost"
           placement="bottom"
         >
-          <svg cdsIcon="filter" size="16"></svg>
+          <svg class="cds--btn__icon" cdsIcon="filter" size="16"></svg>
         </button>
 
         <ng-container *ngTemplateOutlet="uploadButton"></ng-container>
@@ -82,17 +76,6 @@
   }
 
   <valtimo-documenten-api-metadata-modal
-    [defaultValues]="obs.defaultValues"
-    [disableAuthor]="obs.uploadFields?.auteur?.readonly"
-    [disableConfidentialityLevel]="obs.uploadFields?.vertrouwelijkheidaanduiding?.readonly"
-    [disableCreationDate]="obs.uploadFields?.creatiedatum?.readonly"
-    [disableDescription]="obs.uploadFields?.beschrijving?.readonly"
-    [disableDocumentTitle]="obs.uploadFields?.titel?.readonly"
-    [disableDocumentType]="obs.uploadFields?.informatieobjecttype?.readonly"
-    [disableFilename]="obs.uploadFields?.bestandsnaam?.readonly"
-    [disableLanguage]="obs.uploadFields?.taal?.readonly"
-    [disableStatus]="obs.uploadFields?.status?.readonly"
-    [hideFields]="obs.hideFields"
     [open]="showUploadModal$ | async"
     [disabled$]="modalDisabled$"
     [file$]="fileToBeUploaded$"
@@ -105,13 +88,33 @@
 
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="dashboardManagement.deleteModal.confirm"
-  contentTranslationKey="case.documenten.deleteConfirmationModal.content"
+  contentTranslationKey="dossier.documenten.deleteConfirmationModal.content"
   confirmButtonType="danger"
-  titleTranslationKey="case.documenten.deleteConfirmationModal.title"
+  titleTranslationKey="dossier.documenten.deleteConfirmationModal.title"
   [showModalSubject$]="showDeleteConfirmationModal$"
   (confirmEvent)="deleteDocument()"
 >
 </valtimo-confirmation-modal>
+
+<ng-template #downloadButton let-index="index" let-item="item">
+  <div
+    *ngIf="{isDownloading: indexesIncludeIndex(downloadingFileIndexes$ | async, index)} as vars"
+    class="download-button-container"
+  >
+    <button
+      *ngIf="!vars.isDownloading"
+      cdsButton="primary"
+      size="sm"
+      (click)="downloadDocument(item, index)"
+    >
+      {{ 'interface.download' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+    </button>
+
+    <cds-loading size="sm" *ngIf="vars.isDownloading"></cds-loading>
+  </div>
+</ng-template>
 
 <ng-template #noResults>
   @if ((filter$ | async | keyvalue)?.length) {
@@ -123,23 +126,23 @@
   } @else if (showZaakLinkWarning && isAdmin) {
     <valtimo-no-results
       [action]="navigateToCaseAdminButton"
-      [description]="'case.documenten.noZaakFound' | translate"
-      [title]="'case.documenten.noZaakFoundTitle' | translate"
+      [description]="'dossier.documenten.noZaakFound' | translate"
+      [title]="'dossier.documenten.noZaakFoundTitle' | translate"
     ></valtimo-no-results>
   } @else {
     <valtimo-no-results
       [action]="uploadButton"
-      [description]="'case.documenten.noFiles' | translate"
-      [title]="'case.documenten.noFilesTitle' | translate"
+      [description]="'dossier.documenten.noFiles' | translate"
+      [title]="'dossier.documenten.noFilesTitle' | translate"
     ></valtimo-no-results>
   }
 </ng-template>
 
 <ng-template #overflowFilter>
-  <valtimo-case-detail-tab-documenten-api-filter
+  <valtimo-dossier-detail-tab-documenten-api-filter
     [prefillFilter]="filter$ | async"
     (filterEvent)="onFilterEvent($event)"
-  ></valtimo-case-detail-tab-documenten-api-filter>
+  ></valtimo-dossier-detail-tab-documenten-api-filter>
 </ng-template>
 
 <ng-template #resetFilterButton>
@@ -152,12 +155,7 @@
 
 <ng-template #uploadButton let-disabled="disabled">
   <button
-    [disabled]="
-      (uploadProcessLinkedSet && !uploadProcessLinked) ||
-      showZaakLinkWarning ||
-      disabled ||
-      (canCreateResource$ | async) === false
-    "
+    [disabled]="(uploadProcessLinkedSet && !uploadProcessLinked) || showZaakLinkWarning || disabled"
     [vTooltip]="getUploadButtonTooltip() | translate"
     (click)="onUploadButtonClick()"
     cdsButton="primary"
@@ -168,16 +166,12 @@
 </ng-template>
 
 <ng-template #translationTemplate let-data="data">
-  @if (data.item[data.key]) {
-    {{ 'document.' + data.item[data.key] | translate }}
-  } @else {
-    -
-  }
+  {{ 'document.' + data.item[data.key] | translate }}
 </ng-template>
 
 <ng-template #navigateToCaseAdminButton>
   <button (click)="onNavigateToCaseAdminClick()" cdsButton="primary">
-    {{ 'case.documenten.navigateToCaseAdmin' | translate }}
+    {{ 'dossier.documenten.navigateToCaseAdmin' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="settings" size="16"></svg>
   </button>

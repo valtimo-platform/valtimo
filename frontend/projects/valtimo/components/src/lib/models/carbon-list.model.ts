@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,17 +20,12 @@ enum ViewType {
   ACTION = 'dropdownActions',
   ARRAY_COUNT = 'arrayCount',
   BOOLEAN = 'boolean',
-  CURRENCY = 'currency',
   DATE = 'date',
-  DATE_TIME = 'datetime',
-  ENUM = 'enum',
-  NUMBER = 'number',
-  PERCENT = 'percent',
   TAGS = 'tags',
+  ENUM = 'enum',
   TEMPLATE = 'template',
   TEXT = 'text',
   UNDERSCORES_TO_SPACES = 'underscoresToSpaces',
-  HIDDEN = 'hidden',
 }
 interface CarbonListSelectTranslations {
   single: string;
@@ -68,17 +63,12 @@ interface ActionItem {
 }
 
 interface ColumnConfig extends ListField {
-  viewType?: string | ViewType;
+  viewType: string | ViewType;
   className?: string;
-  currencyCode?: string;
-  digitsInfo?: string;
-  display?: string;
-  enum?: Array<string> | {[key: string]: string};
   format?: string;
+  enum?: Array<string> | {[key: string]: string};
   template?: TemplateRef<any>;
   templateData?: object;
-  tooltipCharLimit?: number;
-  tagAmount?: number;
 }
 
 enum MoveRowDirection {
@@ -106,18 +96,12 @@ interface ListField {
   viewType?: string;
   default?: string | boolean;
   sortable?: boolean;
-  tagAmount?: number;
 }
 
 interface CarbonListNoResultsMessage {
   description: string;
   isSearchResult: boolean;
   title: string;
-}
-
-interface DragAndDropEvent {
-  startIndex: number;
-  newIndex: number;
 }
 
 export {
@@ -133,5 +117,4 @@ export {
   MoveRowEvent,
   ViewType,
   CarbonListNoResultsMessage,
-  DragAndDropEvent,
 };

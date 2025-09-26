@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,43 +15,23 @@
  */
 
 import {DisplayTypeSpecification} from '../../models';
-import {DATA_FEATURES} from '../../constants';
-import {MeterConfigurationComponent, MeterDisplayComponent} from './components';
+import {MeterDisplayComponent} from './components/meter-display/meter-display.component';
 
 export const meterSpecification: DisplayTypeSpecification = {
   displayTypeKey: 'meter',
   displayComponent: MeterDisplayComponent,
-  configurationComponent: MeterConfigurationComponent,
   width: 2,
   height: 1,
   translations: {
     nl: {
       title: 'Meter',
-      formTitle: 'Titel (vereist)',
-      formTitleHelperText: 'De titel die wordt weergegeven in de widget',
-      subtitle: 'Ondertitel',
-      subtitleHelperText: 'De ondertitel weergegeven in de widget',
-      label: 'Label',
-      labelHelperText: 'Het label dat wordt weergegeven in de widget',
     },
     en: {
       title: 'Meter',
-      formTitle: 'Title (required)',
-      formTitleHelperText: 'The title displayed in the widget',
-      subtitle: 'Subtitle',
-      subtitleHelperText: 'The subtitle displayed in the widget',
-      label: 'Label',
-      labelHelperText: 'The label displayed in the widget',
     },
     de: {
       title: 'Meter',
-      formTitle: 'Titel (erforderlich)',
-      formTitleHelperText: 'Der im Widget angezeigte Titel',
-      subtitle: 'Untertitel',
-      subtitleHelperText: 'Der im Widget angezeigte Untertitel',
-      label: 'Beschriftung',
-      labelHelperText: 'Die im Widget angezeigte Beschriftung',
     },
   },
-  requiredDataFeatures: [DATA_FEATURES.NUMBERS],
+  requiredDataFeatures: [],
 };

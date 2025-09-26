@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-interface MeterItem {
-  value: number;
-  label: string;
-}
-
 interface MeterData {
-  values: MeterItem[];
+  value: number;
 }
 
 interface MeterDisplayTypeProperties {
   title: string;
-  subtitle: string;
 }
 
-export {MeterData, MeterItem, MeterDisplayTypeProperties};
+export {MeterData, MeterDisplayTypeProperties};

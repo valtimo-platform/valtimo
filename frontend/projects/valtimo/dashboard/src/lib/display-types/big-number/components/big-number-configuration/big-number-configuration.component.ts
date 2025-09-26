@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ import {
 } from '@angular/core';
 import {ConfigurationOutput, DisplayTypeConfigurationComponent} from '../../../../models';
 import {startWith, Subscription} from 'rxjs';
-import {AbstractControl, FormBuilder, Validators} from '@angular/forms';
+import {FormBuilder, Validators} from '@angular/forms';
 import {BigNumberDisplayTypeProperties} from '../../models';
 
 @Component({
-  standalone: false,
   templateUrl: './big-number-configuration.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -46,7 +45,7 @@ export class BigNumberConfigurationComponent
     highSeverityThreshold: this.fb.control(null),
   });
 
-  @Input() public readonly displayTypeKey: string;
+  @Input() displayTypeKey: string;
   @Input() set disabled(disabledValue: boolean) {
     if (disabledValue) {
       this.form.disable();
@@ -55,31 +54,31 @@ export class BigNumberConfigurationComponent
     }
   }
 
-  public get title(): AbstractControl<string> {
+  public get title() {
     return this.form.get('title');
   }
 
-  public get subtitle(): AbstractControl<string> {
+  public get subtitle() {
     return this.form.get('subtitle');
   }
 
-  public get label(): AbstractControl<string> {
+  public get label() {
     return this.form.get('label');
   }
 
-  public get useKPI(): AbstractControl<boolean> {
+  public get useKPI() {
     return this.form.get('useKPI');
   }
 
-  public get lowSeverityThreshold(): AbstractControl<number> {
+  public get lowSeverityThreshold() {
     return this.form.get('lowSeverityThreshold');
   }
 
-  public get mediumSeverityThreshold(): AbstractControl<number> {
+  public get mediumSeverityThreshold() {
     return this.form.get('mediumSeverityThreshold');
   }
 
-  public get highSeverityThreshold(): AbstractControl<number> {
+  public get highSeverityThreshold() {
     return this.form.get('highSeverityThreshold');
   }
 

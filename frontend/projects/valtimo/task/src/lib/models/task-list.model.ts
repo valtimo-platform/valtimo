@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {ListItem} from 'carbon-components-angular';
-import {SearchFilter, SearchFilterRange, TaskListTab} from '@valtimo/shared';
+import {ListItem} from 'carbon-components-angular/dropdown/list-item.interface';
+import {TaskListTab} from '@valtimo/config';
 
 interface TaskPageParams {
   page: number;
@@ -61,28 +61,13 @@ interface TaskListColumnListItem extends ListItem {
   key: string;
 }
 
-type TaskListOtherFilters = Array<SearchFilter | SearchFilterRange>;
-
-interface TaskListQueryParams {
-  selectedTaskType: TaskListTab;
-  params: TaskPageParams;
-  caseDefinitionKey?: string;
-  otherFilters?: TaskListOtherFilters;
-}
-
-interface TaskListEncodedQueryParams {
-  selectedTaskType: TaskListTab;
-  params: string;
-  caseDefinitionName?: string;
-  otherFilters?: string;
-}
-
-interface TaskListQueryParamsWithReload extends TaskListQueryParams {
-  reload: boolean;
-}
-
 interface TaskListParams {
-  params: TaskListQueryParamsWithReload;
+  params: {
+    selectedTaskType: TaskListTab;
+    params: TaskPageParams;
+    caseDefinitionName?: string;
+    reload: boolean;
+  };
   enableLoadingAnimation: boolean;
 }
 
@@ -97,8 +82,4 @@ export {
   TaskListColumnEnum,
   TaskPageParams,
   TaskListParams,
-  TaskListOtherFilters,
-  TaskListQueryParams,
-  TaskListQueryParamsWithReload,
-  TaskListEncodedQueryParams,
 };

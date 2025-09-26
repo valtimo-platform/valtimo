@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/shared';
+import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/config';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
-import {SelectItem} from '../../models';
+import {CARBON_THEME, SelectItem} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
 import {DocumentService} from '@valtimo/document';
 import {IconService} from 'carbon-components-angular';
@@ -27,23 +27,20 @@ import {ChevronDown16, ChevronUp16} from '@carbon/icons';
   selector: 'valtimo-search-fields',
   templateUrl: './search-fields.component.html',
   styleUrls: ['./search-fields.component.scss'],
-  standalone: false,
 })
 export class SearchFieldsComponent implements OnInit, OnDestroy {
   @Input() public loading!: boolean;
   @Input() public set searchFields(fields: Array<SearchField>) {
     this.searchFields$.next(fields);
   }
-  private readonly _caseDefinitionKey$ = new BehaviorSubject<string>('');
-  @Input() public set caseDefinitionKey(value: string) {
-    this._caseDefinitionKey$.pipe(take(1)).subscribe(currentCaseDefinitionKey => {
-      if (currentCaseDefinitionKey !== value) {
-        this._caseDefinitionKey$.next(value);
+  @Input() public set documentDefinitionName(documentDefinitionName: string) {
+    this._documentDefinitionName$.pipe(take(1)).subscribe(currentDocumentDefinitionName => {
+      if (currentDocumentDefinitionName !== documentDefinitionName) {
+        this._documentDefinitionName$.next(documentDefinitionName);
       }
     });
   }
   @Input() public setValuesSubject$!: Observable<SearchFieldValues>;
-  @Input() public clearValuesSubject$!: Observable<null>;
   @Input() public defaultValues!: SearchFieldValues;
   @Input() public inputDisabled = false;
   @Input() public externalSearchField = false;
@@ -68,7 +65,11 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   public readonly expanded$ = new BehaviorSubject<boolean>(false);
   public readonly clear$ = new Subject<null>();
 
-  private readonly _subscriptions = new Subscription();
+  private readonly _documentDefinitionName$ = new BehaviorSubject<string>('');
+
+  private documentDefinitionNameSubscription!: Subscription;
+  private dropdownSubscription!: Subscription;
+  private valuesSubjectSubscription!: Subscription;
 
   private readonly BOOLEAN_POSITIVE: SearchFieldBoolean = 'booleanPositive';
   private readonly BOOLEAN_NEGATIVE: SearchFieldBoolean = 'booleanNegative';
@@ -99,15 +100,16 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    this.openCaseDefinitionKeySubscription();
+    this.openDocumentDefinitionNameSubscription();
     this.openValuesSubjectSubscription();
-    this.openClearSubscription();
     this.openDropdownSubscription();
     this.setDefaultValues();
   }
 
   public ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+    this.documentDefinitionNameSubscription?.unsubscribe();
+    this.valuesSubjectSubscription?.unsubscribe();
+    this.dropdownSubscription?.unsubscribe();
   }
 
   public singleValueChange(searchFieldKey: string, value: any, isDateTime?: boolean): void {
@@ -190,71 +192,54 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
     return value;
   }
 
-  private openCaseDefinitionKeySubscription(): void {
-    this._subscriptions.add(
-      this._caseDefinitionKey$.subscribe(() => {
-        this.collapse();
-        this.clear();
-      })
-    );
+  private openDocumentDefinitionNameSubscription(): void {
+    this.documentDefinitionNameSubscription = this._documentDefinitionName$.subscribe(() => {
+      this.collapse();
+      this.clear();
+    });
   }
 
   private openValuesSubjectSubscription(): void {
     if (this.setValuesSubject$) {
-      this._subscriptions.add(
-        this.setValuesSubject$.subscribe(values => {
-          if (Object.keys(values || {}).length > 0) {
-            this.values$.next(values);
-            this.search();
-            this.expand();
-          }
-        })
-      );
-    }
-  }
-
-  private openClearSubscription(): void {
-    if (this.clearValuesSubject$) {
-      this._subscriptions.add(
-        this.clearValuesSubject$.subscribe(values => {
-          this.values$.next({});
+      this.valuesSubjectSubscription = this.setValuesSubject$.subscribe(values => {
+        if (Object.keys(values || {}).length > 0) {
+          this.values$.next(values);
           this.search();
-        })
-      );
+          this.expand();
+        }
+      });
     }
   }
 
   private openDropdownSubscription(): void {
-    this._subscriptions.add(
-      combineLatest([this._caseDefinitionKey$, this.searchFields$])
-        .pipe(
-          map(([caseDefinitionKey, searchFields]) =>
-            searchFields
-              ?.filter(searchField => searchField.dropdownDataProvider)
-              .map(searchField =>
-                this.documentService
-                  .getDropdownData(
-                    searchField.dropdownDataProvider,
-                    caseDefinitionKey,
-                    searchField.key
-                  )
-                  .subscribe(dropdownData => {
-                    if (dropdownData) {
-                      this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
-                        dropdownFieldKey => ({
-                          id: dropdownFieldKey,
-                          text: dropdownData[dropdownFieldKey],
-                        })
-                      );
-                    } else {
-                      this.dropdownSelectItemsMap[searchField.key] = [];
-                    }
-                  })
-              )
-          )
+    this.dropdownSubscription = combineLatest([this._documentDefinitionName$, this.searchFields$])
+      .pipe(
+        map(([documentDefinitionName, searchFields]) =>
+          searchFields
+            ?.filter(searchField => searchField.dropdownDataProvider)
+            .map(searchField =>
+              this.documentService
+                .getDropdownData(
+                  searchField.dropdownDataProvider,
+                  documentDefinitionName,
+                  searchField.key
+                )
+                .subscribe(dropdownData => {
+                  if (dropdownData) {
+                    this.dropdownSelectItemsMap[searchField.key] = Object.keys(dropdownData).map(
+                      dropdownFieldKey => ({
+                        id: dropdownFieldKey,
+                        text: dropdownData[dropdownFieldKey],
+                      })
+                    );
+                  } else {
+                    this.dropdownSelectItemsMap[searchField.key] = [];
+                  }
+                })
+            )
         )
-        .subscribe()
-    );
+      )
+      .subscribe();
   }
 
   private collapse(): void {
