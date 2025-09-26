@@ -1,0 +1,382 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.catalogiapi.web.rest
+
+import com.ritense.case.service.CaseDefinitionService
+import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.catalogiapi.BaseTest
+import com.ritense.catalogiapi.domain.Besluittype
+import com.ritense.catalogiapi.domain.Eigenschap
+import com.ritense.catalogiapi.domain.Informatieobjecttype
+import com.ritense.catalogiapi.domain.Resultaattype
+import com.ritense.catalogiapi.domain.Roltype
+import com.ritense.catalogiapi.domain.Specificatie
+import com.ritense.catalogiapi.domain.Statustype
+import com.ritense.catalogiapi.service.CatalogiService
+import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.service.DocumentService
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.hamcrest.Matchers
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.springframework.http.MediaType
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.net.URI
+import java.nio.charset.StandardCharsets
+import java.util.Optional
+import java.util.UUID
+
+internal class CatalogiResourceTest : BaseTest() {
+
+    lateinit var mockMvc: MockMvc
+    lateinit var catalogiService: CatalogiService
+    lateinit var catalogiResource: CatalogiResource
+    lateinit var activeCaseDefinitionService: ActiveCaseDefinitionService
+    lateinit var caseDefinitionService: CaseDefinitionService
+    lateinit var documentService: DocumentService
+
+    val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
+
+    @BeforeEach
+    fun init() {
+        catalogiService = mock()
+        activeCaseDefinitionService = mock()
+        caseDefinitionService = mock()
+        documentService = mock()
+        catalogiResource =
+            CatalogiResource(catalogiService, activeCaseDefinitionService, caseDefinitionService, documentService)
+
+        mockMvc = MockMvcBuilders
+            .standaloneSetup(catalogiResource)
+            .build()
+    }
+
+    @Test
+    fun `should get documenttypes for caseDefinitionId`() {
+        val caseDefinitionKey = caseDefinitionId.key
+
+        val type1 = mock<Informatieobjecttype>()
+        whenever(type1.url).thenReturn(URI("http://example.com/1"))
+        whenever(type1.omschrijving).thenReturn("name 1")
+
+        val type2 = mock<Informatieobjecttype>()
+        whenever(type2.url).thenReturn(URI("http://example.com/2"))
+        whenever(type2.omschrijving).thenReturn("name 2")
+
+        val caseDefinition = mock<CaseDefinition>()
+        whenever(caseDefinition.id).thenReturn(caseDefinitionId)
+        whenever(caseDefinitionService.getCaseDefinition(any()))
+            .thenReturn(caseDefinition)
+
+        whenever(catalogiService.getInformatieobjecttypes(caseDefinitionId))
+            .thenReturn(listOf(type1, type2))
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/case-definition/$caseDefinitionKey/version/${caseDefinitionId.versionTag}/zaaktype/documenttype")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://example.com/1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://example.com/2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].name").value("name 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].name").value("name 2"))
+    }
+
+    @Test
+    fun `should get documenttypes for jsonSchemaDocument`() {
+        val documentId = UUID.randomUUID()
+        val documentDefinitionId = JsonSchemaDocumentDefinitionId.of("test", caseDefinitionId)
+
+        val type1 = mock<Informatieobjecttype>()
+        whenever(type1.url).thenReturn(URI("http://example.com/1"))
+        whenever(type1.omschrijving).thenReturn("name 1")
+
+        val type2 = mock<Informatieobjecttype>()
+        whenever(type2.url).thenReturn(URI("http://example.com/2"))
+        whenever(type2.omschrijving).thenReturn("name 2")
+
+        val document = mock<Document>()
+        whenever(document.definitionId()).thenReturn(documentDefinitionId)
+        whenever(documentService.findBy(any()))
+            .thenReturn(Optional.of(document))
+
+        whenever(catalogiService.getInformatieobjecttypes(caseDefinitionId))
+            .thenReturn(listOf(type1, type2))
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/document/$documentId/zaaktype/documenttype")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://example.com/1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://example.com/2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].name").value("name 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].name").value("name 2"))
+    }
+
+    @Test
+    fun `should get roltypes for caseDefinitionId`() {
+        val caseDefinitionKey = caseDefinitionId.key
+
+        val type1 = mock<Roltype>()
+        whenever(type1.url).thenReturn(URI("http://example.com/1"))
+        whenever(type1.omschrijving).thenReturn("name 1")
+
+        val type2 = mock<Roltype>()
+        whenever(type2.url).thenReturn(URI("http://example.com/2"))
+        whenever(type2.omschrijving).thenReturn("name 2")
+
+        val caseDefinition = mock<CaseDefinition>()
+        whenever(caseDefinition.id).thenReturn(caseDefinitionId)
+        whenever(activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey))
+            .thenReturn(caseDefinition)
+
+        whenever(catalogiService.getRoltypes(caseDefinitionId))
+            .thenReturn(listOf(type1, type2))
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/case-definition/$caseDefinitionKey/zaaktype/roltype")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://example.com/1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://example.com/2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].name").value("name 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].name").value("name 2"))
+    }
+
+    @Test
+    fun `should get statustypen for caseDefinitionId`() {
+        val caseDefinitionKey = "case-name"
+
+        val type1 = mock<Statustype>()
+        whenever(type1.url).thenReturn(URI("http://example.com/1"))
+        whenever(type1.omschrijving).thenReturn("name 1")
+
+        val type2 = mock<Statustype>()
+        whenever(type2.url).thenReturn(URI("http://example.com/2"))
+        whenever(type2.omschrijving).thenReturn("name 2")
+
+        val caseDefinition = mock<CaseDefinition>()
+        whenever(caseDefinition.id).thenReturn(caseDefinitionId)
+        whenever(caseDefinitionService.getCaseDefinition(any()))
+            .thenReturn(caseDefinition)
+
+        whenever(catalogiService.getStatustypen(caseDefinitionId))
+            .thenReturn(listOf(type1, type2))
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/case-definition/$caseDefinitionKey/version/${caseDefinitionId.versionTag}/zaaktype/statustype")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://example.com/1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://example.com/2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].name").value("name 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].name").value("name 2"))
+    }
+
+    @Test
+    fun `should get resultaattypen for caseDefinitionId`() {
+        val caseDefinitionKey = caseDefinitionId.key
+
+        val type1 = mock<Resultaattype>()
+        whenever(type1.url).thenReturn(URI("http://example.com/1"))
+        whenever(type1.omschrijving).thenReturn("name 1")
+
+        val type2 = mock<Resultaattype>()
+        whenever(type2.url).thenReturn(URI("http://example.com/2"))
+        whenever(type2.omschrijving).thenReturn("name 2")
+
+        val caseDefinition = mock<CaseDefinition>()
+        whenever(caseDefinition.id).thenReturn(caseDefinitionId)
+        whenever(caseDefinitionService.getCaseDefinition(any()))
+            .thenReturn(caseDefinition)
+
+        whenever(catalogiService.getResultaattypen(caseDefinitionId))
+            .thenReturn(listOf(type1, type2))
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/case-definition/$caseDefinitionKey/version/${caseDefinitionId.versionTag}/zaaktype/resultaattype")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://example.com/1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://example.com/2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].name").value("name 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].name").value("name 2"))
+    }
+
+    @Test
+    fun `should get besluittypen for caseDefinitionId`() {
+        val caseDefinitionKey = caseDefinitionId.key
+
+        val type1 = mock<Besluittype>()
+        whenever(type1.url).thenReturn(URI("http://example.com/1"))
+        whenever(type1.omschrijving).thenReturn("name 1")
+
+        val type2 = mock<Besluittype>()
+        whenever(type2.url).thenReturn(URI("http://example.com/2"))
+        whenever(type2.omschrijving).thenReturn("name 2")
+
+        val caseDefinition = mock<CaseDefinition>()
+        whenever(caseDefinition.id).thenReturn(caseDefinitionId)
+        whenever(caseDefinitionService.getCaseDefinition(any()))
+            .thenReturn(caseDefinition)
+
+        whenever(catalogiService.getBesluittypen(caseDefinitionId))
+            .thenReturn(listOf(type1, type2))
+
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders.get("/api/v1/case-definition/$caseDefinitionKey/version/${caseDefinitionId.versionTag}/zaaktype/besluittype")
+                    .characterEncoding(StandardCharsets.UTF_8.name())
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://example.com/1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://example.com/2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].name").value("name 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].name").value("name 2"))
+    }
+
+    @Test
+    fun `should get zaaktypen`() {
+
+        val zaaktypen = IntRange(1, 2).map { n ->
+            newZaaktype(
+                URI("http://example.com/$n"),
+                "Zaaktype $n"
+            )
+        }
+
+        whenever(catalogiService.getZaakTypen()).thenReturn(zaaktypen)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/management/v1/zgw/zaaktype")
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://example.com/1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].omschrijving").value("Zaaktype 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://example.com/2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].omschrijving").value("Zaaktype 2"))
+    }
+
+    @Test
+    fun `should get eigenschappen for caseDefinitionId`() {
+        val caseDefinitionKey = caseDefinitionId.key
+
+        val eigenschappen = IntRange(1, 2).map { n ->
+            Eigenschap(
+                URI("http://ritense.com/$n"),
+                naam = "naam $n",
+                definitie = "definitie",
+                specificatie = Specificatie(
+                    groep = "groep",
+                    formaat = "formaat",
+                    lengte = "lengte",
+                    kardinaliteit = "kardinaliteit",
+                ),
+                zaaktype = URI("www.ritense.com/zaaktype"),
+            )
+        }
+
+        val caseDefinition = mock<CaseDefinition>()
+        whenever(caseDefinition.id).thenReturn(caseDefinitionId)
+        whenever(caseDefinitionService.getCaseDefinition(any()))
+            .thenReturn(caseDefinition)
+
+        whenever(catalogiService.getEigenschappen(caseDefinitionId)).thenReturn(eigenschappen)
+
+        mockMvc.perform(
+            MockMvcRequestBuilders.get(
+                "/api/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/catalogi-eigenschappen",
+                caseDefinitionKey,
+                caseDefinitionId.versionTag
+            )
+                .characterEncoding(StandardCharsets.UTF_8.name())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isNotEmpty)
+            .andExpect(MockMvcResultMatchers.jsonPath("$").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.*", Matchers.hasSize<Int>(2)))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].url").value("http://ritense.com/1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[0].name").value("naam 1"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].url").value("http://ritense.com/2"))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.[1].name").value("naam 2"))
+    }
+
+}
