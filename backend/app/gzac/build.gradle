@@ -1,0 +1,43 @@
+dependencies {
+    implementation(platform(project(":dependencies:valtimo-dependency-versions")))
+
+    implementation(project(":dependencies:valtimo-gzac-dependencies"))
+    implementation(project(":mail:local-mail"))
+    implementation(project(":document-generation:smartdocuments"))
+    implementation(project(":zgw:portaaltaak"))
+
+    implementation("io.github.microutils:kotlin-logging")
+
+    compileOnly(project(":besluit"))
+    compileOnly(project(":openzaak"))
+    compileOnly(project(":contactmoment"))
+    compileOnly(project(":objects-api"))
+
+    // Database
+    implementation group: 'org.postgresql', name: 'postgresql', version: postgresqlDriverVersion
+
+    if (System.getProperty("os.arch") == "aarch64") {
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.105.Final:osx-aarch_64")
+    }
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}
+
+apply from: "gradle/publishing.gradle"
+
+bootRun {
+    doFirst {
+        File f = file(".env.properties")
+        if (f.isFile()) {
+            def props = new Properties()
+            f.withInputStream { props.load(it) }
+            props.each { key, value ->
+                environment key.toString(), value.toString()
+            }
+        }
+    }
+}
+
+apply from: "$rootProject.projectDir/gradle/dockerComposeGzac.gradle"
