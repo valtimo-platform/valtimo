@@ -21,7 +21,6 @@ import com.ritense.zakenapi.BaseIntegrationTest
 import com.ritense.zakenapi.web.rest.request.CreateZaakTypeLinkRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import java.net.URI
@@ -43,20 +42,5 @@ class ZaakTypeLinkServiceIntTest : BaseIntegrationTest() {
         )
         assertThat(result.caseDefinitionId).isEqualTo(caseDefinitionId)
         assertThat(result.zaakTypeUrl).isEqualTo(zaakUrl)
-    }
-
-    @Test
-    fun `should get zaakTypeLink`() {
-        val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
-        zaakTypeLinkService.createZaakTypeLink(
-            caseDefinitionId,
-            CreateZaakTypeLinkRequest(zaakUrl)
-        )
-
-        val result = zaakTypeLinkService.get(caseDefinitionId)
-        assertNotNull(result)
-        assertThat(result.caseDefinitionId).isEqualTo(caseDefinitionId)
-        assertThat(result.zaakTypeUrl).isEqualTo(zaakUrl)
-
     }
 }

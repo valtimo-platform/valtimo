@@ -23,13 +23,13 @@ import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.exception.DocumentNotFoundException
 import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
-import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstance
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentInstance
+import com.ritense.valtimo.camunda.service.CamundaRuntimeService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -37,15 +37,15 @@ import java.util.UUID
 @SkipComponentScan
 class ProcessDocumentsService(
     private val documentService: DocumentService,
-    private val operatonProcessService: OperatonProcessService,
+    private val camundaProcessService: CamundaProcessService,
     private val associationService: ProcessDocumentAssociationService,
     private val processDocumentService: ProcessDocumentService,
     private val repositoryService: RepositoryService,
-    private val operatonRuntimeService: OperatonRuntimeService,
+    private val camundaRuntimeService: CamundaRuntimeService,
 ) {
 
     fun deleteAllProcessInstancesForThisDocument(execution: DelegateExecution, reason: String) {
-        val thisProcessInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
+        val thisProcessInstanceId = CamundaProcessInstanceId(execution.processInstanceId)
         val documentId = processDocumentService.getDocumentId(thisProcessInstanceId, execution)
         requireNotNull(documentId) {
             "Failed to delete processes for document. Reason: current process has no association with a document."
@@ -53,11 +53,11 @@ class ProcessDocumentsService(
         withLoggingContext(JsonSchemaDocument::class, documentId.toString()) {
             val processInstanceIds = associationService.findProcessDocumentInstances(documentId)
                 .map { it.processDocumentInstanceId().processInstanceId().toString() }
-            operatonProcessService.findProcessInstancesByIds(processInstanceIds.toSet())
+            camundaProcessService.findProcessInstancesByIds(processInstanceIds.toSet())
                 .filter { it.rootProcessInstanceId == null || it.rootProcessInstanceId == it.processInstanceId }
                 .mapNotNull { processInstance ->
                     try {
-                        operatonProcessService.deleteProcessInstanceById(processInstance.id, reason)
+                        camundaProcessService.deleteProcessInstanceById(processInstance.id, reason)
                         null
                     } catch (exception: Exception) {
                         exception
@@ -68,48 +68,20 @@ class ProcessDocumentsService(
         }
     }
 
+    //TODO: Determine what to with this
     fun startProcessByProcessDefinitionKey(processDefinitionKey: String, businessKey: String) {
         startProcessByProcessDefinitionKey(processDefinitionKey, businessKey, null)
     }
 
-    fun startProcessByProcessDefinitionKeyWithoutCaseDefinition(
-        processDefinitionKey: String,
-        businessKey: String,
-        variables: Map<String, Any>?
-    ) {
-        val processInstance = runWithoutAuthorization {
-            operatonProcessService.startProcess(processDefinitionKey, businessKey, variables)
-        }
-
-        require(processInstance.processDefinition.name != null) {
-            "Process definition with id '${processInstance.processDefinition.id}' doesn't have a name"
-        }
-        associateDocumentToProcess(
-            processInstance.processInstanceDto.id,
-            processInstance.processDefinition.name!!,
-            businessKey
-        )
-    }
-
+    //TODO: Determine what to with this
     fun startProcessByProcessDefinitionKey(
         processDefinitionKey: String,
         businessKey: String,
         variables: Map<String, Any>?
     ) {
         val processInstance = runWithoutAuthorization {
-            val document = documentService.findBy(JsonSchemaDocumentId.existingId(UUID.fromString(businessKey)))
-            if (document.isPresent) {
-                operatonProcessService.startProcess(
-                    processDefinitionKey,
-                    businessKey,
-                    document.get().definitionId().caseDefinitionId(),
-                    variables
-                )
-            } else {
-                operatonProcessService.startProcess(processDefinitionKey, businessKey, variables)
-            }
+            camundaProcessService.startProcess(processDefinitionKey, businessKey, variables)
         }
-
         require(processInstance.processDefinition.name != null) {
             "Process definition with id '${processInstance.processDefinition.id}' doesn't have a name"
         }
@@ -121,14 +93,14 @@ class ProcessDocumentsService(
     }
 
     fun getActiveProcessInstanceIds(execution: DelegateExecution): List<String> {
-        val processInstanceId = OperatonProcessInstanceId(execution.processInstanceId)
+        val processInstanceId = CamundaProcessInstanceId(execution.processInstanceId)
         val documentId = processDocumentService.getDocumentId(processInstanceId, execution)
         requireNotNull(documentId) {
             "No associated document found for process instance ID: ${execution.processInstanceId}"
         }
 
         return associationService.findProcessDocumentInstances(documentId)
-            .filterIsInstance<OperatonProcessJsonSchemaDocumentInstance>()
+            .filterIsInstance<CamundaProcessJsonSchemaDocumentInstance>()
             .filter { it.isActive() }
             .map {
                 it.processDocumentInstanceId()
@@ -141,7 +113,7 @@ class ProcessDocumentsService(
         var activeProcessInstances = getActiveProcessInstanceIds(execution)
 
         return activeProcessInstances.mapNotNull {
-            val processInstance = operatonRuntimeService.findProcessInstanceById(it)!!
+            val processInstance = camundaRuntimeService.findProcessInstanceById(it)!!
             repositoryService
                 .createProcessDefinitionQuery()
                 .processDefinitionId(processInstance.processDefinitionId)

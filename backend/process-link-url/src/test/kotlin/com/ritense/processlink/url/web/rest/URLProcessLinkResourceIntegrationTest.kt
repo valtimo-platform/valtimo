@@ -145,6 +145,8 @@ internal class URLProcessLinkResourceIntegrationTest @Autowired constructor(
 
     @Test
     fun `should export process-links`() {
+        listener.deployProcessLinks()
+
         mockMvc.perform(
             get("/api/v1/process-link/export")
                 .param("processDefinitionKey", "url-one-task-process")

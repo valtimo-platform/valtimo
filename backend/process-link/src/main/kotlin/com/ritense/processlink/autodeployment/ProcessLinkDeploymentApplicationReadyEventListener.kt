@@ -36,6 +36,7 @@ import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
 import java.io.IOException
 
+// TODO: MOVE THIS TO TEST
 open class ProcessLinkDeploymentApplicationReadyEventListener(
     private val resourceLoader: ResourceLoader,
     private val processLinkImporter: ProcessLinkImporter,
@@ -49,8 +50,12 @@ open class ProcessLinkDeploymentApplicationReadyEventListener(
         logger.info { "Deploying all process links from $PATH" }
         loadResources().forEach { resource ->
             try {
-                val fileName = resource.url.path.substringAfter(CONFIG_FOLDER_STRUCTURE)
-                logger.info { "Deploying process link for system process from file '${fileName}'" }
+                val relativePath = resource.url.path.substringAfter(CASE_DEFINITION_FOLDER_STRUCTURE)
+                val substring = relativePath.substring(0, StringUtils.ordinalIndexOf(relativePath, "/", 3))
+                val fileName =
+                    resource.url.path.substringAfter(CASE_DEFINITION_FOLDER_STRUCTURE).substring(substring.length)
+
+                logger.info { "Deploying process link from file '${fileName}'" }
 
                 val processLinkNode = objectMapper.readValue<ArrayNode>(resource.inputStream)
                 val resolvedProcessLinkNode = resolveProperties(processLinkNode)
@@ -70,7 +75,7 @@ open class ProcessLinkDeploymentApplicationReadyEventListener(
     private fun loadResources(): List<Resource> {
         return ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
             .getResources(PATH)
-            .filterNot { it?.url?.toString()?.contains("/config/case") ?: false }
+            .filter { it?.url?.toString()?.contains("/config/case") ?: false }
     }
 
     private fun resolveProperties(array: ArrayNode?): ArrayNode {
@@ -110,7 +115,7 @@ open class ProcessLinkDeploymentApplicationReadyEventListener(
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        const val PATH = "classpath*:/config/global/process-link/**/*.process-link.json"
-        private const val CONFIG_FOLDER_STRUCTURE = "/config/global"
+        const val PATH = "classpath*:**/case/*/*/process-link/*.process-link.json"
+        private const val CASE_DEFINITION_FOLDER_STRUCTURE = "/config/case"
     }
 }

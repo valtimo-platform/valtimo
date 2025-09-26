@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case_.service.ActiveCaseDefinitionService
@@ -35,8 +34,8 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
 import org.springframework.core.io.Resource
@@ -59,7 +58,7 @@ class DocumentenApiVersionService(
     private val documentDefinitionService: DocumentDefinitionService,
     private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
     private val pluginProcessLinkService: PluginProcessLinkService,
-    private val operatonRepositoryService: OperatonRepositoryService,
+    private val camundaRepositoryService: CamundaRepositoryService,
     private val activeCaseDefinitionService: ActiveCaseDefinitionService
 ) {
 
@@ -101,7 +100,7 @@ class DocumentenApiVersionService(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<Triple<PluginConfiguration, DocumentenApiPlugin, DocumentenApiVersion?>> {
         return detectPluginConfigurations(caseDefinitionName)
-            .map { pluginConfiguration ->
+            .map {  pluginConfiguration ->
                 val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
                 val version = getVersionByTagOrNull(plugin.apiVersion)
                 Triple(pluginConfiguration, plugin, version)
@@ -114,9 +113,7 @@ class DocumentenApiVersionService(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<PluginConfiguration> {
         documentDefinitionService.requirePermission(caseDefinitionName, JsonSchemaDocumentDefinitionActionProvider.VIEW)
-        val caseDefinition = runWithoutAuthorization {
-                activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName)
-            }
+        val caseDefinition = activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName)
         val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(
             caseDefinition.id,
             "DOCUMENT_UPLOAD"
@@ -126,10 +123,10 @@ class DocumentenApiVersionService(
         }
         val processDefinitionKey = link.id.processDefinitionKey
         val detectedConfigurations = AuthorizationContext.runWithoutAuthorization {
-            operatonRepositoryService.findLinkedProcessDefinitions(
-                OperatonProcessDefinitionSpecificationHelper.byKey(
+            camundaRepositoryService.findLinkedProcessDefinitions(
+                CamundaProcessDefinitionSpecificationHelper.byKey(
                     processDefinitionKey
-                ).and(OperatonProcessDefinitionSpecificationHelper.byLatestVersion())
+                ).and(CamundaProcessDefinitionSpecificationHelper.byLatestVersion())
             )
                 .asSequence()
                 .flatMap { pluginProcessLinkService.getProcessLinks(it.id) }

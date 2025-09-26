@@ -93,16 +93,13 @@ public class KeycloakService {
     }
 
     public List<String> getRoles(Map<String, Object> claims) {
-        final var roles = new ArrayList<String>();
-
         final var realmSettings = (Map<String, List<String>>) claims.get(REALM_ACCESS);
-        if (realmSettings != null) {
-            roles.addAll(realmSettings.getOrDefault(ROLES_SCOPE, List.of()));
-        }
+        final var resourceSettings = (Map<String, Map<String, List<String>>>) claims.get(RESOURCE_ACCESS) ;
 
-        final var resourceSettings = (Map<String, Map<String, List<String>>>) claims.get(RESOURCE_ACCESS);
+        final var roles = new ArrayList<>(realmSettings.get(ROLES_SCOPE));
+
         if (clientName != null && !clientName.isBlank() && resourceSettings != null && resourceSettings.containsKey(clientName)) {
-            roles.addAll(resourceSettings.get(clientName).getOrDefault(ROLES_SCOPE, List.of()));
+            roles.addAll(resourceSettings.get(clientName).get(ROLES_SCOPE));
         }
 
         return roles;

@@ -30,13 +30,13 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.processlink.autodeployment.ProcessLinkDeployDto
 import com.ritense.processlink.exception.ProcessLinkExistsException
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class ProcessLinkImporter(
     private val processLinkService: ProcessLinkService,
-    private val repositoryService: OperatonRepositoryService,
+    private val repositoryService: CamundaRepositoryService,
     private val objectMapper: ObjectMapper
 ) : Importer {
     override fun type() = PROCESS_LINK
@@ -90,6 +90,6 @@ class ProcessLinkImporter(
     }
 
     private companion object {
-        val FILENAME_REGEX = """/process-link/(?:.*/)?(.+)\.process-link\.json""".toRegex()
+        val FILENAME_REGEX = """/process-link/(?:.*\/)?(.+)\.process-link\.json""".toRegex()
     }
 }

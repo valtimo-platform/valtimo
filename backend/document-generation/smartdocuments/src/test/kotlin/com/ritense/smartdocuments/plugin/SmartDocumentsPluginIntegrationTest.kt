@@ -31,10 +31,10 @@ import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.smartdocuments.BaseSmartDocumentsIntegrationTest
 import com.ritense.smartdocuments.domain.SmartDocumentsRequest
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.RuntimeService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -52,14 +52,14 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
     private val pluginService: PluginService,
     private val smartDocumentsPluginFactory: SmartDocumentsPluginFactory,
     private val pluginProcessLinkRepository: PluginProcessLinkRepository,
-    private val operatonRepositoryService: OperatonRepositoryService,
+    private val camundaRepositoryService: CamundaRepositoryService,
     private val runtimeService: RuntimeService,
     private val temporaryResourceStorageService: TemporaryResourceStorageService,
 ) : BaseSmartDocumentsIntegrationTest() {
 
     lateinit var smartDocumentsPlugin: SmartDocumentsPlugin
     lateinit var pluginConfiguration: PluginConfiguration
-    lateinit var processDefinition: OperatonProcessDefinition
+    lateinit var processDefinition: CamundaProcessDefinition
 
     @BeforeEach
     internal fun beforeEach() {
@@ -104,7 +104,7 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
 
         smartDocumentsPlugin = smartDocumentsPluginFactory.create(pluginConfiguration)
         processDefinition = runWithoutAuthorization {
-            operatonRepositoryService.findLatestProcessDefinition("document-generation-plugin")!!
+            camundaRepositoryService.findLatestProcessDefinition("document-generation-plugin")!!
         }
 
         saveProcessLink(generateDocumentActionProperties)

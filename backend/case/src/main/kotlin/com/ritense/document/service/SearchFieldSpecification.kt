@@ -36,9 +36,14 @@ class SearchFieldSpecification(
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
+        if (query.groupList.isEmpty()) {
+            val groupList = ArrayList(query.groupList)
+            groupList.add(root.get<Any>("id").get<Any>("id"))
+            query.groupBy(groupList)
+        }
         val predicates = permissions
             .filter { permission: Permission ->
-                SearchField::class.java == permission.resourceType && permission.actions.contains(authRequest.action)
+                SearchField::class.java == permission.resourceType && authRequest.action == permission.action
             }
             .map { permission: Permission ->
                 permission.toPredicate(

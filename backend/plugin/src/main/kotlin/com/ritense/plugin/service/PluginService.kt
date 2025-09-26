@@ -55,14 +55,13 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
-import com.ritense.valtimo.contract.event.PluginsDeployedEvent
 import com.ritense.valueresolver.ValueResolverService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ConstraintViolationException
 import jakarta.validation.ValidationException
 import jakarta.validation.Validator
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.operaton.bpm.engine.delegate.DelegateTask
+import org.camunda.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.engine.delegate.DelegateTask
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.core.env.Environment
 import org.springframework.data.repository.findByIdOrNull
@@ -151,8 +150,6 @@ class PluginService(
             pluginConfigurationRepository.deleteById(pluginConfiguration.id)
             throw PluginEventInvocationException(pluginConfiguration, e)
         }
-
-        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
 
         return pluginConfiguration
     }
@@ -261,9 +258,7 @@ class PluginService(
             throw PluginEventInvocationException(pluginConfiguration, e)
         }
 
-        val savedPluginConfiguration = pluginConfigurationRepository.save(pluginConfiguration)
-        applicationEventPublisher.publishEvent(PluginsDeployedEvent())
-        return savedPluginConfiguration
+        return pluginConfigurationRepository.save(pluginConfiguration)
     }
 
     fun deletePluginConfiguration(
@@ -322,7 +317,7 @@ class PluginService(
 
     @Deprecated("Marked for removal since 10.6.0", ReplaceWith("processLinkService.getProcessLinks(i,j)"))
     fun getProcessLinks(
-        @LoggableResource("com.ritense.valtimo.operaton.domain.OperatonProcessDefinition") processDefinitionId: String,
+        @LoggableResource("com.ritense.valtimo.camunda.domain.CamundaProcessDefinition") processDefinitionId: String,
         activityId: String
     ): List<PluginProcessLinkResultDto> {
         return pluginProcessLinkRepository.findByProcessDefinitionIdAndActivityId(processDefinitionId, activityId)
@@ -480,7 +475,7 @@ class PluginService(
         task: DelegateTask,
         actionProperties: ObjectNode?
     ): Array<Any?> {
-        return withLoggingContext("com.ritense.valtimo.operaton.domain.OperatonTask", task.id) {
+        return withLoggingContext("com.ritense.valtimo.camunda.domain.CamundaTask", task.id) {
 
             val actionParamValueMap = resolveActionParamValues(task, method, actionProperties)
 
@@ -535,7 +530,7 @@ class PluginService(
         method: Method,
         actionProperties: ObjectNode?
     ): Map<Parameter, Any> {
-        return withLoggingContext("com.ritense.valtimo.operaton.domain.OperatonTask", task.id) {
+        return withLoggingContext("com.ritense.valtimo.camunda.domain.CamundaTask", task.id) {
 
             if (actionProperties == null) {
                 return@withLoggingContext mapOf()

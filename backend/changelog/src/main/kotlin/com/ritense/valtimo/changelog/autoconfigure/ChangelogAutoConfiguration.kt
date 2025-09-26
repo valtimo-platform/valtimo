@@ -23,7 +23,6 @@ import com.ritense.valtimo.changelog.repository.ChangesetRepository
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.changelog.service.ChangelogService
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
-import jakarta.persistence.EntityManager
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -58,16 +57,14 @@ class ChangelogAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ChangelogDeployer::class)
     fun changelogDeployer(
-        changelogService: ChangelogService,
-        changesetDeployers: List<ChangesetDeployer>,
-        environment: Environment,
-        entityManager: EntityManager,
+       changelogService: ChangelogService,
+       changesetDeployers: List<ChangesetDeployer>,
+       environment: Environment,
     ): ChangelogDeployer {
         return ChangelogDeployer(
             changelogService,
             changesetDeployers,
             environment,
-            entityManager,
         )
     }
 
