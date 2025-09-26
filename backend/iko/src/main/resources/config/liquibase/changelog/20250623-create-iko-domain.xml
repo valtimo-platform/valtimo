@@ -20,8 +20,9 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
     <changeSet author="Ritense" id="1">
+        <validCheckSum>9:2037e650de0fbaec25884a6b661b088b</validCheckSum>
         <createTable tableName="iko_repository_config">
-            <column name="key" type="VARCHAR(256)">
+            <column name="`key`" type="VARCHAR(256)">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="title" type="VARCHAR(256)">
@@ -37,8 +38,9 @@
     </changeSet>
 
     <changeSet author="Ritense" id="2">
+        <validCheckSum>9:9db2f6af2612d1f251a7efe267ae52cf</validCheckSum>
         <createTable tableName="iko_data_aggregate">
-            <column name="key" type="VARCHAR(256)">
+            <column name="`key`" type="VARCHAR(256)">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="iko_repository_config_key" type="VARCHAR(256)">
@@ -54,14 +56,15 @@
         <addForeignKeyConstraint baseTableName="iko_data_aggregate"
                                  baseColumnNames="iko_repository_config_key"
                                  referencedTableName="iko_repository_config"
-                                 referencedColumnNames="key"
+                                 referencedColumnNames="`key`"
                                  constraintName="fk_iko_data_aggregate_iko_repository_config_key"
                                  onDelete="CASCADE"/>
     </changeSet>
 
     <changeSet author="Ritense" id="3">
+        <validCheckSum>9:cca4bb6632d3cdfd324225b4cdc8dbf8</validCheckSum>
         <createTable tableName="iko_data_request">
-            <column name="key" type="VARCHAR(256)">
+            <column name="`key`" type="VARCHAR(256)">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="iko_data_aggregate_key" type="VARCHAR(256)">
@@ -80,7 +83,7 @@
         <addForeignKeyConstraint baseTableName="iko_data_request"
                                  baseColumnNames="iko_data_aggregate_key"
                                  referencedTableName="iko_data_aggregate"
-                                 referencedColumnNames="key"
+                                 referencedColumnNames="`key`"
                                  constraintName="fk_iko_data_request_iko_data_aggregate_key"
                                  onDelete="CASCADE"/>
     </changeSet>

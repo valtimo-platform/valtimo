@@ -25,7 +25,7 @@ import jakarta.persistence.ManyToOne
 @Embeddable
 class IkoDataRequestId(
 
-    @Column(name = "key", updatable = false, nullable = false)
+    @Column(name = "`key`", updatable = false, nullable = false)
     val key: String,
 
     @ManyToOne(fetch = EAGER)

@@ -21,6 +21,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
     <changeSet id="1" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
         <createTable tableName="widget">
             <column name="id" type="${uuidType}">
                 <constraints primaryKey="true" nullable="false"/>
@@ -50,6 +53,58 @@
                 <constraints nullable="true"/>
             </column>
         </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <createTable tableName="widget">
+            <column name="id" type="${uuidType}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="widget_key" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="widget_type" type="varchar(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="widget_order" type="${intType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="width" type="${intType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="high_contrast" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="properties" type="${jsonType}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="actions" type="${jsonType}">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="3" author="Ritense">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <update tableName="case_widget_tab_widget">
+            <column name="actions" value="[]"/>
+        </update>
+    </changeSet>
+
+    <changeSet id="4" author="Ritense">
+        <addNotNullConstraint
+                tableName="case_widget_tab_widget"
+                columnName="actions"
+                columnDataType="${jsonType}"
+        />
     </changeSet>
 
 
