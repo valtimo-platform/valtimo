@@ -1,0 +1,61 @@
+spring:
+    main:
+        allow-bean-definition-overriding: false
+    datasource:
+        type: com.zaxxer.hikari.HikariDataSource
+    liquibase:
+        enabled: false
+    jpa:
+        show_sql: true
+        open-in-view: false
+        properties:
+            hibernate:
+                hbm2ddl.auto: none
+                generate_statistics: false
+                naming-strategy: org.springframework.boot.orm.jpa.hibernate.SpringNamingStrategy
+                cache:
+                    use_second_level_cache: false
+                    use_query_cache: false
+                    region.factory_class: org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+                format_sql: true
+                jdbc:
+                    time_zone: UTC
+                connection:
+                    provider_disables_autocommit: true
+        hibernate:
+            ddl-auto: none
+            naming:
+                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            use-new-id-generator-mappings: false
+
+audit:
+    record:
+        retention: 15
+
+scheduling:
+    enabled: false
+    job:
+        cron:
+            cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
+
+spring-actuator:
+    username: admin
+    password: test123
+
+aws:
+    profile: ritense
+    region: eu-central-1
+    s3:
+        bucketName: test-name
+        bucketRegion: eu-central-1
+
+valtimo:
+    mandrill:
+        apiKey: n/a
+        dateFormat: dd-MM-yyyy
+        notificationTemplate: bpc-task-notification
+        completionTemplate: bpc-task-completion
+        reminderTemplate: bpc-task-reminder
+    plugin:
+        encryption-secret: "abcdefghijklmnop"
