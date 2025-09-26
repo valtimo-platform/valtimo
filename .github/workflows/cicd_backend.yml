@@ -14,6 +14,10 @@ on:
             - .github/workflows/cicd_backend.yml
     workflow_dispatch:
 
+defaults:
+    run:
+        working-directory: backend
+
 jobs:
     determine-tests:
         runs-on: ubuntu-latest
@@ -40,7 +44,7 @@ jobs:
                       ${{ env.UNIT_TESTS_MATRIX }}
                       ${{ env.INTEGRATION_TESTS_MATRIX }}
                       ${{ env.SECURITY_TESTS_MATRIX }}
-                  key: testdefinitions-${{ hashFiles('**/build.gradle', '**/build.gradle.kts', '**/settings.gradle', '**/settings.gradle.kts', '**/gradle.properties') }}
+                  key: testdefinitions-${{ hashFiles('backend/**/build.gradle', 'backend/**/build.gradle.kts', 'backend/**/settings.gradle', 'backend/**/settings.gradle.kts', 'backend/**/gradle.properties') }}
             - name: Make test matrices
               id: make_test_matrices
               if: steps.cache-test-definitions.outputs.cache-hit != 'true'
