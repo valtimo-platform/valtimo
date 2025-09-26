@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-export const CreateZaakExtraPropertyOptions = [
+export const ExtraPropertiesOptions = [
   'description',
   'plannedEndDate',
   'finalDeliveryDate',
 ] as const;
-export type CreateZaakExtraProperties = (typeof CreateZaakExtraPropertyOptions)[number];
+export type ExtraProperties = (typeof ExtraPropertiesOptions)[number];

@@ -76,7 +76,6 @@ import {
 } from '../../constants';
 import {
   CAN_CREATE_CASE_PERMISSION,
-  CAN_EXPORT_CASE_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
   CASE_DETAIL_PERMISSION_RESOURCE,
 } from '../../permissions';
@@ -125,7 +124,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public pagination!: Pagination;
   public canHaveAssignee!: boolean;
   public visibleCaseTabs: Array<CaseListTab> | null = null;
-  public loadingExport = false;
 
   public readonly defaultTabs = DEFAULT_CASE_LIST_TABS;
   public readonly tableTranslations = CASE_LIST_TABLE_TRANSLATIONS;
@@ -137,7 +135,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly showAssignModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangePageModal$ = new BehaviorSubject<boolean>(false);
   public readonly showChangeTabModal$ = new BehaviorSubject<boolean>(false);
-  public readonly disableExportButton$ = new BehaviorSubject<boolean>(false);
 
   public readonly searchFields$: Observable<Array<SearchField> | null> =
     this.searchService.documentSearchFields$.pipe(tap(() => (this.loadingSearchFields = false)));
@@ -173,20 +170,14 @@ export class CaseListComponent implements OnInit, OnDestroy {
     )
   );
 
+  // TODO export permission nodig?
   public readonly canExportCase$: Observable<boolean> = this.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey =>
-      combineLatest([
-        this.permissionService.requestPermission(CAN_EXPORT_CASE_PERMISSION, {
-          resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
-          identifier: caseDefinitionKey,
-        }),
-        this.documentService.getCaseList(caseDefinitionKey),
-      ])
-    ),
-    switchMap(([canExportPermission, caseList]) => {
-      const isExportableColumns = caseList.some(caseListitem => caseListitem.exportable);
-      return of(canExportPermission && isExportableColumns);
-    })
+      this.permissionService.requestPermission(CAN_CREATE_CASE_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocumentDefinition,
+        identifier: caseDefinitionKey,
+      })
+    )
   );
 
   public readonly searchFieldValues$ = this.parameterService.searchFieldValues$;
@@ -486,7 +477,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
     ),
     map(res => {
       if (!Array.isArray(res.data)) return res.data;
-      this.disableExportButton$.next(res.data.length === 0 ? true : false);
       return res.data.map(item => {
         const mappedInternalStatusColumns = res.statusColumnKeys.reduce((acc, curr) => {
           const status = res.statuses.find(
@@ -576,12 +566,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         `/cases/${caseDefinitionKey}`,
         this.route.snapshot.queryParams
       );
-
-      if (item.ctrlClick) {
-        window.open(`/cases/${caseDefinitionKey}/document/${item.id}`, '_blank');
-      } else {
-        this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
-      }
+      this.router.navigate([`/cases/${caseDefinitionKey}/document/${item.id}`]);
     });
   }
 
@@ -687,9 +672,8 @@ export class CaseListComponent implements OnInit, OnDestroy {
   }
 
   public export(): void {
-    this.caseExportService
-      .downloadExport()
-      .subscribe(data => (this.loadingExport = data.isLoading));
+    // TODO http call to download the export
+    this.caseExportService.downloadExport();
   }
 
   public forceRefresh(): void {

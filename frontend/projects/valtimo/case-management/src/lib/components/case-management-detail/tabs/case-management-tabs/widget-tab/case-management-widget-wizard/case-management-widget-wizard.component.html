@@ -31,7 +31,7 @@
 
   <section cdsModalContent class="valtimo-case-management-widget-wizard__content">
     <cds-progress-indicator
-      [current]="$currentStep()"
+      [current]="currentStep()"
       [skeleton]="!obs.steps"
       [spacing]="'equal'"
       [steps]="obs.steps"
@@ -39,56 +39,39 @@
     >
     </cds-progress-indicator>
 
-    <div
-      class="valtimo-widget-wizard-step--hidden"
-      [class.valtimo-widget-wizard-step--shown]="$currentStep() === WidgetWizardSteps.TYPE"
-    >
-      <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
+    @switch (currentStep()) {
+      @case (WidgetWizardSteps.TYPE) {
+        <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
 
-      <valtimo-widget-wizard-type-step
-        class="valtimo-widget-wizard-step"
-      ></valtimo-widget-wizard-type-step>
-    </div>
+        <valtimo-widget-wizard-type-step
+          class="valtimo-widget-wizard-step"
+        ></valtimo-widget-wizard-type-step>
+      }
+      @case (WidgetWizardSteps.WIDTH) {
+        <p>{{ 'widgetTabManagement.width.description' | translate }}</p>
 
-    <div
-      class="valtimo-widget-wizard-step--hidden"
-      [class.valtimo-widget-wizard-step--shown]="$currentStep() === WidgetWizardSteps.WIDTH"
-    >
-      <p>{{ 'widgetTabManagement.width.description' | translate }}</p>
+        <valtimo-widget-wizard-width-step
+          class="valtimo-widget-wizard-step"
+        ></valtimo-widget-wizard-width-step>
+      }
+      @case (WidgetWizardSteps.STYLE) {
+        <p>{{ 'widgetTabManagement.style.description' | translate }}</p>
 
-      <valtimo-widget-wizard-width-step
-        class="valtimo-widget-wizard-step"
-      ></valtimo-widget-wizard-width-step>
-    </div>
+        <valtimo-widget-wizard-style-step
+          class="valtimo-widget-wizard-step"
+        ></valtimo-widget-wizard-style-step>
+      }
+      @case (WidgetWizardSteps.CONTENT) {
+        <valtimo-widget-wizard-content-step
+          (contentValidEvent)="onContentValidEvent($event)"
+        ></valtimo-widget-wizard-content-step>
+      }
+      @default {
+        <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
 
-    <div
-      class="valtimo-widget-wizard-step--hidden"
-      [class.valtimo-widget-wizard-step--shown]="$currentStep() === WidgetWizardSteps.STYLE"
-    >
-      <p>{{ 'widgetTabManagement.style.description' | translate }}</p>
-
-      <valtimo-widget-wizard-style-step
-        class="valtimo-widget-wizard-step"
-      ></valtimo-widget-wizard-style-step>
-    </div>
-
-    <div
-      class="valtimo-widget-wizard-step"
-      *ngIf="$currentStep() === WidgetWizardSteps.CONTENT"
-    >
-      <valtimo-widget-wizard-content-step
-        (contentValidEvent)="onContentValidEvent($event)"
-      ></valtimo-widget-wizard-content-step>
-    </div>
-
-    <div
-      class="valtimo-widget-wizard-step--hidden"
-      [class.valtimo-widget-wizard-step--shown]="isDefaultStep()"
-    >
-      <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
-
-      <valtimo-widget-wizard-type-step></valtimo-widget-wizard-type-step>
-    </div>
+        <valtimo-widget-wizard-type-step></valtimo-widget-wizard-type-step>
+      }
+    }
   </section>
 
   <cds-modal-footer class="valtimo-case-management-widget-wizard__footer">
@@ -100,11 +83,11 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    @if ($currentStep() !== WidgetWizardSteps.TYPE) {
+    @if (currentStep() !== WidgetWizardSteps.TYPE) {
       <button
         class="valtimo-case-management-widget-wizard__back"
         cdsButton="secondary"
-        [disabled]="$backButtonDisabled()"
+        [disabled]="backButtonDisabled()"
         (click)="onBackButtonClick()"
       >
         {{ 'interface.back' | translate }}
@@ -114,11 +97,11 @@
     <button
       class="valtimo-case-management-widget-wizard__next"
       cdsButton="primary"
-      [disabled]="$nextButtonDisabled()"
+      [disabled]="nextButtonDisabled()"
       (click)="onNextButtonClick()"
     >
       {{
-        'interface.' + ($currentStep() === WidgetWizardSteps.CONTENT ? 'save' : 'next') | translate
+        'interface.' + (currentStep() === WidgetWizardSteps.CONTENT ? 'save' : 'next') | translate
       }}
     </button>
   </cds-modal-footer>

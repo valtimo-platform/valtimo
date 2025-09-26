@@ -24,7 +24,6 @@ export * from './lib/pipes';
 export * from './lib/services';
 export * from './lib/guards';
 export * from './lib/modules';
-export * from './lib/utils';
 
 /*
 components
@@ -35,7 +34,7 @@ export * from './lib/components/camunda/form/camunda-form.module';
 export * from './lib/components/topbar/topbar.component';
 export * from './lib/components/topbar/topbar.module';
 
-export * from './lib/components/menu/services';
+export * from './lib/components/menu/menu.service';
 export * from './lib/components/menu/menu-routing.module';
 export * from './lib/components/menu/menu.module';
 export * from './lib/components/menu/menu.init';
@@ -209,6 +208,9 @@ export * from './lib/components/multi-input-form/multi-input-form.module';
 // Radio
 export * from './lib/components/radio/radio.component';
 export * from './lib/components/radio/radio.module';
+// Toggle
+export * from './lib/components/toggle/toggle.component';
+export * from './lib/components/toggle/toggle.module';
 
 // Pending Changes
 export * from './lib/components/pending-changes/pending-changes.component';
@@ -258,5 +260,3 @@ export * from './lib/directives/muuri/muuri.directive';
 export * from './lib/directives/muuri/muuri-item.component';
 // read-only
 export * from './lib/directives/read-only.directive';
-// auto key
-export * from './lib/components/auto-key-input/auto-key-input.component';

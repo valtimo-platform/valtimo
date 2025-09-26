@@ -110,7 +110,7 @@
     </div>
 
     <valtimo-no-results
-      [action]="obs.noResultsMessage.isSearchResult ? null : caseListActionsNoResult"
+      [action]="obs.noResultsMessage.isSearchResult ? null : caseListActions"
       [description]="obs.noResultsMessage.description | translate"
       [title]="obs.noResultsMessage.title | translate"
     ></valtimo-no-results>
@@ -188,37 +188,17 @@
 </ng-template>
 
 <ng-template #caseListActions>
-  <cds-tooltip
-    *ngIf="canExportCase$ | async"
-    [description]="'case.exportButtonTooltip' | translate"
-  >
-    <cds-loading *ngIf="loadingExport" size="sm" class="loading-spinner"></cds-loading>
-
-    <button
-      *ngIf="!loadingExport"
-      data-testid="case-list-export-button"
-      cdsButton="ghost"
-      iconOnly="true"
-      (click)="export()"
-      [disabled]="disableExportButton$ | async"
-    >
-      <svg cdsIcon="download" size="16"></svg>
-    </button>
-  </cds-tooltip>
-
   <button
-    *ngIf="canCreateCase$ | async"
+    *ngIf="canExportCase$ | async"
     cdsButton="primary"
     [disabled]="disableStartButton$ | async"
-    (click)="startCase()"
+    class="export-button"
+    (click)="export()"
   >
-    {{ 'Start Case' | translate }}
+    {{ 'case.export' | translate }}
 
-    <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
   </button>
-</ng-template>
-
-<ng-template #caseListActionsNoResult>
   <button
     *ngIf="canCreateCase$ | async"
     cdsButton="primary"

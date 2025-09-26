@@ -73,6 +73,7 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   public readonly downloadName$ = new BehaviorSubject<string>('');
   public readonly downloadUrl$ = new BehaviorSubject<string | undefined>(undefined);
   public readonly disableInput$ = new BehaviorSubject<boolean>(false);
+  public readonly disableExport$ = new BehaviorSubject<boolean>(false);
   public readonly showActionItems$ = new BehaviorSubject<boolean>(false);
   public readonly selectedSearchField$ = new BehaviorSubject<SearchField | undefined>(undefined);
   public readonly selectedDeleteSearchField$ = new BehaviorSubject<SearchField | undefined>(
@@ -409,6 +410,10 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
   }
 
   public formValueChange(data: SearchField): void {
+    this.canExportValue(String(data.path))
+      ? this.disableExport$.next(false)
+      : this.disableExport$.next(true);
+
     setTimeout(() => {
       this.nextIfChanged(this.dataTypeIsText$, data.dataType === 'text');
       this.nextIfChanged(this.dataTypeIsBoolean$, data.dataType === 'boolean');
@@ -669,5 +674,10 @@ export class CaseManagementSearchFieldsComponent implements OnInit, OnDestroy, A
 
   private showEditModal(searchField: SearchField): void {
     this.searchFieldClicked(searchField, false);
+  }
+
+  private canExportValue(path: string): boolean {
+    const pathMustStartWithCaseOrDoc = /^(case:|doc:)/;
+    return pathMustStartWithCaseOrDoc.test(path);
   }
 }

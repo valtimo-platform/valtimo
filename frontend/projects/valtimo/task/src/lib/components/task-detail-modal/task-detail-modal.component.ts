@@ -41,11 +41,7 @@ import {
   TASK_DETAIL_PERMISSION_RESOURCE,
 } from '../../task-permissions';
 import {TaskDetailIntermediateSaveComponent} from '../task-detail-intermediate-save/task-detail-intermediate-save.component';
-import {filter, take} from 'rxjs/operators';
-import {IconService} from 'carbon-components-angular';
-import {DocumentService} from '@valtimo/document';
-import {TaskService} from '../../services/task.service';
-import {FolderDetailsReference16} from '@carbon/icons';
+import {filter} from 'rxjs/operators';
 
 moment.locale(localStorage.getItem('langKey') || '');
 
@@ -67,10 +63,6 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     if (value) this.size$.next(formSizeToCarbonModalSizeMap[value]);
   }
 
-  @Input() set openFromCaseManagement(value: boolean) {
-    if (value) this.openFromCaseManagement$.next(value);
-  }
-
   public currentIntermediateSave$ = new BehaviorSubject<IntermediateSubmission | null>(null);
 
   public readonly processLinkPreloaded$ = new BehaviorSubject<boolean>(false);
@@ -80,10 +72,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
   public readonly submission$ = new BehaviorSubject<any>({});
   public readonly page$ = new BehaviorSubject<any>(null);
   public readonly showConfirmationModal$ = new BehaviorSubject<boolean>(false);
-  public readonly businessKey$ = new BehaviorSubject<string>('');
 
   public readonly size$ = new BehaviorSubject<CarbonModalSize>('md');
-  public readonly openFromCaseManagement$ = new BehaviorSubject<boolean>(false);
 
   public readonly canAssignUserToTask$ = new BehaviorSubject<boolean>(false);
   public readonly canModifyTask$ = new BehaviorSubject<boolean>(false);
@@ -101,13 +91,8 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     private readonly logger: NGXLogger,
     private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
     private readonly sseService: SseService,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly iconService: IconService,
-    private readonly documentService: DocumentService,
-    private readonly taskService: TaskService,
-  ) {
-    this.iconService.registerAll([FolderDetailsReference16]);
-  }
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   public ngOnInit(): void {
     this.openTaskSubscription();
@@ -118,23 +103,11 @@ export class TaskDetailModalComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public openRelatedCase(): void {
-    const businessKey = this.businessKey$.getValue();
-
-    this.documentService
-      .getDocument(businessKey)
-      .pipe(take(1))
-      .subscribe(document => {
-        window.open(`/cases/${document.definitionId?.name}/document/${businessKey}`, '_blank');
-      });
-  }
-
   private openTaskSubscription(): void {
     this._subscriptions.add(
       this.task$.subscribe(task => {
         if (task) {
           this.logger.debug('Checking if user allowed to assign a user to Task with id:', task.id);
-          this.businessKey$.next(task.businessKey);
 
           this.permissionService
             .requestPermission(CAN_ASSIGN_TASK_PERMISSION, {

@@ -42,7 +42,7 @@ import {
     WidgetModule,
     TranslateModule,
     InputModule,
-    FormModule,
+     FormModule,
     DatePickerModule,
     InputLabelModule,
     ParagraphModule,

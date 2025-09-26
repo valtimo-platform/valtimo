@@ -23,7 +23,6 @@ import {
   CarbonListModule,
   ConfirmationModalModule,
   FormIoModule,
-  MenuService,
   SearchFieldsModule,
   SpinnerModule,
   TooltipIconModule,
@@ -40,8 +39,6 @@ import {
   ModalModule,
 } from 'carbon-components-angular';
 import {ReactiveFormsModule} from '@angular/forms';
-import {ConfigService} from '@valtimo/shared';
-import {ObjectMenuService} from './services';
 
 @NgModule({
   declarations: [ObjectListComponent, ObjectDetailContainerComponent, ObjectDetailComponent],
@@ -67,16 +64,4 @@ import {ObjectMenuService} from './services';
   ],
   exports: [],
 })
-export class ObjectModule {
-  constructor(
-    private readonly menuService: MenuService,
-    private readonly configService: ConfigService,
-    private readonly objectMenuService: ObjectMenuService
-  ) {
-    const enabled = this.configService.config?.featureToggles?.enableObjectManagement;
-
-    if (!enabled) return;
-
-    this.menuService.registerAppendMenuItemsFunction(this.objectMenuService.appendObjectMenuItems);
-  }
-}
+export class ObjectModule {}
