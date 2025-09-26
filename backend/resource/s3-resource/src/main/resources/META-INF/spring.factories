@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.ritense.resource.autoconfigure.S3ResourceAutoConfiguration, \
+  com.ritense.resource.autoconfigure.S3ResourceLiquibaseAutoConfiguration, \
+  com.ritense.resource.autoconfigure.S3ResourceSecurityAutoConfiguration

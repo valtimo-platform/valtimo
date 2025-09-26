@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@
 
 package com.ritense.valtimo
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.ProcessEngine
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.ProcessEngine
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 import java.util.Date
+import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -38,16 +37,14 @@ class JobServiceIntTest: BaseIntegrationTest() {
     lateinit var jobService: JobService
 
     @Autowired
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
     @Test
     fun `should delay job`(){
         val testProcessDefinition = "test-timer-event"
-        val testProcessInstance = runWithoutAuthorization{
-            operatonProcessService.startProcess(
-                testProcessDefinition, UUID.randomUUID().toString(),null
-            )
-        }
+        val testProcessInstance = camundaProcessService.startProcess(
+            testProcessDefinition, UUID.randomUUID().toString(),null
+        )
         processEngine.runtimeService.createMessageCorrelation("message-start-event-offset-delay")
             .processInstanceBusinessKey(testProcessInstance.processInstanceDto.businessKey)
             .correlate()
@@ -59,11 +56,9 @@ class JobServiceIntTest: BaseIntegrationTest() {
     @Test
     fun `should move the job forward`(){
         val testProcessDefinition = "test-timer-event"
-        val testProcessInstance = runWithoutAuthorization {
-            operatonProcessService.startProcess(
-                testProcessDefinition, UUID.randomUUID().toString(),null
-            )
-        }
+        val testProcessInstance = camundaProcessService.startProcess(
+            testProcessDefinition, UUID.randomUUID().toString(),null
+        )
         processEngine.runtimeService.createMessageCorrelation("message-start-event-offset-forward")
             .processInstanceBusinessKey(testProcessInstance.processInstanceDto.businessKey)
             .correlate()
@@ -74,11 +69,9 @@ class JobServiceIntTest: BaseIntegrationTest() {
     @Test
     fun `should change job date`(){
         val testProcessDefinition = "test-timer-event"
-        val testProcessInstance = runWithoutAuthorization {
-            operatonProcessService.startProcess(
-                testProcessDefinition, UUID.randomUUID().toString(),null
-            )
-        }
+        val testProcessInstance = camundaProcessService.startProcess(
+            testProcessDefinition, UUID.randomUUID().toString(),null
+        )
         processEngine.runtimeService.createMessageCorrelation("message-start-event-change-date")
             .processInstanceBusinessKey(testProcessInstance.processInstanceDto.businessKey)
             .correlate()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,25 @@
 
 package com.ritense.valtimo.security.config;
 
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
+import static org.springframework.http.HttpMethod.GET;
 
 public class ReportingHttpSecurityConfigurer implements HttpSecurityConfigurer {
 
     @Override
     public void configure(HttpSecurity http) {
         try {
-            http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/reporting/instancecount")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/reporting/instancesstatistics")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/reporting/tasksAverage")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/reporting/tasksPerPerson")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/reporting/pendingTasksByRole")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/reporting/unfinishedTasksPerType")).authenticated()
-                .requestMatchers(antMatcher(GET, "/api/v1/reporting/finishedAndUnfinishedInstances")).authenticated()
-            );
+            http.authorizeRequests()
+                .antMatchers(GET, "/api/v1/reporting/instancecount").hasAuthority(USER)
+                .antMatchers(GET, "/api/v1/reporting/instancesstatistics").hasAuthority(USER)
+                .antMatchers(GET, "/api/v1/reporting/tasksAverage").hasAuthority(USER)
+                .antMatchers(GET, "/api/v1/reporting/tasksPerPerson").hasAuthority(USER)
+                .antMatchers(GET, "/api/v1/reporting/pendingTasksByRole").hasAuthority(USER)
+                .antMatchers(GET, "/api/v1/reporting/unfinishedTasksPerType").hasAuthority(USER)
+                .antMatchers(GET, "/api/v1/reporting/finishedAndUnfinishedInstances").hasAuthority(USER);
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

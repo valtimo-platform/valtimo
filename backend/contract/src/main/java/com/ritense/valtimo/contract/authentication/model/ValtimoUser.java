@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,15 @@
 
 package com.ritense.valtimo.contract.authentication.model;
 
-import static org.springframework.util.ObjectUtils.isEmpty;
-
 import com.ritense.valtimo.contract.authentication.ManageableUser;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
-public class ValtimoUser implements ManageableUser {
+public class ValtimoUser implements Serializable, ManageableUser {
+
+    private static final long serialVersionUID = 1L;
 
     private String id;
     private String username;
@@ -39,7 +41,6 @@ public class ValtimoUser implements ManageableUser {
     private String password;
 
     public ValtimoUser() {
-        //Default value for empty constructor
     }
 
     public void setId(String id) {
@@ -186,9 +187,10 @@ public class ValtimoUser implements ManageableUser {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ValtimoUser that)) {
+        if (!(o instanceof ValtimoUser)) {
             return false;
         }
+        ValtimoUser that = (ValtimoUser) o;
         return Objects.equals(id, that.id)
             && Objects.equals(username, that.username)
             && Objects.equals(email, that.email);

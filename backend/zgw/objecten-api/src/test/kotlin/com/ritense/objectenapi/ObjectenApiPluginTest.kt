@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,20 @@
 
 package com.ritense.objectenapi
 
-import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.objectenapi.client.ObjectenApiClient
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import java.net.URI
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.never
 
 internal class ObjectenApiPluginTest{
 
@@ -54,19 +52,6 @@ internal class ObjectenApiPluginTest{
 
         assertEquals(objectMock, result)
         verify(client).getObject(any(), any())
-    }
-
-    @Test
-    fun `should call client on getObjectRecord`() {
-        val objectUrl = URI("http://example.com/1")
-        val index = 1
-        val recordMock = mock<ObjectRecord>()
-        whenever(client.getObjectRecord(plugin.authenticationPluginConfiguration, objectUrl, index)).thenReturn(recordMock)
-
-        val result = plugin.getObjectRecord(objectUrl, index)
-
-        assertEquals(recordMock, result)
-        verify(client).getObjectRecord(any(), any(), eq(index))
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 
 package com.ritense.valtimo.contract.config;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.ritense.valtimo.contract.OauthConfigHolder;
-import javax.annotation.Nonnull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.ConstructorBinding;
+import org.springframework.boot.context.properties.ConstructorBinding;
 
+@ConstructorBinding
 @ConfigurationProperties(prefix = "valtimo")
 public class ValtimoProperties {
 
@@ -29,26 +27,24 @@ public class ValtimoProperties {
 
     private final Mandrill mandrill;
 
-    private final Oauth oauth;
+    private final JWT jwt;
 
     private final Portal portal;
 
     private final Process process;
 
-    @ConstructorBinding
     public ValtimoProperties(
         App app,
         Mandrill mandrill,
-        Oauth oauth,
+        JWT jwt,
         Portal portal,
         Process process
     ) {
         this.app = app != null ? app : new App();
         this.mandrill = mandrill != null ? mandrill : new Mandrill();
-        this.oauth = oauth != null ? oauth : new Oauth();
+        this.jwt = jwt != null ? jwt : new JWT();
         this.portal = portal != null ? portal : new Portal();
         this.process = process != null ? process : new Process();
-        new OauthConfigHolder(this.oauth);
     }
 
     public App getApp() {
@@ -59,8 +55,8 @@ public class ValtimoProperties {
         return mandrill;
     }
 
-    public Oauth getOauth() {
-        return oauth;
+    public JWT getJwt() {
+        return jwt;
     }
 
     public Portal getPortal() {
@@ -75,6 +71,7 @@ public class ValtimoProperties {
 
         private String hostname;
         private String scheme;
+        private Boolean enableTenancy = false;
 
         public String getHostname() {
             return hostname;
@@ -94,6 +91,14 @@ public class ValtimoProperties {
 
         public String getBaselUrl() {
             return String.format("%s://%s/", scheme, hostname);
+        }
+
+        public Boolean getEnableTenancy() {
+            return enableTenancy;
+        }
+
+        public void setEnableTenancy(Boolean enableTenancy) {
+            this.enableTenancy = enableTenancy;
         }
     }
 
@@ -145,16 +150,16 @@ public class ValtimoProperties {
         }
     }
 
-    public static class Oauth {
-        private String publicKey;
+    public static class JWT {
+        private String secret;
         private long tokenValidityInSeconds = 180000;
 
-        public String getPublicKey() {
-            return publicKey;
+        public String getSecret() {
+            return secret;
         }
 
-        public void setPublicKey(String publicKey) {
-            this.publicKey = publicKey;
+        public void setSecret(String secret) {
+            this.secret = secret;
         }
 
         public long getTokenValidityInSeconds() {
@@ -203,4 +208,5 @@ public class ValtimoProperties {
             this.systemProcessUpdatable = systemProcessUpdatable;
         }
     }
+
 }

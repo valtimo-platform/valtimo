@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@ package com.ritense.objectmanagement.autodeployment
 
 import com.ritense.objectmanagement.BaseIntegrationTest
 import com.ritense.objectmanagement.service.ObjectManagementService
+import javax.transaction.Transactional
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 
 @Transactional
@@ -36,6 +35,5 @@ internal class ObjectManagementDefinitionDeploymentServiceIntTest: BaseIntegrati
         val objectManagement = objectManagementService.findByObjectTypeId("4416cbef-dda3-41f4-bf5c-633f7fe14847")
         assertThat(objectManagement).isNotNull
         assertThat(objectManagement?.title).isEqualTo("My Object Management")
-        assertThat(objectManagement?.id).isEqualTo(UUID.fromString("4f35c270-21f4-4e99-a8a1-6c4f9d5a6c5c"))
     }
 }

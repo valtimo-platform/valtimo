@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,46 +22,39 @@ import com.ritense.resource.service.ResourceService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
 import com.ritense.zakenapi.service.ZaakDocumentService
-import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest(classes = [TestApplication::class])
 @ExtendWith(SpringExtension::class)
 @Tag("integration")
 class BaseIntegrationTest {
-    @MockitoSpyBean
+    @SpyBean
     lateinit var pluginService: PluginService
 
-    @MockitoSpyBean
+    @SpyBean
     lateinit var pluginConfigurationRepository: PluginConfigurationRepository
 
-    @MockitoBean
+    @MockBean
     lateinit var mailSender: MailSender
 
-    @MockitoBean
+    @MockBean
     lateinit var userManagementService: UserManagementService
 
     @Autowired
     lateinit var zaakUrlProvider: ZaakUrlProvider
 
-    @MockitoBean
+    @MockBean
     lateinit var resourceProvider: ResourceProvider
 
-    @MockitoBean
+    @Autowired
     lateinit var resourceService: ResourceService
 
-    @MockitoSpyBean
+    @SpyBean
     lateinit var zaakDocumentService: ZaakDocumentService
-
-    fun mockResponse(body: String): MockResponse {
-        return MockResponse()
-            .addHeader("Content-Type", "application/json")
-            .setBody(body)
-    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,41 +16,26 @@
 
 dockerCompose {
     projectName = "verzoek"
-
-    integrationTestingPostgresql {
-        isRequiredBy(project.tasks.integrationTestingPostgresql)
-        isRequiredBy(project.tasks.securityTesting)
-        useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
-    }
-
-    integrationTestingMysql {
-        isRequiredBy(project.tasks.integrationTestingMysql)
-        useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-mysql.yml", "docker-compose-override-mysql.yml")
-    }
+    isRequiredBy(integrationTesting)
+    isRequiredBy(securityTesting)
+    useComposeFiles.addAll("../../docker-resources/docker-compose-base-test.yml", "docker-compose-override.yml")
 }
 
 dependencies {
-    implementation project(":authorization")
-    implementation project(":case")
     implementation project(":contract")
-    implementation project(":logging")
+    implementation project(":document")
     implementation project(":process-document")
     implementation project(":plugin")
     implementation project(":plugin-authentication:notificaties-api-authentication")
-    implementation project(":value-resolver")
     implementation project(":zgw")
     implementation project(":zgw:catalogi-api")
     implementation project(":zgw:notificaties-api")
+    implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
     implementation project(":zgw:object-management")
     implementation project(":zgw:objecten-api")
-    implementation project(":zgw:objecttypen-api")
-
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 
     testImplementation project(":core")
     testImplementation project(":test-utils-common")
@@ -63,7 +48,7 @@ dependencies {
     testImplementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"
-    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-inline"
 
     jar {
         enabled = true

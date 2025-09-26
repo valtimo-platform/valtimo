@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,16 @@
 
 package com.ritense.valtimo.contract.repository
 
-import jakarta.persistence.AttributeConverter
-import jakarta.persistence.Converter
 import java.net.URI
+import javax.persistence.AttributeConverter
 
-@Converter
-class UriAttributeConverter : AttributeConverter<URI?, String?> {
+class UriAttributeConverter : AttributeConverter<URI, String> {
 
-    override fun convertToDatabaseColumn(attribute: URI?): String? {
-        return attribute?.toString()
+    override fun convertToDatabaseColumn(attribute: URI): String {
+        return attribute.toString()
     }
 
-    override fun convertToEntityAttribute(dbData: String?): URI? {
-        return dbData?.let { URI.create(dbData.trim()) }
+    override fun convertToEntityAttribute(dbData: String): URI {
+        return URI.create(dbData.trim())
     }
 }

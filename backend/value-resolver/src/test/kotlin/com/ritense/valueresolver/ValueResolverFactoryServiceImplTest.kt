@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,20 @@
 
 package com.ritense.valueresolver
 
-import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.community.mockito.delegate.DelegateTaskFake
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
-import org.operaton.bpm.engine.RuntimeService
-import org.operaton.bpm.engine.delegate.DelegateTask
 import java.util.UUID
 
 internal class ValueResolverFactoryServiceImplTest {
 
     private val runtimeService: RuntimeService = mock()
-    private val objectMapper = MapperSingleton.get()
     private val resolverService = ValueResolverServiceImpl(
-        listOf(ProcessVariableValueResolverFactory(runtimeService, objectMapper), FixedValueResolverFactory())
+        listOf(ProcessVariableValueResolverFactory(runtimeService), FixedValueResolverFactory())
     )
 
     @Test
@@ -41,14 +37,14 @@ internal class ValueResolverFactoryServiceImplTest {
         val exception = assertThrows<RuntimeException> {
             val resolverService = ValueResolverServiceImpl(
                 listOf(
-                    ProcessVariableValueResolverFactory(runtimeService, objectMapper),
-                    ProcessVariableValueResolverFactory(runtimeService, objectMapper)
+                    ProcessVariableValueResolverFactory(runtimeService),
+                    ProcessVariableValueResolverFactory(runtimeService)
                 )
             )
 
             resolverService.resolveValues(
                 processInstanceId = UUID.randomUUID().toString(),
-                variableScope = mock<DelegateTask>(),
+                variableScope = DelegateTaskFake(),
                 listOf(
                     "pv:dummy"
                 )
@@ -62,19 +58,14 @@ internal class ValueResolverFactoryServiceImplTest {
     fun `Should resolve list of requested values`() {
         val resolvedValues = resolverService.resolveValues(
             processInstanceId = UUID.randomUUID().toString(),
-            variableScope = mockTaskWithVariables(
-                mapOf(
-                    "firstName" to "John",
-                    "lastName" to "Doe",
-                    "active" to true,
-                    "nullValue" to null,
-                )
-            ),
+            variableScope = DelegateTaskFake()
+                .withVariable("firstName", "John")
+                .withVariable("lastName", "Doe")
+                .withVariable("active", true),
             listOf(
                 "pv:firstName",
                 "pv:lastName",
                 "pv:active",
-                "pv:nullValue",
                 "fixedValue",
                 "pv:nonexistant"
             )
@@ -85,9 +76,7 @@ internal class ValueResolverFactoryServiceImplTest {
                 "pv:firstName" to "John",
                 "pv:lastName" to "Doe",
                 "pv:active" to true,
-                "pv:nullValue" to null,
                 "fixedValue" to "fixedValue",
-                "pv:nonexistant" to null,
             )
         )
     }
@@ -98,15 +87,10 @@ internal class ValueResolverFactoryServiceImplTest {
         val exception = assertThrows<RuntimeException> {
             resolverService.resolveValues(
                 processInstanceId = UUID.randomUUID().toString(),
-                variableScope = mock<DelegateTask> {
-                    on { getVariables() }.thenReturn(
-                        mapOf(
-                            "firstName" to "John",
-                            "lastName" to "Doe",
-                            "active" to true,
-                        )
-                    )
-                },
+                variableScope = DelegateTaskFake()
+                    .withVariable("firstName", "John")
+                    .withVariable("lastName", "Doe")
+                    .withVariable("active", true),
                 listOf(
                     "xyz:firstName"
                 )
@@ -123,15 +107,10 @@ internal class ValueResolverFactoryServiceImplTest {
         val exception = assertThrows<RuntimeException> {
             resolverService.resolveValues(
                 processInstanceId = UUID.randomUUID().toString(),
-                variableScope = mock<DelegateTask> {
-                    on { getVariables() }.thenReturn(
-                        mapOf(
-                            "firstName" to "John",
-                            "lastName" to "Doe",
-                            "active" to true,
-                        )
-                    )
-                },
+                variableScope = DelegateTaskFake()
+                    .withVariable("firstName", "John")
+                    .withVariable("lastName", "Doe")
+                    .withVariable("active", true),
                 listOf(
                     "xyz:firstName"
                 )
@@ -144,7 +123,7 @@ internal class ValueResolverFactoryServiceImplTest {
     @Test
     fun `Should handle list of values`() {
         val processInstanceId = UUID.randomUUID().toString()
-        val variableScope = mock<DelegateTask>()
+        val variableScope = DelegateTaskFake()
 
         resolverService.handleValues(
             processInstanceId, variableScope, mapOf(
@@ -159,17 +138,5 @@ internal class ValueResolverFactoryServiceImplTest {
             "lastName" to "Doe",
             "active" to true,
         ))
-    }
-
-    private fun mockTaskWithVariables(map: Map<String, Any?>): DelegateTask {
-        val delegateTask: DelegateTask = mock()
-        whenever(delegateTask.variables).thenReturn(map)
-        whenever(delegateTask.getVariable(any())).thenAnswer(
-            { invocation ->
-                val variableName = invocation.getArgument<String>(0)
-                map[variableName]
-            }
-        )
-        return delegateTask
     }
 }

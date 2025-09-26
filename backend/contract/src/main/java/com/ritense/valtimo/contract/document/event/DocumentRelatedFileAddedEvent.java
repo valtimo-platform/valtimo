@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,25 @@
 
 package com.ritense.valtimo.contract.document.event;
 
-import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.ritense.valtimo.contract.audit.AuditEvent;
 import com.ritense.valtimo.contract.audit.AuditMetaData;
 import com.ritense.valtimo.contract.audit.view.AuditView;
+import com.ritense.valtimo.contract.domain.DomainEvent;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
+import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
 
-public class DocumentRelatedFileAddedEvent extends AuditMetaData implements AuditEvent {
+public class DocumentRelatedFileAddedEvent extends AuditMetaData implements AuditEvent, DomainEvent {
 
     private final UUID documentId;
     private final UUID fileId;
     private final String fileName;
     private final Map<String, Object> metadata;
+    private final String tenantId;
 
     @JsonCreator
     public DocumentRelatedFileAddedEvent(
@@ -45,7 +45,8 @@ public class DocumentRelatedFileAddedEvent extends AuditMetaData implements Audi
         UUID documentId,
         UUID fileId,
         String fileName,
-        Map<String, Object> metadata
+        Map<String, Object> metadata,
+        String tenantId
     ) {
         super(id, origin, occurredOn, user);
         assertArgumentNotNull(documentId, "documentId is required");
@@ -55,6 +56,7 @@ public class DocumentRelatedFileAddedEvent extends AuditMetaData implements Audi
         this.fileId = fileId;
         this.fileName = fileName;
         this.metadata = metadata;
+        this.tenantId = tenantId;
     }
 
     @Override
@@ -76,26 +78,7 @@ public class DocumentRelatedFileAddedEvent extends AuditMetaData implements Audi
         return metadata;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        if (!super.equals(o)) {
-            return false;
-        }
-        DocumentRelatedFileAddedEvent that = (DocumentRelatedFileAddedEvent) o;
-        return Objects.equals(documentId, that.documentId) && Objects.equals(fileId, that.fileId) && Objects.equals(
-            fileName,
-            that.fileName
-        ) && Objects.equals(metadata, that.metadata);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), documentId, fileId, fileName, metadata);
+    public String getTenantId() {
+        return tenantId;
     }
 }

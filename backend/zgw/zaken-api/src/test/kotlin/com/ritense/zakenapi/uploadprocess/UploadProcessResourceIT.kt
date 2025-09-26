@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 package com.ritense.zakenapi.uploadprocess
 
 import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessRequest
-import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.processdocument.service.DocumentDefinitionProcessLinkService
 import com.ritense.zakenapi.BaseIntegrationTest
 import com.ritense.zakenapi.uploadprocess.UploadProcessService.Companion.DOCUMENT_UPLOAD
 import org.junit.jupiter.api.BeforeEach
@@ -30,8 +29,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
+import javax.transaction.Transactional
 
 @Transactional
 class UploadProcessResourceIT : BaseIntegrationTest() {
@@ -40,11 +39,9 @@ class UploadProcessResourceIT : BaseIntegrationTest() {
     lateinit var webApplicationContext: WebApplicationContext
 
     @Autowired
-    lateinit var caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
+    lateinit var documentDefinitionProcessLinkService: DocumentDefinitionProcessLinkService
 
     lateinit var mockMvc: MockMvc
-
-    val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
 
     @BeforeEach
     fun beforeEach() {
@@ -63,8 +60,8 @@ class UploadProcessResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should respond with process-case-link when one has been configured`() {
-        caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
-            caseDefinitionId,
+        documentDefinitionProcessLinkService.saveDocumentDefinitionProcess(
+            CASE_DEFINITION_KEY,
             DocumentDefinitionProcessRequest(
                 UPLOAD_DOCUMENT_PROCESS_DEFINITION_KEY,
                 DOCUMENT_UPLOAD

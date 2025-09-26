@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package com.ritense.dashboard.web.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.dashboard.BaseIntegrationTest
 import com.ritense.dashboard.domain.Dashboard
 import com.ritense.dashboard.domain.WidgetConfiguration
@@ -65,9 +64,6 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
     @Autowired
     lateinit var widgetConfigurationRepository: WidgetConfigurationRepository
 
-    @Autowired
-    lateinit var objectMapper: ObjectMapper
-
     lateinit var mockMvc: MockMvc
 
     @BeforeEach
@@ -89,10 +85,7 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should get dashboards`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
+        val dashboard = dashboardService.createDashboard("Test dashboard", "Test description")
         createWidgetConfiguration(dashboard)
 
         mockMvc.perform(
@@ -108,10 +101,7 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should get dashboard by key`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
+        val dashboard = dashboardService.createDashboard("Test dashboard", "Test description")
         createWidgetConfiguration(dashboard)
 
         mockMvc.perform(
@@ -127,12 +117,13 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should create dashboard`() {
-        val dashboard = DashboardCreateRequestDto("Test dashboard", "Test description")
+        val dashboard =
+            DashboardCreateRequestDto("Test dashboard", "Test description")
 
         mockMvc.perform(
             post("/api/management/v1/dashboard")
                 .contentType(APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(dashboard))
+                .content(jacksonObjectMapper().writeValueAsString(dashboard))
         )
             .andDo(print())
             .andExpect(status().isOk)
@@ -143,20 +134,15 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should update dashboard`() {
-        val dashboard1 = runWithoutAuthorization {
-            dashboardService.createDashboard("First dashboard", "Test description")
-        }
-        val dashboard2 = runWithoutAuthorization {
-            dashboardService.createDashboard("Second dashboard", "Test description")
-        }
-
+        val dashboard1 = dashboardService.createDashboard("First dashboard", "Test description")
+        val dashboard2 = dashboardService.createDashboard("Second dashboard", "Test description")
         val updateRequest = listOf(dashboard2, dashboard1.copy(title = "Third dashboard"))
             .map { DashboardUpdateRequestDto.of(it) }
 
         mockMvc.perform(
             put("/api/management/v1/dashboard")
                 .contentType(APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(updateRequest))
+                .content(jacksonObjectMapper().writeValueAsString(updateRequest))
         )
             .andDo(print())
             .andExpect(status().isOk)
@@ -168,10 +154,8 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should delete dashboard`() {
-        val dashboard = runWithoutAuthorization {
+        val dashboard =
             dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
         createWidgetConfiguration(dashboard)
 
         mockMvc.perform(
@@ -185,19 +169,14 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should update single dashboard`() {
-        val dashboard1 = runWithoutAuthorization {
-            dashboardService.createDashboard("First dashboard", "Test description")
-        }
-        val dashboard2 = runWithoutAuthorization {
-            dashboardService.createDashboard("Second dashboard", "Test description")
-        }
-
+        val dashboard1 = dashboardService.createDashboard("First dashboard", "Test description")
+        val dashboard2 = dashboardService.createDashboard("Second dashboard", "Test description")
         val updateRequest = DashboardUpdateRequestDto.of(dashboard1.copy(title = "Third dashboard"))
 
         mockMvc.perform(
             put("/api/management/v1/dashboard/{dashboardKey}", dashboard1.key)
                 .contentType(APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(updateRequest))
+                .content(jacksonObjectMapper().writeValueAsString(updateRequest))
         )
             .andDo(print())
             .andExpect(status().isOk)
@@ -209,10 +188,7 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should get widget configurations`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
+        val dashboard = dashboardService.createDashboard("Test dashboard", "Test description")
         createWidgetConfiguration(dashboard)
 
         mockMvc.perform(
@@ -230,22 +206,19 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should create widget configuration`() {
-        runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
+        dashboardService.createDashboard("Test dashboard", "Test description")
         val widgetConfiguration = WidgetConfigurationCreateRequestDto(
             title = "Doorlooptijd",
             dataSourceKey = "doorlooptijd",
-            dataSourceProperties = objectMapper.readTree("""{ "threshold": 50 }""") as ObjectNode,
+            dataSourceProperties = jacksonObjectMapper().readTree("""{ "threshold": 50 }""") as ObjectNode,
             displayType = "gauge",
-            displayTypeProperties = objectMapper.readTree("""{ "useKpi": true }""") as ObjectNode,
+            displayTypeProperties = jacksonObjectMapper().readTree("""{ "useKpi": true }""") as ObjectNode,
         )
 
         mockMvc.perform(
             post("/api/management/v1/dashboard/{dashboardKey}/widget-configuration", "test_dashboard")
                 .contentType(APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(widgetConfiguration))
+                .content(jacksonObjectMapper().writeValueAsString(widgetConfiguration))
         )
             .andDo(print())
             .andExpect(status().isOk)
@@ -258,10 +231,7 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should update widget configurations`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
+        val dashboard = dashboardService.createDashboard("Test dashboard", "Test description")
         createWidgetConfiguration(dashboard)
 
         val widgetConfigurations = listOf(
@@ -269,16 +239,16 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
                 key = "doorlooptijd",
                 title = "Doorlooptijd",
                 dataSourceKey = "doorlooptijd2",
-                dataSourceProperties = objectMapper.readTree("""{ "threshold": 500 }""") as ObjectNode,
+                dataSourceProperties = jacksonObjectMapper().readTree("""{ "threshold": 500 }""") as ObjectNode,
                 displayType = "donut",
-                displayTypeProperties = objectMapper.readTree("""{ "useKpi": false }""") as ObjectNode,
+                displayTypeProperties = jacksonObjectMapper().readTree("""{ "useKpi": false }""") as ObjectNode,
             )
         )
 
         mockMvc.perform(
             put("/api/management/v1/dashboard/{dashboardKey}/widget-configuration", "test_dashboard")
                 .contentType(APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(widgetConfigurations))
+                .content(jacksonObjectMapper().writeValueAsString(widgetConfigurations))
         )
             .andDo(print())
             .andExpect(status().isOk)
@@ -292,24 +262,21 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should update widget configuration`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
+        val dashboard = dashboardService.createDashboard("Test dashboard", "Test description")
         createWidgetConfiguration(dashboard)
 
         val updateRequest = SingleWidgetConfigurationUpdateRequestDto(
                 title = "Doorlooptijd",
                 dataSourceKey = "doorlooptijd2",
-                dataSourceProperties = objectMapper.readTree("""{ "threshold": 500 }""") as ObjectNode,
+                dataSourceProperties = jacksonObjectMapper().readTree("""{ "threshold": 500 }""") as ObjectNode,
                 displayType = "donut",
-                displayTypeProperties = objectMapper.readTree("""{ "useKpi": false }""") as ObjectNode,
+                displayTypeProperties = jacksonObjectMapper().readTree("""{ "useKpi": false }""") as ObjectNode,
             )
 
         mockMvc.perform(
             put("/api/management/v1/dashboard/{dashboardKey}/widget-configuration/{widgetKey}", "test_dashboard", "doorlooptijd")
                 .contentType(APPLICATION_JSON_VALUE)
-                .content(objectMapper.writeValueAsString(updateRequest))
+                .content(jacksonObjectMapper().writeValueAsString(updateRequest))
         )
             .andDo(print())
             .andExpect(status().isOk)
@@ -323,10 +290,7 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should get widget configuration by id`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
+        val dashboard = dashboardService.createDashboard("Test dashboard", "Test description")
         createWidgetConfiguration(dashboard)
 
         mockMvc.perform(
@@ -343,10 +307,7 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
 
     @Test
     fun `should delete widget configuration`() {
-        val dashboard = runWithoutAuthorization {
-            dashboardService.createDashboard("Test dashboard", "Test description")
-        }
-
+        val dashboard = dashboardService.createDashboard("Test dashboard", "Test description")
         createWidgetConfiguration(dashboard)
 
         mockMvc.perform(
@@ -365,10 +326,10 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
             title = "Doorlooptijd",
             dashboard = dashboard,
             dataSourceKey = "doorlooptijd",
-            dataSourceProperties = objectMapper.readTree("""{ "threshold": 50 }""") as ObjectNode,
+            dataSourceProperties = jacksonObjectMapper().readTree("""{ "threshold": 50 }""") as ObjectNode,
             displayType = "gauge",
             order = 1,
-            displayTypeProperties = objectMapper.readTree("""{ "useKpi": true }""") as ObjectNode,
+            displayTypeProperties = jacksonObjectMapper().readTree("""{ "useKpi": true }""") as ObjectNode,
         ))
     }
 
@@ -377,23 +338,11 @@ class AdminDashboardResourceIT : BaseIntegrationTest() {
         mockMvc.perform(get("/api/management/v1/dashboard/widget-data-sources"))
             .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$[0].key").value("case-count"))
-            .andExpect(jsonPath("$[0].title").value("Case count"))
+            .andExpect(jsonPath("$[0].key").value("number-data"))
+            .andExpect(jsonPath("$[0].title").value("Number data"))
             .andExpect(jsonPath("$[0].dataFeatures").value(contains("number", "total")))
-            .andExpect(jsonPath("$[1].key").value("case-counts"))
-            .andExpect(jsonPath("$[1].title").value("Case counts"))
-            .andExpect(jsonPath("$[1].dataFeatures").value(contains("numbers")))
-            .andExpect(jsonPath("$[2].key").value("case-group-by"))
-            .andExpect(jsonPath("$[2].title").value("Case group by"))
-            .andExpect(jsonPath("$[2].dataFeatures").value(contains("numbers")))
-            .andExpect(jsonPath("$[3].key").value("number-data"))
-            .andExpect(jsonPath("$[3].title").value("Number data"))
-            .andExpect(jsonPath("$[3].dataFeatures").value(contains("number", "total")))
-            .andExpect(jsonPath("$[4].key").value("numbers-data"))
-            .andExpect(jsonPath("$[4].title").value("Numbers data"))
-            .andExpect(jsonPath("$[4].dataFeatures").value(contains("numbers", "total")))
-            .andExpect(jsonPath("$[5].key").value("task-count"))
-            .andExpect(jsonPath("$[5].title").value("Task count"))
-            .andExpect(jsonPath("$[5].dataFeatures").value(contains("number", "total")))
+            .andExpect(jsonPath("$[1].key").value("numbers-data"))
+            .andExpect(jsonPath("$[1].title").value("Numbers data"))
+            .andExpect(jsonPath("$[1].dataFeatures").value(contains("numbers", "total")))
     }
 }

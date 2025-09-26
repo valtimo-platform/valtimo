@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.ritense.form.BaseIntegrationTest
 import com.ritense.form.domain.request.CreateFormDefinitionRequest
 import com.ritense.form.service.impl.FormIoFormDefinitionService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
@@ -29,14 +28,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 @Transactional
-internal class FormSupportedProcessLinksIntTest @Autowired constructor(
-    private val formSupportedProcessLinks: FormSupportedProcessLinksHandler,
-    private val formDefinitionService: FormIoFormDefinitionService
-): BaseIntegrationTest() {
+internal class FormSupportedProcessLinksIntTest : BaseIntegrationTest() {
+
+    @Autowired
+    lateinit var formSupportedProcessLinks: FormSupportedProcessLinksHandler
+
+    @Autowired
+    lateinit var formDefinitionService: FormIoFormDefinitionService
 
     @Test
     fun `should return a form process link type for StartEventStart with enabled false`() {
-        formDefinitionRepository.deleteAll() // Ensure no forms are available
         val result = formSupportedProcessLinks.getProcessLinkType(ActivityTypeWithEventName.START_EVENT_START.value)
         assertEquals("form", result?.processLinkType)
         assertEquals(false, result?.enabled)
@@ -45,7 +46,6 @@ internal class FormSupportedProcessLinksIntTest @Autowired constructor(
     @Test
     fun `should return a form process link type for StartEventStart with enabled true`() {
         formDefinitionService.createFormDefinition(
-            CaseDefinitionId.of("person", "1.0.0"),
             CreateFormDefinitionRequest(
                 "FormName",
                 "{}",

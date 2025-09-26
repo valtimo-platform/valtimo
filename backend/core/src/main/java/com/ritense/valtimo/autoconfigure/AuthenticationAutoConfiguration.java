@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,15 @@ import com.ritense.valtimo.contract.security.jwt.TokenAuthenticator;
 import com.ritense.valtimo.contract.security.jwt.provider.SecretKeyProvider;
 import com.ritense.valtimo.security.jwt.authentication.TokenAuthenticationService;
 import com.ritense.valtimo.security.jwt.provider.SecretKeyResolver;
-import java.util.List;
-import com.ritense.valtimo.contract.security.config.oauth2.NoOAuth2ClientsConfiguredCondition;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import java.util.List;
 
-@AutoConfiguration
+@Configuration
 public class AuthenticationAutoConfiguration {
 
     @Bean
-    @Conditional(NoOAuth2ClientsConfiguredCondition.class)
     @ConditionalOnMissingBean(TokenAuthenticationService.class)
     public TokenAuthenticationService tokenAuthenticationService(
         final List<TokenAuthenticator> tokenAuthenticators,
@@ -41,7 +38,6 @@ public class AuthenticationAutoConfiguration {
     }
 
     @Bean
-    @Conditional(NoOAuth2ClientsConfiguredCondition.class)
     @ConditionalOnMissingBean(SecretKeyResolver.class)
     public SecretKeyResolver secretKeyResolver(
         final List<SecretKeyProvider> secretKeyProviders

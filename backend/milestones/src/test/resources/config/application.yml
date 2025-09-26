@@ -1,6 +1,12 @@
 spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:3313/milestones-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
     liquibase:
         enabled: false
 
@@ -15,14 +21,12 @@ spring-actuator:
     username: test
     password: test
 
-operaton:
+camunda:
     bpm:
         history-level: audit
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false
 
 valtimo:
+    database: postgres
     mandrill:
         apiKey: some-key
         dateFormat: dd-MM-yyyy

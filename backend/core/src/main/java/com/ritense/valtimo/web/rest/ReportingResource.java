@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,17 @@
 
 package com.ritense.valtimo.web.rest;
 
-import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byEndTimeAfter;
-import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byEndTimeBefore;
-import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byFinished;
-import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byProcessDefinitionKey;
-import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byUnfinished;
-import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
-
-import com.ritense.authorization.AuthorizationContext;
-import com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper;
-import com.ritense.valtimo.operaton.service.OperatonHistoryService;
-import com.ritense.valtimo.contract.annotation.SkipComponentScan;
-import com.ritense.valtimo.repository.OperatonReportingRepository;
-import com.ritense.valtimo.repository.operaton.dto.ChartInstance;
-import com.ritense.valtimo.repository.operaton.dto.ChartInstanceSeries;
-import com.ritense.valtimo.repository.operaton.dto.InstanceCountChart;
+import com.ritense.valtimo.repository.CamundaReportingRepository;
+import com.ritense.valtimo.repository.camunda.dto.ChartInstance;
+import com.ritense.valtimo.repository.camunda.dto.ChartInstanceSeries;
+import com.ritense.valtimo.repository.camunda.dto.InstanceCountChart;
 import com.ritense.valtimo.web.rest.dto.ProcessInstanceStatisticsDTO;
-import java.sql.Date;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import org.apache.ibatis.session.SqlSession;
-import org.operaton.bpm.engine.HistoryService;
-import org.operaton.bpm.engine.history.HistoricActivityInstance;
-import org.operaton.bpm.engine.history.HistoricActivityInstanceQuery;
-import org.operaton.bpm.engine.impl.db.ListQueryParameterObject;
+import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.history.HistoricActivityInstance;
+import org.camunda.bpm.engine.history.HistoricActivityInstanceQuery;
+import org.camunda.bpm.engine.history.HistoricProcessInstanceQuery;
+import org.camunda.bpm.engine.impl.db.ListQueryParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,8 +36,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.sql.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
+
 @RestController
-@SkipComponentScan
 @RequestMapping(value = "/api", produces = APPLICATION_JSON_UTF8_VALUE)
 @Transactional
 public class ReportingResource {
@@ -64,26 +56,19 @@ public class ReportingResource {
     private static final String ACTIVITY_USER_TASK = "userTask";
     private final SqlSession session;
     private final HistoryService historyService;
-    private final OperatonHistoryService operatonHistoryService;
-    private final OperatonReportingRepository operatonReportingRepository;
+    private final CamundaReportingRepository camundaReportingRepository;
 
-    public ReportingResource(
-        SqlSession session,
-        HistoryService historyService,
-        OperatonHistoryService operatonHistoryService,
-        OperatonReportingRepository operatonReportingRepository
-    ) {
+    public ReportingResource(SqlSession session, HistoryService historyService, CamundaReportingRepository camundaReportingRepository) {
         this.session = session;
         this.historyService = historyService;
-        this.operatonHistoryService = operatonHistoryService;
-        this.operatonReportingRepository = operatonReportingRepository;
+        this.camundaReportingRepository = camundaReportingRepository;
     }
 
     @GetMapping("/v1/reporting/instancecount")
     public ResponseEntity<InstanceCountChart> instanceCount(
         @RequestParam(value = "processFilter", required = false) String processId
     ) {
-        InstanceCountChart instanceCounts = operatonReportingRepository.getProcessInstanceCounts(processId);
+        InstanceCountChart instanceCounts = camundaReportingRepository.getProcessInstanceCounts(processId);
         return new ResponseEntity<>(instanceCounts, HttpStatus.OK);
     }
 
@@ -204,7 +189,7 @@ public class ReportingResource {
         @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
         @RequestParam(value = "processFilter", required = false) String processId
     ) {
-        return new ResponseEntity<>(operatonReportingRepository.getTasksPerRole(processId, fromDate, toDate), HttpStatus.OK);
+        return new ResponseEntity<>(camundaReportingRepository.getTasksPerRole(processId, fromDate, toDate), HttpStatus.OK);
     }
 
     @GetMapping("/v1/reporting/unfinishedTasksPerType")
@@ -248,36 +233,26 @@ public class ReportingResource {
         @RequestParam(value = "toDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate,
         @RequestParam(value = "processFilter", required = false) String processDefinitionKey
     ) {
-        var historicProcessInstanceQueryFinished = OperatonHistoricProcessInstanceSpecificationHelper.query();
-        var historicProcessInstanceQueryUnfinished = OperatonHistoricProcessInstanceSpecificationHelper.query();
+        HistoricProcessInstanceQuery historicProcessInstanceQueryFinished = historyService.createHistoricProcessInstanceQuery();
+        HistoricProcessInstanceQuery historicProcessInstanceQueryUnfinished = historyService.createHistoricProcessInstanceQuery();
 
         if (Optional.ofNullable(processDefinitionKey).isPresent()) {
-            historicProcessInstanceQueryFinished.and(byProcessDefinitionKey(processDefinitionKey));
-            historicProcessInstanceQueryUnfinished.and(byProcessDefinitionKey(processDefinitionKey));
+            historicProcessInstanceQueryFinished.processDefinitionKey(processDefinitionKey);
+            historicProcessInstanceQueryUnfinished.processDefinitionKey(processDefinitionKey);
         }
 
         if (fromDate != null) {
-            var fromDateTime = fromDate.atStartOfDay(ZoneId.systemDefault()).toLocalDateTime();
-            historicProcessInstanceQueryFinished.and(byEndTimeAfter(fromDateTime));
-            historicProcessInstanceQueryUnfinished.and(byEndTimeAfter(fromDateTime));
+            historicProcessInstanceQueryFinished.finishedAfter(fromLocalDateToDate(fromDate));
+            historicProcessInstanceQueryUnfinished.finishedAfter(fromLocalDateToDate(fromDate));
         }
 
         if (toDate != null) {
-            var toDateTime = toDate.atStartOfDay(ZoneId.systemDefault()).toLocalDateTime();
-            historicProcessInstanceQueryFinished.and(byEndTimeBefore(toDateTime));
-            historicProcessInstanceQueryUnfinished.and(byEndTimeBefore(toDateTime));
+            historicProcessInstanceQueryFinished.finishedBefore(fromLocalDateToDate(toDate));
+            historicProcessInstanceQueryUnfinished.finishedBefore(fromLocalDateToDate(toDate));
         }
 
-        Long unfinishedInstances = AuthorizationContext
-            .runWithoutAuthorization(
-                () -> operatonHistoryService
-                    .countHistoricProcessInstances(historicProcessInstanceQueryUnfinished.and(byUnfinished()))
-            );
-        Long finishedInstances = AuthorizationContext
-            .runWithoutAuthorization(
-                () -> operatonHistoryService
-                    .countHistoricProcessInstances(historicProcessInstanceQueryFinished.and(byFinished()))
-            );
+        Long unfinishedInstances = historicProcessInstanceQueryUnfinished.unfinished().count();
+        Long finishedInstances = historicProcessInstanceQueryFinished.finished().count();
 
         List<Long> data = new ArrayList<>();
         data.add(unfinishedInstances);
@@ -312,7 +287,7 @@ public class ReportingResource {
         return query.orderByActivityName().asc().list();
     }
 
-    private List<HistoricActivityInstance> getUnfinishedHistoricTaskInstances(LocalDate fromDate, LocalDate toDate) {
+    private List<HistoricActivityInstance> getUnfinishedHistoricTaskInstances(LocalDate fromDate, LocalDate toDate){
         HistoricActivityInstanceQuery historicActivityInstanceQuery = historyService.createHistoricActivityInstanceQuery()
             .unfinished()
             .activityType(ACTIVITY_USER_TASK);

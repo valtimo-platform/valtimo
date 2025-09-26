@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@
 package com.ritense.objectenapi.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectWrapper
 import com.ritense.valtimo.contract.form.DataResolvingContext
-import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.json.Mapper
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
@@ -38,7 +39,7 @@ import kotlin.test.assertTrue
 internal class ZaakObjectDataResolverTest {
 
     val zaakObjectService = mock<ZaakObjectService>()
-    val resolver = ZaakObjectDataResolver(zaakObjectService, MapperSingleton.get())
+    val resolver = ZaakObjectDataResolver(zaakObjectService, ObjectMapper())
 
     @Test
     fun `should support zaakobject prefix`() {
@@ -69,7 +70,7 @@ internal class ZaakObjectDataResolverTest {
             "nested" to nested
         )
 
-        val objectDataJsonNode = MapperSingleton.get().valueToTree<JsonNode>(objectData1)
+        val objectDataJsonNode = Mapper.INSTANCE.get().valueToTree<JsonNode>(objectData1)
         val objectRecord1 = mock<ObjectRecord>()
         whenever(object1.record).thenReturn(objectRecord1)
         whenever(objectRecord1.data).thenReturn(objectDataJsonNode)
@@ -82,7 +83,7 @@ internal class ZaakObjectDataResolverTest {
             "other-type-path" to "test-value-3"
         )
 
-        val object2DataJsonNode = MapperSingleton.get().valueToTree<JsonNode>(objectData2)
+        val object2DataJsonNode = Mapper.INSTANCE.get().valueToTree<JsonNode>(objectData2)
         val objectRecord2 = mock<ObjectRecord>()
         whenever(object2.record).thenReturn(objectRecord2)
         whenever(objectRecord2.data).thenReturn(object2DataJsonNode)
@@ -93,7 +94,7 @@ internal class ZaakObjectDataResolverTest {
             DataResolvingContext(
                 "something",
                 documentId,
-                MapperSingleton.get().createObjectNode()
+                Mapper.INSTANCE.get().createObjectNode()
             ),
             *fieldsToRequest
         )
@@ -133,7 +134,7 @@ internal class ZaakObjectDataResolverTest {
 
     @Test
     fun `should handle missing field type property`() {
-        val resolvedVariable = testForValueMap(MapperSingleton.get().valueToTree(""))
+        val resolvedVariable = testForValueMap(Mapper.INSTANCE.get().valueToTree(""))
         assertNull(resolvedVariable)
     }
 
@@ -171,7 +172,7 @@ internal class ZaakObjectDataResolverTest {
 
     private fun testForVariableType(value: Any?): Any? {
         return testForValueMap(
-            MapperSingleton.get().valueToTree(
+            Mapper.INSTANCE.get().valueToTree(
                 mapOf(
                     "path" to value
                 )
@@ -197,7 +198,7 @@ internal class ZaakObjectDataResolverTest {
             DataResolvingContext(
                 "something",
                 documentId,
-                MapperSingleton.get().createObjectNode()
+                Mapper.INSTANCE.get().createObjectNode()
             ),
             *fieldsToRequest
         )

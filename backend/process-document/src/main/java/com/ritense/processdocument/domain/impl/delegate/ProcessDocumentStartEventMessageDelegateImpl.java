@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,25 @@
 
 package com.ritense.processdocument.domain.impl.delegate;
 
-import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
-
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.ritense.authorization.AuthorizationContext;
 import com.ritense.document.domain.Document;
 import com.ritense.document.domain.relation.DocumentRelationType;
 import com.ritense.document.service.DocumentService;
 import com.ritense.processdocument.domain.ProcessInstanceId;
 import com.ritense.processdocument.domain.delegate.ProcessDocumentStartEventMessageDelegate;
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
+import com.ritense.tenancy.TenantResolver;
 import com.ritense.valtimo.contract.json.JsonPointerHelper;
-import org.operaton.bpm.engine.RuntimeService;
-import org.operaton.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
 
 public class ProcessDocumentStartEventMessageDelegateImpl implements ProcessDocumentStartEventMessageDelegate {
 
@@ -46,15 +46,18 @@ public class ProcessDocumentStartEventMessageDelegateImpl implements ProcessDocu
     private final ProcessDocumentAssociationService processDocumentAssociationService;
     private final DocumentService documentService;
     private final RuntimeService runtimeService;
+    private final TenantResolver tenantResolver;
 
     public ProcessDocumentStartEventMessageDelegateImpl(
         ProcessDocumentAssociationService processDocumentAssociationService,
         DocumentService documentService,
-        RuntimeService runtimeService
+        RuntimeService runtimeService,
+        TenantResolver tenantResolver
     ) {
         this.processDocumentAssociationService = processDocumentAssociationService;
         this.documentService = documentService;
         this.runtimeService = runtimeService;
+        this.tenantResolver = tenantResolver;
     }
 
     public void deliver(DelegateExecution execution, String message) {
@@ -65,11 +68,10 @@ public class ProcessDocumentStartEventMessageDelegateImpl implements ProcessDocu
         assertArgumentNotNull(message, "message is required");
         assertArgumentNotNull(relationType, "relationType is required");
 
-        final var processInstanceId = ProcessInstanceId.fromExecution(execution, OperatonProcessInstanceId.class);
+        final var processInstanceId = ProcessInstanceId.fromExecution(execution, CamundaProcessInstanceId.class);
         processDocumentAssociationService.findProcessDocumentInstance(processInstanceId)
-            .flatMap(processDocumentInstance ->
-                AuthorizationContext.runWithoutAuthorization(
-                    () -> documentService.findBy(processDocumentInstance.processDocumentInstanceId().documentId()))
+            .flatMap(processDocumentInstance -> documentService.findBy(
+                processDocumentInstance.processDocumentInstanceId().documentId(), tenantResolver.getTenantId())
             )
             .ifPresent(document -> {
                 final JsonNode payload = getPayload(execution, document);
@@ -95,7 +97,7 @@ public class ProcessDocumentStartEventMessageDelegateImpl implements ProcessDocu
                 logger.info("Skipping var: cannot parse key/value to jsonPointer {} - {}", key, value);
             }
         });
-        logger.info("Parsed all process variables to json string: {}", rootNode);
+        logger.info("Parsed all process variables to json string: {}", rootNode.toString());
         return rootNode;
     }
 

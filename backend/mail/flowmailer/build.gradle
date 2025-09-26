@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,21 @@
 
 dockerCompose {
     projectName = "flowmailer"
-
-    integrationTestingPostgresql {
-        isRequiredBy(project.tasks.integrationTestingPostgresql)
-        isRequiredBy(project.tasks.securityTesting)
-        useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-postgresql.yml", "docker-compose-override-postgresql.yml")
-    }
-
-    integrationTestingMysql {
-        isRequiredBy(project.tasks.integrationTestingMysql)
-        useComposeFiles.addAll("../../docker-resources/docker-compose-base-test-mysql.yml", "docker-compose-override-mysql.yml")
-    }
+    isRequiredBy(integrationTesting)
+    isRequiredBy(securityTesting)
+    useComposeFiles.addAll("../../docker-resources/docker-compose-base-test.yml", "docker-compose-override.yml")
 }
 
 dependencies {
     api project(":mail")
-    implementation project(":authorization")
-    implementation project(":case")
+    implementation project(":connector")
+    implementation project(":document")
     implementation project(":resource")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
     api "org.springframework.data:spring-data-commons"
+    api "javax.inject:javax.inject:${javaxInjectVersion}"
 
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-starter-web"
@@ -54,14 +47,14 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
 
-    implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
+    implementation "io.github.microutils:kotlin-logging:${kotlinLoggingVersion}"
 
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
 
     implementation "org.springframework.boot:spring-boot-autoconfigure"
-    implementation "io.hypersistence:hypersistence-utils-hibernate-62:${hypersistenceUtilsVersion}"
+    implementation "com.vladmihalcea:hibernate-types-55:${hibernateTypesVersion}"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin"
     implementation "org.apache.tika:tika-core:${apacheTikaVersion}"
 
@@ -72,6 +65,7 @@ dependencies {
     testImplementation project(":mail")
     testImplementation project(':resource')
     testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "org.camunda.community.mockito:camunda-platform-7-mockito:${camundaMockitoVersion}"
 
     //Kotlin
     testImplementation "org.mockito.kotlin:mockito-kotlin:${mockitoKotlinVersion}"

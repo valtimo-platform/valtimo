@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,23 @@
 
 package com.ritense.form.autodeployment
 
-import com.ritense.authorization.AuthorizationContext
 import com.ritense.form.BaseIntegrationTest
 import com.ritense.form.domain.FormProcessLink
-import com.ritense.processlink.autodeployment.ProcessLinkDeploymentApplicationReadyEventListener
 import com.ritense.processlink.repository.ProcessLinkRepository
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.repository.ProcessDefinition
 import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.hasSize
 import org.hamcrest.Matchers.isA
 import org.hamcrest.Matchers.notNullValue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.transaction.annotation.Transactional
 
 
-@Transactional
 class ProcessLinkDeploymentApplicationReadyEventListenerIntTest @Autowired constructor(
-    private val repositoryService: OperatonRepositoryService,
-    private val processLinkRepository: ProcessLinkRepository,
-    private val listener: ProcessLinkDeploymentApplicationReadyEventListener
+    private val repositoryService: RepositoryService,
+    private val processLinkRepository: ProcessLinkRepository
 ): BaseIntegrationTest() {
 
     @Test
@@ -52,9 +48,10 @@ class ProcessLinkDeploymentApplicationReadyEventListenerIntTest @Autowired const
         assertThat(processLink.formDefinitionId, notNullValue())
     }
 
-    private fun getLatestProcessDefinition(): OperatonProcessDefinition {
-        return AuthorizationContext.runWithoutAuthorization {
-            repositoryService.findLatestProcessDefinition("form-one-task-process")!!
-        }
+    private fun getLatestProcessDefinition(): ProcessDefinition {
+        return repositoryService.createProcessDefinitionQuery()
+            .processDefinitionKey("form-one-task-process")
+            .latestVersion()
+            .singleResult()
     }
 }

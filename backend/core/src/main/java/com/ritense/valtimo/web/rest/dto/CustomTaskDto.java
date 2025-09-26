@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,17 @@
 
 package com.ritense.valtimo.web.rest.dto;
 
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
-import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
+import org.camunda.bpm.engine.form.FormField;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.rest.dto.task.TaskDto;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-import org.operaton.bpm.engine.form.FormField;
-import org.operaton.bpm.engine.runtime.ProcessInstance;
 
-public class CustomTaskDto {
+public class CustomTaskDto implements Serializable {
 
-    private OperatonTaskDto task;
+    private TaskDto task;
 
     private List<FormField> formFields;
 
@@ -45,12 +46,12 @@ public class CustomTaskDto {
     }
 
     public CustomTaskDto(
-        OperatonTaskDto task,
-        List<FormField> formFields,
-        Map<String, Object> variables,
-        String formLocation,
-        ProcessInstance processInstance,
-        OperatonProcessDefinition processDefinition
+            TaskDto task,
+            List<FormField> formFields,
+            Map<String, Object> variables,
+            String formLocation,
+            ProcessInstance processInstance,
+            ProcessDefinition processDefinition
     ) {
         this.task = task;
         this.formFields = formFields;
@@ -63,7 +64,7 @@ public class CustomTaskDto {
         this.businessKey = processInstance.getBusinessKey();
     }
 
-    public OperatonTaskDto getTask() {
+    public TaskDto getTask() {
         return task;
     }
 
@@ -75,7 +76,7 @@ public class CustomTaskDto {
         return variables;
     }
 
-    public void setTask(OperatonTaskDto task) {
+    public void setTask(TaskDto task) {
         this.task = task;
     }
 

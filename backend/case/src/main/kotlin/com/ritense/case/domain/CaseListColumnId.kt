@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 package com.ritense.case.domain
 
 import com.ritense.valtimo.contract.domain.AbstractId
-import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
+import javax.persistence.Column
+import javax.persistence.Embeddable
 
 @Embeddable
 data class CaseListColumnId(
-    @Column(name = "case_definition_key")
-    val caseDefinitionKey: String,
+    @Column(name = "case_definition_name")
+    val caseDefinitionName: String,
     @Column(name = "column_key")
     val key: String
 ) : AbstractId<CaseListColumnId>()

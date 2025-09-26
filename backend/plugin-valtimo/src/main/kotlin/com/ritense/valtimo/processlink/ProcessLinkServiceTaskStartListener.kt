@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,40 +16,32 @@
 
 package com.ritense.valtimo.processlink
 
-import com.ritense.logging.withLoggingContext
+import com.ritense.plugin.domain.ActivityType
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
-import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.springframework.context.event.EventListener
-import org.springframework.stereotype.Component
+import org.camunda.bpm.engine.ActivityTypes
+import org.camunda.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.engine.delegate.ExecutionListener
+import org.camunda.bpm.extension.reactor.bus.CamundaSelector
+import org.camunda.bpm.extension.reactor.spring.listener.ReactorExecutionListener
 import org.springframework.transaction.annotation.Transactional
 
-@Component
-@SkipComponentScan
-class ProcessLinkServiceTaskStartListener(
+@CamundaSelector(type = ActivityTypes.TASK_SERVICE, event = ExecutionListener.EVENTNAME_START)
+open class ProcessLinkServiceTaskStartListener(
     private val pluginProcessLinkRepository: PluginProcessLinkRepository,
     private val pluginService: PluginService,
-) {
+) : ReactorExecutionListener() {
 
     @Transactional
-    @EventListener(
-        condition = """#execution.bpmnModelElementInstance != null
-            && #execution.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_SERVICE
-            && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START"""
-    )
-    fun notify(execution: DelegateExecution) {
-        withLoggingContext("com.ritense.document.domain.impl.JsonSchemaDocument", execution.processBusinessKey) {
-            val pluginProcessLinks = pluginProcessLinkRepository.findByProcessDefinitionIdAndActivityIdAndActivityType(
-                execution.processDefinitionId,
-                execution.currentActivityId,
-                ActivityTypeWithEventName.SERVICE_TASK_START
-            )
+    override fun notify(execution: DelegateExecution) {
+        val pluginProcessLinks = pluginProcessLinkRepository.findByProcessDefinitionIdAndActivityIdAndActivityType(
+            execution.processDefinitionId,
+            execution.currentActivityId,
+            ActivityType.SERVICE_TASK_START
+        )
 
-            pluginProcessLinks.forEach { pluginProcessLink ->
-                pluginService.invoke(execution, pluginProcessLink)
-            }
+        pluginProcessLinks.forEach { pluginProcessLink ->
+            pluginService.invoke(execution, pluginProcessLink)
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,16 @@
 
 package com.ritense.documentenapi.web.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.document.domain.impl.JsonDocumentContent
-import com.ritense.document.domain.impl.request.NewDocumentRequest
-import com.ritense.document.service.DocumentService
 import com.ritense.documentenapi.BaseIntegrationTest
 import com.ritense.documentenapi.DocumentenApiAuthentication
-import com.ritense.documentenapi.domain.DocumentenApiColumn
-import com.ritense.documentenapi.domain.DocumentenApiColumnId
-import com.ritense.documentenapi.domain.DocumentenApiColumnKey
-import com.ritense.documentenapi.repository.DocumentenApiColumnRepository
-import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
-import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessRequest
-import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.json.Mapper
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -55,11 +41,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.header
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestClient
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
@@ -67,6 +49,7 @@ import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
 import java.util.Optional
 import java.util.UUID
+import javax.transaction.Transactional
 
 @Transactional
 internal class DocumentenApiResourceIT : BaseIntegrationTest() {
@@ -74,28 +57,11 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
     @Autowired
     lateinit var webApplicationContext: WebApplicationContext
 
-    @Autowired
-    lateinit var objectMapper: ObjectMapper
-
-    @Autowired
-    lateinit var documentenApiService: DocumentenApiService
-
-    @Autowired
-    lateinit var documentenApiColumnRepository: DocumentenApiColumnRepository
-
-    @Autowired
-    lateinit var caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService
-
-    @Autowired
-    lateinit var documentService: DocumentService
-
     lateinit var mockMvc: MockMvc
 
     lateinit var server: MockWebServer
 
     lateinit var pluginConfiguration: PluginConfiguration
-
-    private val caseDefinitionId = CaseDefinitionId("profile", "1.0.0")
 
     @BeforeEach
     fun beforeEach() {
@@ -114,7 +80,7 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
 
         pluginConfiguration = pluginService.createPluginConfiguration(
             "Documenten API plugin configuration",
-            objectMapper.readTree(
+            Mapper.INSTANCE.get().readTree(
                 """
                     {
                         "url": "${server.url("/")}",
@@ -143,91 +109,6 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
             .andExpect(content().string("TEST_DOCUMENT_CONTENT"))
     }
 
-    @Test
-    fun `should get a list of all ordered Documenten API columns`() {
-        documentenApiColumnRepository.deleteAllByIdCaseDefinitionName("profile")
-        runWithoutAuthorization {
-            caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
-                caseDefinitionId,
-                DocumentDefinitionProcessRequest("call-activity-to-upload-document", "DOCUMENT_UPLOAD")
-            )
-            documentenApiService.createOrUpdateColumn(
-                DocumentenApiColumn(DocumentenApiColumnId("profile", DocumentenApiColumnKey.IDENTIFICATIE), 0)
-            )
-            documentenApiService.createOrUpdateColumn(
-                DocumentenApiColumn(DocumentenApiColumnId("profile", DocumentenApiColumnKey.TITEL), 1)
-            )
-        }
-
-        mockMvc.perform(
-            get("/api/management/v1/case-definition/{caseDefinitionName}/zgw-document-column", "profile")
-        )
-            .andDo(MockMvcResultHandlers.print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$[0].key").value("identificatie"))
-            .andExpect(jsonPath("$[0].sortable").value(false))
-            .andExpect(jsonPath("$[1].key").value("titel"))
-            .andExpect(jsonPath("$[1].sortable").value(true))
-    }
-
-    @Test
-    @WithMockUser(username = USER_EMAIL, authorities = [USER])
-    fun `should get API version`() {
-        runWithoutAuthorization {
-            caseDefinitionProcessLinkService.saveDocumentDefinitionProcess(
-                caseDefinitionId,
-                DocumentDefinitionProcessRequest("call-activity-to-upload-document", "DOCUMENT_UPLOAD")
-            )
-        }
-
-        mockMvc.perform(get("/api/v1/case-definition/{caseDefinitionName}/documenten-api/version", "profile"))
-            .andDo(MockMvcResultHandlers.print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.selectedVersion").value("1.5.0-test-1.0.0"))
-            .andExpect(jsonPath("$.supportsFilterableColumns").value(true))
-            .andExpect(jsonPath("$.supportsSortableColumns").value(true))
-            .andExpect(jsonPath("$.supportsTrefwoorden").value(true))
-            .andExpect(jsonPath("$.supportsUpdatingDefinitiveDocument").value(true))
-    }
-
-    @Test
-    @WithMockUser(USER_EMAIL)
-    fun `should upload fields`() {
-        val documentId = runWithoutAuthorization {
-            val content = """{"description":"Test description"}"""
-            documentService.createDocument(
-                NewDocumentRequest(
-                    "profile",
-                    "profile",
-                    "1.0.0",
-                    JsonDocumentContent(content).asJson()
-                )
-            ).resultingDocument().get().id().id
-        }
-
-        mockMvc.perform(get("/api/v1/document/{documentId}/zgw-document/upload-field", documentId))
-            .andDo(MockMvcResultHandlers.print())
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$").isNotEmpty)
-            .andExpect(jsonPath("$").isArray)
-            .andExpect(jsonPath("$.*", hasSize<Int>(11)))
-            .andExpect(jsonPath("$[0].key").value("beschrijving"))
-            .andExpect(jsonPath("$[0].defaultValue").value("Test description"))
-            .andExpect(jsonPath("$[1].key").value("informatieobjecttype"))
-            .andExpect(jsonPath("$[1].defaultValue").value("http://localhost:8001/catalogi/api/v1/informatieobjecttypen/efc332f2-be3b-4bad-9e3c-49a6219c92ad"))
-            .andExpect(jsonPath("$[2].key").value("status"))
-            .andExpect(jsonPath("$[2].defaultValue").value("in_bewerking"))
-            .andExpect(jsonPath("$[3].key").value("taal"))
-            .andExpect(jsonPath("$[3].defaultValue").value("eng"))
-            .andExpect(jsonPath("$[4].key").value("vertrouwelijkheidaanduiding"))
-            .andExpect(jsonPath("$[4].defaultValue").value("zaakvertrouwelijk"))
-            .andExpect(jsonPath("$[5].key").value("bestandsnaam"))
-            .andExpect(jsonPath("$[6].key").value("titel"))
-            .andExpect(jsonPath("$[7].key").value("auteur"))
-            .andExpect(jsonPath("$[8].key").value("creatiedatum"))
-            .andExpect(jsonPath("$[9].key").value("aanvullendeDatum"))
-            .andExpect(jsonPath("$[10].key").value("trefwoorden"))
-    }
 
     private fun setupMockDocumentenApiServer() {
         val dispatcher: Dispatcher = object : Dispatcher() {
@@ -290,10 +171,6 @@ internal class DocumentenApiResourceIT : BaseIntegrationTest() {
     }
 
     class TestAuthentication : DocumentenApiAuthentication {
-        override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-            return builder
-        }
-
         override fun filter(request: ClientRequest, next: ExchangeFunction): Mono<ClientResponse> {
             return next.exchange(request)
         }

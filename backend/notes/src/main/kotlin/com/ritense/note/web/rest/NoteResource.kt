@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ import com.ritense.note.service.NoteService
 import com.ritense.note.web.rest.dto.NoteCreateRequestDto
 import com.ritense.note.web.rest.dto.NoteResponseDto
 import com.ritense.note.web.rest.dto.NoteUpdateRequestDto
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.tenancy.TenantResolver
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -41,11 +42,11 @@ import java.util.UUID
 
 
 @RestController
-@SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class NoteResource(
     private val noteService: NoteService,
     private val documentService: DocumentService,
+    private val tenantResolver: TenantResolver
 ) {
     @GetMapping("/v1/document/{documentId}/note")
     fun getNotes(
@@ -59,6 +60,12 @@ class NoteResource(
             documentId, pageable
         )
 
+        val jsonSchemaDocumentId = JsonSchemaDocumentId.existingId(documentId)
+
+        if (!documentService.currentUserCanAccessDocument(jsonSchemaDocumentId, tenantResolver.getTenantId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+        }
+
         return ResponseEntity.ok(notes.map { note -> NoteResponseDto(note) })
     }
 
@@ -69,6 +76,10 @@ class NoteResource(
     ): ResponseEntity<NoteResponseDto> {
 
         val jsonSchemaDocumentId = JsonSchemaDocumentId.existingId(documentId)
+
+        if (!documentService.currentUserCanAccessDocument(jsonSchemaDocumentId, tenantResolver.getTenantId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+        }
         val note = noteService.createNote(
             jsonSchemaDocumentId,
             noteDto.content,

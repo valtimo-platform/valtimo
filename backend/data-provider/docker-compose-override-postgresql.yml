@@ -1,6 +1,0 @@
-services:
-  db:
-    ports:
-      - "3339:5432"
-    environment:
-      - POSTGRES_DB=dataprovider-test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,10 @@ data class NamedUser(
     val id: String,
     val email: String?,
     val firstName: String?,
-    val lastName: String?,
-    val userName: String?
+    val lastName: String?
 ) {
 
-    constructor(id: String, firstName: String?, lastName: String?) : this(id, null, firstName, lastName, null)
-
-    constructor(id: String, email: String?, firstName: String?, lastName: String?) : this(id, email, firstName, lastName, null)
+    constructor(id: String, firstName: String?, lastName: String?) : this(id, null, firstName, lastName)
 
     fun getLabel(): String {
         return if (!firstName.isNullOrBlank() && !lastName.isNullOrBlank()) {
@@ -46,11 +43,10 @@ data class NamedUser(
         @JvmStatic
         fun from(user: ManageableUser): NamedUser {
             return NamedUser(
-                id = user.username,
+                id = user.id,
                 email = user.email,
                 firstName = user.firstName,
-                lastName = user.lastName,
-                userName = user.username
+                lastName = user.lastName
             )
         }
     }

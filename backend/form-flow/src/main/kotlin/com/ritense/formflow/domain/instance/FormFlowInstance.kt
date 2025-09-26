@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,22 @@
 package com.ritense.formflow.domain.instance
 
 import com.ritense.formflow.domain.definition.FormFlowDefinition
-import com.ritense.logging.withLoggingContext
-import io.hypersistence.utils.hibernate.type.json.JsonType
-import jakarta.persistence.AttributeOverride
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
-import jakarta.persistence.Embedded
-import jakarta.persistence.EmbeddedId
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.JoinColumns
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.OrderBy
-import jakarta.persistence.Table
 import org.hibernate.annotations.Type
 import org.json.JSONObject
 import java.util.Objects
+import javax.persistence.AttributeOverride
+import javax.persistence.CascadeType
+import javax.persistence.Column
+import javax.persistence.Embedded
+import javax.persistence.EmbeddedId
+import javax.persistence.Entity
+import javax.persistence.FetchType
+import javax.persistence.JoinColumn
+import javax.persistence.JoinColumns
+import javax.persistence.ManyToOne
+import javax.persistence.OneToMany
+import javax.persistence.OrderBy
+import javax.persistence.Table
 
 
 @Entity
@@ -45,8 +43,7 @@ class FormFlowInstance(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns(
         JoinColumn(name = "form_flow_definition_key", referencedColumnName = "form_flow_definition_key"),
-        JoinColumn(name = "case_definition_key", referencedColumnName = "case_definition_key"),
-        JoinColumn(name = "case_definition_version_tag", referencedColumnName = "case_definition_version_tag")
+        JoinColumn(name = "form_flow_definition_version", referencedColumnName = "form_flow_definition_version")
     )
     val formFlowDefinition: FormFlowDefinition,
     @Embedded
@@ -55,7 +52,7 @@ class FormFlowInstance(
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, mappedBy = "instance")
     @OrderBy("order ASC")
     private val history: MutableList<FormFlowStepInstance> = mutableListOf(),
-    @Type(value = JsonType::class)
+    @Type(type = "com.vladmihalcea.hibernate.type.json.JsonType")
     @Column(name = "additional_properties", columnDefinition = "json", nullable = false)
     private val additionalProperties: MutableMap<String, Any> = mutableMapOf()
 ) {
@@ -75,21 +72,13 @@ class FormFlowInstance(
         currentFormFlowStepInstanceId: FormFlowStepInstanceId,
         submissionData: JSONObject
     ): FormFlowStepInstance? {
-        return withLoggingContext(FormFlowStepInstance::class.java.canonicalName to currentFormFlowStepInstanceId.toString()) {
-            if (this.currentFormFlowStepInstanceId != currentFormFlowStepInstanceId) {
-                return getCurrentStep()
-            }
+        assert(this.currentFormFlowStepInstanceId == currentFormFlowStepInstanceId)
 
-            val formFlowStepInstance = getCurrentStep()
+        val formFlowStepInstance = getCurrentStep()
 
-            formFlowStepInstance.complete(submissionData.toString())
+        formFlowStepInstance.complete(submissionData.toString())
 
-            val nextStep = navigateToNextStep()
-            check(nextStep != null || formFlowStepInstance.definition.onComplete.isNotEmpty()) {
-                "Form flow end reached but no action was taken because the 'onComplete' is empty. For form flow step: '${formFlowStepInstance.definition.id}'"
-            }
-            nextStep
-        }
+        return navigateToNextStep()
     }
 
     /**
@@ -111,25 +100,6 @@ class FormFlowInstance(
     }
 
     /**
-     * This method navigates to the target step.
-     *
-     * @return The target step
-     */
-    fun navigateToStep(targetId: FormFlowStepInstanceId): FormFlowStepInstance {
-        return withLoggingContext(FormFlowStepInstance::class.java.canonicalName to targetId.toString()) {
-            val targetStep = history.single { it.id == targetId }
-            val currentStep = getCurrentStep()
-            if (targetStep.order < currentStep.order) {
-                for (i in history.indexOf(currentStep) downTo history.indexOf(targetStep) + 1) {
-                    history[i].back()
-                }
-            }
-            currentFormFlowStepInstanceId = targetStep.id
-            targetStep
-        }
-    }
-
-    /**
      * This method saves submission data for the current step but will *not* complete the step.
      * The submitted data can be changed at any time.
      * @param incompleteSubmissionData This data will be set as the submissionData of the step.
@@ -141,9 +111,6 @@ class FormFlowInstance(
     }
 
     fun getCurrentStep(): FormFlowStepInstance {
-        requireNotNull(currentFormFlowStepInstanceId) {
-            "Failed to get current step. Form flow '${formFlowDefinition.id.key}' has ended."
-        }
         return history.first {
             it.id == currentFormFlowStepInstanceId
         }
@@ -178,23 +145,24 @@ class FormFlowInstance(
     }
 
     private fun getSubmissionData() : List<JSONObject> {
-        val currentStepOrder = if (currentFormFlowStepInstanceId == null) {
-            Int.MAX_VALUE
-        } else {
-            getCurrentStep().order
+        val currentStepOrder = getCurrentStep().order
+        val submissionData = history.filter {
+            it.order < currentStepOrder && it.submissionData != null
+        }.map {
+            JSONObject(it.submissionData)
+        }.toMutableList()
+
+        getCurrentStep().getCurrentSubmissionData()?.let {
+            submissionData.add(JSONObject(it))
         }
-        return history
-            .filter { it.order <= currentStepOrder }
-            .sortedBy { it.submissionOrder }
-            .mapNotNull { it.getCurrentSubmissionData() }
-            .map { JSONObject(it) }
-            .toList()
+
+        return submissionData
     }
 
     private fun mergeSubmissionData(source: JSONObject, target: JSONObject) {
         val keys = JSONObject.getNames(source) ?: arrayOf()
         for (key in keys) {
-            val value = source[key]
+            val value = source.get(key)
             if (target.has(key) && value is JSONObject) {
                 mergeSubmissionData(value, target.getJSONObject(key))
             } else {
@@ -210,16 +178,11 @@ class FormFlowInstance(
             this.currentFormFlowStepInstanceId = null
             return null
         }
-
-        val formFlowStepInstance = history.firstOrNull {
-            it.order == nextStep.order && it.stepKey == nextStep.stepKey
-        }
-
-        if (formFlowStepInstance == null) {
-            history.removeIf { (it.order >= nextStep.order)}
-            history.add(nextStep.order, nextStep)
-        }
-
+        history.removeIf { (it.stepKey == nextStep.stepKey && it.order == nextStep.order)}
+        // TODO: if the order of the next step does not have the same stepKey as the one in the history, every step of
+        // order or higher should be removed from the history.
+        // The above should be true, but needs to be verified.
+        history.add(nextStep.order, nextStep)
         currentFormFlowStepInstanceId = nextStep.id
         return nextStep
     }

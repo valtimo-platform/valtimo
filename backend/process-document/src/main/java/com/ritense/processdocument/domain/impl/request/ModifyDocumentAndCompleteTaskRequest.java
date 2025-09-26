@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ package com.ritense.processdocument.domain.impl.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
 import com.ritense.processdocument.domain.request.Request;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class ModifyDocumentAndCompleteTaskRequest implements Request {
 
@@ -37,9 +36,6 @@ public class ModifyDocumentAndCompleteTaskRequest implements Request {
 
     @JsonIgnore
     private Map<String, Object> processVars;
-
-    @JsonIgnore
-    private Consumer<? super JsonSchemaDocument> additionalModifications;
 
     @JsonCreator
     public ModifyDocumentAndCompleteTaskRequest(
@@ -67,15 +63,4 @@ public class ModifyDocumentAndCompleteTaskRequest implements Request {
         return processVars;
     }
 
-    @Override
-    public Request withAdditionalModifications(Consumer<? super JsonSchemaDocument> function) {
-        this.additionalModifications = function;
-        return this;
-    }
-
-    public void doAdditionalModifications(JsonSchemaDocument document) {
-        if (this.additionalModifications != null) {
-            this.additionalModifications.accept(document);
-        }
-    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,36 +18,20 @@ package com.ritense.documentenapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.documentenapi.client.DocumentenApiClient
-import com.ritense.documentenapi.service.DocumentDeleteHandler
-import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import org.springframework.context.ApplicationEventPublisher
 
 class DocumentenApiPluginFactory(
     pluginService: PluginService,
-    private val client: DocumentenApiClient,
-    private val storageService: TemporaryResourceStorageService,
-    private val applicationEventPublisher: ApplicationEventPublisher,
-    private val objectMapper: ObjectMapper,
-    private val documentDeleteHandlers: List<DocumentDeleteHandler>,
-    private val documentenApiVersionService: DocumentenApiVersionService,
-    private val runtimeService: OperatonRuntimeService,
+    val client: DocumentenApiClient,
+    val storageService: TemporaryResourceStorageService,
+    val applicationEventPublisher: ApplicationEventPublisher,
+    val objectMapper: ObjectMapper,
 ) : PluginFactory<DocumentenApiPlugin>(pluginService) {
 
     override fun create(): DocumentenApiPlugin {
-        return DocumentenApiPlugin(
-            client,
-            storageService,
-            applicationEventPublisher,
-            objectMapper,
-            documentDeleteHandlers,
-            documentenApiVersionService,
-            pluginService,
-            runtimeService,
-        )
+        return DocumentenApiPlugin(client, storageService, applicationEventPublisher, objectMapper)
     }
 }

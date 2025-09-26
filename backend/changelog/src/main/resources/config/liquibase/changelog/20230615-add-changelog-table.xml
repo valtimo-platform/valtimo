@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -38,34 +38,6 @@
                 <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
-    </changeSet>
-
-    <changeSet author="Ritense" id="2">
-        <preConditions onFail="MARK_RAN">
-            <dbms type="postgresql"/>
-        </preConditions>
-        <dropUniqueConstraint
-            tableName="valtimo_changelog"
-            constraintName="valtimo_changelog_md5sum_key"
-            uniqueColumns="md5sum"/>
-    </changeSet>
-
-    <changeSet author="Ritense" id="3">
-        <preConditions onFail="MARK_RAN">
-            <dbms type="mysql"/>
-        </preConditions>
-        <dropUniqueConstraint
-            tableName="valtimo_changelog"
-            constraintName="md5sum"
-            uniqueColumns="md5sum"/>
-    </changeSet>
-
-    <changeSet author="Ritense" id="4">
-        <addColumn tableName="valtimo_changelog">
-            <column name="checksum_type" type="VARCHAR(50)" defaultValue="LEGACY">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

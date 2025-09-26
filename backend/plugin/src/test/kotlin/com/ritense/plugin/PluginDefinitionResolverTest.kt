@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,21 +21,12 @@ import org.hamcrest.Matchers
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
-import org.springframework.context.ApplicationContext
 
 internal class PluginDefinitionResolverTest {
 
     @Test
     fun `should find annotated plugin class`() {
-        val context: ApplicationContext = mock(defaultAnswer = Mockito.RETURNS_DEEP_STUBS)
-        whenever(context.environment.getProperty(eq("valtimo.annotation-scan.accepted-packages"), any(), any<Array<String>>()))
-            .thenReturn(emptyArray())
-        val resolver = PluginDefinitionResolver(context)
+        val resolver = PluginDefinitionResolver()
 
         val pluginMap = resolver.findPluginClasses()
         assertThat(pluginMap.size, Matchers.greaterThanOrEqualTo(1))

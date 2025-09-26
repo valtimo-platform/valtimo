@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,17 @@ package com.ritense.processlink.service
 
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
-import com.ritense.valtimo.operaton.domain.OperatonTask
+import org.camunda.bpm.engine.task.Task
 import java.util.UUID
 
 interface ProcessLinkActivityHandler<T> {
     fun supports(processLink: ProcessLink): Boolean
-    fun openTask(task: OperatonTask, processLink: ProcessLink): ProcessLinkActivityResult<T>
+    fun openTask(task: Task, processLink: ProcessLink): ProcessLinkActivityResult<T>
     fun getStartEventObject(
         processDefinitionId: String,
         documentId: UUID?,
         documentDefinitionName: String?,
-        processLink: ProcessLink): ProcessLinkActivityResult<T>
+        processLink: ProcessLink,
+        tenantId: String
+    ): ProcessLinkActivityResult<T>
 }

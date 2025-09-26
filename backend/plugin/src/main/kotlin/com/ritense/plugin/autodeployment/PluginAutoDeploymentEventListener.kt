@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,10 +22,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.event.PluginsDeployedEvent
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KLogger
+import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
@@ -39,8 +38,7 @@ import java.io.IOException
 class PluginAutoDeploymentEventListener(
     private val resourceLoader: ResourceLoader,
     private val pluginService: PluginService,
-    private val objectMapper: ObjectMapper,
-    private val eventPublisher: ApplicationEventPublisher
+    private val objectMapper: ObjectMapper
 ) {
 
     @Transactional
@@ -54,14 +52,11 @@ class PluginAutoDeploymentEventListener(
                 try {
                     createPluginConfigurations(resource)
                 } catch (e: Exception) {
-                    logger.error(e) { "Error while deploying plugin configuration file: '${resource.filename}'" }
+                    logger.error(e) { "Error while deploying plugin configuration" }
                 }
             }
-
-            eventPublisher.publishEvent(PluginsDeployedEvent())
         } catch (e: Exception) {
             logger.error(e) { "Error while deploying plugin configurations" }
-            throw e
         }
     }
 
@@ -75,7 +70,6 @@ class PluginAutoDeploymentEventListener(
 
             val deployDto = objectMapper.treeToValue<PluginAutoDeploymentDto>(node)
             pluginService.deployPluginConfigurations(deployDto)
-
         }
     }
 
@@ -86,7 +80,7 @@ class PluginAutoDeploymentEventListener(
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
         const val PATH = "classpath*:**/*.pluginconfig.json"
     }
 

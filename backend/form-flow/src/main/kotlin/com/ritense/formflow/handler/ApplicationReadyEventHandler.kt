@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,13 @@ package com.ritense.formflow.handler
 
 import com.ritense.formflow.expression.ExpressionProcessorFactoryHolder
 import com.ritense.formflow.expression.spel.SpelExpressionProcessorFactory
-import org.springframework.boot.autoconfigure.AutoConfigureBefore
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationContext
 import org.springframework.context.event.EventListener
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 
 class ApplicationReadyEventHandler(
     private val applicationContext:ApplicationContext
 ) {
-    @Order(Ordered.HIGHEST_PRECEDENCE)
     @EventListener(ApplicationReadyEvent::class)
     fun onApplicationReady() {
         val expressionProcessorFactory = SpelExpressionProcessorFactory()

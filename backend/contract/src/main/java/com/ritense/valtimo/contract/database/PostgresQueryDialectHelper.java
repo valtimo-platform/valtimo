@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,13 @@
 
 package com.ritense.valtimo.contract.database;
 
-import static com.ritense.valtimo.contract.database.ExpressionHelper.cast;
-
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
 import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 public class PostgresQueryDialectHelper implements QueryDialectHelper {
 
@@ -41,17 +37,14 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
             cb.function("jsonpath", String.class, cb.literal(jsonPath))
         );
         if (String.class.isAssignableFrom(type)) {
-            return cast(cb.trim('"', cast(jsonValue, String.class)), type);
+            return cb.trim('"', jsonValue.as(String.class)).as(type);
         } else if (TemporalAccessor.class.isAssignableFrom(type)) {
-            var stringValue = cast(jsonValue, String.class);
             return cb.selectCase()
-                .when(cb.or(cb.equal(stringValue, "null"), cb.equal(stringValue, "\"\"")), cb.nullLiteral(type))
-                .otherwise(cast(cb.trim('"', stringValue), type))
+                .when(jsonValue.as(String.class).in("\"\""), cb.nullLiteral(type))
+                .otherwise(cb.trim('"', jsonValue.as(String.class)))
                 .as(type);
-        } else if (Collection.class.isAssignableFrom(type)) {
-            throw new UnsupportedOperationException("Failed to query '" + jsonPath + "'. Unsupported type '" + type + "'.");
         } else {
-            return cast(jsonValue, type);
+            return jsonValue.as(type);
         }
     }
 
@@ -77,35 +70,13 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
             cb.function(
                 LOWER_CASE_FUNCTION,
                 String.class,
-                getValueForPathText(cb, column, path)
-            ),
-            "%" + value.toLowerCase() + "%"
-        );
-    }
-
-    @Override
-    public Predicate getJsonArrayContainsExpression(CriteriaBuilder cb, Path column, String path, String value) {
-        return cb.isTrue(
-            cb.function(
-                "jsonb_contains_filter",
-                Boolean.class,
-                cb.function(
-                    "jsonb_path_query_first",
-                    Object.class,
-                    column,
-                    cb.function("jsonpath", String.class, cb.literal(path))
-                ),
-                cb.literal(value)
+                getValueForPath(cb, column, path, String.class)
             )
+            , "%" + value.toLowerCase() + "%"
         );
     }
 
-    @Override
-    public Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column) {
-        return cast(column, String.class);
-    }
-
-    private Expression<String> getValueForPathText(CriteriaBuilder cb, Path column, String path) {
+    private <T> Expression<T> getValueForPath(CriteriaBuilder cb, Path column, String path, Class<T> type) {
         List<Expression<String>> pathParts = splitPath(path).stream().map(cb::literal).toList();
         Expression[] expressions = new Expression[pathParts.size() + 1];
         expressions[0] = column;
@@ -113,7 +84,7 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
 
         return cb.function(
             "jsonb_extract_path_text",
-            String.class,
+            type,
             expressions
         );
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.ritense.plugin
 
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginCategory
-import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
+import com.ritense.plugin.domain.ActivityType.SERVICE_TASK_START
 
 @PluginCategory("test-interface")
 interface TestPluginInterface {
@@ -28,5 +28,5 @@ interface TestPluginInterface {
         description = "This is an action that should be implemented in a plugin",
         activityTypes = [SERVICE_TASK_START]
     )
-    fun interfaceAction()
+    fun interfaceAction();
 }

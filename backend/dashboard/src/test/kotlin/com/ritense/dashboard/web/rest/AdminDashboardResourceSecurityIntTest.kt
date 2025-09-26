@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package com.ritense.dashboard.web.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.dashboard.domain.Dashboard
 import com.ritense.dashboard.domain.WidgetConfiguration
 import com.ritense.dashboard.repository.DashboardRepository
@@ -43,9 +43,6 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
 
     @Autowired
     lateinit var dashboardRepository: DashboardRepository
-
-    @Autowired
-    lateinit var objectMapper: ObjectMapper
 
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
@@ -102,7 +99,7 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should have access to delete dashboard method with role_admin`() {
-        assertHttpStatus(DELETE, "/api/management/v1/dashboard/1", NO_CONTENT)
+        assertHttpStatus(DELETE, "/api/management/v1/dashboard/1", INTERNAL_SERVER_ERROR)
     }
 
     @Test
@@ -126,7 +123,7 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should have access to create widget configuration method with role_admin`() {
-        val properties = objectMapper.createObjectNode()
+        val properties = jacksonObjectMapper().createObjectNode()
         val content = WidgetConfigurationCreateRequestDto("key", "dataSourceKey", "displayType", properties, properties)
         assertHttpStatus(POST, "/api/management/v1/dashboard/1/widget-configuration", content, INTERNAL_SERVER_ERROR)
     }
@@ -134,7 +131,7 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.USER])
     fun `should not access to create widget configuration method without role_admin`() {
-        val properties = objectMapper.createObjectNode()
+        val properties = jacksonObjectMapper().createObjectNode()
         val content = WidgetConfigurationCreateRequestDto("title", "dataSourceKey", "displayType", properties, properties)
         assertHttpStatus(POST, "/api/management/v1/dashboard/1/widget-configuration", content, FORBIDDEN)
     }
@@ -142,7 +139,7 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.ADMIN])
     fun `should have access to update widget configuration method with role_admin`() {
-        val properties = objectMapper.createObjectNode()
+        val properties = jacksonObjectMapper().createObjectNode()
         val content = WidgetConfigurationUpdateRequestDto("key", "title", "dataSourceKey", "displayType", properties, properties)
         assertHttpStatus(PUT, "/api/management/v1/dashboard/1/widget-configuration", listOf(content), INTERNAL_SERVER_ERROR)
     }
@@ -150,7 +147,7 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
     @Test
     @WithMockUser(authorities = [AuthoritiesConstants.USER])
     fun `should not access to update widget configuration method without role_admin`() {
-        val properties = objectMapper.createObjectNode()
+        val properties = jacksonObjectMapper().createObjectNode()
         val content = WidgetConfigurationUpdateRequestDto("key", "title", "dataSourceKey", "displayType", properties, properties)
         assertHttpStatus(PUT, "/api/management/v1/dashboard/1/widget-configuration", listOf(content), FORBIDDEN)
     }
@@ -195,10 +192,9 @@ class AdminDashboardResourceSecurityIntTest : SecuritySpecificEndpointIntegratio
             "title",
             dashboard,
             "dataSourceKey",
-            objectMapper.readTree("""{}""") as ObjectNode,
-            objectMapper.readTree("""{}""") as ObjectNode,
+            jacksonObjectMapper().readTree("""{}""") as ObjectNode,
+            jacksonObjectMapper().readTree("""{}""") as ObjectNode,
             "displayType",
-            null,
             1
         )
         widgets.add(widget)

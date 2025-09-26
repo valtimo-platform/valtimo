@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,32 @@
 
 package com.ritense.valtimo.config;
 
-import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
-import com.ritense.valtimo.contract.json.MapperSingleton;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.ritense.valtimo.contract.json.serializer.PageSerializer;
+import java.time.format.DateTimeFormatter;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Page;
 
-@AutoConfiguration
+@Configuration
 public class JacksonConfiguration {
+
+    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
-        return MapperSingleton.INSTANCE.getCustomizer();
+        return builder -> {
+            builder.simpleDateFormat(DATE_TIME_FORMAT);
+            builder.serializers(new LocalDateTimeSerializer(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)));
+            builder.defaultViewInclusion(false);
+            builder.serializerByType(Page.class, new PageSerializer());
+        };
     }
 
     /**
@@ -40,7 +50,6 @@ public class JacksonConfiguration {
      * @return the corresponding Jackson module.
      */
     @Bean
-    @ConditionalOnMissingBean(JavaTimeModule.class)
     public JavaTimeModule javaTimeModule() {
         return new JavaTimeModule();
     }
@@ -54,8 +63,8 @@ public class JacksonConfiguration {
      * Support for Hibernate types in Jackson.
      */
     @Bean
-    public Hibernate6Module hibernateModule() {
-        return new Hibernate6Module();
+    public Hibernate5Module hibernate5Module() {
+        return new Hibernate5Module();
     }
 
     /*
@@ -65,4 +74,13 @@ public class JacksonConfiguration {
     public BlackbirdModule blackbirdModule() {
         return new BlackbirdModule();
     }
+
+    /*
+     * Allows auto-detecting of properties when using JsonCreator
+     * */
+    @Bean
+    public ParameterNamesModule parameterNamesModule() {
+        return new ParameterNamesModule();
+    }
+
 }

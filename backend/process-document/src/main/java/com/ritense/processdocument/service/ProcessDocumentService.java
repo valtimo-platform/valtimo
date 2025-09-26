@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.ritense.processdocument.service;
 
 import com.ritense.document.domain.Document;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
+import com.ritense.document.domain.impl.JsonSchemaDocumentId;
+import com.ritense.processdocument.domain.ProcessDocumentDefinition;
 import com.ritense.processdocument.domain.ProcessInstanceId;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest;
@@ -31,7 +33,10 @@ import com.ritense.processdocument.service.result.ModifyDocumentAndStartProcessR
 import com.ritense.processdocument.service.result.NewDocumentAndStartProcessResult;
 import com.ritense.processdocument.service.result.NewDocumentForRunningProcessResult;
 import com.ritense.processdocument.service.result.StartProcessForDocumentResult;
-import org.operaton.bpm.engine.delegate.VariableScope;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.delegate.VariableScope;
+
+import java.util.Optional;
 
 public interface ProcessDocumentService {
 
@@ -47,7 +52,11 @@ public interface ProcessDocumentService {
 
     StartProcessForDocumentResult startProcessForDocument(StartProcessForDocumentRequest request);
 
-    Document.Id getDocumentId(ProcessInstanceId processInstanceId, VariableScope variableScope);
+    Document getDocument(DelegateExecution execution);
+
+    JsonSchemaDocumentId getDocumentId(ProcessInstanceId processInstanceId, VariableScope variableScope);
 
     Document getDocument(ProcessInstanceId processInstanceId, VariableScope variableScope);
+
+    Optional<ProcessDocumentDefinition> findProcessDocumentDefinition(ProcessInstanceId processInstanceId);
 }

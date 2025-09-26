@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package com.ritense.valtimo.domain.user;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.util.Map;
 import org.hibernate.annotations.Type;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.util.Map;
 
 @Entity
 @Table(name = "user_settings")
@@ -30,14 +30,14 @@ public class UserSettings {
 
     @Id
     @Column(name = "user_id", nullable = false)
-    private String username;
+    private String userId;
 
-    @Type(value = JsonType.class)
+    @Type(type = "com.vladmihalcea.hibernate.type.json.JsonType")
     @Column(name = "settings", columnDefinition = "JSON")
     private Map<String, Object> settings;
 
-    public UserSettings(String username, Map<String, Object> settings) {
-        this.username = username;
+    public UserSettings(String userId, Map<String, Object> settings) {
+        this.userId = userId;
         this.settings = settings;
     }
 
@@ -45,8 +45,8 @@ public class UserSettings {
 
     }
 
-    public String getUsername() {
-        return username;
+    public String getUserId() {
+        return userId;
     }
 
     public Map<String, Object> getSettings() {
@@ -55,24 +55,18 @@ public class UserSettings {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
         UserSettings that = (UserSettings) o;
 
-        if (getUsername() != null ? !getUsername().equals(that.getUsername()) : that.getUsername() != null) {
-            return false;
-        }
+        if (getUserId() != null ? !getUserId().equals(that.getUserId()) : that.getUserId() != null) return false;
         return getSettings() != null ? getSettings().equals(that.getSettings()) : that.getSettings() == null;
     }
 
     @Override
     public int hashCode() {
-        int result = getUsername() != null ? getUsername().hashCode() : 0;
+        int result = getUserId() != null ? getUserId().hashCode() : 0;
         result = 31 * result + (getSettings() != null ? getSettings().hashCode() : 0);
         return result;
     }

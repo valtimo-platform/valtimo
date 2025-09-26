@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@
 package com.ritense.valtimo.contract.repository
 
 import com.fasterxml.jackson.annotation.JsonValue
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.Expression
-import jakarta.persistence.criteria.Predicate
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.Expression
+import javax.persistence.criteria.Predicate
+import kotlin.reflect.full.isSubclassOf
 
 enum class ExpressionOperator(
     @JsonValue val asText: String,
@@ -35,22 +36,15 @@ enum class ExpressionOperator(
     fun <T : Comparable<T>> toPredicate(criteriaBuilder: CriteriaBuilder, expression: Expression<T>, value: T?): Predicate {
         return when(this) {
             NOT_EQUAL_TO ->
-                // Hibernate does not handle nulls very well in some configurations. This is a workaround
-                if (value == null) {
-                    expression.isNotNull
-                } else {
-                    criteriaBuilder.or(
-                        expression.isNull,
-                        criteriaBuilder.notEqual(expression, value)
-                    )
-                }
+                criteriaBuilder.notEqual(
+                    expression,
+                    value
+                )
             EQUAL_TO ->
-                // Hibernate does not handle nulls very well in some configurations. This is a workaround
-                if (value == null) {
-                    expression.isNull
-                } else {
-                    criteriaBuilder.equal(expression, value)
-                }
+                criteriaBuilder.equal(
+                    expression,
+                    value
+                )
             LESS_THAN ->
                 criteriaBuilder.lessThan(
                     expression,

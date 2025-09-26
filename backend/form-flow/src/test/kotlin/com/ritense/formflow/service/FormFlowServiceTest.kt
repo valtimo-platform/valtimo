@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,12 @@ import com.ritense.formflow.domain.definition.FormFlowStepId
 import com.ritense.formflow.domain.definition.configuration.FormFlowStepType
 import com.ritense.formflow.domain.definition.configuration.step.FormStepTypeProperties
 import com.ritense.formflow.domain.instance.FormFlowInstance
-import com.ritense.formflow.event.ApplicationEventPublisherHolder
 import com.ritense.formflow.expression.ExpressionProcessorFactoryHolder
 import com.ritense.formflow.expression.spel.SpelExpressionProcessor
 import com.ritense.formflow.expression.spel.SpelExpressionProcessorFactory
 import com.ritense.formflow.repository.FormFlowAdditionalPropertiesSearchRepository
 import com.ritense.formflow.repository.FormFlowDefinitionRepository
 import com.ritense.formflow.repository.FormFlowInstanceRepository
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -39,7 +37,6 @@ import org.mockito.Mockito.any
 import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.isNull
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
@@ -62,8 +59,7 @@ internal class FormFlowServiceTest : BaseTest() {
             formFlowDefinitionRepository,
             formFlowInstanceRepository,
             formFlowAdditionalPropertiesSearchRepository,
-            emptyList(),
-            mock(),
+            emptyList()
         )
 
         val expressionProcessorFactory = spy(SpelExpressionProcessorFactory())
@@ -73,7 +69,6 @@ internal class FormFlowServiceTest : BaseTest() {
             expressionProcessor
         }
         ExpressionProcessorFactoryHolder.setInstance(expressionProcessorFactory, mock(ApplicationContext::class.java))
-        ApplicationEventPublisherHolder.setInstance(mock())
     }
 
     @Test
@@ -134,7 +129,6 @@ internal class FormFlowServiceTest : BaseTest() {
         onOpen: List<String>? = null,
         onComplete: List<String>? = null
     ): FormFlowInstance {
-        val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
         val step = FormFlowStep(
             FormFlowStepId("start-step"),
             listOf(),
@@ -144,13 +138,13 @@ internal class FormFlowServiceTest : BaseTest() {
             type = FormFlowStepType("form", FormStepTypeProperties("my-form-definition"))
         )
         val definition = FormFlowDefinition(
-            FormFlowDefinitionId("test", caseDefinitionId), "start-step", setOf(step)
+            FormFlowDefinitionId("test", 1L), "start-step", setOf(step)
         )
         val formFlowInstance = FormFlowInstance(
             formFlowDefinition = definition
         )
 
-        whenever(formFlowInstanceRepository.getReferenceById(formFlowInstance.id)).thenReturn(formFlowInstance)
+        whenever(formFlowInstanceRepository.getById(formFlowInstance.id)).thenReturn(formFlowInstance)
 
         return formFlowInstance
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,20 +22,15 @@ import com.ritense.documentgeneration.domain.templatedata.TemplateData
 import org.springframework.http.MediaType
 
 class LocalPdfDocumentGenerator : PdfDocumentGenerator {
-
     override fun getTemplatePlaceholders(templateName: String?): TemplatePlaceholders {
-        throw NotImplementedError()
+        TODO("Not yet implemented")
     }
 
     override fun generateDocument(templateName: String?, templateData: TemplateData?): GeneratedDocument {
-        throw NotImplementedError()
+        TODO("Not yet implemented")
     }
 
     override fun getDocumentMediaType(): MediaType {
-        throw NotImplementedError()
-    }
-
-    companion object {
-        private const val NOT_YET_IMPLEMENTED_MSG = "Not yet implemented"
+        TODO("Not yet implemented")
     }
 }

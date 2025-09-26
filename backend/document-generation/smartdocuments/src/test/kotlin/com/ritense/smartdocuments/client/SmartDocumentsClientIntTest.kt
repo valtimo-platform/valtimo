@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,8 @@ internal class SmartDocumentsClientIntTest : BaseSmartDocumentsIntegrationTest()
             emptyMap(),
             SmartDocument(Selection("templateGroup", "template"))
         )
-        val authentication = getSmartDocumentsAuthentication()
 
-        val response = smartDocumentsClient.generateDocumentStream(authentication, request, DOCX)
+        val response = smartDocumentsClient.generateDocumentStream(request, DOCX)
 
         val docxAsBytes = response.documentData.readAllBytes()
         assertThat(docxAsBytes).hasSize(12284)
@@ -52,8 +51,7 @@ internal class SmartDocumentsClientIntTest : BaseSmartDocumentsIntegrationTest()
             emptyMap(),
             SmartDocument(Selection("templateGroup", "template"))
         )
-        val authentication = getSmartDocumentsAuthentication()
-        val response = smartDocumentsClient.generateDocument(authentication, request)
+        val response = smartDocumentsClient.generateDocument(request)
         val docxResponse = response.file.first { it.outputFormat == "DOCX" }
 
         val exception = assertThrows<IllegalArgumentException> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,29 +33,24 @@ import com.ritense.plugin.repository.PluginProcessLinkRepositoryImpl
 import com.ritense.plugin.repository.PluginPropertyRepository
 import com.ritense.plugin.security.config.PluginHttpSecurityConfigurer
 import com.ritense.plugin.service.EncryptionService
-import com.ritense.plugin.service.PluginConfigurationListener
 import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.web.rest.PluginConfigurationResource
 import com.ritense.plugin.web.rest.PluginDefinitionResource
 import com.ritense.plugin.web.rest.converter.StringToActivityTypeConverter
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valueresolver.ValueResolverService
-import jakarta.persistence.EntityManager
-import jakarta.validation.Validator
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
 import org.springframework.core.annotation.Order
-import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import javax.persistence.EntityManager
+import javax.validation.Validator
 
-@AutoConfiguration
+@Configuration
 @EnableJpaRepositories(
     basePackageClasses = [
         PluginActionDefinitionRepository::class,
@@ -96,13 +91,13 @@ class PluginAutoConfiguration {
     }
 
     @Bean
-    fun pluginDefinitionResolver(context: ApplicationContext): PluginDefinitionResolver {
-        return PluginDefinitionResolver(context)
+    fun pluginDefinitionResolver(): PluginDefinitionResolver {
+        return PluginDefinitionResolver()
     }
 
     @Bean
-    fun pluginCategoryResolver(context: ApplicationContext): PluginCategoryResolver {
-        return PluginCategoryResolver(context)
+    fun pluginCategoryResolver(): PluginCategoryResolver {
+        return PluginCategoryResolver()
     }
 
     @Order(420)
@@ -120,13 +115,9 @@ class PluginAutoConfiguration {
         pluginProcessLinkRepository: PluginProcessLinkRepository,
         @Lazy pluginFactories: List<PluginFactory<*>>,
         objectMapper: ObjectMapper,
-        valueResolverService: ValueResolverService,
+        @Lazy valueResolverService: ValueResolverService,
         pluginConfigurationSearchRepository: PluginConfigurationSearchRepository,
-        validator: Validator,
-        applicationEventPublisher: ApplicationEventPublisher,
-        encryptionService: EncryptionService,
-        environment: Environment,
-        caseDefinitionChecker: CaseDefinitionChecker,
+        validator: Validator
     ): PluginService {
         return PluginService(
             pluginDefinitionRepository,
@@ -138,10 +129,6 @@ class PluginAutoConfiguration {
             valueResolverService,
             pluginConfigurationSearchRepository,
             validator,
-            applicationEventPublisher,
-            encryptionService,
-            environment,
-            caseDefinitionChecker,
         )
     }
 
@@ -180,11 +167,6 @@ class PluginAutoConfiguration {
         @Value("\${valtimo.plugin.encryption-secret}")
         secret: String
     ): EncryptionService {
-        val secretByteLength = secret.toByteArray().size
-        require(secretByteLength == 16 || secretByteLength == 24 || secretByteLength == 32) {
-            "Invalid AES key length of '$secretByteLength' bytes. Expected property 'valtimo.plugin.encryption-secret' or 'VALTIMO_PLUGIN_ENCRYPTION-SECRET' to have a length of 16 or 24 or 32 bytes"
-        }
-
         return EncryptionService(secret)
     }
 
@@ -193,22 +175,12 @@ class PluginAutoConfiguration {
     fun pluginAutoDeploymentEventListener(
         objectMapper: ObjectMapper,
         pluginService: PluginService,
-        resourceLoader: ResourceLoader,
-        eventPublisher: ApplicationEventPublisher
+        resourceLoader: ResourceLoader
     ): PluginAutoDeploymentEventListener{
         return PluginAutoDeploymentEventListener(
             pluginService = pluginService,
             objectMapper = objectMapper,
-            resourceLoader = resourceLoader,
-            eventPublisher =  eventPublisher
+            resourceLoader = resourceLoader
         )
-    }
-
-    @Bean
-    fun pluginConfigurationListener(
-        pluginConfigurationRepository: PluginConfigurationRepository,
-        pluginProcessLinkRepository: PluginProcessLinkRepository,
-    ): PluginConfigurationListener {
-        return PluginConfigurationListener(pluginConfigurationRepository, pluginProcessLinkRepository)
     }
 }

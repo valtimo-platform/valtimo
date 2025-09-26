@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,23 @@
 
 package com.ritense.processdocument.service.impl.result;
 
-import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
-
 import com.ritense.document.domain.Document;
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
 import com.ritense.processdocument.service.result.StartProcessForDocumentResult;
 import com.ritense.valtimo.contract.result.OperationError;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
+
 public class StartProcessForDocumentResultSucceeded implements StartProcessForDocumentResult {
 
     private final Document document;
-    private final OperatonProcessInstanceId processInstanceId;
+    private final CamundaProcessInstanceId processInstanceId;
 
-    public StartProcessForDocumentResultSucceeded(Document document, OperatonProcessInstanceId processInstanceId) {
+    public StartProcessForDocumentResultSucceeded(Document document, CamundaProcessInstanceId processInstanceId) {
         assertArgumentNotNull(document, "document is required");
         assertArgumentNotNull(processInstanceId, "processInstanceId is required");
         this.document = document;
@@ -44,7 +45,7 @@ public class StartProcessForDocumentResultSucceeded implements StartProcessForDo
     }
 
     @Override
-    public Optional<OperatonProcessInstanceId> processInstanceId() {
+    public Optional<CamundaProcessInstanceId> processInstanceId() {
         return Optional.of(processInstanceId);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,96 +18,70 @@ package com.ritense.form.service
 
 import com.fasterxml.jackson.core.JsonPointer
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.patch.JsonPatchFilterFlag
 import com.ritense.document.domain.patch.JsonPatchService
 import com.ritense.document.service.DocumentService
 import com.ritense.form.domain.FormIoFormDefinition
+import com.ritense.form.domain.Mapper
 import com.ritense.form.service.impl.FormIoFormDefinitionService
-import com.ritense.logging.LoggableResource
 import com.ritense.processdocument.service.ProcessDocumentAssociationService
-import com.ritense.valtimo.operaton.domain.OperatonExecution
-import com.ritense.valtimo.operaton.domain.OperatonTask
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.form.DataResolvingContext
 import com.ritense.valtimo.contract.form.FormFieldDataResolver
 import com.ritense.valtimo.contract.json.JsonPointerHelper
 import com.ritense.valtimo.contract.json.patch.JsonPatch
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.OperatonTaskService
-import com.ritense.valueresolver.ValueResolverService
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.TaskService
 import java.util.UUID
 
-@Transactional
-@Service
-@SkipComponentScan
-class PrefillFormService(
+open class PrefillFormService(
     private val documentService: DocumentService,
     private val formDefinitionService: FormIoFormDefinitionService,
-    private val operatonProcessService: OperatonProcessService,
-    private val taskService: OperatonTaskService,
+    private val camundaProcessService: CamundaProcessService,
+    private val taskService: TaskService,
     private val formFieldDataResolvers: List<FormFieldDataResolver>,
-    private val processDocumentAssociationService: ProcessDocumentAssociationService,
-    private val valueResolverService: ValueResolverService,
-    private val objectMapper: ObjectMapper,
-    private val authorizationService: AuthorizationService,
+    private val processDocumentAssociationService: ProcessDocumentAssociationService
 ) {
 
-    fun getPrefilledFormDefinition(
+    open fun getPrefilledFormDefinition(
         formDefinitionId: UUID,
-        @LoggableResource(resourceType = OperatonExecution::class) processInstanceId: String,
-        @LoggableResource(resourceType = OperatonTask::class) taskInstanceId: String,
+        processInstanceId: String,
+        taskInstanceId: String,
+        tenantId: String
     ): FormIoFormDefinition {
-        val processInstance = runWithoutAuthorization {
-            operatonProcessService.findExecutionByProcessInstanceId(processInstanceId)
-                ?: throw RuntimeException("Process instance not found by id $processInstanceId")
-        }
-        val documentId = processInstance.businessKey
-            ?: throw RuntimeException("Process instance with id $processInstanceId has no businessKey")
-        val document = runWithoutAuthorization { documentService.get(documentId) }
+        val documentId = camundaProcessService.findProcessInstanceById(processInstanceId)
+            .orElseThrow { RuntimeException("Process instance not found by id $processInstanceId") }
+            .businessKey
+        val document = documentService.get(documentId.toString(), tenantId)
         val formDefinition = formDefinitionService.getFormDefinitionById(formDefinitionId)
             .orElseThrow { RuntimeException("Form definition not found by id $formDefinitionId") }
-        prefillFormDefinition(formDefinition, document, processInstanceId, taskInstanceId)
+        prefillFormDefinition(formDefinition, document, taskInstanceId)
         return formDefinition
     }
 
-    fun getPrefilledFormDefinition(
+    open fun getPrefilledFormDefinition(
         formDefinitionId: UUID,
         documentId: UUID?,
+        tenantId: String
     ): FormIoFormDefinition {
         val formDefinition = formDefinitionService.getFormDefinitionById(formDefinitionId)
             .orElseThrow { RuntimeException("Form definition not found by id $formDefinitionId") }
         if (documentId != null) {
-            val document = documentService.get(documentId.toString())
-            prefillFormDefinition(formDefinition, document, null, null)
+            val document = documentService.get(documentId.toString(), tenantId)
+            prefillFormDefinition(formDefinition, document)
         }
         return formDefinition
     }
 
-    fun prefillFormDefinition(
+    open fun prefillFormDefinition(
         formDefinition: FormIoFormDefinition,
         document: Document,
-        processInstanceId: String?,
         taskInstanceId: String? = null,
     ) {
-        val processInstance = processInstanceId?.let {
-            runWithoutAuthorization {
-                operatonProcessService.findExecutionByProcessInstanceId(processInstanceId)
-                    ?: throw RuntimeException("Process instance not found by id $processInstanceId")
-            }
-        }
-
-        prefillValueResolverFields(formDefinition, document.id(), processInstance, taskInstanceId)
-
         val extendedDocumentContent = document.content().asJson() as ObjectNode
 
         val documentMetadata = buildMetaDataObject(document)
@@ -122,61 +96,18 @@ class PrefillFormService(
         }
     }
 
-    private fun prefillValueResolverFields(
-        formDefinition: FormIoFormDefinition,
-        documentInstanceId: Document.Id,
-        processInstance: OperatonExecution?,
-        taskInstanceId: String?
-    ) {
-        // Map input fields to Map<{input.key}, {input.properties.sourceKey}>
-        val inputSourceKeyMap = formDefinition.inputFields
-            .filter { FormIoFormDefinition.HAS_PREFILL_ENABLED.test(it) }
-            .mapNotNull {
-                val inputKey = FormIoFormDefinition.getKey(it)
-                val sourceKey = FormIoFormDefinition.resolveSourceKey(it)
-                if (inputKey.isPresent && sourceKey.isPresent) {
-                    Pair(inputKey.get(), sourceKey.get())
-                } else {
-                    null
-                }
-            }
-            .toMap()
-            .filter { valueResolverService.supportsValue(it.value) }
-
-        // Resolve sourceKeys into a Map<{sourceKey}, {dataValue}>
-        val valueMap = runWithoutAuthorization {
-            if (taskInstanceId != null) {
-                val task = taskService.findTaskById(taskInstanceId)
-                valueResolverService.resolveValues(task.getProcessInstanceId(), task, inputSourceKeyMap.values)
-            } else if (processInstance != null) {
-                valueResolverService.resolveValues(processInstance.id, processInstance, inputSourceKeyMap.values)
-            } else {
-                valueResolverService.resolveValues(documentInstanceId.toString(), inputSourceKeyMap.values)
-            }
-        }
-
-        // Create a Map<{input.key}, {resolvedValue}>
-        val keyValueMap = inputSourceKeyMap.entries.mapNotNull { entry ->
-            valueMap[entry.value]?.let { resolvedValue -> Pair(entry.key, resolvedValue) }
-        }.toMap()
-
-        formDefinition.preFill(keyValueMap)
-    }
-
-    private fun prefillProcessVariables(formDefinition: FormIoFormDefinition, document: Document) {
-        val processVarPointers = formDefinition.extractProcessVarJsonPointers()
-        val processInstanceVariables = runWithoutAuthorization {
-            processDocumentAssociationService.findProcessDocumentInstances(document.id())
-                .map { it.processDocumentInstanceId().processInstanceId().toString() }
-                .flatMap { operatonProcessService.getProcessInstanceVariablesByJsonPointers(it, processVarPointers).entries }
-                .associate { it.key to it.value }
-        }
+    open fun prefillProcessVariables(formDefinition: FormIoFormDefinition, document: Document) {
+        val processVarsNames = formDefinition.extractProcessVarNames()
+        val processInstanceVariables = processDocumentAssociationService.findProcessDocumentInstances(document.id())
+            .map { it.processDocumentInstanceId().processInstanceId().toString() }
+            .flatMap { camundaProcessService.getProcessInstanceVariables(it, processVarsNames).entries }
+            .associate { it.key to it.value }
         if (processInstanceVariables.isNotEmpty()) {
             formDefinition.preFillWith(FormIoFormDefinition.PROCESS_VAR_PREFIX, processInstanceVariables)
         }
     }
 
-    private fun prefillDataResolverFields(
+    open fun prefillDataResolverFields(
         formDefinition: FormIoFormDefinition,
         document: Document,
         extendedDocumentContent: JsonNode?
@@ -210,7 +141,7 @@ class PrefillFormService(
                                     externalFormFieldType + FormIoFormDefinition.EXTERNAL_FORM_FIELD_TYPE_SEPARATOR + contentItem.name
                                 dataNode.set<JsonNode>(
                                     fieldName,
-                                    objectMapper.valueToTree(externalDataMap[contentItem.name])
+                                    Mapper.INSTANCE.get().valueToTree(externalDataMap[contentItem.name])
                                 )
                                 externalDataMap.remove(contentItem.name)
                             }
@@ -223,7 +154,7 @@ class PrefillFormService(
                             JsonPointerHelper.appendJsonPointerTo(
                                 prefillDataNode,
                                 externalContentItem.jsonPointer,
-                                objectMapper.valueToTree(externalDataMap[externalContentItem.name])
+                                Mapper.INSTANCE.get().valueToTree(externalDataMap[externalContentItem.name])
                             )
                         }
                         formDefinition.preFill(prefillDataNode)
@@ -232,34 +163,38 @@ class PrefillFormService(
         formDefinition.preFill(extendedDocumentContent)
     }
 
-    private fun prefillTaskVariables(
+    open fun prefillTaskVariables(
         formDefinition: FormIoFormDefinition,
         taskInstanceId: String,
         extendedDocumentContent: JsonNode
     ) {
-        val taskVariables = runWithoutAuthorization { taskService.getVariables(taskInstanceId) }
-        val placeholders = objectMapper.valueToTree<ObjectNode>(taskVariables)
+        val taskVariables = taskService.getVariables(taskInstanceId)
+        val placeholders = Mapper.INSTANCE.get().valueToTree<ObjectNode>(taskVariables)
         formDefinition.preFillWith("pv", taskVariables)
         prePreFillTransform(formDefinition, placeholders, extendedDocumentContent)
     }
 
-    internal fun prePreFillTransform(formDefinition: FormIoFormDefinition, placeholders: JsonNode, source: JsonNode) {
+    open fun prePreFillTransform(formDefinition: FormIoFormDefinition, placeholders: JsonNode, source: JsonNode) {
+        val formDefinitionData = formDefinition.formDefinition
+        val inputFields = FormIoFormDefinition.getInputFields(formDefinitionData)
         val dataToPreFill = JsonNodeFactory.instance.objectNode()
-        formDefinition.inputFields.forEach { field ->
-            val container = field.at("/$CUSTOM_PROPERTIES/$CONTAINER_KEY").asText()
-            if (container != null) {
+        inputFields.forEach { field ->
+            if (field.has(CUSTOM_PROPERTIES)
+                && !field[CUSTOM_PROPERTIES].isEmpty
+                && field[CUSTOM_PROPERTIES].has(CONTAINER_KEY)
+                && !field[CUSTOM_PROPERTIES][CONTAINER_KEY].isNull
+            ) {
+                val container = field[CUSTOM_PROPERTIES][CONTAINER_KEY].asText()
                 val propertyName = field[FormIoFormDefinition.PROPERTY_KEY].textValue()
                 if (container.contains("/{indexOf")) {
                     val indexValueJsonPointer = getIndexValueJsonPointer(container)
                     val id = placeholders.at(indexValueJsonPointer).textValue()
                     val arrayPointer = JsonPointer.compile(container.substringBefore("/{"))
-                    if (source.at(arrayPointer) is ArrayNode) {
-                        val list = source.at(arrayPointer) as ArrayNode //get sources array
-                        val calculatedArrayItemIndex = lookupIndexForIdValue(list, id)
-                        val arrayItemForSourceJsonPointer =
-                            JsonPointer.compile("$arrayPointer/$calculatedArrayItemIndex/$propertyName")
-                        dataToPreFill.set<JsonNode>(propertyName, source.at(arrayItemForSourceJsonPointer))
-                    }
+                    val list = source.at(arrayPointer) as ArrayNode //get sources array
+                    val calculatedArrayItemIndex = lookupIndexForIdValue(list, id)
+                    val arrayItemForSourceJsonPointer =
+                        JsonPointer.compile("$arrayPointer/$calculatedArrayItemIndex/$propertyName")
+                    dataToPreFill.set<JsonNode>(propertyName, source.at(arrayItemForSourceJsonPointer))
                     val customPropertiesObject = field[CUSTOM_PROPERTIES] as ObjectNode
                     customPropertiesObject.remove(CONTAINER_KEY)
                 }
@@ -354,7 +289,7 @@ class PrefillFormService(
      * @param source the Json to use for determining index value of an array.
      * @return JsonPatch a patch containing patch operations for array modifications.
      */
-    fun preSubmissionTransform(
+    open fun preSubmissionTransform(
         formDefinition: FormIoFormDefinition,
         submission: JsonNode,
         placeholders: JsonNode,
@@ -362,11 +297,14 @@ class PrefillFormService(
     ): JsonPatch {
         val sourceJsonPatchBuilder = JsonPatchBuilder()
         val submissionJsonPatchBuilder = JsonPatchBuilder()
-        formDefinition.inputFields.forEach { field ->
-            val container = field.at("/$CUSTOM_PROPERTIES/$CONTAINER_KEY").asText()
-            if (container != null
+        val formDefinitionData = formDefinition.formDefinition
+        val inputFields = FormIoFormDefinition.getInputFields(formDefinitionData)
+        inputFields.forEach { field ->
+            if (field.has(CUSTOM_PROPERTIES)
+                && !field[CUSTOM_PROPERTIES].isEmpty
                 && submission.has(field[FormIoFormDefinition.PROPERTY_KEY].textValue())
             ) {
+                val container = field[CUSTOM_PROPERTIES][CONTAINER_KEY].asText()
                 val propertyName = field[FormIoFormDefinition.PROPERTY_KEY].textValue()
                 val propertyValue = submission.at("/$propertyName")
                 val submissionProperty =
@@ -375,13 +313,11 @@ class PrefillFormService(
                     val indexValueJsonPointer = getIndexValueJsonPointer(container)
                     val id = placeholders.at(indexValueJsonPointer).textValue()
                     val arrayPointer = JsonPointer.compile(container.substringBefore("/{"))
-                    if (source.at(arrayPointer) is ArrayNode) {
-                        val list = source.at(arrayPointer) as ArrayNode //get sources array
-                        val calculatedArrayItemIndex = lookupIndexForIdValue(list, id)
-                        val arrayItemForSourceJsonPointer =
-                            JsonPointer.compile("$arrayPointer/$calculatedArrayItemIndex/$propertyName")
-                        sourceJsonPatchBuilder.replace(arrayItemForSourceJsonPointer, propertyValue)
-                    }
+                    val list = source.at(arrayPointer) as ArrayNode //get sources array
+                    val calculatedArrayItemIndex = lookupIndexForIdValue(list, id)
+                    val arrayItemForSourceJsonPointer =
+                        JsonPointer.compile("$arrayPointer/$calculatedArrayItemIndex/$propertyName")
+                    sourceJsonPatchBuilder.replace(arrayItemForSourceJsonPointer, propertyValue)
                     submissionJsonPatchBuilder.remove(submissionProperty)
                 } else if (container.contains("/-/")) {
                     val arrayPointer = JsonPointer.compile(container.substringBefore("/-"))
@@ -413,7 +349,7 @@ class PrefillFormService(
     private fun lookupIndexForIdValue(list: ArrayNode, id: String) =
         list.indexOfFirst { item -> item[ID_KEY].textValue().equals(id, ignoreCase = true) }.toString()
 
-    private fun buildMetaDataObject(document: Document): ObjectNode {
+    open fun buildMetaDataObject(document: Document): ObjectNode {
         val metaDataNode = JsonNodeFactory.instance.objectNode()
         metaDataNode.put("id", document.id().toString())
         metaDataNode.put("createdOn", document.createdOn().toString())

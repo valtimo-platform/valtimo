@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,14 @@
 
 package com.ritense.valtimo;
 
-import static org.mockito.Mockito.mock;
-
-import com.ritense.authorization.AuthorizationService;
-import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation;
-import com.ritense.valtimo.operaton.authorization.UnauthorizedProcessBean;
-import com.ritense.valtimo.contract.annotation.ProcessBean;
 import com.ritense.valtimo.contract.mail.MailSender;
-import com.ritense.valtimo.logging.impl.LoggingTestBean;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import static org.mockito.Mockito.mock;
 
 @SpringBootApplication
 public class CoreTestConfiguration {
@@ -40,11 +36,6 @@ public class CoreTestConfiguration {
     public static class TestConfig {
 
         @Bean
-        public LiquibaseMasterChangeLogLocation coreTestLiquibaseMasterChangeLogLocation() {
-            return new LiquibaseMasterChangeLogLocation("config/liquibase/core-test-only-master.xml");
-        }
-
-        @Bean
         public FakeUserRepository fakeUserRepository() {
             return new FakeUserRepository();
         }
@@ -52,20 +43,6 @@ public class CoreTestConfiguration {
         @Bean
         public MailSender mailSender() {
             return mock(MailSender.class);
-        }
-
-        @Bean
-        @ProcessBean
-        public UnauthorizedProcessBean unauthBean(
-            AuthorizationService authorizationService
-        ) {
-            return new UnauthorizedProcessBean(authorizationService);
-        }
-
-        @Bean
-        @ProcessBean
-        public LoggingTestBean loggingTestBean() {
-            return new LoggingTestBean();
         }
     }
 

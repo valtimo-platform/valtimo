@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,39 +16,36 @@
 
 package com.ritense.processdocument.domain.impl.delegate
 
-import com.ritense.authorization.AuthorizationContext
 import com.ritense.document.service.DocumentService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.tenancy.TenantResolver
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import mu.KotlinLogging
+import org.camunda.bpm.engine.delegate.DelegateExecution
 
-@Deprecated(message = "Since 11.0.0", ReplaceWith("com.ritense.processdocument.service.DocumentDelegateService"))
 class DocumentDelegate(
     val processDocumentService: ProcessDocumentService,
     val userManagementService: UserManagementService,
     val documentService: DocumentService,
+    val tenantResolver: TenantResolver
 ) {
 
     fun setAssignee(execution: DelegateExecution, userEmail: String?) {
-        AuthorizationContext.runWithoutAuthorization {
-            if (userEmail == null) {
-                unassign(execution)
-            }
-            logger.debug("Assigning user {} to document {}", userEmail, execution.processBusinessKey)
-            val documentId = processDocumentService.getDocumentId(OperatonProcessInstanceId(execution.processInstanceId), execution)
-            val user = userManagementService.findByEmail(userEmail)
-                .orElseThrow { IllegalArgumentException("No user found with email: $userEmail") }
-            AuthorizationContext
-                .runWithoutAuthorization { documentService.assignUserToDocument(documentId.id, user.id) }
+        if (userEmail == null) {
+            return unassign(execution)
         }
+        logger.debug("Assigning user {} to document {}", userEmail, execution.processBusinessKey)
+        val documentId = processDocumentService.getDocumentId(CamundaProcessInstanceId(execution.processInstanceId), execution)
+        val user = userManagementService.findByEmail(userEmail)
+            .orElseThrow { IllegalArgumentException("No user found with email: $userEmail") }
+        documentService.assignUserToDocument(documentId.id, user.id, tenantResolver.getTenantId())
     }
 
     fun unassign(execution: DelegateExecution) {
         logger.debug("Unassigning user from document {}", execution.processBusinessKey)
-        val documentId = processDocumentService.getDocumentId(OperatonProcessInstanceId(execution.processInstanceId), execution)
-        documentService.unassignUserFromDocument(documentId.id)
+        val documentId = processDocumentService.getDocumentId(CamundaProcessInstanceId(execution.processInstanceId), execution)
+        documentService.unassignUserFromDocument(documentId.id, tenantResolver.getTenantId())
     }
 
     companion object {

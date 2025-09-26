@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.document.domain.Document
 import com.ritense.resource.domain.TemporaryResourceSubmittedEvent
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileSubmittedEvent
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import java.util.UUID
 
@@ -80,7 +80,12 @@ data class UploadField(
                 if (resourceId != null) {
                     logger.debug { "file $resourceId" }
                     applicationEventPublisher.publishEvent(
-                        DocumentRelatedFileSubmittedEvent(document.id()?.id, resourceId, document.definitionId().name())
+                        DocumentRelatedFileSubmittedEvent(
+                            document.id()?.id,
+                            resourceId,
+                            document.definitionId().name(),
+                            document.tenantId()
+                        )
                     )
                 }
 
@@ -127,11 +132,11 @@ data class UploadField(
 
         fun isUploadComponent(jsonNode: ObjectNode): Boolean {
             return jsonNode.has("type")
-                    && (jsonNode["type"].textValue().equals("file", ignoreCase = true) ||
-                    jsonNode["type"].textValue().equals("valtimo-file", ignoreCase = true) ||
-                    jsonNode["type"].textValue().equals("documenten-api-file", ignoreCase = true))
-                    && jsonNode.has("input") && jsonNode["input"].booleanValue()
-                    && jsonNode.has(PROPERTY_KEY)
+                && (jsonNode["type"].textValue().equals("file", ignoreCase = true) ||
+                jsonNode["type"].textValue().equals("valtimo-file", ignoreCase = true) ||
+                jsonNode["type"].textValue().equals("documenten-api-file", ignoreCase = true))
+                && jsonNode["input"].booleanValue()
+                && jsonNode.has(PROPERTY_KEY)
         }
     }
 

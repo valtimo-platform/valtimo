@@ -9,9 +9,9 @@ interface FormSubmissionService {
     fun handleSubmission(
         processLinkId: UUID,
         formData: JsonNode,
-        documentDefinitionName: String?,
         documentId: String?,
         taskInstanceId: String?,
+        tenantId: String
     ): FormSubmissionResult
 
 }

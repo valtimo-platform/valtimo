@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,16 @@ package com.ritense.processdocument.service
 
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.processdocument.BaseIntegrationTest
-import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.repository.ProcessDocumentInstanceRepository
-import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byName
-import com.ritense.valtimo.service.OperatonProcessService
-import com.ritense.valtimo.service.OperatonTaskService
-import org.operaton.bpm.engine.ProcessEngineException
-import org.operaton.bpm.engine.RuntimeService
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.ProcessEngineException
+import org.camunda.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.TaskService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -53,19 +50,16 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
     lateinit var processDocumentAssociationService: ProcessDocumentAssociationService
 
     @Autowired
-    lateinit var processDocumentService: ProcessDocumentService
-
-    @Autowired
     lateinit var documentService: DocumentService
 
     @Autowired
-    lateinit var taskService: OperatonTaskService
+    lateinit var taskService: TaskService
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
     @Autowired
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
     lateinit var documentJson: String
     lateinit var document: Document
@@ -83,91 +77,51 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
 
     @Test
     @Throws(JsonProcessingException::class)
-    fun `should delete processes for a document`() {
-        val request = NewDocumentAndStartProcessRequest(
-            "delete-processes",
-            NewDocumentRequest(
-                "house",
-                "house",
-                "1.0.0",
-                objectMapper.readTree(documentJson)
-            )
-        )
-
-        val result = runWithoutAuthorization {
-            processDocumentService.newDocumentAndStartProcess(request)
-        }
-
-        assertEquals(0, result.errors().size)
-    }
-
-    @Test
-    @Throws(JsonProcessingException::class)
     fun `should start process by process definition key`() {
-        document = runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    "house",
-                    "house",
-                    "1.0.0",
-                    objectMapper.readTree(documentJson)
-                )
-            ).resultingDocument().orElseThrow()
-        }
+        document = documentService.createDocument(
+            NewDocumentRequest(
+                "house", objectMapper.readTree(documentJson)
+            ).withTenantId("1")
+        ).resultingDocument().orElseThrow()
         val processInstance = runtimeService.startProcessInstanceByKey(
             "parent-process",
             document.id().toString()
         )
-        runWithoutAuthorization {
-            processDocumentAssociationService.createProcessDocumentInstance(
-                processInstance.id,
-                document.id().id,
-                "parent process"
-            )
-        }
-        val task = runWithoutAuthorization {
-            taskService.findTask(byName("child process user task"))
-        }
+        processDocumentAssociationService.createProcessDocumentInstance(
+            processInstance.id,
+            document.id().id,
+            "parent process"
+        )
+        val task = taskService.createTaskQuery().taskName("child process user task").singleResult()
         assertNotNull(task)
-        val startedProcessId = task.getProcessInstanceId()
+        val startedProcessId = task.processInstanceId
         val associatedProcessDocuments =
-            processDocumentInstanceRepository.findAllByProcessDocumentInstanceIdDocumentId(
-                JsonSchemaDocumentId.existingId(
-                    document.id().id
-                )
-            )
-        val resultProcessInstance = runWithoutAuthorization {
-            operatonProcessService.findProcessInstanceById(startedProcessId).get()
-        }
+            processDocumentInstanceRepository.findAllByDocumentId(JsonSchemaDocumentId.existingId(document.id().id))
+        val resultProcessInstance = camundaProcessService.findProcessInstanceById(startedProcessId).get()
         assertEquals(document.id().toString(), resultProcessInstance.businessKey)
         assertEquals(associatedProcessDocuments.size, 2)
         assertNotNull(associatedProcessDocuments.firstOrNull { it.processName().equals("parent process") })
         assertNotNull(associatedProcessDocuments.firstOrNull { it.processName().equals("child process") })
         assertEquals(
             document.id(), associatedProcessDocuments.first {
-                it.processName().equals("parent process")
-            }.id!!.documentId()
+            it.processName().equals("parent process")
+        }.id!!.documentId()
         )
         assertEquals(
             document.id(), associatedProcessDocuments.first {
-                it.processName().equals("child process")
-            }.id!!.documentId()
+            it.processName().equals("child process")
+        }.id!!.documentId()
         )
     }
 
     @Test
     @Throws(JsonProcessingException::class)
     fun `should fail to start process with non existing process definition key`() {
-        document = runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    "house",
-                    "house",
-                    "1.0.0",
-                    objectMapper.readTree(documentJson)
-                )
-            ).resultingDocument().orElseThrow()
-        }
+        document = documentService.createDocument(
+            NewDocumentRequest(
+                "house", objectMapper.readTree(documentJson)
+            ).withTenantId("1")
+        ).resultingDocument().orElseThrow()
         val exception = assertThrows<ProcessEngineException> {
             runtimeService.startProcessInstanceByKey(
                 "parent-process-with-non-existing-key",
@@ -175,7 +129,7 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
             )
         }
         assertEquals(
-            "No process definition found with key: 'non-existing-key'",
+            "java.lang.IllegalStateException: No process definition found with key: 'non-existing-key'",
             exception.cause?.message
         )
     }
@@ -191,7 +145,7 @@ class ProcessDocumentsServiceIntTest : BaseIntegrationTest() {
             )
         }
         assertEquals(
-            "No Document found with id $uuid",
+            "com.ritense.document.exception.DocumentNotFoundException: No Document found with id $uuid",
             exception.cause?.message
         )
     }

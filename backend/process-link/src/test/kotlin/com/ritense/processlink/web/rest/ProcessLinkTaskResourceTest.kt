@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@
 package com.ritense.processlink.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.processlink.domain.TestProcessLinkMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.ritense.processlink.domain.CustomProcessLinkMapper
 import com.ritense.processlink.exception.ProcessLinkNotFoundException
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessLinkActivityService
 import com.ritense.processlink.web.rest.dto.ProcessLinkActivityResult
-import com.ritense.valtimo.contract.json.MapperSingleton
-import java.nio.charset.StandardCharsets
-import java.util.UUID
+import com.ritense.tenancy.TenantResolver
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -38,6 +37,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import java.nio.charset.StandardCharsets
+import java.util.UUID
 
 internal class ProcessLinkTaskResourceTest {
 
@@ -46,13 +47,15 @@ internal class ProcessLinkTaskResourceTest {
     lateinit var processLinkMappers: List<ProcessLinkMapper>
     lateinit var processLinkTaskResource: ProcessLinkTaskResource
     lateinit var objectMapper: ObjectMapper
+    lateinit var tenantResolver: TenantResolver
 
     @BeforeEach
     fun init() {
-        objectMapper = MapperSingleton.get()
+        objectMapper = jacksonObjectMapper()
         processLinkActivityService = mock()
-        processLinkMappers = listOf(TestProcessLinkMapper(objectMapper))
-        processLinkTaskResource = ProcessLinkTaskResource(processLinkActivityService)
+        tenantResolver = mock()
+        processLinkMappers = listOf(CustomProcessLinkMapper(objectMapper))
+        processLinkTaskResource = ProcessLinkTaskResource(processLinkActivityService, tenantResolver)
 
         val mappingJackson2HttpMessageConverter = MappingJackson2HttpMessageConverter()
         mappingJackson2HttpMessageConverter.objectMapper = objectMapper
@@ -62,7 +65,6 @@ internal class ProcessLinkTaskResourceTest {
             .setMessageConverters(mappingJackson2HttpMessageConverter)
             .build()
     }
-
 
     @Test
     fun `should list process links`() {

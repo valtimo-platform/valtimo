@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import com.ritense.valtimo.contract.mail.MailSender
 import com.ritense.valtimo.contract.mail.model.MailMessageStatus
 import com.ritense.valtimo.contract.mail.model.RawMailMessage
 import com.ritense.valtimo.contract.mail.model.TemplatedMailMessage
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
+import kotlin.streams.toList
 
 /**
  * This class is the replacement of the previous MailSender.class
@@ -40,7 +40,6 @@ class FilteredMailSender(
         if (optionalMessage.isPresent) {
             return Optional.of(mailDispatcher.send(rawMailMessage))
         }
-        logger.debug { "Skipped sending mail message." }
         return Optional.empty()
     }
 
@@ -49,7 +48,6 @@ class FilteredMailSender(
         if (optionalMessage.isPresent) {
             return Optional.of(mailDispatcher.send(templatedMailMessage))
         }
-        logger.debug { "Skipped sending mail message." }
         return Optional.empty()
     }
 
@@ -58,7 +56,7 @@ class FilteredMailSender(
     }
 
     private fun applyFilters(rawMailMessage: RawMailMessage): Optional<RawMailMessage> {
-        var filteredRawMailMessage = rawMailMessage
+        var filteredRawMailMessage = rawMailMessage;
         val filters = prioritizedFilters()
         filters.forEach {
             val filteredMailMessageOptional = it.doFilter(filteredRawMailMessage)
@@ -72,7 +70,7 @@ class FilteredMailSender(
     }
 
     private fun applyFilters(templatedMailMessage: TemplatedMailMessage): Optional<TemplatedMailMessage> {
-        var filteredTemplatedMailMessage = templatedMailMessage
+        var filteredTemplatedMailMessage = templatedMailMessage;
         val filters = prioritizedFilters()
         filters.forEach {
             val filteredMailMessageOptional = it.doFilter(filteredTemplatedMailMessage)
@@ -90,10 +88,6 @@ class FilteredMailSender(
             .filter { it.isEnabled }
             .sorted(compareBy { it.priority })
             .toList()
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 
 }

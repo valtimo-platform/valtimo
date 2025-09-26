@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,17 @@ package com.ritense.mail.flowmailer.service
 
 import com.ritense.mail.flowmailer.config.FlowmailerProperties
 import com.ritense.mail.flowmailer.domain.OauthTokenResponse
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.core.ResolvableType
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
-import org.springframework.stereotype.Service
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestTemplate
 
-@Service
-@SkipComponentScan
 class FlowmailerTokenService(
     private val flowmailerProperties: FlowmailerProperties,
     private val restTemplate: RestTemplate
@@ -55,7 +51,7 @@ class FlowmailerTokenService(
                 httpEntity,
                 getType(OauthTokenResponse::class.java)
             )
-            return response.body.accessToken
+            return response.body!!.accessToken
         } catch (e: HttpStatusCodeException) {
             throw HttpClientErrorException(e.statusCode, "No token received")
         }
