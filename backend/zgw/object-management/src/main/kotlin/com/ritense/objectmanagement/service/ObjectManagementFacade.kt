@@ -17,7 +17,6 @@
 package com.ritense.objectmanagement.service
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
@@ -27,7 +26,7 @@ import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.service.PluginService
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.web.client.HttpClientErrorException
@@ -232,7 +231,7 @@ class ObjectManagementFacade(
         val objectUrl = accessObject.objectenApiPlugin.getObjectUrl(uuid)
 
         logger.trace { "Getting object $objectUrl" }
-        return runWithoutAuthorization { accessObject.objectenApiPlugin.getObject(objectUrl) }
+        return accessObject.objectenApiPlugin.getObject(objectUrl)
     }
 
     private fun findObjectByUuidAndIndex(accessObject: ObjectManagementAccessObject, uuid: UUID, index: Int): ObjectRecord {
@@ -240,12 +239,12 @@ class ObjectManagementFacade(
         val objectUrl = accessObject.objectenApiPlugin.getObjectUrl(uuid)
 
         logger.trace { "Getting object $objectUrl" }
-        return runWithoutAuthorization { accessObject.objectenApiPlugin.getObjectRecord(objectUrl, index) }
+        return accessObject.objectenApiPlugin.getObjectRecord(objectUrl, index)
     }
 
     private fun findObjectByUri(accessObject: ObjectManagementAccessObject, objectUrl: URI): ObjectWrapper {
         logger.debug { "Getting object $objectUrl" }
-        return runWithoutAuthorization { accessObject.objectenApiPlugin.getObject(objectUrl) }
+        return accessObject.objectenApiPlugin.getObject(objectUrl)
     }
 
     private fun findObjectsPaged(
@@ -256,28 +255,26 @@ class ObjectManagementFacade(
         pageNumber: Int,
         pageSize: Int
     ): ObjectsList {
-        return runWithoutAuthorization {
-            if (!searchString.isNullOrBlank()) {
-                logger.debug { "Getting object page for object type $objectName with search string $searchString" }
+        return if (!searchString.isNullOrBlank()) {
+            logger.debug { "Getting object page for object type $objectName with search string $searchString" }
 
-                accessObject.objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
-                    accessObject.objectTypenApiPlugin.url,
-                    accessObject.objectManagement.objecttypeId,
-                    searchString,
-                    ordering,
-                    PageRequest.of(pageNumber, pageSize)
-                )
-            } else {
-                logger.debug { "Getting object page for object type $objectName" }
+            accessObject.objectenApiPlugin.getObjectsByObjectTypeIdWithSearchParams(
+                accessObject.objectTypenApiPlugin.url,
+                accessObject.objectManagement.objecttypeId,
+                searchString,
+                ordering,
+                PageRequest.of(pageNumber, pageSize)
+            )
+        } else {
+            logger.debug { "Getting object page for object type $objectName" }
 
-                accessObject.objectenApiPlugin.getObjectsByObjectTypeId(
-                    accessObject.objectTypenApiPlugin.url,
-                    accessObject.objectenApiPlugin.url,
-                    accessObject.objectManagement.objecttypeId,
-                    ordering,
-                    PageRequest.of(pageNumber, pageSize)
-                )
-            }
+            accessObject.objectenApiPlugin.getObjectsByObjectTypeId(
+                accessObject.objectTypenApiPlugin.url,
+                accessObject.objectenApiPlugin.url,
+                accessObject.objectManagement.objecttypeId,
+                ordering,
+                PageRequest.of(pageNumber, pageSize)
+            )
         }
     }
 
