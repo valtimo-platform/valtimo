@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,33 +23,24 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import java.util.UUID
 
 interface ProcessLinkMapper {
     fun supportsProcessLinkType(processLinkType: String): Boolean
     fun toProcessLinkResponseDto(processLink: ProcessLink): ProcessLinkResponseDto
     fun toProcessLinkCreateRequestDto(deployDto: ProcessLinkDeployDto): ProcessLinkCreateRequestDto
-    fun toProcessLinkUpdateRequestDto(
-        deployDto: ProcessLinkDeployDto,
-        existingProcessLinkId: UUID
-    ): ProcessLinkUpdateRequestDto
-
     fun toProcessLinkExportResponseDto(processLink: ProcessLink): ProcessLinkExportResponseDto
-    fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto, caseDefinitionId: CaseDefinitionId?): ProcessLink
+    fun toNewProcessLink(createRequestDto: ProcessLinkCreateRequestDto): ProcessLink
     fun toUpdatedProcessLink(
         processLinkToUpdate: ProcessLink,
-        updateRequestDto: ProcessLinkUpdateRequestDto,
-        caseDefinitionId: CaseDefinitionId?
+        updateRequestDto: ProcessLinkUpdateRequestDto
     ): ProcessLink
 
     /**
      * Used by the export service.
      * Should return export requests the provided processLink depends on.
      * @param processLink The processLink to create related export requests for
-     * @param caseDefinitionId The caseDefinitionId of the case the processLink is part of
      */
-    fun createRelatedExportRequests(processLink: ProcessLink, caseDefinitionId: CaseDefinitionId): Set<ExportRequest> = setOf()
+    fun createRelatedExportRequests(processLink: ProcessLink): Set<ExportRequest> = setOf()
 
     fun getImporterType(): String? = null
 }

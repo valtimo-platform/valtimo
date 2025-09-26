@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,7 @@ data class CaseListColumnDto(
     var sortable: Boolean,
     var defaultSort: ColumnDefaultSort?,
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    var order: Int?,
-    var exportable: Boolean = false
+    var order: Int?
 ) {
     @Throws(InvalidListColumnException::class)
     fun validate() {

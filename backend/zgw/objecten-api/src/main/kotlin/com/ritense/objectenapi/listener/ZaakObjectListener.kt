@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import com.ritense.objectenapi.service.ZaakObjectConstants
 import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.event.ExternalDataSubmittedEvent
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.context.event.EventListener
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
+import org.springframework.context.event.EventListener
 
 class ZaakObjectListener(
     private val pluginService: PluginService,
@@ -41,7 +40,6 @@ class ZaakObjectListener(
     fun handle(event: ExternalDataSubmittedEvent) {
         runWithoutAuthorization {
             event.data[ZaakObjectConstants.ZAAKOBJECT_PREFIX]?.let { zaakObjectMap ->
-                logger.debug { "Received external data for zaak object, updating the following properties: ${zaakObjectMap.keys.joinToString()}" }
                 zaakObjectMap.entries.map { entry ->
                     RequestedField(
                         entry.key, entry.value
@@ -51,7 +49,6 @@ class ZaakObjectListener(
                 }.forEach { objectTypeGroup ->
                     val zaakObject = zaakObjectService.getZaakObjectOfTypeByName(event.documentId, objectTypeGroup.key)
                     objectTypeGroup.value.forEach { requestedField ->
-                        logger.trace { "Updating field ${requestedField.path} with value ${requestedField.value} in object '${zaakObject.url}' of type '${objectTypeGroup.key}'" }
                         // For each requestedField update the value in the zaakObject record data
                         val startPath = requestedField.path.substring(1)
                         val newValueNode = getValueNode(requestedField.value)
@@ -126,9 +123,5 @@ class ZaakObjectListener(
     ) {
         val objectType = variableName.substringBeforeLast(":")
         val path = variableName.substringAfterLast(":")
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }

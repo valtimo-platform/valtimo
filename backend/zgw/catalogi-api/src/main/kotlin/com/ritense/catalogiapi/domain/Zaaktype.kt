@@ -18,6 +18,7 @@ package com.ritense.catalogiapi.domain
 
 import com.ritense.zgw.domain.Vertrouwelijkheid
 import java.net.URI
+import java.time.Duration
 import java.time.LocalDate
 import java.time.Period
 

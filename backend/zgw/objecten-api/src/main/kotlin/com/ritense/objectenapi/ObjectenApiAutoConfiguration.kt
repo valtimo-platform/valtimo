@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,16 +34,18 @@ import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.zakenapi.ZaakUrlProvider
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.DependsOn
+import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
-import org.springframework.web.client.RestClient
+import org.springframework.web.reactive.function.client.WebClient
 
-@AutoConfiguration
+@Configuration
 class ObjectenApiAutoConfiguration {
 
     @Bean
@@ -51,24 +53,28 @@ class ObjectenApiAutoConfiguration {
     fun formSubmissionListener(
         pluginService: PluginService,
         zaakObjectService: ZaakObjectService
-    ) = ZaakObjectListener(
-        pluginService,
-        zaakObjectService
-    )
+    ): ZaakObjectListener {
+        return ZaakObjectListener(pluginService, zaakObjectService)
+    }
 
     @Bean
     @ConditionalOnMissingBean(ObjectenApiClient::class)
     fun objectenApiClient(
-        restClientBuilder: RestClient.Builder,
+        webclientBuilder: WebClient.Builder,
         outboxService: OutboxService,
         objectMapper: ObjectMapper,
-        authorizationService: AuthorizationService
+        authorizationService: AuthorizationService,
+        @Value("\${valtimo.authorization.objectenapi.enabled:true}") authorizationEnabled: Boolean
     ): ObjectenApiClient {
+        if (!authorizationEnabled) {
+            logger.warn { "Objecten API authorization is disabled. This is a potential security issue. The option to disable this will be removed with Valtimo 13." }
+        }
         return ObjectenApiClient(
-            restClientBuilder,
+            webclientBuilder,
             outboxService,
             objectMapper,
-            authorizationService
+            authorizationService,
+            authorizationEnabled
         )
     }
 
@@ -76,10 +82,12 @@ class ObjectenApiAutoConfiguration {
     fun objectenApiPluginFactory(
         pluginService: PluginService,
         objectenApiClient: ObjectenApiClient
-    ) = ObjectenApiPluginFactory(
-        pluginService,
-        objectenApiClient
-    )
+    ): ObjectenApiPluginFactory {
+        return ObjectenApiPluginFactory(
+            pluginService,
+            objectenApiClient
+        )
+    }
 
     @Bean
     fun zaakObjectService(
@@ -87,12 +95,13 @@ class ObjectenApiAutoConfiguration {
         pluginService: PluginService,
         formDefinitionService: FormDefinitionService,
         objectManagementInfoProvider: ObjectManagementInfoProvider
-    ) = ZaakObjectService(
-        zaakUrlProvider,
-        pluginService,
-        formDefinitionService,
-        objectManagementInfoProvider
-    )
+    ): ZaakObjectService {
+        return ZaakObjectService(zaakUrlProvider,
+            pluginService,
+            formDefinitionService,
+            objectManagementInfoProvider
+        )
+    }
 
     @Order(380)
     @Bean
@@ -129,11 +138,13 @@ class ObjectenApiAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ZaakObjectResource::class)
     fun zaakObjectResource(
-        zaakObjectService: ZaakObjectService
+        zaakObjectService: ZaakObjectService,
+        pluginService: PluginService,
     ): ZaakObjectResource {
-        return ZaakObjectResource(zaakObjectService)
+        return ZaakObjectResource(zaakObjectService, pluginService)
     }
 
+    @Order(Ordered.LOWEST_PRECEDENCE)
     @Bean
     @ConditionalOnMissingBean(ObjectManagementInfoProvider::class)
     fun errorObjectManagementInfoProvider(): ObjectManagementInfoProvider {

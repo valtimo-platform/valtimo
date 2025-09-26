@@ -15,12 +15,9 @@ spring-actuator:
     username: test
     password: test
 
-operaton:
+camunda:
     bpm:
         history-level: audit
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false
 
 valtimo:
     mandrill:

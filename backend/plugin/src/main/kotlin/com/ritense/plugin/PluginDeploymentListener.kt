@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.plugin
 
+import com.ritense.plugin.annotation.PluginProperty as PluginPropertyAnnotation
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
@@ -30,14 +31,13 @@ import com.ritense.plugin.repository.PluginActionDefinitionRepository
 import com.ritense.plugin.repository.PluginActionPropertyDefinitionRepository
 import com.ritense.plugin.repository.PluginCategoryRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Parameter
-import com.ritense.plugin.annotation.PluginProperty as PluginPropertyAnnotation
 
 open class PluginDeploymentListener(
     private val pluginDefinitionResolver: PluginDefinitionResolver,
@@ -114,7 +114,6 @@ open class PluginDeploymentListener(
             pluginAnnotation.description,
             clazz.name,
             mutableSetOf(),
-            mutableSetOf(),
             mutableSetOf()
         )
 
@@ -153,20 +152,18 @@ open class PluginDeploymentListener(
     private fun createActionDefinition(deployedPluginDefinition: PluginDefinition, clazz: Class<*>) {
         findPluginActions(clazz)
             .forEach { (method, actionAnnotation) ->
-                val actionDefinition = PluginActionDefinition(
-                    PluginActionDefinitionId(
-                        actionAnnotation.key,
-                        deployedPluginDefinition
-                    ),
-                    actionAnnotation.title,
-                    actionAnnotation.description,
-                    method.name,
-                    actionAnnotation.activityTypes.toList()
+                val actionDefinition = deployActionDefinition(
+                    PluginActionDefinition(
+                        PluginActionDefinitionId(
+                            actionAnnotation.key,
+                            deployedPluginDefinition
+                        ),
+                        actionAnnotation.title,
+                        actionAnnotation.description,
+                        method.name,
+                        actionAnnotation.activityTypes.toList()
+                    )
                 )
-
-                deployActionDefinition(actionDefinition)
-                (deployedPluginDefinition.actions as MutableSet).add(actionDefinition)
-
                 findPluginActionParameters(method)
                     .forEach { (parameter, _) ->
                         deployActionParameterDefinition(

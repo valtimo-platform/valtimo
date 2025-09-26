@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ package com.ritense.zgw
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 
-data class Rsin @JsonCreator(mode = JsonCreator.Mode.DELEGATING) constructor(private val value: String) {
+data class Rsin(private val value: String) {
 
     constructor(value: Long) : this(value.toString().padStart(9, '0'))
 
     companion object {
         @JvmStatic
+        @JsonCreator
         fun create(value: String) = value
     }
 

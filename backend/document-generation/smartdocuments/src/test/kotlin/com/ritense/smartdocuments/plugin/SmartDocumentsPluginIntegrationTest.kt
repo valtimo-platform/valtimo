@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.ritense.smartdocuments.plugin
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.plugin.domain.ActivityType
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProcessLinkId
@@ -26,15 +27,14 @@ import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.smartdocuments.BaseSmartDocumentsIntegrationTest
 import com.ritense.smartdocuments.domain.SmartDocumentsRequest
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.RuntimeService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -52,14 +52,14 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
     private val pluginService: PluginService,
     private val smartDocumentsPluginFactory: SmartDocumentsPluginFactory,
     private val pluginProcessLinkRepository: PluginProcessLinkRepository,
-    private val operatonRepositoryService: OperatonRepositoryService,
+    private val camundaRepositoryService: CamundaRepositoryService,
     private val runtimeService: RuntimeService,
     private val temporaryResourceStorageService: TemporaryResourceStorageService,
-) : BaseSmartDocumentsIntegrationTest() {
+): BaseSmartDocumentsIntegrationTest() {
 
     lateinit var smartDocumentsPlugin: SmartDocumentsPlugin
     lateinit var pluginConfiguration: PluginConfiguration
-    lateinit var processDefinition: OperatonProcessDefinition
+    lateinit var processDefinition: CamundaProcessDefinition
 
     @BeforeEach
     internal fun beforeEach() {
@@ -104,7 +104,7 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
 
         smartDocumentsPlugin = smartDocumentsPluginFactory.create(pluginConfiguration)
         processDefinition = runWithoutAuthorization {
-            operatonRepositoryService.findLatestProcessDefinition("document-generation-plugin")!!
+            camundaRepositoryService.findLatestProcessDefinition("document-generation-plugin")!!
         }
 
         saveProcessLink(generateDocumentActionProperties)
@@ -114,12 +114,7 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
     fun `should generate document`() {
         // given
         val documentContent = objectMapper.readTree("{\"lastname\": \"Klaveren\"}")
-        val newDocumentRequest = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY,
-            "profile",
-            "1.0.0",
-            documentContent
-        )
+        val newDocumentRequest = NewDocumentRequest(DOCUMENT_DEFINITION_KEY, documentContent)
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
             .withProcessVars(mapOf("age" to 138))
 
@@ -133,26 +128,19 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
             findRequestBody(HttpMethod.POST, "/wsxmldeposit/deposit/unattended", SmartDocumentsRequest::class.java)
         assertThat(requestBody.smartDocument.selection.templateGroup).isNotEqualTo("test-template-group")
         assertThat(requestBody.smartDocument.selection.template).isEqualTo("test-template-name")
-        assertThat(requestBody.customerData).isEqualTo(
-            mapOf(
-                "achternaam" to "Klaveren",
-                "leeftijd" to 138,
-                "nonExistingDocumentVar" to null,
-                "nonExistingProcessVar" to null,
-                "fixedValue" to "My fixed value",
-            )
-        )
+        assertThat(requestBody.customerData).isEqualTo(mapOf(
+            "achternaam" to "Klaveren",
+            "leeftijd" to 138,
+            "nonExistingDocumentVar" to null,
+            "nonExistingProcessVar" to null,
+            "fixedValue" to "My fixed value",
+        ))
     }
 
     @Test
     fun `should create temp file when generating document`() {
         // given
-        val newDocumentRequest = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY,
-            "profile",
-            "1.0.0",
-            objectMapper.createObjectNode()
-        )
+        val newDocumentRequest = NewDocumentRequest(DOCUMENT_DEFINITION_KEY, objectMapper.createObjectNode())
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
 
         // when
@@ -196,12 +184,7 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
             }
         """.trimIndent()
         )
-        val newDocumentRequest = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY,
-            "profile",
-            "1.0.0",
-            objectMapper.createObjectNode()
-        )
+        val newDocumentRequest = NewDocumentRequest(DOCUMENT_DEFINITION_KEY, objectMapper.createObjectNode())
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
             .withProcessVars(mapOf("my-template-name-variable" to "my-custom-template-name"))
 
@@ -217,7 +200,7 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
     }
 
     @Test
-    fun `should throw error when template-name contains process-variable that doesn't exist`() {
+    fun `should respond with placeholder when template-name contains process-variable that doesn't exist`() {
         // given
         saveProcessLink(
             """
@@ -230,22 +213,18 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
             }
         """.trimIndent()
         )
-        val newDocumentRequest = NewDocumentRequest(
-            DOCUMENT_DEFINITION_KEY,
-            "profile",
-            "1.0.0",
-            objectMapper.createObjectNode()
-        )
+        val newDocumentRequest = NewDocumentRequest(DOCUMENT_DEFINITION_KEY, objectMapper.createObjectNode())
         val request = NewDocumentAndStartProcessRequest(PROCESS_DEFINITION_KEY, newDocumentRequest)
 
         // when
-        val result = runWithoutAuthorization {
+        runWithoutAuthorization {
             processDocumentService.newDocumentAndStartProcess(request)
         }
 
         // then
-        assertThat(result.errors()).hasSize(1)
-        assertThat(result.errors()[0].asString()).startsWith("Unexpected error occurred, please contact support")
+        val requestBody =
+            findRequestBody(HttpMethod.POST, "/wsxmldeposit/deposit/unattended", SmartDocumentsRequest::class.java)
+        assertThat(requestBody.smartDocument.selection.template).isEqualTo("pv:non-existing-process-variable")
     }
 
     private fun saveProcessLink(generateDocumentActionProperties: String) {
@@ -257,7 +236,7 @@ class SmartDocumentsPluginIntegrationTest @Autowired constructor(
                 objectMapper.readTree(generateDocumentActionProperties) as ObjectNode,
                 pluginConfiguration.id,
                 "generate-document",
-                ActivityTypeWithEventName.SERVICE_TASK_START
+                ActivityType.SERVICE_TASK_START
             )
         )
     }

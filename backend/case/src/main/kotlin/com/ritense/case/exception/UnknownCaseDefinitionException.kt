@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.ritense.case.exception
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.zalando.problem.AbstractThrowableProblem
 import org.zalando.problem.Exceptional
 import org.zalando.problem.Status
@@ -27,8 +26,6 @@ class UnknownCaseDefinitionException(message: String?) :
         message,
         Status.BAD_REQUEST
     ) {
-    constructor(caseDefinitionId: CaseDefinitionId) : this("Case definition with id $caseDefinitionId could not be found")
-
     override fun getCause(): Exceptional? {
         return null
     }

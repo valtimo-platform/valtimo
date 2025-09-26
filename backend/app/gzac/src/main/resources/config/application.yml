@@ -7,8 +7,6 @@ management:
     endpoint:
         health:
             show-details: when_authorized
-            roles:
-                - ROLE_ACTUATOR
 spring:
     application:
         name: gzac
@@ -25,6 +23,7 @@ spring:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost:54320/gzac
         username: gzac
+        password: password
         hikari:
             auto-commit: false
             maximum-pool-size: 25
@@ -46,25 +45,8 @@ spring:
                 elideSetAutoCommits: true
                 maintainTimeStats: false
                 serverTimezone: UTC
+                stringtype: unspecified
                 allowPublicKeyRetrieval: true
-    security:
-        oauth2:
-            resourceserver:
-                jwt:
-                    jwk-set-uri: http://localhost:8081/auth/realms/valtimo/protocol/openid-connect/certs
-            client:
-                provider:
-                    keycloakjwt:
-                        issuer-uri: http://localhost:8081/auth/realms/valtimo
-                    keycloakapi:
-                        issuer-uri: http://localhost:8081/auth/realms/valtimo
-                registration:
-                    keycloakjwt:
-                        client-id: valtimo-console
-                    keycloakapi:
-                        client-id: valtimo-user-m2m-client
-                        authorization-grant-type: authorization_code
-                        scope: openid
 
     groovy:
         template:
@@ -72,7 +54,7 @@ spring:
     liquibase:
         enabled: false
     jpa:
-        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        database-platform: org.hibernate.dialect.PostgreSQL10Dialect
         show_sql: false
         open-in-view: false
         properties:
@@ -91,34 +73,35 @@ spring:
                     provider_disables_autocommit: true
         hibernate:
             ddl-auto: none
+            naming:
+                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            use-new-id-generator-mappings: false
     messages:
         basename: i18n/messages
     main.allow-bean-definition-overriding: true
-    servlet:
-        multipart:
-            max-file-size: 10MB
-            max-request-size: 10MB
     jersey:
-        application-path: /api/operaton-rest
+        application-path: /api/camunda-rest
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
     cloud:
-        function:
-            definition: kotlinInboxCloudEventConsumer
         stream:
+            function:
+                definition: createExternalCaseConsumer;completeTaskConsumer;updatedExternalIdConsumer;externalDomainMessageSupplier
             bindings:
-                kotlinInboxCloudEventConsumer-in-0:
-                    destination: valtimo-events
-                    group: valtimo-inbox
+                createExternalCaseConsumer-in-0:
+                    destination: create-external-case
                     binder: rabbit
-            rabbit:
-                bindings:
-                    kotlinInboxCloudEventConsumer-in-0:
-                        consumer:
-                            bindQueue: false
-                            declareExchange: false
-                            queueNameGroupOnly: true
+                    group: Q1
+                completeTaskConsumer-in-0:
+                    destination: complete-task
+                    binder: rabbit
+                    group: Q2
+                updatedExternalIdConsumer-in-0:
+                    destination: external-id-portal-case-updated
+                    binder: rabbit
+                    group: Q3
             binders:
                 rabbit:
                     type: rabbit
@@ -130,6 +113,7 @@ spring:
                                 username: guest
                                 password: guest
                                 virtual-host: /
+            source: externalDomainMessageSupplier
     rabbitmq:
         host: localhost
         port: 5672
@@ -162,6 +146,8 @@ mailing:
     sendRedirectedMailsTo:
 
 valtimo:
+    keycloak:
+        client: valtimo-console
     app:
         scheme: http
     database: postgres
@@ -173,6 +159,7 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     oauth:
         tokenValidityInSeconds: 3600 # Token is valid 1 hour
+        public-key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAooyECQIi6v4TLKOYWwXClDhJcrGcGfKZj7LQIgY/Ajm2nAKv5kiZRoS8GzMzIGKkkilAJyWQCoKlP//azHqzIxO6WZWCqGFxd04vK5JYujsiMMTNvTggfFSM7VxbzU/wv+aAEvBaGUMYp2Oamn5szzYzkzsowujvDZp+CE8ryZWTVmA+8WZE4aoU6VzfXmMDmPxvRXvktPRsJkA7hkv65TTJwUZF38goRg62kRD0hOP1sIy6vwKDSkjafLV1bYNBRiWXNReJNBXauhy74GeiHODGrI62NwUJXSgZ62cViPt6cx/3A7VBPLpEPnpnlZcIDfsFpSUuNEXc7HoLRuldbQIDAQAB
 
     hardening:
         allowStacktraceOnIps:
@@ -196,6 +183,10 @@ valtimo:
     portal:
         hostname: localhost:4201
         scheme: http
+    connector-encryption:
+        secret: "0123456789101112"
+    plugin:
+        encryption-secret: "abcdefghijklmnop"
     web:
         cors:
             corsConfiguration:
@@ -207,6 +198,11 @@ valtimo:
                     - "*"
             paths:
                 - "/**"
+    openklant:
+        url: "http://localhost:8006"
+        clientId: "valtimo_client"
+        secret: "e09b8bc5-5831-4618-ab28-41411304309d"
+        rsin: "051845623"
 
     genericTemplateName: "template-name"
     besluitDocumentRequired: true
@@ -215,27 +211,23 @@ valtimo:
         acceptedMimeTypes:
             - text/plain
             - application/pdf
-            - application/xml
             - image/jpeg
-            - image/png
+            - application/xml
     changelog:
+        dashboard:
+            clear-tables: true
         pbac:
-            clear-tables: false
-
+            clear-tables: true
+        case-tabs:
+            clear-tables: true
     outbox:
         enabled: true
         publisher:
             cloudevent-source: "com.ritense.gzac"
             rabbitmq:
-                exchange: valtimo-events
+                routing-key: valtimo-audit
                 delivery-timeout: "PT0.5S"
-            polling.rate: "PT15M"
-
-    logging:
-        retentionInMinutes: 1440
-    docker:
-        filter:
-            enabled: true
+            polling.rate: "PT1M"
 
 spring-actuator:
     username: admin
@@ -254,17 +246,24 @@ scheduling:
         cron:
             cleanupAuditEvents: 0 0 4 * * ? # Every day at 00:00
             taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
-operaton:
+camunda:
     bpm:
         history-level: AUDIT
         history-level-default: AUDIT
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false
         admin-user:
             id: Admin
             password: admin
             first-name: Admin account
+
+# ==================
+# keycloak server to server config
+# ==================
+keycloak:
+    realm: valtimo
+    auth-server-url: http://localhost:8081/auth
+    resource: valtimo-user-m2m-client
+    credentials:
+        secret: 6ef6ca16-6b86-482a-a3d9-0561704c1db9
 
 external:
     case:
@@ -275,3 +274,5 @@ external:
             bezwaar:
                 caseKey: bezwaar
                 processDefinitionKey: bezwaar
+
+valtimo.changelog.dashboard.clear-tables: true

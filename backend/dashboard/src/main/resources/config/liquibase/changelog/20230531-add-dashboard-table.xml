@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <!--
- ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+ ~ Copyright 2015-2023 Ritense BV, the Netherlands.
  ~
  ~ Licensed under EUPL, Version 1.2 (the "License");
  ~ you may not use this file except in compliance with the License.
@@ -102,14 +102,6 @@
                               columnName="display_type_properties"
                               defaultNullValue="{}"
                               columnDataType="${jsonType}"/>
-    </changeSet>
-
-    <changeSet id="8" author="Ritense">
-        <addColumn tableName="dashboard_widget_configuration">
-            <column name="url" type="text">
-                <constraints nullable="true"/>
-            </column>
-        </addColumn>
     </changeSet>
 
 </databaseChangeLog>

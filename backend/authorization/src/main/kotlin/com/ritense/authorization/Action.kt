@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package com.ritense.authorization
 
-import jakarta.persistence.Column
-import jakarta.persistence.Embeddable
+import javax.persistence.Column
+import javax.persistence.Embeddable
 
 @Embeddable
 data class Action<T>(
     @Column(name = "action")
-    val key: String = ""
+    val key: String
 ) {
     companion object {
         @JvmStatic
@@ -40,9 +40,8 @@ data class Action<T>(
         const val COMPLETE = "complete"
         const val ASSIGN = "assign"
         const val CLAIM = "claim"
-        const val ASSIGNABLE = "assignable"
+        const val ASSIGNABLE = "assignable" //TODO: re-evaluate if this is the way to go
         const val IGNORE = "ignore"
         const val DENY = "deny"
-        const val EXPORT = "export"
     }
 }

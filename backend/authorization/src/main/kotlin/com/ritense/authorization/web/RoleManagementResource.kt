@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,16 @@ package com.ritense.authorization.web
 
 import com.fasterxml.jackson.annotation.JsonView
 import com.ritense.authorization.AuthorizationSupportedHelper
-import com.ritense.authorization.deployment.PermissionDto
 import com.ritense.authorization.permission.PermissionRepository
-import com.ritense.authorization.permission.PermissionView
 import com.ritense.authorization.role.Role
 import com.ritense.authorization.role.RoleRepository
+import com.ritense.authorization.deployment.PermissionDto
+import com.ritense.authorization.permission.PermissionView
 import com.ritense.authorization.web.request.DeleteRolesRequest
 import com.ritense.authorization.web.request.SaveRoleRequest
 import com.ritense.authorization.web.request.UpdateRolePermissionRequest
 import com.ritense.authorization.web.request.UpdateRoleRequest
 import com.ritense.authorization.web.result.RoleResult
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -43,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@SkipComponentScan
 @RequestMapping("/api/management", produces = [ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE])
 class RoleManagementResource(
     val roleRepository: RoleRepository,
@@ -91,16 +89,7 @@ class RoleManagementResource(
     fun getRolePermissions(@PathVariable roleKey: String)
         : ResponseEntity<List<PermissionDto>> {
         val rolePermissions = permissionRepository.findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(listOf(roleKey))
-            .map { permission ->
-                PermissionDto(
-                    permission.resourceType,
-                    permission.actions.map { it.key },
-                    permission.conditionContainer.conditions,
-                    permission.role.key,
-                    permission.contextResourceType,
-                    permission.contextConditionContainer?.conditions ?: emptyList()
-                )
-            }
+            .map { PermissionDto(it.resourceType, it.action.key, it.conditionContainer.conditions, it.role.key) }
         return ResponseEntity.ok(rolePermissions)
     }
 
@@ -120,16 +109,7 @@ class RoleManagementResource(
                     AuthorizationSupportedHelper.checkSupported(it.resourceType)
                     it.toPermission(role)
                 }
-            ).map { permission ->
-                PermissionDto(
-                    permission.resourceType,
-                    permission.actions.map { it.key },
-                    permission.conditionContainer.conditions,
-                    permission.role.key,
-                    permission.contextResourceType,
-                    permission.contextConditionContainer?.conditions ?: emptyList()
-                )
-            }
+            ).map { PermissionDto(it.resourceType, it.action.key, it.conditionContainer.conditions, it.role.key) }
         return ResponseEntity.ok(permissions)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@ import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRe
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -52,7 +52,7 @@ internal class DeadlockIntTest : BaseIntegrationTest() {
         admin.username = USERNAME
         admin.roles = listOf(USER, ADMIN)
         whenever(userManagementService.currentUser).thenReturn(admin)
-        whenever(userManagementService.findByUsername(USERNAME)).thenReturn(admin)
+        whenever(userManagementService.findById(USERNAME)).thenReturn(admin)
     }
 
     @Test
@@ -65,7 +65,7 @@ internal class DeadlockIntTest : BaseIntegrationTest() {
             threads.add(async(Dispatchers.IO) {
                 runWithoutAuthorization {
                     logger.info { "Thread: $i" }
-                    operatonProcessJsonSchemaDocumentService.startProcessForDocument(
+                    camundaProcessJsonSchemaDocumentService.startProcessForDocument(
                         StartProcessForDocumentRequest(
                             document.id,
                             "deadlock-process",
@@ -84,8 +84,6 @@ internal class DeadlockIntTest : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     definition().id().name(),
-                    definition().id.caseDefinitionId().key,
-                    definition().id.caseDefinitionId().versionTag.version,
                     JsonDocumentContent(content).asJson()
                 )
             )

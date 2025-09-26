@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,14 @@
 package com.ritense.dashboard.domain
 
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.valtimo.contract.repository.UriAttributeConverter
-import io.hypersistence.utils.hibernate.type.json.JsonType
-import jakarta.persistence.Column
-import jakarta.persistence.Convert
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.Table
 import org.hibernate.annotations.Type
-import java.net.URI
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.FetchType
+import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.Table
 
 @Entity
 @Table(name = "dashboard_widget_configuration")
@@ -48,20 +44,16 @@ data class WidgetConfiguration(
     @Column(name = "data_source_key", nullable = false)
     val dataSourceKey: String,
 
-    @Type(value = JsonType::class)
+    @Type(type = "com.vladmihalcea.hibernate.type.json.JsonType")
     @Column(name = "data_source_properties", columnDefinition = "JSON")
     val dataSourceProperties: ObjectNode,
 
-    @Type(value = JsonType::class)
+    @Type(type = "com.vladmihalcea.hibernate.type.json.JsonType")
     @Column(name = "display_type_properties", columnDefinition = "JSON")
     val displayTypeProperties: ObjectNode,
 
     @Column(name = "display_type", nullable = false)
     val displayType: String,
-
-    @Column(name = "url")
-    @Convert(converter = UriAttributeConverter::class)
-    val url: URI? = null,
 
     @Column(name = "sort_order", nullable = false)
     val order: Int
@@ -74,7 +66,6 @@ data class WidgetConfiguration(
             "dataSourceProperties=$dataSourceProperties, " +
             "displayTypeProperties=$displayTypeProperties, " +
             "displayType='$displayType', " +
-            "order=$order, " +
-            "url='$url')"
+            "order=$order)"
     }
 }

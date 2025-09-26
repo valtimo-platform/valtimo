@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -29,7 +26,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.spring" version "${kotlinVersion}"
     id "org.jetbrains.kotlin.plugin.jpa" version "${kotlinVersion}"
     id "org.jetbrains.kotlin.plugin.allopen" version "${kotlinVersion}"
-    id "org.jetbrains.dokka-javadoc" version "${dokkaPluginVersion}"
+    id "org.jetbrains.dokka" version "${dokkaPluginVersion}"
     id "com.github.ben-manes.versions" version "${versionsPluginVersion}"
     id "org.sonarqube" version "${sonarqubePluginVersion}"
     id "checkstyle"
@@ -38,21 +35,17 @@ plugins {
     id "com.avast.gradle.docker-compose" version "${dockerComposePluginVersion}"
     id "com.github.jk1.dependency-license-report" version "${dependencyLicenseReportVersion}"
     id "project-report"
-    id "org.owasp.dependencycheck" version "12.1.3"
-    id "org.jreleaser" version "${jreleaserPluginVersion}"
+    id "org.owasp.dependencycheck" version "8.4.0"
 }
 
 jacoco {
-    toolVersion = "0.8.12"
+    toolVersion = "0.8.9"
 }
 
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
 dependencies {
     subprojects { subproject ->
-        if (
-            !subproject.name.endsWith("-dependencies") &&
-            !subproject.name.endsWith("-dependency-versions")
-        ) {
+        if (!project.name.endsWith("-dependencies")) {
             jacocoAggregation(subproject)
         }
     }
@@ -60,7 +53,7 @@ dependencies {
 reporting {
     reports {
         testCodeCoverageReport(JacocoCoverageReport) {
-            testSuiteName = "test"
+            testType = TestSuiteType.UNIT_TEST
         }
     }
 }
@@ -70,45 +63,7 @@ htmlDependencyReport {
 }
 
 //Sonarqube
-tasks.named("sonar") {
-    dependsOn tasks.named("build")
-    dependsOn tasks.named("testCodeCoverageReport")
-    //make sure the sources were build before collecting the source sets for sonar
-    dependsOn subprojects.collectMany { subproject ->
-        def deps = []
-        if (subproject.hasProperty("sourceSets") &&
-            subproject.sourceSets.findByName("main") != null) {
-            if (subproject.tasks.findByName("classes") != null) {
-                deps << subproject.tasks.named("classes")
-                deps << subproject.tasks.named("testClasses")
-            }
-        }
-        return deps
-    }
-    doFirst {
-        def binaryDirs = subprojects.collectMany { subproject ->
-            def outputDirs = []
-
-            if (subproject.hasProperty("sourceSets")) {
-                if (subproject.sourceSets.findByName("main") != null) {
-                    def dirs = subproject.sourceSets.main.output.classesDirs.files +
-                        subproject.sourceSets.test.output.classesDirs.files
-                    dirs.each { dir ->
-                        if (dir.exists()) {
-                            outputDirs << dir
-                        }
-                    }
-                }
-            }
-
-            return outputDirs
-        }
-
-        project.extensions.extraProperties.set("sonar.java.binaries", files(binaryDirs).asPath)
-    }
-}
-
-sonar {
+sonarqube {
     properties {
         property "sonar.scm.provider", "git"
         property "sonar.coverage.jacoco.xmlReportPaths", allTestCoverageFile
@@ -116,8 +71,7 @@ sonar {
 }
 
 dockerCompose {
-    useDockerComposeV2 = true
-    removeOrphans = true
+    useDockerComposeV2 = false
 }
 
 configurations {
@@ -128,7 +82,7 @@ configurations {
 }
 
 allprojects {
-    if (!project.name.endsWith("-dependency-versions")) {
+    if (!(project.name.endsWith("-dependencies"))) {
         apply plugin: "java"
         apply plugin: "org.springframework.boot"
         apply plugin: "io.spring.dependency-management"
@@ -140,17 +94,17 @@ allprojects {
                 mavenBom "org.junit:junit-bom:${junitVersion}"
             }
             dependencies {
-                dependency "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
+                dependency "org.yaml:snakeyaml:${snakeYamlVersionOverride}"
+                dependency "io.netty:netty-codec:${nettyCodecVersionOverride}"
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
-                dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
             }
         }
 
         bootJar.enabled = false
     }
 
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 
     group = projectGroup
     version = projectVersion
@@ -165,10 +119,8 @@ apply from: "gradle/deployment.gradle"
 
 subprojects { subproject ->
     apply plugin: "maven-publish"
-    if (project.name.endsWith("-dependency-versions")) {
+    if (project.name.endsWith("-dependencies")) {
         apply plugin: 'java-platform'
-    } else if (project.name.endsWith("-dependencies")) {
-        apply plugin: "java-library"
     } else {
         apply plugin: "idea"
         apply plugin: "java-library"
@@ -177,20 +129,16 @@ subprojects { subproject ->
         apply plugin: "kotlin"
         apply plugin: "kotlin-spring"
         apply plugin: "kotlin-jpa"
+        apply plugin: "kotlin-allopen"
+        apply from: "$rootProject.projectDir/gradle/test.gradle"
         apply plugin: "com.avast.gradle.docker-compose"
-        apply plugin: "org.jetbrains.dokka-javadoc"
+        apply plugin: "org.jetbrains.dokka"
         apply plugin: "maven-publish"
         apply plugin: "org.owasp.dependencycheck"
-
-        apply from: "$rootProject.projectDir/gradle/test.gradle"
 
         tasks.register("allDeps", DependencyReportTask) {}
         tasks.register("allDepInsight", DependencyInsightReportTask) {
             showingAllVariants.set(false)
-        }
-
-        allOpen {
-            annotation("com.ritense.valtimo.contract.annotation.AllOpen")
         }
 
         java {
@@ -202,22 +150,17 @@ subprojects { subproject ->
         ext.kotlinSubProjectPath = subproject.projectDir.getAbsolutePath() + "/src/main/kotlin"
         if (new File(ext.kotlinSubProjectPath).exists() && !new File(ext.javaSubProjectPath).exists()) {
             tasks.getByName('javadocJar') {
-                from dokkaGenerate
+                from dokkaJavadoc
             }
         }
 
         dockerCompose {
-            useDockerComposeV2 = true
-            if (DefaultNativePlatform.currentOperatingSystem.macOsX) {
-                executable = "/usr/local/bin/docker-compose"
-                dockerExecutable = "/usr/local/bin/docker"
-            }
+            useDockerComposeV2 = false
         }
 
         tasks.withType(KotlinCompile).configureEach {
-            compilerOptions {
-                jvmTarget = JvmTarget.JVM_21
-                freeCompilerArgs.add("-Xemit-jvm-type-annotations")
+            kotlinOptions {
+                jvmTarget = JavaVersion.VERSION_17
             }
         }
 
@@ -234,6 +177,12 @@ subprojects { subproject ->
             }
         }
 
+        sonarqube {
+            properties {
+                property "sonar.coverage.jacoco.xmlReportPaths", allTestCoverageFile
+            }
+        }
+
         jar {
             enabled = true
             manifest {
@@ -244,6 +193,7 @@ subprojects { subproject ->
             }
         }
     }
+
 }
 
 tasks.withType(PublishToMavenRepository) {

@@ -3,8 +3,9 @@ package com.ritense.exact.client.endpoints
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.ritense.exact.client.endpoints.ExchangeTokenEndpoint.ExchangeTokenResponse
 import com.ritense.exact.client.endpoints.structs.ExactEndpoint
-import org.springframework.http.client.MultipartBodyBuilder
-import org.springframework.web.client.RestClient
+import org.springframework.web.reactive.function.BodyInserters
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.WebClient.RequestHeadersSpec
 
 class ExchangeTokenEndpoint(
     private val redirectUrl: String,
@@ -13,18 +14,18 @@ class ExchangeTokenEndpoint(
     private val code: String
 ) : ExactEndpoint<ExchangeTokenResponse>(ExchangeTokenResponse::class.java) {
 
-    override fun create(client: RestClient): RestClient.RequestHeadersSpec<*> {
-        val builder = MultipartBodyBuilder().apply {
-            part("grant_type", "authorization_code")
-            part("client_id", clientId)
-            part("client_secret", clientSecret)
-            part("code", code)
-            part("redirect_uri", redirectUrl)
-        }
+    override fun create(client: WebClient): RequestHeadersSpec<*> {
         return client
             .post()
-            .uri { it.pathSegment("api", "oauth2", "token").build() }
-            .body(builder.build())
+            .uri("/api/oauth2/token")
+            .body(
+                BodyInserters
+                    .fromFormData("grant_type", "authorization_code")
+                    .with("client_id", clientId)
+                    .with("client_secret", clientSecret)
+                    .with("code", code)
+                    .with("redirect_uri", redirectUrl)
+            )
     }
 
     data class ExchangeTokenResponse(

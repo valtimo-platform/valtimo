@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -26,7 +26,5 @@
     <include file="changelog/20230124-add-search-list-column-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20230131-add-search-field-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20230426-migrate-path.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20240523-add-ownertype-matchtype-dropdown.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20240620-replace-uq-constraint-remove-null.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

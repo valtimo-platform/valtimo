@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,10 @@
 
 package com.ritense.processdocument.web;
 
-import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
 import com.ritense.valtimo.web.rest.SecuritySmokeIntegrationTest;
 import java.util.Set;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 public class ProcessDocumentSecuritySmokeIntegrationTest extends SecuritySmokeIntegrationTest {
-    @MockitoBean
-    private ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker;
-
     public ProcessDocumentSecuritySmokeIntegrationTest() {
         super("com.ritense.processdocument", Set.of());
     }

@@ -1,10 +1,10 @@
 package com.ritense.formflow.repository
 
 import com.ritense.formflow.domain.instance.FormFlowInstance
-import jakarta.persistence.EntityManager
-import jakarta.persistence.criteria.CriteriaBuilder
-import jakarta.persistence.criteria.Predicate
-import jakarta.persistence.criteria.Root
+import javax.persistence.EntityManager
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.Predicate
+import javax.persistence.criteria.Root
 
 class MySqlFormFlowAdditionalPropertiesSearchRepository(
     private val entityManager: EntityManager
@@ -41,7 +41,7 @@ class MySqlFormFlowAdditionalPropertiesSearchRepository(
         return criteriaBuilder.equal(
             criteriaBuilder.function(
                 "JSON_EXTRACT",
-                Any::class.java,
+                FormFlowInstance::class.java,
                 root.get<Any>("additionalProperties"),
                 criteriaBuilder.literal("$.$key")
             ),

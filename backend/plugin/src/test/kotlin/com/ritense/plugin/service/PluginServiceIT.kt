@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.TestPlugin
 import com.ritense.plugin.autodeployment.AutoDeploymentTestPlugin
 import com.ritense.plugin.autodeployment.PluginAutoDeploymentDto
+import com.ritense.plugin.domain.ActivityType
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
@@ -31,7 +32,10 @@ import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
-import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.plugin.repository.PluginProcessLinkRepository
+import org.camunda.bpm.engine.delegate.DelegateExecution
+import org.camunda.community.mockito.delegate.DelegateExecutionFake
+import org.camunda.community.mockito.delegate.DelegateTaskFake
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -46,9 +50,9 @@ import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.InvocationTargetException
 import java.net.URI
@@ -58,6 +62,11 @@ import kotlin.test.assertNotEquals
 
 
 internal class PluginServiceIT : BaseIntegrationTest() {
+    @SpyBean
+    lateinit var pluginService: PluginService
+
+    @MockBean
+    lateinit var pluginProcessLinkRepository: PluginProcessLinkRepository
 
     @Autowired
     lateinit var pluginDefinitionRepository: PluginDefinitionRepository
@@ -71,37 +80,29 @@ internal class PluginServiceIT : BaseIntegrationTest() {
     @Autowired
     lateinit var objectMapper: ObjectMapper
 
-    @Autowired
-    lateinit var encryptionService: EncryptionService
-
-
     lateinit var pluginConfiguration: PluginConfiguration
     lateinit var categoryPluginConfiguration: PluginConfiguration
     lateinit var pluginDefinition: PluginDefinition
 
     @BeforeEach
     fun init() {
-        pluginDefinition = pluginDefinitionRepository.getReferenceById("test-plugin")
+        pluginDefinition = pluginDefinitionRepository.getById("test-plugin")
         pluginConfiguration = pluginConfigurationRepository.save(
             PluginConfiguration(
                 PluginConfigurationId.newId(),
                 "title",
                 objectMapper.createObjectNode(),
-                pluginDefinition,
-                encryptionService,
-                objectMapper
+                pluginDefinition
             )
         )
 
-        val categoryPluginDefinition = pluginDefinitionRepository.getReferenceById("test-category-plugin")
+        val categoryPluginDefinition = pluginDefinitionRepository.getById("test-category-plugin")
         categoryPluginConfiguration = pluginConfigurationRepository.save(
             PluginConfiguration(
                 PluginConfigurationId.newId(),
                 "title",
                 objectMapper.createObjectNode(),
-                categoryPluginDefinition,
-                encryptionService,
-                objectMapper
+                categoryPluginDefinition
             )
         )
     }
@@ -168,11 +169,11 @@ internal class PluginServiceIT : BaseIntegrationTest() {
             pluginConfigurationId = pluginConfiguration.id,
             pluginActionDefinitionKey = "test-action",
             actionProperties = objectMapper.readTree("{}") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            activityType = ActivityType.SERVICE_TASK_START
         )
 
-        val execution = mock<DelegateExecution>()
-        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
+        val execution = DelegateExecutionFake.of()
+            .withProcessInstanceId(UUID.randomUUID().toString())
 
         pluginService.invoke(execution, processLink)
     }
@@ -187,15 +188,13 @@ internal class PluginServiceIT : BaseIntegrationTest() {
             pluginConfigurationId = pluginConfiguration.id,
             pluginActionDefinitionKey = "test-action-task",
             actionProperties = objectMapper.readTree("{}") as ObjectNode,
-            activityType = ActivityTypeWithEventName.USER_TASK_CREATE
+            activityType = ActivityType.USER_TASK_CREATE
         )
 
-        val execution = mock<DelegateExecution>()
-        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
+        val execution = DelegateExecutionFake.of()
+            .withProcessInstanceId(UUID.randomUUID().toString())
 
-        val task = mock<DelegateTask>()
-        whenever(task.processInstanceId).thenReturn(UUID.randomUUID().toString())
-        whenever(task.execution).thenReturn(execution)
+        val task = DelegateTaskFake().withProcessInstanceId(execution.processInstanceId).withExecution(execution)
 
         pluginService.invoke(task, processLink)
     }
@@ -210,11 +209,11 @@ internal class PluginServiceIT : BaseIntegrationTest() {
             pluginConfigurationId = pluginConfiguration.id,
             pluginActionDefinitionKey = "other-test-action",
             actionProperties = objectMapper.readTree("""{"someString": "test123"}""") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            activityType = ActivityType.SERVICE_TASK_START
         )
 
-        val execution = mock<DelegateExecution>()
-        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
+        val execution = DelegateExecutionFake.of()
+            .withProcessInstanceId(UUID.randomUUID().toString())
 
         val result = pluginService.invoke(execution, processLink)
 
@@ -231,15 +230,15 @@ internal class PluginServiceIT : BaseIntegrationTest() {
             pluginConfigurationId = pluginConfiguration.id,
             pluginActionDefinitionKey = "other-test-action",
             actionProperties = objectMapper.readTree("""{"someString": "pv:placeholder"}""") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            activityType = ActivityType.SERVICE_TASK_START
         )
 
         val testPlugin = spy(TestPlugin("someString"))
         doReturn(testPlugin).whenever(pluginFactory).create(pluginConfiguration)
 
-        val execution = mock<DelegateExecution>()
-        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
-        whenever(execution.getVariable("placeholder")).thenReturn("1234")
+        val execution = DelegateExecutionFake.of()
+            .withProcessInstanceId(UUID.randomUUID().toString())
+            .withVariable("placeholder", "1234")
 
         pluginService.invoke(execution, processLink)
 
@@ -251,33 +250,6 @@ internal class PluginServiceIT : BaseIntegrationTest() {
 
     @Test
     @Transactional
-    fun `should handle plugin action property with leading 0`() {
-        val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
-            processDefinitionId = UUID.randomUUID().toString(),
-            activityId = "test",
-            pluginConfigurationId = pluginConfiguration.id,
-            pluginActionDefinitionKey = "other-test-action",
-            actionProperties = objectMapper.readTree("""{"someString": "01234"}""") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
-        )
-
-        val testPlugin = spy(TestPlugin("someString"))
-        doReturn(testPlugin).whenever(pluginFactory).create(pluginConfiguration)
-
-        val execution = mock<DelegateExecution>()
-        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
-
-        pluginService.invoke(execution, processLink)
-
-        val argumentCaptor = argumentCaptor<String>()
-        verify(testPlugin).testAction(argumentCaptor.capture())
-
-        assertEquals("01234", argumentCaptor.firstValue)
-    }
-
-    @Test
-    @Transactional
     fun `should fail when invoking an action with missing required parameter`() {
         val processLink = PluginProcessLink(
             PluginProcessLinkId.newId(),
@@ -285,7 +257,7 @@ internal class PluginServiceIT : BaseIntegrationTest() {
             activityId = "test",
             pluginConfigurationId = pluginConfiguration.id,
             pluginActionDefinitionKey = "other-test-action",
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            activityType = ActivityType.SERVICE_TASK_START
         )
 
         assertFailsWith<InvocationTargetException>(
@@ -305,12 +277,12 @@ internal class PluginServiceIT : BaseIntegrationTest() {
             pluginConfigurationId = pluginConfiguration.id,
             pluginActionDefinitionKey = "test-action-with-uri-parameter",
             actionProperties = objectMapper.readTree("""{"uriParam": "pv:exampleUrl"}""") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            activityType = ActivityType.SERVICE_TASK_START
         )
 
-        val execution = mock<DelegateExecution>()
-        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
-        whenever(execution.getVariable("exampleUrl")).thenReturn("www.example.com")
+        val execution = DelegateExecutionFake.of()
+            .withProcessInstanceId(UUID.randomUUID().toString())
+            .withVariable("exampleUrl", "www.example.com")
 
         val result = pluginService.invoke(execution, processLink)
 
@@ -433,9 +405,7 @@ internal class PluginServiceIT : BaseIntegrationTest() {
                 PluginConfigurationId.newId(),
                 "title",
                 objectMapper.readTree(update) as ObjectNode,
-                pluginDefinition,
-                encryptionService,
-                objectMapper
+                pluginDefinition
             )
         )
 

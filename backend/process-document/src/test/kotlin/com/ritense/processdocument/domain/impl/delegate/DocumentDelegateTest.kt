@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,19 +18,17 @@ package com.ritense.processdocument.domain.impl.delegate
 
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
-import com.ritense.valtimo.contract.OauthConfigHolder
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.authentication.model.ValtimoUserBuilder
-import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth
+import org.camunda.community.mockito.delegate.DelegateExecutionFake
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.util.Optional
 import java.util.UUID
 
@@ -51,24 +49,22 @@ internal class DocumentDelegateTest {
             userManagementService,
             documentService,
         )
-        OauthConfigHolder(Oauth())
     }
 
     @Test
     fun `should assign user to document`() {
         val documentId = "11111111-1111-1111-1111-111111111111"
         val processInstanceId = "00000000-0000-0000-0000-000000000000"
-        val delegateExecution = mock<DelegateExecution>()
-        whenever(delegateExecution.id).thenReturn("id")
-        whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId)
+        val delegateExecutionFake = DelegateExecutionFake("id")
+            .withProcessInstanceId(processInstanceId)
+            .withProcessBusinessKey(documentId)
         whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
+            processDocumentService.getDocumentId(CamundaProcessInstanceId(processInstanceId), delegateExecutionFake)
         ).thenReturn(JsonSchemaDocumentId.existingId(UUID.fromString(documentId)))
         whenever(userManagementService.findByEmail("john@example.com"))
             .thenReturn(Optional.of(ValtimoUserBuilder().id("anId").build()))
 
-        documentDelegate.setAssignee(delegateExecution, "john@example.com")
+        documentDelegate.setAssignee(delegateExecutionFake, "john@example.com")
 
         verify(documentService, times(1)).assignUserToDocument(UUID.fromString(documentId), "anId")
     }
@@ -77,15 +73,14 @@ internal class DocumentDelegateTest {
     fun `should unassign user from document`() {
         val documentId = "11111111-1111-1111-1111-111111111111"
         val processInstanceId = "00000000-0000-0000-0000-000000000000"
-        val delegateExecution = mock<DelegateExecution>()
-        whenever(delegateExecution.id).thenReturn("id")
-        whenever(delegateExecution.processInstanceId).thenReturn(processInstanceId)
-        whenever(delegateExecution.processBusinessKey).thenReturn(documentId)
+        val delegateExecutionFake = DelegateExecutionFake("id")
+            .withProcessInstanceId(processInstanceId)
+            .withProcessBusinessKey(documentId)
         whenever(
-            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), delegateExecution)
+            processDocumentService.getDocumentId(CamundaProcessInstanceId(processInstanceId), delegateExecutionFake)
         ).thenReturn(JsonSchemaDocumentId.existingId(UUID.fromString(documentId)))
 
-        documentDelegate.unassign(delegateExecution)
+        documentDelegate.unassign(delegateExecutionFake)
 
         verify(documentService, times(1)).unassignUserFromDocument(UUID.fromString(documentId))
     }

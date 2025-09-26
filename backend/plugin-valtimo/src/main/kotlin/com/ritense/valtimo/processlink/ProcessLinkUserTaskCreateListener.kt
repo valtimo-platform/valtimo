@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,42 +16,31 @@
 
 package com.ritense.valtimo.processlink
 
-import com.ritense.logging.withLoggingContext
+import com.ritense.plugin.domain.ActivityType
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.service.PluginService
-import com.ritense.processlink.domain.ActivityTypeWithEventName
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import org.operaton.bpm.engine.delegate.DelegateTask
-import org.springframework.context.event.EventListener
-import org.springframework.stereotype.Component
+import org.camunda.bpm.engine.ActivityTypes
+import org.camunda.bpm.engine.delegate.DelegateTask
+import org.camunda.bpm.engine.delegate.TaskListener
+import org.camunda.bpm.extension.reactor.bus.CamundaSelector
+import org.camunda.bpm.extension.reactor.spring.listener.ReactorTaskListener
 import org.springframework.transaction.annotation.Transactional
 
-@Component
-@SkipComponentScan
+@CamundaSelector(type = ActivityTypes.TASK_USER_TASK, event = TaskListener.EVENTNAME_CREATE)
 open class ProcessLinkUserTaskCreateListener(
     private val pluginProcessLinkRepository: PluginProcessLinkRepository,
     private val pluginService: PluginService,
-) {
+) : ReactorTaskListener() {
 
     @Transactional
-    @EventListener(
-        condition = """#delegateTask.bpmnModelElementInstance != null
-            && #delegateTask.bpmnModelElementInstance.elementType.typeName == T(org.operaton.bpm.engine.ActivityTypes).TASK_USER_TASK
-            && #delegateTask.eventName == T(org.operaton.bpm.engine.delegate.TaskListener).EVENTNAME_CREATE"""
-    )
-    fun notify(delegateTask: DelegateTask) {
-        withLoggingContext(
-            "com.ritense.document.domain.impl.JsonSchemaDocument",
-            delegateTask.execution.processBusinessKey
-        ) {
-            val pluginProcessLinks = pluginProcessLinkRepository.findByProcessDefinitionIdAndActivityIdAndActivityType(
-                delegateTask.processDefinitionId,
-                delegateTask.execution.currentActivityId,
-                ActivityTypeWithEventName.USER_TASK_CREATE
-            )
-            pluginProcessLinks.forEach { pluginProcessLink ->
-                pluginService.invoke(delegateTask, pluginProcessLink)
-            }
+    override fun notify(task: DelegateTask) {
+        val pluginProcessLinks = pluginProcessLinkRepository.findByProcessDefinitionIdAndActivityIdAndActivityType(
+            task.processDefinitionId,
+            task.execution.currentActivityId,
+            ActivityType.USER_TASK_CREATE
+        )
+        pluginProcessLinks.forEach { pluginProcessLink ->
+            pluginService.invoke(task, pluginProcessLink)
         }
     }
 }

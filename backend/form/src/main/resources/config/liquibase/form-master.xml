@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -33,11 +33,5 @@
     <include file="changelog/20210107-add-readonly-column.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20220123-add-name-unique-constraint-changelog.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20230330-add-form-process-link.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20240528-add-view-model-to-process-link.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20240529-intermediate-submission.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20240819-task-size-and-type-to-process-link.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20241111-subtitles-to-process-link.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20250219-form-major13-upgrade.xml" relativeToChangelogFile="true"/>
-    <include file="changelog/20250812-process-link-subtitles-to-jsonb.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

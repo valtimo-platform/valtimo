@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,83 +29,63 @@ import com.ritense.objectenapi.event.ObjectsListed
 import com.ritense.objectenapi.security.Object
 import com.ritense.objectenapi.security.ObjectActionProvider
 import com.ritense.outbox.OutboxService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Component
-import org.springframework.web.client.RestClient
-import org.springframework.web.client.body
+import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 
-@SkipComponentScan
-@Component
 class ObjectenApiClient(
-    private val restClientBuilder: RestClient.Builder,
+    private val webclientBuilder: WebClient.Builder,
     private val outboxService: OutboxService,
     private val objectMapper: ObjectMapper,
     private val authorizationService: AuthorizationService,
+    private val authorizationEnabled: Boolean,
 ) {
 
     fun getObject(
         authentication: ObjectenApiAuthentication,
         objectUrl: URI
     ): ObjectWrapper {
-        val result = buildRestClient(authentication)
+        val result = webclientBuilder
+            .clone()
+            .filter(authentication)
+            .build()
             .get()
             .uri(objectUrl)
             .retrieve()
-            .body<ObjectWrapper>()!!
+            .toEntity(ObjectWrapper::class.java)
+            .block()
 
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.VIEW,
-                Object()
-            )
-        )
+        val responseBody = result?.body!!
 
-        outboxService.send {
-            ObjectViewed(
-                result.url.toString(),
-                objectMapper.valueToTree(result)
-            )
-        }
-        return result
-    }
+        val response = if (responseBody.type.host == HOST_DOCKER_INTERNAL)
+            responseBody.copy(
+                type = URI.create(
+                    responseBody.type.toString().replace(HOST_DOCKER_INTERNAL, "localhost")
+                )
+        ) else responseBody
 
-    fun getObjectRecord(
-        authentication: ObjectenApiAuthentication,
-        objectUrl: URI,
-        index: Int
-    ): ObjectRecord {
-        val recordUrl = UriComponentsBuilder
-            .fromUri(objectUrl)
-            .pathSegment(index.toString())
-            .build()
-            .toUri()
-
-        val result = buildRestClient(authentication)
-            .get()
-            .uri(recordUrl)
-            .retrieve()
-            .body<ObjectRecord>()!!
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.VIEW,
-                Object()
-            )
-        )
-
-        outboxService.send {
-            ObjectViewed(
-                objectUrl.toString(),
-                objectMapper.valueToTree(result)
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.VIEW,
+                    Object()
+                )
             )
         }
-        return result
+
+        if (result.hasBody()) {
+            outboxService.send {
+                ObjectViewed(
+                    response.url.toString(),
+                    objectMapper.valueToTree(response)
+                )
+            }
+        }
+
+        return response
     }
 
     fun getObjectsByObjecttypeUrl(
@@ -113,44 +93,57 @@ class ObjectenApiClient(
         objecttypesApiUrl: URI,
         objectsApiUrl: URI,
         objectypeId: String,
-        ordering: String? = "",
         pageable: Pageable
     ): ObjectsList {
+        val host = if (objecttypesApiUrl.host == "localhost") {
+            HOST_DOCKER_INTERNAL
+        } else {
+            objecttypesApiUrl.host
+        }
         val objectTypeUrl = UriComponentsBuilder.newInstance()
             .uri(objecttypesApiUrl)
-            .host(objecttypesApiUrl.host)
+            .host(host)
             .pathSegment("objecttypes")
             .pathSegment(objectypeId)
             .toUriString()
 
-        val result = buildRestClient(authentication, objectsApiUrl.toASCIIString())
+        val result = webclientBuilder
+            .clone()
+            .filter(authentication)
+            .baseUrl(objectsApiUrl.toASCIIString())
+            .build()
             .get()
             .uri { builder ->
                 builder.path("objects")
                     .queryParam("type", objectTypeUrl)
                     .queryParam("pageSize", pageable.pageSize)
                     .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
-                    .queryParam("ordering", ordering)
                     .build()
             }
             .header(ACCEPT_CRS, EPSG_4326)
             .retrieve()
-            .body<ObjectsList>()!!
+            .toEntity(ObjectsList::class.java)
+            .block()
 
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.VIEW_LIST,
-                Object()
-            )
-        )
-
-        outboxService.send {
-            ObjectsListed(
-                objectMapper.valueToTree(result.results)
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.VIEW_LIST,
+                    Object()
+                )
             )
         }
-        return result
+
+        if (result.hasBody()) {
+            outboxService.send {
+                ObjectsListed(
+                    objectMapper.valueToTree(result.body.results)
+                )
+            }
+        }
+
+        return result?.body!!
     }
 
     fun getObjectsByObjecttypeUrlWithSearchParams(
@@ -159,17 +152,25 @@ class ObjectenApiClient(
         objectsApiUrl: URI,
         objectypeId: String,
         searchString: String,
-        ordering: String? = "",
         pageable: Pageable
     ): ObjectsList {
+        val host = if (objecttypesApiUrl.host == "localhost") {
+            HOST_DOCKER_INTERNAL
+        } else {
+            objecttypesApiUrl.host
+        }
         val objectTypeUrl = UriComponentsBuilder.newInstance()
             .uri(objecttypesApiUrl)
-            .host(objecttypesApiUrl.host)
+            .host(host)
             .pathSegment("objecttypes")
             .pathSegment(objectypeId)
             .toUriString()
 
-        val result = buildRestClient(authentication, objectsApiUrl.toASCIIString())
+        val result = webclientBuilder
+            .clone()
+            .filter(authentication)
+            .baseUrl(objectsApiUrl.toASCIIString())
+            .build()
             .get()
             .uri { builder ->
                 builder.path("objects")
@@ -177,27 +178,32 @@ class ObjectenApiClient(
                     .queryParam("pageSize", pageable.pageSize)
                     .queryParam("page", pageable.pageNumber + 1) //objects api pagination starts at 1 instead of 0
                     .queryParam("data_attrs", searchString)
-                    .queryParam("ordering", ordering)
                     .build()
             }
             .header(ACCEPT_CRS, EPSG_4326)
             .retrieve()
-            .body<ObjectsList>()!!
+            .toEntity(ObjectsList::class.java)
+            .block()
 
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.VIEW_LIST,
-                Object()
-            )
-        )
-
-        outboxService.send {
-            ObjectsListed(
-                objectMapper.valueToTree(result.results)
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.VIEW_LIST,
+                    Object()
+                )
             )
         }
-        return result
+
+        if (result.hasBody()) {
+            outboxService.send {
+                ObjectsListed(
+                    objectMapper.valueToTree(result.body.results)
+                )
+            }
+        }
+
+        return result?.body!!
     }
 
     fun createObject(
@@ -205,30 +211,52 @@ class ObjectenApiClient(
         objectsApiUrl: URI,
         objectRequest: ObjectRequest
     ): ObjectWrapper {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.CREATE,
-                Object()
-            )
-        )
-
-        val result = buildRestClient(authentication, objectsApiUrl.toASCIIString())
-            .post()
-            .uri { it.pathSegment("objects").build() }
-            .header(ACCEPT_CRS, EPSG_4326)
-            .header(CONTENT_CRS, EPSG_4326)
-            .body(objectRequest)
-            .retrieve()
-            .body<ObjectWrapper>()!!
-
-        outboxService.send {
-            ObjectCreated(
-                result.url.toString(),
-                objectMapper.valueToTree(result)
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.CREATE,
+                    Object()
+                )
             )
         }
-        return result
+
+        val objectRequestCorrectedHost = if (objectRequest.type.host == "localhost") {
+            objectRequest.copy(
+                type = UriComponentsBuilder
+                    .fromUri(objectRequest.type)
+                    .host(HOST_DOCKER_INTERNAL)
+                    .build()
+                    .toUri()
+            )
+        } else {
+            objectRequest
+        }
+
+        val result = webclientBuilder
+            .clone()
+            .filter(authentication)
+            .baseUrl(objectsApiUrl.toASCIIString())
+            .build()
+            .post()
+            .uri("objects")
+            .header(ACCEPT_CRS, EPSG_4326)
+            .header(CONTENT_CRS, EPSG_4326)
+            .bodyValue(objectRequestCorrectedHost)
+            .retrieve()
+            .toEntity(ObjectWrapper::class.java)
+            .block()
+
+        if (result.hasBody()) {
+            outboxService.send {
+                ObjectCreated(
+                    result.body.url.toString(),
+                    objectMapper.valueToTree(result.body)
+                )
+            }
+        }
+
+        return result?.body!!
     }
 
     fun objectPatch(
@@ -236,30 +264,50 @@ class ObjectenApiClient(
         objectUrl: URI,
         objectRequest: ObjectRequest
     ): ObjectWrapper {
-
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.MODIFY,
-                Object()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.MODIFY,
+                    Object()
+                )
             )
-        )
+        }
 
-        val result = buildRestClient(authentication)
+        val objectRequestCorrectedHost = if (objectRequest.type.host == "localhost") {
+            objectRequest.copy(
+                type = UriComponentsBuilder
+                    .fromUri(objectRequest.type)
+                    .host(HOST_DOCKER_INTERNAL)
+                    .build()
+                    .toUri()
+            )
+        } else {
+            objectRequest
+        }
+        val result = webclientBuilder
+            .clone()
+            .filter(authentication)
+            .build()
             .patch()
             .uri(objectUrl)
             .header(CONTENT_CRS, EPSG_4326)
-            .body(objectRequest)
+            .bodyValue(objectRequestCorrectedHost)
             .retrieve()
-            .body<ObjectWrapper>()!!
+            .toEntity(ObjectWrapper::class.java)
+            .block()
 
-        outboxService.send {
-            ObjectPatched(
-                result.url.toString(),
-                objectMapper.valueToTree(result)
-            )
+
+        if (result.hasBody()) {
+            outboxService.send {
+                ObjectPatched(
+                    result.body.url.toString(),
+                    objectMapper.valueToTree(result.body)
+                )
+            }
         }
-        return result
+
+        return result?.body!!
     }
 
     fun objectUpdate(
@@ -267,64 +315,75 @@ class ObjectenApiClient(
         objectUrl: URI,
         objectRequest: ObjectRequest
     ): ObjectWrapper {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.MODIFY,
-                Object()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.MODIFY,
+                    Object()
+                )
             )
-        )
+        }
 
-        val result = buildRestClient(authentication)
+        val result = webclientBuilder
+            .clone()
+            .filter(authentication)
+            .build()
             .put()
             .uri(objectUrl)
             .header(CONTENT_CRS, EPSG_4326)
-            .body(objectRequest)
+            .bodyValue(objectRequest)
             .retrieve()
-            .body<ObjectWrapper>()!!
+            .toEntity(ObjectWrapper::class.java)
+            .block()
 
-        outboxService.send {
-            ObjectUpdated(
-                result.url.toString(),
-                objectMapper.valueToTree(result)
-            )
+        if (result.hasBody()) {
+            outboxService.send {
+                ObjectUpdated(
+                    result.body.url.toString(),
+                    objectMapper.valueToTree(result.body)
+                )
+            }
         }
-        return result
+
+        return result?.body!!
     }
 
     fun deleteObject(authentication: ObjectenApiAuthentication, objectUrl: URI): HttpStatus {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                Object::class.java,
-                ObjectActionProvider.DELETE,
-                Object()
+        if (authorizationEnabled) {
+            authorizationService.requirePermission(
+                EntityAuthorizationRequest(
+                    Object::class.java,
+                    ObjectActionProvider.DELETE,
+                    Object()
+                )
             )
-        )
+        }
 
-        val result = buildRestClient(authentication)
+        val result = webclientBuilder
+            .clone()
+            .filter(authentication)
+            .build()
             .delete()
             .uri(objectUrl)
             .header(CONTENT_CRS, EPSG_4326)
             .retrieve()
             .toBodilessEntity()
+            .block()
 
-        outboxService.send {
-            ObjectDeleted(objectUrl.toString())
-        }
-        return HttpStatus.valueOf(result.statusCode.value())
-    }
-
-    private fun buildRestClient(authentication: ObjectenApiAuthentication, baseURL: String? = null): RestClient {
-        return restClientBuilder
-            .clone()
-            .apply {
-                authentication.applyAuth(it)
-                baseURL?.let { url -> it.baseUrl(url) }
+        if (result?.statusCode?.is2xxSuccessful == true) {
+            outboxService.send {
+                ObjectDeleted(
+                    objectUrl.toString()
+                )
             }
-            .build()
+        }
+
+        return result?.statusCode!!
     }
 
     companion object {
+        private const val HOST_DOCKER_INTERNAL = "host.docker.internal"
         private const val CONTENT_CRS = "Content-Crs"
         private const val ACCEPT_CRS = "Accept-Crs"
         private const val EPSG_4326 = "EPSG:4326"

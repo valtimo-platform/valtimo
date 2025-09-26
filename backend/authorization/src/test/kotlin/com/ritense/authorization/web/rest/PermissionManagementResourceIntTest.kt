@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.ritense.authorization.web.rest
 import com.ritense.authorization.BaseIntegrationTest
 import com.ritense.authorization.web.request.SearchPermissionsRequest
 import com.ritense.valtimo.contract.utils.TestUtil.convertObjectToJsonBytes
-import kotlin.text.Charsets.UTF_8
 import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -32,6 +31,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
+import kotlin.text.Charsets.UTF_8
 
 class PermissionManagementResourceIntTest : BaseIntegrationTest() {
 
@@ -59,12 +59,11 @@ class PermissionManagementResourceIntTest : BaseIntegrationTest() {
             .andDo(print())
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$[0].resourceType", equalTo("com.ritense.authorization.testimpl.TestDocument")))
-            .andExpect(jsonPath("$[0].actions[0]", equalTo("view")))
+            .andExpect(jsonPath("$[0].action", equalTo("view")))
             .andExpect(jsonPath("$[0].conditions[0].type", equalTo("field")))
             .andExpect(jsonPath("$[0].conditions[0].field", equalTo("document.name")))
-            .andExpect(jsonPath("$[0].conditions[0].operator", equalTo("in")))
-            .andExpect(jsonPath("$[0].conditions[0].value[0]", equalTo("loan")))
-            .andExpect(jsonPath("$[0].conditions[0].value[1]", equalTo("gift")))
+            .andExpect(jsonPath("$[0].conditions[0].operator", equalTo("==")))
+            .andExpect(jsonPath("$[0].conditions[0].value", equalTo("loan")))
             .andExpect(jsonPath("$[0].roleKey", equalTo("ROLE_USER")))
     }
 

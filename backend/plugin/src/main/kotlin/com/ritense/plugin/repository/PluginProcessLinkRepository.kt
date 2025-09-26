@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.ritense.plugin.repository
 
+import com.ritense.plugin.domain.ActivityType
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginProcessLink
 import com.ritense.plugin.domain.PluginProcessLinkId
@@ -26,7 +27,7 @@ import com.ritense.processlink.repository.BaseProcessLinkRepository
 class PluginProcessLinkRepository(
     private val pluginProcessLinkRepositoryImpl: PluginProcessLinkRepositoryImpl
 ) {
-    fun getById(id: PluginProcessLinkId) = pluginProcessLinkRepositoryImpl.getReferenceById(id.id)
+    fun getById(id: PluginProcessLinkId) = pluginProcessLinkRepositoryImpl.getById(id.id)
     fun save(entity: PluginProcessLink) = pluginProcessLinkRepositoryImpl.save(entity)
     fun saveAll(entities: List<PluginProcessLink>) = pluginProcessLinkRepositoryImpl.saveAll(entities)
     fun deleteById(id: PluginProcessLinkId) = pluginProcessLinkRepositoryImpl.deleteById(id.id)
@@ -39,23 +40,23 @@ class PluginProcessLinkRepository(
     fun findByProcessDefinitionIdAndActivityIdAndActivityType(
         processDefinitionId: String,
         activityId: String,
-        activityType: ActivityTypeWithEventName
+        activityType: ActivityType
     ) =
         pluginProcessLinkRepositoryImpl.findByProcessDefinitionIdAndActivityIdAndActivityType(
             processDefinitionId,
             activityId,
-            activityType
+            activityType.toActivityTypeWithEventName()
         )
 
     fun findByPluginConfigurationIdAndActivityIdAndActivityType(
         pluginConfigurationId: PluginConfigurationId,
         activityId: String,
-        activityType: ActivityTypeWithEventName
+        activityType: ActivityType
     ) =
         pluginProcessLinkRepositoryImpl.findByPluginConfigurationIdAndActivityIdAndActivityType(
             pluginConfigurationId,
             activityId,
-            activityType
+            activityType.toActivityTypeWithEventName()
         )
 
     fun findByPluginConfigurationId(pluginConfigurationId: PluginConfigurationId) =

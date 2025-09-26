@@ -1,3 +1,0 @@
-com.ritense.objectmanagement.autoconfigure.ObjectManagementAutoConfiguration
-com.ritense.objectmanagement.autoconfigure.ObjectManagementEarlyAutoConfiguration
-com.ritense.objectmanagement.autoconfigure.ObjectManagementLiquibaseAutoConfiguration

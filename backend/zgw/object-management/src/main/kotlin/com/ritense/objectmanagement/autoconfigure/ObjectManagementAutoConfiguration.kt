@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,23 +21,22 @@ import com.ritense.objectmanagement.autodeployment.ObjectManagementDefinitionDep
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objectmanagement.security.config.ObjectManagementHttpSecurityConfigurer
 import com.ritense.objectmanagement.service.ObjectManagementFacade
+import com.ritense.objectmanagement.service.ObjectManagementInfoProviderImpl
 import com.ritense.objectmanagement.service.ObjectManagementService
-import com.ritense.objectmanagement.web.rest.ObjectManagementManagementResource
 import com.ritense.objectmanagement.web.rest.ObjectManagementResource
 import com.ritense.plugin.service.PluginService
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.service.SearchListColumnService
-import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
-import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
-@AutoConfiguration
+@Configuration
 @EnableJpaRepositories(basePackages = ["com.ritense.objectmanagement.repository"])
 @EntityScan("com.ritense.objectmanagement.domain")
 class ObjectManagementAutoConfiguration {
@@ -71,21 +70,19 @@ class ObjectManagementAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(ObjectManagementResource::class)
-    fun objectManagementResource(
-        objectManagementService: ObjectManagementService
-    ): ObjectManagementResource {
-        return ObjectManagementResource(
+    @ConditionalOnMissingBean(ObjectManagementInfoProviderImpl::class)
+    fun objectManagementInfoProvider(objectManagementService: ObjectManagementService): ObjectManagementInfoProviderImpl {
+        return ObjectManagementInfoProviderImpl(
             objectManagementService
         )
     }
 
     @Bean
-    @ConditionalOnMissingBean(ObjectManagementManagementResource::class)
-    fun objectManagementManagementResource(
+    @ConditionalOnMissingBean(ObjectManagementResource::class)
+    fun objectManagementResource(
         objectManagementService: ObjectManagementService
-    ): ObjectManagementManagementResource {
-        return ObjectManagementManagementResource(
+    ): ObjectManagementResource {
+        return ObjectManagementResource(
             objectManagementService
         )
     }
@@ -98,7 +95,6 @@ class ObjectManagementAutoConfiguration {
         objectManagementRepository: ObjectManagementRepository,
         applicationEventPublisher: ApplicationEventPublisher,
         objectMapper: ObjectMapper,
-        environment: Environment
     ): ObjectManagementDefinitionDeploymentService {
         return ObjectManagementDefinitionDeploymentService(
             resourceLoader,
@@ -106,7 +102,6 @@ class ObjectManagementAutoConfiguration {
             objectManagementRepository,
             applicationEventPublisher,
             objectMapper,
-            environment
         )
     }
 

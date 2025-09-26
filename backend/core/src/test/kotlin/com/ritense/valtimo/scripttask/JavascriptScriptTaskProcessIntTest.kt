@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,9 @@ package com.ritense.valtimo.scripttask
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.BaseIntegrationTest
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.HistoryService
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.HistoryService
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
-import org.operaton.bpm.engine.ScriptEvaluationException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -33,7 +30,7 @@ import kotlin.test.assertEquals
 class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
 
     @Autowired
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
     @Autowired
     lateinit var historyService: HistoryService
@@ -41,7 +38,7 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
     @Test
     fun `should execute javascript in script-task`() {
         val processInstance = runWithoutAuthorization {
-            operatonProcessService.startProcess(
+            camundaProcessService.startProcess(
                 "javascript-script-task-process",
                 UUID.randomUUID().toString(),
                 mapOf("a" to 1, "b" to 2)
@@ -54,46 +51,5 @@ class JavascriptScriptTaskProcessIntTest : BaseIntegrationTest() {
             .singleResult()
             .value
         assertEquals(3, c)
-    }
-
-    @Test
-    fun `whitelisted classes should be allowed in script tasks`() {
-
-        assertDoesNotThrow {
-            runWithoutAuthorization {
-                operatonProcessService.startProcess(
-                    "javascript-script-task-process-allowed",
-                    UUID.randomUUID().toString(),
-                    emptyMap()
-                ).processInstanceDto
-            }
-        }
-    }
-
-    @Test
-    fun `default whitelisted classes should be allowed in script tasks`() {
-
-        assertDoesNotThrow {
-            runWithoutAuthorization {
-                operatonProcessService.startProcess(
-                    "javascript-script-task-process-default-allowed",
-                    UUID.randomUUID().toString(),
-                    emptyMap()
-                ).processInstanceDto
-            }
-        }
-    }
-
-    @Test
-    fun `non-whitelisted classes should not be allowed in script tasks`() {
-        assertThrows<ScriptEvaluationException> {
-            runWithoutAuthorization {
-                operatonProcessService.startProcess(
-                    "javascript-script-task-process-unallowed",
-                    UUID.randomUUID().toString(),
-                    emptyMap()
-                ).processInstanceDto
-            }
-        }
     }
 }

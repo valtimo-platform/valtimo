@@ -23,6 +23,10 @@ spring:
                     provider_disables_autocommit: true
         hibernate:
             ddl-auto: none
+            naming:
+                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            use-new-id-generator-mappings: false
 
 scheduling:
     enabled: false
@@ -35,12 +39,9 @@ spring-actuator:
     username: test
     password: test
 
-operaton:
+camunda:
     bpm:
         history-level: audit
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false
 
 valtimo:
     mandrill:
@@ -51,9 +52,7 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    operaton:
-        scripting:
-            allowedClasses: java.lang.System
+
 aws:
     profile: ritense
     region: eu-central-1
@@ -64,15 +63,3 @@ aws:
         enabled: true
         region: eu-central-1
         projectName: Valtimo-Implementation
-
-
-management:
-    endpoints:
-        web:
-            exposure:
-                include: [ "health", "configprops" ]
-    endpoint:
-        health:
-            show-details: when_authorized
-            roles:
-                - ROLE_ACTUATOR

@@ -1,6 +1,0 @@
-services:
-    db:
-        ports:
-            - "3351:5432"
-        environment:
-            - POSTGRES_DB=zaakdetails-test

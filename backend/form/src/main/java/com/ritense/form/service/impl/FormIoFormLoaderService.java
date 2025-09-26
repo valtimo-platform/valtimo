@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,16 @@
 
 package com.ritense.form.service.impl;
 
-import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.document.domain.Document;
-import com.ritense.document.domain.impl.JsonSchemaDocument;
+import com.ritense.document.service.DocumentService;
 import com.ritense.form.domain.FormIoFormDefinition;
 import com.ritense.form.repository.FormDefinitionRepository;
 import com.ritense.form.service.FormLoaderService;
 import com.ritense.form.service.PrefillFormService;
-import com.ritense.logging.LoggableResource;
 import java.util.Optional;
+import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
 
 public class FormIoFormLoaderService implements FormLoaderService {
     private final FormDefinitionRepository formDefinitionRepository;
@@ -43,21 +41,19 @@ public class FormIoFormLoaderService implements FormLoaderService {
     }
 
     @Override
-    public Optional<JsonNode> getFormDefinitionByName(
-        @LoggableResource("formDefinitionName")final String formDefinitionName
-    ) {
+    public Optional<JsonNode> getFormDefinitionByName(final String formDefinitionName) {
         assertArgumentNotNull(formDefinitionName, "formDefinitionName is required");
-        return formDefinitionRepository.findByNameAndCaseDefinitionIdIsNull(formDefinitionName).map(FormIoFormDefinition::asJson);
+        return formDefinitionRepository.findByName(formDefinitionName).map(FormIoFormDefinition::asJson);
     }
 
     @Override
     public Optional<JsonNode> getFormDefinitionByNamePreFilled(
-        @LoggableResource("formDefinitionName") final String formDefinitionName,
-        @LoggableResource(resourceType = JsonSchemaDocument.class) final Document.Id documentId
+        final String formDefinitionName,
+        final Document.Id documentId
     ) {
         assertArgumentNotNull(documentId, "documentId is required");
         return AuthorizationContext.runWithoutAuthorization(
-            () -> formDefinitionRepository.findByNameAndCaseDefinitionIdIsNull(formDefinitionName)
+            () -> formDefinitionRepository.findByName(formDefinitionName)
                 .map(formIoFormDefinition -> {
                     FormIoFormDefinition prefilledFormDefinition = prefillFormService.getPrefilledFormDefinition(
                         formIoFormDefinition.getId(), documentId.getId());

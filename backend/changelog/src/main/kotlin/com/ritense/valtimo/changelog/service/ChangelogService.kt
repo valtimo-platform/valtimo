@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2024 Ritense BV, the Netherlands.
+ *  Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  *  Licensed under EUPL, Version 1.2 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,16 +18,13 @@ package com.ritense.valtimo.changelog.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valtimo.changelog.domain.Changeset
-import com.ritense.valtimo.changelog.domain.ChangesetCheckSumType
 import com.ritense.valtimo.changelog.repository.ChangesetRepository
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
 import liquibase.util.MD5Util
 import liquibase.util.StringUtil
+import mu.KotlinLogging
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
-import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
 import java.text.Normalizer
@@ -35,8 +32,6 @@ import java.time.Instant
 import kotlin.jvm.optionals.getOrElse
 
 @Transactional
-@Service
-@SkipComponentScan
 class ChangelogService(
     private val resourceLoader: ResourceLoader,
     private val changesetRepository: ChangesetRepository,
@@ -53,31 +48,19 @@ class ChangelogService(
                 filename = filename,
                 dateExecuted = Instant.now(),
                 orderExecuted = changesetRepository.getNextOrderExecuted() ?: 0,
-                md5sum = md5sum,
-                checksumType = ChangesetCheckSumType.FILE_HASH
+                md5sum = md5sum
             )
         )
     }
 
     fun deleteChangesetsByKey(key: String?) = changesetRepository.deleteAllByKey(key)
 
-    fun isNewValidChangeset(changesetId: String, md5sum: String, legacyCheckSum: String): Boolean {
+    fun isNewValidChangeset(changesetId: String, md5sum: String): Boolean {
         val existing = changesetRepository.findById(changesetId).getOrElse {
             return true
         }
         if (md5sum != existing.md5sum) {
-            if (existing.md5sum == legacyCheckSum && existing.checksumType == ChangesetCheckSumType.LEGACY) {
-                logger.info { "Checksum for changeset $changesetId in file ${existing.filename} matches existing legacy checksum. Migrating to new version" }
-                existing.copy(
-                    md5sum = md5sum,
-                    checksumType = ChangesetCheckSumType.FILE_HASH
-                ).also {
-                    changesetRepository.save(it)
-                }
-                return false
-            } else {
-                throw RuntimeException("Computed checksum '$md5sum' doesn't match existing '${existing.md5sum}' for ${existing.filename}")
-            }
+            throw RuntimeException("Computed checksum '$md5sum' doesn't match existing '${existing.md5sum}' for ${existing.filename}")
         } else {
             logger.debug { "Verified checksum '$md5sum' for ${existing.filename}" }
         }

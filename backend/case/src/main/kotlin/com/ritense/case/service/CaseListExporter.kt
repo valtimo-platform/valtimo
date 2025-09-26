@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package com.ritense.case.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.exporter.ExportFile
-import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
+import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import java.io.ByteArrayOutputStream
 
@@ -39,15 +39,11 @@ class CaseListExporter(
             return ExportResult()
         }
 
-        val formattedCaseDefinitionVersion = request.caseDefinitionId.versionTag.let {
-            "${it.major}-${it.minor}-${it.patch}"
-        }
-
         val exportFile = ByteArrayOutputStream().use {
             mapper.writer(ExportPrettyPrinter()).writeValue(it, listColumns)
 
             ExportFile(
-                PATH.format(request.caseDefinitionId.key, formattedCaseDefinitionVersion, request.name),
+                PATH.format(request.name),
                 it.toByteArray()
             )
         }
@@ -56,6 +52,6 @@ class CaseListExporter(
     }
 
     companion object {
-        private const val PATH = "config/case/%s/%s/case/list/%s.case-list.json"
+        private const val PATH = "config/case/list/%s.json"
     }
 }

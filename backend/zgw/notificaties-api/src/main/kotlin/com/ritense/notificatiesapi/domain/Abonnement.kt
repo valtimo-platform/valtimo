@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class Abonnement(
-    val url: String? = null,
+    val url: String?,
     val callbackUrl: String,
     val auth: String?,
     val kanalen: List<Kanaal> = listOf(),
@@ -29,10 +29,4 @@ data class Abonnement(
         val filters: Map<String, String> = mapOf(),
         val naam: String
     )
-
-    fun equals(url: String, callbackUrl: String, kanalen: Set<String>): Boolean {
-        return this.url == url
-            && this.callbackUrl == callbackUrl
-            && this.kanalen == kanalen.map { Kanaal(naam = it) }
-    }
 }
