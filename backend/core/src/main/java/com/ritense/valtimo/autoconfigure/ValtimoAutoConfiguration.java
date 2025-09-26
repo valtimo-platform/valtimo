@@ -20,16 +20,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.operaton.ProcessApplicationStartedEventListener;
-import com.ritense.valtimo.operaton.ProcessDefinitionPropertyListener;
-import com.ritense.valtimo.operaton.TaskCompletedListener;
-import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
-import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
-import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
-import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
-import com.ritense.valtimo.operaton.service.OperatonHistoryService;
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
+import com.ritense.valtimo.camunda.ProcessApplicationStartedEventListener;
+import com.ritense.valtimo.camunda.ProcessDefinitionPropertyListener;
+import com.ritense.valtimo.camunda.TaskCompletedListener;
+import com.ritense.valtimo.camunda.repository.CamundaExecutionRepository;
+import com.ritense.valtimo.camunda.repository.CamundaIdentityLinkRepository;
+import com.ritense.valtimo.camunda.repository.CamundaTaskRepository;
+import com.ritense.valtimo.camunda.repository.CustomRepositoryServiceImpl;
+import com.ritense.valtimo.camunda.service.CamundaHistoryService;
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService;
+import com.ritense.valtimo.camunda.service.CamundaRuntimeService;
 import com.ritense.valtimo.config.CustomDateTimeProvider;
 import com.ritense.valtimo.config.ValtimoApplicationReadyEventListener;
 import com.ritense.valtimo.contract.authentication.AuthorizedUserRepository;
@@ -39,17 +39,16 @@ import com.ritense.valtimo.contract.authentication.CurrentUserService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.helper.ActivityHelper;
-import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
 import com.ritense.valtimo.processdefinition.repository.ProcessDefinitionPropertiesRepository;
-import com.ritense.valtimo.repository.OperatonReportingRepository;
-import com.ritense.valtimo.repository.OperatonSearchProcessInstanceRepository;
+import com.ritense.valtimo.repository.CamundaReportingRepository;
+import com.ritense.valtimo.repository.CamundaSearchProcessInstanceRepository;
 import com.ritense.valtimo.repository.UserSettingsRepository;
 import com.ritense.valtimo.service.AuthorizedUsersServiceImpl;
 import com.ritense.valtimo.service.BpmnModelService;
-import com.ritense.valtimo.service.OperatonByteArrayService;
-import com.ritense.valtimo.service.OperatonProcessService;
-import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.CamundaByteArrayService;
+import com.ritense.valtimo.service.CamundaProcessService;
+import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valtimo.service.CurrentUserServiceImpl;
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
 import com.ritense.valtimo.service.ProcessPropertyService;
@@ -68,11 +67,11 @@ import java.util.Collection;
 import java.util.Optional;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.operaton.bpm.engine.FormService;
-import org.operaton.bpm.engine.HistoryService;
-import org.operaton.bpm.engine.RepositoryService;
-import org.operaton.bpm.engine.RuntimeService;
-import org.operaton.bpm.engine.TaskService;
+import org.camunda.bpm.engine.FormService;
+import org.camunda.bpm.engine.HistoryService;
+import org.camunda.bpm.engine.RepositoryService;
+import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.TaskService;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -101,9 +100,9 @@ public class ValtimoAutoConfiguration {
     @ConditionalOnMissingBean(ProcessApplicationStartedEventListener.class)
     public ProcessApplicationStartedEventListener processApplicationStartedEventListener(
         final ApplicationEventPublisher applicationEventPublisher,
-        final OperatonProcessService operatonProcessService
+        final CamundaProcessService camundaProcessService
     ) {
-        return new ProcessApplicationStartedEventListener(applicationEventPublisher, operatonProcessService);
+        return new ProcessApplicationStartedEventListener(applicationEventPublisher, camundaProcessService);
     }
 
     @Bean
@@ -131,49 +130,48 @@ public class ValtimoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(OperatonProcessService.class)
-    public OperatonProcessService operatonProcessService(
+    @ConditionalOnMissingBean(CamundaProcessService.class)
+    public CamundaProcessService camundaProcessService(
         final RuntimeService runtimeService,
-        final OperatonRuntimeService operatonRuntimeService,
+        final CamundaRuntimeService camundaRuntimeService,
         final RepositoryService repositoryService,
-        final OperatonRepositoryService operatonRepositoryService,
+        final CamundaRepositoryService camundaRepositoryService,
         final FormService formService,
-        final OperatonHistoryService historyService,
+        final CamundaHistoryService historyService,
         final ProcessPropertyService processPropertyService,
         final ValtimoProperties valtimoProperties,
         final AuthorizationService authorizationService,
-        final OperatonExecutionRepository operatonExecutionRepository,
+        final CamundaExecutionRepository camundaExecutionRepository,
         final ProcessDefinitionCaseDefinitionLinker processDefinitionCaseDefinitionLinker,
-        final OperatonByteArrayService operatonByteArrayService,
-        final ApplicationEventPublisher applicationEventPublisher,
-        final OperatonDeploymentSourceHelper operatonDeploymentSourceHelper
+        final CamundaByteArrayService camundaByteArrayService,
+        final ApplicationEventPublisher applicationEventPublisher
+
     ) {
-        return new OperatonProcessService(
+        return new CamundaProcessService(
             runtimeService,
-            operatonRuntimeService,
+            camundaRuntimeService,
             repositoryService,
-            operatonRepositoryService,
+            camundaRepositoryService,
             formService,
             historyService,
             processPropertyService,
             valtimoProperties,
             authorizationService,
-            operatonExecutionRepository,
+            camundaExecutionRepository,
             processDefinitionCaseDefinitionLinker,
-            operatonByteArrayService,
-            applicationEventPublisher,
-            operatonDeploymentSourceHelper
+            camundaByteArrayService,
+            applicationEventPublisher
         );
     }
 
     @Bean
-    @ConditionalOnMissingBean(OperatonTaskService.class)
-    public OperatonTaskService operatonTaskService(
+    @ConditionalOnMissingBean(CamundaTaskService.class)
+    public CamundaTaskService camundaTaskService(
         final TaskService taskService,
         final FormService formService,
         final DelegateTaskHelper delegateTaskHelper,
-        final OperatonTaskRepository operatonTaskRepository,
-        final OperatonIdentityLinkRepository operatonIdentityLinkRepository,
+        final CamundaTaskRepository camundaTaskRepository,
+        final CamundaIdentityLinkRepository camundaIdentityLinkRepository,
         final Optional<ResourceService> resourceServiceOptional,
         final ApplicationEventPublisher applicationEventPublisher,
         final RuntimeService runtimeService,
@@ -183,12 +181,12 @@ public class ValtimoAutoConfiguration {
         final OutboxService outboxService,
         final ObjectMapper objectMapper
     ) {
-        return new OperatonTaskService(
+        return new CamundaTaskService(
             taskService,
             formService,
             delegateTaskHelper,
-            operatonTaskRepository,
-            operatonIdentityLinkRepository,
+            camundaTaskRepository,
+            camundaIdentityLinkRepository,
             resourceServiceOptional,
             applicationEventPublisher,
             runtimeService,
@@ -223,18 +221,18 @@ public class ValtimoAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(OperatonReportingRepository.class)
-    public OperatonReportingRepository operatonReportingRepository(
+    @ConditionalOnMissingBean(CamundaReportingRepository.class)
+    public CamundaReportingRepository camundaReportingRepository(
         final SqlSession sqlSession,
-        final OperatonRepositoryService repositoryService
+        final CamundaRepositoryService repositoryService
     ) {
-        return new OperatonReportingRepository(sqlSession, repositoryService);
+        return new CamundaReportingRepository(sqlSession, repositoryService);
     }
 
     @Bean
-    @ConditionalOnMissingBean(OperatonSearchProcessInstanceRepository.class)
-    public OperatonSearchProcessInstanceRepository operatonSearchProcessInstanceRepository(final SqlSession sqlSession) {
-        return new OperatonSearchProcessInstanceRepository(sqlSession);
+    @ConditionalOnMissingBean(CamundaSearchProcessInstanceRepository.class)
+    public CamundaSearchProcessInstanceRepository camundaSearchProcessInstanceRepository(final SqlSession sqlSession) {
+        return new CamundaSearchProcessInstanceRepository(sqlSession);
     }
 
     @Bean
@@ -248,10 +246,10 @@ public class ValtimoAutoConfiguration {
     @ConditionalOnMissingBean(TaskResource.class)
     public TaskResource taskResource(
         final FormService formService,
-        final OperatonTaskService operatonTaskService,
-        final OperatonProcessService operatonProcessService
+        final CamundaTaskService camundaTaskService,
+        final CamundaProcessService camundaProcessService
     ) {
-        return new TaskResource(formService, operatonTaskService, operatonProcessService);
+        return new TaskResource(formService, camundaTaskService, camundaProcessService);
     }
 
     @Bean
@@ -259,43 +257,43 @@ public class ValtimoAutoConfiguration {
     public ReportingResource reportingResource(
         final SqlSession sqlSession,
         final HistoryService historyService,
-        final OperatonHistoryService operatonHistoryService,
-        final OperatonReportingRepository operatonReportingRepository
+        final CamundaHistoryService camundaHistoryService,
+        final CamundaReportingRepository camundaReportingRepository
     ) {
-        return new ReportingResource(sqlSession, historyService, operatonHistoryService, operatonReportingRepository);
+        return new ReportingResource(sqlSession, historyService, camundaHistoryService, camundaReportingRepository);
     }
 
     @Bean
     @ConditionalOnMissingBean(ProcessResource.class)
     public ProcessResource processResource(
         final HistoryService historyService,
-        final OperatonHistoryService operatonHistoryService,
+        final CamundaHistoryService camundaHistoryService,
         final RuntimeService runtimeService,
         final RepositoryService repositoryService,
-        final OperatonRepositoryService operatonRepositoryService,
-        final OperatonTaskService operatonTaskService,
-        final OperatonProcessService operatonProcessService,
+        final CamundaRepositoryService camundaRepositoryService,
+        final CamundaTaskService camundaTaskService,
+        final CamundaProcessService camundaProcessService,
         final ProcessShortTimerService processShortTimerService,
-        final OperatonSearchProcessInstanceRepository operatonSearchProcessInstanceRepository,
+        final CamundaSearchProcessInstanceRepository camundaSearchProcessInstanceRepository,
         final ProcessPropertyService processPropertyService
     ) {
         return new ProcessResource(
             historyService,
-            operatonHistoryService,
+            camundaHistoryService,
             runtimeService,
             repositoryService,
-            operatonRepositoryService,
-            operatonTaskService,
-            operatonProcessService,
+            camundaRepositoryService,
+            camundaTaskService,
+            camundaProcessService,
             processShortTimerService,
-            operatonSearchProcessInstanceRepository,
+            camundaSearchProcessInstanceRepository,
             processPropertyService
         );
     }
 
     @Bean
     @ConditionalOnMissingBean(ProcessInstanceResource.class)
-    public ProcessInstanceResource processInstanceResource(OperatonRuntimeService runtimeService) {
+    public ProcessInstanceResource processInstanceResource(CamundaRuntimeService runtimeService) {
         return new ProcessInstanceResource(runtimeService);
     }
 
@@ -344,12 +342,12 @@ public class ValtimoAutoConfiguration {
     public ProcessDefinitionPropertyListener processDefinitionPropertyListener(
         final ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository,
         final RepositoryService repositoryService,
-        final OperatonRepositoryService operatonRepositoryService
+        final CamundaRepositoryService camundaRepositoryService
     ) {
         return new ProcessDefinitionPropertyListener(
             processDefinitionPropertiesRepository,
             repositoryService,
-            operatonRepositoryService
+            camundaRepositoryService
         );
     }
 
@@ -358,7 +356,7 @@ public class ValtimoAutoConfiguration {
     public ProcessPropertyService processPropertyService(
         final ProcessDefinitionPropertiesRepository processDefinitionPropertiesRepository,
         final ValtimoProperties valtimoProperties,
-        final OperatonRepositoryService repositoryService
+        final CamundaRepositoryService repositoryService
     ) {
         return new ProcessPropertyService(processDefinitionPropertiesRepository, valtimoProperties, repositoryService);
     }

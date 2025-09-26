@@ -58,8 +58,8 @@ class BaseTest(
         return JsonSchemaDocumentDefinition(jsonSchemaDocumentDefinitionId, schema)
     }
 
-    protected fun definitionOf(name: String = "house", versionTag: String = "1.0.0"): JsonSchemaDocumentDefinition {
-        val documentDefinitionName = JsonSchemaDocumentDefinitionId.of(name, of(name, versionTag))
+    protected fun definitionOf(name: String?): JsonSchemaDocumentDefinition {
+        val documentDefinitionName = JsonSchemaDocumentDefinitionId.of(name, caseDefinitionId())
         val schema = JsonSchema.fromResourceUri(
             path(
                 documentDefinitionName.caseDefinitionId(),
@@ -146,7 +146,6 @@ class BaseTest(
         autoAssignTasks: Boolean = false,
         hasExternalStartForm: Boolean = false,
         externalStartFormUrl: String? = null,
-        final: Boolean = true,
     ): CaseDefinition {
         return CaseDefinition(
             id = id,
@@ -155,7 +154,7 @@ class BaseTest(
             createdBy = "system",
             createdDate = LocalDateTime.now(),
             basedOnVersionTag = Semver.parse("1.0.0-SNAPSHOT"),
-            final = final,
+            final = true,
             active = active,
 
             canHaveAssignee = canHaveAssignee,

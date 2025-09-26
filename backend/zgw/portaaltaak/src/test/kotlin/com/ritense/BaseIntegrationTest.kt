@@ -17,14 +17,13 @@
 package com.ritense
 
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.notificatiesapi.PluginsDeployedEventListener
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.ResourceService
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
-import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.CamundaProcessService
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ResourceProvider
 import com.ritense.zakenapi.ZaakUrlProvider
@@ -51,7 +50,7 @@ abstract class BaseIntegrationTest {
     lateinit var valueResolverService: ValueResolverService
 
     @MockitoSpyBean
-    lateinit var operatonProcessService: OperatonProcessService
+    lateinit var camundaProcessService: CamundaProcessService
 
     @MockitoSpyBean
     lateinit var zaakInstanceLinkService: ZaakInstanceLinkService
@@ -76,7 +75,4 @@ abstract class BaseIntegrationTest {
 
     @MockitoBean
     lateinit var zaaktypeUrlProvider: ZaaktypeUrlProvider
-
-    @MockitoBean
-    lateinit var pluginsDeployedEventListener: PluginsDeployedEventListener
 }

@@ -16,7 +16,6 @@
 
 package com.ritense.zakenapi.uploadprocess
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.logging.LoggableResource
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
@@ -42,8 +41,7 @@ class UploadProcessResource(
     fun checkCaseProcessLink(
         @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
     ): ResponseEntity<CheckLinkResponse> {
-        val caseDefinition =
-            runWithoutAuthorization { activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName) }
+        val caseDefinition = activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName)
         val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(caseDefinition.id, DOCUMENT_UPLOAD)
         return ResponseEntity.ok(CheckLinkResponse(link != null))
     }

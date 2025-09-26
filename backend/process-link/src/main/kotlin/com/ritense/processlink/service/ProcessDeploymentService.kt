@@ -23,9 +23,9 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.exception.BpmnParseException
-import com.ritense.valtimo.service.OperatonProcessService
-import org.operaton.bpm.engine.ParseException
-import org.operaton.bpm.model.bpmn.Bpmn
+import com.ritense.valtimo.service.CamundaProcessService
+import org.camunda.bpm.engine.ParseException
+import org.camunda.bpm.model.bpmn.Bpmn
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
@@ -34,11 +34,10 @@ import kotlin.reflect.full.primaryConstructor
 
 @Transactional
 class ProcessDeploymentService(
-    private val operatonProcessService: OperatonProcessService,
+    private val camundaProcessService: CamundaProcessService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val processLinkService: ProcessLinkService,
 ) {
-    //TODO: this code could use a refactor
     fun deployProcessDefinitionAndProcessLinksForCaseDefinition(
         caseDefinitionId: CaseDefinitionId,
         bpmn: MultipartFile?,
@@ -59,18 +58,20 @@ class ProcessDeploymentService(
                 deployedProcessDefinitionId
             } else {
                 val model = Bpmn.readModelFromStream(bpmn!!.inputStream)
-                val previouslyDeployProcess = operatonProcessService.getExistingProcessForFile(caseDefinitionId, model)
+                val previouslyDeployProcess = camundaProcessService.getExistingProcessForFile(caseDefinitionId, model)
                 ProcessDefinitionId(previouslyDeployProcess.id)
             }
 
-            processDefinitionCaseDefinitionService.createProcessDocumentDefinition(
-                ProcessDocumentDefinitionRequest(
-                    processDefinitionId = processIdToUpdate,
-                    caseDefinitionId = caseDefinitionId,
-                    canInitializeDocument = canInitializeDocument,
-                    startableByUser = startableByUser
+            if (processIdToUpdate != null) {
+                processDefinitionCaseDefinitionService.createProcessDocumentDefinition(
+                    ProcessDocumentDefinitionRequest(
+                        processDefinitionId = processIdToUpdate,
+                        caseDefinitionId = caseDefinitionId,
+                        canInitializeDocument = canInitializeDocument,
+                        startableByUser = startableByUser
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -85,7 +86,7 @@ class ProcessDeploymentService(
         if (bpmn != null) {
             try {
                 val deployment = runWithoutAuthorization {
-                    operatonProcessService.deploy(
+                    camundaProcessService.deploy(
                         caseDefinitionId,
                         bpmn.originalFilename,
                         ByteArrayInputStream(bpmn.bytes),
@@ -96,18 +97,11 @@ class ProcessDeploymentService(
 
                 // If the deployment is null, the same xml was deployed before
                 if (deployment == null) {
-                    runWithoutAuthorization {
-                        val model = Bpmn.readModelFromStream(bpmn!!.inputStream)
-                        val previouslyDeployProcess =
-                            operatonProcessService.getExistingProcessForFile(caseDefinitionId, model)
-                        processLinkService.deleteProcessLinksForProcessDefinition(previouslyDeployProcess.id)
-                        createProcessLinks(processLinks = processLinks, caseDefinitionId = caseDefinitionId)
-                    }
                     return null
                 }
 
                 val deployedProcessDefinition = runWithoutAuthorization {
-                    operatonProcessService.getProcessDefinitionByDeploymentId(deployment.id)
+                    camundaProcessService.getProcessDefinitionByDeploymentId(deployment.id)
                 }
 
                 deployedProcessDefinitionId = deployedProcessDefinition.id
@@ -117,7 +111,7 @@ class ProcessDeploymentService(
         } else {
             try {
                 val deployment = runWithoutAuthorization {
-                    operatonProcessService.duplicateProcessDefinitionById(
+                    camundaProcessService.duplicateProcessDefinitionById(
                         caseDefinitionId,
                         processDefinitionId,
                         true,
@@ -130,7 +124,7 @@ class ProcessDeploymentService(
                 }
 
                 val deployedProcessDefinition = runWithoutAuthorization {
-                    operatonProcessService.getProcessDefinitionByDeploymentId(deployment.id)
+                    camundaProcessService.getProcessDefinitionByDeploymentId(deployment.id)
                 }
 
                 deployedProcessDefinitionId = deployedProcessDefinition.id
@@ -138,38 +132,25 @@ class ProcessDeploymentService(
                 throw RuntimeException("Failed to duplicate process definition. Rolling back deployment.", e)
             }
         }
-        createProcessLinks(processLinks, deployedProcessDefinitionId, caseDefinitionId)
 
-        return ProcessDefinitionId(deployedProcessDefinitionId)
-    }
-
-    private fun createProcessLinks(
-        processLinks: List<ProcessLinkCreateRequestDto>,
-        deployedProcessDefinitionId: String? = null,
-        caseDefinitionId: CaseDefinitionId? = null
-    ) {
         try {
             processLinks.map { originalLink ->
-                if (deployedProcessDefinitionId != null) {
-                    copyWithNewProcessDefinitionId(originalLink, deployedProcessDefinitionId)
-                } else {
-                    originalLink
-                }
+                copyWithNewProcessDefinitionId(originalLink, deployedProcessDefinitionId)
             }.forEach { link ->
                 runWithoutAuthorization {
-                    processLinkService.createProcessLink(link, caseDefinitionId)
+                    processLinkService.createProcessLink(link, null)
                 }
             }
         } catch (e: Exception) {
             throw RuntimeException("Failed to create process links. Rolling back deployment.", e)
         }
+        return ProcessDefinitionId(deployedProcessDefinitionId)
     }
 
     private fun copyWithNewProcessDefinitionId(
         original: ProcessLinkCreateRequestDto,
         newProcessDefinitionId: String
     ): ProcessLinkCreateRequestDto {
-        //TODO: see if there's a way to do this without reflection
         val originalClass = original::class
         val properties = originalClass.memberProperties
         val constructor = originalClass.primaryConstructor
