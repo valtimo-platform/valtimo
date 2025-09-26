@@ -23,21 +23,19 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
 import {
-  TableWidget,
+  InteractiveTableWidget,
   WidgetAction,
   WidgetLayoutService,
-  WidgetTableComponent,
-  WidgetTableContent,
-  WidgetWithUuid,
+  WidgetInteractiveTableComponent,
 } from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 
 @Component({
-  selector: 'valtimo-iko-widget-table',
-  templateUrl: './iko-widget-table.component.html',
+  selector: 'valtimo-iko-widget-interactive-table',
+  templateUrl: './iko-widget-interactive-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
@@ -48,17 +46,17 @@ import {IkoApiService} from '../../services';
     TilesModule,
     TranslateModule,
     ButtonModule,
-    WidgetTableComponent,
+    WidgetInteractiveTableComponent,
   ],
 })
-export class IkoWidgetTableComponent {
-  private _widgetConfiguration: TableWidget;
-  public readonly widgetConfiguration$ = new BehaviorSubject<TableWidget | null>(null);
-  @Input({required: true}) public set widgetConfiguration(value: TableWidget) {
+export class IkoWidgetInteractiveTableComponent {
+  private _widgetConfiguration: InteractiveTableWidget;
+  public readonly widgetConfiguration$ = new BehaviorSubject<InteractiveTableWidget | null>(null);
+  @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
     this._widgetConfiguration = value;
     this.widgetConfiguration$.next(value);
   }
-  public get widgetConfiguration(): TableWidget {
+  public get widgetConfiguration(): InteractiveTableWidget {
     return this._widgetConfiguration;
   }
 
@@ -97,8 +95,15 @@ export class IkoWidgetTableComponent {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
   }
 
-  private getPageSizeParam(widgetConfiguration: WidgetWithUuid): string {
-    return `size=${(widgetConfiguration.properties as WidgetTableContent).defaultPageSize}`;
+  public onRowClickEvent(event: any): void {
+    this.widgetConfiguration$
+      .pipe(take(1))
+      .subscribe((widgetConfiguration: InteractiveTableWidget) => {
+        this.ikoApiService.handleAction(
+          widgetConfiguration.properties.rowClickAction,
+          event.resolved
+        );
+      });
   }
 
   public onWidgetActionClick(action: WidgetAction): void {

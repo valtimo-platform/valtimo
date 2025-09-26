@@ -61,6 +61,7 @@ export class IkoManagementWidgetsComponent implements OnInit, OnDestroy {
     WidgetType.FIELDS,
     WidgetType.COLLECTION,
     WidgetType.TABLE,
+    WidgetType.INTERACTIVE_TABLE,
   ];
 
   private readonly _ikoRepositoryConfig$: Observable<IkoRepositoryConfigResponse> =
