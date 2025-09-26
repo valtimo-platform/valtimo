@@ -21,7 +21,6 @@
     compactMode: compactMode$ | async,
     context: context$ | async,
     canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
-    isDraftVersion: isDraftVersion$ | async,
   } as obs"
 >
   @if (obs.formDefinition) {
@@ -41,20 +40,18 @@
       </cds-tab>
 
       <cds-tab [heading]="TABS.EDITOR | translate" (selected)="onSelectedTab(TABS.EDITOR)">
-        @if (activeTab === TABS.EDITOR) {
-          <ng-container
-            *ngTemplateOutlet="
-              jsonEditor;
-              context: {
-                data: {
-                  disabled: obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration,
-                  formDefinition: obs.formDefinition,
-                  model: obs.jsonFormDefinition,
-                },
-              }
-            "
-          ></ng-container>
-        }
+        <ng-container
+          *ngTemplateOutlet="
+            jsonEditor;
+            context: {
+              data: {
+                disabled: obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration,
+                formDefinition: obs.formDefinition,
+                model: obs.jsonFormDefinition,
+              },
+            }
+          "
+        ></ng-container>
       </cds-tab>
 
       <cds-tab
@@ -63,21 +60,18 @@
         class="valtimo-form-management-edit__output"
       >
         <valtimo-form-io
-          *ngIf="activeTab === TABS.OUTPUT"
           [form]="obs.formDefinition.formDefinition"
           (change)="onOutputChange($event)"
         ></valtimo-form-io>
 
-        @if (activeTab === TABS.OUTPUT) {
-          <ng-container
-            *ngTemplateOutlet="
-              jsonEditor;
-              context: {
-                data: {disabled: true, formDefinition: obs.formDefinition, model: obs.jsonOutput},
-              }
-            "
-          ></ng-container>
-        }
+        <ng-container
+          *ngTemplateOutlet="
+            jsonEditor;
+            context: {
+              data: {disabled: true, formDefinition: obs.formDefinition, model: obs.jsonOutput},
+            }
+          "
+        ></ng-container>
       </cds-tab>
     </cds-tabs>
   } @else {
@@ -137,10 +131,7 @@
           {{ 'Upload' | translate }}
         </cds-overflow-menu-option>
 
-        <cds-overflow-menu-option
-          *ngIf="(obs.context === 'case' && obs.isDraftVersion) || obs.context === 'independent'"
-          (selected)="showDuplicateModal(obs.formDefinition)"
-        >
+        <cds-overflow-menu-option (selected)="showDuplicateModal(obs.formDefinition)">
           {{ 'formManagement.duplicate' | translate }}
         </cds-overflow-menu-option>
 
@@ -166,12 +157,10 @@
       }
 
       <button
-        *ngIf="
-          (obs?.canUpdateGlobalConfiguration && obs?.isDraftVersion) ||
-          obs.context === 'independent'
-        "
         cdsButton="primary"
-        [disabled]="obs.formDefinition.readOnly"
+        [disabled]="
+          obs.formDefinition.readOnly || !validJsonChange || !obs.canUpdateGlobalConfiguration
+        "
         [size]="obs.compactMode ? 'sm' : 'md'"
         (click)="modifyFormDefinition(obs.formDefinition)"
       >

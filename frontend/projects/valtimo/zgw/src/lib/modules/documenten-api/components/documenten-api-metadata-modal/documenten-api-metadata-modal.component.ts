@@ -52,7 +52,6 @@ import {
   Validators,
 } from '@angular/forms';
 import {
-  FormIoStateService,
   InputLabelModule,
   InputModule,
   ModalService,
@@ -399,18 +398,15 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly documentId$ = this.formioStateService.documentId$;
-
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
-    this.documentId$,
+    this.valtimoModalService.caseDefinitionKey$,
     this.informatieobjecttypeFormControl.valueChanges.pipe(
       startWith(this.informatieobjecttypeFormControl.value)
     ),
   ]).pipe(
-    filter(([documentId]) => !!documentId),
-    switchMap(([documentId, informatieobjecttypeValue]) =>
+    switchMap(([caseDefinitionKey, informatieobjecttypeValue]) =>
       combineLatest([
-        this.documentService.getDocumentTypesForDocument(documentId),
+        this.documentService.getDocumentTypes(caseDefinitionKey),
         of(informatieobjecttypeValue),
       ])
     ),
@@ -446,8 +442,7 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     private readonly modalService: ModalService,
     private readonly translateService: TranslateService,
     private readonly valtimoModalService: ValtimoModalService,
-    private readonly documentenApiVersionService: DocumentenApiVersionService,
-    private readonly formioStateService: FormIoStateService
+    private readonly documentenApiVersionService: DocumentenApiVersionService
   ) {}
 
   public ngOnInit(): void {
@@ -474,10 +469,6 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
 
   public tagsSelected(event: Array<ListItem>) {
     this.tagFormControl.patchValue(event.filter(tag => tag.selected).map(tag => tag.id));
-  }
-
-  public setAdditionalDate(value: AdditionalDocumentDate): void {
-    this.additionalDocumentDate$.next(value);
   }
 
   public confidentialityLevelSelected(event: {id: string}) {
@@ -523,16 +514,14 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
       else if (ontvangstdatum) this.additionalDocumentDate$.next('received');
       else this.additionalDocumentDate$.next('neither');
 
-      const defaultStatus = this.defaultValues.status;
-      const validDefaultStatus =
-        this.STATUSES.includes(defaultStatus as DocumentStatus) && defaultStatus;
-      const validPrefillStatus = this.STATUSES.includes(status) && status;
+      const prefillStatus = status || this.defaultValues.status;
+      const validPrefillStatus = this.STATUSES.includes(prefillStatus) ? prefillStatus : '';
 
       this.documentenApiMetadataForm.patchValue({
         beschrijving: beschrijving || this.defaultValues.beschrijving,
         taal: taal || this.defaultValues.taal,
         informatieobjecttype: informatieobjecttype || this.defaultValues.informatieobjecttype,
-        status: validPrefillStatus || validDefaultStatus || null,
+        status: validPrefillStatus,
         vertrouwelijkheidaanduiding:
           vertrouwelijkheidaanduiding || this.defaultValues.vertrouwelijkheidaanduiding,
         ontvangstdatum: ontvangstdatum ? new Date(ontvangstdatum) : null,

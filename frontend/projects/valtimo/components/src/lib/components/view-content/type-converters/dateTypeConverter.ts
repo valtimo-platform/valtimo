@@ -21,10 +21,6 @@ export class DateTypeConverter implements TypeConverter {
     return 'date';
   }
 
-  public isRawValue(): boolean {
-    return false;
-  }
-
   public convert(value: any, definition: any): string {
     if (!value) return '-';
 

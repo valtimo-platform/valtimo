@@ -15,30 +15,25 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="{
-    loading: loading$ | async,
-    caseStatuses: caseStatuses$ | async,
-    isDraftVersion: isDraftVersion$ | async,
-  } as obs"
+  *ngIf="{loading: loading$ | async, caseStatuses: caseStatuses$ | async} as obs"
   [items]="obs.caseStatuses"
   [fields]="fields$ | async"
   [header]="false"
   [loading]="obs.loading"
   [dragAndDrop]="true"
-  [dragAndDropDisabled]="obs.loading || !(hasEditPermissions$ | async)"
+  [dragAndDropDisabled]="obs.loading"
   [actionItems]="ACTION_ITEMS"
   (rowClicked)="openEditModal($event)"
   (itemsReordered)="onItemsReordered($event)"
 >
-  <ng-container carbonToolbarContent *ngTemplateOutlet="addStatusButton"></ng-container>
+  <ng-container
+    carbonToolbarContent
+    *ngTemplateOutlet="addStatusButton"
+  ></ng-container>
 
   <valtimo-no-results
     [action]="addStatusButton"
-    [description]="
-      obs.isDraftVersion
-        ? ('caseManagement.statuses.noResults.description' | translate)
-        : ('caseManagement.statuses.noResultsFinalVersion.description' | translate)
-    "
+    [description]="'caseManagement.statuses.noResults.description' | translate"
     [title]="'caseManagement.statuses.noResults.title' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-list>
@@ -62,12 +57,7 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #addStatusButton>
-  <button
-    *ngIf="hasEditPermissions$ | async"
-    cdsButton="primary"
-    [disabled]="loading$ | async"
-    (click)="openAddModal()"
-  >
+  <button cdsButton="primary" [disabled]="loading$ | async" (click)="openAddModal()">
     {{ 'caseManagement.statuses.add' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

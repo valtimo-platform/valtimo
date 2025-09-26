@@ -15,7 +15,7 @@
  */
 
 import {DecisionService} from '../services/decision.service';
-import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component} from '@angular/core';
 import DmnJS from 'dmn-js/dist/dmn-modeler.development.js';
 import {ActivatedRoute, Router, RouterModule} from '@angular/router';
 import {DecisionXml} from '../models';
@@ -27,7 +27,6 @@ import {
   filter,
   from,
   map,
-  Observable,
   of,
   switchMap,
   take,
@@ -35,13 +34,13 @@ import {
 } from 'rxjs';
 import {
   BreadcrumbService,
-  FitPageDirective,
+  FitPageDirectiveModule,
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
   SelectedValue,
-  SelectModule as ValtimoSelectModule,
+  SelectItem,
   WidgetModule,
 } from '@valtimo/components';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -57,7 +56,6 @@ import {
 } from 'carbon-components-angular';
 import {
   CaseManagementParams,
-  EditPermissionsService,
   getCaseManagementRouteParams,
   getContextObservable,
   GlobalNotificationService,
@@ -78,19 +76,15 @@ declare const $: any;
     ModalModule,
     SelectModule,
     WidgetModule,
-    ValtimoSelectModule,
     TranslateModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     ButtonModule,
     IconModule,
-    FitPageDirective,
+    FitPageDirectiveModule,
     DialogModule,
   ],
 })
-export class DecisionModelerComponent
-  extends PendingChangesComponent
-  implements OnInit, OnDestroy, AfterViewInit
-{
+export class DecisionModelerComponent extends PendingChangesComponent implements AfterViewInit {
   private CLASS_NAMES = {
     drd: 'dmn-icon-lasso-tool',
     decisionTable: 'dmn-icon-decision-table',
@@ -101,32 +95,17 @@ export class DecisionModelerComponent
   private $tabs!: any;
   private dmnModeler!: DmnJS;
 
-  public readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
-  public readonly isCreating$ = new BehaviorSubject<boolean>(false);
-  public readonly selectionId$ = new BehaviorSubject<string>('');
+  readonly versionSelectionDisabled$ = new BehaviorSubject<boolean>(true);
+  readonly isCreating$ = new BehaviorSubject<boolean>(false);
+  readonly selectionId$ = new BehaviorSubject<string>('');
+  readonly createdDecisionVersionSelectItems$ = new BehaviorSubject<Array<SelectItem>>([]);
 
   private _fileName!: string;
 
-  public readonly caseManagementRouteParams$: Observable<CaseManagementParams | undefined> =
-    getCaseManagementRouteParams(this.route);
-
-  public readonly context$: Observable<ManagementContext | null> = getContextObservable(this.route);
-  public readonly isIndependent$ = this.context$.pipe(map(context => context === 'independent'));
+  public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
+  public readonly context$ = getContextObservable(this.route);
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.caseManagementRouteParams$,
-    this.context$,
-  ]).pipe(
-    switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey ?? '',
-        params?.caseDefinitionVersionTag ?? '',
-        context ?? ''
-      )
-    )
-  );
 
   private readonly decisionId$ = this.route.params.pipe(
     map(params => params?.id),
@@ -137,7 +116,7 @@ export class DecisionModelerComponent
     filter(id => !!id && id !== 'create')
   );
 
-  public readonly decision$ = this.decisionId$.pipe(
+  readonly decision$ = this.decisionId$.pipe(
     switchMap(id => this.decisionService.getDecisionById(id)),
     tap(decision => {
       this._fileName = decision.resource;
@@ -145,24 +124,26 @@ export class DecisionModelerComponent
     })
   );
 
-  public readonly decisionTitle$ = this.decision$.pipe(
+  readonly decisionTitle$ = this.decision$.pipe(
     map(d => d?.name || d?.key || '-'),
     tap(title => this.pageTitleService.setCustomPageTitle(title))
   );
 
-  private readonly _refreshDecisionSelectItems$ = new BehaviorSubject<null>(null);
-  public readonly decisionVersionSelectItems$ = this._refreshDecisionSelectItems$.pipe(
-    switchMap(() => combineLatest([this.decision$, this.decisionService.getDecisions()])),
-    map(([current, list]) => {
+  readonly decisionVersionSelectItems$ = combineLatest([
+    this.decision$,
+    this.decisionService.getDecisions(),
+    this.createdDecisionVersionSelectItems$,
+  ]).pipe(
+    map(([current, list, created]) => {
       const filtered = list.filter(d => d.key === current.key);
-      return [...filtered.map(d => ({id: d.id, text: d.version.toString()}))].sort(
-        (a, b) => +(b.text ?? '') - +(a.text ?? '')
+      return [...filtered.map(d => ({id: d.id, text: d.version.toString()})), ...created].sort(
+        (a, b) => +b.text - +a.text
       );
     }),
     tap(() => this.versionSelectionDisabled$.next(false))
   );
 
-  public readonly decisionXml$ = this.decisionId$.pipe(
+  readonly decisionXml$ = this.decisionId$.pipe(
     switchMap(id => this.decisionService.getDecisionXml(id)),
     tap(xml => xml && this.loadDecisionXml(xml))
   );
@@ -176,19 +157,10 @@ export class DecisionModelerComponent
     private readonly breadcrumbService: BreadcrumbService,
     private readonly iconService: IconService,
     private readonly pageHeaderService: PageHeaderService,
-    private readonly notificationService: GlobalNotificationService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly notificationService: GlobalNotificationService
   ) {
     super();
     this.iconService.registerAll([Deploy16, Download16, ArrowLeft16]);
-  }
-
-  public ngOnInit(): void {
-    this.pageTitleService.disableReset();
-  }
-
-  public ngOnDestroy(): void {
-    this.pageTitleService.enableReset();
   }
 
   public ngAfterViewInit(): void {
@@ -199,17 +171,12 @@ export class DecisionModelerComponent
     combineLatest([this.caseManagementRouteParams$, this.context$])
       .pipe(take(1))
       .subscribe(([params, context]) => {
-        if (!params || !context) return;
-
         this.initBreadcrumbs(params, context);
       });
   }
 
   public switchVersion(decisionId: string | SelectedValue): void {
-    if (!decisionId) return;
-
-    this.router.navigate(['../', decisionId], {relativeTo: this.route});
-    this._refreshDecisionSelectItems$.next(null);
+    if (decisionId) this.router.navigate(['/decision-tables/edit', decisionId]);
   }
 
   public deploy(): void {
@@ -223,15 +190,30 @@ export class DecisionModelerComponent
             : this.caseManagementRouteParams$.pipe(
                 switchMap(params =>
                   this.decisionService.deployCaseDecisionDefinition(
-                    params?.caseDefinitionKey ?? '',
-                    params?.caseDefinitionVersionTag ?? '',
+                    params.caseDefinitionKey,
+                    params.caseDefinitionVersionTag,
                     file
                   )
                 )
               )
         ),
-        tap((res: {identifier: string}) => {
-          this.switchVersion(res.identifier);
+        tap(res => {
+          const deployed = res?.deployedDecisionDefinitions;
+          const id = deployed && deployed[Object.keys(deployed)[0]]?.id;
+
+          if (!id) return;
+
+          this.createdDecisionVersionSelectItems$.pipe(take(1)).subscribe(existing => {
+            this.createdDecisionVersionSelectItems$.next([
+              ...existing,
+              {id, text: deployed[id].version.toString()},
+            ]);
+            setTimeout(() => {
+              this.switchVersion(id);
+            });
+          });
+        }),
+        tap(() => {
           this.showNotification('success', 'decisions.deploySuccess');
         }),
         catchError(() => {
@@ -268,8 +250,6 @@ export class DecisionModelerComponent
   }
 
   private showNotification(notification: null | 'success' | 'error', message: string): void {
-    if (!notification) return;
-
     this.notificationService.showToast({
       caption: this.translateService.instant(message),
       type: notification,
@@ -295,15 +275,19 @@ export class DecisionModelerComponent
   }
 
   private setTabEvents(): void {
-    this.$tabs.delegate('.tab', 'click', async (event: any) => {
-      const index = +event.currentTarget.getAttribute('data-id');
-      const view = this.dmnModeler.getViews()[index];
-      try {
-        await this.dmnModeler.open(view);
-      } catch (err) {
-        console.error('tab open error', err);
-      }
-    });
+    this.$tabs.delegate(
+      '.tab',
+      'click',
+      async function () {
+        const index = +this.getAttribute('data-id');
+        const view = this.dmnModeler.getViews()[index];
+        try {
+          await this.dmnModeler.open(view);
+        } catch (err) {
+          console.error('tab open error', err);
+        }
+      }.bind(this)
+    );
   }
 
   private setModelerEvents(): void {

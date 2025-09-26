@@ -23,14 +23,12 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {EditPermissionsService, getCaseManagementRouteParams} from '@valtimo/shared';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {CaseTag, CaseTagService, CaseTagsUtils} from '@valtimo/document';
 import {
   BehaviorSubject,
   combineLatest,
-  filter,
   map,
-  Observable,
   Subject,
   Subscription,
   switchMap,
@@ -38,7 +36,6 @@ import {
   tap,
 } from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
-import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
@@ -59,15 +56,6 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   public readonly caseDefinitionKey$ = this._params$.pipe(map(p => p.caseDefinitionKey));
   public readonly caseDefinitionVersionTag$ = this._params$.pipe(
     map(p => p.caseDefinitionVersionTag)
-  );
-
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest(
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$
-  ).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
-    )
   );
 
   public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
@@ -99,15 +87,6 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
     })
   );
 
-  public readonly isDraftVersion$: Observable<boolean> = combineLatest([
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$,
-  ]).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
-    )
-  );
-
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -131,9 +110,7 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private readonly caseTagService: CaseTagService,
-    private readonly route: ActivatedRoute,
-    private readonly editPermissionsService: EditPermissionsService,
-    private readonly caseManagementService: CaseManagementService
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngAfterViewInit(): void {
@@ -150,10 +127,8 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   }
 
   public openEditModal(caseTag: CaseTag): void {
-    this.hasEditPermissions$.pipe(filter(hasPermission => hasPermission)).subscribe(() => {
-      this.prefillCaseTag$.next(caseTag);
-      this.statusModalType$.next('edit');
-    });
+    this.prefillCaseTag$.next(caseTag);
+    this.statusModalType$.next('edit');
   }
 
   public openAddModal(): void {
@@ -189,12 +164,9 @@ export class CaseManagementTagsComponent implements AfterViewInit, OnDestroy {
   public onItemsReorderedEvent(reorderedItems: CaseTag[]): void {
     if (!reorderedItems) return;
 
-    this.hasEditPermissions$
+    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
       .pipe(
-        filter(hasPermission => hasPermission),
-        switchMap(() =>
-          combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$]).pipe(take(1))
-        ),
+        take(1),
         switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
           this.caseTagService.updateCaseTags(
             caseDefinitionKey,

@@ -20,10 +20,9 @@ import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListModule,
   ConfirmationModalModule,
-  JsonEditorComponent,
-  RenderInPageHeaderDirective,
+  RenderInPageHeaderDirectiveModule,
   SpinnerModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -60,15 +59,14 @@ import {WidgetConfigurationContainerComponent} from './components/widget-configu
     ReactiveFormsModule,
     SpinnerModule,
     TranslateModule,
-    RenderInPageHeaderDirective,
+    RenderInPageHeaderDirectiveModule,
     ConfirmationModalModule,
     NotificationModule,
     IconModule,
     WidgetTranslatePipeModule,
     CarbonListModule,
     LayerModule,
-    ValtimoCdsModalDirective,
-    JsonEditorComponent,
+    ValtimoCdsModalDirectiveModule,
   ],
   exports: [],
 })

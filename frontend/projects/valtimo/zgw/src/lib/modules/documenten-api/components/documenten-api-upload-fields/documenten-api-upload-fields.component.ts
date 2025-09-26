@@ -25,11 +25,7 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {
-  CaseManagementParams,
-  EditPermissionsService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -45,7 +41,6 @@ import {DocumentenApiColumnModalType, DocumentenApiColumnModalTypeCloseEvent} fr
 import {DocumentenApiUploadField} from '../../models/documenten-api-upload-field.model';
 import {DocumentenApiDocumentService} from '../../services';
 import {DocumentenApiUploadFieldModalComponent} from '../documenten-api-upload-field-model/documenten-api-upload-field-modal.component';
-import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-documenten-api-upload-fields',
@@ -106,17 +101,6 @@ export class DocumentenApiUploadFieldsComponent {
     })
   );
 
-  public readonly hasEditPermissions$: Observable<boolean> = getCaseManagementRouteParams(
-    this.route
-  ).pipe(
-    switchMap(params =>
-      this.editPermissionsService.hasEditPermissions(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag
-      )
-    )
-  );
-
   public readonly ACTION_ITEMS: ActionItem[] = [
     {
       label: 'interface.edit',
@@ -151,18 +135,12 @@ export class DocumentenApiUploadFieldsComponent {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly documentenApiDocumentService: DocumentenApiDocumentService,
-    private readonly translateService: TranslateService,
-    private readonly editPermissionsService: EditPermissionsService
+    private readonly translateService: TranslateService
   ) {}
 
   public openEditModal(uploadField: DocumentenApiUploadField): void {
-    this.hasEditPermissions$.pipe(take(1)).subscribe(hasPermission => {
-      if (!hasPermission && uploadField.key !== 'informatieobjecttype') {
-        return;
-      }
-      this.prefill$.next(uploadField);
-      this.uploadFieldModalType$.next('edit');
-    });
+    this.prefill$.next(uploadField);
+    this.uploadFieldModalType$.next('edit');
   }
 
   public closeModal(closeModalEvent: DocumentenApiColumnModalTypeCloseEvent): void {

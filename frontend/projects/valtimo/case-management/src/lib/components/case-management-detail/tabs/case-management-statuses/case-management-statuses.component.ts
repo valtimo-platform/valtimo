@@ -22,15 +22,10 @@ import {
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {ActionItem, ColumnConfig, ViewType} from '@valtimo/components';
-import {
-  EditPermissionsService,
-  EnvironmentService,
-  getCaseManagementRouteParams,
-} from '@valtimo/shared';
+import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {CaseStatusService, InternalCaseStatus, InternalCaseStatusUtils} from '@valtimo/document';
-import {BehaviorSubject, combineLatest, map, Observable, Subject, switchMap, take, tap} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Subject, switchMap, tap} from 'rxjs';
 import {StatusModalCloseEvent, StatusModalType} from '../../../../models';
-import {CaseManagementService} from '../../../../services';
 
 @Component({
   standalone: false,
@@ -47,10 +42,6 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
   private readonly _params$ = getCaseManagementRouteParams(this.route);
 
   public readonly caseDefinitionKey$ = this._params$.pipe(map(params => params.caseDefinitionKey));
-
-  public readonly caseDefinitionVersionTag$ = this._params$.pipe(
-    map(params => params.caseDefinitionVersionTag)
-  );
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 
@@ -77,24 +68,6 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
     })
   );
 
-  public readonly hasEditPermissions$: Observable<boolean> = combineLatest(
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$
-  ).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.editPermissionsService.hasEditPermissions(caseDefinitionKey, caseDefinitionVersionTag)
-    )
-  );
-
-  public readonly isDraftVersion$: Observable<boolean> = combineLatest([
-    this.caseDefinitionKey$,
-    this.caseDefinitionVersionTag$,
-  ]).pipe(
-    switchMap(([caseDefinitionKey, caseDefinitionVersionTag]) =>
-      this.caseManagementService.isDraftVersion(caseDefinitionKey, caseDefinitionVersionTag)
-    )
-  );
-
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
   public readonly ACTION_ITEMS: ActionItem[] = [
@@ -118,10 +91,7 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
 
   constructor(
     private readonly caseStatusService: CaseStatusService,
-    private readonly route: ActivatedRoute,
-    private readonly environmentService: EnvironmentService,
-    private readonly editPermissionsService: EditPermissionsService,
-    private readonly caseManagementService: CaseManagementService
+    private readonly route: ActivatedRoute
   ) {}
 
   public ngAfterViewInit(): void {
@@ -134,12 +104,8 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
   }
 
   public openEditModal(status: InternalCaseStatus): void {
-    this.hasEditPermissions$.pipe(take(1)).subscribe(hasPermission => {
-      if (!hasPermission) return;
-
-      this.prefillStatus$.next(status);
-      this.statusModalType$.next('edit');
-    });
+    this.prefillStatus$.next(status);
+    this.statusModalType$.next('edit');
   }
 
   public openAddModal(): void {
@@ -167,8 +133,6 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
   }
 
   public onItemsReordered(reorderedItems: InternalCaseStatus[]): void {
-    if (!reorderedItems) return;
-
     this.caseDefinitionKey$
       .pipe(
         switchMap(caseDefinitionKey =>

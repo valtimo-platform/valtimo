@@ -31,39 +31,36 @@ export class DecisionService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public deployDmn(dmn: File): Observable<{identifier: string}> {
+  public deployDmn(dmn: File): Observable<any> {
     const formData: FormData = new FormData();
     formData.append('file', dmn);
     formData.append('deployment-name', 'dmnTableDeploy');
     formData.append('deployment-source', 'process application');
 
-    return this.httpClient.post<{identifier: string}>(
-      this.getApiUrl('/v1/process/definition/deployment'),
-      formData
-    );
+    return this.httpClient.post<any>(this.getApiUrl('/v1/process/definition/deployment'), formData);
   }
 
   public getDecisions(): Observable<Decision[]> {
     return this.httpClient.get<Decision[]>(
-      this.getApiUrl('/operaton-rest/engine/default/decision-definition')
+      this.getApiUrl('/camunda-rest/engine/default/decision-definition')
     );
   }
 
   public getDecisionById(decisionId: string): Observable<Decision> {
     return this.httpClient.get<Decision>(
-      this.getApiUrl(`/operaton-rest/engine/default/decision-definition/${decisionId}`)
+      this.getApiUrl(`/camunda-rest/engine/default/decision-definition/${decisionId}`)
     );
   }
 
   public getLatestDecisionByKey(decisionKey: string): Observable<Decision> {
     return this.httpClient.get<Decision>(
-      this.getApiUrl(`/operaton-rest/engine/default/decision-definition/key/${decisionKey}`)
+      this.getApiUrl(`/camunda-rest/engine/default/decision-definition/key/${decisionKey}`)
     );
   }
 
   public getDecisionXml(decisionId: string): Observable<DecisionXml> {
     return this.httpClient.get<DecisionXml>(
-      this.getApiUrl(`/operaton-rest/engine/default/decision-definition/${decisionId}/xml`)
+      this.getApiUrl(`/camunda-rest/engine/default/decision-definition/${decisionId}/xml`)
     );
   }
 
@@ -82,11 +79,11 @@ export class DecisionService extends BaseApiService {
     caseDefinitionKey: string,
     versionTag: string,
     dmn: File
-  ): Observable<{identifier: string}> {
+  ): Observable<any> {
     const formData = new FormData();
     formData.append('file', dmn);
 
-    return this.httpClient.post<{identifier: string}>(
+    return this.httpClient.post<any>(
       this.getApiUrl(
         `/management/v1/case-definition/${caseDefinitionKey}/version/${versionTag}/decision-definition`
       ),

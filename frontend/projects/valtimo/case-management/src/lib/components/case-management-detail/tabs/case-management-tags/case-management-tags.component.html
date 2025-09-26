@@ -15,19 +15,14 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="{
-    loading: loading$ | async,
-    caseTags: caseTags$ | async,
-    fields: fields$ | async,
-    isDraftVersion: isDraftVersion$ | async,
-  } as obs"
+  *ngIf="{loading: loading$ | async, caseTags: caseTags$ | async, fields: fields$ | async} as obs"
   [items]="obs.caseTags"
   [fields]="obs.fields"
   [header]="false"
   [loading]="obs.loading"
   [actionItems]="ACTION_ITEMS"
   [dragAndDrop]="true"
-  [dragAndDropDisabled]="!(hasEditPermissions$ | async)"
+  [dragAndDropDisabled]="false"
   (itemsReordered)="onItemsReorderedEvent($event)"
   (rowClicked)="openEditModal($event)"
 >
@@ -35,11 +30,7 @@
 
   <valtimo-no-results
     [action]="addTagButton"
-    [description]="
-      obs.isDraftVersion
-        ? ('caseManagement.caseTags.noResults.description' | translate)
-        : ('caseManagement.caseTags.noResultsFinalVersion.description' | translate)
-    "
+    [description]="'caseManagement.caseTags.noResults.description' | translate"
     [title]="'caseManagement.caseTags.noResults.title' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-list>
@@ -64,12 +55,7 @@
 ></valtimo-confirmation-modal>
 
 <ng-template #addTagButton>
-  <button
-    *ngIf="hasEditPermissions$ | async"
-    cdsButton="primary"
-    [disabled]="loading$ | async"
-    (click)="openAddModal()"
-  >
+  <button cdsButton="primary" [disabled]="loading$ | async" (click)="openAddModal()">
     {{ 'caseManagement.caseTags.add' | translate }}
 
     <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>

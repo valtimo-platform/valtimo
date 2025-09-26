@@ -15,8 +15,6 @@
     "TaskDueDateSetEvent": "Task due date set > {{taskName}}"
   },
   "case": {
-    "exportButtonTooltip": "Export current case list",
-    "summaryFormNotFound": "Summary form not found for '{{caseDefinitionKey}}'. A form named '{{caseDefinitionKey}}.summary' must exist using the case definition key.",
     "bulkAssign": {
       "assign": "Assign to",
       "modal": {
@@ -360,6 +358,7 @@
       }
     }
   },
+  "cancel": "Cancel22",
   "account": {
     "title": "Account",
     "informationTitle": "Information",
@@ -407,13 +406,7 @@
     }
   },
   "decisions": {
-    "upload": {
-      "title": "Upload decision table",
-      "description": "Select a .dmn file to upload",
-      "fileUploaderTitle": "Upload DMN file",
-      "fileUploaderDescription": "Only files with the .dmn extension are allowed.",
-      "fileUploaderButton": "Choose DMN file"
-    },
+    "upload": {"title": "Upload decision table", "description": "Select a .dmn file to upload"},
     "version": "Version",
     "deploy": "Save",
     "loadFailure": "Something went wrong with loading your decision table.",
@@ -438,7 +431,6 @@
     "duplicate": "Duplicate",
     "readOnly": "Read-only",
     "add": "Add form",
-    "navigateToRelatedCase": "Go to case (opens in new tab)",
     "tabs": {"formBuilder": "Form builder", "jsonEditor": "JSON editor", "output": "Output"},
     "intermediateSave": {
       "save": "Save progress",
@@ -454,8 +446,7 @@
       "deleted": "Deleted form",
       "deletionError": "Error deleting form",
       "deployed": "Form deployed",
-      "deploymentError": "Error deploying form",
-      "duplicated": "Form duplicated"
+      "deploymentError": "Error deploying form"
     },
     "upload": {
       "modalTitle": "Upload form definition",
@@ -516,7 +507,7 @@
       }
     },
     "deployment": {
-      "title": "Version management",
+      "title": "Deployment",
       "buttons": {
         "back": "Back",
         "delete": "Delete draft",
@@ -557,7 +548,7 @@
         "fields": {"caseDefinitionVersionTag": "Version", "basedOnVersionTag": "Based on"},
         "warning": {
           "title": "Warning",
-          "description": "There is another draft based on {{ basedOnVersionTag }} with version {{ conflictingVersions }}"
+          "description": "There is another draft based on {{ basedOnVersionTag }} called {{ conflictingVersions }}"
         }
       },
       "releaseInformation": {
@@ -615,7 +606,6 @@
       "forms": "Forms",
       "decision": "Decision tables",
       "formFlows": "Form Flows",
-      "tasks": "Tasks",
       "generalTab": {
         "readOnlyNotification": {
           "title": "Read only",
@@ -630,17 +620,12 @@
           "title": "Case handler",
           "canHaveHandler": "Case type can have a handler",
           "assignUser": "Automatically assign user tasks to case handler",
-          "disabledAutoAssignTooltip": "Automatically assigning a user task to the case handler can only be enabled when the case itself can have a handler.",
           "toggle": {"onText": "Yes", "offText": "No"}
         }
       },
-      "caseListTab": {
-        "title": "Case list",
-        "searchFields": "Search Fields",
-        "columns": "List columns"
-      },
-      "caseDetailsTab": {
-        "title": "Case details",
+      "caseListTab": {"title": "Case list", "searchFields": "Search Fields", "columns": "Columns"},
+      "caseDetailTab": {
+        "title": "Case detail",
         "tabs": "Tabs",
         "statuses": "Statuses",
         "tags": "Tags"
@@ -688,7 +673,7 @@
       "editModal": {"title": "Edit tab {{name}}", "updateTab": "Update tab"},
       "deleteModal": {
         "title": "Delete tab?",
-        "description": "Are you sure you want to delete this tab? This action cannot be undone."
+        "description": "Are you sure you want to delete this tab? This acction cannot be undone."
       }
     },
     "tabType": {"custom": "Custom", "formio": "FormIO", "standard": "Standard"},
@@ -737,7 +722,7 @@
     "createDefinition": {
       "idError": "This definition name is already in use. Please change to a unique name",
       "versionError": "This version is not a valid Semver version",
-      "versionExistsError": "This version already exists for this definition",
+      "versionExistsError": "This version already exists for this case",
       "modalTitle": "Create case definition",
       "key": "Case definition key",
       "keyPlaceholder": "Case definition key will be auto-generated here",
@@ -751,6 +736,13 @@
       "description": "Case definition description",
       "descriptionPlaceholder": "Enter description here",
       "descriptionTooltip": "The description is used for the visible description of the case definition in the UI"
+    },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "Leaving the editor",
+        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the case definition."
+      },
+      "saveModalContent": "Are you sure you want to save the Document definition? Removing or changing an attribute can break the case definition."
     },
     "statuses": {
       "withoutStatus": "Show cases without a status",
@@ -772,8 +764,7 @@
       "noResults": {
         "title": "No statuses configured",
         "description": "Click here to configure a status for this case type"
-      },
-      "noResultsFinalVersion": {"description": "No statuses have been created for this case type."}
+      }
     },
     "caseTags": {
       "searchFieldTitle": "Tags",
@@ -788,12 +779,7 @@
       "noResults": {
         "title": "No tags configured",
         "description": "Click here to configure a tag for this case type"
-      },
-      "noResultsFinalVersion": {"description": "No tags have been created for this case type."}
-    },
-    "draftWarning": {
-      "title": "Not linked to a version of the case",
-      "description": "When updating {{name}}, the {{name}} will change for all versions of this case. Not just the selected version!"
+      }
     }
   },
   "widgetTabManagement": {
@@ -886,10 +872,7 @@
         "valuePlaceholder": "Path to value",
         "ellipsisCharacterLimit": "Ellipsis character limit",
         "ellipsisCharacterLimitTooltip": "Enter the number of characters that will display before an ellipsis is shown",
-        "ellipsisCharacterLimitPlaceholder": "Choose a number of characters (optional)",
-        "linkText": "Link text",
-        "linkTextTooltip": "The text that will be displayed for the link. If left empty, the URL will be used as link text.",
-        "linkTextPlaceholder": "Link text (optional)"
+        "ellipsisCharacterLimitPlaceholder": "Choose a number of characters (optional)"
       },
       "displayType": {
         "text": "Text",
@@ -899,8 +882,7 @@
         "datetime": "Date and time",
         "enum": "Enumeration",
         "number": "Number",
-        "percent": "Percentage",
-        "link": "Link"
+        "percent": "Percentage"
       },
       "custom": {"selectComponent": "Angular component", "placeholder": "Select a component"},
       "formio": {"selectForm": "Form definition", "placeholder": "Select a form definition"},
@@ -935,7 +917,7 @@
     },
     "cancelModal": {
       "title": "Leaving the editor",
-      "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost."
+      "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can break the widget configuration."
     },
     "processes": {
       "buttonTextLabel": "New process button text (Optional)",
@@ -943,7 +925,7 @@
       "selectorLabel": "New process button (Optional)",
       "selectorPlaceholder": "Choose a process"
     },
-    "saveModalContent": "Are you sure you want to save the widget configuration?"
+    "saveModalContent": "Are you sure you want to save the widget configuration? Removing or changing an attribute can break the widget configuration."
   },
   "zgw": {
     "columns": {
@@ -1213,7 +1195,7 @@
     "selectInfoObjectType": "Select information object type"
   },
   "zaakdetails": {
-    "title": "Zaak detail synchronisation",
+    "title": "Case detail synchronisation",
     "enabled": "Enabled",
     "yes": "Yes",
     "no": "No",
@@ -1252,8 +1234,6 @@
       "valtimo-backend-libraries": "Valtimo back-end",
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
-    "results": "Results",
-    "details": "Details",
     "email": "E-mail",
     "username": "Username",
     "name": "Name",
@@ -1320,20 +1300,12 @@
       "noDefault": "No default sort"
     },
     "editor": {"visualEditor": "Visual editor", "jsonEditor": "JSON editor"},
-    "jsonEditor": {
-      "cancelModal": {
-        "title": "Leaving the editor",
-        "content": "Are you sure you want to leave the editor? There can be unsaved changes that will be lost. When saving, beware that removing or changing an attribute can be breaking."
-      },
-      "saveModalContent": "Are you sure you want to save? Removing or changing an attribute can be breaking."
-    },
     "key": "Key",
     "value": "Value",
     "title": "Title",
     "yes": "Yes",
     "no": "No",
-    "upload": "Upload",
-    "noTranslationFound": "No translation found"
+    "upload": "Upload"
   },
   "taskDetail": {"taskCreated": "Created", "taskCompleted": "has successfully been completed"},
   "assignTask": {
@@ -1568,8 +1540,6 @@
     "selectDefaultSort": "Select a default sort",
     "sortableYes": "Yes",
     "sortableNo": "No",
-    "exportField": "Exportable",
-    "exportTooltip": "Only fields from the document or the case can be exported. If another type of field is selected, the export button will be set to ‘disabled’.",
     "sortableAsc": "Ascending",
     "sortableDesc": "Descending",
     "hasEnvConfigWarningTitle": "Case type already has a column configuration",
@@ -1601,8 +1571,7 @@
     "enum": "Enumeration",
     "arrayCount": "Count",
     "underscoresToSpaces": "Underscores to spaces",
-    "tags": "Tags",
-    "hidden": "hidden"
+    "tags": "Tags"
   },
   "object": {
     "title": "Objects",
@@ -1699,8 +1668,7 @@
     "version": "Version",
     "selectVersion": "Select version",
     "activity": "Process activity",
-    "selectActivity": "Select process activity",
-    "noProcess": "No upload process"
+    "selectActivity": "Select process activity"
   },
   "processLinkType": {
     "plugin": "Plugin",
@@ -1774,16 +1742,15 @@
   "caseMigration": {
     "warningBeta": "Case migration is still in beta. Migrating cases might give unexpected results. Please use with care.",
     "caseDefinition": "Case definition",
-    "sourceCaseDefinitionKey": "Source case definition name",
-    "sourceCaseDefinitionVersionTag": "Source case definition version",
-    "targetCaseDefinitionKey": "Target case definition name",
-    "targetCaseDefinitionVersionTag": "Target case definition version",
+    "sourceDocumentDefinitionName": "Source case definition name",
+    "sourceDocumentDefinitionVersion": "Source case definition version",
+    "targetDocumentDefinitionName": "Target case definition name",
+    "targetDocumentDefinitionVersion": "Target case definition version",
     "patches": "Patches ",
     "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
     "patchSource": "Source case field",
     "patchTarget": "Target case field",
     "errors": "Errors",
-    "noErrors": "Success. No errors found.",
     "checkPatches": "Verify patches",
     "migrate": "Migrate cases",
     "modalTitle": "Migrate cases",
@@ -1813,7 +1780,7 @@
     "placeholder": "Select a path",
     "dropdown": "Dropdown",
     "manual": "Manual",
-    "selectCaseDefPlaceholder": "Select a case"
+    "selectDocDefPlaceholder": "Select a case"
   },
   "logging": {
     "columns": {"timestamp": "Timestamp", "formattedMessage": "Message", "level": "Log level"},
@@ -1840,70 +1807,5 @@
     "dueDateText": "Due date:",
     "removeButtonText": "Remove due date"
   },
-  "processStartSuccessful": "{{processName}} has successfully been started",
-  "widgets": {
-    "noData": "No data found",
-    "emptyFields": "Nothing here",
-    "noWidgets": "No widgets",
-    "noWidgetsDescription": "There are no widgets configured for this tab, or you don't have the rights to view them.",
-    "noWidget": "Widget not found",
-    "noCustomComponentDescription": "The custom component configured for this widget is not available."
-  },
-  "iko": {
-    "searchFieldsNoResults": "No search fields found for this entity"
-  },
-  "ikoManagement": {
-    "ikoServer": "IKO Server",
-    "view": "View",
-    "title": "Configuration",
-    "list": "List",
-    "tabs": {"title": "Tabs"},
-    "widgets": {"title": "Widgets"},
-    "searchActions": {
-      "addActionTitle": "Add search action",
-      "editActionTitle": "Edit search action",
-      "deleteModalTitle": "Delete search action",
-      "deleteModalText": "Are you sure you want to delete this search action?",
-      "title": "Search actions",
-      "numberOfFields": "Number of search fields",
-      "noResultsTitle": "There are no search actions.",
-      "noResultsDescription": "Click here to configure a search action."
-    },
-    "searchFields": {
-      "pageTitle": "Search action: {{searchActionTitle}}",
-      "title": "Search fields",
-      "deleteModalText": "Are you sure you want to delete this search field?",
-      "noResultsTitle": "There are no search fields.",
-      "noResultsDescription": "Click here to configure a search field."
-    },
-    "addApiConfig": "Configure IKO Server",
-    "titleTitle": "Title",
-    "titlePlaceholder": "Enter a title for the API configuration",
-    "keyTitle": "Key",
-    "keyPlaceholder": "Enter a key for the API configuration",
-    "pluginIdTitle": "Plugin configuration",
-    "typeTitle": "type",
-    "addColumn": "Add Column",
-    "editColumn": "Edit column",
-    "columnTitlePlaceholder": "Enter column title",
-    "columnKeyPlaceholder": "Enter column key",
-    "pathTitle": "Path",
-    "columnPathPlaceholder": "Enter column path",
-    "sortableTitle": "Sortable",
-    "sortingDisabled": "Sorting disabled",
-    "defaultSortTitle": "Default Sort",
-    "displayType": "Display Type",
-    "sortingEnabled": "Sorting enabled",
-    "tabKey": "Key",
-    "tabTitle": "Tab title",
-    "tabTitlePlaceholder": "Enter tab title",
-    "tabType": "Tab type",
-    "tabTypeTitle": "Tab type",
-    "tabTypePlaceholder": "Enter tab type",
-    "addTab": "Add tab",
-    "editTab": "Edit tab",
-    "tabTypes": {
-      "widgets": "Widgets"
-    }
-  }
+  "processStartSuccessful": "{{processName}} has successfully been started"
 }

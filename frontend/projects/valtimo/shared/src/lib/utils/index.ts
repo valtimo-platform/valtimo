@@ -18,4 +18,3 @@ export * from './router.utils';
 export * from './url.utils';
 export * from './global-notification.utils';
 export * from './route-params.utils';
-export * from './display-type.utils';

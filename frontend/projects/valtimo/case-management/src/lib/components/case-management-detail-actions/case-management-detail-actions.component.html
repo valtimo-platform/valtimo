@@ -117,11 +117,7 @@
   <button cdsButton="tertiary" [size]="(compactMode$ | async) ? 'sm' : 'md'">
     {{ 'caseManagement.more' | translate }}
 
-    <svg
-      class="cds--btn__icon case-management-overflow-icon"
-      cdsIcon="overflow-menu--vertical"
-      size="16"
-    ></svg>
+    <svg class="cds--btn__icon case-management-overflow-icon" cdsIcon="overflow-menu--vertical" size="16"></svg>
   </button>
 </ng-template>
 
@@ -140,6 +136,8 @@
     'caseManagement.readonly' | translate
   }}</cds-tag>
 </ng-template>
+
+<valtimo-case-management-remove-modal #caseRemoveModal></valtimo-case-management-remove-modal>
 
 <valtimo-case-management-select-version-modal
   [open]="showAllVersionsModal$ | async"

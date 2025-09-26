@@ -56,7 +56,6 @@ import {
 import {DocumentenApiFilterModel} from '../../models';
 import {DocumentenApiTag} from '../../models/documenten-api-tag.model';
 import {DocumentenApiTagService} from '../../services';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-case-detail-tab-documenten-api-filter',
@@ -120,15 +119,11 @@ export class DocumentenApiFilterComponent implements OnInit, OnDestroy, AfterVie
     startWith([])
   );
 
-  private readonly _context = getCaseManagementRouteParams(this.route);
-
-  public readonly informationObjectTypes$: Observable<ListItem[]> = this._context.pipe(
-    switchMap(params =>
+  public readonly informationObjectTypes$: Observable<ListItem[]> = this.route.paramMap.pipe(
+    filter((paramMap: ParamMap) => !!paramMap.get('caseDefinitionKey')),
+    switchMap((paramMap: ParamMap) =>
       combineLatest([
-        this.documentService.getDocumentTypesForCase(
-          params.caseDefinitionKey,
-          params.caseDefinitionVersionTag
-        ),
+        this.documentService.getDocumentTypes(paramMap.get('caseDefinitionKey') ?? ''),
         this._filter$,
       ])
     ),

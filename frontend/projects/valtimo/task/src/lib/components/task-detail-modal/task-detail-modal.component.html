@@ -15,12 +15,12 @@
   -->
 
 <cds-modal
+  #taskDetailModal
   id="taskDetailModal"
   [size]="size$ | async"
-  [open]="modalOpen$ | async"
   (close)="closeModal()"
   valtimoCdsModal
-  [minContentHeight]="480"
+  [enableOverflow]="true"
 >
   <cds-modal-header (closeSelect)="closeModal()">
     <div class="title-container">
@@ -52,30 +52,21 @@
       <ng-container *ngTemplateOutlet="assignUserToTask"></ng-container>
     </div>
 
-    <div class="save-buttons-margin">
-      <button
-        *ngIf="!(openFromCaseManagement$ | async)"
-        cdsButton="ghost"
-        iconOnly="true"
-        cdsIcon="folder--details--reference"
-        [vTooltip]="'formManagement.navigateToRelatedCase' | translate"
-        (click)="openRelatedCase()"
-      ></button>
-
-      @if (processLinkPreloaded$ | async) {
-        <valtimo-task-detail-intermediate-save
-          [taskAndProcessLink]="taskAndProcessLink$ | async"
-          (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
-          (showModalEvent)="onShowModalEvent()"
-        ></valtimo-task-detail-intermediate-save>
-      } @else {
-        <valtimo-task-detail-intermediate-save
-          [task]="task$ | async"
-          (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
-          (showModalEvent)="onShowModalEvent()"
-        ></valtimo-task-detail-intermediate-save>
-      }
-    </div>
+    @if (processLinkPreloaded$ | async) {
+      <valtimo-task-detail-intermediate-save
+        class="save-buttons-margin"
+        [taskAndProcessLink]="taskAndProcessLink$ | async"
+        (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+        (showModalEvent)="onShowModalEvent()"
+      ></valtimo-task-detail-intermediate-save>
+    } @else {
+      <valtimo-task-detail-intermediate-save
+        class="save-buttons-margin"
+        [task]="task$ | async"
+        (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+        (showModalEvent)="onShowModalEvent()"
+      ></valtimo-task-detail-intermediate-save>
+    }
   </cds-modal-header>
 
   <div body class="cds--modal-content pb-1">

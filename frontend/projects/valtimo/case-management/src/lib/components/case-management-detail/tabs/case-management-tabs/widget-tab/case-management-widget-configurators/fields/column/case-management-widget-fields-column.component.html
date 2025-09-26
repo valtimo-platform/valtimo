@@ -37,7 +37,7 @@
               <v-input-label
                 [title]="'widgetTabManagement.content.fields.title' | translate"
                 [tooltip]="
-                  'widgetTabManagement.content.' + $widgetType() + '.titleTooltip' | translate
+                  'widgetTabManagement.content.' + widgetType() + '.titleTooltip' | translate
                 "
               >
               </v-input-label>
@@ -70,15 +70,15 @@
               <v-input-label
                 [title]="'widgetTabManagement.content.fields.value' | translate"
                 [tooltip]="
-                  'widgetTabManagement.content.' + $widgetType() + '.valueTooltip' | translate
+                  'widgetTabManagement.content.' + widgetType() + '.valueTooltip' | translate
                 "
               >
               </v-input-label>
 
               <valtimo-value-path-selector
                 formControlName="content"
-                [caseDefinitionKey]="params?.caseDefinitionKey"
-                [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
+                [documentDefinitionName]="params?.caseDefinitionKey"
+                [prefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
                 [parentItem]="selectedCollection"
               ></valtimo-value-path-selector>
             </div>
@@ -301,28 +301,11 @@
                   />
                 </cds-text-label>
               }
-              @case (CaseWidgetDisplayTypeKey.LINK) {
-                <cds-text-label>
-                  <v-input-label
-                          [title]="'widgetTabManagement.content.fields.linkText' | translate"
-                          [tooltip]="'widgetTabManagement.content.fields.linkTextTooltip' | translate"
-                  >
-                  </v-input-label>
-
-                  <input
-                          cdsText
-                          [attr.data-carbon-theme]="inputTheme"
-                          [placeholder]="'widgetTabManagement.content.fields.linkTextPlaceholder' | translate"
-                          type="text"
-                          formControlName="linkText"
-                  />
-                </cds-text-label>
-              }
             }
 
             <cds-text-label
               *ngIf="
-                formRow.get('type').value.id === CaseWidgetDisplayTypeKey.TEXT && $isFieldWidget
+                formRow.get('type').value.id === CaseWidgetDisplayTypeKey.TEXT && isFieldWidget
               "
             >
               <v-input-label

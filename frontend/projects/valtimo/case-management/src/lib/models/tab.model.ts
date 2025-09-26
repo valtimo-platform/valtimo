@@ -28,6 +28,5 @@ export enum TabEnum {
   TAGS = 'tags',
   DECISIONS = 'decisions',
   CASE_LIST = 'case-list',
-  CASE_DETAILS = 'case-details',
-  TASKS = 'tasks',
+  CASE_DETAIL = 'case-detail'
 }

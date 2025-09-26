@@ -22,7 +22,7 @@ import {
   CarbonMultiInputModule,
   MultiInputValues,
   TooltipIconModule,
-  ValtimoCdsModalDirective,
+  ValtimoCdsModalDirectiveModule,
   ViewType,
 } from '@valtimo/components';
 import {CommonModule} from '@angular/common';
@@ -32,7 +32,6 @@ import {
   CheckboxModule,
   DropdownModule,
   InputModule,
-  LayerModule,
   ModalModule,
   TabsModule,
 } from 'carbon-components-angular';
@@ -77,8 +76,7 @@ import {isEqual} from 'lodash';
     TooltipIconModule,
     CarbonMultiInputModule,
     ButtonModule,
-    ValtimoCdsModalDirective,
-    LayerModule,
+    ValtimoCdsModalDirectiveModule,
   ],
 })
 export class TaskManagementColumnModalComponent {
@@ -99,7 +97,7 @@ export class TaskManagementColumnModalComponent {
     if (showModal) this.enable();
     if (!showModal) this.resetFormAfterTimeout();
   }
-  @Input() public caseDefinitionKey!: string;
+  @Input() public documentDefinitionName!: string;
   @Input() public set selectedTaskListColumn(column: TaskListColumn) {
     if (column) this.prefillForm(column);
   }
@@ -111,9 +109,9 @@ export class TaskManagementColumnModalComponent {
     map(type => type === 'edit'),
     tap(isEdit => {
       if (isEdit) {
-        this.key?.disable();
+        this.key.disable();
       } else {
-        this.key?.enable();
+        this.key.enable();
       }
     })
   );
@@ -165,46 +163,42 @@ export class TaskManagementColumnModalComponent {
       : {invalidItem: true};
 
   public readonly formGroup = new FormGroup({
-    title: new FormControl<string | null>(null),
-    key: new FormControl<string | null>(null, [
-      this.uniqueKeyValidator.bind(this),
+    title: new FormControl(null),
+    key: new FormControl(null, [this.uniqueKeyValidator.bind(this), Validators.required]),
+    path: new FormControl(null, Validators.required),
+    dateFormat: new FormControl(null),
+    displayType: new FormControl(this.getInvalidListItem(`listColumn.selectDefaultSort`), [
+      Validators.required,
+      this.listItemValidator.bind(this),
+    ]),
+    sortable: new FormControl(false),
+    defaultSort: new FormControl(this.getInvalidListItem(`listColumn.selectDefaultSort`), [
       Validators.required,
     ]),
-    path: new FormControl<string | null>(null, Validators.required),
-    dateFormat: new FormControl<string | null>(null),
-    displayType: new FormControl<TaskListColumnListItem>(
-      this.getInvalidListItem(`listColumn.selectDefaultSort`),
-      [Validators.required, this.listItemValidator.bind(this)]
-    ),
-    sortable: new FormControl<boolean>(false),
-    defaultSort: new FormControl<TaskListColumnListItem>(
-      this.getInvalidListItem(`listColumn.selectDefaultSort`),
-      [Validators.required]
-    ),
   });
 
-  public get title(): AbstractControl<string | null> | null {
+  public get title(): AbstractControl<string> {
     return this.formGroup.get('title');
   }
-  public get key(): AbstractControl<string | null> | null {
+  public get key(): AbstractControl<string> {
     return this.formGroup.get('key');
   }
-  public get keyValue$(): Observable<string | null> {
-    return this.key?.valueChanges.pipe(distinctUntilChanged()) ?? of(null);
+  public get keyValue$(): Observable<string> {
+    return this.key.valueChanges.pipe(distinctUntilChanged());
   }
-  public get path(): AbstractControl<string | null> | null {
+  public get path(): AbstractControl<string> {
     return this.formGroup.get('path');
   }
-  public get dateFormat(): AbstractControl<string | null> | null {
+  public get dateFormat(): AbstractControl<string> {
     return this.formGroup.get('dateFormat');
   }
-  public get displayType(): AbstractControl<TaskListColumnListItem | null> | null {
+  public get displayType(): AbstractControl<TaskListColumnListItem> {
     return this.formGroup.get('displayType');
   }
-  public get sortable(): AbstractControl<boolean | null> | null {
+  public get sortable(): AbstractControl<boolean> {
     return this.formGroup.get('sortable');
   }
-  public get defaultSort(): AbstractControl<TaskListColumnListItem | null> | null {
+  public get defaultSort(): AbstractControl<TaskListColumnListItem> {
     return this.formGroup.get('defaultSort');
   }
 
@@ -336,7 +330,7 @@ export class TaskManagementColumnModalComponent {
 
     this.taskManagementApiService
       .updateTaskListColumn(
-        this.caseDefinitionKey,
+        this.documentDefinitionName,
         this.getTaskListColumnFromFormValue(this._showEnum, this._showDateFormat, this._showYesNo)
       )
       .subscribe({
@@ -417,20 +411,20 @@ export class TaskManagementColumnModalComponent {
 
     const formValue = this.formGroup.getRawValue();
     const taskListColumn: TaskListColumn = {
-      title: formValue?.title ?? '',
-      key: formValue.key ?? '',
-      path: formValue.path ?? '',
+      ...(formValue.title && {title: formValue.title}),
+      key: formValue.key,
+      path: formValue.path,
       displayType: {
-        type: formValue?.displayType?.key ?? '',
+        type: formValue.displayType.key,
         displayTypeParameters: {
-          ...(!!includeDateFormat && {dateFormat: formValue.dateFormat ?? ''}),
+          ...(includeDateFormat && formValue.dateFormat && {dateFormat: formValue.dateFormat}),
           ...(includeEnum && mappedEnumValues && {enum: mappedEnumValues}),
           ...(includeYesNo && mappedYesNoValues && {enum: mappedYesNoValues}),
         },
       },
-      sortable: formValue.sortable ?? false,
-      ...(formValue?.defaultSort?.key !== this._INVALID_KEY && {
-        defaultSort: formValue?.defaultSort?.key as TaskListColumnDefaultSort,
+      sortable: formValue.sortable,
+      ...(formValue.defaultSort.key !== this._INVALID_KEY && {
+        defaultSort: formValue.defaultSort.key as TaskListColumnDefaultSort,
       }),
     };
 
@@ -438,7 +432,7 @@ export class TaskManagementColumnModalComponent {
   }
 
   private mapEnumValues(enumValues: MultiInputValues): TaskListColumnEnum {
-    return enumValues.reduce((acc, curr) => ({...acc, [curr?.key ?? '']: curr.value}), {});
+    return enumValues.reduce((acc, curr) => ({...acc, [curr.key]: curr.value}), {});
   }
 
   private getValidEnumValues(values: MultiInputValues): MultiInputValues {
@@ -457,7 +451,7 @@ export class TaskManagementColumnModalComponent {
   ): MultiInputValues {
     return Object.keys(taskListColumnEnum).reduce(
       (acc, curr) => [...acc, {key: curr, value: taskListColumnEnum[curr]}],
-      [] as MultiInputValues
+      []
     );
   }
 
@@ -496,7 +490,7 @@ export class TaskManagementColumnModalComponent {
       ...(column.defaultSort === 'ASC' && {defaultSort: this._SORT_ASC_ITEM}),
       ...(column.defaultSort === 'DESC' && {defaultSort: this._SORT_DESC_ITEM}),
       ...(column.displayType?.type === ViewType.DATE && {
-        dateFormat: column.displayType?.displayTypeParameters?.dateFormat,
+        dateFormat: column.displayType.displayTypeParameters.dateFormat,
       }),
     });
   }

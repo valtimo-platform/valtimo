@@ -18,6 +18,7 @@
  * Public API Surface of task
  */
 
+export * from './lib/task-management.module';
 export * from './lib/components';
 export * from './lib/models';
 export * from './lib/services';

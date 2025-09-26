@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Output} from '@angular/core';
-import {FormBuilder, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {DecisionService, DecisionStateService} from '../services';
+import {ValtimoCdsOverflowButtonDirectiveModule} from '@valtimo/components';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  ButtonModule,
-  FileUploaderModule,
-  LayerModule,
-  ModalModule,
-} from 'carbon-components-angular';
+import {ModalModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
 import {getCaseManagementRouteParams, getContextObservable} from '@valtimo/shared';
-import {DecisionService, DecisionStateService} from '../services';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'valtimo-decision-deploy',
@@ -39,48 +35,30 @@ import {DecisionService, DecisionStateService} from '../services';
     FormsModule,
     TranslateModule,
     ModalModule,
-    ButtonModule,
-    LayerModule,
-    FileUploaderModule,
-    ReactiveFormsModule,
+    ValtimoCdsOverflowButtonDirectiveModule,
+    ModalModule,
   ],
 })
 export class DecisionDeployComponent {
-  @Output() deploySuccessful = new EventEmitter();
-
   public dmn: File | null = null;
+  @Output() deploySuccessful = new EventEmitter();
 
   public readonly modalOpen$ = new BehaviorSubject<boolean>(false);
 
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route);
   public readonly context$ = getContextObservable(this.route);
 
-  public readonly ACCEPTED_FILES: string[] = ['dmn'];
-
-  public readonly form = this.formBuilder.group({
-    file: this.formBuilder.control(new Set<any>(), [Validators.required]),
-  });
-
   constructor(
     private readonly decisionService: DecisionService,
     private readonly stateService: DecisionStateService,
-    private readonly route: ActivatedRoute,
-    private readonly formBuilder: FormBuilder
+    private readonly route: ActivatedRoute
   ) {}
-
-  public get selectedDmnFile(): File | null {
-    const fileSet = this.form.value?.file;
-    return fileSet?.size ? fileSet.values().next().value?.file || null : null;
-  }
 
   public onChange(files: FileList): void {
     this.dmn = files.item(0);
   }
 
   public deployDmn(): void {
-    const dmnFile = this.selectedDmnFile;
-    if (!dmnFile) return;
-
     combineLatest([this.caseManagementRouteParams$, this.context$])
       .pipe(
         take(1),
@@ -89,9 +67,9 @@ export class DecisionDeployComponent {
             ? this.decisionService.deployCaseDecisionDefinition(
                 params.caseDefinitionKey,
                 params.caseDefinitionVersionTag,
-                dmnFile
+                this.dmn
               )
-            : this.decisionService.deployDmn(dmnFile)
+            : this.decisionService.deployDmn(this.dmn)
         )
       )
       .subscribe(() => {

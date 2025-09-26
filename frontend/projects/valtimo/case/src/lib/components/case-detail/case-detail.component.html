@@ -15,7 +15,7 @@
   -->
 <div
   class="main-content"
-  [ngClass]="{'main-content--no-horizontal-overflow': $tabHorizontalOverflowDisabled()}"
+  [ngClass]="{'main-content--no-horizontal-overflow': tabHorizontalOverflowDisabled()}"
 >
   <div class="container-fluid">
     <ng-container *ngIf="caseTags$ | async as caseTags">
@@ -134,7 +134,7 @@
 
   <valtimo-case-supporting-process-start-modal
     [isAdmin]="isAdmin$ | async"
-    (formSubmit)="onFormSubmitEvent()"
+    (formSubmit)="tabLoader.refreshView()"
     #supportingProcessStartModal
   ></valtimo-case-supporting-process-start-modal>
 </div>

@@ -24,7 +24,6 @@ export * from './lib/pipes';
 export * from './lib/services';
 export * from './lib/guards';
 export * from './lib/modules';
-export * from './lib/utils';
 
 /*
 components
@@ -35,7 +34,7 @@ export * from './lib/components/camunda/form/camunda-form.module';
 export * from './lib/components/topbar/topbar.component';
 export * from './lib/components/topbar/topbar.module';
 
-export * from './lib/components/menu/services';
+export * from './lib/components/menu/menu.service';
 export * from './lib/components/menu/menu-routing.module';
 export * from './lib/components/menu/menu.module';
 export * from './lib/components/menu/menu.init';
@@ -94,8 +93,8 @@ export * from './lib/components/data-list/data-list.module';
 
 export * from './lib/components/view-content/view-content.service';
 
-export * from './lib/components/form-io/components/form-io/form-io.component';
-export * from './lib/components/form-io/components/form-io-builder/form-io-builder.component';
+export * from './lib/components/form-io/form-io.component';
+export * from './lib/components/form-io/form-io-builder.component';
 export * from './lib/components/form-io/form-io.module';
 
 export * from './lib/components/modal/modal.module';
@@ -110,23 +109,22 @@ export * from './lib/components/searchable-dropdown/searchable-dropdown.componen
 export * from './lib/components/dropzone/dropzone.module';
 export * from './lib/components/dropzone/dropzone.component';
 
-export * from './lib/components/form-io/components/form-io-uploader/form-io-uploader.component';
-export * from './lib/components/form-io/components/form-io-uploader/form-io-uploader.formio';
+export * from './lib/components/form-io/form-io-uploader/form-io-uploader.component';
+export * from './lib/components/form-io/form-io-uploader/form-io-uploader.formio';
 
-export * from './lib/components/form-io/components/form-io-current-user/form-io-current-user.component';
-export * from './lib/components/form-io/components/form-io-current-user/form-io-current-user.formio';
+export * from './lib/components/form-io/form-io-current-user/form-io-current-user.component';
+export * from './lib/components/form-io/form-io-current-user/form-io-current-user.formio';
 
-export * from './lib/components/form-io/components/form-io-iban/iban.component';
-export * from './lib/components/form-io/components/form-io-iban/iban.formio';
+export * from './lib/components/form-io/form-io-iban/iban.component';
+export * from './lib/components/form-io/form-io-iban/iban.formio';
 
-export * from './lib/components/form-io/components/form-io-currency/currency.component';
-export * from './lib/components/form-io/components/form-io-currency/currency.formio';
+export * from './lib/components/form-io/form-io-currency/currency.component';
+export * from './lib/components/form-io/form-io-currency/currency.formio';
 
-export * from './lib/components/form-io/components/form-io-resource-selector/form-io-resource-selector.formio';
+export * from './lib/components/form-io/form-io-resource-selector/form-io-resource-selector.formio';
 
 export * from './lib/components/form-io/services/form-io-state.service';
 export * from './lib/components/form-io/services/form-io-dom.service';
-export * from './lib/components/form-io/services/form-io.tags.service';
 
 export * from './lib/components/webcam/webcam.module';
 export * from './lib/components/webcam/webcam.component';
@@ -160,11 +158,11 @@ export * from './lib/components/status-selector/status-selector.component';
 // value path selector
 export * from './lib/components/value-path-selector/value-path-selector.component';
 // formio value resolver selector
-export * from './lib/components/form-io/components/formio-value-resolver-selector/formio-value-resolver-selector.formio';
-export * from './lib/components/form-io/components/formio-value-resolver-selector/formio-value-resolver-selector.component';
+export * from './lib/components/form-io/formio-value-resolver-selector/formio-value-resolver-selector.formio';
+export * from './lib/components/form-io/formio-value-resolver-selector/formio-value-resolver-selector.component';
 // formio dummy
-export * from './lib/components/form-io/components/form-io-dummy/dummy.component';
-export * from './lib/components/form-io/components/form-io-dummy/dummy.formio';
+export * from './lib/components/form-io/form-io-dummy/dummy.component';
+export * from './lib/components/form-io/form-io-dummy/dummy.formio';
 // Table component
 export * from './lib/components/table/table.module';
 export * from './lib/components/table/table.component';
@@ -226,37 +224,36 @@ export * from './lib/components/case-tags-selector/case-tags-selector.component'
 // render in body
 export * from './lib/components/render-in-body/render-in-body.component';
 
-// JSON editor
-export * from './lib/components/json-editor/json-editor.component';
-
 /*
 directives
  */
 // valtimo cds modal
 export * from './lib/directives/valtimo-cds-modal/valtimo-cds-modal.directive';
+export * from './lib/directives/valtimo-cds-modal/valtimo-cds-modal-directive.module';
 // tooltip
 export * from './lib/directives/tooltip/tooltip.directive';
 export * from './lib/directives/tooltip/tooltip.component';
 export * from './lib/directives/tooltip/tooltip.module';
 // render in page header
 export * from './lib/directives/render-in-page-header/render-in-page-header.directive';
+export * from './lib/directives/render-in-page-header/render-in-page-header-directive.module';
 // render page header
 export * from './lib/directives/render-page-header/render-page-header.directive';
+export * from './lib/directives/render-page-header/render-page-header-directive.module';
 // fit page
 export * from './lib/directives/fit-page/fit-page.directive';
+export * from './lib/directives/fit-page/fit-page-directive.module';
 // digit only
 export * from './lib/directives/digit-only/digit-only.directive';
 // command click
-export * from './lib/directives/ctrl-click/ctrl-click.directive';
+export * from './lib/directives/command-click/command-click.directive';
+export * from './lib/directives/command-click/command-click-directive.module';
 // cds overflow button
 export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button.directive';
+export * from './lib/directives/valtimo-cds-overflow-button/valtimo-cds-overflow-button-directive.module';
 // remove toggletip button class
 export * from './lib/directives/remove-classnames/remove-classnames.directive';
 // muuri
 export * from './lib/directives/muuri/muuri-directive.module';
 export * from './lib/directives/muuri/muuri.directive';
 export * from './lib/directives/muuri/muuri-item.component';
-// read-only
-export * from './lib/directives/read-only.directive';
-// auto key
-export * from './lib/components/auto-key-input/auto-key-input.component';

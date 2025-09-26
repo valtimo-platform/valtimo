@@ -15,8 +15,6 @@
     "TaskDueDateSetEvent": "Aufgabefrist gesetzt > {{taskName}}"
   },
   "case": {
-    "exportButtonTooltip": "Aktuelle Aktenliste exportieren",
-    "summaryFormNotFound": "Zusammenfassungsformular für '{{caseDefinitionKey}}' wurde nicht gefunden. Es muss ein Formular mit dem Namen '{{caseDefinitionKey}}.summary' existieren, das den Falldefinitionsschlüssel verwendet.",
     "bulkAssign": {
       "assign": "Zuweisen",
       "modal": {
@@ -159,7 +157,15 @@
       "noFormSpecified": "Für diese Registerkarte wurde keine Formulardefinition angegeben.",
       "formNotFound": "Die Formulardefinition '{{formDefinitionName}}' konnte nicht gefunden werden."
     },
-    "rowLocked": "Kein Zugriff zu dieser Fall!"
+    "rowLocked": "Kein Zugriff zu dieser Fall!",
+    "widgets": {
+      "noData": "Keine Data gefunden",
+      "emptyFields": "Niets hier",
+      "noWidgets": "Keine Widgets",
+      "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
+      "noCustomComponent": "Widget nicht verfügbar",
+      "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
+    }
   },
   "document": {
     "title": {"single": "Dokument", "plural": "Dokumente"},
@@ -404,10 +410,7 @@
   "decisions": {
     "upload": {
       "title": "Entscheidungstabelle hochladen",
-      "description": "Wähle eine .dmn Datei für den Upload",
-      "fileUploaderTitle": "DMN-Datei hochladen",
-      "fileUploaderDescription": "Nur Dateien mit der Endung .dmn sind erlaubt.",
-      "fileUploaderButton": "DMN-Datei auswählen"
+      "description": "Wähle eine .dmn Datei für den Upload"
     },
     "version": "Version",
     "deploy": "Speichern",
@@ -433,7 +436,6 @@
     "duplicate": "Duplizieren",
     "readOnly": "Schreibgeschützt",
     "add": "Formular hinzufügen",
-    "navigateToRelatedCase": "Zum Vorgang gehen (öffnet in neuem Tab)",
     "tabs": {"formBuilder": "Formulareditor", "jsonEditor": "JSON-Editor", "output": "Output"},
     "intermediateSave": {
       "save": "Fortschritt speichern",
@@ -449,8 +451,7 @@
       "deleted": "Formular gelöscht",
       "deletionError": "Fehler beim Löschen des Formulars",
       "deployed": "Formular bereitgestellt",
-      "deploymentError": "Fehler beim Bereitstellen des Formulars",
-      "duplicated": "Formular dupliziert"
+      "deploymentError": "Fehler beim Bereitstellen des Formulars"
     },
     "upload": {
       "modalTitle": "Formulardefinition hochladen",
@@ -611,7 +612,6 @@
       "processes": "Prozesse",
       "document": "Dokument",
       "formFlows": "Form flows",
-      "tasks": "Aufgaben",
       "zgw": "ZGW",
       "forms": "Formulare",
       "decision": "Entscheidungstabellen",
@@ -629,16 +629,11 @@
           "title": "Fallbearbeiter",
           "canHaveHandler": "Falltyp kann einen Bearbeiter haben",
           "assignUser": "Benutzeraufgaben automatisch dem Fallbearbeiter zuweisen",
-          "disabledAutoAssignTooltip": "Die automatische Zuweisung einer Benutzeraufgabe an den Fallbearbeiter kann nur aktiviert werden, wenn der Fall selbst einen Bearbeiter haben kann.",
           "toggle": {"onText": "Ja", "offText": "Nein"}
         }
       },
-      "caseListTab": {
-        "title": "Caseliste",
-        "searchFields": "Suchfelder",
-        "columns": "Spalten auflisten"
-      },
-      "caseDetailsTab": {
+      "caseListTab": {"title": "Caseliste", "searchFields": "Suchfelder", "columns": "Spalten"},
+      "caseDetailTab": {
         "title": "Casedetails",
         "tabs": "Tabs",
         "statuses": "Status",
@@ -751,6 +746,13 @@
       "descriptionPlaceholder": "Beschreibung hier eingeben",
       "descriptionTooltip": "Die Beschreibung wird in der Benutzeroberfläche als zusätzliche Information zur Falldefinition angezeigt."
     },
+    "documentDefinition": {
+      "cancelModal": {
+        "title": "Verlassen des Editors",
+        "content": "Sind Sie sicher, dass Sie den Editor verlassen möchten? Möglicherweise gehen nicht gespeicherte Änderungen verloren. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs die Falldefinition zerstören kann."
+      },
+      "saveModalContent": "Sind Sie sicher, dass Sie die Dokumentdefinition speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Falldefinition zerstören."
+    },
     "statuses": {
       "withoutStatus": "Dateien ohne Status anzeigen",
       "searchFieldTitle": "Status",
@@ -771,9 +773,6 @@
       "noResults": {
         "title": "Keine Status konfiguriert",
         "description": "Klicken Sie hier, um einen Status für diesen Casetyp zu konfigurieren"
-      },
-      "noResultsFinalVersion": {
-        "description": "Für diesen Vorgangstyp wurden keine Status erstellt."
       }
     },
     "caseTags": {
@@ -794,12 +793,7 @@
       "noResults": {
         "title": "Keine Tags konfiguriert",
         "description": "Klicken Sie hier, um einen Tag für diesen Casetyp zu konfigurieren"
-      },
-      "noResultsFinalVersion": {"description": "Für diesen Vorgangstyp wurden keine Tags erstellt."}
-    },
-    "draftWarning": {
-      "title": "Nicht mit einer Version des Case verknüpft",
-      "description": "Beim Aktualisieren {name} ändert sich der {name} für alle Versionen dieses Case. Nicht nur für die ausgewählte Version!"
+      }
     }
   },
   "widgetTabManagement": {
@@ -895,10 +889,7 @@
         "valuePlaceholder": "Weg zum Wert",
         "ellipsisCharacterLimit": "Zeichenbeschränkung für Auslassungszeichen",
         "ellipsisCharacterLimitTooltip": "Geben Sie die Anzahl der Zeichen ein, die angezeigt werden sollen, bevor Auslassungspunkte angezeigt werden",
-        "ellipsisCharacterLimitPlaceholder": "Wählen Sie eine Anzahl von Zeichen (optional)",
-        "linkText": "Linktext",
-        "linkTextTooltip": "Der Text, der für den Link angezeigt wird. Wenn dieses Feld leer gelassen wird, wird die URL selbst als Linktext verwendet.",
-        "linkTextPlaceholder": "Linktext (optional)"
+        "ellipsisCharacterLimitPlaceholder": "Wählen Sie eine Anzahl von Zeichen (optional)"
       },
       "displayType": {
         "text": "Text",
@@ -908,8 +899,7 @@
         "datetime": "Datum und zeit",
         "enum": "Aufzählung",
         "number": "Nummer",
-        "percent": "Prozentsatz",
-        "link": "Link"
+        "percent": "Prozentsatz"
       },
       "custom": {
         "selectComponent": "Angular-komponente",
@@ -1267,8 +1257,6 @@
       "valtimo-backend-libraries": "Valtimo back-end",
       "valtimo-frontend-libraries": "Valtimo front-end"
     },
-    "details": "Details",
-    "results": "Ergebnisse",
     "email": "Email",
     "username": "Nutzername",
     "name": "Name",
@@ -1337,20 +1325,12 @@
       "noDefault": "Keine Standardsortierung"
     },
     "editor": {"visualEditor": "Visuell editor", "jsonEditor": "JSON editor"},
-    "jsonEditor": {
-      "cancelModal": {
-        "title": "Editor verlassen",
-        "content": "Möchten Sie den Editor wirklich verlassen? Nicht gespeicherte Änderungen könnten verloren gehen. Beachten Sie beim Speichern, dass das Entfernen oder Ändern eines Attributs zu Funktionsstörungen führen kann."
-      },
-      "saveModalContent": "Möchten Sie wirklich speichern? Das Entfernen oder Ändern eines Attributs kann Funktionsstörungen verursachen."
-    },
     "key": "Schlüssel",
     "value": "Wert",
     "title": "Titel",
     "yes": "Ja",
     "no": "Nein",
-    "upload": "Hochladen",
-    "noTranslationFound": "Keine Übersetzung gefunden"
+    "upload": "Hochladen"
   },
   "taskDetail": {"taskCreated": "Erstellt", "taskCompleted": "erfolgreich abgeschlossen"},
   "assignTask": {
@@ -1583,8 +1563,6 @@
     "selectDefaultSort": "Wählen Sie eine Standardsortierung aus",
     "sortableYes": "Ja",
     "sortableNo": "Nein",
-    "exportField": "Exportierbar",
-    "exportTooltip": "Es können nur Felder des Dokuments oder des Dossiers exportiert werden. Wenn ein anderer Feldtyp ausgewählt wird, wird die Export-Schaltfläche auf ‚deaktiviert‘ gesetzt.",
     "sortableAsc": "Aufsteigend",
     "sortableDesc": "Absteigend",
     "hasEnvConfigWarningTitle": "Dieser Dossiertyp hat bereits eine Spaltenkonfiguration",
@@ -1616,8 +1594,7 @@
     "enum": "Aufzählung",
     "arrayCount": "Quantität",
     "underscoresToSpaces": "Unterstriche zu Leerzeichen",
-    "tags": "Tags",
-    "hidden": "Versteckt"
+    "tags": "Tags"
   },
   "object": {
     "title": "Objekte",
@@ -1721,8 +1698,7 @@
     "version": "Version",
     "selectVersion": "Wählen Sie eine Version aus",
     "activity": "Prozessaktivität",
-    "selectActivity": "Wählen Sie eine Prozessaktivität aus",
-    "noProcess": "Kein Upload-Prozess"
+    "selectActivity": "Wählen Sie eine Prozessaktivität aus"
   },
   "processLinkType": {
     "plugin": "Plugin",
@@ -1796,16 +1772,15 @@
   "caseMigration": {
     "warningBeta": "Die Fallmigration befindet sich noch im Beta-Stadium. Die Migration von Fällen kann unerwartete Ergebnisse liefern. Bitte verwenden Sie es mit Vorsicht.",
     "caseDefinition": "Case definition",
-    "sourceCaseDefinitionKey": "Quellfall-Definitionsnamen",
-    "sourceCaseDefinitionVersionTag": "Quellfall-Definitionsversion",
-    "targetCaseDefinitionKey": "Ziel-Fall-Definitionsnamen",
-    "targetCaseDefinitionVersionTag": "Ziel-Fall-Definitionsversion",
+    "sourceDocumentDefinitionName": "Quellfall-Definitionsnamen",
+    "sourceDocumentDefinitionVersion": "Quellfall-Definitionsversion",
+    "targetDocumentDefinitionName": "Ziel-Fall-Definitionsnamen",
+    "targetDocumentDefinitionVersion": "Ziel-Fall-Definitionsversion",
     "patches": "Patches",
     "patchTooltip": "The old case can be migrated to the new case by using patches. Patches work by moving case properties from the source location to the target location. For example: source: '/oldLocation/firstName', target: '/newLocation/firstName'. A property can be removed by leaving the target empty. For example: source: '/gulden', target: ''. A property can be given a default value in the source field. For example, source: 'John', target: '/firstName'. A patch will always try to convert the type to the target type. For example, source: '/my/number', target: '/my/text'. A property can be set to [NULL] by using SpEL expressions. For example, source: '${null}', target: '/driversLicense'. A Spring bean can be called for more elaborate patches. For example, source: ${myBean.getAge(source.person.birthYear)}, target: '${myOtherBean.doMore(builder, sourceValue)}'",
     "patchSource": "Quellfallfeld",
     "patchTarget": "Ziel-Fallfeld",
     "errors": "Fehler",
-    "noErrors": "Fertig. Keine Fehler gefunden.",
     "checkPatches": "Patches überprüfen",
     "migrate": "Fälle migrieren",
     "modalTitle": "Fälle migrieren",
@@ -1831,7 +1806,7 @@
     "placeholder": "Wählen Sie einen Pfad",
     "dropdown": "Dropdown",
     "manual": "Manuell",
-    "selectCaseDefPlaceholder": "Wählen Sie einen Fall"
+    "selectDocDefPlaceholder": "Wählen Sie einen Fall"
   },
   "logging": {
     "columns": {"timestamp": "Zeit", "formattedMessage": "Nachricht", "level": "Protokollebene"},
@@ -1858,70 +1833,5 @@
     "dueDateText": "Fälligkeitsdatum:",
     "removeButtonText": "Fälligkeitsdatum entfernen"
   },
-  "processStartSuccessful": "{{processName}} wurde erfolgreich gestartet.",
-  "widgets": {
-    "noData": "Keine Data gefunden",
-    "emptyFields": "Niets hier",
-    "noWidgets": "Keine Widgets",
-    "noWidgetsDescription": "Für dieses Tab sind keine Widgets konfiguriert, oder Sie verfügen nicht über die entsprechenden Berechtigungen, um sie anzuzeigen.",
-    "noCustomComponent": "Widget nicht verfügbar",
-    "noCustomComponentDescription": "Die für dieses Widget konfigurierte Komponente konnte nicht gefunden werden."
-  },
-  "iko": {
-    "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
-  },
-  "ikoManagement": {
-    "ikoServer": "IKO Server",
-    "view": "Bild",
-    "title": "Konfiguration",
-    "list": "Liste",
-    "tabs": {"title": "Tabs"},
-    "widgets": {"title": "Widgets"},
-    "searchActions": {
-      "addActionTitle": "Suchaktion hinzufügen",
-      "editActionTitle": "Suchaktion bearbeiten",
-      "deleteModalTitle": "Suchaktion löschen",
-      "deleteModalText": "Bist du sicher, dass du diese Suchaktion löschen möchtest?",
-      "title": "Suchaktionen",
-      "numberOfFields": "Anzahl der Suchfelder",
-      "noResultsTitle": "Es gibt keine Suchaktionen.",
-      "noResultsDescription": "Klicke hier, um eine Suchaktion zu konfigurieren."
-    },
-    "searchFields": {
-      "pageTitle": "Suchaktion: {{searchActionTitle}}",
-      "title": "Suchfelder",
-      "deleteModalText": "Bist du sicher, dass du dieses Suchfeld löschen möchtest?",
-      "noResultsTitle": "Es gibt keine Suchfelder.",
-      "noResultsDescription": "Klicke hier, um ein Suchfeld zu konfigurieren."
-    },
-    "addApiConfig": "IKO Server konfigurieren",
-    "titleTitle": "Titel",
-    "titlePlaceholder": "Geben Sie einen Titel für die API-Konfiguration ein",
-    "keyTitle": "Schlüssel",
-    "keyPlaceholder": "Geben Sie einen Schlüssel für die API-Konfiguration ein",
-    "pluginIdTitle": "Plugin-Konfiguration",
-    "typeTitle": "Typ",
-    "addColumn": "Spalte hinzufügen",
-    "editColumn": "Spalte bearbeiten",
-    "columnTitlePlaceholder": "Spaltentitel eingeben",
-    "columnKeyPlaceholder": "Spaltenschlüssel eingeben",
-    "pathTitle": "Pfad",
-    "columnPathPlaceholder": "Spaltenpfad eingeben",
-    "sortableTitle": "Sortierbar",
-    "sortingDisabled": "Sortierung deaktiviert",
-    "defaultSortTitle": "Standardsortierung",
-    "displayType": "Anzeigetyp",
-    "sortingEnabled": "Sortierung aktiviert",
-    "tabKey": "Schlüssel",
-    "tabTitle": "Tabtitel",
-    "tabTitlePlaceholder": "Tabtitel eingeben",
-    "tabType": "Tabtyp",
-    "tabTypeTitle": "Tabtyp",
-    "tabTypePlaceholder": "Tabtyp eingeben",
-    "addTab": "Tab hinzufügen",
-    "editTab": "Tab bearbeiten",
-    "tabTypes": {
-      "widgets": "Widgets"
-    }
-  }
+  "processStartSuccessful": "{{processName}} wurde erfolgreich gestartet."
 }
