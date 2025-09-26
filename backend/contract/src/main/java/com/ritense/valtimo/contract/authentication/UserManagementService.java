@@ -48,17 +48,7 @@ public interface UserManagementService {
 
     Optional<NamedUser> findNamedUserByEmail(String email);
 
-    /**
-     * Find user by user identifier
-     *
-     * @deprecated Since 13.0.0.
-     */
-    @Deprecated(since = "Since 13.0.0", forRemoval = true)
-    default ManageableUser findByIdentifier(String userIdentifier) {
-        throw new NotImplementedException("Failed to get current user because method is not implemented.");
-    }
-
-    default ManageableUser findByUsername(String username) {
+    default ManageableUser findByUserIdentifier(String userIdentifier) {
         throw new NotImplementedException("Failed to get current user because method is not implemented.");
     }
 

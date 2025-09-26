@@ -26,4 +26,5 @@ public interface TaskMetaData {
 
     @JsonProperty
     String getAssignee();
+
 }

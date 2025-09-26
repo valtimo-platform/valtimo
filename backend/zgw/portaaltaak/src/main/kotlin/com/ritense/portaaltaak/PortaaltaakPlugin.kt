@@ -22,9 +22,7 @@ import com.fasterxml.jackson.module.kotlin.convertValue
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.document.domain.patch.JsonPatchService
 import com.ritense.logging.withLoggingContext
-import com.ritense.notificatiesapi.NotificatiesApiListener
 import com.ritense.notificatiesapi.NotificatiesApiPlugin
-import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
@@ -38,21 +36,22 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
 import com.ritense.portaaltaak.exception.CompleteTaakProcessVariableNotFoundException
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.CamundaTaskService
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.domain.rol.RolNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
-import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
+import com.ritense.zakenapi.domain.rol.RolType
 import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.DelegateExecution
-import org.operaton.bpm.engine.delegate.DelegateTask
+import mu.KLogger
+import mu.KotlinLogging
+import org.camunda.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.engine.delegate.DelegateTask
 import java.net.URI
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -70,8 +69,8 @@ class PortaaltaakPlugin(
     private val valueResolverService: ValueResolverService,
     private val processDocumentService: ProcessDocumentService,
     private val zaakInstanceLinkService: ZaakInstanceLinkService,
-    private val taskService: OperatonTaskService
-) : NotificatiesApiListener {
+    private val taskService: CamundaTaskService
+) {
     private val objectMapper = pluginService.getObjectMapper()
 
     @PluginProperty(key = "notificatiesApiPluginConfiguration", secret = false)
@@ -112,7 +111,7 @@ class PortaaltaakPlugin(
                     .existingId(objectManagement.objectenApiPluginConfigurationId)
             ) as ObjectenApiPlugin
 
-            val processInstanceId = OperatonProcessInstanceId(delegateTask.processInstanceId)
+            val processInstanceId = CamundaProcessInstanceId(delegateTask.processInstanceId)
             val documentId = processDocumentService.getDocumentId(processInstanceId, delegateTask).id
 
             val zaakUrl = try {
@@ -221,7 +220,7 @@ class PortaaltaakPlugin(
     }
 
     internal fun getZaakinitiator(delegateTask: DelegateTask): TaakIdentificatie {
-        val processInstanceId = OperatonProcessInstanceId(delegateTask.processInstanceId)
+        val processInstanceId = CamundaProcessInstanceId(delegateTask.processInstanceId)
         val documentId = processDocumentService.getDocumentId(processInstanceId, delegateTask)
 
         val zaakUrl = zaakInstanceLinkService.getByDocumentId(documentId.id).zaakInstanceUrl
@@ -230,7 +229,7 @@ class PortaaltaakPlugin(
         ) { "No plugin configuration was found for zaak with URL $zaakUrl" }
 
         val initiator = requireNotNull(
-            zakenPlugin.getZaakRollen(zaakUrl, RolTypeGeneriekeBeschrijving.INITIATOR).firstOrNull()
+            zakenPlugin.getZaakRollen(zaakUrl, RolType.INITIATOR).firstOrNull()
         ) { "No initiator role found for zaak with URL $zaakUrl" }
 
         return requireNotNull(
@@ -341,39 +340,7 @@ class PortaaltaakPlugin(
         )
     }
 
-    override fun getNotificatiesApiPlugin(): NotificatiesApiPlugin {
-        return notificatiesApiPluginConfiguration
-    }
-
-    override fun getKanaalFilters(): List<Abonnement.Kanaal> {
-        val objectManagement = objectManagementService.getById(objectManagementConfigurationId)
-            ?: throw IllegalStateException("Object management not found for portaaltaak")
-
-        val objecttypenApiPlugin = pluginService.createInstance(
-            PluginConfigurationId
-                .existingId(objectManagement.objecttypenApiPluginConfigurationId)
-        ) as ObjecttypenApiPlugin
-
-
-        return listOf(
-            Abonnement.Kanaal(
-                naam = "objecten",
-                filters = mapOf(
-                    "objectType" to "${objecttypenApiPlugin.url}objecttypes/${objectManagement.objecttypeId}",
-                    "actie" to "update"
-                )
-            ),
-            Abonnement.Kanaal(
-                naam = "objecten",
-                filters = mapOf(
-                    "objectType" to "${objecttypenApiPlugin.url}objecttypes/${objectManagement.objecttypeId}",
-                    "actie" to "partial_update"
-                )
-            )
-        )
-    }
-
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
     }
 }

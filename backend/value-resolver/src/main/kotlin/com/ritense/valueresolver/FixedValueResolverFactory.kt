@@ -17,7 +17,7 @@
 package com.ritense.valueresolver
 
 import java.util.function.Function
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.VariableScope
 
 /**
  * This resolver returns the requestedValue as the value.
