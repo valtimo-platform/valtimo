@@ -1,0 +1,45 @@
+{
+    "$id": "nested-array-reference-example.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "nested-array-reference-example",
+    "type": "object",
+    "properties": {
+        "object1": {
+            "type": "object",
+            "properties" : {
+                "object2": {
+                    "type": "object",
+                    "properties" : {
+                        "array1": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/refObject"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "refObject": {
+            "type": "object",
+            "properties": {
+                "object3": {
+                    "type": "object",
+                    "properties": {
+                        "object4": {
+                            "type": "object",
+                            "properties": {
+                                "text1": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "additionalProperties": false
+}

@@ -1,0 +1,41 @@
+{
+    "searchFields": [
+        {
+            "key": "createdOn",
+            "path": "case:createdOn",
+            "dataType": "date",
+            "fieldType": "single",
+            "matchType": "exact"
+        },
+        {
+            "key": "modifiedOn",
+            "path": "case:modifiedOn",
+            "dataType": "date",
+            "fieldType": "single",
+            "matchType": "exact"
+        },
+        {
+            "key": "assigneeFullName",
+            "path": "case:assigneeFullName",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "like"
+        },
+        {
+            "key": "voornaam",
+            "path": "doc:voornaam",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "like",
+            "title": "Voornaam"
+        },
+        {
+            "key": "achternaam",
+            "path": "doc:achternaam",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "like",
+            "title": "Achternaam"
+        }
+    ]
+}
