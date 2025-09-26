@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {combineLatest, Observable} from 'rxjs';
 import {
   PluginConfiguration,
@@ -23,7 +23,7 @@ import {
   PluginDefinition,
   PluginFunction,
 } from '../models';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService} from '@valtimo/config';
 import {map} from 'rxjs/operators';
 import {PluginService} from './plugin.service';
 import {DomSanitizer} from '@angular/platform-browser';
@@ -41,30 +41,25 @@ export class PluginManagementService {
     private readonly http: HttpClient
   ) {}
 
-  public getPluginDefinitions(): Observable<Array<PluginDefinition>> {
+  getPluginDefinitions(): Observable<Array<PluginDefinition>> {
     return this.http.get<Array<PluginDefinition>>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/definition`
     );
   }
 
-  public getPluginFunctions(
-    pluginDefinitionId: string,
-    activityType: string
-  ): Observable<Array<PluginFunction>> {
-    const params = new HttpParams().set('activityType', activityType);
-
+  getPluginFunctions(pluginDefinitionId: string): Observable<Array<PluginFunction>> {
     return this.http.get<Array<PluginFunction>>(
-      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/definition/${pluginDefinitionId}/action`,
-      {params}
+      `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/definition/${pluginDefinitionId}/action`
     );
   }
-  public getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
+
+  getAllPluginConfigurations(): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration`
     );
   }
 
-  public getPluginConfigurationsByPluginDefinitionKey(
+  getPluginConfigurationsByPluginDefinitionKey(
     pluginDefinitionKey: string
   ): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
@@ -72,15 +67,13 @@ export class PluginManagementService {
     );
   }
 
-  public getPluginConfigurationsByCategory(
-    categoryId: string
-  ): Observable<Array<PluginConfiguration>> {
+  getPluginConfigurationsByCategory(categoryId: string): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
       `${this.VALTIMO_API_ENDPOINT_URI}v1/plugin/configuration?category=${categoryId}`
     );
   }
 
-  public getPluginConfigurationsWithActionsForActivityType(
+  getPluginConfigurationsWithActionsForActivityType(
     activityType: string
   ): Observable<Array<PluginConfiguration>> {
     return this.http.get<Array<PluginConfiguration>>(
@@ -88,7 +81,7 @@ export class PluginManagementService {
     );
   }
 
-  public getAllPluginConfigurationsWithLogos(
+  getAllPluginConfigurationsWithLogos(
     activityType?: string
   ): Observable<Array<PluginConfigurationWithLogo>> {
     return activityType && activityType.length > 0
@@ -98,7 +91,7 @@ export class PluginManagementService {
       : this.returnPluginConfigurationsWithLogos(this.getAllPluginConfigurations());
   }
 
-  public savePluginConfiguration(
+  savePluginConfiguration(
     pluginConfiguration: PluginConfiguration
   ): Observable<PluginConfiguration> {
     return this.http.post<PluginConfiguration>(

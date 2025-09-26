@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,59 +16,37 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {EditorModel, EditorModule} from '@valtimo/components';
 import {ModalModule} from 'carbon-components-angular';
 import {LoggingEvent} from '../../models';
 
 @Component({
   selector: 'valtimo-log-details',
   templateUrl: './log-details.component.html',
-  styleUrl: './log-details.component.scss',
   standalone: true,
-  imports: [CommonModule, TranslateModule, ModalModule],
+  imports: [CommonModule, TranslateModule, ModalModule, EditorModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LogDetailsComponent {
-  @Input() public open = false;
+  private _logEventModel: EditorModel | null = null;
+  @Input() public set logEvent(value: LoggingEvent | null) {
+    if (!value) {
+      this._logEventModel = null;
+      return;
+    }
 
-  @Input() public set logEvent(logEvent: LoggingEvent) {
-    this.logEventFormatted = {
-      ...logEvent,
-      stacktrace: this.formatStacktrace(logEvent?.stacktrace),
+    this._logEventModel = {
+      value: JSON.stringify(value),
+      language: 'json',
     };
   }
+  public get logEventModel(): EditorModel | null {
+    return this._logEventModel;
+  }
 
-  @Output() public readonly closeModalEvent = new EventEmitter();
-
-  public logEventFormatted: LoggingEvent;
-
-  public readonly classesToIgnore: string[] = [
-    'LoggingContextKt',
-    'LoggableResourceAspect',
-    'RunWithoutAuthorizationAspect',
-    'UserLoggingFilter',
-  ];
+  @Output() closeModalEvent = new EventEmitter();
 
   public onCloseSelect(): void {
     this.closeModalEvent.emit();
-  }
-
-  private formatStacktrace(s?: string): string {
-    if (!s) {
-      return s;
-    }
-
-    s = s.replace(/^[^\t].+(Exception|Error): .+/gm, '<span class="highlight1">$&</span>');
-    s = s.replace(/^Caused by: .+/gm, '<span class="highlight1">$&</span>');
-    this.classesToIgnore.forEach(
-      c =>
-        (s = s.replace(
-          new RegExp(`^\tat .+\.${c}\..+`, 'gm'),
-          '<span class="highlight3">$&</span>'
-        ))
-    );
-    s = s.replace(/^\tat com.(ritense|valtimo).+/gm, '<span class="highlight2">$&</span>');
-    s = s.replace(/^\t.+common frames omitted$/gm, '<span class="highlight3">$&</span>');
-    s = s.replace(/^\tat .+/gm, '<span class="highlight3">$&</span>');
-    return s;
   }
 }

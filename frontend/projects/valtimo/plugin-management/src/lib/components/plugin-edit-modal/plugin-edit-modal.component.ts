@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,19 @@ import {PluginManagementStateService} from '../../services';
 import {take} from 'rxjs/operators';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {
-  PluginConfiguration,
   PluginConfigurationData,
+  PluginConfiguration,
   PluginManagementService,
 } from '@valtimo/plugin';
 import {NGXLogger} from 'ngx-logger';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-plugin-edit-modal',
   templateUrl: './plugin-edit-modal.component.html',
   styleUrls: ['./plugin-edit-modal.component.scss'],
 })
 export class PluginEditModalComponent {
-  @Input() public readonly open = false;
-  @Input() public readonly saveNewConfiguration = false;
+  @Input() open = false;
 
   @Output() closeModal: EventEmitter<boolean> = new EventEmitter();
 
@@ -53,7 +51,6 @@ export class PluginEditModalComponent {
   }
 
   delete(): void {
-    this.stateService.delete();
     this.stateService.disableInput();
 
     this.stateService.selectedPluginConfiguration$
@@ -86,11 +83,6 @@ export class PluginEditModalComponent {
   public onPluginConfiguration(configuration: PluginConfigurationData): void {
     this.stateService.disableInput();
 
-    if (this.saveNewConfiguration) {
-      this.saveNewPluginConfiguration(configuration);
-      return;
-    }
-
     this.stateService.selectedPluginConfiguration$
       .pipe(take(1))
       .subscribe(selectedPluginConfiguration => {
@@ -106,42 +98,16 @@ export class PluginEditModalComponent {
             configurationTitle,
             configurationData
           )
-          .subscribe({
-            next: () => {
+          .subscribe(
+            () => {
               this.stateService.refresh();
               this.hide();
             },
-            error: () => {
+            () => {
               this.logger.error('Something went wrong with updating the plugin configuration.');
               this.stateService.enableInput();
-            },
-          });
-      });
-  }
-
-  private saveNewPluginConfiguration(configuration: PluginConfigurationData): void {
-    this.stateService.selectedPluginConfiguration$
-      .pipe(take(1))
-      .subscribe(selectedPluginConfiguration => {
-        const duplicatedConfiguration = {...selectedPluginConfiguration, properties: configuration};
-
-        duplicatedConfiguration.title = duplicatedConfiguration.properties.configurationTitle;
-
-        delete duplicatedConfiguration.properties.configurationTitle;
-        delete duplicatedConfiguration.properties.configurationId;
-
-        this.pluginManagementService.savePluginConfiguration(duplicatedConfiguration).subscribe({
-          next: () => {
-            this.stateService.refresh();
-            this.hide();
-          },
-          error: () => {
-            this.logger.error(
-              'Something went wrong with saving the duplicated plugin configuration.'
-            );
-            this.stateService.enableInput();
-          },
-        });
+            }
+          );
       });
   }
 }

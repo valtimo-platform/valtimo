@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -2395,8 +2395,9 @@ textarea.form-control {
 }
 
 .form-check-input {
-  position: relative;
-  margin: 0;
+  position: absolute;
+  margin-top: 0.3rem;
+  margin-left: -1.25rem;
 }
 
 .form-check-input[disabled] ~ .form-check-label,
@@ -3929,7 +3930,6 @@ input[type='button'].btn-block {
   flex-wrap: wrap;
   align-items: stretch;
   width: 100%;
-  gap: 8px;
 }
 
 .input-group > .form-control,
@@ -18490,6 +18490,7 @@ li.L9 {
 .timeline-content {
   position: relative;
   background-color: #ffffff;
+  padding: 25px 30px 25px 28px;
   border-radius: 3px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.07);
   min-height: 85px;

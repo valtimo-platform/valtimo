@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,11 @@ import {PermissionRequest} from '@valtimo/access-control';
 enum PERMISSION_ACTION {
   assign = 'assign',
   view = 'view',
-  modify = 'modify',
 }
 
 enum TASK_DETAIL_PERMISSION_RESOURCE {
   jsonSchemaDocument = 'com.ritense.document.domain.impl.JsonSchemaDocument',
-  task = 'com.ritense.valtimo.operaton.domain.OperatonTask',
+  task = 'com.ritense.valtimo.camunda.domain.CamundaTask',
 }
 
 const CAN_ASSIGN_TASK_PERMISSION: PermissionRequest = {
@@ -42,15 +41,9 @@ const CAN_VIEW_CASE_PERMISSION: PermissionRequest = {
   resource: TASK_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
 };
 
-const CAN_MODIFY_TASK_PERMISSION: PermissionRequest = {
-  action: PERMISSION_ACTION.modify,
-  resource: TASK_DETAIL_PERMISSION_RESOURCE.task,
-};
-
 export {
   CAN_ASSIGN_TASK_PERMISSION,
   CAN_VIEW_TASK_PERMISSION,
   CAN_VIEW_CASE_PERMISSION,
-  CAN_MODIFY_TASK_PERMISSION,
   TASK_DETAIL_PERMISSION_RESOURCE,
 };

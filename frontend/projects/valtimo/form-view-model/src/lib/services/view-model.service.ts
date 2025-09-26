@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpHeaders} from '@angular/common/http';
+
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {HttpClient, HttpHeaders, HttpParams, HttpResponse} from '@angular/common/http';
 import {Observable} from 'rxjs';
+import {BaseApiService, ConfigService} from '@valtimo/config';
+import {InterceptorSkip} from '@valtimo/security';
 
 @Injectable({providedIn: 'root'})
 export class ViewModelService extends BaseApiService {
@@ -40,18 +42,13 @@ export class ViewModelService extends BaseApiService {
   public updateViewModel(
     formName: string,
     taskInstanceId: string,
-    viewModel: object,
-    page: number,
-    isWizard: boolean
+    viewModel: object
   ): Observable<object> {
-    const params = {
-      formName,
-      taskInstanceId,
-      isWizard,
-      ...(!isNaN(page) && {page}),
-    };
     return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/user-task`), viewModel, {
-      params,
+      params: {
+        formName,
+        taskInstanceId,
+      },
       headers: new HttpHeaders().set(InterceptorSkip, '400'),
     });
   }
@@ -72,14 +69,12 @@ export class ViewModelService extends BaseApiService {
 
   public getViewModelForStartForm(
     formName: string,
-    processDefinitionKey: string,
-    documentId: string = null
+    processDefinitionKey: string
   ): Observable<object> {
     return this.httpClient.get<any>(this.getApiUrl('/v1/form/view-model/start-form'), {
       params: {
         formName,
         processDefinitionKey,
-        ...(!!documentId && {documentId}),
       },
       headers: new HttpHeaders().set(InterceptorSkip, '400'),
     });
@@ -88,20 +83,13 @@ export class ViewModelService extends BaseApiService {
   public updateViewModelForStartForm(
     formName: string,
     processDefinitionKey: string,
-    documentId: string,
-    viewModel: object,
-    page: number,
-    isWizard: boolean
+    viewModel: object
   ): Observable<object> {
-    const params = {
-      formName,
-      processDefinitionKey,
-      isWizard,
-      ...(!isNaN(page) && {page}),
-      ...(!!documentId && {documentId}),
-    };
     return this.httpClient.post(this.getApiUrl(`/v1/form/view-model/start-form`), viewModel, {
-      params,
+      params: {
+        formName,
+        processDefinitionKey,
+      },
       headers: new HttpHeaders().set(InterceptorSkip, '400'),
     });
   }
@@ -109,7 +97,6 @@ export class ViewModelService extends BaseApiService {
   public submitViewModelForStartForm(
     formName: string,
     processDefinitionKey: string,
-    documentId: string,
     documentDefinitionName: string,
     viewModel: object
   ): Observable<object> {
@@ -121,7 +108,6 @@ export class ViewModelService extends BaseApiService {
           formName,
           processDefinitionKey,
           documentDefinitionName,
-          ...(!!documentId && {documentId}),
         },
         headers: new HttpHeaders().set(InterceptorSkip, '400'),
       }

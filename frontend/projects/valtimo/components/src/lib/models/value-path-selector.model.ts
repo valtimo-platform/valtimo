@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,12 @@
 
 import {ListItem} from 'carbon-components-angular';
 
-enum ValuePathType {
-  FIELD = 'FIELD',
-  COLLECTION = 'COLLECTION',
-}
-
-interface ValuePathResponse {
-  path: string;
-  type: ValuePathType;
-  children?: ValuePathResponse[];
-}
-
 interface ValuePathSelectorCache {
   [documentDefinitionName: string]: {
     [version: string | number]: {
-      [prefix: string]: {
-        [type in ValuePathType]: ValuePathItem[];
-      };
+      [prefix: string]: string[];
     };
   };
-}
-
-interface ValuePathItem {
-  path: string;
-  children?: string[];
 }
 
 type DocumentDefinitionItemsCache = ListItem[];
@@ -60,13 +42,13 @@ enum ValuePathSelectorInputMode {
 
 type ValuePathSelectorNotation = 'dots' | 'slashes';
 
+type ValuePathVersionArgument = number | 'latest';
+
 export {
+  ValuePathSelectorCache,
   ValuePathSelectorPrefix,
   ValuePathSelectorInputMode,
+  ValuePathVersionArgument,
   DocumentDefinitionItemsCache,
   ValuePathSelectorNotation,
-  ValuePathType,
-  ValuePathResponse,
-  ValuePathSelectorCache,
-  ValuePathItem,
 };

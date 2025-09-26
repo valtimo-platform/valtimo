@@ -1,0 +1,18 @@
+<div class="ibanForm-container" [formGroup]="ibanForm">
+  <div class="input-group">
+    <input cdsText id="iban" type="text" formControlName="iban" class="form-control" />
+
+    <div
+      class="formio-errors invalid-feedback"
+      *ngIf="
+        ibanForm.controls.iban.invalid &&
+        (ibanForm.controls.iban.touched || !ibanForm.controls.iban.pristine) &&
+        ibanForm.controls?.iban?.errors
+      "
+    >
+      <div class="form-text error">
+        {{ 'formioTranslations.formioIbanComponent.errorMessage' | translate }}
+      </div>
+    </div>
+  </div>
+</div>

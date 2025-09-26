@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@ import {
 import {RecentlyViewed16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ConfirmationModalModule, TooltipModule} from '@valtimo/components';
-import {ConfigService, GlobalNotificationService} from '@valtimo/shared';
-import {TaskProcessLinkResult, TaskWithProcessLink} from '@valtimo/process-link';
+import {ConfigService} from '@valtimo/config';
 import {ButtonModule, IconModule, IconService, ModalModule} from 'carbon-components-angular';
 import moment from 'moment';
+import {ToastrService} from 'ngx-toastr';
 import {BehaviorSubject, combineLatest, switchMap, take} from 'rxjs';
 import {IntermediateSaveRequest, IntermediateSubmission, Task} from '../../models';
 import {TaskIntermediateSaveService, TaskService} from '../../services';
@@ -36,7 +36,6 @@ import {TaskIntermediateSaveService, TaskService} from '../../services';
 @Component({
   selector: 'valtimo-task-detail-intermediate-save',
   templateUrl: './task-detail-intermediate-save.component.html',
-  styleUrls: ['./task-detail-intermediate-save.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
@@ -56,7 +55,8 @@ export class TaskDetailIntermediateSaveComponent {
       .getTaskProcessLink(value.id)
       .pipe(take(1))
       .subscribe(res => {
-        this.setFormFlow(res);
+        if (res !== null && res.type === 'form-flow')
+          this.formFlowInstanceId$.next(res.properties.formFlowInstanceId);
       });
 
     this.taskValue.set(value);
@@ -65,17 +65,6 @@ export class TaskDetailIntermediateSaveComponent {
       subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${value.created}`,
     });
     this.getCurrentProgress(value);
-  }
-  @Input() public set taskAndProcessLink(value: TaskWithProcessLink | null) {
-    if (!value) return;
-
-    this.setFormFlow(value.processLinkActivityResult);
-    this.taskValue.set(value.task as any);
-    this.page.set({
-      title: value?.task.name,
-      subtitle: `${this.translateService.instant('taskDetail.taskCreated')} ${value?.task.created}`,
-    });
-    this.getCurrentProgress(value.task as any);
   }
   @Output() public readonly currentIntermediateSaveEvent =
     new EventEmitter<IntermediateSubmission | null>();
@@ -95,11 +84,11 @@ export class TaskDetailIntermediateSaveComponent {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly globalNotificationService: GlobalNotificationService,
     private readonly iconService: IconService,
+    private readonly translateService: TranslateService,
     private readonly taskIntermediateSaveService: TaskIntermediateSaveService,
     private readonly taskService: TaskService,
-    private readonly translateService: TranslateService
+    private readonly toastr: ToastrService
   ) {
     this.intermediateSaveEnabled = !!this.configService.featureToggles?.enableIntermediateSave;
     this.iconService.registerAll([RecentlyViewed16]);
@@ -122,18 +111,14 @@ export class TaskDetailIntermediateSaveComponent {
       )
       .subscribe({
         next: intermediateSubmission => {
-          this.globalNotificationService.showToast({
-            title: this.translateService.instant('formManagement.intermediateSave.success'),
-            type: 'success',
-          });
+          this.toastr.success(
+            this.translateService.instant('formManagement.intermediateSave.success')
+          );
           this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSubmission);
           this.currentIntermediateSaveEvent.emit(this.currentIntermediateSave);
         },
         error: () => {
-          this.globalNotificationService.showToast({
-            title: this.translateService.instant('formManagement.intermediateSave.error'),
-            type: 'error',
-          });
+          this.toastr.error(this.translateService.instant('formManagement.intermediateSave.error'));
         },
       });
   }
@@ -152,16 +137,10 @@ export class TaskDetailIntermediateSaveComponent {
       .clearIntermediateSubmission(this.taskValue()?.id ?? '')
       .pipe(take(1))
       .subscribe(() => {
-        this.taskIntermediateSaveService.setSubmission({});
+        this.taskIntermediateSaveService.setSubmission({data: {}});
         this.currentIntermediateSave = null;
         this.currentIntermediateSaveEvent.emit(this.currentIntermediateSave);
       });
-  }
-
-  private setFormFlow(processLink: TaskProcessLinkResult): void {
-    if (processLink !== null && processLink.type === 'form-flow') {
-      this.formFlowInstanceId$.next(processLink.properties.formFlowInstanceId);
-    }
   }
 
   private formatIntermediateSubmission(
@@ -184,14 +163,7 @@ export class TaskDetailIntermediateSaveComponent {
       .getIntermediateSubmission(task.id ?? '')
       .pipe(take(1))
       .subscribe(intermediateSave => {
-        if (intermediateSave !== null) {
-          this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSave);
-        } else {
-          this.currentIntermediateSave = null;
-          this.taskIntermediateSaveService.setSubmission({});
-        }
-
-        this.currentIntermediateSaveEvent.emit(this.currentIntermediateSave);
+        this.currentIntermediateSave = this.formatIntermediateSubmission(intermediateSave);
       });
   }
 }

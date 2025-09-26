@@ -15,8 +15,8 @@
  */
 
 import {
-  CaseListTab,
   DefinitionColumn,
+  DossierListTab,
   IncludeFunction,
   Language,
   ROLE_ADMIN,
@@ -25,7 +25,7 @@ import {
   TaskListTab,
   UploadProvider,
   ValtimoConfig,
-} from '@valtimo/shared';
+} from '@valtimo/config';
 import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config.dev';
 import {cspHeaderParamsDev} from './csp';
@@ -86,7 +86,7 @@ export const environment: ValtimoConfig = {
       },
       {
         roles: [ROLE_USER],
-        title: 'Cases',
+        title: 'Dossiers',
         iconClass: 'icon mdi mdi-layers',
         sequence: 1,
         children: [],
@@ -118,35 +118,30 @@ export const environment: ValtimoConfig = {
         iconClass: 'icon mdi mdi-tune',
         sequence: 5,
         children: [
-          {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
-          {link: ['/case-management'], title: 'Cases', sequence: 2},
-          {link: ['/plugins'], title: 'Plugins', sequence: 3},
-          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 4},
-          {link: ['/access-control'], title: 'Access Control', sequence: 5},
-          {link: ['/translation-management'], title: 'Translations', sequence: 6},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 7},
-
+          {title: 'Basics', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
+          {link: ['/processes'], title: 'Processes', sequence: 2},
+          {link: ['/form-management'], title: 'Forms', sequence: 3},
+          {link: ['/form-flow-management'], title: 'Form Flows', sequence: 4},
+          {link: ['/decision-tables'], title: 'Decision tables', sequence: 5},
+          {link: ['/template'], title: 'Templates', sequence: 6},
+          {link: ['/dossier-management'], title: 'Dossiers', sequence: 7},
+          {link: ['/task-management'], title: 'Tasks', sequence: 8},
           {
-            title: 'Object management',
-            textClass: 'text-dark font-weight-bold c-default',
-            sequence: 8,
+            link: ['/object-management'],
+            title: 'Objects',
+            sequence: 9,
+            includeFunction: IncludeFunction.ObjectManagementEnabled,
           },
-          {link: ['/object-management'], title: 'Objects', sequence: 9},
-          {link: ['/form-management'], title: 'Forms', sequence: 10},
-
-          {
-            title: 'System processes',
-            textClass: 'text-dark font-weight-bold c-default',
-            sequence: 11,
-          },
-          {link: ['/processes'], title: 'Processes', sequence: 12},
-          {link: ['/decision-tables'], title: 'Decision tables', sequence: 13},
-
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 14},
+          {link: ['/plugins'], title: 'Plugins', sequence: 10},
+          {link: ['/process-links'], title: 'Process links', sequence: 11},
+          {link: ['/dashboard-management'], title: 'Dashboard', sequence: 12},
+          {link: ['/access-control'], title: 'Access Control', sequence: 13},
+          {link: ['/translation-management'], title: 'Translations', sequence: 14},
           {link: ['/logging'], title: 'Logs', sequence: 15},
-          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 16},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 17},
-          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 18},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 16},
+          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 17},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 18},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 19},
         ],
       },
       {
@@ -178,19 +173,37 @@ export const environment: ValtimoConfig = {
     level: NgxLoggerLevel.TRACE,
   },
   definitions: {
-    cases: [],
+    dossiers: [],
   },
   openZaak: {
     catalogus: '8225508a-6840-413e-acc9-6422af120db1',
   },
   uploadProvider: UploadProvider.DOCUMENTEN_API,
   caseFileSizeUploadLimitMB: 100,
-  supportedDocumentFileTypesToViewInBrowser: ['pdf', 'jpg', 'png', 'svg'],
+  supportedDocumentFileTypesToViewInBrowser: ['pdf', 'jpg', 'png', 'svg', 'html'],
   defaultDefinitionTable: defaultDefinitionColumns,
+  customDefinitionTables: {
+    leningen: [
+      ...defaultDefinitionColumns,
+      {propertyName: '$.voornaam', translationKey: 'firstName', sortable: false},
+      {
+        propertyName: 'relatedFiles',
+        translationKey: 'files',
+        sortable: true,
+        viewType: 'relatedFiles',
+      },
+      {
+        propertyName: '$.lening-akkoord',
+        translationKey: 'accepted',
+        sortable: false,
+        viewType: 'boolean',
+      },
+    ],
+  },
   caseFileUploadAcceptedFiles:
     'image/png, image/jpeg, text/plain, application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/xml',
   visibleTaskListTabs: [TaskListTab.MINE, TaskListTab.OPEN, TaskListTab.ALL],
-  visibleCaseListTabs: [CaseListTab.ALL, CaseListTab.MINE, CaseListTab.OPEN],
+  visibleDossierListTabs: [DossierListTab.ALL, DossierListTab.MINE, DossierListTab.OPEN],
   customTaskList: {
     fields: [
       {
@@ -245,10 +258,17 @@ export const environment: ValtimoConfig = {
     enableObjectManagement: true,
     enableFormViewModel: true,
     enableIntermediateSave: true,
-    enableFormFlowBreadcrumbs: true,
     enableTaskPanel: true,
-    enablePbacDocumentenApiDocuments: true,
-    enableSuppressDocumentError: false,
+    enableFormFlowBreadcrumbs: true,
+  },
+  customDossierHeader: {
+    leningen: [
+      {
+        propertyPaths: ['voornaam'],
+        columnSize: 3,
+        textSize: 'sm',
+      },
+    ],
   },
   csp: cspHeaderParamsDev,
   formioOptions: {

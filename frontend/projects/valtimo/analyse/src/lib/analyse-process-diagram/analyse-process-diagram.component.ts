@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,18 +25,17 @@ import {
 } from '@angular/core';
 import {ProcessDefinition, ProcessService} from '@valtimo/process';
 import {Heatpoint} from '../models';
-import BpmnViewer from 'bpmn-js';
+import BpmnJS from 'bpmn-js/dist/bpmn-navigated-viewer.production.min.js';
 import heatmap from 'heatmap.js-fixed/build/heatmap.js';
 import {PageTitleService} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-analyse-process-diagram',
   templateUrl: './analyse-process-diagram.component.html',
   styleUrls: ['./analyse-process-diagram.component.scss'],
 })
 export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
-  private bpmnViewer: BpmnViewer;
+  private bpmnJS: BpmnJS;
   private heatMapInstance: any;
 
   @ViewChild('ref') public el: ElementRef;
@@ -78,11 +77,11 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   }
 
   private createBpmnViewerInstance() {
-    this.bpmnViewer = new BpmnViewer();
-    this.bpmnViewer.on('import.done', ({error}: any) => {
+    this.bpmnJS = new BpmnJS();
+    this.bpmnJS.on('import.done', ({error}: any) => {
       if (!error && !this.initialized) {
-        const canvas = this.bpmnViewer.get('canvas') as any;
-        const eventBus = this.bpmnViewer.get('eventBus') as any;
+        const canvas = this.bpmnJS.get('canvas');
+        const eventBus = this.bpmnJS.get('eventBus');
         if (this.processDiagram.historicActivityInstances) {
           this.processDiagram.historicActivityInstances.forEach((instance: any) => {
             if (instance.activityType !== 'multiInstanceBody') {
@@ -121,8 +120,8 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.bpmnViewer) {
-      this.bpmnViewer.destroy();
+    if (this.bpmnJS) {
+      this.bpmnJS.destroy();
     }
     this.pageTitleService.enableReset();
   }
@@ -153,8 +152,8 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   public loadProcessDefinitionXml(processDefinitionId: string): void {
     this.processService.getProcessDefinitionXml(processDefinitionId).subscribe(response => {
       this.processDiagram = response;
-      this.bpmnViewer.importXML(this.processDiagram.bpmn20Xml);
-      this.bpmnViewer.attachTo(this.el.nativeElement);
+      this.bpmnJS.importXML(this.processDiagram.bpmn20Xml);
+      this.bpmnJS.attachTo(this.el.nativeElement);
     });
   }
 
@@ -294,7 +293,7 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
   }
 
   public addCounterActiveOverlays(key: string, inputData: any[]): void {
-    const overlays = this.bpmnViewer.get('overlays') as any;
+    const overlays = this.bpmnJS.get('overlays');
     overlays.add(key, {
       position: {
         bottom: 13,

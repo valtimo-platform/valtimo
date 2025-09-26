@@ -1,0 +1,73 @@
+<!--
+  ~ Copyright 2015-2023 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="{
+    model: model$ | async,
+    updatedModelValue: updatedModelValue$ | async,
+  } as obs">
+  <valtimo-editor
+    [disabled]="editorDisabled$ | async"
+    [model]="obs.model"
+    (validEvent)="onValid($event)"
+    (valueChangeEvent)="onValueChange($event)"
+  ></valtimo-editor>
+
+  <div style="margin-top: 100px" [innerHTML]="obs.updatedModelValue"></div>
+</ng-container>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <div
+      *ngIf="{model: model$ | async, moreDisabled: moreDisabled$ | async} as obs"
+      class="buttons-container"
+    >
+      <cds-overflow-menu class="overflow-button">
+        <cds-overflow-menu-option
+          [disabled]="obs.moreDisabled"
+          type="danger"
+          (selected)="showDeleteModal()"
+          >{{ 'interface.delete' | translate }}</cds-overflow-menu-option
+        >
+      </cds-overflow-menu>
+
+      <button
+        [disabled]="saveDisabled$ | async"
+        cdsButton="primary"
+        size="md"
+        (click)="updateTemplate()"
+      >
+        {{ 'interface.save' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
+      </button>
+    </div>
+  </ng-template>
+</ng-container>
+
+<ng-container *ngIf="{selectedRowKeys: selectedRowKeys$ | async} as obs">
+  <valtimo-delete-template-modal
+    [deleteRowKeys]="obs.selectedRowKeys"
+    [showDeleteModal$]="showDeleteModal$"
+    (deleteEvent)="onDelete($event)"
+  >
+  </valtimo-delete-template-modal>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <cds-loading></cds-loading>
+  </div>
+</ng-template>

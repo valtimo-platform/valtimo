@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,8 @@ import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
 import {DocumentService} from '@valtimo/document';
 import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
 import {PluginTranslatePipe} from '../../../../pipes';
-import {Add16, TrashCan16} from '@carbon/icons';
-import {IconService} from 'carbon-components-angular';
-import {CreateZaakExtraProperties, CreateZaakExtraPropertyOptions} from '../../models/create-zaak-properties';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-create-zaak-configuration',
   templateUrl: './create-zaak-configuration.component.html',
   styleUrls: ['./create-zaak-configuration.component.scss'],
@@ -52,13 +47,9 @@ export class CreateZaakConfigurationComponent
   @Input() set pluginId(value: string) {
     this.pluginId$.next(value);
   }
-  @Input() context$: Observable<[ManagementContext, CaseManagementParams]>;
-
   @Input() prefillConfiguration$: Observable<CreateZaakConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakConfig> = new EventEmitter<CreateZaakConfig>();
-
-  public readonly propertyList: Array<CreateZaakExtraProperties> = [];
 
   readonly pluginId$ = new BehaviorSubject<string>('');
   readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
@@ -81,35 +72,30 @@ export class CreateZaakConfigurationComponent
 
   private readonly formValue$ = new BehaviorSubject<CreateZaakConfig | null>(null);
   private readonly valid$ = new BehaviorSubject<boolean>(false);
-  private readonly _properties = new Map<CreateZaakExtraProperties, string>();
 
   readonly loading$ = new BehaviorSubject<boolean>(true);
 
   readonly zaakTypeItems$: Observable<Array<SelectItem>> = this.modalService.modalData$.pipe(
-    switchMap(() => this.context$),
-    tap(([context]) => {
-      if (context === 'independent') {
-        this.selectedInputOption$.next('text');
-        this.loading$.next(false);
-      }
-    }),
-    filter(([context]) => context === 'case'),
-    switchMap(([context, params]) =>
+    switchMap(params =>
+      this.documentService.findProcessDocumentDefinitionsByProcessDefinitionKey(
+        params?.processDefinitionKey
+      )
+    ),
+    switchMap(processDocumentDefinitions =>
       combineLatest([
         this.openZaakService.getZaakTypes(),
-        context === 'case'
-          ? this.openZaakService.getZaakTypeLink(
-              params.caseDefinitionKey,
-              params.caseDefinitionVersionTag
-            )
-          : null,
+        ...processDocumentDefinitions.map(processDocumentDefinition =>
+          this.openZaakService.getZaakTypeLink(
+            processDocumentDefinition.id.documentDefinitionId.name
+          )
+        ),
       ])
     ),
     map(results => {
       const zaakTypes = results[0] as Array<ZaakType>;
-      const zaakTypeLink = results[1] as ZaakTypeLink;
+      const zaakTypeLinks = results.filter((result, index) => index !== 0) as Array<ZaakTypeLink>;
 
-      return [zaakTypeLink]
+      return zaakTypeLinks
         .filter(zaakTypeLink => !!zaakTypeLink?.zaakTypeUrl)
         .map(zaakTypeLink => ({
           id: zaakTypeLink.zaakTypeUrl,
@@ -139,20 +125,11 @@ export class CreateZaakConfigurationComponent
     private readonly openZaakService: OpenZaakService,
     private readonly documentService: DocumentService,
     private readonly modalService: ModalService,
-    private readonly pluginTranslatePipe: PluginTranslatePipe,
-    private readonly iconService: IconService
-  ) {
-    this.iconService.registerAll([Add16, TrashCan16]);
-  }
+    private readonly pluginTranslatePipe: PluginTranslatePipe
+  ) {}
 
   ngOnInit(): void {
     this.openSaveSubscription();
-
-    this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property]).forEach(property =>
-        this.addCaseProperty(property)
-      );
-    });
   }
 
   ngOnDestroy() {
@@ -160,8 +137,6 @@ export class CreateZaakConfigurationComponent
   }
 
   formValueChange(formValue: CreateZaakConfig): void {
-    this._properties.forEach((value, key) => (formValue[key] = value));
-
     const inputTypeZaakTypeToggle = formValue.inputTypeZaakTypeToggle;
     this.formValue$.next(formValue);
     this.handleValid(formValue);
@@ -188,8 +163,7 @@ export class CreateZaakConfigurationComponent
   }
 
   private handleValid(formValue: CreateZaakConfig): void {
-    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
-    const valid = !!(formValue.rsin && formValue.zaaktypeUrl) && !isPropertyInvalid;
+    const valid = !!(formValue.rsin && formValue.zaaktypeUrl);
 
     this.valid$.next(valid);
     this.valid.emit(valid);
@@ -201,41 +175,13 @@ export class CreateZaakConfigurationComponent
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
-            const payload: CreateZaakConfig = {
+            this.configuration.emit({
               rsin: formValue.rsin,
               zaaktypeUrl: formValue.zaaktypeUrl,
               manualZaakTypeUrl: formValue.manualZaakTypeUrl,
-            };
-            this.propertyList.forEach(property => (payload[property] = formValue[property]));
-            this.configuration.emit(payload);
+            });
           }
         });
     });
-  }
-
-  public addCaseProperty(property: CreateZaakExtraProperties): void {
-    this.propertyList.push(property);
-  }
-
-  public removeCaseProperty(property: CreateZaakExtraProperties): void {
-    this.propertyList.splice(this.propertyList.indexOf(property), 1);
-    this._properties.delete(property);
-    this.onPropertyChanged(property, undefined);
-  }
-
-  public hasPropertyBeenAdded(property: CreateZaakExtraProperties): boolean {
-    return this.propertyList.indexOf(property) !== -1;
-  }
-
-  public onPropertyChanged(property: CreateZaakExtraProperties, value: any): void {
-    this._properties.set(property, value);
-    this.formValue$
-      .pipe(
-        filter(formValue => formValue !== null),
-        take(1)
-      )
-      .subscribe(formValue => {
-        this.formValueChange(formValue);
-      });
   }
 }
