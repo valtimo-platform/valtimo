@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,20 +27,22 @@ import {PluginConfigurationContainerModule, PluginTranslatePipeModule} from '@va
 import {PluginEditModalComponent} from './components/plugin-edit-modal/plugin-edit-modal.component';
 import {PluginEditComponent} from './components/plugin-edit/plugin-edit.component';
 import {
+  ButtonModule,
   CarbonListModule,
+  PageModule,
   ParagraphModule,
   StepperModule,
   TableModule,
-  ValtimoCdsModalDirective,
+  TitleModule,
+  ValtimoCdsModalDirectiveModule,
+  VCardModule,
   VModalModule,
 } from '@valtimo/components';
 import {
   ButtonModule as CarbonButtonModule,
   IconModule,
   LayerModule,
-  LoadingModule,
   ModalModule as CarbonModalModule,
-  TilesModule,
 } from 'carbon-components-angular';
 
 @NgModule({
@@ -57,20 +59,22 @@ import {
     CommonModule,
     PluginManagementRoutingModule,
     TranslateModule,
+    PageModule,
     ParagraphModule,
+    TitleModule,
     TableModule,
     StepperModule,
     VModalModule,
+    ButtonModule,
+    VCardModule,
     PluginTranslatePipeModule,
     PluginConfigurationContainerModule,
     CarbonButtonModule,
     CarbonListModule,
     CarbonModalModule,
     IconModule,
-    ValtimoCdsModalDirective,
+    ValtimoCdsModalDirectiveModule,
     LayerModule,
-    TilesModule,
-    LoadingModule,
   ],
   exports: [
     PluginManagementComponent,

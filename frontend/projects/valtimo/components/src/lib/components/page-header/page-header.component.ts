@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import {PageHeaderService, PageTitleService} from '../../services';
   selector: 'valtimo-page-header',
   templateUrl: './page-header.component.html',
   styleUrls: ['./page-header.component.scss'],
-  standalone: false,
 })
 export class PageHeaderComponent implements AfterViewInit, OnDestroy {
   @ViewChild('contentVcr', {static: true, read: ViewContainerRef})
@@ -38,7 +37,6 @@ export class PageHeaderComponent implements AfterViewInit, OnDestroy {
   private readonly _pageHead!: ElementRef<HTMLDivElement>;
   public readonly showPageHeader$ = this.userInterfaceService.showPageHeader$;
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
-  public readonly smallTitle$ = this.pageHeaderService.smallTitle$;
   public readonly pageActionsHasContent$ = this.pageHeaderService.pageActionsHasContent$;
   public readonly pageTitleHidden$ = this.pageTitleService.pageTitleHidden$;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 import {Injectable, OnDestroy} from '@angular/core';
 import {BehaviorSubject, combineLatest, Observable, Subscription} from 'rxjs';
-import {filter, map} from 'rxjs/operators';
+import {filter} from 'rxjs/operators';
 import {CurrentCarbonTheme, SelectableCarbonTheme} from '../models';
 
 @Injectable({
@@ -33,14 +33,6 @@ export class CdsThemeService implements OnDestroy {
 
   public get currentTheme$(): Observable<CurrentCarbonTheme> {
     return this._currentTheme$.pipe(filter(theme => !!theme));
-  }
-
-  public get toggletipTheme$(): Observable<CurrentCarbonTheme> {
-    return this.currentTheme$.pipe(
-      map(currentTheme =>
-        currentTheme === CurrentCarbonTheme.G10 ? CurrentCarbonTheme.G90 : CurrentCarbonTheme.WHITE
-      )
-    );
   }
 
   private readonly _subscriptions = new Subscription();

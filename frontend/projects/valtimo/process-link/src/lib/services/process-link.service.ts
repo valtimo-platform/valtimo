@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
-import {Injectable} from '@angular/core';
-import {ConfigService} from '@valtimo/shared';
-import {map, Observable} from 'rxjs';
 
+import {Injectable} from '@angular/core';
+import {ConfigService} from '@valtimo/config';
+import {map, Observable} from 'rxjs';
 import {
   CompatiblePluginProcessLinks,
+  FormFlowProcessLinkCreateRequestDto,
   FormFlowProcessLinkUpdateRequestDto,
+  FormProcessLinkCreateRequestDto,
   FormProcessLinkUpdateRequestDto,
   FormSubmissionResult,
   GetProcessLinkRequest,
   GetProcessLinkResponse,
+  PluginProcessLinkCreateDto,
   PluginProcessLinkUpdateDto,
-  ProcessLinkCreateEvent,
   ProcessLinkType,
   TaskWithProcessLink,
+  UIComponentProcessLinkCreateRequestDto,
   UIComponentProcessLinkUpdateRequestDto,
+  URLProcessLinkCreateDto,
   URLProcessLinkUpdateRequestDto,
 } from '../models';
+import {HttpClient, HttpHeaders, HttpParams} from '@angular/common/http';
 import {URLVariables} from '../models/process-link-url.model';
 
 @Injectable({
@@ -44,7 +48,7 @@ export class ProcessLinkService {
     private readonly configService: ConfigService,
     private readonly http: HttpClient
   ) {
-    this.VALTIMO_ENDPOINT_URI = this.configService.config.valtimoApi.endpointUri;
+    this.VALTIMO_ENDPOINT_URI = configService.config.valtimoApi.endpointUri;
   }
 
   public getTasksWithProcessLinks(processInstanceId: string): Observable<TaskWithProcessLink[]> {
@@ -58,12 +62,9 @@ export class ProcessLinkService {
   public getProcessLink(
     getProcessLinkRequest: GetProcessLinkRequest
   ): Observable<GetProcessLinkResponse> {
-    var params = new HttpParams().set(
-      'processDefinitionId',
-      getProcessLinkRequest.processDefinitionId
-    );
-    if (getProcessLinkRequest.activityId !== undefined)
-      params = params.set('activityId', getProcessLinkRequest.activityId);
+    const params = new HttpParams()
+      .set('activityId', getProcessLinkRequest.activityId)
+      .set('processDefinitionId', getProcessLinkRequest.processDefinitionId);
 
     return this.http.get<GetProcessLinkResponse>(`${this.VALTIMO_ENDPOINT_URI}v1/process-link`, {
       params,
@@ -84,7 +85,14 @@ export class ProcessLinkService {
     );
   }
 
-  public saveProcessLink(saveProcessLinkRequest: ProcessLinkCreateEvent): Observable<null> {
+  public saveProcessLink(
+    saveProcessLinkRequest:
+      | FormProcessLinkCreateRequestDto
+      | FormFlowProcessLinkCreateRequestDto
+      | PluginProcessLinkCreateDto
+      | URLProcessLinkCreateDto
+      | UIComponentProcessLinkCreateRequestDto
+  ): Observable<null> {
     return this.http.post<null>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link`,
       this.emptyStringToNull(saveProcessLinkRequest)
@@ -98,53 +106,6 @@ export class ProcessLinkService {
   public getProcessLinkCandidates(activityType: string): Observable<Array<ProcessLinkType>> {
     return this.http.get<Array<ProcessLinkType>>(
       `${this.VALTIMO_ENDPOINT_URI}v1/process-link/types?activityType=${activityType}`
-    );
-  }
-
-  public deployProcessWithProcessLinks(
-    processLinks: ProcessLinkCreateEvent[] = [],
-    processDefinitionId: string | null,
-    processXml: string | null
-  ) {
-    const formData = new FormData();
-    const processLinksBlob = new Blob(
-      [JSON.stringify(processLinks.map(processLink => this.emptyStringToNull(processLink)))],
-      {type: 'application/json'}
-    );
-
-    if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
-    if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
-    formData.append('processLinks', processLinksBlob);
-
-    return this.http.post(`${this.VALTIMO_ENDPOINT_URI}management/v1/process-definition`, formData);
-  }
-
-  public deployProcessWithProcessLinksForCase(
-    processLinks: ProcessLinkCreateEvent[] = [],
-    processDefinitionId: string | null,
-    processXml: string | null,
-    caseDefinitionKey: string,
-    caseDefinitionVersionTag: string,
-    canInitializeDocument: boolean = false,
-    startableByUser: boolean = false
-  ) {
-    const formData = new FormData();
-    const processLinksBlob = new Blob(
-      [JSON.stringify(processLinks.map(processLink => this.emptyStringToNull(processLink)))],
-      {type: 'application/json'}
-    );
-
-    if (processXml) formData.append('file', new File([processXml], 'process.bpmn'));
-
-    if (processDefinitionId) formData.append('processDefinitionId', processDefinitionId);
-
-    formData.append('processLinks', processLinksBlob);
-    formData.append('canInitializeDocument', String(canInitializeDocument));
-    formData.append('startableByUser', String(startableByUser));
-
-    return this.http.post(
-      `${this.VALTIMO_ENDPOINT_URI}management/v1/case-definition/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition`,
-      formData
     );
   }
 

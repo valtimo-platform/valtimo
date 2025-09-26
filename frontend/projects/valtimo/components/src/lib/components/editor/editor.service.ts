@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import {combineLatest, filter, map, Subject, Subscription} from 'rxjs';
 import {CurrentCarbonTheme, MonacoTheme} from '../../models';
 import {DOCUMENT} from '@angular/common';
 import {CdsThemeService} from '../../services';
-import {ValtimoWindow} from '@valtimo/shared';
+import {ValtimoWindow} from '@valtimo/config';
 
 @Injectable({
   providedIn: 'root',
@@ -60,16 +60,10 @@ export class EditorService implements OnDestroy {
     }
 
     const onGotAmdLoader = () => {
-      const win = window as any;
-
-      if (typeof win.require === 'function' && typeof win.require.config === 'function') {
-        win.require.config({paths: {vs: `${baseUrl}`}});
-        win.require(['vs/editor/editor.main'], () => {
-          this.finishLoading();
-        });
-      } else {
-        setTimeout(onGotAmdLoader, 10);
-      }
+      (window as any).require.config({paths: {vs: `${baseUrl}`}});
+      (window as any).require([`vs/editor/editor.main`], () => {
+        this.finishLoading();
+      });
     };
 
     if (!(window as any).require) {

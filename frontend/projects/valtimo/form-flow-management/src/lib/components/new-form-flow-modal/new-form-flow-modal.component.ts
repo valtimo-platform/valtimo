@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import {FormFlowDefinition} from '../../models';
 import {CARBON_CONSTANTS} from '@valtimo/components';
 
 @Component({
-  standalone: false,
   selector: 'valtimo-new-form-flow-modal',
   templateUrl: './new-form-flow-modal.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,7 +49,8 @@ export class NewFormFlowModalComponent {
     }
 
     this.closeEvent.emit({
-      key: this.key.value ?? '',
+      key: this.key.value,
+      version: 1,
       startStep: 'start-step',
       steps: [],
     });
