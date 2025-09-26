@@ -20,8 +20,6 @@ import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgument
 import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentTrue;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Sets;
-import com.ritense.document.domain.CaseTag;
 import com.ritense.document.domain.Document;
 import com.ritense.document.domain.InternalCaseStatus;
 import com.ritense.document.domain.RelatedFile;
@@ -35,7 +33,6 @@ import com.ritense.document.service.result.CreateDocumentResult;
 import com.ritense.document.service.result.DocumentResult;
 import com.ritense.document.service.result.ModifyDocumentResult;
 import com.ritense.document.service.result.error.DocumentOperationError;
-import com.ritense.document.web.rest.dto.CaseTagResponseDto;
 import com.ritense.valtimo.contract.Constants;
 import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.document.event.DocumentRelatedFileAddedEvent;
@@ -51,22 +48,18 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.Type;
@@ -122,18 +115,6 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
     )
     @JoinColumn(name = "internal_case_status_key", referencedColumnName = "internal_case_status_key")
     private InternalCaseStatus internalStatus;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "case_tag_link",
-        joinColumns = @JoinColumn(name = "json_schema_document_id", referencedColumnName="json_schema_document_id"),
-        inverseJoinColumns = {
-            @JoinColumn(name = "case_tag_key", referencedColumnName = "case_tag_key"),
-            @JoinColumn(name = "case_definition_key", referencedColumnName = "case_definition_key"),
-            @JoinColumn(name = "case_definition_version_tag", referencedColumnName = "case_definition_version_tag")
-        }
-    )
-    private Set<CaseTag> caseTags;
 
     @Column(name = "assignee_id", columnDefinition = "varchar(64)")
     private String assigneeId;
@@ -342,18 +323,6 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
         this.internalStatus = internalCaseStatus;
     }
 
-    public void addCaseTag(CaseTag caseTag) {
-        if (caseTags == null) {
-            this.caseTags = Sets.newHashSet(caseTag);
-        } else {
-            this.caseTags.add(caseTag);
-        }
-    }
-
-    public void removeCaseTag(CaseTag caseTag) {
-        this.caseTags.remove(caseTag);
-    }
-
     @Override
     public JsonSchemaDocumentId id() {
         return id;
@@ -390,18 +359,6 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
             return null;
         } else {
             return internalStatus.getId().getKey();
-        }
-    }
-
-    @Override
-    public List<CaseTagResponseDto> caseTags() {
-        if (caseTags == null) {
-            return Collections.emptyList();
-        } else {
-            return caseTags.stream()
-                .map(CaseTagResponseDto::new)
-                .sorted(Comparator.comparing(CaseTagResponseDto::getOrder))
-                .collect(Collectors.toList());
         }
     }
 
@@ -453,9 +410,9 @@ public class JsonSchemaDocument extends AbstractAggregateRoot<JsonSchemaDocument
         return id.isNew();
     }
 
-    ////////////////////////////////////////
-    //// DocumentResult IMPLEMENTATIONS ////
-    ////////////////////////////////////////
+    /// /////////////////////////////////////
+    /// / DocumentResult IMPLEMENTATIONS ////
+    /// /////////////////////////////////////
 
     public static class CreateDocumentResultImpl extends AbstractDocumentResult implements CreateDocumentResult {
         CreateDocumentResultImpl(JsonSchemaDocument resultingDocument) {

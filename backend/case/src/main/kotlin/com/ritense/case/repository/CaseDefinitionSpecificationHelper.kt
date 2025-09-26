@@ -18,7 +18,6 @@ package com.ritense.case.repository
 
 import com.ritense.case.repository.CaseTabSpecificationHelper.Companion.ID
 import com.ritense.case_.domain.definition.CaseDefinition
-import org.semver4j.Semver
 import org.springframework.data.jpa.domain.Specification
 
 class CaseDefinitionSpecificationHelper {
@@ -26,9 +25,7 @@ class CaseDefinitionSpecificationHelper {
     companion object {
 
         const val KEY: String = "key"
-        const val VERSION_TAG: String = "versionTag"
         const val ACTIVE: String = "active"
-        const val FINAL: String = "final"
 
         @JvmStatic
         fun query() = Specification<CaseDefinition> { _, _, cb ->
@@ -41,18 +38,8 @@ class CaseDefinitionSpecificationHelper {
         }
 
         @JvmStatic
-        fun byFinal(final: Boolean = true) = Specification<CaseDefinition> { root, _, cb ->
-            cb.equal(root.get<Any>(FINAL), final)
-        }
-
-        @JvmStatic
         fun byCaseDefinitionKey(caseDefinitionKey: String) = Specification<CaseDefinition> { root, _, cb ->
             cb.equal(root.get<Any>(ID).get<Any>(KEY), caseDefinitionKey)
-        }
-
-        @JvmStatic
-        fun byCaseDefinitionVersionTag(caseDefinitionVersionTag: Semver) = Specification<CaseDefinition> { root, _, cb ->
-            cb.equal(root.get<Any>(ID).get<Any>(VERSION_TAG), caseDefinitionVersionTag)
         }
 
     }

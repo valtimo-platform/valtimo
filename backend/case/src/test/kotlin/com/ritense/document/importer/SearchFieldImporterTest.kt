@@ -63,11 +63,11 @@ class SearchFieldImporterTest(
 
     @Test
     fun `should not support invalid document definition fileName`() {
-        assertThat(importer.supports("/case/search-field/not/person.case-search-field.json")).isFalse()
-        assertThat(importer.supports("/case/search-field/person.case-search-field.xml")).isFalse()
+        assertThat(importer.supports("/search/not/person.json")).isFalse()
+        assertThat(importer.supports("/search/person.xml")).isFalse()
     }
 
     private companion object {
-        const val FILENAME = "/case/search-field/person.case-search-field.json"
+        const val FILENAME = "/search/person.json"
     }
 }

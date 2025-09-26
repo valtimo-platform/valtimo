@@ -16,14 +16,13 @@
 
 package com.ritense.case.web.rest
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case.web.rest.dto.CaseDefinitionCheckResponse
 import com.ritense.case.web.rest.dto.CaseDefinitionDraftCreateRequest
 import com.ritense.case.web.rest.dto.CaseDefinitionResponseDto
 import com.ritense.case.web.rest.dto.CaseDefinitionSettingsResponseDto
-import com.ritense.case.web.rest.dto.CaseDefinitionUpdateRequest
 import com.ritense.case.web.rest.dto.CaseListColumnDto
 import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case.web.rest.dto.CaseVersionDto
@@ -35,10 +34,9 @@ import com.ritense.importer.ImportService
 import com.ritense.importer.exception.ImportServiceException
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
@@ -70,7 +68,6 @@ class CaseDefinitionResource(
     private val exportService: ExportService,
     private val importService: ImportService,
     private val caseDefinitionRepository: CaseDefinitionRepository,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
 ) {
 
     @RunWithoutAuthorization
@@ -115,51 +112,16 @@ class CaseDefinitionResource(
     }
 
     @RunWithoutAuthorization
-    @PatchMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}")
-    fun updateCaseDefinition(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-        @LoggableResource("versionTag") @PathVariable versionTag: String,
-        @RequestBody request: CaseDefinitionUpdateRequest
-    ): ResponseEntity<CaseDefinitionResponseDto> {
-        val caseDefinition = service.updateCaseDefinition(
-            CaseDefinitionId.of(caseDefinitionKey, versionTag),
-            request.name,
-            request.description
-        )
-        return ResponseEntity.ok(CaseDefinitionResponseDto.of(caseDefinition))
-    }
-
-    @GetMapping("/v1/case-definition")
+    @GetMapping("/management/v1/case-definition")
     fun getCaseDefinitions(
         @RequestParam caseDefinitionKey: String?,
         @RequestParam active: Boolean?,
-        @RequestParam final: Boolean?,
-    ): ResponseEntity<List<CaseDefinitionResponseDto>> {
-        val caseDefinitions = service.getCaseDefinitions(
-            caseDefinitionKey = caseDefinitionKey,
-            active = active,
-            final = final,
-        )
-        return ResponseEntity.ok(caseDefinitions.map { CaseDefinitionResponseDto.of(it) })
-    }
-
-    @RunWithoutAuthorization
-    @GetMapping("/management/v1/case-definition")
-    fun getCaseDefinitionsForManagement(
-        @RequestParam caseDefinitionKey: String?,
-        @RequestParam active: Boolean?,
-        @RequestParam final: Boolean?,
         @SortDefaults(
             SortDefault(sort = ["name"]),
             SortDefault(sort = ["active", "id.versionTag"], direction = Sort.Direction.DESC)
         ) pageable: Pageable
     ): ResponseEntity<Page<CaseDefinitionResponseDto>> {
-        val caseDefinitions = service.getCaseDefinitions(
-            caseDefinitionKey = caseDefinitionKey,
-            active = active,
-            final = final,
-            pageable = pageable
-        )
+        val caseDefinitions = service.getCaseDefinitions(caseDefinitionKey, active, pageable)
         return ResponseEntity.ok(caseDefinitions.map { CaseDefinitionResponseDto.of(it) })
     }
 
@@ -170,21 +132,8 @@ class CaseDefinitionResource(
         @PageableDefault(size = 5, sort = ["active", "id.versionTag"], direction = Sort.Direction.DESC)
         pageable: Pageable
     ): ResponseEntity<List<CaseVersionDto>> {
-        val caseDefinitions = service.getCaseDefinitions(caseDefinitionKey = caseDefinitionKey, pageable = pageable)
+        val caseDefinitions = service.getCaseDefinitions(caseDefinitionKey, null, pageable)
         return ResponseEntity.ok(caseDefinitions.map { CaseVersionDto.of(it) }.content)
-    }
-
-    @RunWithoutAuthorization
-    @PostMapping("/management/v1/case-definition/{caseDefinitionKey}/version/{versionTag}/finalize")
-    fun finalizeCaseDefinition(
-        @LoggableResource("caseDefinitionKey") @PathVariable caseDefinitionKey: String,
-        @LoggableResource("versionTag") @PathVariable versionTag: String,
-    ): ResponseEntity<CaseDefinitionResponseDto> {
-        return ResponseEntity.ok(
-            CaseDefinitionResponseDto.of(
-                service.finalizeCaseDefinition(CaseDefinitionId.of(caseDefinitionKey, versionTag))
-            )
-        )
     }
 
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/settings")
@@ -341,22 +290,11 @@ class CaseDefinitionResource(
     ): ResponseEntity<Unit> {
         return try {
             importService.import(file.inputStream, caseDefinitionRepository.findAll().map { it.id })
-            service.setLatestToActiveIfNoneIsActive()
             ResponseEntity.ok().build()
         } catch (exception: ImportServiceException) {
             logger.info(exception) { "Import failed" }
             ResponseEntity.badRequest().build()
         }
-    }
-
-    @RunWithoutAuthorization
-    @GetMapping("/management/v1/case-definition/check")
-    fun checkCaseDefinition(): ResponseEntity<CaseDefinitionCheckResponse> {
-        return ResponseEntity.ok(
-            CaseDefinitionCheckResponse(
-                canUpdateGlobalConfiguration = caseDefinitionChecker.canUpdateGlobalConfiguration(),
-            )
-        )
     }
 
     companion object {

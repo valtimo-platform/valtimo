@@ -33,8 +33,8 @@ import com.ritense.zakenapi.BaseIntegrationTest
 import com.ritense.zakenapi.uploadprocess.UploadProcessService.Companion.DOCUMENT_UPLOAD
 import com.ritense.zakenapi.uploadprocess.UploadProcessService.Companion.RESOURCE_ID_PROCESS_VAR
 import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.HistoryService
-import org.operaton.bpm.engine.history.HistoricProcessInstance
+import org.camunda.bpm.engine.HistoryService
+import org.camunda.bpm.engine.history.HistoricProcessInstance
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -80,8 +80,6 @@ class ResourceUploadedToDocumentSseEventMapperIT @Autowired constructor(
             documentService.createDocument(
                 NewDocumentRequest(
                     DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
                     objectMapper.createObjectNode()
                 )
             ).resultingDocument().get().id!!.id.toString()
@@ -102,8 +100,6 @@ class ResourceUploadedToDocumentSseEventMapperIT @Autowired constructor(
             documentService.createDocument(
                 NewDocumentRequest(
                     DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
                     objectMapper.createObjectNode()
                 )
             ).resultingDocument().get().id!!.id.toString()
@@ -113,9 +109,7 @@ class ResourceUploadedToDocumentSseEventMapperIT @Autowired constructor(
             mapOf(MetadataType.DOCUMENT_ID.key to documentId)
         )
 
-        runWithoutAuthorization {
-            applicationEventPublisher.publishEvent(TemporaryResourceUploadedEvent(resourceId))
-        }
+        applicationEventPublisher.publishEvent(TemporaryResourceUploadedEvent(resourceId))
 
         val documentUploadProcess = getHistoricProcessInstance(UPLOAD_DOCUMENT_PROCESS_DEFINITION_KEY, documentId)
         val retrievedResourceId =

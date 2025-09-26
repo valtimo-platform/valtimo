@@ -23,9 +23,9 @@ import com.ritense.valtimo.contract.mail.MailSender
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.context.annotation.Import
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest
@@ -34,13 +34,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @Tag("integration")
 class BaseIntegrationTest : BaseTest() {
 
-    @MockitoBean
+    @MockBean
     lateinit var mailSender: MailSender
 
-    @MockitoBean
+    @MockBean
     lateinit var userManagementService: UserManagementService
 
-    @MockitoSpyBean
+    @SpyBean
     lateinit var outboxService: OutboxService
 }
 

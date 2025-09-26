@@ -135,9 +135,6 @@
             "moduleLicense": null,
             "moduleVersion": "2.*",
             "moduleName": "software.amazon.awssdk:bom"
-        },
-        {
-            "moduleLicense": "Unicode/ICU License"
         }
     ]
 }

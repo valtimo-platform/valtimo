@@ -17,7 +17,7 @@
 package com.ritense.valueresolver
 
 import java.util.function.Function
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.VariableScope
 
 /**
  * This resolver returns the requestedValue as the value.
@@ -58,29 +58,13 @@ class FixedValueResolverFactory(
     private fun createResolver(): Function<String, Any?> {
         return Function { requestedValue->
             requestedValue.toBooleanStrictOrNull()
-                ?: toLongOrNullSave(requestedValue)
-                ?: toDoubleOrNullSave(requestedValue)
+                ?: requestedValue.toLongOrNull()
+                ?: requestedValue.toDoubleOrNull()
                 ?:  if (prefix.isEmpty()) {
                         requestedValue
                     } else {
                         "$prefix:$requestedValue"
                     }
-        }
-    }
-
-    private fun toLongOrNullSave(value: String): Long? {
-        return if (value != value.toLongOrNull().toString()) {
-            null
-        } else {
-            value.toLongOrNull()
-        }
-    }
-
-    private fun toDoubleOrNullSave(value: String): Double? {
-        return if (value != value.toDoubleOrNull().toString()) {
-            null
-        } else {
-            value.toDoubleOrNull()
         }
     }
 

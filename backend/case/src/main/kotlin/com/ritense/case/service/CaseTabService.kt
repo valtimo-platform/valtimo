@@ -39,13 +39,13 @@ import com.ritense.document.service.DocumentService
 import com.ritense.document.service.findByOrNull
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import kotlin.jvm.optionals.getOrNull
 
 @Transactional
 @Service
@@ -56,8 +56,7 @@ class CaseTabService(
     private val authorizationService: AuthorizationService,
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val userManagementService: UserManagementService,
-    private val documentService: DocumentService,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val documentService: DocumentService
 ) {
     fun getCaseTab(caseDefinitionId: CaseDefinitionId, key: String): CaseTab {
         val caseTab = caseTabRepository.getReferenceById(CaseTabId(caseDefinitionId, key))
@@ -72,7 +71,6 @@ class CaseTabService(
     }
 
     fun getCaseTab(caseTabId: CaseTabId): CaseTab {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseTabId.caseDefinitionId)
         val caseTab = caseTabRepository.getReferenceById(caseTabId)
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
@@ -122,7 +120,9 @@ class CaseTabService(
 
     fun createCaseTab(caseDefinitionId: CaseDefinitionId, caseTabDto: CaseTabDto): CaseTab {
         denyAuthorization()
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
+
+        documentDefinitionService.findByCaseDefinitionId(caseDefinitionId).getOrNull()
+            ?: throw NoSuchElementException("Case definition with key ${caseDefinitionId.key} and version tag ${caseDefinitionId.versionTag} does not exist!")
 
         val currentTabs = getCaseTabs(caseDefinitionId)
         val tabWithKeyExists = currentTabs.any { tab ->
@@ -153,7 +153,6 @@ class CaseTabService(
 
     fun updateCaseTab(caseDefinitionId: CaseDefinitionId, tabKey: String, caseTab: CaseTabUpdateDto) {
         denyAuthorization()
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
 
         val existingTab = caseTabRepository.findOne(byCaseDefinitionIdAndTabKey(caseDefinitionId, tabKey)).get()
 
@@ -169,7 +168,6 @@ class CaseTabService(
 
     fun updateCaseTabs(caseDefinitionId: CaseDefinitionId, caseTabDtos: List<CaseTabUpdateOrderDto>): List<CaseTab> {
         denyAuthorization()
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
 
         val existingTabs = caseTabRepository.findAll(byCaseDefinitionId(caseDefinitionId))
         if (existingTabs.size != caseTabDtos.size) {
@@ -193,7 +191,6 @@ class CaseTabService(
 
     fun deleteCaseTab(caseDefinitionId: CaseDefinitionId, tabKey: String) {
         denyAuthorization()
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
 
         caseTabRepository.findOne(byCaseDefinitionIdAndTabKey(caseDefinitionId, tabKey))
             .ifPresent {
@@ -204,7 +201,6 @@ class CaseTabService(
 
     fun deleteCaseTabs(caseDefinitionId: CaseDefinitionId) {
         denyAuthorization()
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
         caseTabRepository.findAll(byCaseDefinitionId(caseDefinitionId)).forEach { caseTab ->
             caseTabRepository.delete(caseTab)
         }

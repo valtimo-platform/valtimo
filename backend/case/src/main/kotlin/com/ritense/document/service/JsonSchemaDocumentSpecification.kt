@@ -18,6 +18,7 @@ package com.ritense.document.service
 import com.ritense.authorization.permission.Permission
 import com.ritense.authorization.request.AuthorizationRequest
 import com.ritense.authorization.specification.AuthorizationSpecification
+import com.ritense.authorization.utils.QueryUtils
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository
@@ -31,10 +32,10 @@ import org.springframework.data.repository.findByIdOrNull
 import java.util.UUID
 
 class JsonSchemaDocumentSpecification(
-    authRequest: AuthorizationRequest<JsonSchemaDocument>,
-    permissions: List<Permission>,
-    private val documentRepository: JsonSchemaDocumentRepository,
-    private val queryDialectHelper: QueryDialectHelper
+        authRequest: AuthorizationRequest<JsonSchemaDocument>,
+        permissions: List<Permission>,
+        private val documentRepository: JsonSchemaDocumentRepository,
+        private val queryDialectHelper: QueryDialectHelper
 ) : AuthorizationSpecification<JsonSchemaDocument>(authRequest, permissions) {
 
     override fun toPredicate(
@@ -42,9 +43,16 @@ class JsonSchemaDocumentSpecification(
         query: AbstractQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
+        // Filter the permissions for the relevant ones and use those to  find the filters that are required
+        // Turn those filters into predicates
+        if (!QueryUtils.isCountQuery(query) && query.groupList.isEmpty()) {
+            val groupList = ArrayList(query.groupList)
+            groupList.add(root.get<Any>("id").get<Any>("id"))
+            query.groupBy(groupList)
+        }
         val predicates = permissions
             .filter { permission: Permission ->
-                JsonSchemaDocument::class.java == permission.resourceType && permission.actions.contains(authRequest.action)
+                JsonSchemaDocument::class.java == permission.resourceType && authRequest.action == permission.action
             }
             .map { permission: Permission ->
                 permission.toPredicate(

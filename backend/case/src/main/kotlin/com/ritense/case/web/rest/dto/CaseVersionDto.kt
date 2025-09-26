@@ -19,15 +19,13 @@ package com.ritense.case.web.rest.dto
 import com.ritense.case_.domain.definition.CaseDefinition
 
 data class CaseVersionDto(
-    val versionTag: String,
-    val active: Boolean,
-    val final: Boolean,
+    var versionTag: String,
+    var active: Boolean,
 ) {
     companion object {
         fun of(caseDefinition: CaseDefinition) = CaseVersionDto(
             caseDefinition.id.versionTag.version,
             caseDefinition.active,
-            caseDefinition.final,
         )
     }
 }

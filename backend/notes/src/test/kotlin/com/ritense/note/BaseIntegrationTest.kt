@@ -32,13 +32,13 @@ import com.ritense.testutilscommon.junit.extension.LiquibaseRunnerExtension
 import com.ritense.valtimo.contract.authentication.UserManagementService
 import com.ritense.valtimo.contract.mail.MailSender
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker
+import jakarta.inject.Inject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import java.util.UUID
@@ -48,19 +48,19 @@ import java.util.UUID
 @Tag("integration")
 abstract class BaseIntegrationTest {
 
-    @MockitoBean
+    @MockBean
     lateinit var processDefinitionCaseDefinitionLinker: ProcessDefinitionCaseDefinitionLinker
 
-    @MockitoBean
+    @MockBean
     lateinit var userManagementService: UserManagementService
 
-    @MockitoBean
+    @MockBean
     lateinit var mailSender: MailSender
 
-    @Autowired
+    @Inject
     lateinit var roleRepository: RoleRepository
 
-    @Autowired
+    @Inject
     lateinit var permissionRepository: PermissionRepository
 
 
@@ -76,32 +76,32 @@ abstract class BaseIntegrationTest {
             Permission(
                 UUID.randomUUID(),
                 Note::class.java,
-                mutableListOf(VIEW_LIST),
+                VIEW_LIST,
                 ConditionContainer(listOf()),
                 role1
             ),
             Permission(
                 resourceType = Note::class.java,
-                actions = mutableListOf(CREATE),
+                action = CREATE,
                 conditionContainer = ConditionContainer(listOf()),
                 role = role2
             ),
             Permission(
                 resourceType = Note::class.java,
-                actions = mutableListOf(MODIFY),
+                action = MODIFY,
                 conditionContainer = ConditionContainer(
                     listOf(
-                        FieldPermissionCondition("createdByUserId", PermissionConditionOperator.EQUAL_TO, "\${currentUsername}")
+                        FieldPermissionCondition("createdByUserId", PermissionConditionOperator.EQUAL_TO, "\${currentUserId}")
                     )
                 ),
                 role = role2
             ),
             Permission(
                 resourceType = Note::class.java,
-                actions = mutableListOf(DELETE),
+                action = DELETE,
                 conditionContainer = ConditionContainer(
                     listOf(
-                        FieldPermissionCondition("createdByUserId", PermissionConditionOperator.EQUAL_TO, "\${currentUsername}")
+                        FieldPermissionCondition("createdByUserId", PermissionConditionOperator.EQUAL_TO, "\${currentUserId}")
                     )
                 ),
                 role = role2

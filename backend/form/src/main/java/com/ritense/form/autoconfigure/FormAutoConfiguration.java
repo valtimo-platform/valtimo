@@ -29,16 +29,17 @@ import com.ritense.form.service.FormLoaderService;
 import com.ritense.form.service.PrefillFormService;
 import com.ritense.form.service.impl.FormIoFormDefinitionService;
 import com.ritense.form.service.impl.FormIoFormLoaderService;
+import com.ritense.form.web.rest.FormDefinitionResource;
 import com.ritense.form.web.rest.FormFileResource;
 import com.ritense.form.web.rest.FormManagementResource;
+import com.ritense.form.web.rest.impl.FormIoFormDefinitionResource;
 import com.ritense.form.web.rest.impl.FormIoFormFileResource;
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
 import com.ritense.processdocument.service.ProcessDocumentAssociationService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.form.FormFieldDataResolver;
-import com.ritense.valtimo.service.OperatonProcessService;
-import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.CamundaProcessService;
+import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valueresolver.ValueResolverService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -76,10 +77,8 @@ public class FormAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(FormDefinitionService.class)
-    public FormIoFormDefinitionService formDefinitionService(
-        final FormDefinitionRepository formDefinitionRepository,
-        final CaseDefinitionChecker caseDefinitionChecker) {
-        return new FormIoFormDefinitionService(formDefinitionRepository, caseDefinitionChecker);
+    public FormIoFormDefinitionService formDefinitionService(final FormDefinitionRepository formDefinitionRepository) {
+        return new FormIoFormDefinitionService(formDefinitionRepository);
     }
 
     @Bean
@@ -113,6 +112,12 @@ public class FormAutoConfiguration {
         return new FormManagementResource(formDefinitionService);
     }
 
+    @Bean
+    @ConditionalOnMissingBean(FormDefinitionResource.class)
+    public FormDefinitionResource formDefinitionResource(FormDefinitionService formDefinitionService) {
+        return new FormIoFormDefinitionResource(formDefinitionService);
+    }
+
     @Bean("formSpringContextHelper")
     @ConditionalOnMissingBean(FormSpringContextHelper.class)
     public FormSpringContextHelper formSpringContextHelper() {
@@ -134,8 +139,8 @@ public class FormAutoConfiguration {
     public PrefillFormService prefillFormService(
         DocumentService documentService,
         FormIoFormDefinitionService formDefinitionService,
-        OperatonProcessService operatonProcessService,
-        OperatonTaskService taskService,
+        CamundaProcessService camundaProcessService,
+        CamundaTaskService taskService,
         List<FormFieldDataResolver> formFieldDataResolvers,
         ProcessDocumentAssociationService processDocumentAssociationService,
         ValueResolverService valueResolverService,
@@ -145,7 +150,7 @@ public class FormAutoConfiguration {
         return new PrefillFormService(
             documentService,
             formDefinitionService,
-            operatonProcessService,
+            camundaProcessService,
             taskService,
             formFieldDataResolvers,
             processDocumentAssociationService,

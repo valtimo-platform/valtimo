@@ -26,9 +26,9 @@ import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
+import com.ritense.valtimo.service.CamundaProcessService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -47,7 +47,7 @@ import java.util.Optional
 class ProcessDocumentLinkImporterTest(
     @Mock private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     @Mock private val documentDefinitionService: DocumentDefinitionService,
-    @Mock private val processService: OperatonProcessService
+    @Mock private val processService: CamundaProcessService
 ) {
     private lateinit var processDocumentLinkImporter: ProcessDocumentLinkImporter
 
@@ -100,7 +100,7 @@ class ProcessDocumentLinkImporterTest(
         whenever(documentDefinitionService.findByNameAndCaseDefinitionId(any(), any()))
             .thenReturn(Optional.of(documentDefinition))
 
-        val processDefinition = mock<OperatonProcessDefinition>()
+        val processDefinition = mock<CamundaProcessDefinition>()
         val processDefinitionId = "test"
         whenever(processService.getLatestDefinitionByKeyAndCaseDefinition(any(), any())).thenReturn(processDefinition)
         whenever(processDefinition.id).thenReturn(processDefinitionId)
@@ -138,7 +138,7 @@ class ProcessDocumentLinkImporterTest(
         whenever(documentDefinitionService.findByNameAndCaseDefinitionId(any(), any()))
             .thenReturn(Optional.of(documentDefinition))
 
-        val processDefinition = mock<OperatonProcessDefinition>()
+        val processDefinition = mock<CamundaProcessDefinition>()
         val processDefinitionId = "test"
         whenever(processService.getLatestDefinitionByKeyAndCaseDefinition(any(), any())).thenReturn(processDefinition)
         whenever(processDefinition.id).thenReturn(processDefinitionId)
@@ -152,7 +152,7 @@ class ProcessDocumentLinkImporterTest(
 
         val processDocumentDefinitionRequestCaptor = argumentCaptor<ProcessDocumentDefinitionRequest>()
 
-        verify(processDefinitionCaseDefinitionService).deleteProcessDefinitionCaseDefinition(
+        verify(processDefinitionCaseDefinitionService).deleteProcessDocumentDefinition(
             ProcessDefinitionId(processDefinitionId),
             caseDefinitionId
         )
@@ -166,6 +166,6 @@ class ProcessDocumentLinkImporterTest(
     }
 
     private companion object {
-        const val FILENAME = "/process-document-link/my-process-document-link.process-document-link.json"
+        const val FILENAME = "/process-document-link/my-process-document-link.json"
     }
 }

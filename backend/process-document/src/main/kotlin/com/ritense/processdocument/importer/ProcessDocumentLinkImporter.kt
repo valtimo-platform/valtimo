@@ -32,8 +32,9 @@ import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.domain.config.ProcessDocumentLinkConfigItem
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService
-import io.github.oshai.kotlinlogging.KotlinLogging
+import com.ritense.valtimo.service.CamundaProcessService
+import mu.KLogger
+import mu.KotlinLogging
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -41,7 +42,7 @@ class ProcessDocumentLinkImporter(
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService,
     private val documentDefinitionService: DocumentDefinitionService,
     private val objectMapper: ObjectMapper,
-    private val processService: OperatonProcessService,
+    private val processService: CamundaProcessService,
 ) : Importer {
 
     override fun type() = PROCESS_DOCUMENT_LINK
@@ -100,7 +101,7 @@ class ProcessDocumentLinkImporter(
                         "Updating process-document-links from {}.json",
                         documentDefinitionName
                     )
-                    processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
+                    processDefinitionCaseDefinitionService.deleteProcessDocumentDefinition(
                         request.processDefinitionId,
                         request.caseDefinitionId
                     )
@@ -121,7 +122,7 @@ class ProcessDocumentLinkImporter(
     }
 
     companion object {
-        private val FILENAME_REGEX = """/process-document-link/([^/]+)\.process-document-link\.json""".toRegex()
-        private val logger = KotlinLogging.logger {}
+        private val FILENAME_REGEX = """/process-document-link/([^/]+)\.json""".toRegex()
+        private val logger: KLogger = KotlinLogging.logger {}
     }
 }

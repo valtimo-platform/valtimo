@@ -23,7 +23,7 @@ class ExchangeTokenEndpoint(
         }
         return client
             .post()
-            .uri { it.pathSegment("api", "oauth2", "token").build() }
+            .uri("/api/oauth2/token")
             .body(builder.build())
     }
 

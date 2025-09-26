@@ -22,17 +22,15 @@ import com.ritense.processdocument.domain.CaseDefinitionProcessLinkId.Companion.
 import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessLinkResponse
 import com.ritense.processdocument.domain.impl.request.DocumentDefinitionProcessRequest
 import com.ritense.processdocument.repository.CaseDefinitionProcessLinkRepository
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 open class CaseDefinitionProcessLinkService(
     private val caseDefinitionProcessLinkRepository: CaseDefinitionProcessLinkRepository,
-    private val repositoryService: OperatonRepositoryService,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val repositoryService: CamundaRepositoryService
 ) {
     fun getDocumentDefinitionProcess(caseDefinitionId: CaseDefinitionId, type: String): CaseDefinitionProcess? {
         val link = caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(caseDefinitionId, type)
@@ -46,10 +44,6 @@ open class CaseDefinitionProcessLinkService(
         }
     }
 
-    fun getDocumentDefinitionProcessLinks(caseDefinitionId: CaseDefinitionId): List<CaseDefinitionProcessLink> {
-        return caseDefinitionProcessLinkRepository.findAllByIdCaseDefinitionId(caseDefinitionId)
-    }
-
     fun getDocumentDefinitionProcessLink(
         caseDefinitionId: CaseDefinitionId,
         type: String
@@ -57,29 +51,12 @@ open class CaseDefinitionProcessLinkService(
         return caseDefinitionProcessLinkRepository.findByIdCaseDefinitionIdAndType(caseDefinitionId, type)
     }
 
-    fun saveDocumentDefinitionProcessLink(
-        caseDefinitionId: CaseDefinitionId,
-        processDefinitionKey: String,
-        linkType: String
-    ): CaseDefinitionProcessLink {
-        return caseDefinitionProcessLinkRepository.save(
-            CaseDefinitionProcessLink(
-                newId(
-                    caseDefinitionId,
-                    processDefinitionKey
-                ),
-                linkType
-            )
-        )
-    }
 
     fun saveDocumentDefinitionProcess(
         caseDefinitionId: CaseDefinitionId,
         request: DocumentDefinitionProcessRequest
     ): DocumentDefinitionProcessLinkResponse {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-
-        val processDefinition: OperatonProcessDefinition? = runWithoutAuthorization {
+        val processDefinition: CamundaProcessDefinition? = runWithoutAuthorization {
             repositoryService.findLatestProcessDefinition(request.getProcessDefinitionKey())
         }
 
@@ -114,13 +91,7 @@ open class CaseDefinitionProcessLinkService(
         )
     }
 
-    fun deleteDocumentDefinitionProcess(caseDefinitionId: CaseDefinitionId, type: String) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-        caseDefinitionProcessLinkRepository.deleteByIdCaseDefinitionIdAndType(caseDefinitionId, type)
-    }
-
-    fun deleteDocumentDefinitionProcesses(caseDefinitionId: CaseDefinitionId) {
-        caseDefinitionChecker.assertCanUpdateCaseDefinition(caseDefinitionId)
-        caseDefinitionProcessLinkRepository.deleteAllByIdCaseDefinitionId(caseDefinitionId)
+    fun deleteDocumentDefinitionProcess(caseDefinition: CaseDefinitionId, type: String) {
+        caseDefinitionProcessLinkRepository.deleteByIdCaseDefinitionIdAndType(caseDefinition, type)
     }
 }

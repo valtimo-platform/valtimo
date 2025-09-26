@@ -31,7 +31,7 @@ import com.ritense.formflow.service.FormFlowService
 import com.ritense.processdocument.domain.impl.request.StartProcessForDocumentRequest
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valtimo.contract.json.MapperSingleton
-import com.ritense.valtimo.service.OperatonTaskService
+import com.ritense.valtimo.service.CamundaTaskService
 import com.ritense.valueresolver.ValueResolverService
 import java.util.Objects
 import java.util.UUID
@@ -39,7 +39,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @FormFlowBean
 open class ValtimoFormFlow(
-    private val taskService: OperatonTaskService,
+    private val taskService: CamundaTaskService,
     private val objectMapper: ObjectMapper,
     private val valueResolverService: ValueResolverService,
     private val formFlowService: FormFlowService,
@@ -117,8 +117,6 @@ open class ValtimoFormFlow(
             documentService.createDocument(
                 NewDocumentRequest(
                     documentDefinitionName,
-                    formFlowInstance.formFlowDefinition.id.caseDefinitionId.key,
-                    formFlowInstance.formFlowDefinition.id.caseDefinitionId.versionTag.version,
                     submittedByType["doc"] as JsonNode
                 )
             )

@@ -22,13 +22,14 @@ import org.springframework.web.client.body
 import java.net.URI
 
 class ObjecttypenApiClient(
-    private val restClientBuilder: RestClient.Builder,
+    private val restClientBuilder: RestClient.Builder
 ) {
 
     fun getObjecttype(
         authentication: ObjecttypenApiAuthentication,
         objecttypeUrl: URI
     ): Objecttype {
+        val url = sanitizeUriHost(objecttypeUrl)
         return restClientBuilder
             .clone()
             .apply {
@@ -36,7 +37,7 @@ class ObjecttypenApiClient(
             }
             .build()
             .get()
-            .uri(objecttypeUrl)
+            .uri(url)
             .retrieve()
             .body(Objecttype::class.java)!!
     }
@@ -45,6 +46,7 @@ class ObjecttypenApiClient(
         authentication: ObjecttypenApiAuthentication,
         objecttypesUrl: URI
     ): List<Objecttype> {
+        val url = sanitizeUriHost(objecttypesUrl)
         return restClientBuilder
             .clone()
             .apply {
@@ -52,8 +54,21 @@ class ObjecttypenApiClient(
             }
             .build()
             .get()
-            .uri(objecttypesUrl)
+            .uri(url)
             .retrieve()
             .body<List<Objecttype>>()!!
+    }
+
+    private fun sanitizeUriHost(objecttypesUrl: URI): URI {
+        val url = if (objecttypesUrl.host == HOST_DOCKER_INTERNAL) {
+            URI.create(objecttypesUrl.toString().replace(HOST_DOCKER_INTERNAL, "localhost"))
+        } else {
+            objecttypesUrl
+        }
+        return url
+    }
+
+    companion object {
+        private const val HOST_DOCKER_INTERNAL = "host.docker.internal"
     }
 }

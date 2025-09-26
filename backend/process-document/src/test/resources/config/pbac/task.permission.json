@@ -2,7 +2,7 @@
     "changesetId": "task-v1",
     "permissions": [
         {
-            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
             "action": "view",
             "roleKey": "ROLE_USER",
             "conditions": [
@@ -23,26 +23,7 @@
             ]
         },
         {
-            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
-            "action": "view",
-            "roleKey": "ROLE_HOUSE_OWNER",
-            "conditions": [
-                {
-                    "type": "container",
-                    "resourceType": "com.ritense.valtimo.operaton.domain.OperatonIdentityLink",
-                    "conditions": [
-                        {
-                            "type": "field",
-                            "field": "groupId",
-                            "operator": "==",
-                            "value": "ROLE_HOUSE_OWNER"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
             "action": "view_list",
             "roleKey": "ROLE_USER",
             "conditions": [
@@ -61,7 +42,7 @@
             ]
         },
         {
-            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
             "action": "view_list",
             "roleKey": "ROLE_USER",
             "conditions": [
@@ -80,7 +61,7 @@
             ]
         },
         {
-            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
+            "resourceType": "com.ritense.valtimo.camunda.domain.CamundaTask",
             "action": "view_list",
             "roleKey": "ROLE_USER",
             "conditions": [
@@ -93,25 +74,6 @@
                             "field": "documentDefinitionId.name",
                             "operator": "==",
                             "value": "task"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "resourceType": "com.ritense.valtimo.operaton.domain.OperatonTask",
-            "action": "view_list",
-            "roleKey": "ROLE_HOUSE_OWNER",
-            "conditions": [
-                {
-                    "type": "container",
-                    "resourceType": "com.ritense.document.domain.impl.JsonSchemaDocument",
-                    "conditions": [
-                        {
-                            "type": "field",
-                            "field": "documentDefinitionId.name",
-                            "operator": "==",
-                            "value": "museum"
                         }
                     ]
                 }

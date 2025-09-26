@@ -19,44 +19,45 @@ package com.ritense.processdocument;
 import com.ritense.audit.service.impl.AuditServiceImpl;
 import com.ritense.authorization.specification.impl.NoopAuthorizationSpecificationFactory;
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
-import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
-import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
+import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentAssociationService;
+import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentService;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
-import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.CamundaTaskService;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@SpringBootTest(classes = {ProcessDocumentTestConfiguration.class})
+@SpringBootTest
 @Tag("integration")
 @ExtendWith(SpringExtension.class)
 public abstract class BaseIntegrationTest extends BaseTest {
 
-    @MockitoBean
+    @MockBean
     protected UserManagementService userManagementService;
 
-    @Autowired
-    protected OperatonProcessJsonSchemaDocumentAssociationService operatonProcessJsonSchemaDocumentAssociationService;
+    @Inject
+    protected CamundaProcessJsonSchemaDocumentAssociationService camundaProcessJsonSchemaDocumentAssociationService;
 
-    @Autowired
-    protected OperatonProcessJsonSchemaDocumentService operatonProcessJsonSchemaDocumentService;
+    @Inject
+    protected CamundaProcessJsonSchemaDocumentService camundaProcessJsonSchemaDocumentService;
 
-    @Autowired
+    @Inject
     protected ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService;
 
-    @Autowired
-    protected OperatonTaskService operatonTaskService;
+    @Inject
+    protected CamundaTaskService camundaTaskService;
 
-    @MockitoBean
+    @MockBean
     protected AuditServiceImpl auditService;
 
-    @MockitoBean
+    @MockBean
     protected ResourceService resourceService;
 
     @Autowired

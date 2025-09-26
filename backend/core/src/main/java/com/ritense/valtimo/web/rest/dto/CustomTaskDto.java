@@ -16,16 +16,16 @@
 
 package com.ritense.valtimo.web.rest.dto;
 
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
-import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
+import com.ritense.valtimo.camunda.domain.CamundaProcessDefinition;
+import com.ritense.valtimo.camunda.dto.CamundaTaskDto;
 import java.util.List;
 import java.util.Map;
-import org.operaton.bpm.engine.form.FormField;
-import org.operaton.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.form.FormField;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
 
 public class CustomTaskDto {
 
-    private OperatonTaskDto task;
+    private CamundaTaskDto task;
 
     private List<FormField> formFields;
 
@@ -45,12 +45,12 @@ public class CustomTaskDto {
     }
 
     public CustomTaskDto(
-        OperatonTaskDto task,
-        List<FormField> formFields,
-        Map<String, Object> variables,
-        String formLocation,
-        ProcessInstance processInstance,
-        OperatonProcessDefinition processDefinition
+            CamundaTaskDto task,
+            List<FormField> formFields,
+            Map<String, Object> variables,
+            String formLocation,
+            ProcessInstance processInstance,
+            CamundaProcessDefinition processDefinition
     ) {
         this.task = task;
         this.formFields = formFields;
@@ -63,7 +63,7 @@ public class CustomTaskDto {
         this.businessKey = processInstance.getBusinessKey();
     }
 
-    public OperatonTaskDto getTask() {
+    public CamundaTaskDto getTask() {
         return task;
     }
 
@@ -75,7 +75,7 @@ public class CustomTaskDto {
         return variables;
     }
 
-    public void setTask(OperatonTaskDto task) {
+    public void setTask(CamundaTaskDto task) {
         this.task = task;
     }
 

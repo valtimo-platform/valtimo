@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.config.DocumentSpringContextHelper;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
+import com.ritense.document.domain.impl.listener.ApplicationReadyEventListenerImpl;
 import com.ritense.document.domain.impl.listener.DocumentRelatedFileSubmittedEventListenerImpl;
 import com.ritense.document.domain.impl.listener.RelatedJsonSchemaDocumentAvailableEventListenerImpl;
 import com.ritense.document.domain.impl.sequence.JsonSchemaDocumentDefinitionSequenceRecord;
@@ -29,7 +30,6 @@ import com.ritense.document.listener.DocumentDefinitionCaseEventListener;
 import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
 import com.ritense.document.repository.impl.JsonSchemaDocumentRepository;
-import com.ritense.document.service.CaseTagService;
 import com.ritense.document.service.DocumentDefinitionService;
 import com.ritense.document.service.DocumentSearchService;
 import com.ritense.document.service.DocumentSequenceGeneratorService;
@@ -37,10 +37,12 @@ import com.ritense.document.service.DocumentService;
 import com.ritense.document.service.DocumentStatisticService;
 import com.ritense.document.service.InternalCaseStatusService;
 import com.ritense.document.service.SearchFieldService;
+import com.ritense.document.service.UndeployDocumentDefinitionService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionSequenceGeneratorService;
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService;
 import com.ritense.document.service.impl.JsonSchemaDocumentSearchService;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
+import com.ritense.document.service.impl.UndeployJsonSchemaDocumentDefinitionService;
 import com.ritense.document.web.rest.DocumentDefinitionManagementResource;
 import com.ritense.document.web.rest.DocumentDefinitionResource;
 import com.ritense.document.web.rest.DocumentResource;
@@ -52,7 +54,6 @@ import com.ritense.document.web.rest.impl.JsonSchemaDocumentSearchResource;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -84,8 +85,7 @@ public class DocumentAutoConfiguration {
         final ApplicationEventPublisher applicationEventPublisher,
         final OutboxService outboxService,
         final ObjectMapper objectMapper,
-        final InternalCaseStatusService internalCaseStatusService,
-        final CaseTagService caseTagService
+        final InternalCaseStatusService internalCaseStatusService
     ) {
         return new JsonSchemaDocumentService(
             documentRepository,
@@ -97,8 +97,7 @@ public class DocumentAutoConfiguration {
             applicationEventPublisher,
             outboxService,
             objectMapper,
-            internalCaseStatusService,
-            caseTagService
+            internalCaseStatusService
         );
     }
 
@@ -107,14 +106,12 @@ public class DocumentAutoConfiguration {
     public JsonSchemaDocumentDefinitionService documentDefinitionService(
         final ResourceLoader resourceLoader,
         final DocumentDefinitionRepository<JsonSchemaDocumentDefinition> documentDefinitionRepository,
-        final AuthorizationService authorizationService,
-        final CaseDefinitionChecker caseDefinitionChecker
+        final AuthorizationService authorizationService
     ) {
         return new JsonSchemaDocumentDefinitionService(
             resourceLoader,
             documentDefinitionRepository,
-            authorizationService,
-            caseDefinitionChecker
+            authorizationService
         );
     }
 
@@ -136,7 +133,7 @@ public class DocumentAutoConfiguration {
         JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService
     ) {
         return new JsonSchemaDocumentDefinitionImporter(
-            jsonSchemaDocumentDefinitionService
+          jsonSchemaDocumentDefinitionService
         );
     }
 
@@ -149,6 +146,22 @@ public class DocumentAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(UndeployDocumentDefinitionService.class)
+    public UndeployJsonSchemaDocumentDefinitionService undeployDocumentDefinitionService(
+        final JsonSchemaDocumentDefinitionService documentDefinitionService,
+        final DocumentService documentService,
+        final ApplicationEventPublisher applicationEventPublisher,
+        final AuthorizationService authorizationService
+    ) {
+        return new UndeployJsonSchemaDocumentDefinitionService(
+            documentDefinitionService,
+            documentService,
+            applicationEventPublisher,
+            authorizationService
+        );
+    }
+
+    @Bean
     @ConditionalOnMissingBean(DocumentSearchService.class)
     public JsonSchemaDocumentSearchService documentSearchService(
         final EntityManager entityManager,
@@ -157,7 +170,6 @@ public class DocumentAutoConfiguration {
         final UserManagementService userManagementService,
         final AuthorizationService authorizationService,
         final OutboxService outboxService,
-        final JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService,
         final ObjectMapper objectMapper
     ) {
         return new JsonSchemaDocumentSearchService(
@@ -167,9 +179,16 @@ public class DocumentAutoConfiguration {
             userManagementService,
             authorizationService,
             outboxService,
-            jsonSchemaDocumentDefinitionService,
             objectMapper
         );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ApplicationReadyEventListenerImpl.class)
+    public ApplicationReadyEventListenerImpl applicationReadyEventListenerImpl(
+        final DocumentDefinitionService documentDefinitionService
+    ) {
+        return new ApplicationReadyEventListenerImpl(documentDefinitionService);
     }
 
     @Bean
@@ -194,10 +213,12 @@ public class DocumentAutoConfiguration {
     @ConditionalOnMissingBean(DocumentDefinitionResource.class)
     public JsonSchemaDocumentDefinitionResource documentDefinitionResource(
         final DocumentDefinitionService documentDefinitionService,
+        final UndeployDocumentDefinitionService undeployDocumentDefinitionService,
         final DocumentStatisticService documentStatisticService
     ) {
         return new JsonSchemaDocumentDefinitionResource(
             documentDefinitionService,
+            undeployDocumentDefinitionService,
             documentStatisticService
         );
     }

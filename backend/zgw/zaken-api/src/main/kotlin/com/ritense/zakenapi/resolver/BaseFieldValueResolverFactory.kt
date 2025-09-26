@@ -16,10 +16,10 @@
 
 package com.ritense.zakenapi.resolver
 
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valueresolver.ValueResolverFactory
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.function.Function
 
 abstract class BaseFieldValueResolverFactory(
@@ -30,8 +30,8 @@ abstract class BaseFieldValueResolverFactory(
         processInstanceId: String,
         variableScope: VariableScope
     ): Function<String, Any?> {
-        val operatonProcessInstanceId = OperatonProcessInstanceId(processInstanceId)
-        val documentId = processDocumentService.getDocumentId(operatonProcessInstanceId, variableScope).toString()
+        val camundaProcessInstanceId = CamundaProcessInstanceId(processInstanceId)
+        val documentId = processDocumentService.getDocumentId(camundaProcessInstanceId, variableScope).toString()
         return createResolver(documentId)
     }
 

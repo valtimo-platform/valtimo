@@ -28,6 +28,4 @@ interface FormFlowDefinitionRepository : JpaRepository<FormFlowDefinition, FormF
     fun findAllByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId): List<FormFlowDefinition>
 
     fun findAllByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId, pageable: Pageable): Page<FormFlowDefinition>
-
-    fun deleteAllByIdCaseDefinitionId(caseDefinitionId: CaseDefinitionId)
 }
