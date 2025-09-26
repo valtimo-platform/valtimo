@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.kotlin.OngoingStubbingKt.whenever;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -43,15 +44,15 @@ import com.ritense.processdocument.BaseTest;
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinition;
 import com.ritense.processdocument.domain.ProcessDefinitionCaseDefinitionId;
 import com.ritense.processdocument.domain.ProcessDefinitionId;
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId;
-import com.ritense.processdocument.domain.impl.OperatonProcessJsonSchemaDocumentInstanceId;
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId;
+import com.ritense.processdocument.domain.impl.CamundaProcessJsonSchemaDocumentInstanceId;
 import com.ritense.processdocument.domain.impl.ProcessDocumentInstanceDto;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndCompleteTaskRequest;
 import com.ritense.processdocument.domain.impl.request.ModifyDocumentAndStartProcessRequest;
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest;
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
-import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentAssociationService;
-import com.ritense.processdocument.service.impl.OperatonProcessJsonSchemaDocumentService;
+import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentAssociationService;
+import com.ritense.processdocument.service.impl.CamundaProcessJsonSchemaDocumentService;
 import com.ritense.processdocument.service.impl.result.ModifyDocumentAndCompleteTaskResultSucceeded;
 import com.ritense.processdocument.service.impl.result.ModifyDocumentAndStartProcessResultSucceeded;
 import com.ritense.processdocument.service.impl.result.NewDocumentAndStartProcessResultSucceeded;
@@ -65,9 +66,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -78,11 +79,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class ProcessDocumentResourceTest extends BaseTest {
     private static final String PROCESS_INSTANCE_ID = UUID.randomUUID().toString();
 
-    @MockitoBean
-    private OperatonProcessJsonSchemaDocumentService processDocumentService;
+    @MockBean
+    private CamundaProcessJsonSchemaDocumentService processDocumentService;
 
-    @MockitoBean
-    private OperatonProcessJsonSchemaDocumentAssociationService processDocumentAssociationService;
+    @MockBean
+    private CamundaProcessJsonSchemaDocumentAssociationService processDocumentAssociationService;
 
     private MockMvc mockMvc;
     private ProcessDefinitionCaseDefinition processDefinitionCaseDefinition;
@@ -97,8 +98,8 @@ class ProcessDocumentResourceTest extends BaseTest {
     @BeforeEach
     void setUp() {
         objectMapper = MapperSingleton.INSTANCE.get();
-        processDocumentService = mock(OperatonProcessJsonSchemaDocumentService.class);
-        processDocumentAssociationService = mock(OperatonProcessJsonSchemaDocumentAssociationService.class);
+        processDocumentService = mock(CamundaProcessJsonSchemaDocumentService.class);
+        processDocumentAssociationService = mock(CamundaProcessJsonSchemaDocumentAssociationService.class);
         processDefinitionCaseDefinitionService = mock(ProcessDefinitionCaseDefinitionService.class);
         activeCaseDefinitionService = mock(ActiveCaseDefinitionService.class);
         ProcessDocumentResource processDocumentResource = new ProcessDocumentResource(
@@ -123,8 +124,8 @@ class ProcessDocumentResourceTest extends BaseTest {
         );
 
         processDocumentInstance = new ProcessDocumentInstanceDto(
-            OperatonProcessJsonSchemaDocumentInstanceId.newId(
-                new OperatonProcessInstanceId(PROCESS_INSTANCE_ID),
+            CamundaProcessJsonSchemaDocumentInstanceId.newId(
+                new CamundaProcessInstanceId(PROCESS_INSTANCE_ID),
                 JsonSchemaDocumentId.existingId(UUID.randomUUID())
             ),
             "aName",
@@ -139,14 +140,9 @@ class ProcessDocumentResourceTest extends BaseTest {
         caseDefinition = new CaseDefinition(
             caseDefinitionId,
             "house",
-            null,
-            null,
-            null,
-            null,
             true,
             true,
             true,
-            false,
             false,
             null,
             null
@@ -175,7 +171,7 @@ class ProcessDocumentResourceTest extends BaseTest {
 
     @Test
     void shouldReturnOkWhenGettingProcessDocumentDefinitionByProcessInstanceId() throws Exception {
-        when(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinition(new OperatonProcessInstanceId(PROCESS_INSTANCE_ID)))
+        when(processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinition(new CamundaProcessInstanceId(PROCESS_INSTANCE_ID)))
             .thenReturn(processDefinitionCaseDefinition);
 
         mockMvc.perform(
@@ -217,7 +213,7 @@ class ProcessDocumentResourceTest extends BaseTest {
         var content = new JsonDocumentContent("{\"street\": \"Funenparks\"}");
         final CreateDocumentResult result = createDocument(definition(), content);
 
-        final OperatonProcessInstanceId processInstanceId = new OperatonProcessInstanceId(UUID.randomUUID().toString());
+        final CamundaProcessInstanceId processInstanceId = new CamundaProcessInstanceId(UUID.randomUUID().toString());
         var resultSucceeded = new NewDocumentAndStartProcessResultSucceeded(
             result.resultingDocument().orElseThrow(),
             processInstanceId
@@ -228,8 +224,6 @@ class ProcessDocumentResourceTest extends BaseTest {
         final JsonNode jsonContent = objectMapper.readTree("{\"street\": \"Funenparks\"}");
         var newDocumentRequest = new NewDocumentRequest(
             "house",
-            "house",
-            "1.0.0",
             jsonContent
         );
         var request = new NewDocumentAndStartProcessRequest("some-key", newDocumentRequest);
@@ -281,9 +275,9 @@ class ProcessDocumentResourceTest extends BaseTest {
         var content = new JsonDocumentContent("{\"street\": \"Funenparks\"}");
         final CreateDocumentResult result = createDocument(definition(), content);
 
-        final var operatonProcessInstanceId = new OperatonProcessInstanceId(UUID.randomUUID().toString());
+        final var camundaProcessInstanceId = new CamundaProcessInstanceId(UUID.randomUUID().toString());
         var resultSucceeded = new ModifyDocumentAndStartProcessResultSucceeded(
-            result.resultingDocument().orElseThrow(), operatonProcessInstanceId);
+            result.resultingDocument().orElseThrow(), camundaProcessInstanceId);
         when(processDocumentService.modifyDocumentAndStartProcess(any())).thenReturn(resultSucceeded);
 
         final JsonNode jsonDataUpdate = objectMapper.readTree("{\"street\": \"Funenparks\"}");

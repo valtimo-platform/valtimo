@@ -16,21 +16,22 @@
 
 package com.ritense.document.other
 
-import com.ritense.BaseIntegrationTest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.document.BaseIntegrationTest
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.authentication.model.ValtimoUser
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import mu.KotlinLogging
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,6 +45,9 @@ import kotlin.test.assertTrue
 internal class LostUpdateIntTest : BaseIntegrationTest() {
 
     @Autowired
+    lateinit var documentService: DocumentService
+
+    @Autowired
     lateinit var lostUpdateService: LostUpdateService
 
     @BeforeEach
@@ -53,11 +57,11 @@ internal class LostUpdateIntTest : BaseIntegrationTest() {
         admin.username = USERNAME
         admin.roles = listOf(USER, ADMIN)
         whenever(userManagementService.currentUser).thenReturn(admin)
-        whenever(userManagementService.findByUsername(USERNAME)).thenReturn(admin)
+        whenever(userManagementService.findByUserIdentifier(USERNAME)).thenReturn(admin)
     }
 
     @AfterEach
-    fun afterEach() {
+    override fun afterEach() {
         documentRepository.deleteAll()
     }
 
@@ -94,8 +98,6 @@ internal class LostUpdateIntTest : BaseIntegrationTest() {
                             CaseDefinitionId.of("allows-all", "1.0.0")
                         )
                     ).id().name(),
-                    "allows-all",
-                    "1.0.0",
                     JsonDocumentContent(content).asJson()
                 )
             )

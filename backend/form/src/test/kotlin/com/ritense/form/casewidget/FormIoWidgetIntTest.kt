@@ -65,14 +65,7 @@ class FormIoWidgetIntTest @Autowired constructor(
         val widgetKey = "my-widget"
         val documentId = runWithoutAuthorization {
             createCaseWidgetTab(caseDefinitionName, tabKey, widgetKey)
-            documentService.createDocument(
-                NewDocumentRequest(
-                    caseDefinitionName,
-                    "person",
-                    "1.0.0",
-                    MapperSingleton.get().createObjectNode()
-                )
-            ).resultingDocument().get().id()
+            documentService.createDocument(NewDocumentRequest(caseDefinitionName, MapperSingleton.get().createObjectNode())).resultingDocument().get().id()
         }
         mockMvc.perform(
             get("/api/v1/document/{documentId}/widget-tab/{tabKey}", documentId, tabKey)
@@ -92,14 +85,7 @@ class FormIoWidgetIntTest @Autowired constructor(
         val widgetKey = "my-widget"
         val documentId = runWithoutAuthorization {
             createCaseWidgetTab(caseDefinitionName, tabKey, widgetKey)
-            documentService.createDocument(
-                NewDocumentRequest(
-                    caseDefinitionName,
-                    "person",
-                    "1.0.0",
-                    MapperSingleton.get().createObjectNode()
-                )
-            ).resultingDocument().get().id()
+            documentService.createDocument(NewDocumentRequest(caseDefinitionName, MapperSingleton.get().createObjectNode())).resultingDocument().get().id()
         }
         mockMvc.perform(
             get("/api/v1/document/{documentId}/widget-tab/{tabKey}/widget/{widgetKey}", documentId, tabKey, widgetKey)
@@ -115,10 +101,7 @@ class FormIoWidgetIntTest @Autowired constructor(
         tabKey: String,
         widgetKey: String
     ): CaseWidgetTabDto {
-        tabService.createCaseTab(
-            CaseDefinitionId.of(caseDefinitionName, "1.0.0"),
-            CaseTabDto(key = tabKey, type = CaseTabType.WIDGETS, contentKey = "-")
-        )
+        tabService.createCaseTab(CaseDefinitionId.of(caseDefinitionName, "1.0.0"), CaseTabDto(key = tabKey, type = CaseTabType.WIDGETS, contentKey = "-"))
         return widgetTabService.updateWidgetTab(
             CaseWidgetTabDto(
                 caseDefinitionKey = caseDefinitionName,

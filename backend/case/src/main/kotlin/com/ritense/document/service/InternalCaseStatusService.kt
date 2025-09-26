@@ -17,12 +17,10 @@
 package com.ritense.document.service
 
 import com.ritense.authorization.Action
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.service.CaseDefinitionService
-import com.ritense.case_.authorization.CaseDefinitionActionProvider
-import com.ritense.case_.domain.definition.CaseDefinition
+import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.domain.InternalCaseStatus
 import com.ritense.document.domain.InternalCaseStatusId
 import com.ritense.document.exception.InternalCaseStatusAlreadyExistsException
@@ -32,7 +30,6 @@ import com.ritense.document.web.rest.dto.InternalCaseStatusCreateRequestDto
 import com.ritense.document.web.rest.dto.InternalCaseStatusUpdateOrderRequestDto
 import com.ritense.document.web.rest.dto.InternalCaseStatusUpdateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import jakarta.validation.Valid
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -44,25 +41,11 @@ import org.springframework.validation.annotation.Validated
 @SkipComponentScan
 class InternalCaseStatusService(
     private val internalCaseStatusRepository: InternalCaseStatusRepository,
-    private val caseDefinitionService: CaseDefinitionService,
+    private val activeCaseDefinitionService: ActiveCaseDefinitionService,
     private val authorizationService: AuthorizationService,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
 ) {
-    fun getInternalCaseStatuses(caseDefinitionKey: String): List<InternalCaseStatus> {
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW,
-                runWithoutAuthorization {
-                    caseDefinitionService.getCaseDefinitions(
-                        caseDefinitionKey = caseDefinitionKey,
-                        active = true
-                    )
-                }
-            )
-        )
-
-        return internalCaseStatusRepository.findByIdCaseDefinitionKeyOrderByOrder(caseDefinitionKey)
+    fun getInternalCaseStatuses(documentDefinitionName: String): List<InternalCaseStatus> {
+        return internalCaseStatusRepository.findByIdCaseDefinitionKeyOrderByOrder(documentDefinitionName)
     }
 
     fun get(caseDefinitionName: String, statusKey: String): InternalCaseStatus {
@@ -78,9 +61,8 @@ class InternalCaseStatusService(
         @Valid request: InternalCaseStatusCreateRequestDto
     ): InternalCaseStatus {
         denyManagementOperation()
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
 
-        require(caseDefinitionService.existsCaseDefinition(caseDefinitionKey))
+        require(activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionKey).active)
 
         val currentInternalCaseStatuses = getInternalCaseStatuses(caseDefinitionKey)
         if (currentInternalCaseStatuses.any { status ->
@@ -109,7 +91,6 @@ class InternalCaseStatusService(
         @Valid request: InternalCaseStatusUpdateRequestDto,
     ) {
         denyManagementOperation()
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
 
         val oldInternalCaseStatus = internalCaseStatusRepository
             .findDistinctByIdCaseDefinitionKeyAndIdKey(
@@ -130,7 +111,6 @@ class InternalCaseStatusService(
         @Valid requests: List<InternalCaseStatusUpdateOrderRequestDto>
     ): List<InternalCaseStatus> {
         denyManagementOperation()
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
 
         val existingInternalCaseStatuses = internalCaseStatusRepository
             .findByIdCaseDefinitionKeyOrderByOrder(caseDefinitionName)
@@ -157,7 +137,6 @@ class InternalCaseStatusService(
 
     fun delete(caseDefinitionName: String, internalCaseStatusKey: String) {
         denyManagementOperation()
-        caseDefinitionChecker.assertCanUpdateGlobalConfiguration()
 
         val internalCaseStatus =
             internalCaseStatusRepository.findDistinctByIdCaseDefinitionKeyAndIdKey(

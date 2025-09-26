@@ -24,7 +24,7 @@ import com.ritense.authorization.role.Role
 
 data class UpdateRolePermissionRequest(
     val resourceType: Class<*>,
-    val actions: List<String>,
+    val action: String,
     val conditions: List<PermissionCondition> = emptyList(),
     val contextResourceType: Class<*>? = null,
     val contextConditions: List<PermissionCondition> = emptyList(),
@@ -32,7 +32,7 @@ data class UpdateRolePermissionRequest(
     fun toPermission(role: Role): Permission {
         return Permission(
             resourceType = resourceType,
-            actions = actions.map { (Action<Any>(it)) }.toMutableList(),
+            action = Action<Any>(action),
             conditionContainer = ConditionContainer(conditions),
             role = role,
             contextResourceType = contextResourceType,

@@ -16,8 +16,8 @@
 
 package com.ritense.case_.widget.fields
 
-import com.ritense.BaseIntegrationTest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.case.BaseIntegrationTest
 import com.ritense.case.domain.CaseTabType
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.web.rest.dto.CaseTabDto
@@ -25,6 +25,7 @@ import com.ritense.case_.rest.dto.CaseWidgetTabDto
 import com.ritense.case_.service.CaseWidgetTabService
 import com.ritense.case_.widget.displayproperties.BooleanFieldDisplayProperties
 import com.ritense.document.domain.impl.request.NewDocumentRequest
+import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -47,6 +48,7 @@ class FieldsWidgetIntTest @Autowired constructor(
     private val webApplicationContext: WebApplicationContext,
     private val tabService: CaseTabService,
     private val widgetTabService: CaseWidgetTabService,
+    private val documentService: JsonSchemaDocumentService
 ) : BaseIntegrationTest() {
 
     lateinit var mockMvc: MockMvc
@@ -63,14 +65,7 @@ class FieldsWidgetIntTest @Autowired constructor(
         val tabKey = "my-tab"
         val widgetKey = "my-widget"
         val documentId = runWithoutAuthorization {
-            val document = documentService.createDocument(
-                NewDocumentRequest(
-                    caseDefinitionName,
-                    caseDefinitionName,
-                    "1.2.3",
-                    MapperSingleton.get().createObjectNode()
-                )
-            ).resultingDocument().get()
+            val document = documentService.createDocument(NewDocumentRequest(caseDefinitionName, MapperSingleton.get().createObjectNode())).resultingDocument().get()
             createCaseWidgetTab(document.definitionId().caseDefinitionId(), tabKey, widgetKey)
             document.id
         }
@@ -100,14 +95,7 @@ class FieldsWidgetIntTest @Autowired constructor(
         val tabKey = "my-tab"
         val widgetKey = "my-widget"
         val documentId = runWithoutAuthorization {
-            val document = documentService.createDocument(
-                NewDocumentRequest(
-                    caseDefinitionName,
-                    caseDefinitionName,
-                    "1.2.3",
-                    MapperSingleton.get().createObjectNode()
-                )
-            ).resultingDocument().get()
+            val document = documentService.createDocument(NewDocumentRequest(caseDefinitionName, MapperSingleton.get().createObjectNode())).resultingDocument().get()
             createCaseWidgetTab(document.definitionId().caseDefinitionId(), tabKey, widgetKey)
             document.id
         }
@@ -126,43 +114,39 @@ class FieldsWidgetIntTest @Autowired constructor(
         tabKey: String,
         widgetKey: String
     ): CaseWidgetTabDto {
-        tabService.createCaseTab(
-            caseDefinitionId,
-            CaseTabDto(key = tabKey, type = CaseTabType.WIDGETS, contentKey = "-")
-        )
+        tabService.createCaseTab(caseDefinitionId, CaseTabDto(key = tabKey, type = CaseTabType.WIDGETS, contentKey = "-"))
         return widgetTabService.updateWidgetTab(
             CaseWidgetTabDto(
                 caseDefinitionKey = caseDefinitionId.key,
                 caseDefinitionVersionTag = caseDefinitionId.versionTag.version,
                 key = tabKey,
                 widgets = listOf(
-                    FieldsCaseWidgetDto(
-                        widgetKey, "My widget", 1, true, null, FieldsWidgetProperties(
-                            columns = listOf(
-                                listOf(
-                                    FieldsWidgetProperties.Field(
-                                        "someKey", "Some key", "test:/myKey"
-                                    )
+                    FieldsCaseWidgetDto(widgetKey, "My widget", 1, true, null, FieldsWidgetProperties(
+                        columns = listOf(
+                            listOf(
+                                FieldsWidgetProperties.Field(
+                                    "someKey", "Some key", "test:/myKey"
+                                )
+                            ),
+                            listOf(
+                                FieldsWidgetProperties.Field(
+                                    "someOtherKey",
+                                    "Some other key",
+                                    "test:/myOtherKey",
+                                    displayProperties = BooleanFieldDisplayProperties()
                                 ),
-                                listOf(
-                                    FieldsWidgetProperties.Field(
-                                        "someOtherKey",
-                                        "Some other key",
-                                        "test:/myOtherKey",
-                                        displayProperties = BooleanFieldDisplayProperties()
-                                    ),
-                                    FieldsWidgetProperties.Field(
-                                        "nullValue",
-                                        "nullValue",
-                                        "test:null",
-                                        displayProperties = BooleanFieldDisplayProperties()
-                                    )
+                                FieldsWidgetProperties.Field(
+                                    "nullValue",
+                                    "nullValue",
+                                    "test:null",
+                                    displayProperties = BooleanFieldDisplayProperties()
                                 )
                             )
                         )
                     )
                 )
             )
+        )
         )
     }
 }

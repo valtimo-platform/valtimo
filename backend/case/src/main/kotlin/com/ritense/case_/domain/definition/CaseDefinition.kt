@@ -16,22 +16,12 @@
 
 package com.ritense.case_.domain.definition
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.repository.SemverConverter
-import com.ritense.valtimo.contract.serializer.SemverSerializer
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 import org.apache.commons.validator.routines.UrlValidator
-import org.apache.commons.validator.routines.UrlValidator.ALLOW_LOCAL_URLS
-import org.semver4j.Semver
-import org.springframework.data.annotation.CreatedBy
-import org.springframework.data.annotation.CreatedDate
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "case_definition")
@@ -40,28 +30,12 @@ data class CaseDefinition(
     val id: CaseDefinitionId,
     @Column(name = "case_definition_name")
     val name: String,
-    @Column(name = "description")
-    val description: String? = null,
-    @CreatedBy
-    @Column(name = "created_by", updatable = false) @JsonIgnore
-    val createdBy: String? = null,
-    @CreatedDate
-    @Column(name = "created_date", updatable = false)
-    @JsonIgnore
-    val createdDate: LocalDateTime?,
-    @Convert(converter = SemverConverter::class)
-    @Column(name = "based_on_version_tag", updatable = false)
-    @JsonSerialize(using = SemverSerializer::class)
-    val basedOnVersionTag: Semver? = null,
-    @Column(name = "is_final")
-    val final: Boolean = false,
-    @Column(name = "active")
-    val active: Boolean = false,
-
     @Column(name = "can_have_assignee", nullable = false)
     val canHaveAssignee: Boolean = false,
     @Column(name = "auto_assign_tasks", nullable = false)
     val autoAssignTasks: Boolean = false,
+    @Column(name = "active")
+    val active: Boolean = false,
     @Column(name = "has_external_start_form", nullable = false)
     val hasExternalStartForm: Boolean = false,
     @Column(name = "external_start_form_url", nullable = true, length = 512)
@@ -86,7 +60,7 @@ data class CaseDefinition(
         }
         require(
             when (hasExternalStartForm) {
-                true -> UrlValidator(arrayOf("http", "https"), ALLOW_LOCAL_URLS).isValid(externalStartFormUrl)
+                true -> UrlValidator(arrayOf("http", "https")).isValid(externalStartFormUrl)
                 else -> true
             }
         ) {

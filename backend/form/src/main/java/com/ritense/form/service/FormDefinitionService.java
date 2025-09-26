@@ -31,9 +31,7 @@ public interface FormDefinitionService {
 
     Page<? extends FormDefinition> getAll(Pageable pageable);
 
-    List<FormOption> getUnlinkedFormOptions();
-
-    List<FormOption> getFormOptionsForCaseDefinition(CaseDefinitionId caseDefinitionId);
+    List<FormOption> getAllFormOptions();
 
     Page<? extends FormDefinition> queryFormDefinitions(String searchTerm, Pageable pageable);
 
@@ -42,8 +40,6 @@ public interface FormDefinitionService {
         String searchTerm,
         Pageable pageable
     );
-
-    List<? extends FormDefinition> getFormDefinitions(CaseDefinitionId caseDefinitionId);
 
     Optional<? extends FormDefinition> getFormDefinitionById(UUID id);
 
@@ -68,8 +64,6 @@ public interface FormDefinitionService {
     void deleteFormDefinition(UUID id);
 
     void deleteFormDefinition(CaseDefinitionId caseDefinitionId, UUID id);
-
-    void deleteAllFormDefinitions(CaseDefinitionId caseDefinitionId);
 
     boolean formDefinitionExistsById(UUID id);
 

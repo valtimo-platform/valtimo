@@ -32,14 +32,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ritense.BaseTest;
-import com.ritense.document.domain.impl.DocumentContentFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ritense.document.BaseTest;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
 import com.ritense.document.service.impl.JsonSchemaDocumentService;
 import com.ritense.document.web.rest.impl.JsonSchemaDocumentResource;
+import com.ritense.outbox.OutboxService;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.utils.TestUtil;
 import java.util.List;
@@ -47,6 +48,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -54,14 +56,20 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 class JsonSchemaDocumentResourceTest extends BaseTest {
 
     private JsonSchemaDocumentService documentService;
+    private OutboxService outboxService;
     private MockMvc mockMvc;
     private JsonSchemaDocument document;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
 
         documentService = mock(JsonSchemaDocumentService.class);
-        DocumentResource documentResource = new JsonSchemaDocumentResource(documentService);
+        outboxService = mock(OutboxService.class);
+        documentService = mock(JsonSchemaDocumentService.class);
+        DocumentResource documentResource = new JsonSchemaDocumentResource(documentService, outboxService, objectMapper);
 
         mockMvc = MockMvcBuilders.standaloneSetup(documentResource)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
@@ -72,7 +80,7 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
             definitionOfForUnitTests("person"),
             content,
             USERNAME,
-            getDocumentSequenceGeneratorService(),
+            documentSequenceGeneratorService,
             null
         );
         document = result.resultingDocument().orElseThrow();
@@ -108,27 +116,6 @@ class JsonSchemaDocumentResourceTest extends BaseTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
             .andExpect(jsonPath("$.content").doesNotExist());
-    }
-
-    @Test
-    void shouldReturnDocumentWithContentWhenEnabled() throws Exception {
-        when(documentService.findBy(any()))
-            .thenReturn(Optional.of(document));
-
-        //enable output of document content
-        DocumentContentFilter.setIncludeDocumentContent(true);
-
-        mockMvc.perform(get("/api/v1/document/{id}", UUID.randomUUID().toString())
-                .accept(APPLICATION_JSON_VALUE)
-                .contentType(APPLICATION_JSON_VALUE)
-            )
-            .andDo(print())
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
-            .andExpect(jsonPath("$.content").exists());
-
-        //reset to default for cleanup
-        DocumentContentFilter.setIncludeDocumentContent(false);
     }
 
     @Test

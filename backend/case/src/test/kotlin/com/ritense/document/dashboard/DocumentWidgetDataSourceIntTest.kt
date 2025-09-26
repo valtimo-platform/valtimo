@@ -16,8 +16,8 @@
 
 package com.ritense.document.dashboard
 
-import com.ritense.BaseIntegrationTest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.document.BaseIntegrationTest
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.request.NewDocumentRequest
@@ -49,8 +49,8 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         whenever(userManagementService.currentUser.email)
             .thenReturn(mockedUserEmail)
 
-        whenever(userManagementService.currentUser.username)
-            .thenReturn(mockedUsername)
+        whenever(userManagementService.currentUser.userIdentifier)
+            .thenReturn(mockedUserIdentifier)
     }
 
     @Test
@@ -438,7 +438,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
 
         val definition = definition()
 
-        createDocument(definition, "", mockedUsername)
+        createDocument(definition, "", mockedUserIdentifier)
 
         val documentDefinitionName = definition.id().name()
 
@@ -448,7 +448,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
                 QueryCondition(
                     "doc:userInfo",
                     ExpressionOperator.EQUAL_TO,
-                    "\${currentUsername}"
+                    "\${currentUserIdentifier}"
                 ),
             )
         )
@@ -459,7 +459,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
                 QueryCondition(
                     "doc:userInfo",
                     ExpressionOperator.NOT_EQUAL_TO,
-                    "\${currentUsername}"
+                    "\${currentUserIdentifier}"
                 ),
             )
         )
@@ -482,8 +482,6 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
             documentService.createDocument(
                 NewDocumentRequest(
                     documentDefinition.id().name(),
-                    documentDefinition.id().caseDefinitionId().key,
-                    documentDefinition.id().caseDefinitionId().versionTag.version,
                     content.asJson()
                 )
             )
@@ -496,8 +494,6 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
             documentService.createDocument(
                 NewDocumentRequest(
                     documentDefinition.id().name(),
-                    documentDefinition.id().caseDefinitionId().key,
-                    documentDefinition.id().caseDefinitionId().versionTag.version,
                     content.asJson()
                 )
             )
@@ -507,6 +503,6 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
     companion object {
         private val mockedUserId = "mockUserId"
         private val mockedUserEmail = "mockUserEmail"
-        private val mockedUsername = "mockUsername"
+        private val mockedUserIdentifier = "mockUserIdentifier"
     }
 }

@@ -31,8 +31,7 @@ class ValtimoImportTypes {
         const val FORM_FLOW = "formflow"
         const val INTERNAL_CASE_STATUS = "internalcasestatus"
         const val PROCESS_DEFINITION = "processdefinition"
-        const val GLOBAL_PROCESS_DEFINITION = "globalprocessdefinition"
-        const val GLOBAL_DECISION_DEFINITION = "globaldecisiondefinition"
+        const val SYSTEM_PROCESS_DEFINITION = "systemprocessdefinition"
         const val PROCESS_DOCUMENT_LINK = "processdocumentlink"
         const val PROCESS_LINK = "processlink"
         const val SEARCH = "search"
@@ -40,7 +39,6 @@ class ValtimoImportTypes {
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"
-        const val ZGW_DOCUMENT_TREFWOORD = "zgwdocumenttrefwoord"
         const val ZGW_DOCUMENT_UPLOAD_FIELD = "zgwdocumentuploadfield"
         const val ZGW_ZAAK_TYPE_LINK = "zgwzaaktypelink"
     }

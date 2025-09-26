@@ -22,13 +22,12 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
-import io.github.oshai.kotlinlogging.KotlinLogging
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import mu.KotlinLogging
+import org.springframework.data.repository.findByIdOrNull
 
 class CaseDefinitionImporter(
     private val objectMapper: ObjectMapper,
-    private val caseDefinitionRepository: CaseDefinitionRepository,
-    private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val caseDefinitionRepository: CaseDefinitionRepository
 ) : Importer {
     override fun type() = CASE_DEFINITION
 
@@ -37,40 +36,38 @@ class CaseDefinitionImporter(
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 
     override fun import(request: ImportRequest) {
-        deploy(request.content.toString(Charsets.UTF_8))
+        deploy(request.content.toString(Charsets.UTF_8), true)
     }
 
-    override fun afterImport(request: ImportRequest) {
-        val caseDefinitionDto = toCaseDefinitionDto(request.content.toString(Charsets.UTF_8))
-        if (caseDefinitionDto.final) {
-            caseDefinitionRepository.save(caseDefinitionDto.toEntity())
-        }
-    }
-
-    private fun deploy(fileContent: String) {
-        val caseDefinitionDto = toCaseDefinitionDto(fileContent)
-        val caseDefinitionId = caseDefinitionDto.getCaseDefinitionId()
-
-        caseDefinitionChecker.assertCanCreateOrUpdateCaseDefinition(caseDefinitionId, caseDefinitionDto.final)
-
-        val caseDefinition = caseDefinitionDto.toEntity().copy(final = false)
-
-        logger.debug { "Deploying case definition with id '${caseDefinition.id}'" }
-
-        caseDefinitionRepository.save(caseDefinition)
-        logger.debug { "Case definition with id '${caseDefinition.id}' was saved" }
-    }
-
-    private fun toCaseDefinitionDto(fileContent: String): CaseDefinitionDto {
-        return try {
+    private fun deploy(fileContent: String, forceDeploy: Boolean = false) {
+        val caseDefinitionDto = try {
             objectMapper.readValue(fileContent, CaseDefinitionDto::class.java)
         } catch (e: Exception) {
             throw IllegalArgumentException("Failed to parse file content as a valid case definition: ${e.message}", e)
+        }
+
+        val caseDefinition = caseDefinitionDto.toEntity()
+
+        logger.debug { "Deploying case definition with id '${caseDefinition.id}'" }
+
+        val existingCaseDefinition = caseDefinitionRepository.findByIdOrNull(caseDefinition.id)
+
+        if (existingCaseDefinition == null || forceDeploy) { // TODO: revisit forceDeploy this when doing drafts
+            val activeCaseDefinition = caseDefinitionRepository.findByActiveIsTrueAndIdKey(caseDefinition.id.key)
+            if (activeCaseDefinition == null || activeCaseDefinition.id.versionTag < caseDefinition.id.versionTag) {
+                caseDefinitionRepository.save(caseDefinition.copy(active = true))
+                activeCaseDefinition?.let {caseDefinitionRepository.save(it.copy(active = false)) }
+            } else {
+                caseDefinitionRepository.save(caseDefinition)
+            }
+            logger.debug { "Case definition with id '${caseDefinition.id}' was saved" }
+        } else {
+            logger.debug { "Not deploying case definition with '${caseDefinition.id}', it already exists" }
         }
     }
 
     private companion object {
         val logger = KotlinLogging.logger {}
-        val FILENAME_REGEX = """/case/definition/([^/]+)\.case-definition\.json""".toRegex()
+        val FILENAME_REGEX = """/case/definition/([^/]+)\.json""".toRegex()
     }
 }

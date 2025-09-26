@@ -21,7 +21,6 @@ import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseTabService
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
-import com.ritense.case_.listener.CaseTabCaseEventListener
 import com.ritense.case_.repository.CaseWidgetTabRepository
 import com.ritense.case_.repository.CaseWidgetTabWidgetSpecificationFactory
 import com.ritense.case_.rest.CaseWidgetTabManagementResource
@@ -38,13 +37,11 @@ import com.ritense.case_.widget.CaseWidgetMapper
 import com.ritense.case_.widget.collection.CollectionCaseWidgetDataProvider
 import com.ritense.case_.widget.collection.CollectionCaseWidgetMapper
 import com.ritense.case_.widget.custom.CustomCaseWidgetMapper
-import com.ritense.case_.widget.divider.DividerCaseWidgetMapper
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
 import com.ritense.document.service.DocumentService
-import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.validation.Validator
@@ -73,16 +70,14 @@ class CaseWidgetAutoConfiguration {
         authorizationService: AuthorizationService,
         caseWidgetMappers: List<CaseWidgetMapper<*, *>>,
         caseWidgetDataProviders: List<CaseWidgetDataProvider<*>>,
-        documentService: DocumentService,
-        caseDefinitionChecker: CaseDefinitionChecker,
+        documentService: DocumentService
     ) = CaseWidgetTabService(
         documentService,
         caseWidgetTabRepository,
         caseTabRepository,
         authorizationService,
         caseWidgetMappers as List<CaseWidgetMapper<CaseWidgetTabWidget, CaseWidgetTabWidgetDto>>,
-        caseWidgetDataProviders as List<CaseWidgetDataProvider<CaseWidgetTabWidget>>,
-        caseDefinitionChecker,
+        caseWidgetDataProviders as List<CaseWidgetDataProvider<CaseWidgetTabWidget>>
     )
 
     @ConditionalOnMissingBean(CaseWidgetTabWidgetSpecificationFactory::class)
@@ -173,24 +168,9 @@ class CaseWidgetAutoConfiguration {
     @Bean
     fun customCaseWidgetMapper() = CustomCaseWidgetMapper()
 
-    @ConditionalOnMissingBean(DividerCaseWidgetMapper::class)
-    @Bean
-    fun dividerCaseWidgetMapper() = DividerCaseWidgetMapper()
-
     @ConditionalOnMissingBean(ActiveCaseDefinitionService::class)
     @Bean
     fun activeCaseDefinitionService(
-        caseDefinitionService: CaseDefinitionService,
-        authorizationService: AuthorizationService
-    ) = ActiveCaseDefinitionService(caseDefinitionService, authorizationService)
-
-    @ConditionalOnMissingBean(CaseTabCaseEventListener::class)
-    @Bean
-    fun caseTabCaseEventListener(
-        caseTabService: CaseTabService,
-        caseWidgetTabRepository: CaseWidgetTabRepository,
-    ) = CaseTabCaseEventListener(
-        caseTabService,
-        caseWidgetTabRepository,
-    )
+        caseDefinitionService: CaseDefinitionService
+    ) = ActiveCaseDefinitionService(caseDefinitionService)
 }

@@ -118,7 +118,7 @@ public abstract class BaseTest {
             "-" + caseDefinitionVersion.getMinor() +
             "-" + caseDefinitionVersion.getPatch();
         return URI.create(String.format(
-            "config/case/%s/%s/document/definition/%s.document-definition.json",
+            "config/case/%s/%s/document/definition/%s.json",
             caseDefinitionId.getKey(),
             formattedCaseDefinitionVersion,
             name + ".schema"

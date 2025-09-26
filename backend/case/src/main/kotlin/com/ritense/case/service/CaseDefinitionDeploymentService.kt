@@ -21,7 +21,7 @@ import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.importer.ValtimoImportService
 import com.ritense.valtimo.changelog.service.ChangelogDeployer
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
@@ -68,10 +68,9 @@ class CaseDefinitionDeploymentService(
                     }
             resources.forEach { (_, files) ->
                 runWithoutAuthorization {
-                    valtimoImportService.importCaseDefinition(files, caseDefinitionRepository.findAllByFinalTrue().map { it.id })
+                    valtimoImportService.importCaseDefinition(files, caseDefinitionRepository.findAll().map { it.id })
                 }
             }
-            setLatestToActiveIfNoneIsActive()
 
         } catch (ex: FileNotFoundException) {
             // No resources found, nothing to import
@@ -102,16 +101,6 @@ class CaseDefinitionDeploymentService(
             // No resources found, nothing to import
             logger.info { "No global definitions found. Continuing startup without importing global definitions." }
         }
-    }
-
-    private fun setLatestToActiveIfNoneIsActive() {
-        caseDefinitionRepository.findAll()
-            .groupBy { it.id.key }
-            .map { it.value }
-            .filter { caseDefinitions -> caseDefinitions.none { caseDefinition -> caseDefinition.active } }
-            .map { caseDefinitions -> caseDefinitions.maxBy { it.id.versionTag } }
-            .map { caseDefinition -> caseDefinition.copy(active = true) }
-            .forEach { caseDefinition -> caseDefinitionRepository.save(caseDefinition) }
     }
 
     companion object {

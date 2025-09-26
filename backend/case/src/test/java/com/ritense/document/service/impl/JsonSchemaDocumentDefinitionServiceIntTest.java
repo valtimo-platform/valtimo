@@ -22,20 +22,23 @@ import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.U
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.ritense.BaseIntegrationTest;
 import com.ritense.authorization.permission.ConditionContainer;
 import com.ritense.authorization.permission.Permission;
 import com.ritense.authorization.permission.condition.FieldPermissionCondition;
 import com.ritense.authorization.permission.condition.PermissionConditionOperator;
+import com.ritense.document.BaseIntegrationTest;
 import com.ritense.document.domain.DocumentDefinition;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.service.JsonSchemaDocumentDefinitionActionProvider;
+import com.ritense.valtimo.contract.case_.CaseDefinitionId;
+import jakarta.inject.Inject;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -45,7 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class JsonSchemaDocumentDefinitionServiceIntTest extends BaseIntegrationTest {
 
-    @Autowired
+    @Inject
     private ResourceLoader resourceLoader;
 
     @Test
@@ -59,9 +62,9 @@ class JsonSchemaDocumentDefinitionServiceIntTest extends BaseIntegrationTest {
     @Test
     @WithMockUser(username = USERNAME, authorities = USER)
     void shouldGetForRolesOnly() {
-        final var expectedDefinition = runWithoutAuthorization(() -> documentDefinitionService.findActiveByName("house")).get();
+        final var expectedDefinition = runWithoutAuthorization(() -> documentDefinitionService.findLatestByName("house")).get();
 
-        final var unexpectedDefinition = runWithoutAuthorization(() -> documentDefinitionService.findActiveByName("person")).get();
+        final var unexpectedDefinition = runWithoutAuthorization(() -> documentDefinitionService.findLatestByName("person")).get();
 
         permissionRepository.save(new Permission(
             UUID.randomUUID(),

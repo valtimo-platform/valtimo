@@ -25,11 +25,11 @@ import com.ritense.exporter.request.DocumentDefinitionExportRequest
 import com.ritense.exporter.request.ProcessDefinitionExportRequest
 import com.ritense.processdocument.domain.config.ProcessDocumentLinkConfigItem
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 
 class ProcessDocumentLinkExporter(
     private val objectMapper: ObjectMapper,
-    private val operatonRepositoryService: OperatonRepositoryService,
+    private val camundaRepositoryService: CamundaRepositoryService,
     private val processDefinitionCaseDefinitionService: ProcessDefinitionCaseDefinitionService
 ) : Exporter<DocumentDefinitionExportRequest> {
 
@@ -39,7 +39,7 @@ class ProcessDocumentLinkExporter(
         val processDefinitions = processDefinitionCaseDefinitionService.findProcessDefinitionCaseDefinitions(
             request.caseDefinitionId
         ).map { definition ->
-            Pair(definition, operatonRepositoryService.findProcessDefinitionById(definition.id.processDefinitionId.id)!!)
+            Pair(definition, camundaRepositoryService.findProcessDefinitionById(definition.id.processDefinitionId.id)!!)
         }
 
         if (processDefinitions.isEmpty()) {
@@ -73,8 +73,7 @@ class ProcessDocumentLinkExporter(
             relatedRequests
         )
     }
-
     companion object {
-        private const val PATH = "config/case/%s/%s/process-document-link/%s.process-document-link.json"
+        private const val PATH = "config/case/%s/%s/process-document-link/%s.json"
     }
 }

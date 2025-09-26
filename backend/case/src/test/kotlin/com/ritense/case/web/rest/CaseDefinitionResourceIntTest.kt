@@ -18,7 +18,7 @@
 package com.ritense.case.web.rest
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.BaseIntegrationTest
+import com.ritense.case.BaseIntegrationTest
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case_.domain.definition.CaseDefinition
@@ -1103,7 +1103,7 @@ class CaseDefinitionResourceIntTest : BaseIntegrationTest() {
         val caseDefinitionVersion = 1
         val result = mockMvc.perform(
             get(
-                "/api/management/v1/case/{caseDefinitionName}/version/{caseDefinitionVersion}/export",
+                "/api/management/v1/case/{caseDefinitionName}/{caseDefinitionVersion}/export",
                 caseDefinitionName, caseDefinitionVersion
             )
         ).andExpect(status().isOk)

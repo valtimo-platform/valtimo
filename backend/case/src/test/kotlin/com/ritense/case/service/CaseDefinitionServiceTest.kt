@@ -16,9 +16,6 @@
 
 package com.ritense.case.service
 
-import com.ritense.BaseTest
-import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.case.domain.ColumnDefaultSort
 import com.ritense.case.domain.DisplayType
 import com.ritense.case.domain.EnumDisplayTypeParameter
@@ -30,6 +27,8 @@ import com.ritense.case.web.rest.dto.CaseSettingsDto
 import com.ritense.case.web.rest.mapper.CaseListColumnMapper
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.exception.UnknownDocumentDefinitionException
 import com.ritense.document.service.DocumentDefinitionService
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
@@ -42,22 +41,21 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.data.domain.PageImpl
-import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import java.util.Optional
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class CaseDefinitionServiceTest : BaseTest() {
+class CaseDefinitionServiceTest {
     lateinit var caseDefinitionRepository: CaseDefinitionRepository
     lateinit var caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository
     lateinit var service: CaseDefinitionService
     lateinit var documentDefinitionService: DocumentDefinitionService
     lateinit var valueResolverService: ValueResolverService
-    lateinit var authorizationService: AuthorizationService
 
     @BeforeEach
     fun setUp() {
@@ -65,32 +63,33 @@ class CaseDefinitionServiceTest : BaseTest() {
         caseDefinitionListColumnRepository = mock()
         caseDefinitionRepository = mock()
         valueResolverService = mock()
-        authorizationService = mock()
         service = CaseDefinitionService(
             caseDefinitionListColumnRepository,
             documentDefinitionService,
             caseDefinitionRepository,
             valueResolverService,
-            authorizationService,
-            mock(),
             mock()
         )
     }
 
     @Test
     fun `should get case definition by id`() {
+        val caseDefinitionName = "name"
+        val caseDefinitionId = CaseDefinitionId.of("name", "1.0.0")
         val externalFormUrl = "https://www.example.com/external-form"
-        val caseDefinition = caseDefinition(
+        val caseDefinition = CaseDefinition(
+            id = caseDefinitionId,
+            name = caseDefinitionName,
             canHaveAssignee = true,
             hasExternalStartForm = true,
             externalStartFormUrl = externalFormUrl
         )
 
-        whenever(caseDefinitionRepository.findById(caseDefinition.id)).thenReturn(Optional.of(caseDefinition))
+        whenever(caseDefinitionRepository.findById(caseDefinitionId)).thenReturn(Optional.of(caseDefinition))
 
-        val foundCaseDefinitionSettings = service.getCaseDefinition(caseDefinition.id)
+        val foundCaseDefinitionSettings = service.getCaseDefinition(caseDefinitionId)
 
-        assertEquals(caseDefinition.name, foundCaseDefinitionSettings.name)
+        assertEquals(caseDefinitionName, foundCaseDefinitionSettings.name)
         assertTrue(foundCaseDefinitionSettings.canHaveAssignee)
     }
 
@@ -105,23 +104,24 @@ class CaseDefinitionServiceTest : BaseTest() {
 
     @Test
     fun `should update case settings`() {
-        val currentCaseDefinition = caseDefinition(
+        val caseDefinitionId = CaseDefinitionId.of("name", "1.0.0")
+        val currentCaseDefinition = CaseDefinition(
+            id = caseDefinitionId,
+            name = "name",
             canHaveAssignee = true
         )
-        val updatedCaseDefinition = caseDefinition(
+        val updatedCaseDefinition = CaseDefinition(
+            id = caseDefinitionId,
+            name = "name",
             canHaveAssignee = false
         )
         val caseSettingsDto: CaseSettingsDto = mock()
-        whenever(caseDefinitionRepository.findById(eq(currentCaseDefinition.id))).thenReturn(
-            Optional.of(
-                currentCaseDefinition
-            )
-        )
+        whenever(caseDefinitionRepository.findById(eq(caseDefinitionId))).thenReturn(Optional.of(currentCaseDefinition))
         whenever(caseDefinitionRepository.save(updatedCaseDefinition)).thenReturn(
             updatedCaseDefinition
         )
         whenever(caseSettingsDto.update(currentCaseDefinition)).thenReturn(updatedCaseDefinition)
-        val returnedCaseDefinitionSettings = service.updateCaseSettings(currentCaseDefinition.id, caseSettingsDto)
+        val returnedCaseDefinitionSettings = service.updateCaseSettings(caseDefinitionId, caseSettingsDto)
 
         assertEquals("name", returnedCaseDefinitionSettings.name)
         assertFalse(returnedCaseDefinitionSettings.canHaveAssignee)
@@ -143,8 +143,8 @@ class CaseDefinitionServiceTest : BaseTest() {
         val listColumnDto = getListColumnDtoToFirstName(
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
-        whenever(documentDefinitionService.existsByName(caseDefinitionName))
-            .thenReturn(true)
+        whenever(documentDefinitionService.findIdByName(caseDefinitionName))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository
                 .existsByIdCaseDefinitionKeyAndIdKey(
@@ -156,7 +156,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val exception = assertThrows<InvalidListColumnException> {
             service.createListColumn(caseDefinitionName, listColumnDto)
         }
-        verify(documentDefinitionService).existsByName(caseDefinitionName)
+        verify(documentDefinitionService).findIdByName(caseDefinitionName)
         verify(caseDefinitionListColumnRepository).existsByIdCaseDefinitionKeyAndIdKey(
             caseDefinitionName,
             listColumnDto.key
@@ -168,6 +168,11 @@ class CaseDefinitionServiceTest : BaseTest() {
     fun `should fail to validate list column on create when document definition doesn't exist`() {
         val caseDefinitionName = "name"
         val listColumnDto: CaseListColumnDto = mock()
+        whenever(documentDefinitionService.findIdByName(any())).thenThrow(
+            UnknownDocumentDefinitionException(
+                caseDefinitionName
+            )
+        )
         assertThrows<UnknownCaseDefinitionException> {
             service.createListColumn(caseDefinitionName, listColumnDto)
         }
@@ -179,8 +184,8 @@ class CaseDefinitionServiceTest : BaseTest() {
         val listColumnDto = getListColumnDtoToFirstName(
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
-        whenever(documentDefinitionService.existsByName(caseDefinitionName))
-            .thenReturn(true)
+        whenever(documentDefinitionService.findIdByName(caseDefinitionName))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(
                 caseDefinitionName
@@ -194,7 +199,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val exception = assertThrows<InvalidListColumnException> {
             service.createListColumn(caseDefinitionName, listColumnDto)
         }
-        verify(documentDefinitionService).existsByName(caseDefinitionName)
+        verify(documentDefinitionService).findIdByName(caseDefinitionName)
         verify(caseDefinitionListColumnRepository).findByIdCaseDefinitionKeyOrderByOrderAsc(
             caseDefinitionName
         )
@@ -208,8 +213,8 @@ class CaseDefinitionServiceTest : BaseTest() {
         val listColumnDto = getListColumnDtoToFirstName(
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
-        whenever(documentDefinitionService.existsByName(caseDefinitionName))
-            .thenReturn(true)
+        whenever(documentDefinitionService.findIdByName(caseDefinitionName))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(
                 caseDefinitionName
@@ -229,7 +234,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val exception = assertThrows<InvalidListColumnException> {
             service.createListColumn(caseDefinitionName, listColumnDto)
         }
-        verify(documentDefinitionService).existsByName(caseDefinitionName)
+        verify(documentDefinitionService).findIdByName(caseDefinitionName)
         verify(caseDefinitionListColumnRepository).findByIdCaseDefinitionKeyOrderByOrderAsc(
             caseDefinitionName
         )
@@ -249,8 +254,8 @@ class CaseDefinitionServiceTest : BaseTest() {
         val listColumnDto = getListColumnDtoToFirstName(
             DisplayType("enum", EnumDisplayTypeParameter(emptyMap()))
         )
-        whenever(documentDefinitionService.existsByName(caseDefinitionName))
-            .thenReturn(true)
+        whenever(documentDefinitionService.findIdByName(caseDefinitionName))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(
                 caseDefinitionName
@@ -263,7 +268,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val exception = assertThrows<InvalidListColumnException> {
             service.createListColumn(caseDefinitionName, listColumnDto)
         }
-        verify(documentDefinitionService).existsByName(caseDefinitionName)
+        verify(documentDefinitionService).findIdByName(caseDefinitionName)
         verify(caseDefinitionListColumnRepository).findByIdCaseDefinitionKeyOrderByOrderAsc(
             caseDefinitionName
         )
@@ -276,6 +281,11 @@ class CaseDefinitionServiceTest : BaseTest() {
     fun `should fail to validate column on update when document definition doesn't exist`() {
         val caseDefinitionName = "name"
         val listColumnDto: CaseListColumnDto = mock()
+        whenever(documentDefinitionService.findIdByName(any())).thenThrow(
+            UnknownDocumentDefinitionException(
+                caseDefinitionName
+            )
+        )
         assertThrows<UnknownCaseDefinitionException> {
             service.createListColumn(caseDefinitionName, listColumnDto)
         }
@@ -291,8 +301,8 @@ class CaseDefinitionServiceTest : BaseTest() {
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
         listColumnDtoLastName.defaultSort = ColumnDefaultSort.ASC
-        whenever(documentDefinitionService.existsByName(caseDefinitionName))
-            .thenReturn(true)
+        whenever(documentDefinitionService.findIdByName(caseDefinitionName))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(
                 caseDefinitionName
@@ -310,7 +320,7 @@ class CaseDefinitionServiceTest : BaseTest() {
                 listOf(listColumnDtoFirstName, listColumnDtoLastName)
             )
         }
-        verify(documentDefinitionService).existsByName(caseDefinitionName)
+        verify(documentDefinitionService).findIdByName(caseDefinitionName)
         verify(caseDefinitionListColumnRepository).findByIdCaseDefinitionKeyOrderByOrderAsc(
             caseDefinitionName
         )
@@ -326,8 +336,8 @@ class CaseDefinitionServiceTest : BaseTest() {
         val listColumnDtoLastName = getListColumnDtoLastName(
             DisplayType("enum", EnumDisplayTypeParameter(mapOf(Pair("Key1", "Value1"))))
         )
-        whenever(documentDefinitionService.existsByName(caseDefinitionName))
-            .thenReturn(true)
+        whenever(documentDefinitionService.findIdByName(caseDefinitionName))
+            .thenReturn(JsonSchemaDocumentDefinitionId.existingId("aName", CaseDefinitionId.of("bName", "1.0.2")))
         whenever(
             caseDefinitionListColumnRepository.findByIdCaseDefinitionKeyOrderByOrderAsc(
                 caseDefinitionName
@@ -350,7 +360,7 @@ class CaseDefinitionServiceTest : BaseTest() {
         val exception = assertThrows<InvalidListColumnException> {
             service.updateListColumns(caseDefinitionName, listOf(listColumnDtoFirstName))
         }
-        verify(documentDefinitionService).existsByName(caseDefinitionName)
+        verify(documentDefinitionService).findIdByName(caseDefinitionName)
         verify(caseDefinitionListColumnRepository).findByIdCaseDefinitionKeyOrderByOrderAsc(
             caseDefinitionName
         )
@@ -363,40 +373,6 @@ class CaseDefinitionServiceTest : BaseTest() {
         )
     }
 
-    @Test
-    fun `should not delete an active draft when more drafts exist`() {
-        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(id = caseDefinitionId, active = true, final = false)
-        whenever(caseDefinitionRepository.findAll(any(), any<Pageable>()))
-            .thenReturn(PageImpl(listOf<CaseDefinition>(caseDefinition, mock())))
-        whenever(caseDefinitionRepository.findById(caseDefinitionId))
-            .thenReturn(Optional.of(caseDefinition))
-        val spec = mock<AuthorizationSpecification<CaseDefinition>>()
-        whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
-            .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
-
-        assertEquals("Failed to delete case-definition. Case-definition with id: '$caseDefinitionId' is the global active version.", assertThrows<Exception> {
-            service.deleteCaseDefinition(caseDefinitionId)
-        }.message)
-    }
-
-    @Test
-    fun `should delete an active draft when it is the last one`() {
-        val caseDefinitionId = CaseDefinitionId("key", "1.0.0")
-        val caseDefinition = caseDefinition(id = caseDefinitionId, active = true, final = false)
-        whenever(caseDefinitionRepository.findAll(any(), any<Pageable>()))
-            .thenReturn(PageImpl(listOf(caseDefinition)))
-        whenever(caseDefinitionRepository.findById(caseDefinitionId))
-            .thenReturn(Optional.of(caseDefinition))
-        val spec = mock<AuthorizationSpecification<CaseDefinition>>()
-        whenever(authorizationService.getAuthorizationSpecification<CaseDefinition>(any(), eq(null)))
-            .thenReturn(spec)
-        whenever(spec.and(any())).thenReturn(spec)
-
-        service.deleteCaseDefinition(caseDefinitionId)
-    }
-
     private fun getListColumnDtoToFirstName(displayType: DisplayType): CaseListColumnDto {
         return CaseListColumnDto(
             title = "First name",
@@ -405,8 +381,7 @@ class CaseDefinitionServiceTest : BaseTest() {
             displayType = displayType,
             sortable = true,
             defaultSort = ColumnDefaultSort.ASC,
-            order = 1,
-            exportable = false
+            order = 1
         )
     }
 
@@ -418,8 +393,7 @@ class CaseDefinitionServiceTest : BaseTest() {
             displayType = displayType,
             sortable = true,
             defaultSort = null,
-            order = 2,
-            exportable = false
+            order = 2
         )
     }
 }
