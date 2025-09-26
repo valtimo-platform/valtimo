@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,61 +16,57 @@
 
 package com.ritense.valtimo.web.rest;
 
-import com.ritense.authorization.AuthorizationContext;
-import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition;
-import com.ritense.valtimo.operaton.domain.OperatonTask;
-import com.ritense.valtimo.operaton.dto.OperatonTaskDto;
-import com.ritense.valtimo.service.OperatonProcessService;
-import com.ritense.valtimo.service.OperatonTaskService;
+import com.ritense.valtimo.service.CamundaProcessService;
+import com.ritense.valtimo.service.CamundaTaskService;
 import com.ritense.valtimo.service.util.FormUtils;
 import com.ritense.valtimo.web.rest.dto.CustomTaskDto;
-import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.camunda.bpm.engine.FormService;
+import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.form.FormField;
+import org.camunda.bpm.engine.repository.ProcessDefinition;
+import org.camunda.bpm.engine.rest.dto.task.TaskDto;
+import org.camunda.bpm.engine.runtime.ProcessInstance;
+import org.camunda.bpm.engine.task.Task;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.operaton.bpm.engine.FormService;
-import org.operaton.bpm.engine.form.FormField;
-import org.operaton.bpm.engine.runtime.ProcessInstance;
 
 public abstract class AbstractTaskResource {
 
+    protected final TaskService taskService;
     final FormService formService;
-    final OperatonTaskService operatonTaskService;
-    private final OperatonProcessService operatonProcessService;
+    final CamundaTaskService camundaTaskService;
+    private final CamundaProcessService camundaProcessService;
 
     AbstractTaskResource(
+        final TaskService taskService,
         final FormService formService,
-        final OperatonTaskService operatonTaskService,
-        final OperatonProcessService operatonProcessService
+        final CamundaTaskService camundaTaskService,
+        final CamundaProcessService camundaProcessService
     ) {
+        this.taskService = taskService;
         this.formService = formService;
-        this.operatonTaskService = operatonTaskService;
-        this.operatonProcessService = operatonProcessService;
+        this.camundaTaskService = camundaTaskService;
+        this.camundaProcessService = camundaProcessService;
     }
 
     public CustomTaskDto createCustomTaskDto(String id, HttpServletRequest request) {
-        final OperatonTask task = operatonTaskService.findTaskById(id);
-        OperatonTaskDto taskDto = OperatonTaskDto.of(task);
+        final Task task = camundaTaskService.findTaskById(id);
+        TaskDto taskDto = TaskDto.fromEntity(task);
 
-        ProcessInstance processInstance = AuthorizationContext
-            .runWithoutAuthorization(
-                () -> operatonProcessService.findProcessInstanceById(taskDto.getProcessInstanceId()).orElseThrow()
-            );
-        OperatonProcessDefinition processDefinition = AuthorizationContext
-            .runWithoutAuthorization(
-                () -> operatonProcessService.findProcessDefinitionById(processInstance.getProcessDefinitionId())
-            );
+        ProcessInstance processInstance = camundaProcessService.findProcessInstanceById(taskDto.getProcessInstanceId()).orElseThrow();
+        ProcessDefinition processDefinition = camundaProcessService.findProcessDefinitionById(processInstance.getProcessDefinitionId());
 
-        Map<String, Object> variables = operatonTaskService.getVariables(id);
+        Map<String, Object> variables = taskService.getVariables(id);
         List<FormField> taskFormData = new ArrayList<>();
 
         String formLocation = null;
-        String formKey = formService.getTaskFormKey(taskDto.getProcessDefinitionId(), taskDto.getTaskDefinitionKey());
-        if (StringUtils.isBlank(formKey)) {
+        if (StringUtils.isBlank(taskDto.getFormKey())) {
             taskFormData = formService.getTaskFormData(id).getFormFields();
         } else {
-            formLocation = FormUtils.getFormLocation(formKey, request);
+            formLocation = FormUtils.getFormLocation(taskDto.getFormKey(), request);
         }
         return new CustomTaskDto(taskDto, taskFormData, variables, formLocation, processInstance, processDefinition);
     }

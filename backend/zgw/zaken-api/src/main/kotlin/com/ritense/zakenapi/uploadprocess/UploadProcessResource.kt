@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,7 @@
 
 package com.ritense.zakenapi.uploadprocess
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.case_.service.ActiveCaseDefinitionService
-import com.ritense.logging.LoggableResource
-import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.processdocument.service.DocumentDefinitionProcessLinkService
 import com.ritense.zakenapi.uploadprocess.UploadProcessService.Companion.DOCUMENT_UPLOAD
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,21 +25,17 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@SkipComponentScan
-@RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping("/api")
 class UploadProcessResource(
-    private val activeCaseDefinitionService: ActiveCaseDefinitionService,
-    private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
+    private val documentDefinitionProcessLinkService: DocumentDefinitionProcessLinkService,
 ) {
 
     @Deprecated("Marked for removal since 9.22.0")
-    @GetMapping("/v1/uploadprocess/case/{caseDefinitionName}/check-link")
+    @GetMapping("/v1/uploadprocess/case/{caseDefinitionKey}/check-link")
     fun checkCaseProcessLink(
-        @LoggableResource("documentDefinitionName") @PathVariable caseDefinitionName: String
+        @PathVariable caseDefinitionKey: String
     ): ResponseEntity<CheckLinkResponse> {
-        val caseDefinition =
-            runWithoutAuthorization { activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName) }
-        val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(caseDefinition.id, DOCUMENT_UPLOAD)
-        return ResponseEntity.ok(CheckLinkResponse(link != null))
+        val link = documentDefinitionProcessLinkService.getDocumentDefinitionProcessLink(caseDefinitionKey, DOCUMENT_UPLOAD)
+        return ResponseEntity.ok(CheckLinkResponse(link.isPresent))
     }
 }

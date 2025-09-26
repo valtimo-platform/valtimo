@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,12 @@
 
 package com.ritense.plugin.web.rest
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
@@ -24,14 +29,10 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.plugin.web.rest.converter.StringToActivityTypeConverter
 import com.ritense.plugin.web.rest.request.CreatePluginConfigurationDto
 import com.ritense.plugin.web.rest.request.UpdatePluginConfigurationDto
-import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valtimo.contract.json.Mapper
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import org.springframework.format.support.FormattingConversionService
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
@@ -69,8 +70,8 @@ internal class PluginConfigurationResourceTest {
 
     @Test
     fun `should get plugin configurations`() {
-        val properties1: ObjectNode = MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode
-        val properties2: ObjectNode = MapperSingleton.get().readTree("{\"other\": \"something\" }") as ObjectNode
+        val properties1: ObjectNode = ObjectMapper().readTree("{\"name\": \"whatever\" }") as ObjectNode
+        val properties2: ObjectNode = ObjectMapper().readTree("{\"other\": \"something\" }") as ObjectNode
         val plugin = PluginDefinition("key", "title", "description", "className")
         val plugin2 = PluginDefinition("key2", "title2", "description2", "className2")
         val pluginConfiguration = PluginConfiguration(PluginConfigurationId.newId(), "title", properties1, plugin)
@@ -90,8 +91,8 @@ internal class PluginConfigurationResourceTest {
 
     @Test
     fun `should get plugin configurations by category`() {
-        val properties1: ObjectNode = MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode
-        val properties2: ObjectNode = MapperSingleton.get().readTree("{\"other\": \"something\" }") as ObjectNode
+        val properties1: ObjectNode = ObjectMapper().readTree("{\"name\": \"whatever\" }") as ObjectNode
+        val properties2: ObjectNode = ObjectMapper().readTree("{\"other\": \"something\" }") as ObjectNode
         val plugin = PluginDefinition("key", "title", "description", "className")
         val plugin2 = PluginDefinition("key2", "title2", "description2", "className2")
         val pluginConfiguration = PluginConfiguration(PluginConfigurationId.newId(), "title", properties1, plugin)
@@ -113,7 +114,7 @@ internal class PluginConfigurationResourceTest {
     fun `should filter on plugins for activityType`() {
         whenever(pluginService.getPluginConfigurations(any())).thenReturn(listOf())
 
-        mockMvc.perform(get("/api/v1/plugin/configuration?activityType=bpmn:ServiceTask:start")
+        mockMvc.perform(get("/api/v1/plugin/configuration?activityType=bpmn:ServiceTask")
             .characterEncoding(StandardCharsets.UTF_8.name())
             .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andDo(print())
@@ -126,7 +127,7 @@ internal class PluginConfigurationResourceTest {
     fun `should not filter on plugins for rare activityType`() {
         whenever(pluginService.getPluginConfigurations(any())).thenReturn(listOf())
 
-        mockMvc.perform(get("/api/v1/plugin/configuration?activityType=bpmn:IntermediateLinkCatch:start")
+        mockMvc.perform(get("/api/v1/plugin/configuration?activityType=bpmn:IntermediateLinkCatch")
             .characterEncoding(StandardCharsets.UTF_8.name())
             .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andDo(print())
@@ -139,7 +140,7 @@ internal class PluginConfigurationResourceTest {
     fun `should respond with 400 bad request when filtering on non existing activityType`() {
         whenever(pluginService.getPluginConfigurations(any())).thenReturn(listOf())
 
-        mockMvc.perform(get("/api/v1/plugin/configuration?activityType=bpmn:ActivityTypeDoesntExist:start")
+        mockMvc.perform(get("/api/v1/plugin/configuration?activityType=bpmn:ActivityTypeDoesntExist")
             .characterEncoding(StandardCharsets.UTF_8.name())
             .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andDo(print())
@@ -190,24 +191,23 @@ internal class PluginConfigurationResourceTest {
 
     @Test
     fun `should save plugin configuration`() {
-        val properties: ObjectNode = MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode
+        val properties: ObjectNode = ObjectMapper().readTree("{\"name\": \"whatever\" }") as ObjectNode
         val plugin = PluginDefinition("key", "title", "description", "className")
         val pluginConfiguration = PluginConfiguration(PluginConfigurationId.newId(), "title", properties, plugin)
 
-        whenever(pluginService.createPluginConfiguration(any(), any(), any(), any())).thenReturn(pluginConfiguration)
+        whenever(pluginService.createPluginConfiguration(any(), any(), any())).thenReturn(pluginConfiguration)
 
         val pluginConfiguratieDto = CreatePluginConfigurationDto(
             "title",
             properties,
-            "key",
-            UUID.fromString("3ab43f1a-0154-4658-82b8-41527def0aee")
+            "key"
         )
 
         mockMvc.perform(
             post("/api/v1/plugin/configuration")
             .characterEncoding(StandardCharsets.UTF_8.name())
             .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .content(MapperSingleton.get().writeValueAsString(pluginConfiguratieDto))
+            .content(Mapper.INSTANCE.get().writeValueAsString(pluginConfiguratieDto))
             .accept(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(print())
@@ -231,7 +231,6 @@ internal class PluginConfigurationResourceTest {
                 jsonPath("$.pluginDefinition.fullyQualifiedClassName").doesNotExist())
 
         verify(pluginService).createPluginConfiguration(
-            PluginConfigurationId.existingId(UUID.fromString("3ab43f1a-0154-4658-82b8-41527def0aee")),
             "title",
             properties,
             "key")
@@ -239,11 +238,11 @@ internal class PluginConfigurationResourceTest {
 
     @Test
     fun `should update plugin configuration`() {
-        val properties: ObjectNode = MapperSingleton.get().readTree("{\"name\": \"whatever\" }") as ObjectNode
+        val properties: ObjectNode = ObjectMapper().readTree("{\"name\": \"whatever\" }") as ObjectNode
         val plugin = PluginDefinition("key", "title", "description", "className")
         val pluginConfigurationId = UUID.randomUUID()
         val pluginConfiguration = PluginConfiguration(PluginConfigurationId.existingId(pluginConfigurationId), "title", properties, plugin)
-        whenever(pluginService.updatePluginConfiguration(any(), any(), any(), any())).thenReturn(pluginConfiguration)
+        whenever(pluginService.updatePluginConfiguration(any(), any(), any())).thenReturn(pluginConfiguration)
 
         val pluginConfiguratieDto = UpdatePluginConfigurationDto(
             "title",
@@ -254,7 +253,7 @@ internal class PluginConfigurationResourceTest {
             put("/api/v1/plugin/configuration/$pluginConfigurationId")
                 .characterEncoding(StandardCharsets.UTF_8.name())
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(MapperSingleton.get().writeValueAsString(pluginConfiguratieDto))
+                .content(Mapper.INSTANCE.get().writeValueAsString(pluginConfiguratieDto))
                 .accept(MediaType.APPLICATION_JSON_VALUE)
         )
             .andDo(print())
@@ -276,7 +275,6 @@ internal class PluginConfigurationResourceTest {
                 jsonPath("$.pluginDefinition.fullyQualifiedClassName").doesNotExist())
 
         verify(pluginService).updatePluginConfiguration(
-            PluginConfigurationId.existingId(pluginConfigurationId),
             PluginConfigurationId.existingId(pluginConfigurationId),
             "title",
             properties)

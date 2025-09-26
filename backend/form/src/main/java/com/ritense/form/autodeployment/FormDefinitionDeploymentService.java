@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,14 @@
 
 package com.ritense.form.autodeployment;
 
-import static com.ritense.logging.LoggingContextKt.withLoggingContext;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.form.domain.FormDefinition;
+import com.ritense.form.domain.Mapper;
 import com.ritense.form.domain.event.FormsAutoDeploymentFinishedEvent;
 import com.ritense.form.domain.request.CreateFormDefinitionRequest;
 import com.ritense.form.repository.FormDefinitionRepository;
 import com.ritense.form.service.FormDefinitionService;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import com.ritense.logging.LoggableResource;
-import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +31,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.ResourcePatternUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class FormDefinitionDeploymentService {
 
@@ -49,60 +43,77 @@ public class FormDefinitionDeploymentService {
     private final FormDefinitionService formDefinitionService;
     private final FormDefinitionRepository formDefinitionRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final ObjectMapper objectMapper;
 
-    public FormDefinitionDeploymentService(
-        ResourceLoader resourceLoader, FormDefinitionService formDefinitionService,
-        FormDefinitionRepository formDefinitionRepository, ApplicationEventPublisher applicationEventPublisher,
-        ObjectMapper objectMapper
-    ) {
+    public FormDefinitionDeploymentService(ResourceLoader resourceLoader, FormDefinitionService formDefinitionService,
+        FormDefinitionRepository formDefinitionRepository, ApplicationEventPublisher applicationEventPublisher) {
         this.resourceLoader = resourceLoader;
         this.formDefinitionService = formDefinitionService;
         this.formDefinitionRepository = formDefinitionRepository;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.objectMapper = objectMapper;
     }
 
-    public Optional<FormDefinition> deploy(
-        @LoggableResource("formDefinitionName") String name,
-        String formDefinitionAsString,
-        CaseDefinitionId caseDefinitionId,
-        boolean readOnly
-    ) throws JsonProcessingException {
-        var rawFormDefinition = getJson(formDefinitionAsString);
-        var optionalFormDefinition = formDefinitionRepository.findByNameAndCaseDefinitionId(name, caseDefinitionId);
-        if (optionalFormDefinition.isPresent()) {
-            var existingFormDefinition = optionalFormDefinition.get();
-            if (!rawFormDefinition.equals(existingFormDefinition.getFormDefinition())) {
-                var formDefinition = formDefinitionService.modifyFormDefinition(
-                    existingFormDefinition.getId(),
-                    name,
-                    rawFormDefinition.toString(),
-                    readOnly
-                );
-                logger.info(
-                    "Modified existing form definition {} for case definition {}", name, caseDefinitionId.toString()
-                );
-                return Optional.of(formDefinition);
+    void deployAllFromResourceFiles() {
+        logger.info("Deploying all forms from {}", PATH);
+        ArrayList<FormDefinition> formDefinitions = new ArrayList<>();
+        final Resource[] resources = loadResources();
+        for (Resource resource : resources) {
+            try {
+                if (resource.getFilename() == null) {
+                    continue;
+                }
+                var name = getFormName(resource);
+                var rawFormDefinition = getJson(IOUtils.toString(resource.getInputStream(), UTF_8));
+                var optionalFormDefinition = formDefinitionRepository.findByName(name);
+                if (optionalFormDefinition.isPresent()) {
+                    var existingFormDefinition = optionalFormDefinition.get();
+                    if (!rawFormDefinition.equals(existingFormDefinition.getFormDefinition())) {
+                        var formDefinition = formDefinitionService.modifyFormDefinition(
+                            existingFormDefinition.getId(),
+                            name,
+                            rawFormDefinition.toString(),
+                            true
+                        );
+                        formDefinitions.add(formDefinition);
+                        logger.info("Modified existing form definition {}", name);
+                    }
+                } else {
+                    var formDefinition = formDefinitionService.createFormDefinition(
+                        new CreateFormDefinitionRequest(
+                            name,
+                            rawFormDefinition.toString(),
+                            true
+                        )
+                    );
+                    formDefinitions.add(formDefinition);
+                    logger.info("Deployed form definition {}", name);
+                }
+            } catch (IOException e) {
+                logger.error("Error while deploying form definition {}", getFormName(resource), e);
             }
-        } else {
-            var formDefinition = formDefinitionService.createFormDefinition(
-                caseDefinitionId,
-                new CreateFormDefinitionRequest(
-                    name,
-                    rawFormDefinition.toString(),
-                    readOnly
-                )
-            );
-            logger.info("Deployed form definition {} for case definition {}", name, caseDefinitionId.toString());
-            return Optional.of(formDefinition);
         }
 
-        return Optional.empty();
+        applicationEventPublisher.publishEvent(new FormsAutoDeploymentFinishedEvent(formDefinitions));
     }
 
     private JsonNode getJson(String rawJson) throws JsonProcessingException {
-        return objectMapper.readTree(rawJson);
+        return Mapper.INSTANCE.get().readTree(rawJson);
+    }
+
+    private String getFormName(Resource resource) {
+        String formName = resource.getFilename();
+        if (formName != null && formName.endsWith(".json")) {
+            formName = formName.substring(0, formName.length() - 5);
+        }
+        return formName;
+    }
+
+    private Resource[] loadResources() {
+        try {
+            return ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH);
+        } catch (IOException ioe) {
+            logger.error("Failed to load resources from " + PATH, ioe);
+            return new Resource[0];
+        }
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import com.ritense.form.domain.FormDefinition
 import com.ritense.objectenapi.service.ZaakObjectService
 import com.ritense.objectenapi.web.rest.result.ObjectDto
 import com.ritense.objectenapi.web.rest.result.ObjecttypeDto
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import com.ritense.plugin.service.PluginService
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -37,13 +36,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.net.URI
 import java.util.UUID
 
-@Controller
-@SkipComponentScan
-@RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping(value = ["/api"], produces = [MediaType.APPLICATION_JSON_VALUE])
 class ZaakObjectResource(
-    private val zaakObjectService: ZaakObjectService
+    val zaakObjectService: ZaakObjectService,
+    val pluginService: PluginService
 ) {
-    @GetMapping("/v1/document/{documentId}/zaak/objecttype")
+    @GetMapping(value = ["/v1/document/{documentId}/zaak/objecttype"])
     fun getZaakObjecttypes(
         @PathVariable(name = "documentId") documentId: UUID
     ): ResponseEntity<List<ObjecttypeDto>> {
@@ -53,7 +51,7 @@ class ZaakObjectResource(
         return ResponseEntity.ok(zaakObjectTypes)
     }
 
-    @GetMapping("/v1/document/{documentId}/zaak/object")
+    @GetMapping(value = ["/v1/document/{documentId}/zaak/object"])
     fun getZaakObjecten(
         @PathVariable(name = "documentId") documentId: UUID,
         @RequestParam(name = "typeUrl") typeUrl: URI
@@ -67,7 +65,7 @@ class ZaakObjectResource(
         message = "The documentId is not mandatory anymore",
         replaceWith = ReplaceWith("api/v1/object/form")
     )
-    @GetMapping("/v1/document/{documentId}/zaak/object/form")
+    @GetMapping(value = ["/v1/document/{documentId}/zaak/object/form"])
     fun getZaakObjecten(
         @RequestParam(name = "objectUrl") objectUrl: URI
     ): ResponseEntity<FormDefinition>{
@@ -75,7 +73,7 @@ class ZaakObjectResource(
         return form?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 
-    @PostMapping("/v1/object")
+    @PostMapping(value = ["/v1/object"])
     fun createZaakObject(
         @RequestParam(name = "objectManagementId") objectManagementId: UUID,
         @RequestBody data: JsonNode
@@ -90,7 +88,7 @@ class ZaakObjectResource(
         } ?: ResponseEntity.notFound().build()
     }
 
-    @PutMapping("/v1/object")
+    @PutMapping(value = ["/v1/object"])
     fun updateZaakObject(
         @RequestParam(name = "objectManagementId") objectManagementId: UUID,
         @RequestParam(name = "objectUrl") objectUrl: URI,
@@ -106,7 +104,7 @@ class ZaakObjectResource(
         } ?: ResponseEntity.notFound().build()
     }
 
-    @DeleteMapping("/v1/object")
+    @DeleteMapping(value = ["/v1/object"])
     fun deleteZaakObject(
         @RequestParam(name = "objectManagementId") objectManagementId: UUID,
         @RequestParam(name = "objectId") objectId: UUID? = null,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,35 +16,30 @@
 
 package com.ritense.valtimo.security.config;
 
-import static org.springframework.http.HttpMethod.GET;
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException;
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 
 public class TaskHttpSecurityConfigurer implements HttpSecurityConfigurer {
 
+    private static final String TASK_ACCESS_PERMISSION = "hasAuthority('ROLE_USER') and hasPermission(#taskId, 'taskAccess')";
 
     @Override
     public void configure(HttpSecurity http) {
         try {
-            http.authorizeHttpRequests(requests ->
-                requests.requestMatchers(antMatcher(GET, "/api/v1/task")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v2/task")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/assign/batch-assign")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/batch-complete")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/task/{taskId}")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/{taskId}/assign")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/task/{taskId}/comments")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/{taskId}/complete")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/{taskId}/unassign")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v1/task/{taskId}/candidate-user")).authenticated()
-                    .requestMatchers(antMatcher(GET, "/api/v2/task/{taskId}/candidate-user")).authenticated()
-                    .requestMatchers(antMatcher(POST, "/api/v1/task/{taskId}/set-due-date")).authenticated()
-
-            );
+            http.authorizeRequests()
+                .antMatchers(GET, "/api/v1/task").hasAuthority(USER)
+                .antMatchers(POST, "/api/v1/task/assign/batch-assign").hasAuthority(USER)
+                .antMatchers(POST, "/api/v1/task/batch-complete").hasAuthority(USER)
+                .antMatchers(GET, "/api/v1/task/{taskId}").access(TASK_ACCESS_PERMISSION)
+                .antMatchers(POST, "/api/v1/task/{taskId}/assign").access(TASK_ACCESS_PERMISSION)
+                .antMatchers(GET, "/api/v1/task/{taskId}/comments").access(TASK_ACCESS_PERMISSION)
+                .antMatchers(POST, "/api/v1/task/{taskId}/complete").access(TASK_ACCESS_PERMISSION)
+                .antMatchers(POST, "/api/v1/task/{taskId}/unassign").access(TASK_ACCESS_PERMISSION)
+                .antMatchers(GET, "/api/v1/task/{taskId}/candidate-user").access(TASK_ACCESS_PERMISSION);
         } catch (Exception e) {
             throw new HttpConfigurerConfigurationException(e);
         }

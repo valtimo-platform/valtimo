@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,16 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * OpenAPI configuration.
  */
-@AutoConfiguration
-@EnableConfigurationProperties(OpenApiProperties.class)
+@Configuration
+@EnableConfigurationProperties(value = {OpenApiProperties.class})
 public class OpenApiAutoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenApiAutoConfiguration.class);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
 
 package com.ritense.processdocument.domain;
 
-import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
-
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import java.lang.reflect.InvocationTargetException;
-import org.operaton.bpm.engine.delegate.DelegateExecution;
-import org.operaton.bpm.engine.impl.persistence.entity.ExecutionEntity;
+import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotNull;
 
 public interface ProcessDefinitionKey {
 
@@ -37,7 +36,7 @@ public interface ProcessDefinitionKey {
             final String id = executionEntity.getProcessDefinition().getKey();
             target = targetClass.getConstructor(String.class).newInstance(id);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new IllegalArgumentException("Cannot create instance of ProcessInstanceId class - " + targetClass);
+            throw new IllegalArgumentException("Cannot create instance of ProcessInstanceId class - " + targetClass.toString());
         }
         return target;
     }

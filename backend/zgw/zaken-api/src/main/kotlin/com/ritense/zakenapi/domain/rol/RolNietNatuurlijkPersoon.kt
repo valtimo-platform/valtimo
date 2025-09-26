@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,15 @@
 package com.ritense.zakenapi.domain.rol
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class RolNietNatuurlijkPersoon(
     val annIdentificatie: String? = null,
     val innNnpId: String? = null,
     val statutaireNaam: String? = null,
-    @JsonProperty("innRechtsvorm")
-    private val innRechtsvormString: String? = null,
-    val bezoekadres: String? = null,
-    val subVerblijfBuitenland: SubVerblijfBuitenland? = null,
-    val kvkNummer: String? = null,
-    val vestigingsNummer: String? = null,
+    val innRechtsvorm: String? = null,
+    val bezoekadres: String? = null
 ) : BetrokkeneIdentificatie() {
-
-    val innRechtsvorm = innRechtsvormString?.let {
-        InnRechtsvormEnum.entries.find { it.value == innRechtsvormString }
-    }?.value
 
     init {
         require(!annIdentificatie.isNullOrBlank() || !innNnpId.isNullOrBlank()) {

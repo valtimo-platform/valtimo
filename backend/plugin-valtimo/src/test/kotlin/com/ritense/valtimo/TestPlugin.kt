@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,21 @@ package com.ritense.valtimo
 
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
-import com.ritense.plugin.annotation.PluginActionProperty
-import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
+import com.ritense.plugin.domain.ActivityType.SERVICE_TASK_START
 
 @Plugin(
     key = "test-plugin",
     title = "Test plugin",
     description = "This is a test plugin only available in tests"
 )
-class TestPlugin {
+class TestPlugin() {
     @PluginAction(
         key = "test-action",
         title = "Test action",
         description = "This is a test action",
         activityTypes = [SERVICE_TASK_START]
     )
-    fun testAction(@PluginActionProperty attachmentIds: List<String>?) {
-        Companion.attachmentIds = attachmentIds
-    }
-
-    companion object {
-        var attachmentIds: List<String>? = null
+    fun testAction() {
+        //do nothing
     }
 }

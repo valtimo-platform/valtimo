@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,17 @@
 
 package com.ritense.verzoek
 
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.case.service.CaseDefinitionService
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
-import com.ritense.notificatiesapi.NotificatiesApiListener
 import com.ritense.notificatiesapi.NotificatiesApiPlugin
-import com.ritense.notificatiesapi.domain.Abonnement
-import com.ritense.objectmanagement.service.ObjectManagementService
-import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginEvent
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
-import com.ritense.plugin.domain.PluginConfigurationId
-import com.ritense.plugin.service.PluginService
 import com.ritense.verzoek.domain.CopyStrategy
 import com.ritense.verzoek.domain.VerzoekProperties
 import com.ritense.zgw.Rsin
-import jakarta.validation.Valid
-import jakarta.validation.ValidationException
-import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
-import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.PREFIX as PV_PREFIX
+import java.util.UUID
+import javax.validation.ValidationException
 
 @Plugin(
     key = "verzoek",
@@ -44,14 +34,14 @@ import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.P
     description = "Handles verzoeken"
 )
 class VerzoekPlugin(
-    private val caseDefinitionService: CaseDefinitionService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
-    private val objectManagementService: ObjectManagementService,
-    private val pluginService: PluginService,
-) : NotificatiesApiListener {
+) {
 
     @PluginProperty(key = "notificatiesApiPluginConfiguration", secret = false)
     lateinit var notificatiesApiPluginConfiguration: NotificatiesApiPlugin
+
+    @PluginProperty(key = "objectManagementId", secret = false)
+    lateinit var objectManagementId: UUID
 
     @PluginProperty(key = "processToStart", secret = false)
     lateinit var processToStart: String
@@ -59,7 +49,6 @@ class VerzoekPlugin(
     @PluginProperty(key = "rsin", secret = false)
     lateinit var rsin: Rsin
 
-    @Valid
     @PluginProperty(key = "verzoekProperties", secret = false)
     lateinit var verzoekProperties: List<VerzoekProperties>
 
@@ -69,61 +58,12 @@ class VerzoekPlugin(
             .filter { it.copyStrategy == CopyStrategy.SPECIFIED }
             .forEach { property ->
                 property.mapping?.forEach {
-                    if (!it.target.startsWith(DOC_PREFIX) && !it.target.startsWith(PV_PREFIX)) {
+                    if (!it.target.startsWith("doc:")) {
                         throw ValidationException("Failed to set mapping. Unknown prefix '${it.target.substringBefore(":")}:'.")
                     }
-
-                    val documentDefinitions = runWithoutAuthorization {
-                        val caseDefinitions = caseDefinitionService.getCaseDefinitions(
-                            caseDefinitionKey = property.caseDefinitionKey,
-                            caseDefinitionVersionTag = property.caseDefinitionVersionTag,
-                        )
-                        require(caseDefinitions.isNotEmpty()) {
-                            "No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'."
-                        }
-                        caseDefinitions.map { caseDefinition ->
-                            documentDefinitionService.findByCaseDefinitionId(
-                                caseDefinition.id
-                            ).get()
-                        }
-                    }
-
-                    if (it.target.startsWith(DOC_PREFIX)) {
-                        val documentPath = it.target.substringAfter(delimiter = ":")
-                        runWithoutAuthorization {
-                            documentDefinitions.forEach { documentDefinition ->
-                                documentDefinitionService.validateJsonPointer(
-                                    documentDefinition.id.name(),
-                                    documentPath
-                                )
-                            }
-                        }
-                    }
+                    val documentPath = it.target.substringAfter(delimiter = ":")
+                    documentDefinitionService.validateJsonPointer(property.caseDefinitionName, documentPath)
                 }
             }
-    }
-
-    override fun getNotificatiesApiPlugin(): NotificatiesApiPlugin {
-        return notificatiesApiPluginConfiguration
-    }
-
-    override fun getKanaalFilters(): List<Abonnement.Kanaal> {
-        return verzoekProperties.map { verzoekProperty ->
-            val objectManagement = objectManagementService.getById(verzoekProperty.objectManagementId)
-                ?: throw IllegalStateException("Object management not found for portaaltaak")
-
-            val objecttypenApiPlugin = pluginService.createInstance(
-                PluginConfigurationId
-                    .existingId(objectManagement.objecttypenApiPluginConfigurationId)
-            ) as ObjecttypenApiPlugin
-
-            Abonnement.Kanaal(
-                naam = "objecten",
-                filters = mapOf(
-                    "objectType" to "${objecttypenApiPlugin.url}objecttypes/${objectManagement.objecttypeId}",
-                    "actie" to "create"
-                )
-            )
-        }
     }
 }

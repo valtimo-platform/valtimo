@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@
 
 package com.ritense.valtimo.web.rest.dto;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class FlowNodeMigrationDTO {
+public class FlowNodeMigrationDTO implements Serializable {
 
     private Map<String, String> sourceFlowNodeMap;
     private Map<String, String> targetFlowNodeMap;

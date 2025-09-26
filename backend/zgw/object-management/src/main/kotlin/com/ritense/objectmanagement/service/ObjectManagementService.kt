@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,53 +18,34 @@ package com.ritense.objectmanagement.service
 
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.Comparator
-import com.ritense.objectenapi.client.Comparator.EQUAL_TO
-import com.ritense.objectenapi.client.Comparator.GREATER_THAN_OR_EQUAL_TO
-import com.ritense.objectenapi.client.Comparator.LOWER_THAN_OR_EQUAL_TO
-import com.ritense.objectenapi.client.Comparator.STRING_CONTAINS
 import com.ritense.objectenapi.client.ObjectSearchParameter
-import com.ritense.objectenapi.client.ObjectWrapper
+import com.ritense.objectenapi.client.ObjectsList
 import com.ritense.objectmanagement.domain.ObjectManagement
 import com.ritense.objectmanagement.domain.ObjectsListRowDto
-import com.ritense.objectmanagement.domain.search.SearchRequestValue
-import com.ritense.objectmanagement.domain.search.SearchWithConfigFilter
 import com.ritense.objectmanagement.domain.search.SearchWithConfigRequest
 import com.ritense.objectmanagement.repository.ObjectManagementRepository
 import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
-import com.ritense.search.domain.DataType.BOOLEAN
-import com.ritense.search.domain.DataType.DATE
-import com.ritense.search.domain.DataType.DATETIME
-import com.ritense.search.domain.DataType.NUMBER
-import com.ritense.search.domain.DataType.TEXT
-import com.ritense.search.domain.DataType.TIME
-import com.ritense.search.domain.FieldType.MULTI_SELECT_DROPDOWN
-import com.ritense.search.domain.FieldType.RANGE
-import com.ritense.search.domain.FieldType.SINGLE
-import com.ritense.search.domain.FieldType.SINGLE_SELECT_DROPDOWN
-import com.ritense.search.domain.FieldType.TEXT_CONTAINS
-import com.ritense.search.domain.LEGACY_OWNER_TYPE
-import com.ritense.search.domain.SearchFieldV2
+import com.ritense.search.domain.DataType
+import com.ritense.search.domain.FieldType
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.service.SearchListColumnService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.util.UUID
+import mu.KLogger
+import mu.KotlinLogging
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZonedDateTime
-import java.util.UUID
 
 @Transactional(readOnly = true)
-@Service
-@SkipComponentScan
 class ObjectManagementService(
     private val objectManagementRepository: ObjectManagementRepository,
     private val pluginService: PluginService,
@@ -73,8 +54,7 @@ class ObjectManagementService(
 ) {
 
     @Transactional
-    fun create(objectManagement: ObjectManagement): ObjectManagement {
-        logger.info { "Create $objectManagement" }
+    fun create(objectManagement: ObjectManagement): ObjectManagement =
         with(objectManagementRepository.findByTitle(objectManagement.title)) {
             if (this != null) {
                 throw ResponseStatusException(
@@ -82,41 +62,33 @@ class ObjectManagementService(
                     "This title already exists. Please choose another title"
                 )
             }
-            val result = objectManagementRepository.save(objectManagement)
-            return result
+            objectManagementRepository.save(objectManagement)
         }
-    }
 
     @Transactional
-    fun update(objectManagement: ObjectManagement): ObjectManagement {
-        logger.info { "Update $objectManagement" }
+    fun update(objectManagement: ObjectManagement): ObjectManagement =
         with(objectManagementRepository.findByTitle(objectManagement.title)) {
-            val result = if (this != null && objectManagement.id != id) {
+            if (this != null && objectManagement.id != id) {
                 objectManagementRepository.save(objectManagement.copy(id = this.id))
             } else {
                 objectManagementRepository.save(objectManagement)
             }
-            return result
         }
-    }
 
     fun getById(id: UUID): ObjectManagement? = objectManagementRepository.findByIdOrNull(id)
 
-    fun getByTitle(title: String): ObjectManagement? = objectManagementRepository.findByTitle(title)
-
-    fun getAll(): List<ObjectManagement> = objectManagementRepository.findAll().sortedBy { it.title }
+    fun getAll(): List<ObjectManagement> = objectManagementRepository.findAll()
 
     @Transactional
-    fun deleteById(id: UUID) {
-        logger.info { "Delete by id=$id" }
-        objectManagementRepository.deleteById(id)
-    }
+    fun deleteById(id: UUID) = objectManagementRepository.deleteById(id)
 
-    @Transactional
     fun getObjects(id: UUID, pageable: Pageable): PageImpl<ObjectsListRowDto> {
-        logger.debug { "Get objects id=$id pageable=$pageable" }
         val objectManagement = getById(id) ?: let {
-            throw IllegalArgumentException("The requested Id is not configured as a object management configuration. The requested id was: $id")
+            logger.info {
+                "The requested Id is not configured as a objectnamagement configuration. " +
+                    "The requested id was: $id"
+            }
+            throw NotFoundException()
         }
 
         val objectTypePluginInstance = getObjectTypenApiPlugin(objectManagement.objecttypenApiPluginConfigurationId)
@@ -124,10 +96,10 @@ class ObjectManagementService(
         val objectenPluginInstance = getObjectenApiPlugin(objectManagement.objectenApiPluginConfigurationId)
 
         val objectsList = objectenPluginInstance.getObjectsByObjectTypeId(
-            objecttypesApiUrl = objectTypePluginInstance.url,
-            objectsApiUrl = objectenPluginInstance.url,
-            objecttypeId = objectManagement.objecttypeId,
-            pageable = pageable
+            objectTypePluginInstance.url,
+            objectenPluginInstance.url,
+            objectManagement.objecttypeId,
+            pageable
         )
 
         val objectsListDto = objectsList.results.map {
@@ -135,202 +107,156 @@ class ObjectManagementService(
                 it.url.toString(), listOf(
                     ObjectsListRowDto.ObjectsListItemDto("objectUrl", it.url),
                     ObjectsListRowDto.ObjectsListItemDto("recordIndex", it.record.index),
-                )
+
+                    )
             )
         }
 
         return PageImpl(objectsListDto, pageable, objectsList.count.toLong())
     }
 
-    @Transactional
     fun getObjectsWithSearchParams(
         searchWithConfigRequest: SearchWithConfigRequest,
         id: UUID,
         pageable: Pageable
     ): PageImpl<ObjectsListRowDto> {
-        logger.debug {
-            "Get objects with searchParams searchWithConfigRequest=$searchWithConfigRequest id=$id pageable=$pageable"
+        val objectManagement = getById(id) ?: let {
+            logger.info {
+                "The requested Id is not configured as a objectnamagement configuration. " +
+                    "The requested id was: $id"
+            }
+            throw NotFoundException()
         }
-        val objectManagement = getById(id)
-            ?: throw IllegalStateException("The requested Id is not configured as a object management configuration. The requested id was: $id")
 
-        val searchFieldList = searchFieldV2Service.findAllByOwnerTypeAndOwnerId(LEGACY_OWNER_TYPE, id.toString())
+        val searchFieldList = searchFieldV2Service.findAllByOwnerId(id.toString())!!
 
         val searchDtoList = searchFieldList.flatMap { searchField ->
             searchWithConfigRequest.otherFilters
                 .filter { otherFilter -> otherFilter.key == searchField.key }
-                .flatMap { otherFilter -> mapToObjectSearchParameters(searchField, otherFilter) }
+                .flatMap { otherFilter ->
+                    if (searchField.fieldType != FieldType.RANGE) {
+                        if (otherFilter.values.size > 1) {
+                            throw IllegalArgumentException("The objects api does not support the multiselect options")
+                        }
+                        otherFilter.values.flatMap { value ->
+                            mapToObjectSearchParameter(searchField.key, searchField.fieldType, value.value, searchField.dataType)
+                        }
+                    } else {
+                        mapToObjectSearchParameter(
+                            searchField.key,
+                            searchField.fieldType,
+                            listOf(otherFilter.rangeFrom?.value, otherFilter.rangeTo?.value),
+                            searchField.dataType
+                        )
+                    }
+                }
         }
 
-        val objectsList = getObjectsWithSearchParams(objectManagement, searchDtoList, pageable)
-        val objectsListDto = mapToObjectListRowDto(objectsList.toList(), id)
-        return PageImpl(objectsListDto, pageable, objectsList.totalElements)
-    }
-
-    fun getObjectsWithSearchParams(
-        objectManagement: ObjectManagement,
-        searchParameters: List<ObjectSearchParameter>,
-        pageable: Pageable
-    ): PageImpl<ObjectWrapper> {
-        logger.debug {
-            "Get objects with searchParams objectManagement=$objectManagement searchParameters=$searchParameters pageable=$pageable"
-        }
-        val searchString = ObjectSearchParameter.toQueryParameter(searchParameters)
+        val searchString = ObjectSearchParameter.toQueryParameter(searchDtoList)
 
         val objectTypePluginInstance = getObjectTypenApiPlugin(objectManagement.objecttypenApiPluginConfigurationId)
 
         val objectenPluginInstance = getObjectenApiPlugin(objectManagement.objectenApiPluginConfigurationId)
 
         val objectsList = objectenPluginInstance.getObjectsByObjectTypeIdWithSearchParams(
-            objecttypesApiUrl = objectTypePluginInstance.url,
-            objecttypeId = objectManagement.objecttypeId,
-            searchString = searchString,
-            pageable = pageable
+            objectTypePluginInstance.url,
+            objectManagement.objecttypeId,
+            searchString,
+            pageable
         )
 
-        return PageImpl(objectsList.results, pageable, objectsList.count.toLong())
+        val objectsListDto = mapToObjectListRowDto(objectsList, id)
+
+        return PageImpl(objectsListDto, pageable, objectsList.count.toLong())
     }
 
     private fun mapToObjectListRowDto(
-        objectsList: List<ObjectWrapper>,
+        objectsList: ObjectsList,
         objectManagementId: UUID
     ): List<ObjectsListRowDto> {
         val listColumns = searchListColumnService.findByOwnerId(objectManagementId.toString())
-        return objectsList.map { objectApiObject ->
-            val listRowDto = listColumns?.map { listColumn ->
-                if (!listColumn.path.startsWith("object:/") && !listColumn.path.startsWith("/")) {
-                    throw IllegalArgumentException("Unknown list column path prefix in: '${listColumn.path}'")
-                }
-
+        return objectsList.results.map {objects ->
+            val listRowDto = listColumns?.map {
+                listColumn ->
                 ObjectsListRowDto.ObjectsListItemDto(
                     listColumn.key,
-                    objectApiObject.record.data?.at(listColumn.path.substringAfter(":"))
+                    objects.record.data?.at(listColumn.path)
                 )
             }
-            ObjectsListRowDto(objectApiObject.uuid.toString(), listRowDto!!)
-        }
-    }
-
-    private fun mapToObjectSearchParameters(
-        searchField: SearchFieldV2,
-        otherFilter: SearchWithConfigFilter,
-    ): List<ObjectSearchParameter> {
-        if (otherFilter.values.size > 1) {
-            throw IllegalArgumentException("The objects api does not support the multiselect options")
-        }
-
-        return when (searchField.fieldType) {
-            RANGE -> {
-                val searchGte = mapToObjectSearchParameter(
-                    searchField,
-                    GREATER_THAN_OR_EQUAL_TO,
-                    otherFilter.rangeFrom
-                )
-                val searchLte = mapToObjectSearchParameter(
-                    searchField,
-                    LOWER_THAN_OR_EQUAL_TO,
-                    otherFilter.rangeTo
-                )
-                listOfNotNull(searchGte, searchLte)
-            }
-
-            SINGLE ->
-                otherFilter.values.mapNotNull { value ->
-                    if (searchField.dataType == TEXT || searchField.dataType == BOOLEAN) {
-                        // Note: Implementations assume that TEXT + SINGLE should do a STRING_CONTAINS search
-                        // Note: Searching for BOOLEAN types in the Objects API only works when using STRING_CONTAINS
-                        mapToObjectSearchParameter(searchField, STRING_CONTAINS, value)
-                    } else {
-                        mapToObjectSearchParameter(searchField, EQUAL_TO, value)
-                    }
-                }
-
-            TEXT_CONTAINS ->
-                otherFilter.values.mapNotNull { value ->
-                    mapToObjectSearchParameter(searchField, STRING_CONTAINS, value)
-                }
-
-            SINGLE_SELECT_DROPDOWN ->
-                otherFilter.values.mapNotNull { value ->
-                    mapToObjectSearchParameter(searchField, EQUAL_TO, value)
-                }
-
-            MULTI_SELECT_DROPDOWN ->
-                throw IllegalArgumentException("The objects api does not support the multiselect options")
-
-            else ->
-                throw IllegalArgumentException("Unknown search field type '${searchField.fieldType}'")
+            ObjectsListRowDto(objects.uuid.toString(), listRowDto!!)
         }
     }
 
     private fun mapToObjectSearchParameter(
-        searchField: SearchFieldV2,
-        comparator: Comparator,
-        value: SearchRequestValue?
-    ): ObjectSearchParameter? {
-        return if (value?.value == null) {
-            null
-        } else {
-            ObjectSearchParameter(
-                mapToObjectApiPath(searchField.path),
-                comparator,
-                castValueToDataType(searchField, value)
+        key: String,
+        fieldType: FieldType,
+        value: Any,
+        dataType: DataType
+    ): List<ObjectSearchParameter> {
+        return when (fieldType) {
+            FieldType.TEXT_CONTAINS -> listOf(
+                ObjectSearchParameter(
+                    key,
+                    Comparator.STRING_CONTAINS,
+                    castValueToDataType(dataType, value)
+                )
+            )
+
+            FieldType.RANGE -> {
+                (value as List<Any?>).mapIndexed { index, rangeValue ->
+                    if (rangeValue != null) {
+                        ObjectSearchParameter(
+                            key,
+                            if(index == 0) Comparator.GREATER_THAN_OR_EQUAL_TO else Comparator.LOWER_THAN_OR_EQUAL_TO,
+                            castValueToDataType(dataType, rangeValue)
+                        )
+                    } else {
+                        null
+                    }
+                }.filterNotNull()
+            }
+
+            FieldType.MULTI_SELECT_DROPDOWN -> {
+                throw IllegalArgumentException("The objects api does not support the multiselect options")
+            }
+
+            FieldType.SINGLE_SELECT_DROPDOWN -> listOf(
+                ObjectSearchParameter(key, Comparator.EQUAL_TO, castValueToDataType(dataType, value))
+            )
+
+            FieldType.SINGLE -> listOf(
+                ObjectSearchParameter(key, Comparator.STRING_CONTAINS, castValueToDataType(dataType, value))
             )
         }
     }
 
-    private fun mapToObjectApiPath(jsonPointerPath: String): String {
-        if (!jsonPointerPath.startsWith("object:/") && !jsonPointerPath.startsWith("/")) {
-            throw IllegalArgumentException("Unknown search path prefix in: '${jsonPointerPath}'")
-        }
-        return jsonPointerPath
-            .substringAfter("object:")
-            .substringAfter("/")
-            .replace("/", "__")
-    }
-
-    private fun castValueToDataType(searchField: SearchFieldV2, searchRequestValue: SearchRequestValue): String {
-        val value = searchRequestValue.value!!
-        return when (searchField.dataType) {
-            TEXT -> value as String
-            NUMBER -> if (value is String) value else (value as Number).toString()
-            BOOLEAN -> if (value is String) value else (value as Boolean).toString()
-            DATE -> parseDate(value)
-            DATETIME -> parseDatetime(value, searchField)
-            TIME -> parseTime(value, searchField)
-        }
-    }
-
-    private fun parseDate(value: Any): String {
-        return if (value is String) {
-            LocalDate.parse(value).toString()
-        } else {
-            (value as LocalDate).toString()
-        }
-    }
-
-    private fun parseDatetime(value: Any, searchField: SearchFieldV2): String {
-        return if (value is String) {
-            val dateTimeValue = ZonedDateTime.parse(value)
-            if (searchField.fieldType == RANGE) {
-                // Note: Objects API doesn't support field type 'RANGE' with data type 'DATETIME'
-                dateTimeValue.toLocalDate().toString()
-            } else {
-                dateTimeValue.toString()
+    fun castValueToDataType(dataType: DataType, value: Any): String {
+        return when (dataType) {
+            DataType.TEXT -> value as String
+            DataType.NUMBER -> {
+                value as Number
+                return value.toString()
             }
-        } else {
-            (value as ZonedDateTime).toString()
-        }
-    }
 
-    private fun parseTime(value: Any, searchField: SearchFieldV2): String {
-        return if (searchField.fieldType == RANGE) {
-            throw IllegalStateException("Objects API doesn't support field type 'RANGE' with data type 'TIME'")
-        } else if (value is String) {
-            LocalTime.parse(value).toString()
-        } else {
-            (value as LocalTime).toString()
+            DataType.BOOLEAN -> {
+                value as Boolean
+                return value.toString()
+            }
+
+            DataType.DATE -> {
+                value as LocalDate
+                return value.toString()
+            }
+            DataType.DATE_TIME -> {
+                value as LocalDateTime
+                return value.toString()
+            }
+            DataType.TIME -> {
+                value as LocalTime
+                return value.toString()
+            }
         }
+
     }
 
     private fun getObjectenApiPlugin(id: UUID) = pluginService
@@ -345,7 +271,8 @@ class ObjectManagementService(
 
     fun findByObjectTypeId(id: String) = objectManagementRepository.findByObjecttypeId(id)
 
+
     companion object {
-        private val logger = KotlinLogging.logger {}
+        private val logger: KLogger = KotlinLogging.logger {}
     }
 }

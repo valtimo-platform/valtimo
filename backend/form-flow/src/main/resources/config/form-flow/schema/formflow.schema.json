@@ -1,9 +1,10 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "formflow.schema",
+    "$id": "http://json-schema.org/draft-07/schema#",
     "title": "Form flow definition",
     "description": "Representation of a form flow definition",
     "type": "object",
+    "additionalProperties": false,
     "properties": {
         "startStep": {
             "type": "string",
@@ -19,13 +20,8 @@
                         "type": "string",
                         "description": "The identifying human readable key of the step"
                     },
-                    "title": {
-                        "type": "string",
-                        "description": "The title of the step"
-                    },
                     "type": {
                         "type": "object",
-                        "description": "The type of form that should be displayed",
                         "properties": {
                             "name": {
                                 "type": "string",
@@ -47,14 +43,6 @@
                         "items": {
                             "type": "string",
                             "description": "An expression that is executed when opening the step"
-                        }
-                    },
-                    "onBack": {
-                        "type": "array",
-                        "description": "An array of expressions which are executed in order when navigating to the previous step",
-                        "items": {
-                            "type": "string",
-                            "description": "An expression that is executed when going to the previous step"
                         }
                     },
                     "onComplete": {
@@ -90,8 +78,7 @@
                     }
                 },
                 "required": [
-                    "key",
-                    "type"
+                    "key"
                 ]
             },
             "minItems": 1,

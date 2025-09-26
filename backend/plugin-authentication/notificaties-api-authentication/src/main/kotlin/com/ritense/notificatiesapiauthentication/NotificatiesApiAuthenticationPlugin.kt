@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,9 @@
 package com.ritense.notificatiesapiauthentication
 
 import com.ritense.notificatiesapi.NotificatiesApiAuthentication
-import com.ritense.notificatiesapiauthentication.token.NotificatiesApiPluginTokenGeneratorService
+import com.ritense.openzaak.service.TokenGeneratorService
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginProperty
-import com.ritense.plugin.domain.PluginConfigurationId
-import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
@@ -33,14 +31,12 @@ import reactor.core.publisher.Mono
     description = "Plugin used to provide authentication to Notificaties API based on a JSON Web Token"
 )
 class NotificatiesApiAuthenticationPlugin(
-    pluginConfigurationId: PluginConfigurationId,
-    private val tokenGeneratorService: NotificatiesApiPluginTokenGeneratorService
-) : NotificatiesApiAuthentication {
-    override val configurationId = pluginConfigurationId
+    val tokenGeneratorService: TokenGeneratorService
+)
+    : NotificatiesApiAuthentication {
 
     @PluginProperty(key = "clientId", secret = false, required = true)
     lateinit var clientId: String
-
     @PluginProperty(key = "clientSecret", secret = true, required = true)
     lateinit var clientSecret: String
 
@@ -53,15 +49,5 @@ class NotificatiesApiAuthenticationPlugin(
             headers.setBearerAuth(generatedToken)
         }.build()
         return next.exchange(filteredRequest)
-    }
-
-    override fun applyAuth(builder: RestClient.Builder): RestClient.Builder {
-        val generatedToken = tokenGeneratorService.generateToken(
-            clientSecret,
-            clientId
-        )
-        return builder.defaultHeaders { headers ->
-            headers.setBearerAuth(generatedToken)
-        }
     }
 }

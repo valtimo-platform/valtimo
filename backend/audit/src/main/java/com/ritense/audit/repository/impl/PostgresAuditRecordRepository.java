@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,9 @@
 package com.ritense.audit.repository.impl;
 
 import com.ritense.audit.domain.AuditRecord;
+import com.ritense.audit.domain.AuditRecordId;
 import com.ritense.audit.repository.AuditRecordRepository;
+import com.ritense.valtimo.contract.audit.AuditEvent;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -30,17 +32,17 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 @NoRepositoryBean
-public interface PostgresAuditRecordRepository extends AuditRecordRepository<AuditRecord> {
+public interface PostgresAuditRecordRepository extends AuditRecordRepository<AuditRecord, AuditRecordId> {
 
     @Query(" SELECT  ar " +
         "    FROM    AuditRecord ar " +
         "    WHERE   className = :className ")
     List<AuditRecord> findAuditRecordsByEvent(@Param("className") String className);
 
-    @Query(value = " SELECT  ar " +
+    @Query(value=" SELECT  ar " +
         "    FROM    AuditRecord ar " +
         "    WHERE   className = :className " +
-        "    AND     ar.auditEvent ->> :key = :value ", nativeQuery = true)
+        "    AND     ar.auditEvent ->> :key = :value ", nativeQuery=true)
     List<AuditRecord> findAuditRecordsByEventAndProperty(
         @Param("className") String className,
         @Param("key") String key,
@@ -53,7 +55,7 @@ public interface PostgresAuditRecordRepository extends AuditRecordRepository<Aud
         "    AND     documentId = :documentId " +
         "    ORDER BY ar.metaData.occurredOn DESC")
     Page<AuditRecord> findByEventAndDocumentId(
-        List<String> eventTypes,
+        List<Class<? extends AuditEvent>> eventTypes,
         UUID documentId,
         Pageable pageable
     );
@@ -69,9 +71,9 @@ public interface PostgresAuditRecordRepository extends AuditRecordRepository<Aud
         Pageable pageable
     );
 
-    @Query(value = " SELECT ar.* " +
+    @Query(value=" SELECT ar.* " +
         "    FROM        audit_record ar " +
-        "    WHERE       ar.audit_event ->> ?1 = ?2 ", nativeQuery = true)
+        "    WHERE       ar.audit_event ->> ?1 = ?2 ", nativeQuery=true)
     Page<AuditRecord> findAuditRecordsByProperty(String key, Object value, Pageable pageable);
 
     @Modifying

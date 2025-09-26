@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@
 package com.ritense.objectenapi.service
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.form.domain.FormDefinition
 import com.ritense.form.service.FormDefinitionService
-import com.ritense.logging.withLoggingContext
 import com.ritense.objectenapi.ObjectenApiPlugin
 import com.ritense.objectenapi.client.ObjectRecord
 import com.ritense.objectenapi.client.ObjectRequest
@@ -32,107 +30,90 @@ import com.ritense.objecttypenapi.ObjecttypenApiPlugin
 import com.ritense.objecttypenapi.client.Objecttype
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
+import mu.KotlinLogging
+import org.springframework.http.HttpStatus
+import org.springframework.web.util.UriComponentsBuilder
 
-@Transactional
-@Service
-@SkipComponentScan
 class ZaakObjectService(
-    private val zaakUrlProvider: ZaakUrlProvider,
-    private val pluginService: PluginService,
-    private val formDefinitionService: FormDefinitionService,
-    private val objectManagementInfoProvider: ObjectManagementInfoProvider
+    val zaakUrlProvider: ZaakUrlProvider,
+    val pluginService: PluginService,
+    val formDefinitionService: FormDefinitionService,
+    val objectManagementInfoProvider: ObjectManagementInfoProvider
 ) {
     fun getZaakObjectTypes(documentId: UUID): List<Objecttype> {
-        return withLoggingContext(JsonSchemaDocument::class, documentId) {
-            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-            val zakenApiPluginInstance = findZakenApiPlugin(zaakUrl)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+        val zakenApiPluginInstance = findZakenApiPlugin(zaakUrl)
 
-            return@withLoggingContext zakenApiPluginInstance.getZaakObjecten(zaakUrl)
-                .mapNotNull {
-                    getObjectByObjectUrl(it.objectUrl)
-                }.map { it.type }
-                .distinct()
-                .mapNotNull {
-                    getObjectTypeByUrl(it)
-                }
-        }
+        return zakenApiPluginInstance.getZaakObjecten(zaakUrl)
+            .mapNotNull {
+                getObjectByObjectUrl(it.objectUrl)
+            }.map { it.type }
+            .distinct()
+            .mapNotNull {
+                getObjectTypeByUrl(it)
+            }
     }
 
     fun getObjectByObjectUrl(objectUrl: URI): ObjectWrapper? {
-        withLoggingContext("objectUrl", objectUrl.toString()) {
-            val objectenApiPlugin = pluginService
-                .createInstance(ObjectenApiPlugin::class.java, ObjectenApiPlugin.findConfigurationByUrl(objectUrl))
-                ?: return null
-            return objectenApiPlugin.getObject(objectUrl)
-        }
+        val objectenApiPlugin = pluginService
+            .createInstance(ObjectenApiPlugin::class.java) { properties: JsonNode ->
+                objectUrl.toString().startsWith(properties.get("url").textValue())
+            } ?: return null
+        return objectenApiPlugin.getObject(objectUrl)
     }
 
     private fun getObjectTypeByUrl(objectTypeUrl: URI): Objecttype? {
-        withLoggingContext("objectTypeUrl", objectTypeUrl.toString()) {
-            val objectTypePluginInstance = pluginService
-                .createInstance(
-                    ObjecttypenApiPlugin::class.java,
-                    ObjecttypenApiPlugin.findConfigurationByUrl(objectTypeUrl)
-                ) ?: return null
+        val objectTypePluginInstance = pluginService
+            .createInstance(ObjecttypenApiPlugin::class.java) { properties: JsonNode ->
+                objectTypeUrl.toString().startsWith(properties.get("url").textValue())
+            } ?: return null
 
-            return objectTypePluginInstance.getObjecttype(objectTypeUrl)
-        }
+        return objectTypePluginInstance.getObjecttype(objectTypeUrl)
     }
 
     fun getZaakObjectenOfType(documentId: UUID, typeUrl: URI): List<ObjectWrapper> {
-        withLoggingContext(JsonSchemaDocument::class, documentId) {
-            withLoggingContext("objectTypeUrl", typeUrl.toString()) {
-                val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-                val zakenApiPluginInstance = findZakenApiPlugin(zaakUrl)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+        val zakenApiPluginInstance = findZakenApiPlugin(zaakUrl)
 
-                return zakenApiPluginInstance.getZaakObjecten(zaakUrl)
-                    .mapNotNull {
-                        getObjectByObjectUrl(it.objectUrl)
-                    }.filter {
-                        it.type == typeUrl
-                    }
+        return zakenApiPluginInstance.getZaakObjecten(zaakUrl)
+            .mapNotNull {
+                getObjectByObjectUrl(it.objectUrl)
+            }.filter {
+                it.type == typeUrl
             }
-        }
     }
 
     fun getZaakObjectOfTypeByName(documentId: UUID, objecttypeName: String): ObjectWrapper {
-        withLoggingContext(JsonSchemaDocument::class, documentId) {
-            logger.debug { "Getting zaakobject for documentId $documentId and objecttypeName '$objecttypeName'" }
-            val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-            val zakenApiPluginInstance = findZakenApiPlugin(zaakUrl)
+        logger.debug { "Getting zaakobject for documentId $documentId and objecttypeName '$objecttypeName'" }
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+        val zakenApiPluginInstance = findZakenApiPlugin(zaakUrl)
 
-            val listOfObjecttypeWithCorrectName = zakenApiPluginInstance.getZaakObjecten(zaakUrl)
-                .mapNotNull {
-                    getObjectByObjectUrl(it.objectUrl)
-                }.groupBy {
-                    it.type
-                }.filter {
-                    getObjectTypeByUrl(it.key)?.name == objecttypeName
-                }.map {
-                    it.value
-                }
+        val listOfObjecttypeWithCorrectName = zakenApiPluginInstance.getZaakObjecten(zaakUrl)
+            .mapNotNull {
+                getObjectByObjectUrl(it.objectUrl)
+            }.groupBy {
+                it.type
+            }.filter {
+                getObjectTypeByUrl(it.key)?.name == objecttypeName
+            }.map {
+                it.value
+            }
 
-            if (listOfObjecttypeWithCorrectName.isEmpty()) {
-                throw IllegalStateException("No object was found of type '$objecttypeName' for document $documentId")
-            } else if (listOfObjecttypeWithCorrectName.size > 1) {
-                throw IllegalStateException("More than one objecttype with name '$objecttypeName' was found for document $documentId")
+        if (listOfObjecttypeWithCorrectName.isEmpty()) {
+            throw IllegalStateException("No object was found of type '$objecttypeName' for document $documentId")
+        } else if (listOfObjecttypeWithCorrectName.size > 1) {
+            throw IllegalStateException("More than one objecttype with name '$objecttypeName' was found for document $documentId")
+        } else {
+            val objectsOfType = listOfObjecttypeWithCorrectName[0]
+            if (objectsOfType.size > 1) {
+                throw IllegalStateException("More than one object of type '$objecttypeName' was found for document $documentId")
             } else {
-                val objectsOfType = listOfObjecttypeWithCorrectName[0]
-                if (objectsOfType.size > 1) {
-                    throw IllegalStateException("More than one object of type '$objecttypeName' was found for document $documentId")
-                } else {
-                    return objectsOfType[0]
-                }
+                return objectsOfType[0]
             }
         }
     }
@@ -189,14 +170,16 @@ class ZaakObjectService(
             objectManagementInfoProvider.getObjectManagementInfo(objectManagementId)
         val objectsApiPlugin =
             pluginService.createInstance(PluginConfigurationId(objectManagement.objectenApiPluginConfigurationId)) as ObjectenApiPlugin
-        val objectUrl = objectsApiPlugin.getObjectUrl(objectId)
+        val objectUrl = "${objectsApiPlugin.url}objects/$objectId"
         logger.debug { "Getting object for url $objectUrl" }
-        return objectsApiPlugin.getObject(objectUrl)
+        return objectsApiPlugin.getObject(URI.create(objectUrl))
     }
 
     private fun findZakenApiPlugin(zaakUrl: URI): ZakenApiPlugin {
         val zakenApiPluginInstance = pluginService
-            .createInstance(ZakenApiPlugin::class.java, ZakenApiPlugin.findConfigurationByUrl(zaakUrl))
+            .createInstance(ZakenApiPlugin::class.java) { properties: JsonNode ->
+                zaakUrl.toString().startsWith(properties.get("url").textValue())
+            }
 
         requireNotNull(zakenApiPluginInstance) { "No plugin configuration was found for zaak with URL $zaakUrl" }
 
@@ -227,7 +210,6 @@ class ZaakObjectService(
 
 
     fun createObject(objectManagementId: UUID, data: JsonNode): URI {
-        logger.debug { "Creating object for objectManagementId $objectManagementId" }
         val (createObjectRequest, objectManagementInfo) = getObjectRequestAndInfo(objectManagementId, data)
 
         val objectenApiPlugin =
@@ -236,7 +218,6 @@ class ZaakObjectService(
     }
 
     fun updateObject(objectManagementId: UUID, objectUrl: URI, data: JsonNode): URI {
-        logger.debug { "Updating object with url '$objectUrl' for objectManagementId $objectManagementId" }
         val (updateObjectRequest, objectManagementInfo) = getObjectRequestAndInfo(objectManagementId, data)
 
         val objectenApiPlugin = pluginService.createInstance(
@@ -252,7 +233,6 @@ class ZaakObjectService(
     }
 
     fun deleteObject(objectManagementId: UUID, objectId: UUID? = null, objectUrl: URI? = null): HttpStatus {
-        logger.debug { "Deleting object with url '$objectUrl' or id '$objectId' for objectManagementId $objectManagementId" }
         val objectManagementInfo = objectManagementInfoProvider.getObjectManagementInfo(objectManagementId)
 
         val objectenApiPlugin = pluginService.createInstance(
@@ -265,13 +245,18 @@ class ZaakObjectService(
             throw IllegalStateException("The objectUrl and objectId can not both be null.")
         }
 
-        val objectUri = objectUrl ?: objectenApiPlugin.getObjectUrl(objectId!!)
+        val objectUri = objectUrl ?: URI.create(
+                    UriComponentsBuilder.newInstance()
+                        .uri(objectenApiPlugin.url)
+                        .pathSegment("objects")
+                        .pathSegment(objectId.toString())
+                        .toUriString()
+                )
 
         return objectenApiPlugin.deleteObject(objectUri)
     }
 
     fun patchObjectFromManagementId(objectManagementId: UUID, objectId: UUID, jsonNode: JsonNode): URI {
-        logger.debug { "Patching object with id '$objectId' for objectManagementId $objectManagementId" }
         val objectManagement = objectManagementInfoProvider.getObjectManagementInfo(objectManagementId)
 
         val objectenApiPlugin = pluginService.createInstance(
@@ -282,7 +267,12 @@ class ZaakObjectService(
             PluginConfigurationId.existingId(objectManagement.objecttypenApiPluginConfigurationId)
         ) as ObjecttypenApiPlugin
 
-        val objectTypeUrl = objectTypenApiPlugin.getObjectTypeUrlById(objectManagement.objecttypeId)
+        val objectTypeUrl = UriComponentsBuilder.newInstance()
+            .uri(objectTypenApiPlugin.url)
+            .pathSegment("objecttypes")
+            .pathSegment(objectManagement.objecttypeId)
+            .build()
+            .toUri()
 
         val objectRequest = ObjectRequest(
             objectTypeUrl,
@@ -293,7 +283,13 @@ class ZaakObjectService(
             )
         )
 
-        val objectUrl = objectenApiPlugin.getObjectUrl(objectId)
+        val objectUrl = URI.create(
+            UriComponentsBuilder.newInstance()
+                .uri(objectenApiPlugin.url)
+                .pathSegment("objects")
+                .pathSegment(objectId.toString())
+                .toUriString()
+        )
 
         return objectenApiPlugin.objectPatch(objectUrl, objectRequest).url
     }

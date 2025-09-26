@@ -1,6 +1,0 @@
-services:
-    db:
-        ports:
-            - "3314:5432"
-        environment:
-            - POSTGRES_DB=mail-test

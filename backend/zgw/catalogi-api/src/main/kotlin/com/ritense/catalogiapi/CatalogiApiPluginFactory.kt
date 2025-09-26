@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,16 @@
 
 package com.ritense.catalogiapi
 
-import com.ritense.catalogiapi.client.CatalogiApiClient
-import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.document.service.DocumentService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
+import com.ritense.catalogiapi.client.CatalogiApiClient
 
 class CatalogiApiPluginFactory(
     pluginService: PluginService,
-    val client: CatalogiApiClient,
-    val zaaktypeUrlProvider: ZaaktypeUrlProvider,
-    val documentService: DocumentService,
+    val client: CatalogiApiClient
 ) : PluginFactory<CatalogiApiPlugin>(pluginService) {
 
     override fun create(): CatalogiApiPlugin {
-        return CatalogiApiPlugin(client, zaaktypeUrlProvider, documentService)
+        return CatalogiApiPlugin(client)
     }
 }

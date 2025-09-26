@@ -1,6 +1,0 @@
-services:
-    db:
-        ports:
-            - "3322:5432"
-        environment:
-            - POSTGRES_DB=plugin-test

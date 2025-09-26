@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,14 @@ import com.fasterxml.jackson.databind.node.JsonNodeType.NUMBER
 import com.fasterxml.jackson.databind.node.JsonNodeType.OBJECT
 import com.fasterxml.jackson.databind.node.JsonNodeType.POJO
 import com.fasterxml.jackson.databind.node.JsonNodeType.STRING
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.objectenapi.service.ZaakObjectConstants.Companion.ZAAKOBJECT_PREFIX
-import com.ritense.valtimo.contract.form.DataResolvingContext
 import com.ritense.valtimo.contract.form.FormFieldDataResolver
-import io.github.oshai.kotlinlogging.KotlinLogging
-import java.lang.Deprecated
+import com.ritense.valtimo.contract.form.DataResolvingContext
+import java.util.UUID
 
-@Deprecated(since = "11.0", forRemoval = true)
 class ZaakObjectDataResolver(
-    private val zaakObjectService: ZaakObjectService,
-    private val objectMapper: ObjectMapper
+    val zaakObjectService: ZaakObjectService,
+    val objectMapper: ObjectMapper
 ): FormFieldDataResolver {
 
     override fun supports(externalFormFieldType: String): Boolean {
@@ -49,21 +46,17 @@ class ZaakObjectDataResolver(
         vararg varNames: String
     ): MutableMap<String, Any?> {
         val results = mutableMapOf<String, Any?>()
-        logger.debug { "Requested zaak object values '$varNames' for document ${dataResolvingContext.documentId}, document definition ${dataResolvingContext.documentDefinitionName}" }
 
         varNames.map {
             RequestedData(it)
         }.groupBy {
             it.objectType
         }.forEach{ objectTypeGroup ->
-            runWithoutAuthorization {
-                val zaakObject = zaakObjectService.getZaakObjectOfTypeByName(
-                    dataResolvingContext.documentId, objectTypeGroup.key
-                )
-                val dataAsJsonNode = objectMapper.valueToTree<JsonNode>(zaakObject.record.data)
-                objectTypeGroup.value.forEach {
-                    results[it.variableName] = extractValue(dataAsJsonNode.at(it.path))
-                }
+            val zaakObject = zaakObjectService.getZaakObjectOfTypeByName(
+                dataResolvingContext.documentId, objectTypeGroup.key)
+            val dataAsJsonNode = objectMapper.valueToTree<JsonNode>(zaakObject.record.data)
+            objectTypeGroup.value.forEach {
+                results[it.variableName] = extractValue(dataAsJsonNode.at(it.path))
             }
         }
 
@@ -90,9 +83,5 @@ class ZaakObjectDataResolver(
     ) {
         val objectType = variableName.substringBeforeLast(":")
         val path = variableName.substringAfterLast(":")
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }

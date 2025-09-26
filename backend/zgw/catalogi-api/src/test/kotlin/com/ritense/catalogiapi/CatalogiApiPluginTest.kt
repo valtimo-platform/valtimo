@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,48 +16,22 @@
 
 package com.ritense.catalogiapi
 
-import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.catalogiapi.client.ZaaktypeInformatieobjecttypeRequest
-import com.ritense.catalogiapi.domain.Besluittype
-import com.ritense.catalogiapi.domain.Eigenschap
 import com.ritense.catalogiapi.domain.Informatieobjecttype
-import com.ritense.catalogiapi.domain.Resultaattype
-import com.ritense.catalogiapi.domain.Specificatie
-import com.ritense.catalogiapi.domain.Statustype
-import com.ritense.catalogiapi.domain.Zaaktype
 import com.ritense.catalogiapi.domain.ZaaktypeInformatieobjecttype
-import com.ritense.catalogiapi.exception.BesluittypeNotFoundException
-import com.ritense.catalogiapi.exception.EigenschapNotFoundException
-import com.ritense.catalogiapi.exception.ResultaattypeNotFoundException
-import com.ritense.catalogiapi.exception.StatustypeNotFoundException
-import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.document.domain.Document
-import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
-import com.ritense.document.service.DocumentService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.catalogiapi.client.CatalogiApiClient
 import com.ritense.zgw.Page
-import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.net.URI
-import java.time.LocalDate
-import java.util.UUID
 import kotlin.test.assertEquals
 
-internal class CatalogiApiPluginTest : BaseTest() {
+internal class CatalogiApiPluginTest{
 
     val client = mock<CatalogiApiClient>()
-    val zaaktypeUrlProvider = mock<ZaaktypeUrlProvider>()
-    val documentService = mock<DocumentService>()
-    val plugin = CatalogiApiPlugin(client, zaaktypeUrlProvider, documentService)
-    val caseDefinitionId = CaseDefinitionId("test", "1.0.0")
+    val plugin = CatalogiApiPlugin(client)
 
     @BeforeEach
     fun setUp() {
@@ -69,56 +43,40 @@ internal class CatalogiApiPluginTest : BaseTest() {
     fun `should call client to get informatieobjecttypes`() {
         val zaakTypeUrl = URI("https://example.com/zaaktype")
         val resultPage = mock<Page<ZaaktypeInformatieobjecttype>>()
-        whenever(
-            client.getZaaktypeInformatieobjecttypes(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                ZaaktypeInformatieobjecttypeRequest(
-                    zaaktype = zaakTypeUrl,
-                    page = 1
-                )
+        whenever(client.getZaaktypeInformatieobjecttypes(
+            plugin.authenticationPluginConfiguration,
+            plugin.url,
+            ZaaktypeInformatieobjecttypeRequest(
+                zaaktype = zaakTypeUrl,
+                page = 1
             )
-        ).thenReturn(resultPage)
+        )).thenReturn(resultPage)
 
         val mockZaaktypeInformatieobjecttype1 = mock<ZaaktypeInformatieobjecttype>()
         val mockZaaktypeInformatieobjecttype2 = mock<ZaaktypeInformatieobjecttype>()
-        whenever(resultPage.results).thenReturn(
-            listOf(
-                mockZaaktypeInformatieobjecttype1,
-                mockZaaktypeInformatieobjecttype2
-            )
-        )
+        whenever(resultPage.results).thenReturn(listOf(mockZaaktypeInformatieobjecttype1,
+            mockZaaktypeInformatieobjecttype2))
 
         val mockInformatieobjecttype1 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype1.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype1.beginGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        whenever(mockInformatieobjecttype1.eindeGeldigheid).thenReturn(null)
         val mockInformatieobjecttypeUrl1 = URI("https://example.com/informatieobjecttype/1")
         whenever(mockZaaktypeInformatieobjecttype1.informatieobjecttype)
             .thenReturn(mockInformatieobjecttypeUrl1)
         val mockInformatieobjecttype2 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype2.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype2.beginGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        whenever(mockInformatieobjecttype2.eindeGeldigheid).thenReturn(null)
         val mockInformatieobjecttypeUrl2 = URI("https://example.com/informatieobjecttype/2")
         whenever(mockZaaktypeInformatieobjecttype2.informatieobjecttype)
             .thenReturn(mockInformatieobjecttypeUrl2)
 
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl1
-            )
-        ).thenReturn(mockInformatieobjecttype1)
+        whenever(client.getInformatieobjecttype(
+            plugin.authenticationPluginConfiguration,
+            plugin.url,
+            mockInformatieobjecttypeUrl1
+        )).thenReturn(mockInformatieobjecttype1)
 
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl2
-            )
-        ).thenReturn(mockInformatieobjecttype2)
+        whenever(client.getInformatieobjecttype(
+            plugin.authenticationPluginConfiguration,
+            plugin.url,
+            mockInformatieobjecttypeUrl2
+        )).thenReturn(mockInformatieobjecttype2)
 
         val informatieobjecttypes = plugin.getInformatieobjecttypes(zaakTypeUrl)
 
@@ -134,27 +92,23 @@ internal class CatalogiApiPluginTest : BaseTest() {
         whenever(resultPage1.next).thenReturn(URI("https://example.com/zaaktype/2"))
         val resultPage2 = mock<Page<ZaaktypeInformatieobjecttype>>()
 
-        whenever(
-            client.getZaaktypeInformatieobjecttypes(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                ZaaktypeInformatieobjecttypeRequest(
-                    zaaktype = zaakTypeUrl,
-                    page = 1
-                )
+        whenever(client.getZaaktypeInformatieobjecttypes(
+            plugin.authenticationPluginConfiguration,
+            plugin.url,
+            ZaaktypeInformatieobjecttypeRequest(
+                zaaktype = zaakTypeUrl,
+                page = 1
             )
-        ).thenReturn(resultPage1)
+        )).thenReturn(resultPage1)
 
-        whenever(
-            client.getZaaktypeInformatieobjecttypes(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                ZaaktypeInformatieobjecttypeRequest(
-                    zaaktype = zaakTypeUrl,
-                    page = 2
-                )
+        whenever(client.getZaaktypeInformatieobjecttypes(
+            plugin.authenticationPluginConfiguration,
+            plugin.url,
+            ZaaktypeInformatieobjecttypeRequest(
+                zaaktype = zaakTypeUrl,
+                page = 2
             )
-        ).thenReturn(resultPage2)
+        )).thenReturn(resultPage2)
 
         val mockZaaktypeInformatieobjecttype1 = mock<ZaaktypeInformatieobjecttype>()
         val mockZaaktypeInformatieobjecttype2 = mock<ZaaktypeInformatieobjecttype>()
@@ -162,35 +116,25 @@ internal class CatalogiApiPluginTest : BaseTest() {
         whenever(resultPage2.results).thenReturn(listOf(mockZaaktypeInformatieobjecttype2))
 
         val mockInformatieobjecttype1 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype1.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype1.beginGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        whenever(mockInformatieobjecttype1.eindeGeldigheid).thenReturn(null)
         val mockInformatieobjecttypeUrl1 = URI("https://example.com/informatieobjecttype/1")
         whenever(mockZaaktypeInformatieobjecttype1.informatieobjecttype)
             .thenReturn(mockInformatieobjecttypeUrl1)
         val mockInformatieobjecttype2 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype2.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype2.beginGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        whenever(mockInformatieobjecttype2.eindeGeldigheid).thenReturn(null)
         val mockInformatieobjecttypeUrl2 = URI("https://example.com/informatieobjecttype/2")
         whenever(mockZaaktypeInformatieobjecttype2.informatieobjecttype)
             .thenReturn(mockInformatieobjecttypeUrl2)
 
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl1
-            )
-        ).thenReturn(mockInformatieobjecttype1)
+        whenever(client.getInformatieobjecttype(
+            plugin.authenticationPluginConfiguration,
+            plugin.url,
+            mockInformatieobjecttypeUrl1
+        )).thenReturn(mockInformatieobjecttype1)
 
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl2
-            )
-        ).thenReturn(mockInformatieobjecttype2)
+        whenever(client.getInformatieobjecttype(
+            plugin.authenticationPluginConfiguration,
+            plugin.url,
+            mockInformatieobjecttypeUrl2
+        )).thenReturn(mockInformatieobjecttype2)
 
         val informatieobjecttypes = plugin.getInformatieobjecttypes(zaakTypeUrl)
 
@@ -199,534 +143,4 @@ internal class CatalogiApiPluginTest : BaseTest() {
         assertEquals(mockInformatieobjecttype2, informatieobjecttypes[1])
     }
 
-    @Test
-    fun `should filter informatieobjecttypes that are still in concept`() {
-        val zaakTypeUrl = URI("https://example.com/zaaktype")
-        val resultPage = mock<Page<ZaaktypeInformatieobjecttype>>()
-        whenever(
-            client.getZaaktypeInformatieobjecttypes(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                ZaaktypeInformatieobjecttypeRequest(
-                    zaaktype = zaakTypeUrl,
-                    page = 1
-                )
-            )
-        ).thenReturn(resultPage)
-
-        val mockZaaktypeInformatieobjecttype1 = mock<ZaaktypeInformatieobjecttype>()
-        val mockZaaktypeInformatieobjecttype2 = mock<ZaaktypeInformatieobjecttype>()
-        whenever(resultPage.results).thenReturn(
-            listOf(
-                mockZaaktypeInformatieobjecttype1,
-                mockZaaktypeInformatieobjecttype2
-            )
-        )
-
-        val mockInformatieobjecttype1 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype1.concept).thenReturn(true)
-        whenever(mockInformatieobjecttype1.beginGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        whenever(mockInformatieobjecttype1.eindeGeldigheid).thenReturn(null)
-        val mockInformatieobjecttypeUrl1 = URI("https://example.com/informatieobjecttype/1")
-        val mockInformatieobjecttype2 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype2.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype2.beginGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        whenever(mockInformatieobjecttype2.eindeGeldigheid).thenReturn(null)
-        val mockInformatieobjecttypeUrl2 = URI("https://example.com/informatieobjecttype/2")
-
-        whenever(mockZaaktypeInformatieobjecttype1.informatieobjecttype)
-            .thenReturn(mockInformatieobjecttypeUrl1)
-        whenever(mockZaaktypeInformatieobjecttype2.informatieobjecttype)
-            .thenReturn(mockInformatieobjecttypeUrl2)
-
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl1
-            )
-        ).thenReturn(mockInformatieobjecttype1)
-
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl2
-            )
-        ).thenReturn(mockInformatieobjecttype2)
-
-        val informatieobjecttypes = plugin.getInformatieobjecttypes(zaakTypeUrl)
-
-        assertEquals(1, informatieobjecttypes.size)
-        assertEquals(mockInformatieobjecttype2, informatieobjecttypes[0])
-    }
-
-    @Test
-    fun `should filter informatieobjecttypes that are not valid yet`() {
-        val zaakTypeUrl = URI("https://example.com/zaaktype")
-        val resultPage = mock<Page<ZaaktypeInformatieobjecttype>>()
-        whenever(
-            client.getZaaktypeInformatieobjecttypes(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                ZaaktypeInformatieobjecttypeRequest(
-                    zaaktype = zaakTypeUrl,
-                    page = 1
-                )
-            )
-        ).thenReturn(resultPage)
-
-        val mockZaaktypeInformatieobjecttype1 = mock<ZaaktypeInformatieobjecttype>()
-        val mockZaaktypeInformatieobjecttype2 = mock<ZaaktypeInformatieobjecttype>()
-        whenever(resultPage.results).thenReturn(
-            listOf(
-                mockZaaktypeInformatieobjecttype1,
-                mockZaaktypeInformatieobjecttype2
-            )
-        )
-
-        val mockInformatieobjecttype1 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype1.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype1.beginGeldigheid).thenReturn(LocalDate.now().plusDays(1))
-        whenever(mockInformatieobjecttype1.eindeGeldigheid).thenReturn(null)
-        val mockInformatieobjecttypeUrl1 = URI("https://example.com/informatieobjecttype/1")
-        val mockInformatieobjecttype2 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype2.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype2.beginGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        whenever(mockInformatieobjecttype2.eindeGeldigheid).thenReturn(null)
-        val mockInformatieobjecttypeUrl2 = URI("https://example.com/informatieobjecttype/2")
-
-        whenever(mockZaaktypeInformatieobjecttype1.informatieobjecttype)
-            .thenReturn(mockInformatieobjecttypeUrl1)
-        whenever(mockZaaktypeInformatieobjecttype2.informatieobjecttype)
-            .thenReturn(mockInformatieobjecttypeUrl2)
-
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl1
-            )
-        ).thenReturn(mockInformatieobjecttype1)
-
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl2
-            )
-        ).thenReturn(mockInformatieobjecttype2)
-
-        val informatieobjecttypes = plugin.getInformatieobjecttypes(zaakTypeUrl)
-
-        assertEquals(1, informatieobjecttypes.size)
-        assertEquals(mockInformatieobjecttype2, informatieobjecttypes[0])
-    }
-
-    @Test
-    fun `should filter informatieojecttypes that are no longer valid`() {
-        val zaakTypeUrl = URI("https://example.com/zaaktype")
-        val resultPage = mock<Page<ZaaktypeInformatieobjecttype>>()
-        whenever(
-            client.getZaaktypeInformatieobjecttypes(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                ZaaktypeInformatieobjecttypeRequest(
-                    zaaktype = zaakTypeUrl,
-                    page = 1
-                )
-            )
-        ).thenReturn(resultPage)
-
-        val mockZaaktypeInformatieobjecttype1 = mock<ZaaktypeInformatieobjecttype>()
-        val mockZaaktypeInformatieobjecttype2 = mock<ZaaktypeInformatieobjecttype>()
-        whenever(resultPage.results).thenReturn(
-            listOf(
-                mockZaaktypeInformatieobjecttype1,
-                mockZaaktypeInformatieobjecttype2
-            )
-        )
-
-        val mockInformatieobjecttype1 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype1.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype1.beginGeldigheid).thenReturn(LocalDate.now().minusWeeks(1))
-        whenever(mockInformatieobjecttype1.eindeGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        val mockInformatieobjecttypeUrl1 = URI("https://example.com/informatieobjecttype/1")
-        val mockInformatieobjecttype2 = mock<Informatieobjecttype>()
-        whenever(mockInformatieobjecttype2.concept).thenReturn(false)
-        whenever(mockInformatieobjecttype2.beginGeldigheid).thenReturn(LocalDate.now().minusDays(1))
-        whenever(mockInformatieobjecttype2.eindeGeldigheid).thenReturn(null)
-        val mockInformatieobjecttypeUrl2 = URI("https://example.com/informatieobjecttype/2")
-
-        whenever(mockZaaktypeInformatieobjecttype1.informatieobjecttype)
-            .thenReturn(mockInformatieobjecttypeUrl1)
-        whenever(mockZaaktypeInformatieobjecttype2.informatieobjecttype)
-            .thenReturn(mockInformatieobjecttypeUrl2)
-
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl1
-            )
-        ).thenReturn(mockInformatieobjecttype1)
-
-        whenever(
-            client.getInformatieobjecttype(
-                plugin.authenticationPluginConfiguration,
-                plugin.url,
-                mockInformatieobjecttypeUrl2
-            )
-        ).thenReturn(mockInformatieobjecttype2)
-
-        val informatieobjecttypes = plugin.getInformatieobjecttypes(zaakTypeUrl)
-
-        assertEquals(1, informatieobjecttypes.size)
-        assertEquals(mockInformatieobjecttype2, informatieobjecttypes[0])
-    }
-
-    @Test
-    fun `should get status type`() {
-        val documentId = UUID.randomUUID().toString()
-        val document = mock<Document>()
-        val statustype = "Registered"
-        val statustypeUrl = "https://example.com/statustype/456"
-        val zaaktypeUrl = "https://example.com/zaaktype/123"
-        val execution = mock<DelegateExecution> {
-            on { businessKey }.thenReturn(documentId)
-        }
-        whenever(document.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.of("myDocDef", caseDefinitionId))
-        whenever(documentService.get(documentId)).thenReturn(document)
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(URI(zaaktypeUrl))
-        whenever(client.getStatustypen(any(), any(), any())).thenReturn(
-            Page(
-                count = 3,
-                results = listOf(
-                    Statustype(URI("example.com/1"), URI(zaaktypeUrl), "other status", null, null, 0, null, null),
-                    Statustype(URI(statustypeUrl), URI(zaaktypeUrl), statustype, null, null, 0, null, null),
-                    Statustype(URI("example.com/2"), URI(zaaktypeUrl), "yet another status", null, null, 0, null, null),
-                )
-            )
-        )
-        plugin.getStatustype(
-            execution, statustype, "myProcessVar"
-        )
-
-        verify(execution, times(1)).setVariable("myProcessVar", statustypeUrl)
-    }
-
-    @Test
-    fun `should throw StatustypeNotFoundException when get status type doesn't exist`() {
-        val documentId = UUID.randomUUID().toString()
-        val document = mock<Document>()
-        val statustype = "Registered"
-        val zaaktypeUrl = "https://example.com/zaaktype/123"
-        val execution = mock<DelegateExecution> {
-            on { businessKey }.thenReturn(documentId)
-        }
-        whenever(document.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.of("myDocDef", caseDefinitionId))
-        whenever(documentService.get(documentId)).thenReturn(document)
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(URI(zaaktypeUrl))
-        whenever(client.getStatustypen(any(), any(), any())).thenReturn(
-            Page(count = 0, results = listOf())
-        )
-
-        val exception = assertThrows<StatustypeNotFoundException> {
-            plugin.getStatustype(
-                execution, statustype, "myProcessVar"
-            )
-        }
-
-        assertEquals("No statustype was found with 'omschrijving': 'Registered'", exception.message)
-    }
-
-    @Test
-    fun `should get resultaat type`() {
-        val exampleUrl = URI("example.com")
-        val documentId = UUID.randomUUID().toString()
-        val document = mock<Document>()
-        val resultaattype = "Registered"
-        val resultaattypeUrl = "https://example.com/resultaattype/456"
-        val zaaktypeUrl = "https://example.com/zaaktype/123"
-        val execution = mock<DelegateExecution> {
-            on { businessKey }.thenReturn(documentId)
-        }
-        whenever(document.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.of("myDocDef", caseDefinitionId))
-        whenever(documentService.get(documentId)).thenReturn(document)
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(URI(zaaktypeUrl))
-        whenever(client.getResultaattypen(any(), any(), any())).thenReturn(
-            Page(
-                count = 3,
-                results = listOf(
-                    Resultaattype(
-                        URI("example.com/1"),
-                        URI(zaaktypeUrl),
-                        "other resultaat",
-                        exampleUrl,
-                        null,
-                        exampleUrl,
-                        null
-                    ),
-                    Resultaattype(
-                        URI(resultaattypeUrl),
-                        URI(zaaktypeUrl),
-                        resultaattype,
-                        exampleUrl,
-                        null,
-                        exampleUrl,
-                        null
-                    ),
-                    Resultaattype(
-                        URI("example.com/2"),
-                        URI(zaaktypeUrl),
-                        "yet another resultaat",
-                        exampleUrl,
-                        null,
-                        exampleUrl,
-                        null
-                    ),
-                )
-            )
-        )
-        plugin.getResultaattype(
-            execution, resultaattype, "myProcessVar"
-        )
-
-        verify(execution, times(1)).setVariable("myProcessVar", resultaattypeUrl)
-    }
-
-    @Test
-    fun `should throw ResultaattypeNotFoundException when get resultaat type doesn't exist`() {
-        val resultaattype = "Registered"
-        val zaaktypeUrl = "https://example.com/zaaktype/123"
-        whenever(client.getResultaattypen(any(), any(), any())).thenReturn(
-            Page(count = 0, results = listOf())
-        )
-
-        val exception = assertThrows<ResultaattypeNotFoundException> {
-            plugin.getResultaattypeByOmschrijving(
-                URI(zaaktypeUrl), resultaattype
-            )
-        }
-
-        assertEquals("No resultaattype was found with 'omschrijving': '$resultaattype'", exception.message)
-    }
-
-    @Test
-    fun `should get besluit type`() {
-        val documentId = UUID.randomUUID().toString()
-        val document = mock<Document>()
-        val besluittype = "Allocated"
-        val besluittypeUrl = "https://example.com/besluittype/456"
-        val zaaktypeUrl = "https://example.com/zaaktype/123"
-        val execution = mock<DelegateExecution> {
-            on { businessKey }.thenReturn(documentId)
-        }
-        whenever(document.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.of("myDocDef", caseDefinitionId))
-        whenever(documentService.get(documentId)).thenReturn(document)
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(URI(zaaktypeUrl))
-        whenever(client.getBesluittypen(any(), any(), any())).thenReturn(
-            Page(
-                count = 3,
-                results = listOf(
-                    Besluittype(
-                        URI("example.com/1"),
-                        URI(zaaktypeUrl),
-                        listOf(),
-                        "other besluit",
-                        null,
-                        null,
-                        null,
-                        true,
-                        null,
-                        null,
-                        null,
-                        listOf(),
-                        LocalDate.now(),
-                        null,
-                        null
-                    ),
-                    Besluittype(
-                        URI(besluittypeUrl),
-                        URI(zaaktypeUrl),
-                        listOf(),
-                        besluittype,
-                        null,
-                        null,
-                        null,
-                        true,
-                        null,
-                        null,
-                        null,
-                        listOf(),
-                        LocalDate.now(),
-                        null,
-                        null
-                    ),
-                    Besluittype(
-                        URI("example.com/2"),
-                        URI(zaaktypeUrl),
-                        listOf(),
-                        "yet another besluit",
-                        null,
-                        null,
-                        null,
-                        true,
-                        null,
-                        null,
-                        null,
-                        listOf(),
-                        LocalDate.now(),
-                        null,
-                        null
-                    ),
-                )
-            )
-        )
-        plugin.getBesluittype(
-            execution, besluittype, "myProcessVar"
-        )
-
-        verify(execution, times(1)).setVariable("myProcessVar", besluittypeUrl)
-    }
-
-    @Test
-    fun `should get besluit type by url`() {
-        val documentId = UUID.randomUUID().toString()
-        val besluittype = "http://example.com/besluittype/456"
-        val execution = mock<DelegateExecution> {
-            on { businessKey }.thenReturn(documentId)
-        }
-
-        plugin.getBesluittype(execution, besluittype, "myProcessVar")
-
-        verify(execution, times(1)).setVariable("myProcessVar", besluittype)
-    }
-
-    @Test
-    fun `should throw BesluitypeNotFound exception when get besluit type doesn't exist`() {
-        val documentId = UUID.randomUUID().toString()
-        val document = mock<Document>()
-        val besluittype = "Allocated"
-        val zaaktypeUrl = "https://example.com/zaaktype/123"
-        val execution = mock<DelegateExecution> {
-            on { businessKey }.thenReturn(documentId)
-        }
-
-        whenever(document.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.of("myDocDef", caseDefinitionId))
-        whenever(documentService.get(documentId)).thenReturn(document)
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(URI(zaaktypeUrl))
-        whenever(client.getBesluittypen(any(), any(), any())).thenReturn(
-            Page(count = 0, results = listOf())
-        )
-
-        val exception = assertThrows<BesluittypeNotFoundException> {
-            plugin.getBesluittype(execution, besluittype, "myProcessVar")
-        }
-
-        assertEquals("No besluittype was found with 'omschrijving': 'Allocated'", exception.message)
-    }
-
-    @Test
-    fun `should get zaaktypen`() {
-        whenever(client.getZaaktypen(any(), any(), any()))
-            .thenReturn(
-                Page(
-                    1, URI(""), null, listOf(
-                        newZaaktype(URI("zaak:1"), "Zaak 1", "zaak 1")
-                    )
-                )
-            )
-            .thenReturn(
-                Page(
-                    1, null, URI(""), listOf(
-                        newZaaktype(URI("zaak:2"), "Zaak 2", "zaak 2")
-                    )
-                )
-            )
-
-        val zaaktypen = plugin.getZaaktypen()
-
-        assertThat(zaaktypen).hasSize(2)
-        zaaktypen.forEachIndexed { i: Int, zaaktype: Zaaktype ->
-            val zaakNr = i + 1
-            assertThat(zaaktype.url.toString()).isEqualTo("zaak:$zaakNr")
-            assertThat(zaaktype.omschrijving).isEqualTo("Zaak $zaakNr")
-            assertThat(zaaktype.omschrijvingGeneriek).isEqualTo("zaak $zaakNr")
-        }
-    }
-
-    @Test
-    fun `should get eigenschap`() {
-        val documentId = UUID.randomUUID().toString()
-        val document = mock<Document>()
-        val eigenschapNaam = "Einddatum"
-        val eigenschapUrl = "https://example.com/eigenschap/456"
-        val zaaktypeUrl = "https://example.com/zaaktype/123"
-        val execution = mock<DelegateExecution> {
-            on { businessKey }.thenReturn(documentId)
-        }
-
-        whenever(document.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.of("myDocDef", caseDefinitionId))
-        whenever(documentService.get(documentId)).thenReturn(document)
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(URI(zaaktypeUrl))
-        whenever(client.getEigenschappen(any(), any(), any())).thenReturn(
-            Page(
-                count = 3,
-                results = listOf(
-                    Eigenschap(
-                        URI(eigenschapUrl),
-                        eigenschapNaam,
-                        "Einddatum",
-                        Specificatie(null, "tekst", "lengte", "1:N", null),
-                        null,
-                        URI(zaaktypeUrl)
-                    ),
-                    Eigenschap(
-                        URI("example.com/1"),
-                        "startdatum",
-                        "startdatum",
-                        Specificatie(null, "tekst", "lengte", "1:N", null),
-                        null,
-                        URI(zaaktypeUrl)
-                    ),
-                    Eigenschap(
-                        URI("example.com/2"),
-                        "status",
-                        "status",
-                        Specificatie(null, "tekst", "lengte", "1:N", null),
-                        null,
-                        URI(zaaktypeUrl)
-                    )
-                )
-            )
-        )
-        plugin.getEigenschap(execution, eigenschapNaam, "eigenschapUrlPv")
-
-        verify(execution, times(1)).setVariable("eigenschapUrlPv", eigenschapUrl)
-    }
-
-    @Test
-    fun `should throw EigenschapNotFound exception when get eigenschap doesn't exist`() {
-        val documentId = UUID.randomUUID().toString()
-        val document = mock<Document>()
-        val eigenschapNaam = "Einddatum"
-        val zaaktypeUrl = "https://example.com/zaaktype/123"
-        val execution = mock<DelegateExecution> {
-            on { businessKey }.thenReturn(documentId)
-        }
-
-        whenever(document.definitionId()).thenReturn(JsonSchemaDocumentDefinitionId.of("myDocDef", caseDefinitionId))
-        whenever(documentService.get(documentId)).thenReturn(document)
-        whenever(zaaktypeUrlProvider.getZaaktypeUrl(caseDefinitionId)).thenReturn(URI(zaaktypeUrl))
-        whenever(client.getEigenschappen(any(), any(), any())).thenReturn(
-            Page(count = 0, results = listOf())
-        )
-
-        val exception = assertThrows<EigenschapNotFoundException> {
-            plugin.getEigenschap(execution, eigenschapNaam, "eigenschapUrlPv")
-        }
-
-        assertEquals("No eigenschap was found with eigenschapnaam: 'Einddatum'", exception.message)
-    }
 }

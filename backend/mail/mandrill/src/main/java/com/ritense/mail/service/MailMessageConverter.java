@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,10 @@ import com.ritense.valtimo.contract.mail.model.value.Recipient;
 import com.ritense.valtimo.contract.mail.model.value.RecipientCollection;
 import com.ritense.valtimo.contract.mail.model.value.Sender;
 import com.ritense.valtimo.contract.mail.model.value.Subject;
+import org.apache.commons.codec.binary.Base64;
+
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.codec.binary.Base64;
 
 public class MailMessageConverter {
 
@@ -47,17 +48,15 @@ public class MailMessageConverter {
             rawMailMessage.attachments
         );
 
-        boolean textBodyIsPresent = rawMailMessage.mailBody.textBody != null && rawMailMessage.mailBody.textBody.isPresent();
-        if (textBodyIsPresent) {
+        if (rawMailMessage.mailBody.textBody.isPresent()) {
             mandrillMessageWithContent.setText(rawMailMessage.mailBody.textBody.get());
         }
 
-        boolean mailBodyIsPresent = rawMailMessage.mailBody.htmlBody != null && rawMailMessage.mailBody.htmlBody.isPresent();
-        if (mailBodyIsPresent) {
+        if (rawMailMessage.mailBody.htmlBody.isPresent()) {
             mandrillMessageWithContent.setHtml(rawMailMessage.mailBody.htmlBody.get());
         }
 
-        if (!textBodyIsPresent && !mailBodyIsPresent) {
+        if (!rawMailMessage.mailBody.textBody.isPresent() && !rawMailMessage.mailBody.htmlBody.isPresent()) {
             throw new IllegalArgumentException("Cannot convert RawMailMessage into MandrillMessage: rawMailMessage not contain a text or html body");
         }
 
@@ -89,15 +88,15 @@ public class MailMessageConverter {
     }
 
     private MandrillMessage.Recipient.Type convert(Recipient.Type type) {
-        if (type == Recipient.Type.TO) {
+        if (type == Recipient.Type.To) {
             return MandrillMessage.Recipient.Type.TO;
         }
 
-        if (type == Recipient.Type.CC) {
+        if (type == Recipient.Type.Cc) {
             return MandrillMessage.Recipient.Type.CC;
         }
 
-        if (type == Recipient.Type.BCC) {
+        if (type == Recipient.Type.Bcc) {
             return MandrillMessage.Recipient.Type.BCC;
         }
         String message = String.format("Cannot convert Recipient.Type value '%s' to MandrillMessage.Recipient.Type. No mapping exists", type);

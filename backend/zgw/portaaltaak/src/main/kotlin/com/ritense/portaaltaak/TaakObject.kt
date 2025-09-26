@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.ritense.portaaltaak
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
-import java.net.URI
-import java.time.LocalDateTime
 
 class TaakObject(
     val identificatie: TaakIdentificatie,
@@ -29,11 +27,8 @@ class TaakObject(
     val formulier: TaakForm,
     @JsonProperty("verwerker_taak_id")
     val verwerkerTaakId: String,
-    @JsonProperty("zaak")
-    val zaakUrl: URI?,
-    val verloopdatum: LocalDateTime?,
     @JsonProperty("verzonden_data")
-    val verzondenData: Map<String, Any> = mapOf(),
+    val verzondenData: Map<String, Any> = mapOf()
 )
 
 class TaakIdentificatie(
@@ -54,8 +49,7 @@ class TaakForm(
 enum class TaakStatus(@JsonValue val key: String) {
     OPEN("open"),
     INGEDIEND("ingediend"),
-    VERWERKT("verwerkt"),
-    GESLOTEN("gesloten")
+    VERWERKT("verwerkt")
 }
 
 enum class TaakFormType(@JsonValue val key: String) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,38 +31,32 @@ import com.ritense.audit.service.impl.AuditEventProcessorImpl;
 import com.ritense.audit.service.impl.AuditRetentionServiceImpl;
 import com.ritense.audit.service.impl.AuditSearchServiceImpl;
 import com.ritense.audit.service.impl.AuditServiceImpl;
-import com.ritense.authorization.AuthorizationService;
-import com.ritense.document.service.DocumentService;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
-import jakarta.persistence.EntityManager;
+import javax.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean;
 
-@AutoConfiguration
+@Configuration
 @EnableJpaRepositories(basePackages = "com.ritense.audit.repository.impl")
 @EntityScan("com.ritense.audit.domain")
 public class AuditAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(AuditEventProcessor.class)
-    public AuditEventProcessor auditEventProcessor(AuditRecordRepository<AuditRecord> auditRecordRepository) {
+    public AuditEventProcessor auditEventProcessor(AuditRecordRepository<AuditRecord, AuditRecordId> auditRecordRepository) {
         return new AuditEventProcessorImpl(auditRecordRepository);
     }
 
     @Bean
     @ConditionalOnMissingBean(AuditService.class)
-    public AuditService auditService(
-        AuditRecordRepository<AuditRecord> auditRecordRepository,
-        AuthorizationService authorizationService,
-        DocumentService documentService
-    ) {
-        return new AuditServiceImpl(auditRecordRepository, authorizationService, documentService);
+    public AuditService auditService(AuditRecordRepository<AuditRecord, AuditRecordId> auditRecordRepository) {
+        return new AuditServiceImpl(auditRecordRepository);
     }
 
     @Bean
@@ -79,10 +73,9 @@ public class AuditAutoConfiguration {
     @ConditionalOnMissingBean(AuditSearchService.class)
     public AuditSearchService auditSearchService(
         EntityManager entityManager,
-        QueryDialectHelper queryDialectHelper,
-        AuthorizationService authorizationService
+        QueryDialectHelper queryDialectHelper
     ) {
-        return new AuditSearchServiceImpl(entityManager, queryDialectHelper, authorizationService);
+        return new AuditSearchServiceImpl(entityManager, queryDialectHelper);
     }
 
     @Bean
@@ -93,13 +86,16 @@ public class AuditAutoConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "valtimo", name = "database", havingValue = "postgres")
-    public JpaRepositoryFactoryBean<AuditRecordRepository<AuditRecord>, AuditRecord, AuditRecordId> postgresAuditRecordRepository() {
-        return new JpaRepositoryFactoryBean<>(PostgresAuditRecordRepository.class);
+    public JpaRepositoryFactoryBean<AuditRecordRepository<AuditRecord, AuditRecordId>, AuditRecord, AuditRecordId> postgresAuditRecordRepository() {
+        JpaRepositoryFactoryBean factory = new JpaRepositoryFactoryBean(PostgresAuditRecordRepository.class);
+        return factory;
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "valtimo", name = "database", havingValue = "mysql", matchIfMissing = true)
-    public JpaRepositoryFactoryBean<AuditRecordRepository<AuditRecord>, AuditRecord, AuditRecordId> mysqlAuditRecordRepository() {
-        return new JpaRepositoryFactoryBean<>(MySqlAuditRecordRepository.class);
+    public JpaRepositoryFactoryBean<AuditRecordRepository<AuditRecord, AuditRecordId>, AuditRecord, AuditRecordId> mysqlAuditRecordRepository() {
+        JpaRepositoryFactoryBean factory = new JpaRepositoryFactoryBean(MySqlAuditRecordRepository.class);
+        return factory;
     }
+
 }

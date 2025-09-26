@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.ritense.zakenapi.domain
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.ritense.zgw.Rsin
 import com.ritense.zgw.domain.Archiefnominatie
 import com.ritense.zgw.domain.Vertrouwelijkheid
@@ -24,8 +24,6 @@ import java.net.URI
 import java.time.LocalDate
 import java.util.UUID
 
-@Deprecated("Marked for removal since 10.7.0. Will be replaced by ZaakResponse")
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class CreateZaakResponse(
     val url: URI,
     val uuid: UUID,
@@ -44,7 +42,8 @@ data class CreateZaakResponse(
     val communicatiekanaal: URI? = null,
     val productenOfDiensten: List<URI>? = null,
     val vertrouwelijkheidaanduiding: Vertrouwelijkheid? = null,
-    val betalingsindicatie: Betalingsindicatie? = null,
+    @JsonProperty("betalingsindicatie")
+    private val betalingsindicatieString: String? = null,
     val betalingsindicatieWeergave: String? = null,
     val laatsteBetaaldatum: LocalDate? = null,
     val zaakgeometrie: Geometry? = null,
@@ -62,4 +61,8 @@ data class CreateZaakResponse(
     val archiefactiedatum: LocalDate? = null,
     val resultaat: URI? = null,
     val opdrachtgevendeOrganisatie: String? = null,
-)
+) {
+    val betalingsindicatie = betalingsindicatieString?.let {betalingsindicatie ->
+        Betalingsindicatie.values().find {it.key == betalingsindicatie}
+    }
+}

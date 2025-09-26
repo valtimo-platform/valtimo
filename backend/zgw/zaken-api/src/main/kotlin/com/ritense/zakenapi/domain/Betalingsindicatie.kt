@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,11 @@
 
 package com.ritense.zakenapi.domain
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class Betalingsindicatie(@JsonValue val key: String) {
     NVT("nvt"),
     NOG_NIET("nog_niet"),
     GEDEELTELIJK("gedeeltelijk"),
-    GEHEEL("geheel");
-
-    companion object {
-        /**
-         * This creator allows for null, empty or non-matching keys to result in a null value.
-         */
-        @JvmStatic
-        @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-        fun create(key: String?): Betalingsindicatie? {
-            return Betalingsindicatie.values().find { it.key == key }
-        }
-    }
+    GEHEEL("geheel")
 }

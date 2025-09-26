@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,19 +39,19 @@ public class Recipient {
     }
 
     public enum Type {
-        TO, CC, BCC
+        To, Cc, Bcc
     }
 
     public static Recipient to(EmailAddress emailAddress, SimpleName name) {
-        return Recipient.forType(emailAddress, name, Type.TO);
+        return Recipient.forType(emailAddress, name, Type.To);
     }
 
     public static Recipient cc(EmailAddress emailAddress, SimpleName name) {
-        return Recipient.forType(emailAddress, name, Type.CC);
+        return Recipient.forType(emailAddress, name, Type.Cc);
     }
 
     public static Recipient bcc(EmailAddress emailAddress, SimpleName name) {
-        return Recipient.forType(emailAddress, name, Type.BCC);
+        return Recipient.forType(emailAddress, name, Type.Bcc);
     }
 
     @Override

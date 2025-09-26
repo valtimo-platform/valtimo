@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,29 +26,29 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import javax.inject.Inject;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @Tag("integration")
 public abstract class BaseIntegrationTest extends BaseTest {
 
-    @MockitoBean
+    @MockBean
     public UserManagementService userManagementService;
 
-    @MockitoBean
+    @MockBean
     public MailSender mailSender;
 
-    @MockitoBean
+    @MockBean
     public ResourceService resourceService;
 
-    @MockitoBean
+    @MockBean
     public DocumentSnapshotService documentSnapshotService;
 
-    @Autowired
+    @Inject
     public FormDefinitionRepository formDefinitionRepository;
 
     @BeforeAll

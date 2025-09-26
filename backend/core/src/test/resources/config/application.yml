@@ -2,9 +2,17 @@ timezone: etc/UTC
 spring:
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:3304/core-test
+        username: valtimo
+        password: password
+        hikari:
+            auto-commit: false
     liquibase:
         enabled: false
     jpa:
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        database: postgresql
         show_sql: true
         open-in-view: false
         properties:
@@ -23,6 +31,10 @@ spring:
                     provider_disables_autocommit: true
         hibernate:
             ddl-auto: none
+            naming:
+                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+            use-new-id-generator-mappings: false
 
 scheduling:
     enabled: false
@@ -35,14 +47,12 @@ spring-actuator:
     username: test
     password: test
 
-operaton:
+camunda:
     bpm:
         history-level: audit
-        generic-properties:
-            properties:
-                enforceHistoryTimeToLive: false
 
 valtimo:
+    database: postgres
     mandrill:
         apiKey: some-key
         dateFormat: dd-MM-yyyy
@@ -51,9 +61,7 @@ valtimo:
         reminderTemplate: bpc-task-reminder
     plugin:
         encryption-secret: "abcdefghijklmnop"
-    operaton:
-        scripting:
-            allowedClasses: java.lang.System
+
 aws:
     profile: ritense
     region: eu-central-1
@@ -64,15 +72,3 @@ aws:
         enabled: true
         region: eu-central-1
         projectName: Valtimo-Implementation
-
-
-management:
-    endpoints:
-        web:
-            exposure:
-                include: [ "health", "configprops" ]
-    endpoint:
-        health:
-            show-details: when_authorized
-            roles:
-                - ROLE_ACTUATOR

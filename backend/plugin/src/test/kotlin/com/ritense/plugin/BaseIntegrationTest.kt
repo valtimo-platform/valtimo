@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,12 @@
 
 package com.ritense.plugin
 
-import com.ritense.plugin.repository.PluginProcessLinkRepository
-import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.authentication.UserManagementService
-import com.ritense.valtimo.contract.mail.MailSender
-import org.operaton.bpm.engine.HistoryService
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @SpringBootTest
-@ExtendWith(SpringExtension::class)
+@ExtendWith(value = [SpringExtension::class])
 @Tag("integration")
-class BaseIntegrationTest {
-    @MockitoBean
-    lateinit var userManagementService: UserManagementService
-
-    @MockitoBean
-    lateinit var mailSender: MailSender
-
-    @MockitoSpyBean
-    lateinit var pluginService: PluginService
-
-    @MockitoBean
-    lateinit var pluginProcessLinkRepository: PluginProcessLinkRepository
-
-    @MockitoBean
-    lateinit var historyService: HistoryService
-}
+class BaseIntegrationTest

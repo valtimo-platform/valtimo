@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package com.ritense.resource.web.rest
 
 import com.ritense.resource.web.ObjectUrlDTO
 import com.ritense.resource.web.ResourceDTO
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -30,20 +29,19 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@SkipComponentScan
-@RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping(value = ["/api"], produces = [MediaType.APPLICATION_JSON_VALUE])
 interface ResourceResource {
 
-    @GetMapping("/v1/resource/{resourceId}")
+    @GetMapping(value = ["/v1/resource/{resourceId}"])
     fun get(@PathVariable(name = "resourceId") resourceId: String): ResponseEntity<ObjectUrlDTO>
 
-    @GetMapping("/v1/resource/{resourceId}/download")
+    @GetMapping(value = ["/v1/resource/{resourceId}/download"])
     fun getContent(@PathVariable(name = "resourceId") resourceId: String): ResponseEntity<ByteArray>
 
-    @PutMapping("/v1/resource", consumes = [APPLICATION_JSON_UTF8_VALUE])
+    @PutMapping(value = ["/v1/resource"], consumes = [MediaType.APPLICATION_JSON_VALUE])
     fun register(@RequestBody resourceDTO: ResourceDTO): ResponseEntity<ResourceDTO>
 
-    @DeleteMapping("/v1/resource/{resourceId}")
+    @DeleteMapping(value = ["/v1/resource/{resourceId}"])
     fun delete(@PathVariable(name = "resourceId") resourceId: String): ResponseEntity<Void>
 
 }

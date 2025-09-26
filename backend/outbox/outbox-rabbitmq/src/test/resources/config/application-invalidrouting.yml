@@ -1,5 +1,0 @@
-valtimo:
-    outbox:
-        publisher:
-            rabbitmq:
-                routingKey: invalid

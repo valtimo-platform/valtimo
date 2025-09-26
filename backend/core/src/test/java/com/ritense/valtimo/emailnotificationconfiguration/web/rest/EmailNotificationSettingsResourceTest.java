@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,21 @@
 
 package com.ritense.valtimo.emailnotificationconfiguration.web.rest;
 
-import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettings;
+import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettingsRequestImpl;
+import com.ritense.valtimo.emailnotificationsettings.service.impl.EmailNotificationSettingsServiceImpl;
+import com.ritense.valtimo.emailnotificationsettings.web.rest.EmailNotificationSettingsResource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import static com.ritense.valtimo.emailnotificationconfiguration.helper.EmailNotificationSettingsHelper.disabledEmailNotificationSettings;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -27,23 +41,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ritense.valtimo.contract.json.MapperSingleton;
-import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettings;
-import com.ritense.valtimo.emailnotificationsettings.domain.request.impl.EmailNotificationSettingsRequestImpl;
-import com.ritense.valtimo.emailnotificationsettings.service.impl.EmailNotificationSettingsServiceImpl;
-import com.ritense.valtimo.emailnotificationsettings.web.rest.EmailNotificationSettingsResource;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
@@ -57,7 +54,7 @@ class EmailNotificationSettingsResourceTest {
 
     @BeforeEach
     void setUp() {
-        objectMapper = MapperSingleton.INSTANCE.get();
+        objectMapper = new ObjectMapper();
         emailNotificationService = mock(EmailNotificationSettingsServiceImpl.class);
         emailNotificationSettingsResource = new EmailNotificationSettingsResource(emailNotificationService);
         mockMvc = MockMvcBuilders
@@ -85,7 +82,7 @@ class EmailNotificationSettingsResourceTest {
             .contentType(MediaType.APPLICATION_JSON_VALUE))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE));
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,13 @@
 package com.ritense.search.repository
 
 import com.ritense.search.domain.SearchFieldV2
-import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
+import org.springframework.data.jpa.repository.JpaRepository
 
 interface SearchFieldV2Repository : JpaRepository<SearchFieldV2, UUID> {
 
-    fun findByOwnerIdAndKeyOrderByOrder(ownerId: String, key: String): SearchFieldV2?
+    fun findByOwnerIdAndKey(ownerId: String, key: String): SearchFieldV2?
 
-    fun findByOwnerTypeAndOwnerIdAndKeyOrderByOrder(ownerType: String, ownerId: String, key: String): SearchFieldV2?
+    fun findAllByOwnerId(ownerId: String): List<SearchFieldV2>?
 
-    fun findAllByOwnerTypeOrderByOrder(ownerType: String?): List<SearchFieldV2>
-
-    fun findAllByOwnerIdOrderByOrder(ownerId: String): List<SearchFieldV2>
-
-    fun findAllByOwnerTypeAndOwnerIdOrderByOrder(ownerType: String?, ownerId: String): List<SearchFieldV2>
-
-    fun deleteAllByOwnerType(ownerType: String)
-
-    fun deleteAllByOwnerTypeAndOwnerId(ownerType: String, ownerId: String)
 }

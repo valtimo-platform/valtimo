@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,15 @@
 
 package com.ritense.valtimo.web.rest.error;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.ritense.valtimo.contract.hardening.config.HardeningProperties;
 import com.ritense.valtimo.contract.hardening.service.impl.HardeningServiceImpl;
 import com.ritense.valtimo.contract.web.rest.error.ExceptionTranslator;
 import com.ritense.valtimo.web.autoconfigure.WebAutoConfiguration;
+import javax.inject.Inject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,6 +34,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zalando.problem.jackson.ProblemModule;
 import org.zalando.problem.violations.ConstraintViolationProblemModule;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Test class for the ExceptionTranslator controller advice.
@@ -59,13 +58,13 @@ import org.zalando.problem.violations.ConstraintViolationProblemModule;
 @Tag("integration")
 public class ExceptionTranslatorIntTest {
 
-    @Autowired
+    @Inject
     private ExceptionTranslatorTestController controller;
 
-    @Autowired
+    @Inject
     private ExceptionTranslator exceptionTranslator;
 
-    @Autowired
+    @Inject
     private MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter;
 
     private MockMvc mockMvc;

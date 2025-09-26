@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,13 @@
 
 package com.ritense.objectmanagement
 
-import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.zakenapi.ZaakUrlProvider
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 @SpringBootApplication
 class TestApplication {
 
     fun main(args: Array<String>) {
         runApplication<TestApplication>(*args)
-    }
-
-    @TestConfiguration
-    class TestConfig {
-
-        @MockitoBean
-        lateinit var zaaktypeUrlProvider: ZaaktypeUrlProvider
-
-        @MockitoBean
-        lateinit var zaakUrlProvider: ZaakUrlProvider
     }
 }

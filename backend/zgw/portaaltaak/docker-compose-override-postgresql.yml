@@ -1,6 +1,0 @@
-services:
-    db:
-        ports:
-            - "3338:5432"
-        environment:
-            - POSTGRES_DB=portaaltaak-test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,22 @@
 
 package com.ritense.besluitenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.ritense.besluitenapi.client.BesluitenApiClient
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.zakenapi.ZaakUrlProvider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.springframework.web.reactive.function.client.WebClient
 
 internal class BesluitenApiPluginFactoryTest {
     @Test
@@ -37,9 +39,9 @@ internal class BesluitenApiPluginFactoryTest {
         val pluginService: PluginService = mock()
         val besluitenApiClient: BesluitenApiClient = mock()
         val urlProvider: ZaakUrlProvider = mock()
-        val authentication: BesluitenApiAuthentication = mock()
+        val authentication: BesluitenApiAuthentication = mock();
         whenever(pluginService.createInstance(any<PluginConfigurationId>())).thenReturn(authentication)
-        whenever(pluginService.getObjectMapper()).thenReturn(MapperSingleton.get())
+        whenever(pluginService.getObjectMapper()).thenReturn(jacksonObjectMapper())
 
         val pluginProperties: String = """
             {
@@ -55,7 +57,7 @@ internal class BesluitenApiPluginFactoryTest {
         val pluginConfiguration = PluginConfiguration(
             PluginConfigurationId.newId(),
             "title",
-            MapperSingleton.get().readTree(pluginProperties) as ObjectNode,
+            ObjectMapper().readTree(pluginProperties) as ObjectNode,
             pluginDefinition
         )
 

@@ -1,6 +1,0 @@
-services:
-    db:
-        ports:
-            - "3347:5432"
-        environment:
-            - POSTGRES_DB=outbox-test

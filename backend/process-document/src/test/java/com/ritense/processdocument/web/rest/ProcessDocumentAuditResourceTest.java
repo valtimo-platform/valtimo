@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,6 @@
 
 package com.ritense.processdocument.web.rest;
 
-import static com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.audit.domain.AuditRecord;
 import com.ritense.audit.domain.AuditRecordBuilder;
@@ -37,28 +26,41 @@ import com.ritense.processdocument.BaseTest;
 import com.ritense.processdocument.domain.event.TestEvent;
 import com.ritense.processdocument.service.ProcessDocumentAuditService;
 import com.ritense.valtimo.contract.audit.AuditEvent;
-import com.ritense.valtimo.contract.json.MapperSingleton;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import com.ritense.valtimo.contract.json.serializer.PageSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
 public class ProcessDocumentAuditResourceTest extends BaseTest {
 
-    @MockitoBean
+    @MockBean
     private ProcessDocumentAuditService processDocumentAuditService;
     private ProcessDocumentAuditResource processDocumentAuditResource;
     private MockMvc mockMvc;
@@ -89,7 +91,7 @@ public class ProcessDocumentAuditResourceTest extends BaseTest {
                     .contentType(APPLICATION_JSON_VALUE))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(content().contentType(APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(content().contentType(APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.content").isArray())
             .andExpect(jsonPath("$.content").isNotEmpty())
             .andExpect(jsonPath("$.content[0].metaData.origin").doesNotExist())
@@ -127,7 +129,9 @@ public class ProcessDocumentAuditResourceTest extends BaseTest {
     }
 
     private MappingJackson2HttpMessageConverter jacksonMessageConverter() {
-        ObjectMapper objectMapper = MapperSingleton.INSTANCE.get();
+        ObjectMapper objectMapper = new Jackson2ObjectMapperBuilder()
+            .failOnUnknownProperties(false)
+            .serializerByType(Page.class, new PageSerializer()).build();
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
         converter.setObjectMapper(objectMapper);
         return converter;

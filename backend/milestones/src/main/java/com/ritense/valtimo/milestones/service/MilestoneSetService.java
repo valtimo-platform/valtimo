@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2023 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import com.ritense.valtimo.milestones.domain.MilestoneSet;
 import com.ritense.valtimo.milestones.repository.MilestoneRepository;
 import com.ritense.valtimo.milestones.repository.MilestoneSetRepository;
 import com.ritense.valtimo.milestones.service.exception.IllegalMilestoneSetDeletionException;
-import com.ritense.valtimo.milestones.web.rest.dto.MilestoneSetSaveDTO;
-import java.util.List;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.Optional;
 
 public class MilestoneSetService {
 
@@ -38,15 +37,8 @@ public class MilestoneSetService {
         this.milestoneRepository = milestoneRepository;
     }
 
-    public MilestoneSet saveMilestoneSet(MilestoneSetSaveDTO dto) {
-        logger.debug("Service request to save milestone set {}", dto.getTitle());
-        MilestoneSet milestoneSet;
-        if (dto.getId() != null) {
-            milestoneSet = milestoneSetRepository.findById(dto.getId()).orElseThrow();
-        } else {
-            milestoneSet = new MilestoneSet();
-        }
-        milestoneSet.setTitle(dto.getTitle());
+    public MilestoneSet saveMilestoneSet(MilestoneSet milestoneSet) {
+        logger.debug("Service request to save milestone set {}", milestoneSet.getTitle());
         return milestoneSetRepository.save(milestoneSet);
     }
 
@@ -64,7 +56,7 @@ public class MilestoneSetService {
             return;
         }
         List<Milestone> milestones = milestoneRepository.findMilestonesByMilestoneSet(milestoneSet.get());
-        if (milestones.isEmpty()) {
+        if (milestones.size() == 0) {
             milestoneSetRepository.deleteById(id);
         } else {
             throw new IllegalMilestoneSetDeletionException();
