@@ -18,8 +18,7 @@ package com.ritense.valueresolver
 
 import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.VariableScope
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -50,24 +49,21 @@ class ValueResolverServiceImpl(
     }
 
     override fun getResolvableKeys(
-        request: ValueResolverOptionRequest,
-        caseDefinitionKey: String
-    ): List<ValueResolverOption> {
-        val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
-        return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionKey) ?: emptyList()
-            list + newOptions.filter { option -> request.type.equals(option.type) }
+        prefixes: List<String>,
+        @LoggableResource("documentDefinitionName") documentDefinitionName: String
+    ): List<String> {
+        return prefixes.fold(emptyList()) { acc, prefix ->
+            (acc + (addPrefixToResolvableKeys(prefix, resolverFactoryMap[prefix]?.getResolvableKeys(documentDefinitionName))))
         }
     }
 
     override fun getResolvableKeys(
-        request: ValueResolverOptionRequest,
-        caseDefinitionId: CaseDefinitionId
-    ): List<ValueResolverOption> {
-        val prefixes = request.prefixes.ifEmpty { resolverFactoryMap.keys }
-        return prefixes.fold(emptyList()) { list, prefix ->
-            val newOptions = resolverFactoryMap[prefix]?.getResolvableKeyOptions(caseDefinitionId) ?: emptyList()
-            list + newOptions.filter { option -> request.type.equals(option.type) }
+        prefixes: List<String>,
+        @LoggableResource("documentDefinitionName") documentDefinitionName: String,
+        version: Long
+    ): List<String> {
+        return prefixes.fold(emptyList()) { acc, prefix ->
+            (acc + (addPrefixToResolvableKeys(prefix, resolverFactoryMap[prefix]?.getResolvableKeys(documentDefinitionName, version))))
         }
     }
 
@@ -79,13 +75,13 @@ class ValueResolverServiceImpl(
      * A requestedValue can only be resolved when a resolver for that prefix is configured.
      * An unresolved requestedValue will not be included in the returned map.
      *
-     * @param processInstanceId The Operaton processInstanceId these values belong to
+     * @param processInstanceId The Camunda processInstanceId these values belong to
      * @param variableScope An implementation of VariableScope. For instance: a TaskDelegate or DelegateExecution
      * @param requestedValues The requestedValues that should be resolved into values.
      * @return A map where the key is the requestedValue, and the value the resolved value.
      */
     override fun resolveValues(
-        @LoggableResource("com.ritense.valtimo.operaton.domain.OperatonExecution") processInstanceId: String,
+        @LoggableResource("com.ritense.valtimo.camunda.domain.CamundaExecution") processInstanceId: String,
         variableScope: VariableScope,
         requestedValues: Collection<String>
     ): Map<String, Any?> {
@@ -150,12 +146,12 @@ class ValueResolverServiceImpl(
     /**
      * Handle values. Usually by storing them somewhere.
      *
-     * @param processInstanceId The Operaton processInstanceId these values belong to
+     * @param processInstanceId The Camunda processInstanceId these values belong to
      * @param variableScope An implementation of VariableScope.
      * @param values mapOf(doc:add:/firstname to John)
      */
     override fun handleValues(
-        @LoggableResource("com.ritense.valtimo.operaton.domain.OperatonExecution") processInstanceId: String,
+        @LoggableResource("com.ritense.valtimo.camunda.domain.CamundaExecution") processInstanceId: String,
         variableScope: VariableScope?,
         values: Map<String, Any?>
     ) {

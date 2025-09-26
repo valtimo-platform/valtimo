@@ -21,6 +21,7 @@ import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 
+import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
@@ -57,16 +58,10 @@ public class KeycloakUserManagementService implements UserManagementService {
 
     private final KeycloakService keycloakService;
     private final String clientName;
-    private final UserCache userCache;
 
-    public KeycloakUserManagementService(
-        KeycloakService keycloakService,
-        String keycloakClientName,
-        UserCache userCache
-    ) {
+    public KeycloakUserManagementService(KeycloakService keycloakService, String keycloakClientName) {
         this.keycloakService = keycloakService;
         this.clientName = keycloakClientName;
-        this.userCache = userCache;
     }
 
     @Override
@@ -134,13 +129,7 @@ public class KeycloakUserManagementService implements UserManagementService {
 
     @Override
     public Optional<ManageableUser> findByEmail(String email) {
-        return Optional.ofNullable(
-            userCache.get(
-                CacheType.EMAIL,
-                email,
-                (emailToRetrieve) -> findUserRepresentationByEmail(emailToRetrieve).map(this::toManageableUserByRetrievingRoles).orElse(null)
-            )
-        );
+        return findUserRepresentationByEmail(email).map(this::toManageableUserByRetrievingRoles);
     }
 
     @Override
@@ -149,41 +138,19 @@ public class KeycloakUserManagementService implements UserManagementService {
     }
 
     @Override
-    public ValtimoUser findByIdentifier(String userIdentifier) {
-        return userCache.get(
-            CacheType.USER_IDENTIFIER,
-            userIdentifier,
-            (identifier) -> {
-                UserRepresentation user = null;
-                try (Keycloak keycloak = keycloakService.keycloak()) {
-                    var users = keycloakService.usersResource(keycloak).searchByUsername(userIdentifier, true);
-                    if (!users.isEmpty()) {
-                        user = users.get(0);
-                    }
-                }
-                Boolean isUserEnabled = user != null ? user.isEnabled() : null;
-                return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRoles(user) : null;
+    public ValtimoUser findByUserIdentifier(String userIdentifier) {
+        UserRepresentation user = null;
+        try (Keycloak keycloak = keycloakService.keycloak()) {
+            switch (OauthConfigHolder.getCurrentInstance().getIdentifierField()) {
+                case USERID ->
+                    user = keycloakService.usersResource(keycloak).get(userIdentifier).toRepresentation();
+                case USERNAME ->
+                    user = keycloakService.usersResource(keycloak).search(userIdentifier).get(0);
             }
-        );
-    }
 
-    @Override
-    public ValtimoUser findByUsername(String username) {
-        return userCache.get(
-            CacheType.USER_IDENTIFIER,
-            username,
-            (identifier) -> {
-                UserRepresentation user = null;
-                try (Keycloak keycloak = keycloakService.keycloak()) {
-                    var users = keycloakService.usersResource(keycloak).searchByUsername(username, true);
-                    if (!users.isEmpty()) {
-                        user = users.get(0);
-                    }
-                }
-                Boolean isUserEnabled = user != null ? user.isEnabled() : null;
-                return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRoles(user) : null;
-            }
-        );
+        }
+        Boolean isUserEnabled = user != null ? user.isEnabled() : null;
+        return Boolean.TRUE.equals(isUserEnabled) ? toValtimoUserByRetrievingRoles(user) : null;
     }
 
     @Override
@@ -269,7 +236,7 @@ public class KeycloakUserManagementService implements UserManagementService {
         try (Keycloak keycloak = keycloakService.keycloak()) {
             userList = keycloakService
                 .usersResource(keycloak)
-                .searchByEmail(email, true);
+                .search(null, null, null, email, 0, 1, true, true);
         }
         if (userList.isEmpty() || !Objects.equals(userList.get(0).getEmail(), email)) {
             return Optional.empty();

@@ -22,54 +22,35 @@ import static com.ritense.valtimo.contract.authentication.AuthoritiesConstants.U
 import static com.valtimo.keycloak.service.KeycloakUserManagementService.MAX_USERS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.ritense.valtimo.contract.OauthConfigHolder;
 import com.ritense.valtimo.contract.authentication.ManageableUser;
 import com.ritense.valtimo.contract.authentication.model.SearchByUserGroupsCriteria;
-import com.ritense.valtimo.contract.config.ValtimoProperties.Oauth;
 import jakarta.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 
 class KeycloakUserManagementServiceTest {
 
     private KeycloakService keycloakService;
     private KeycloakUserManagementService userManagementService;
-    private CacheManager cacheManager;
-    private CacheManagerUserCache cacheManagerUserCache;
 
     private UserRepresentation jamesVance;
     private UserRepresentation johnDoe;
     private UserRepresentation ashaMiller;
 
-    @BeforeAll
-    static void setUp() {
-        new OauthConfigHolder(new Oauth());
-    }
-
     @BeforeEach
     public void before() {
         keycloakService = mock(KeycloakService.class, RETURNS_DEEP_STUBS);
-        cacheManager = new ConcurrentMapCacheManager();
-        cacheManagerUserCache = new CacheManagerUserCache(cacheManager);
-        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName", cacheManagerUserCache);
+        userManagementService = new KeycloakUserManagementService(keycloakService, "clientName");
 
         jamesVance = newUser("James", "Vance", List.of(USER));
         johnDoe = newUser("John", "Doe", List.of(USER, ADMIN));
@@ -85,11 +66,6 @@ class KeycloakUserManagementServiceTest {
             .thenReturn(Set.of());
         when(keycloakService.clientRolesResource(any()).get(any()).getRoleGroupMembers())
             .thenReturn(Set.of());
-    }
-
-    @AfterEach
-    public void after() {
-        reset(keycloakService);
     }
 
     @Test
@@ -187,56 +163,12 @@ class KeycloakUserManagementServiceTest {
         assertThat(userIds).containsOnlyOnce(jamesVance.getId(), johnDoe.getId());
     }
 
-    @Test
-    void shouldNotfindByUsernameShouldReturnUserWhenSearchingOnUserId() {
-        when(keycloakService.usersResource(any()).get(eq(johnDoe.getId())).toRepresentation())
-            .thenReturn(johnDoe);
-
-        var user = userManagementService.findByUsername(johnDoe.getId());
-
-        assertThat(user).isNull();
-    }
-
-    @Test
-    void findByUsernameShouldReturnUserWhenSearchingOnUsername() {
-        when(keycloakService.usersResource(any()).searchByUsername(eq(johnDoe.getUsername()), eq(true)))
-            .thenReturn(List.of(johnDoe));
-
-        var user = userManagementService.findByUsername(johnDoe.getUsername());
-
-        verify(keycloakService.usersResource(any())).searchByUsername(eq(johnDoe.getUsername()), eq(true));
-        assertThat(user).isNotNull();
-    }
-
-    @Test
-    void shouldRetrieveManageableUserFromCache() {
-        String email = "test@example.com";
-
-        userManagementService.findByEmail(email);
-        userManagementService.findByEmail(email);
-
-        verify(keycloakService.usersResource(any()), times(1))
-            .searchByEmail(email, true);
-    }
-
-    @Test
-    void findByUsernameShouldNotThrowAnExceptionWhenSearchingOnUsernameAndNoUserIsNotFound() {
-        when(keycloakService.usersResource(any()).searchByUsername(eq(johnDoe.getUsername()), eq(true)))
-            .thenReturn(List.of());
-
-        var user = userManagementService.findByUsername(johnDoe.getUsername());
-
-        verify(keycloakService.usersResource(any())).searchByUsername(eq(johnDoe.getUsername()), eq(true));
-        assertThat(user).isNull();
-    }
-
-    private UserRepresentation newUser(String firstName, String lastName, List<String> roles, String username) {
+    private UserRepresentation newUser(String firstName, String lastName, List<String> roles) {
         var user = new UserRepresentation();
         user.setId(Integer.toString(Objects.hash(firstName, lastName, roles)));
         user.setEnabled(true);
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setUsername(username);
         var roleRepresentations = roles.stream()
             .map(role -> new RoleRepresentation(role, role + " description", false))
             .collect(Collectors.toList());
@@ -245,9 +177,5 @@ class KeycloakUserManagementServiceTest {
         when(keycloakService.usersResource(any()).get(user.getId()).roles().clientLevel(any()).listEffective(true))
             .thenReturn(List.of());
         return user;
-    }
-
-    private UserRepresentation newUser(String firstName, String lastName, List<String> roles) {
-        return newUser(firstName, lastName, roles, "username");
     }
 }

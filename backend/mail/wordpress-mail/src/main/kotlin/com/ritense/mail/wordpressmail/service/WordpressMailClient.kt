@@ -16,23 +16,19 @@
 
 package com.ritense.mail.wordpressmail.service
 
-import com.ritense.mail.wordpressmail.config.WordpressMailProperties
+import com.ritense.mail.wordpressmail.connector.WordpressMailConnectorProperties
 import com.ritense.mail.wordpressmail.domain.EmailSendRequest
 import com.ritense.mail.wordpressmail.domain.EmailSendResponse
 import com.ritense.mail.wordpressmail.domain.EmailTemplateResponse
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.core.io.Resource
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA
 import org.springframework.http.client.MultipartBodyBuilder
-import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 
-@SkipComponentScan
-@Component
 class WordpressMailClient(
-    private var wordpressMailProperties: WordpressMailProperties,
+    private var wordpressMailConnectorProperties: WordpressMailConnectorProperties,
     private val wordpressMailRestClientBuilder: RestClient.Builder
 ) {
 
@@ -54,7 +50,7 @@ class WordpressMailClient(
 
         val result = restClient()
             .post()
-            .uri { it.pathSegment("wp-json", "email", "v1", "send", "{emailTemplateId}").build(emailTemplateId) }
+            .uri("/wp-json/email/v1/send/$emailTemplateId")
             .contentType(MULTIPART_FORM_DATA)
             .body(builder.build())
             .retrieve()
@@ -65,16 +61,20 @@ class WordpressMailClient(
     fun getEmailTemplates(): EmailTemplateResponse {
         val result = restClient()
             .get()
-            .uri { it.pathSegment("wp-json", "email", "v1", "get").build() }
+            .uri("/wp-json/email/v1/get")
             .retrieve()
             .body<EmailTemplateResponse>()!!
         return result
     }
 
+    fun setProperties(wordpressMailConnectorProperties: WordpressMailConnectorProperties) {
+        this.wordpressMailConnectorProperties = wordpressMailConnectorProperties
+    }
+
     private fun restClient(): RestClient {
         return wordpressMailRestClientBuilder
             .clone()
-            .baseUrl(wordpressMailProperties.url!!)
+            .baseUrl(wordpressMailConnectorProperties.url!!)
             .build()
     }
 

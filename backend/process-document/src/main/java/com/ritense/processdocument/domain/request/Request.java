@@ -16,13 +16,5 @@
 
 package com.ritense.processdocument.domain.request;
 
-import com.ritense.document.domain.impl.JsonSchemaDocument;
-import java.util.function.Consumer;
-
 public interface Request {
-    default Request withAdditionalModifications(
-        Consumer<? super JsonSchemaDocument> function
-    ) {
-        return null;
-    }
 }

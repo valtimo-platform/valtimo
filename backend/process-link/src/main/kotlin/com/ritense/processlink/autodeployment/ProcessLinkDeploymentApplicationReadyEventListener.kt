@@ -15,32 +15,22 @@
  */
 package com.ritense.processlink.autodeployment
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.node.TextNode
-import com.fasterxml.jackson.module.kotlin.readValue
-import com.ritense.importer.ImportContext.Companion.runImporter
 import com.ritense.importer.ImportRequest
 import com.ritense.processlink.importer.ProcessLinkImporter
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.apache.commons.lang3.StringUtils
+import java.io.IOException
+import mu.KLogger
+import mu.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
-import org.springframework.core.env.Environment
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.ResourcePatternUtils
-import java.io.IOException
 
 open class ProcessLinkDeploymentApplicationReadyEventListener(
     private val resourceLoader: ResourceLoader,
-    private val processLinkImporter: ProcessLinkImporter,
-    private val objectMapper: ObjectMapper,
-    private val environment: Environment
+    private val processLinkImporter: ProcessLinkImporter
 ) {
 
     @EventListener(ApplicationReadyEvent::class)
@@ -49,17 +39,13 @@ open class ProcessLinkDeploymentApplicationReadyEventListener(
         logger.info { "Deploying all process links from $PATH" }
         loadResources().forEach { resource ->
             try {
-                val fileName = resource.url.path.substringAfter(CONFIG_FOLDER_STRUCTURE)
-                logger.info { "Deploying process link for system process from file '${fileName}'" }
-
-                val processLinkNode = objectMapper.readValue<ArrayNode>(resource.inputStream)
-                val resolvedProcessLinkNode = resolveProperties(processLinkNode)
-
-                val importRequest = ImportRequest(fileName, objectMapper.writeValueAsBytes(resolvedProcessLinkNode))
-
-                runImporter {
-                    processLinkImporter.import(importRequest)
+                val fileName = requireNotNull(resource.filename)
+                logger.info { "Deploying process link from file '${fileName}'" }
+                val importRequest = resource.inputStream.use { inputStream ->
+                    ImportRequest(fileName, inputStream.readAllBytes())
                 }
+
+                processLinkImporter.import(importRequest)
             } catch (e: Exception) {
                 logger.error(e) { "Error while deploying process-link: '${resource.filename}'" }
             }
@@ -67,50 +53,13 @@ open class ProcessLinkDeploymentApplicationReadyEventListener(
     }
 
     @Throws(IOException::class)
-    private fun loadResources(): List<Resource> {
+    private fun loadResources(): Array<Resource> {
         return ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
             .getResources(PATH)
-            .filterNot { it?.url?.toString()?.contains("/config/case") ?: false }
-    }
-
-    private fun resolveProperties(array: ArrayNode?): ArrayNode {
-        val result = objectMapper.createArrayNode()
-        array?.forEach {
-            result.add(resolveValue(it))
-        }
-        return result
-    }
-
-    private fun resolveValue(node: JsonNode?): JsonNode? {
-        if (node != null) {
-            if (node is ObjectNode) {
-                val result = objectMapper.createObjectNode()
-                node.fields().forEachRemaining {
-                    result.replace(it.key, resolveValue(it.value))
-                }
-                return result
-            } else if (node.isArray) {
-                return objectMapper.createArrayNode().addAll(node.map { resolveValue(it) })
-            } else if (node.isTextual) {
-                var value = node.textValue()
-                Regex("\\$\\{([^\\}]+)\\}").findAll(value)
-                    .map { it.groupValues }
-                    .forEach { (placeholder, placeholderValue) ->
-                        val resolvedValue = environment.getProperty(placeholderValue)
-                            ?: System.getenv(placeholderValue)
-                            ?: System.getProperty(placeholderValue)
-                            ?: throw IllegalStateException("Failed to find environment variable: '$placeholderValue'")
-                        value = value.replace(placeholder, resolvedValue)
-                    }
-                return TextNode(value)
-            }
-        }
-        return node
     }
 
     companion object {
-        private val logger = KotlinLogging.logger {}
-        const val PATH = "classpath*:/config/global/process-link/**/*.process-link.json"
-        private const val CONFIG_FOLDER_STRUCTURE = "/config/global"
+        private val logger: KLogger = KotlinLogging.logger {}
+        const val PATH = "classpath*:**/*.processlink.json"
     }
 }

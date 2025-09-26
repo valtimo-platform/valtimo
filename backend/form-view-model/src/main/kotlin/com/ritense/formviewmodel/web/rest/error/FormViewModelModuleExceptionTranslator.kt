@@ -17,10 +17,9 @@
 package com.ritense.formviewmodel.web.rest.error
 
 import com.ritense.formviewmodel.error.BusinessException
-import com.ritense.formviewmodel.error.FormErrorsException
 import com.ritense.formviewmodel.error.FormException
-import com.ritense.formviewmodel.web.rest.dto.MultipleFormErrors
-import com.ritense.formviewmodel.web.rest.dto.SingleFormError
+import com.ritense.formviewmodel.web.rest.dto.BusinessRuleError
+import com.ritense.formviewmodel.web.rest.dto.FormError
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -35,26 +34,11 @@ class FormViewModelModuleExceptionTranslator {
     fun handleFormException(
         ex: FormException,
         request: NativeWebRequest
-    ): ResponseEntity<SingleFormError> {
+    ): ResponseEntity<FormError> {
         return ResponseEntity
             .badRequest()
             .body(
-                SingleFormError(
-                    error = ex.message ?: UNKNOWN_FORM_ERROR,
-                    component = ex.component
-                )
-            )
-    }
-
-    @ExceptionHandler(FormErrorsException::class)
-    fun handleFormErrorsException(
-        ex: FormErrorsException,
-        request: NativeWebRequest
-    ): ResponseEntity<MultipleFormErrors> {
-        return ResponseEntity
-            .badRequest()
-            .body(
-                MultipleFormErrors(ex.componentErrors)
+                FormError(ex.message, ex.component)
             )
     }
 
@@ -62,18 +46,12 @@ class FormViewModelModuleExceptionTranslator {
     fun handleBusinessException(
         ex: BusinessException,
         request: NativeWebRequest
-    ): ResponseEntity<SingleFormError> {
+    ): ResponseEntity<BusinessRuleError> {
         return ResponseEntity
             .badRequest()
             .body(
-                SingleFormError(
-                    error = ex.message ?: UNKNOWN_BUSINESS_RULE_ERROR
-                )
+                BusinessRuleError(ex.message)
             )
     }
 
-    companion object {
-        private const val UNKNOWN_FORM_ERROR = "Unknown Form Error"
-        private const val UNKNOWN_BUSINESS_RULE_ERROR = "Unknown Business Rule Error"
-    }
 }

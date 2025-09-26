@@ -17,7 +17,7 @@
 package com.ritense.valtimo.web.logging
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import io.github.oshai.kotlinlogging.KotlinLogging
+import mu.KotlinLogging
 import org.springframework.boot.web.client.RestClientCustomizer
 import org.springframework.http.HttpRequest
 import org.springframework.http.client.ClientHttpRequestExecution
@@ -69,7 +69,7 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
             Request:
             HTTP Method = ${request.method}
             Request URI = ${request.uri}
-            Headernames = ${request.headers.keys}
+            Headers = ${request.headers}
             Body = ${String(requestBody)}
             ---------------------------------------
             Response:

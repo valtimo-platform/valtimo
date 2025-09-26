@@ -16,11 +16,13 @@
 
 package com.ritense.case_.rest
 
+import com.fasterxml.jackson.annotation.JsonView
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
 import com.ritense.case_.service.CaseWidgetTabService
+import com.ritense.case_.widget.WidgetView
+import com.ritense.case_.widget.displayproperties.codelist.CodeListProvider
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -35,34 +37,37 @@ import org.springframework.web.bind.annotation.RequestMapping
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseWidgetTabManagementResource(
-    private val caseWidgetTabService: CaseWidgetTabService
+    private val caseWidgetTabService: CaseWidgetTabService,
+    private val codeListProviders: List<CodeListProvider>
 ) {
 
-    @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab/{tabKey}")
+    @GetMapping("/v1/case-definition/{caseDefinitionName}/widget-tab/{tabKey}")
+    @JsonView(WidgetView.Management::class)
     fun getCaseWidgetTab(
-        @PathVariable caseDefinitionKey: String,
-        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable caseDefinitionName: String,
         @PathVariable tabKey: String
     ): ResponseEntity<CaseWidgetTabDto> {
-        val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val widgetTab =  runWithoutAuthorization {
-            caseWidgetTabService.getWidgetTab(caseDefinitionId, tabKey)
+            caseWidgetTabService.getWidgetTab(caseDefinitionName, tabKey)
         }
         return ResponseEntity.ofNullable(widgetTab)
     }
 
-    @PostMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab/{tabKey}")
+    @PostMapping("/v1/case-definition/{caseDefinitionName}/widget-tab/{tabKey}")
+    @JsonView(WidgetView.Management::class)
     fun updateCaseWidgetTab(
-        @PathVariable caseDefinitionKey: String,
-        @PathVariable caseDefinitionVersionTag: String,
+        @PathVariable caseDefinitionName: String,
         @PathVariable tabKey: String,
         @Valid @RequestBody caseWidgetTabDto: CaseWidgetTabDto
     ): ResponseEntity<CaseWidgetTabDto> {
-        val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
-        caseWidgetTabDto.validate(caseDefinitionId)
         val widgetTab = runWithoutAuthorization {
             caseWidgetTabService.updateWidgetTab(caseWidgetTabDto)
         }
         return ResponseEntity.ofNullable(widgetTab)
+    }
+
+    @GetMapping("/v1/codelist-providers")
+    fun getCodeListProviderNames(): List<String> {
+        return codeListProviders.map { it.name }
     }
 }

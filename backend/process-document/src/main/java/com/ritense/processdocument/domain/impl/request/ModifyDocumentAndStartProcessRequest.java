@@ -19,13 +19,11 @@ package com.ritense.processdocument.domain.impl.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
 import com.ritense.processdocument.domain.request.Request;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class ModifyDocumentAndStartProcessRequest implements Request {
 
@@ -40,9 +38,6 @@ public class ModifyDocumentAndStartProcessRequest implements Request {
 
     @JsonIgnore
     private Map<String, Object> processVars;
-
-    @JsonIgnore
-    private Consumer<? super JsonSchemaDocument> additionalModifications;
 
     @JsonCreator
     public ModifyDocumentAndStartProcessRequest(
@@ -78,15 +73,4 @@ public class ModifyDocumentAndStartProcessRequest implements Request {
         return processVars;
     }
 
-    @Override
-    public Request withAdditionalModifications(Consumer<? super JsonSchemaDocument> function) {
-        this.additionalModifications = function;
-        return this;
-    }
-
-    public void doAdditionalModifications(JsonSchemaDocument document) {
-        if (this.additionalModifications != null) {
-            this.additionalModifications.accept(document);
-        }
-    }
 }

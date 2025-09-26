@@ -18,7 +18,6 @@ package com.ritense.logging.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
-import java.util.Objects
 
 @Embeddable
 class LoggingEventExceptionId(
@@ -28,18 +27,4 @@ class LoggingEventExceptionId(
 
     @Column(name = "i", updatable = false)
     val i: Short,
-) {
-    override fun hashCode() = Objects.hash(eventId, i)
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as LoggingEventExceptionId
-
-        if (eventId != other.eventId) return false
-        if (i != other.i) return false
-
-        return true
-    }
-}
+)

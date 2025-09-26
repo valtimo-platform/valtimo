@@ -20,10 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
-import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.service.DocumentDefinitionService
@@ -34,9 +32,9 @@ import com.ritense.documentenapi.domain.DocumentenApiVersion
 import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
-import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
+import com.ritense.processdocument.service.DocumentDefinitionProcessLinkService
+import com.ritense.valtimo.camunda.repository.CamundaProcessDefinitionSpecificationHelper
+import com.ritense.valtimo.camunda.service.CamundaRepositoryService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
 import org.springframework.core.io.Resource
@@ -57,10 +55,9 @@ class DocumentenApiVersionService(
     private val authorizationService: AuthorizationService,
     private val documentService: DocumentService,
     private val documentDefinitionService: DocumentDefinitionService,
-    private val caseDefinitionProcessLinkService: CaseDefinitionProcessLinkService,
+    private val documentDefinitionProcessLinkService: DocumentDefinitionProcessLinkService,
     private val pluginProcessLinkService: PluginProcessLinkService,
-    private val operatonRepositoryService: OperatonRepositoryService,
-    private val activeCaseDefinitionService: ActiveCaseDefinitionService
+    private val camundaRepositoryService: CamundaRepositoryService,
 ) {
 
     private var documentenApiVersions: Map<String, DocumentenApiVersion> = emptyMap()
@@ -101,9 +98,9 @@ class DocumentenApiVersionService(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<Triple<PluginConfiguration, DocumentenApiPlugin, DocumentenApiVersion?>> {
         return detectPluginConfigurations(caseDefinitionName)
-            .map { pluginConfiguration ->
+            .map {  pluginConfiguration ->
                 val plugin = pluginService.createInstance(pluginConfiguration) as DocumentenApiPlugin
-                val version = getVersionByTagOrNull(plugin.apiVersion)
+                val version = getVersionByTag(plugin.apiVersion)
                 Triple(pluginConfiguration, plugin, version)
             }
             .sortedByDescending { it.third }
@@ -114,22 +111,19 @@ class DocumentenApiVersionService(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<PluginConfiguration> {
         documentDefinitionService.requirePermission(caseDefinitionName, JsonSchemaDocumentDefinitionActionProvider.VIEW)
-        val caseDefinition = runWithoutAuthorization {
-                activeCaseDefinitionService.getActiveCaseDefinition(caseDefinitionName)
-            }
-        val link = caseDefinitionProcessLinkService.getDocumentDefinitionProcessLink(
-            caseDefinition.id,
+        val link = documentDefinitionProcessLinkService.getDocumentDefinitionProcessLink(
+            caseDefinitionName,
             "DOCUMENT_UPLOAD"
         )
-        if (link == null) {
+        if (link.isEmpty) {
             return emptyList()
         }
-        val processDefinitionKey = link.id.processDefinitionKey
+        val processDefinitionKey = link.get().id.processDefinitionKey
         val detectedConfigurations = AuthorizationContext.runWithoutAuthorization {
-            operatonRepositoryService.findLinkedProcessDefinitions(
-                OperatonProcessDefinitionSpecificationHelper.byKey(
+            camundaRepositoryService.findLinkedProcessDefinitions(
+                CamundaProcessDefinitionSpecificationHelper.byKey(
                     processDefinitionKey
-                ).and(OperatonProcessDefinitionSpecificationHelper.byLatestVersion())
+                ).and(CamundaProcessDefinitionSpecificationHelper.byLatestVersion())
             )
                 .asSequence()
                 .flatMap { pluginProcessLinkService.getProcessLinks(it.id) }
@@ -140,10 +134,7 @@ class DocumentenApiVersionService(
         return detectedConfigurations
     }
 
-    fun getVersionByTag(versionTag: String?): DocumentenApiVersion =
-        getVersionByTagOrNull(versionTag) ?: MINIMUM_VERSION
-
-    fun getVersionByTagOrNull(versionTag: String?): DocumentenApiVersion? = documentenApiVersions[versionTag]
+    fun getVersionByTag(versionTag: String?) = documentenApiVersions[versionTag]
 
     private fun loadResources(): Array<Resource> {
         return ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(PATH)

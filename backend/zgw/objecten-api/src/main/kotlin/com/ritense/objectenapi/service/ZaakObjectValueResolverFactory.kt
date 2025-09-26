@@ -18,14 +18,10 @@ package com.ritense.objectenapi.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.document.domain.impl.JsonSchemaDocument
-import com.ritense.logging.withLoggingContext
-import com.ritense.processdocument.domain.impl.OperatonProcessInstanceId
+import com.ritense.processdocument.domain.impl.CamundaProcessInstanceId
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.valueresolver.ValueResolverFactory
-import io.github.oshai.kotlinlogging.KotlinLogging
-import org.operaton.bpm.engine.delegate.VariableScope
+import org.camunda.bpm.engine.delegate.VariableScope
 import java.util.UUID
 import java.util.function.Function
 
@@ -44,15 +40,13 @@ class ZaakObjectValueResolverFactory(
         variableScope: VariableScope
     ): Function<String, Any?> {
         return Function { requestedValue ->
-            logger.debug { "Requested zaak object value '$requestedValue' for process $processInstanceId" }
-            val documentId = processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), variableScope).toString()
+            val documentId = processDocumentService.getDocumentId(CamundaProcessInstanceId(processInstanceId), variableScope).toString()
             getZaakData(requestedValue, documentId)
         }
     }
 
     override fun createResolver(documentId: String): Function<String, Any?> {
         return Function { requestedValue ->
-            logger.debug { "Requested zaak object value '$requestedValue' for document $documentId" }
             getZaakData(requestedValue, documentId)
         }
     }
@@ -62,28 +56,20 @@ class ZaakObjectValueResolverFactory(
         variableScope: VariableScope?,
         values: Map<String, Any?>
     ) {
-        throw UnsupportedOperationException("Zaak object value resolver does not support setting values")
+        TODO()
     }
 
     private fun getZaakData(requestedValue: String, documentId: String): Any? {
-        return withLoggingContext(JsonSchemaDocument::class, documentId) {
-            val requestedData = ZaakObjectDataResolver.RequestedData(requestedValue)
-            val zaakObject = runWithoutAuthorization {
-                zaakObjectService.getZaakObjectOfTypeByName(UUID.fromString(documentId), requestedData.objectType)
-            }
-            val dataAsJsonNode = objectMapper.valueToTree<JsonNode>(zaakObject.record.data)
-            val node = dataAsJsonNode.at(requestedData.path)
-            return@withLoggingContext if (node == null || node.isMissingNode || node.isNull) {
-                null
-            } else if (node.isValueNode || node.isArray || node.isObject) {
-                objectMapper.treeToValue(node, Object::class.java)
-            } else {
-                node.asText()
-            }
+        val requestedData = ZaakObjectDataResolver.RequestedData(requestedValue)
+        val zaakObject = zaakObjectService.getZaakObjectOfTypeByName(UUID.fromString(documentId), requestedData.objectType)
+        val dataAsJsonNode = objectMapper.valueToTree<JsonNode>(zaakObject.record.data)
+        val node = dataAsJsonNode.at(requestedData.path)
+        return if (node == null || node.isMissingNode || node.isNull) {
+            null
+        } else if (node.isValueNode || node.isArray || node.isObject) {
+            objectMapper.treeToValue(node, Object::class.java)
+        } else {
+            node.asText()
         }
-    }
-
-    companion object {
-        private val logger = KotlinLogging.logger {}
     }
 }

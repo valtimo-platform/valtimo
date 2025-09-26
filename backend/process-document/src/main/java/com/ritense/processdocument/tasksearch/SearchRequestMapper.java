@@ -160,7 +160,7 @@ public class SearchRequestMapper {
             }
         } else if (searchField.getMatchType() == LIKE) {
             return DatabaseSearchType.LIKE;
-        } else if (searchField.getMatchType() == EXACT || searchField.getMatchType() == null) {
+        } else if (searchField.getMatchType() == EXACT) {
             return DatabaseSearchType.EQUAL;
         } else {
             throw new IllegalStateException("Unknown match type: " + searchField.getMatchType());

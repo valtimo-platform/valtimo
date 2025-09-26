@@ -16,7 +16,6 @@
 
 package com.ritense.valueresolver.autoconfiguration
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.valueresolver.FixedValueResolverFactory
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory
 import com.ritense.valueresolver.ValueResolverFactory
@@ -24,7 +23,7 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.valueresolver.ValueResolverServiceImpl
 import com.ritense.valueresolver.security.config.ValueResolverHttpSecurityConfigurer
 import com.ritense.valueresolver.web.rest.ValueResolverResource
-import org.operaton.bpm.engine.RuntimeService
+import org.camunda.bpm.engine.RuntimeService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -66,9 +65,8 @@ class ValueResolverAutoConfiguration {
     @ConditionalOnMissingBean(ProcessVariableValueResolverFactory::class)
     fun processVariableValueResolver(
         runtimeService: RuntimeService,
-        objectMapper: ObjectMapper,
     ): ValueResolverFactory {
-        return ProcessVariableValueResolverFactory(runtimeService, objectMapper)
+        return ProcessVariableValueResolverFactory(runtimeService)
     }
 
     @Bean

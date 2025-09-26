@@ -19,14 +19,9 @@ package com.ritense.documentenapi
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
-import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.documentenapi.DocumentenApiPlugin.Companion.PLUGIN_KEY
-import com.ritense.documentenapi.client.BestandsdelenRequest
 import com.ritense.documentenapi.client.CreateDocumentRequest
-import com.ritense.documentenapi.client.CreateDocumentResult
 import com.ritense.documentenapi.client.DocumentInformatieObject
-import com.ritense.documentenapi.client.DocumentLock
 import com.ritense.documentenapi.client.DocumentStatusType
 import com.ritense.documentenapi.client.DocumentenApiClient
 import com.ritense.documentenapi.client.PatchDocumentRequest
@@ -45,13 +40,11 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.resource.domain.MetadataType
 import com.ritense.resource.service.TemporaryResourceStorageService
-import com.ritense.temporaryresource.domain.StorageMetadataKeys
 import com.ritense.valtimo.contract.validation.Url
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService
 import com.ritense.zgw.domain.Vertrouwelijkheid
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.ValidationException
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import mu.KotlinLogging
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.hibernate.validator.constraints.Length
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
@@ -74,8 +67,7 @@ class DocumentenApiPlugin(
     private val objectMapper: ObjectMapper,
     private val documentDeleteHandlers: List<DocumentDeleteHandler>,
     private val documentenApiVersionService: DocumentenApiVersionService,
-    private val pluginService: PluginService,
-    private val runtimeService: OperatonRuntimeService,
+    private val pluginService: PluginService
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -109,17 +101,12 @@ class DocumentenApiPlugin(
         @PluginActionProperty taal: String = DEFAULT_LANGUAGE,
         @PluginActionProperty status: DocumentStatusType = DocumentStatusType.DEFINITIEF
     ) {
-        val resourceId = getResourceId(execution, localDocumentLocation)
-        val documentUrl = storageService.getMetadataValueOrNull(resourceId, StorageMetadataKeys.DOCUMENT_URL)
-        if (documentUrl?.startsWith(url.toString()) == true) {
-            logger.warn { "Skipping document upload. Document already exists with url '$documentUrl'." }
-            execution.setVariable(localDocumentLocation, documentUrl)
-            return
-        }
-        val contentAsInputStream = storageService.getResourceContentAsInputStream(resourceId)
-        val metadata = storageService.getResourceMetadata(resourceId)
+        val documentLocation = execution.getVariable(localDocumentLocation) as String?
+            ?: throw IllegalStateException("Failed to store document. No process variable '$localDocumentLocation' found.")
+        val contentAsInputStream = storageService.getResourceContentAsInputStream(documentLocation)
+        val metadata = storageService.getResourceMetadata(documentLocation)
 
-        val result = storeDocument(
+        storeDocument(
             execution = execution,
             metadata = metadata,
             titel = title,
@@ -130,9 +117,8 @@ class DocumentenApiPlugin(
             inhoudAsInputStream = contentAsInputStream,
             beschrijving = description,
             informatieobjecttype = informatieobjecttype,
-            storedDocumentKey = storedDocumentUrl
+            storedDocumentUrl = storedDocumentUrl
         )
-        storageService.saveMetadataValue(resourceId, StorageMetadataKeys.DOCUMENT_URL, result.url)
     }
 
     @PluginAction(
@@ -144,57 +130,24 @@ class DocumentenApiPlugin(
     fun storeUploadedDocument(
         execution: DelegateExecution
     ) {
-        val resourceId = getResourceId(execution)
-        val documentUrl = storageService.getMetadataValueOrNull(resourceId, StorageMetadataKeys.DOCUMENT_URL)
-        if (documentUrl?.startsWith(url.toString()) == true) {
-            logger.warn { "Skipping document upload. Document already exists with url '$documentUrl'." }
-            execution.setVariable(DOCUMENT_URL_PROCESS_VAR, documentUrl)
-            return
-        }
+        val resourceId = execution.getVariable(RESOURCE_ID_PROCESS_VAR) as String?
+            ?: throw IllegalStateException("Failed to store document. No process variable '$RESOURCE_ID_PROCESS_VAR' found.")
         val contentAsInputStream = storageService.getResourceContentAsInputStream(resourceId)
         val metadata = storageService.getResourceMetadata(resourceId)
-        val processInstanceId = metadata[StorageMetadataKeys.PROCESS_INSTANCE_ID.key] as? String
-        val documentUrlProcessVariable = metadata[StorageMetadataKeys.DOCUMENT_URL_PROCESS_VARIABLE.key] as? String
-        val result = storeDocument(
+
+        storeDocument(
             execution = execution,
             metadata = metadata,
+            titel = null,
+            vertrouwelijkheidaanduiding = null,
+            status = null,
+            taal = null,
+            bestandsnaam = null,
             inhoudAsInputStream = contentAsInputStream,
+            beschrijving = null,
             informatieobjecttype = null,
-            storedDocumentKey = DOCUMENT_URL_PROCESS_VAR,
+            storedDocumentUrl = DOCUMENT_URL_PROCESS_VAR,
         )
-
-        setDocumentUrlProcessVariableForRelatedProcess(processInstanceId, result.url, documentUrlProcessVariable)
-        storageService.saveMetadataValue(resourceId, StorageMetadataKeys.DOCUMENT_URL, result.url)
-    }
-
-    @PluginAction(
-        key = "store-uploaded-document-in-parts",
-        title = "Store uploaded document in parts",
-        description = "Store an uploaded document in the Documenten API in parts using the bestandsdelen api",
-        activityTypes = [ActivityTypeWithEventName.SERVICE_TASK_START]
-    )
-    fun storeUploadedDocumentInParts(
-        execution: DelegateExecution
-    ) {
-        val resourceId = getResourceId(execution)
-        val documentUrl = storageService.getMetadataValueOrNull(resourceId, StorageMetadataKeys.DOCUMENT_URL)
-        if (documentUrl?.startsWith(url.toString()) == true) {
-            logger.warn { "Skipping document upload. Document already exists with url '$documentUrl'." }
-            execution.setVariable(DOCUMENT_URL_PROCESS_VAR, documentUrl)
-            return
-        }
-        val contentAsInputStream = storageService.getResourceContentAsInputStream(resourceId)
-        val metadata = storageService.getResourceMetadata(resourceId)
-        val processInstanceId = metadata[StorageMetadataKeys.PROCESS_INSTANCE_ID.key] as? String
-        val documentUrlProcessVariable = metadata[StorageMetadataKeys.DOCUMENT_URL_PROCESS_VARIABLE.key] as? String
-        val result = storeDocumentInParts(
-            execution = execution,
-            metadata = metadata,
-            inhoudAsInputStream = contentAsInputStream,
-        )
-
-        setDocumentUrlProcessVariableForRelatedProcess(processInstanceId, result.url, documentUrlProcessVariable)
-        storageService.saveMetadataValue(resourceId, StorageMetadataKeys.DOCUMENT_URL, result.url)
     }
 
     @PluginAction(
@@ -250,7 +203,6 @@ class DocumentenApiPlugin(
     }
 
     fun deleteInformatieObject(objectUrl: URI) {
-        logger.info { "Deleting informatie object from documenten API with url $objectUrl" }
         documentDeleteHandlers.forEach { it.preDocumentDelete(objectUrl) }
         client.deleteInformatieObject(authenticationPluginConfiguration, objectUrl)
     }
@@ -265,16 +217,6 @@ class DocumentenApiPlugin(
         val documentLock = client.lockInformatieObject(authenticationPluginConfiguration, documentUrl)
         try {
             patchDocumentRequest.lock = documentLock.lock
-
-            runWithoutAuthorization {
-                require(
-                    documentenApiVersionService.getVersionByTag(apiVersion).supportsUpdatingDefinitiveDocument
-                        || getInformatieObject(documentUrl).status != DocumentStatusType.DEFINITIEF
-                ) {
-                    "InformatieObject ${documentUrl.path.substringAfterLast("/")} with status 'definitief' cannot be updated in Documenten API with '$apiVersion'"
-                }
-            }
-
             val modifiedDocument =
                 client.modifyInformatieObject(authenticationPluginConfiguration, documentUrl, patchDocumentRequest)
             return modifiedDocument
@@ -291,53 +233,43 @@ class DocumentenApiPlugin(
         }
     }
 
-    private fun getResourceId(
-        execution: DelegateExecution,
-        localDocumentLocation: String = RESOURCE_ID_PROCESS_VAR,
-    ): String {
-        return execution.getVariable(localDocumentLocation) as String?
-            ?: throw IllegalStateException("Failed to store document. No process variable '$localDocumentLocation' found.")
-    }
-
     private fun storeDocument(
         execution: DelegateExecution,
         metadata: Map<String, Any?>,
-        titel: String? = null,
-        vertrouwelijkheidaanduiding: String? = null,
-        status: DocumentStatusType? = null,
-        taal: String? = null,
-        bestandsnaam: String? = null,
-        inhoudAsInputStream: InputStream = InputStream.nullInputStream(),
-        beschrijving: String? = null,
-        informatieobjecttype: String? = null,
-        storedDocumentKey: String,
-    ): CreateDocumentResult {
+        titel: String?,
+        vertrouwelijkheidaanduiding: String?,
+        status: DocumentStatusType?,
+        taal: String?,
+        bestandsnaam: String?,
+        inhoudAsInputStream: InputStream,
+        beschrijving: String?,
+        informatieobjecttype: String?,
+        storedDocumentUrl: String,
+    ) {
         val vertrouwelijkheidaanduidingEnum = Vertrouwelijkheid.fromKey(
-            vertrouwelijkheidaanduiding ?: getUploadField(
+            vertrouwelijkheidaanduiding ?: getMetadataField(
                 metadata,
                 VERTROUWELIJKHEIDAANDUIDING_FIELD
             )
         )
-        val trefwoorden = (getUploadField(metadata, TREFWOORDEN_FIELD) as String?)
-            ?.split(',')
-            ?.filter { it.isNotBlank() }
+        val trefwoorden = (getMetadataField(metadata, TREFWOORDEN_FIELD) as String?)?.split(',')
 
         val request = CreateDocumentRequest(
             bronorganisatie = bronorganisatie,
             creatiedatum = getLocalDateFromMetaData(metadata, CREATIEDATUM_FIELD) ?: LocalDate.now(),
-            titel = titel ?: getUploadField(metadata, TITEL_FIELD)!!,
+            titel = titel ?: getMetadataField(metadata, TITEL_FIELD)!!,
             vertrouwelijkheidaanduiding = vertrouwelijkheidaanduidingEnum,
-            auteur = getUploadField(metadata, AUTEUR_FIELD) ?: DEFAULT_AUTHOR,
+            auteur = getMetadataField(metadata, AUTEUR_FIELD) ?: DEFAULT_AUTHOR,
             status = status ?: getStatusFromMetaData(metadata),
-            taal = taal ?: getUploadField(metadata, TAAL_FIELD) ?: DEFAULT_LANGUAGE,
-            bestandsnaam = bestandsnaam ?: getUploadField(metadata, BESTANDSNAAM_FIELD),
+            taal = taal ?: getMetadataField(metadata, TAAL_FIELD) ?: DEFAULT_LANGUAGE,
+            bestandsnaam = bestandsnaam ?: getMetadataField(metadata, BESTANDSNAAM_FIELD),
             bestandsomvang = (metadata[MetadataType.FILE_SIZE.key] as String?)?.toLong(),
             inhoud = inhoudAsInputStream,
-            beschrijving = beschrijving ?: getUploadField(metadata, BESCHRIJVING_FIELD),
+            beschrijving = beschrijving ?: getMetadataField(metadata, BESCHRIJVING_FIELD),
             ontvangstdatum = getLocalDateFromMetaData(metadata, ONTVANGSTDATUM_FIELD),
             verzenddatum = getLocalDateFromMetaData(metadata, VERZENDDATUM_FIELD),
-            informatieobjecttype = informatieobjecttype ?: getUploadField(metadata, INFORMATIEOBJECTTYPE_FIELD),
-            formaat = getUploadField(metadata, FORMAAT_FIELD),
+            informatieobjecttype = informatieobjecttype ?: getMetadataField(metadata, INFORMATIEOBJECTTYPE_FIELD),
+            formaat = getMetadataField(metadata, FORMAAT_FIELD),
             trefwoorden = trefwoorden,
         )
         logger.info { "Store document $request" }
@@ -351,7 +283,7 @@ class DocumentenApiPlugin(
             documentCreateResult.beginRegistratie
         )
         applicationEventPublisher.publishEvent(event)
-        execution.setVariable(storedDocumentKey, documentCreateResult.url)
+        execution.setVariable(storedDocumentUrl, documentCreateResult.url)
         val documentId = documentCreateResult.url.substringAfterLast('/')
         execution.setVariable(DOCUMENT_ID_PROCESS_VAR, documentId)
         try {
@@ -363,48 +295,6 @@ class DocumentenApiPlugin(
                 "Failed to set the $DOWNLOAD_URL_PROCESS_VAR variable in the DelegateExecution", e
             )
         }
-
-        return documentCreateResult
-    }
-
-    /**
-     * Using the bestandsdelen api a document can be uploaded in chunks. This upload method entails several api calls
-     * to store a document:
-     *  - First the document metadata is uploaded without the 'inhoud' parameter. The response of this method will
-     *    contain a 'lock' parameter that must be used in the next call
-     *  - Using the provided lock the contents of the file is uploaded to the bestandsdelen api
-     *  - When the complete file is uploaded the unlock api must be called. This will unlock the document enabling it
-     *    for download.
-     */
-    private fun storeDocumentInParts(
-        execution: DelegateExecution,
-        metadata: Map<String, Any>,
-        inhoudAsInputStream: InputStream,
-    ): CreateDocumentResult {
-        val documentCreateResult = storeDocument(
-            execution = execution,
-            metadata = metadata,
-            storedDocumentKey = DOCUMENT_URL_PROCESS_VAR
-        )
-
-        val bestandsdelenRequest = BestandsdelenRequest(
-            inhoud = inhoudAsInputStream
-        )
-
-        client.storeDocumentInParts(
-            authenticationPluginConfiguration,
-            url,
-            bestandsdelenRequest,
-            documentCreateResult,
-        )
-
-        val documentLock = DocumentLock(documentCreateResult.getLockOrEmpty())
-        client.unlockInformatieObject(
-            authenticationPluginConfiguration,
-            URI.create(documentCreateResult.url),
-            documentLock
-        )
-        return documentCreateResult
     }
 
     private fun getDocumentenApiPluginByInformatieobjectUrl(informatieobjectUrl: URI): PluginConfiguration {
@@ -420,31 +310,21 @@ class DocumentenApiPlugin(
         return "/api/v1/documenten-api/${pluginId}/files/${documentId}/download"
     }
 
-    private fun <T> getUploadField(metadata: Map<String, Any?>, field: List<String>): T? =
+    private fun <T> getMetadataField(metadata: Map<String, Any?>, field: List<String>): T? =
         field.firstNotNullOfOrNull { metadata[it] as T? }
 
     private fun getLocalDateFromMetaData(metadata: Map<String, Any?>, field: List<String>): LocalDate? {
-        return getUploadField<String?>(metadata, field)?.let { LocalDate.parse(it) }
+        return getMetadataField<String?>(metadata, field)?.let { LocalDate.parse(it) }
     }
 
-    private fun getStatusFromMetaData(metadata: Map<String, Any?>): DocumentStatusType? {
-        val status: String? = getUploadField(metadata, STATUS_FIELD)
+    private fun getStatusFromMetaData(metadata: Map<String, Any?>): DocumentStatusType {
+        val status: String? = getMetadataField(metadata, STATUS_FIELD)
         return if (status != null) {
             DocumentStatusType.fromKey(status)
                 ?: throw IllegalStateException("Failed to store document. Invalid status '$status' found in metadata.")
         } else {
-            null
+            DocumentStatusType.DEFINITIEF
         }
-    }
-
-    private fun setDocumentUrlProcessVariableForRelatedProcess(
-        processInstanceId: String?,
-        documentUrl: String,
-        documentUrlProcessVariable: String?,
-    ) {
-        if (processInstanceId.isNullOrBlank()) return
-        val variableName = documentUrlProcessVariable?.takeIf { it.isNotBlank() } ?: DOCUMENT_URL_PROCESS_VAR
-        runtimeService.setVariable(processInstanceId, variableName, documentUrl)
     }
 
     companion object {
@@ -457,7 +337,7 @@ class DocumentenApiPlugin(
         const val DOCUMENT_ID_PROCESS_VAR = "documentId"
         const val DOWNLOAD_URL_PROCESS_VAR = "downloadUrl"
 
-        val BESTANDSNAAM_FIELD = listOf("bestandsnaam", MetadataType.FILE_NAME.key)
+        val BESTANDSNAAM_FIELD = listOf("filename", "bestandsnaam", MetadataType.FILE_NAME.key)
         val TITEL_FIELD = listOf("title", "titel") + BESTANDSNAAM_FIELD
         val AUTEUR_FIELD = listOf("author", "auteur", MetadataType.USER.key)
         val BESCHRIJVING_FIELD = listOf("description", "beschrijving")
