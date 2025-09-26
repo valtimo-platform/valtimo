@@ -1,0 +1,62 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.ritense.processdocument.domain.impl.listener;
+
+import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService;
+import com.ritense.processdocument.service.ProcessDocumentAssociationService;
+import com.ritense.valtimo.service.OperatonProcessService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class UndeployDocumentDefinitionEventListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(UndeployDocumentDefinitionEventListener.class);
+    private final ProcessDocumentAssociationService processDocumentAssociationService;
+    private final ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService;
+    private final OperatonProcessService operatonProcessService;
+    private static final String REASON = "Triggerd undeployment of document definition";
+
+    public UndeployDocumentDefinitionEventListener(
+        ProcessDocumentAssociationService processDocumentAssociationService,
+        ProcessDefinitionCaseDefinitionService processDefinitionCaseDefinitionService,
+        OperatonProcessService operatonProcessService
+    ) {
+        this.processDocumentAssociationService = processDocumentAssociationService;
+        this.processDefinitionCaseDefinitionService = processDefinitionCaseDefinitionService;
+        this.operatonProcessService = operatonProcessService;
+    }
+
+//TODO: How do we want to support this?
+/*    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void handleEvent(UndeployDocumentDefinitionEvent event) {
+        logger.debug("process document definition to be removed due to undeployment document definition with name: {}", event.getDocumentDefinitionName());
+        String documentDefinitionName = event.getDocumentDefinitionName();
+        AuthorizationContext.runWithoutAuthorization(() -> {
+            processDefinitionCaseDefinitionService.findByDocumentDefinitionName(documentDefinitionName).ifPresent(processDocumentDefinition -> {
+                operatonProcessService.deleteAllProcesses(
+                    processDocumentDefinition.processDocumentDefinitionId().processDefinitionKey().toString(), REASON
+                );
+                processDocumentAssociationService.deleteProcessDocumentInstances(
+                    processDocumentDefinition.processName());
+                processDefinitionCaseDefinitionService.deleteProcessDocumentDefinition(documentDefinitionName);
+            });
+            return null;
+        });
+    }*/
+
+}
