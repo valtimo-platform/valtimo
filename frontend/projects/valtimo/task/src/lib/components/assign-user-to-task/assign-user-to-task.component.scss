@@ -1,0 +1,86 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:host ::ng-deep .cds--popover-content {
+  max-inline-size: unset;
+}
+
+.assign-user-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: 0.16px;
+  color: var(--cds-link-01);
+
+  .bold {
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.remove-button {
+  width: 100%;
+}
+
+.assignee-text {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.element {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  transition: opacity 0.3s ease-in-out;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  &.main {
+    position: relative;
+  }
+}
+
+.assign-task-popover-content {
+  width: 400px;
+  max-inline-size: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .cds--btn {
+    width: 100%;
+    max-width: unset;
+  }
+}
+
+.set-assignee-button {
+  width: 250px;
+}

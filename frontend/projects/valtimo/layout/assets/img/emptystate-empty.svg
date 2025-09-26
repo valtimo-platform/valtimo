@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="80"
+   height="80"
+   class="iot--empty-state--icon"
+   data-testid="EmptyState-icon"
+   version="1.1"
+   id="svg280"
+   sodipodi:docname="empty.svg"
+   inkscape:version="1.2.2 (b0a8486, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview282"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="12.8375"
+     inkscape:cx="39.961052"
+     inkscape:cy="40"
+     inkscape:window-width="1390"
+     inkscape:window-height="1205"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg280" />
+  <defs
+     id="defs246">
+    <linearGradient
+       id="a"
+       x1="37.502%"
+       x2="55.959%"
+       y1="34.928%"
+       y2="57.808%">
+      <stop
+         offset="0%"
+         stop-opacity=".04"
+         id="stop196" />
+      <stop
+         offset="100%"
+         stop-opacity=".04"
+         id="stop198" />
+    </linearGradient>
+    <linearGradient
+       id="b"
+       x1="-63.062%"
+       x2="101.194%"
+       y1="77.587%"
+       y2="37.496%">
+      <stop
+         offset="0%"
+         stop-color="#767676"
+         id="stop201" />
+      <stop
+         offset="100%"
+         stop-color="#929292"
+         id="stop203" />
+    </linearGradient>
+    <linearGradient
+       id="c"
+       x1="73.167%"
+       x2="44.204%"
+       y1="89.948%"
+       y2="39.998%">
+      <stop
+         offset="0%"
+         stop-color="#969696"
+         id="stop206" />
+      <stop
+         offset="100%"
+         stop-color="#E8E8E8"
+         id="stop208" />
+    </linearGradient>
+    <linearGradient
+       id="d"
+       x1="-23.114%"
+       x2="57.391%"
+       y1="-11.496%"
+       y2="56.197%">
+      <stop
+         offset="0%"
+         stop-color="#393939"
+         id="stop211" />
+      <stop
+         offset="99%"
+         stop-color="#525252"
+         id="stop213" />
+    </linearGradient>
+    <linearGradient
+       id="e"
+       x1="5.255%"
+       x2="56.521%"
+       y1="115.2%"
+       y2="40.489%">
+      <stop
+         offset="0%"
+         stop-color="#9C9C9C"
+         id="stop216" />
+      <stop
+         offset="100%"
+         stop-color="#C5C5C5"
+         id="stop218" />
+    </linearGradient>
+    <linearGradient
+       id="f"
+       x1="45.625%"
+       x2="61.212%"
+       y1="38.922%"
+       y2="78.234%">
+      <stop
+         offset="0%"
+         stop-color="#8A8A8A"
+         id="stop221" />
+      <stop
+         offset="100%"
+         stop-color="#B5B5B5"
+         id="stop223" />
+    </linearGradient>
+    <linearGradient
+       id="g"
+       x1="57.243%"
+       x2="41.531%"
+       y1="31.727%"
+       y2="71.327%">
+      <stop
+         offset="0%"
+         stop-color="#A4A4A4"
+         id="stop226" />
+      <stop
+         offset="100%"
+         stop-color="#BEBEBE"
+         id="stop228" />
+    </linearGradient>
+    <linearGradient
+       id="h"
+       x1="27.599%"
+       x2="45.796%"
+       y1="69.394%"
+       y2="53.639%">
+      <stop
+         offset="0%"
+         stop-color="#C2C2C2"
+         id="stop231" />
+      <stop
+         offset="100%"
+         stop-color="#E8E8E8"
+         id="stop233" />
+    </linearGradient>
+    <linearGradient
+       id="i"
+       x1="62.356%"
+       x2="31.337%"
+       y1="64.634%"
+       y2="27.889%">
+      <stop
+         offset="0%"
+         stop-color="#C6C6C6"
+         id="stop236" />
+      <stop
+         offset="100%"
+         stop-color="#E8E8E8"
+         id="stop238" />
+    </linearGradient>
+    <linearGradient
+       id="j"
+       x1="62.354%"
+       x2="43.81%"
+       y1="114.244%"
+       y2="17.782%">
+      <stop
+         offset="0%"
+         stop-color="#B7B7B7"
+         id="stop241" />
+      <stop
+         offset="100%"
+         stop-color="#EEE"
+         id="stop243" />
+    </linearGradient>
+  </defs>
+  <g
+     fill="none"
+     id="g278">
+    <path
+       fill="#A8A8A8"
+       d="M36.131 27.683c.03.03.065.053.103.069h.042l-.159-.09s0 .02.014.02z"
+       id="path248" />
+    <path
+       fill="url(#a)"
+       d="M28.793.593.041 17.241l28.835 16.697 28.758-16.62z"
+       transform="translate(11.724 43)"
+       id="path250" />
+    <path
+       fill="url(#b)"
+       d="M.069 16.207v24.476L28.062 24.51V.034L.07 16.207z"
+       transform="translate(12.414 7.138)"
+       id="path252" />
+    <path
+       fill="url(#c)"
+       d="M40.455 2.807 27.945.33 0 16.551l12.483 2.477z"
+       transform="translate(0 4.38)"
+       id="path254" />
+    <path
+       fill="url(#d)"
+       d="M27.986.276 0 16.462l28.048 16.241 27.986-16.151z"
+       transform="translate(12.414 31.276)"
+       id="path256" />
+    <path
+       fill="url(#e)"
+       d="M28.434 40.641V16.207L.47.034V24.47l27.965 16.172z"
+       transform="translate(40 7.138)"
+       id="path258" />
+    <path
+       fill="url(#f)"
+       d="M28.476 24.828V.352l-28 16.2v24.482l28-16.206z"
+       transform="translate(40 23)"
+       id="path260" />
+    <path
+       fill="url(#g)"
+       d="M28.062 41.007V16.524L.097.36v24.475l27.965 16.173z"
+       transform="translate(12.414 23)"
+       id="path262" />
+    <path
+       fill="url(#h)"
+       d="M28.517 20.407 40 16.84 11.952.607.469 4.172z"
+       transform="translate(40 3)"
+       id="path264" />
+    <path
+       fill="url(#i)"
+       d="M39.559 10.834 28.524.317.517 16.503l11.076 10.51z"
+       transform="translate(40 23)"
+       id="path266" />
+    <path
+       fill="url(#j)"
+       d="m28.276 31.848 10.227-15.296L10.455.276.235 15.606z"
+       transform="translate(2.069 23)"
+       id="path268" />
+    <path
+       fill="#FFF"
+       d="m2.303 38.607.063.041 10.158-15.227 27.966 16.2.082-.104-28.048-16.241z"
+       id="path270" />
+    <path
+       fill="#FFF"
+       d="m68.69 23.503-.2-.186-27.973 16.186 11.076 10.51.076-.054-10.855-10.345z"
+       id="path272" />
+    <path
+       fill="#999"
+       d="m80 19.841-.159-.09-11.324 3.511-27.89-16.124-.158.055 28.048 16.235z"
+       id="path274" />
+    <path
+       fill="#FFF"
+       d="M68.517 23.262h.09L40.614 7.028v-.042l-.131.042 28.034 16.234z"
+       id="path276" />
+  </g>
+</svg>

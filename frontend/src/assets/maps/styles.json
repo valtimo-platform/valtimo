@@ -1,0 +1,28 @@
+[
+  {
+    "id": "woonfunctie",
+    "stylename": "pand-woonfunctie",
+    "description": null,
+    "strokecolor": "rgba(123,0,118,.5)",
+    "strokewidth": 8.0,
+    "fillcolor": "rgba(255, 255, 255, 0.1)",
+    "styletype": "POLYGON",
+    "iconname": null,
+    "iconwidth": 0,
+    "iconheight": 0,
+    "iconscale": null
+  },
+  {
+    "id": "industriefunctie",
+    "stylename": "pand-industriefunctie",
+    "description": null,
+    "strokecolor": "rgba(200,100,121, 0.8)",
+    "strokewidth": 8.0,
+    "fillcolor": "rgba(255, 255, 255, 0.1)",
+    "styletype": "POLYGON",
+    "iconname": null,
+    "iconwidth": 0,
+    "iconheight": 0,
+    "iconscale": null
+  }
+]

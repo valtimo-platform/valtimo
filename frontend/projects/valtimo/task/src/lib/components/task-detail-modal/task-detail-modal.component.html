@@ -1,0 +1,132 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  id="taskDetailModal"
+  [size]="size$ | async"
+  [open]="modalOpen$ | async"
+  (close)="closeModal()"
+  valtimoCdsModal
+  [minContentHeight]="480"
+>
+  <cds-modal-header (closeSelect)="closeModal()">
+    <div class="title-container">
+      <p class="cds--modal-header__heading cds--type-beta">{{ (page$ | async)?.title }}</p>
+
+      <p class="cds--modal-header__label cds--type-delta">{{ (page$ | async)?.subtitle }}</p>
+
+      <p
+        class="cds--modal-header__label cds--type-delta"
+        *ngIf="currentIntermediateSave$ | async as currentIntermediateSave"
+      >
+        {{ 'formManagement.intermediateSave.lastSavedBy' | translate }}:
+
+        {{
+          currentIntermediateSave?.editedBy
+            ? currentIntermediateSave?.editedBy
+            : currentIntermediateSave.createdBy
+        }}
+
+        {{ 'formManagement.intermediateSave.on' | translate }}:
+
+        {{
+          currentIntermediateSave?.editedOn
+            ? currentIntermediateSave?.editedOn
+            : currentIntermediateSave.createdOn
+        }}
+      </p>
+
+      <ng-container *ngTemplateOutlet="assignUserToTask"></ng-container>
+    </div>
+
+    <div class="save-buttons-margin">
+      <button
+        *ngIf="!(openFromCaseManagement$ | async)"
+        cdsButton="ghost"
+        iconOnly="true"
+        cdsIcon="folder--details--reference"
+        [vTooltip]="'formManagement.navigateToRelatedCase' | translate"
+        (click)="openRelatedCase()"
+      ></button>
+
+      @if (processLinkPreloaded$ | async) {
+        <valtimo-task-detail-intermediate-save
+          [taskAndProcessLink]="taskAndProcessLink$ | async"
+          (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+          (showModalEvent)="onShowModalEvent()"
+        ></valtimo-task-detail-intermediate-save>
+      } @else {
+        <valtimo-task-detail-intermediate-save
+          [task]="task$ | async"
+          (currentIntermediateSaveEvent)="onCurrentIntermediateSaveEvent($event)"
+          (showModalEvent)="onShowModalEvent()"
+        ></valtimo-task-detail-intermediate-save>
+      }
+    </div>
+  </cds-modal-header>
+
+  <div body class="cds--modal-content pb-1">
+    @if (processLinkPreloaded$ | async) {
+      <valtimo-task-detail-content
+        [taskAndProcessLink]="taskAndProcessLink$ | async"
+        [modalClosed]="modalCloseEvent$ | async"
+        (formSubmit)="onFormSubmit()"
+        (closeModalEvent)="closeModal()"
+      ></valtimo-task-detail-content>
+    } @else {
+      <valtimo-task-detail-content
+        [task]="task$ | async"
+        [modalClosed]="modalCloseEvent$ | async"
+        (formSubmit)="onFormSubmit()"
+        (closeModalEvent)="closeModal()"
+      ></valtimo-task-detail-content>
+    }
+  </div>
+</cds-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showConfirmationModal$"
+  (confirmEvent)="clearCurrentProgress()"
+  (cancelEvent)="showConfirmationModal$.next(false)"
+  cancelButtonType="ghost"
+  confirmButtonTextTranslationKey="interface.confirm"
+  titleTranslationKey="formManagement.intermediateSave.clear"
+  contentTranslationKey="formManagement.intermediateSave.clearConfirm"
+></valtimo-confirmation-modal>
+
+<ng-template #assignUserToTask>
+  <div
+    *ngIf="{
+      task: task$ | async,
+      canAssignUserToTask: canAssignUserToTask$ | async,
+      canModifyTask: canModifyTask$ | async,
+    } as obs"
+    class="task-actions"
+  >
+    <valtimo-assign-user-to-task
+      *ngIf="obs.task && assignmentOfTaskChanged"
+      [taskId]="obs.task.id"
+      [assigneeId]="obs.task.assignee"
+      [canAssignUserToTask]="obs.canAssignUserToTask"
+      (assignmentOfTaskChanged)="assignmentOfTaskChanged.emit()"
+    ></valtimo-assign-user-to-task>
+
+    <valtimo-set-task-due-date
+      [task]="obs.task"
+      [canModifyTask]="obs.canModifyTask"
+    ></valtimo-set-task-due-date>
+  </div>
+</ng-template>

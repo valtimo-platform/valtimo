@@ -1,0 +1,342 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="right-sidebar-menu">
+  <cds-panel [expanded]="panelExpanded$ | async">
+    <div cdsGrid [condensed]="true">
+      <div cdsRow>
+        <div cdsCol [columnNumbers]="{lg: 16}" class="menu-tabs" cdsLayer>
+          <cds-tabs class="cds--tab--list--full-width">
+            <cds-tab [heading]="'account.title' | translate">
+              <ng-container *ngTemplateOutlet="accountTabTemplate"></ng-container>
+            </cds-tab>
+
+            <cds-tab [heading]="'settings.title' | translate">
+              <ng-container *ngTemplateOutlet="settingsTabTemplate"></ng-container>
+            </cds-tab>
+          </cds-tabs>
+        </div>
+      </div>
+    </div>
+  </cds-panel>
+</div>
+
+<ng-template #accountTabTemplate>
+  <ng-container *ngTemplateOutlet="accountInformationTemplate"></ng-container>
+
+  <ng-container *ngTemplateOutlet="linksTemplate"></ng-container>
+</ng-template>
+
+<ng-template #settingsTabTemplate>
+  <ng-container *ngTemplateOutlet="languageSettingsTemplate"></ng-container>
+
+  <ng-container *ngTemplateOutlet="interfaceSettingsTemplate"></ng-container>
+
+  <ng-container *ngTemplateOutlet="notificationSettingsTemplate"></ng-container>
+
+  @if (showValtimoVersions) {
+    <ng-container *ngTemplateOutlet="versionTemplate"></ng-container>
+  }
+</ng-template>
+
+<ng-template #accountInformationTemplate>
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column>{{ 'account.informationTitle' | translate }}</cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row>
+      <cds-list-column>
+        <ng-container *ngTemplateOutlet="accountInformationTableTemplate"></ng-container>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</ng-template>
+
+<ng-template #accountInformationTableTemplate>
+  <div class="information-table account-information">
+    <cds-structured-list *ngIf="userSubject$ | async as userSubject">
+      <cds-list-row>
+        <cds-list-column
+          >{{ 'interface.email' | translate }}
+          <cds-tag type="blue">{{ userSubject.email }}</cds-tag>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column
+          >{{ 'interface.username' | translate }}
+          <cds-tag type="blue">{{ userSubject.username }}</cds-tag>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column
+          >{{ 'interface.name' | translate }}
+          <cds-tag type="blue">{{ userSubject.firstName + ' ' + userSubject.lastName }}</cds-tag>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
+  </div>
+</ng-template>
+
+<ng-template #linksTemplate>
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column>{{ 'account.quickLinks' | translate }}</cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row>
+      <cds-list-column>
+        <ng-container *ngTemplateOutlet="linksTableTemplate"></ng-container>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</ng-template>
+
+<ng-template #linksTableTemplate>
+  <div class="information-table">
+    <cds-structured-list>
+      <cds-list-row>
+        <cds-list-column>
+          <a href="https://docs.valtimo.nl" target="_blank" cdsLink>{{
+            'account.links.help' | translate
+          }}</a>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column *ngIf="!overrideFeedbackMenuItemToMailTo; else feedbackMailTo">
+          <a href="https://www.valtimo.nl/feedback" target="_blank" cdsLink>{{
+            'account.links.feedback' | translate
+          }}</a>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row *ngIf="resetUrl">
+        <cds-list-column>
+          <a [href]="resetUrl" cdsLink>{{ 'account.links.resetPassword' | translate }}</a>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row>
+        <cds-list-column>
+          <a href="javascript:void(0)" cdsLink (click)="logout()">{{
+            'account.links.signOut' | translate
+          }}</a>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row *ngIf="showPlantATreeButton">
+        <cds-list-column>
+          <a
+            class="text-success"
+            href="mailto:valtimo@ritense.com?subject=Plant een boom voor Valtimo&body=Hallo Valtimo gebruiker,%0D%0DMet het versturen van deze e-mail gaan we gelijk aan de slag om een boom te planten. Hiermee compenseren we voor een deel de CO2 uitstoot van je Valtimo gebruik.%0D%0DMet Groene Groet,%0D%0DHet Valtimo team%0D%0D*Deze bomenplantactie kan 1 keer ingezet worden door elke geregistreerde Valtimo gebruiker.%0D%0D** Ritense plant ook jaarlijks bomen voor alle Valtimo installaties die in gebruik zijn."
+            target="_blank"
+            cdsLink
+          >
+            {{ 'account.links.plantATree' | translate }}
+          </a>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
+  </div>
+</ng-template>
+
+<ng-template #languageSettingsTemplate>
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column>{{ 'settings.language.title' | translate }}</cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row>
+      <cds-list-column>
+        <cds-dropdown
+          [id]="'language-dropdown'"
+          [appendInline]="true"
+          [dropUp]="false"
+          (click)="$event.stopPropagation()"
+          (selected)="updateUserLanguage($event)"
+        >
+          <cds-dropdown-list [items]="(languageListItems$ | async) || []"></cds-dropdown-list>
+        </cds-dropdown>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</ng-template>
+
+<ng-template #notificationSettingsTemplate>
+  <cds-structured-list *ngIf="emailNotificationSettingsWithSideEffects$ | async">
+    <cds-list-header>
+      <cds-list-column>{{ 'settings.notification.title' | translate }}</cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row>
+      <cds-list-column>
+        <form [formGroup]="settingsForm" class="toggle-group">
+          <cds-toggle
+            [label]="'settings.notification.taskNotifications' | translate"
+            [onText]="'interface.on' | translate"
+            [offText]="'interface.off' | translate"
+            formControlName="taskNotifications"
+            [disabled]="updatingSettings$ | async"
+          >
+          </cds-toggle>
+          <span class="description">{{
+            'settings.notification.emailNotificationsIntro' | translate
+          }}</span>
+        </form>
+      </cds-list-column>
+    </cds-list-row>
+
+    <cds-list-row>
+      <cds-list-column>
+        <form [formGroup]="settingsForm" class="toggle-group">
+          <cds-toggle
+            [label]="'settings.notification.emailNotifications' | translate"
+            [onText]="'interface.on' | translate"
+            [offText]="'interface.off' | translate"
+            formControlName="emailNotifications"
+            [disabled]="updatingSettings$ | async"
+          >
+          </cds-toggle>
+          <span class="description">{{
+            'settings.notification.taskNotificationsIntro' | translate
+          }}</span>
+        </form>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</ng-template>
+
+<ng-template #interfaceSettingsTemplate>
+  <cds-structured-list>
+    <cds-list-header>
+      <cds-list-column>{{ 'settings.interface.title' | translate }}</cds-list-column>
+    </cds-list-header>
+
+    <cds-list-row>
+      <cds-list-column>
+        <cds-toggle
+          [label]="'settings.interface.collapsibleMenu' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+          [disabled]="updatingUserSettings$ | async"
+          [ngModel]="collapsibleWidescreenMenu$ | async"
+          (ngModelChange)="setCollapsibleWidescreenMenu($event)"
+        >
+        </cds-toggle>
+      </cds-list-column>
+    </cds-list-row>
+
+    <cds-list-row *ngIf="allowUserThemeSwitching">
+      <cds-list-column>
+        <cds-dropdown
+          [label]="'settings.interface.themePreference' | translate"
+          [appendInline]="true"
+          (click)="$event.stopPropagation()"
+          (selected)="setPreferredTheme($event)"
+          [dropUp]="false"
+        >
+          <cds-dropdown-list [items]="(themeOptions$ | async) || []"></cds-dropdown-list>
+        </cds-dropdown>
+      </cds-list-column>
+    </cds-list-row>
+
+    <cds-list-row *ngIf="enableCompactModeToggle">
+      <cds-list-column>
+        <cds-toggle
+          [label]="'settings.interface.compactMode' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+          [disabled]="updatingUserSettings$ | async"
+          [ngModel]="compactMode$ | async"
+          (ngModelChange)="setCompactMode($event)"
+        >
+        </cds-toggle>
+      </cds-list-column>
+    </cds-list-row>
+
+    <cds-list-row *ngIf="enableShowUserNameToggle">
+      <cds-list-column>
+        <cds-toggle
+          [label]="'settings.interface.showUserName' | translate"
+          [onText]="'interface.on' | translate"
+          [offText]="'interface.off' | translate"
+          [disabled]="updatingUserSettings$ | async"
+          [ngModel]="showUserNameInTopBar$ | async"
+          (ngModelChange)="setShowUserName($event)"
+        >
+        </cds-toggle>
+      </cds-list-column>
+    </cds-list-row>
+  </cds-structured-list>
+</ng-template>
+
+<ng-template #versionTemplate>
+  <ng-container *ngIf="{backendVersion: backendVersion$ | async} as obs">
+    <cds-structured-list *ngIf="obs.backendVersion || frontendVersion">
+      <cds-list-header>
+        <cds-list-column>{{ 'settings.version.title' | translate }}</cds-list-column>
+      </cds-list-header>
+
+      <cds-list-row *ngIf="obs.backendVersion">
+        <cds-list-column>
+          <div class="build-information">
+            <span class="build-title">{{
+              'interface.builds.' + obs.backendVersion.title | translate
+            }}</span>
+            <div class="tag-container">
+              <cds-tag type="blue">{{ obs.backendVersion.version }}</cds-tag>
+            </div>
+          </div>
+        </cds-list-column>
+      </cds-list-row>
+
+      <cds-list-row *ngIf="frontendVersion">
+        <cds-list-column>
+          <div class="build-information">
+            <span class="build-title">{{
+              'interface.builds.valtimo-frontend-libraries' | translate
+            }}</span>
+            <div class="tag-container">
+              <cds-tag type="blue">{{ frontendVersion }}</cds-tag>
+            </div>
+          </div>
+        </cds-list-column>
+      </cds-list-row>
+    </cds-structured-list>
+  </ng-container>
+</ng-template>
+
+<ng-template #feedbackMailTo>
+  <cds-list-column>
+    <a
+      [href]="
+        'mailto:' +
+        overrideFeedbackMenuItemToMailTo.email +
+        '?subject=' +
+        (overrideFeedbackMenuItemToMailTo.subjectTranslationKey | translate) +
+        '&body=' +
+        (overrideFeedbackMenuItemToMailTo.bodyTranslationKey | translate)
+      "
+      target="_blank"
+      cdsLink
+    >
+      {{ 'account.links.feedback' | translate }}
+    </a>
+  </cds-list-column>
+</ng-template>

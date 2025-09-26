@@ -1,0 +1,184 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<ng-container
+  *ngIf="{
+    formDefinition: formDefinition$ | async,
+    jsonFormDefinition: jsonFormDefinition$ | async,
+    jsonOutput: jsonOutput$ | async,
+    compactMode: compactMode$ | async,
+    context: context$ | async,
+    canUpdateGlobalConfiguration: canUpdateGlobalConfiguration$ | async,
+    isDraftVersion: isDraftVersion$ | async,
+  } as obs"
+>
+  @if (obs.formDefinition) {
+    <ng-container renderInPageHeader [fullWidth]="true">
+      <ng-template>
+        <ng-container *ngTemplateOutlet="actions; context: {obs: obs}"></ng-container>
+      </ng-template>
+    </ng-container>
+
+    <cds-tabs type="contained">
+      <cds-tab [heading]="TABS.BUILDER | translate" (selected)="onSelectedTab(TABS.BUILDER)">
+        <valtimo-form-io-builder
+          *ngIf="(reloading$ | async) === false && activeTab === TABS.BUILDER"
+          [form]="obs.formDefinition.formDefinition"
+          (change)="formBuilderChanged($event, obs.jsonFormDefinition)"
+        ></valtimo-form-io-builder>
+      </cds-tab>
+
+      <cds-tab [heading]="TABS.EDITOR | translate" (selected)="onSelectedTab(TABS.EDITOR)">
+        @if (activeTab === TABS.EDITOR) {
+          <ng-container
+            *ngTemplateOutlet="
+              jsonEditor;
+              context: {
+                data: {
+                  disabled: obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration,
+                  formDefinition: obs.formDefinition,
+                  model: obs.jsonFormDefinition,
+                },
+              }
+            "
+          ></ng-container>
+        }
+      </cds-tab>
+
+      <cds-tab
+        [heading]="TABS.OUTPUT | translate"
+        (selected)="onSelectedTab(TABS.OUTPUT)"
+        class="valtimo-form-management-edit__output"
+      >
+        <valtimo-form-io
+          *ngIf="activeTab === TABS.OUTPUT"
+          [form]="obs.formDefinition.formDefinition"
+          (change)="onOutputChange($event)"
+        ></valtimo-form-io>
+
+        @if (activeTab === TABS.OUTPUT) {
+          <ng-container
+            *ngTemplateOutlet="
+              jsonEditor;
+              context: {
+                data: {disabled: true, formDefinition: obs.formDefinition, model: obs.jsonOutput},
+              }
+            "
+          ></ng-container>
+        }
+      </cds-tab>
+    </cds-tabs>
+  } @else {
+    <cds-loading></cds-loading>
+  }
+
+  <valtimo-confirmation-modal
+    confirmButtonTextTranslationKey="interface.delete"
+    confirmButtonType="danger"
+    contentTranslationKey="interface.deleteConfirmation"
+    cancelButtonTextTranslationKey="interface.cancel"
+    [outputOnConfirm]="obs.formDefinition"
+    [showModalSubject$]="showDeleteModal$"
+    titleTranslationKey="dashboardManagement.delete"
+    (confirmEvent)="deleteFormDefinition($event)"
+  ></valtimo-confirmation-modal>
+
+  <valtimo-form-management-upload
+    [show$]="showModal$"
+    (definitionUploaded)="setFormDefinition($event)"
+  ></valtimo-form-management-upload>
+
+  <ng-template #jsonEditor let-data="data">
+    <valtimo-editor
+      [model]="data.model"
+      [disabled]="data.disabled"
+      (validEvent)="onValidEvent($event, data.disabled)"
+      (valueChangeEvent)="onValueChangeEvent($event, data.formDefinition, data.disabled)"
+      [fitPage]="true"
+      [fitPageExtraSpace]="80"
+    ></valtimo-editor>
+  </ng-template>
+</ng-container>
+
+<ng-template #actions let-obs="obs">
+  <div
+    class="valtimo-form-management-edit__header-container"
+    [ngClass]="{
+      '--compact': obs.compactMode,
+      'valtimo-form-management-edit__header-container-case': obs?.context === 'case',
+    }"
+  >
+    @if (obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration) {
+      <cds-tag size="sm" type="blue">{{ 'formManagement.readOnly' | translate }}</cds-tag>
+    }
+
+    <div class="valtimo-form-management-edit__header">
+      <cds-overflow-menu>
+        <cds-overflow-menu-option (selected)="downloadFormDefinition(obs.formDefinition)">
+          {{ 'Download' | translate }}
+        </cds-overflow-menu-option>
+
+        <cds-overflow-menu-option
+          [disabled]="obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration"
+          (selected)="showUploadModal()"
+        >
+          {{ 'Upload' | translate }}
+        </cds-overflow-menu-option>
+
+        <cds-overflow-menu-option
+          *ngIf="(obs.context === 'case' && obs.isDraftVersion) || obs.context === 'independent'"
+          (selected)="showDuplicateModal(obs.formDefinition)"
+        >
+          {{ 'formManagement.duplicate' | translate }}
+        </cds-overflow-menu-option>
+
+        <cds-overflow-menu-option
+          [disabled]="obs.formDefinition.readOnly || !obs.canUpdateGlobalConfiguration"
+          type="danger"
+          (selected)="delete()"
+        >
+          {{ 'interface.delete' | translate }}
+        </cds-overflow-menu-option>
+      </cds-overflow-menu>
+
+      @if (obs.context === 'case') {
+        <button
+          cdsButton="secondary"
+          [size]="obs.compactMode ? 'sm' : 'md'"
+          (click)="onGoBackButtonClick()"
+        >
+          <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+
+          <span>{{ 'interface.back' | translate }}</span>
+        </button>
+      }
+
+      <button
+        *ngIf="
+          (obs?.canUpdateGlobalConfiguration && obs?.isDraftVersion) ||
+          obs.context === 'independent'
+        "
+        cdsButton="primary"
+        [disabled]="obs.formDefinition.readOnly"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        (click)="modifyFormDefinition(obs.formDefinition)"
+      >
+        {{ 'interface.save' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="save" size="16"></svg>
+      </button>
+    </div>
+  </div>
+</ng-template>

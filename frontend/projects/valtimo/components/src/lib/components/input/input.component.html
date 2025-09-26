@@ -1,0 +1,193 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="v-input-container">
+  <ng-container *ngTemplateOutlet="inputTitle"></ng-container>
+  <ng-container *ngTemplateOutlet="textInput"></ng-container>
+  <ng-container *ngTemplateOutlet="textareaInput"></ng-container>
+  <ng-container *ngTemplateOutlet="passwordInput"></ng-container>
+  <ng-container *ngTemplateOutlet="numberInput"></ng-container>
+  <ng-container *ngTemplateOutlet="digitOnlyInput"></ng-container>
+  <ng-container *ngTemplateOutlet="checkboxInput"></ng-container>
+  <ng-container *ngTemplateOutlet="presets"></ng-container>
+</div>
+
+<ng-template #inputTitle>
+  <v-input-label
+    *ngIf="title || titleTranslationKey"
+    [name]="name"
+    [required]="required"
+    [small]="smallLabel"
+    [titleTranslationKey]="titleTranslationKey"
+    [title]="title"
+    [tooltip]="tooltip"
+  >
+  </v-input-label>
+</ng-template>
+
+<ng-template #textInput>
+  <input
+    *ngIf="isText"
+    [ngClass]="{
+      'v-input--full-width': fullWidthClass,
+      'v-input--margin': margin && presetOptions.length === 0,
+      'v-input--small-margin': smallMargin && presetOptions.length === 0,
+    }"
+    [ngModel]="inputValue$ | async"
+    cdsText
+    [attr.data-testid]="dataTestId"
+    [disabled]="disabled"
+    [maxLength]="maxLength"
+    [min]="0"
+    [name]="name"
+    [step]="step"
+    (ngModelChange)="onValueChange($event)"
+    [style.width.px]="widthPx"
+    [placeholder]="placeholder"
+    type="text"
+  />
+</ng-template>
+
+<ng-template #textareaInput>
+  <textarea
+    *ngIf="isTextarea"
+    [ngClass]="{
+      'v-input--full-width': fullWidthClass,
+      'v-input--margin': margin,
+      'v-input--small-margin': smallMargin,
+    }"
+    cdsTextArea
+    [attr.data-testid]="dataTestId"
+    [disabled]="disabled"
+    [name]="name"
+    [ngModel]="inputValue$ | async"
+    [rows]="rows"
+    (ngModelChange)="onValueChange($event)"
+    [style.width.px]="widthPx"
+  ></textarea>
+</ng-template>
+
+<ng-template #passwordInput>
+  <ng-container *ngIf="isPassword">
+    <div
+      *ngIf="{showPassword: showPassword$ | async} as obs"
+      [ngClass]="{
+        'v-input--full-width': fullWidthClass,
+        'v-input--margin': margin,
+        'v-input--small-margin': smallMargin,
+      }"
+      class="v-input__password-container"
+    >
+      <input
+        [ngClass]="{
+          'v-input--full-width': fullWidthClass,
+        }"
+        cdsText
+        [attr.data-testid]="dataTestId"
+        [disabled]="disabled"
+        [maxLength]="maxLength"
+        [min]="0"
+        [name]="name"
+        [ngModel]="inputValue$ | async"
+        [step]="step"
+        (ngModelChange)="onValueChange($event)"
+        [style.width.px]="widthPx"
+        [type]="obs.showPassword ? 'text' : 'password'"
+      />
+
+      <div class="v-input__password-icon">
+        <cds-icon-button align="top" (click)="toggleShowPassword()">
+          <svg cdsIcon="{{ obs.showPassword ? 'view-off' : 'view' }}" size="16"></svg>
+        </cds-icon-button>
+      </div>
+    </div>
+  </ng-container>
+</ng-template>
+
+<ng-template #numberInput>
+  <input
+    *ngIf="isNumber"
+    [ngClass]="{
+      'v-input--full-width': fullWidthClass,
+      'v-input--margin': margin,
+      'v-input--small-margin': smallMargin,
+      'v-input--hide-spinbox': hideNumberSpinBox,
+    }"
+    cdsText
+    [attr.data-testid]="dataTestId"
+    [disabled]="disabled"
+    [maxLength]="maxLength"
+    [min]="min"
+    [name]="name"
+    [ngModel]="inputValue$ | async"
+    [step]="step"
+    (ngModelChange)="onValueChange($event)"
+    [style.width.px]="widthPx"
+    type="number"
+  />
+</ng-template>
+
+<ng-template #digitOnlyInput>
+  <input
+    *ngIf="isDigitOnly"
+    [ngClass]="{
+      'v-input--full-width': fullWidthClass,
+      'v-input--margin': margin,
+      'v-input--small-margin': smallMargin,
+    }"
+    cdsText
+    digitOnly
+    [attr.data-testid]="dataTestId"
+    [disabled]="disabled"
+    [maxLength]="maxLength"
+    [min]="0"
+    [name]="name"
+    [ngModel]="inputValue$ | async"
+    [step]="step"
+    (ngModelChange)="onValueChange($event)"
+    [style.width.px]="widthPx"
+    type="text"
+  />
+</ng-template>
+
+<ng-template #checkboxInput>
+  <div *ngIf="isCheckbox" (click)="stopCheckboxEventPropagation($event)">
+    <cds-checkbox
+      [attr.data-testid]="dataTestId"
+      [disabled]="disabled"
+      [name]="name"
+      [ngModel]="inputValue$ | async"
+      (ngModelChange)="onValueChange($event)"
+    >
+    </cds-checkbox>
+  </div>
+</ng-template>
+
+<ng-template #presets>
+  <div
+    *ngIf="isText && presetOptions.length > 0"
+    [ngClass]="{
+      'v-input--margin': margin,
+      'v-input--small-margin': smallMargin,
+    }"
+    class="v-input--preset-options">
+    <span>{{ presetsTitle }}:</span>
+    @for (preset of presetOptions; track $index; let isFirst = $first) {
+      @if (!isFirst) { | }
+      <a (click)="presetWithValue(preset)" class="v-input--preset-option">{{ preset }}</a>
+    }
+  </div>
+</ng-template>

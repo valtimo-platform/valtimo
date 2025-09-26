@@ -1,0 +1,39 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {TypeConverter} from './type-converters.model';
+
+export class StringTypeConverter implements TypeConverter {
+  public getTypeString(): string {
+    return 'string';
+  }
+
+  public isRawValue(): boolean {
+    return false;
+  }
+
+  public convert(value: any): string {
+    if (!value) return '-';
+
+    if (Array.isArray(value) && typeof value[0] === 'string')
+      return value.reduce(
+        (acc, curr, index) => `${acc}${index < value.length && index > 0 ? ', ' : ''}${curr}`,
+        ''
+      );
+
+    return value;
+  }
+}

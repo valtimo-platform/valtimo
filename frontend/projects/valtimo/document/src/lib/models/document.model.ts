@@ -1,0 +1,437 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {DisplayType} from '@valtimo/shared';
+import {CaseTag} from './case-tags.model';
+
+interface SortResult {
+  sorted: boolean;
+  unsorted: boolean;
+}
+
+interface Pageable {
+  sort: SortResult;
+  pageSize: number;
+  pageNumber: number;
+  offset: number;
+  unpaged: boolean;
+  paged: boolean;
+}
+
+interface Page<T> {
+  content: Array<T>;
+  pageable: Pageable;
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  sort: SortResult;
+  numberOfElements: number;
+  size: number;
+  number: number;
+}
+
+interface DocumentDefinition {
+  id: DocumentDefinitionId;
+  schema: any;
+  createdOn: string;
+  readOnly: boolean;
+}
+
+interface DocumentDefinitionId {
+  name: string;
+  caseDefinitionId: CaseDefinitionId;
+}
+
+interface CreateDocumentDefinitionResponse {
+  documentDefinition: DocumentDefinition;
+  errors: string[];
+}
+
+interface Documents {
+  content: Document[];
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+  size: number;
+  sort: any;
+  totalElements: number;
+  totalPages: number;
+  locked?: boolean;
+}
+
+type SpecifiedDocuments = Omit<Documents, 'content'> & {
+  content: Array<{id: string; items: Array<{key: string; value: string}>; locked?: boolean}>;
+};
+
+interface RelatedFile {
+  fileId: string;
+  fileName: string;
+  sizeInBytes: number;
+  createdOn: Date;
+  createdBy: string;
+  pluginConfigurationId?: string;
+}
+
+type RelatedFileListItem = Omit<RelatedFile, 'createdOn'> & {createdOn: string};
+
+interface Document {
+  id: string;
+  content: object;
+  version: string;
+  createdOn: Date;
+  modifiedOn: Date;
+  createdBy: string;
+  sequence: number;
+  definitionName: string;
+  definitionId: DocumentDefinitionId | null;
+  relations: string[];
+  relatedFiles: RelatedFile[];
+  assigneeFullName: string;
+  assigneeId: string;
+  internalStatus?: string;
+  caseTags?: CaseTag[];
+}
+
+interface ProcessDocumentDefinitionId {
+  processDefinitionKey: string;
+  documentDefinitionId: DocumentDefinitionId;
+}
+
+interface ProcessDocumentDefinition {
+  id: ProcessDocumentDefinitionId;
+  processName: string;
+  canInitializeDocument: boolean;
+  startableByUser: boolean;
+  latestVersionId: string;
+}
+
+interface CaseDefinitionId {
+  key: string;
+  versionTag: string;
+}
+
+interface ProcessDefinitionCaseDefinitionId {
+  processDefinitionId: string;
+  caseDefinitionId: CaseDefinitionId;
+}
+
+interface ProcessDefinitionCaseDefinition {
+  id: ProcessDefinitionCaseDefinitionId;
+  canInitializeDocument: boolean;
+  startableByUser: boolean;
+  processDefinitionName: string;
+  processDefinitionKey: string;
+}
+
+interface ProcessDocumentInstanceId {
+  processInstanceId: string;
+  documentId: string;
+}
+
+interface ProcessDocumentInstance {
+  id: ProcessDocumentInstanceId;
+  processName: string;
+  active: boolean;
+  version: number;
+  latestVersion: number;
+  startedBy: string;
+  startedOn: Date;
+}
+
+interface AssignHandlerToDocumentResult {
+  assigneeId: string;
+}
+
+interface NewDocumentAndStartProcessResult {
+  document: Document;
+  processInstanceId: string;
+  errors: string[];
+}
+
+interface ModifyDocumentAndCompleteTaskResult {
+  document: Document;
+  errors: string[];
+}
+
+interface ModifyDocumentAndStartProcessResult {
+  document: Document;
+  processInstanceId: string;
+  errors: string[];
+}
+
+interface DocumentResult {
+  document: Document;
+  errors: string[];
+}
+
+interface ModifyDocumentRequest {
+  documentId: string;
+  content: object;
+  versionBasedOn: string;
+}
+
+class ModifyDocumentRequestImpl implements ModifyDocumentRequest {
+  documentId: string;
+  content: object;
+  versionBasedOn: string;
+
+  constructor(documentId: string, content: object, versionBasedOn: string) {
+    this.documentId = documentId;
+    this.content = content;
+    this.versionBasedOn = versionBasedOn;
+  }
+}
+
+interface ModifyDocumentAndCompleteTaskRequest<
+  T_MODIFY_DOCUMENT_REQUEST extends ModifyDocumentRequest,
+> {
+  taskId: string;
+  request: T_MODIFY_DOCUMENT_REQUEST;
+}
+
+class ModifyDocumentAndCompleteTaskRequestImpl
+  implements ModifyDocumentAndCompleteTaskRequest<ModifyDocumentRequestImpl>
+{
+  taskId: string;
+  request: ModifyDocumentRequestImpl;
+
+  constructor(taskId: string, request: ModifyDocumentRequestImpl) {
+    this.taskId = taskId;
+    this.request = request;
+  }
+}
+
+interface NewDocumentRequest {
+  definition: string;
+  content: object;
+}
+
+class NewDocumentRequestImpl implements NewDocumentRequest {
+  definition: string;
+  content: object;
+
+  constructor(definition: string, content: object) {
+    this.definition = definition;
+    this.content = content;
+  }
+}
+
+interface NewDocumentAndStartProcessRequest<T_NEW_DOCUMENT_REQUEST extends NewDocumentRequest> {
+  processDefinitionKey: string;
+  request: T_NEW_DOCUMENT_REQUEST;
+}
+
+class NewDocumentAndStartProcessRequestImpl
+  implements NewDocumentAndStartProcessRequest<NewDocumentRequestImpl>
+{
+  processDefinitionKey: string;
+  request: NewDocumentRequestImpl;
+
+  constructor(processDefinitionKey: string, request: NewDocumentRequestImpl) {
+    this.processDefinitionKey = processDefinitionKey;
+    this.request = request;
+  }
+}
+
+interface ModifyDocumentAndStartProcessRequest<
+  T_MODIFY_DOCUMENT_REQUEST extends ModifyDocumentRequest,
+> {
+  processDefinitionKey: string;
+  request: T_MODIFY_DOCUMENT_REQUEST;
+}
+
+class ModifyDocumentAndStartProcessRequestImpl
+  implements ModifyDocumentAndStartProcessRequest<ModifyDocumentRequestImpl>
+{
+  processDefinitionKey: string;
+  request: ModifyDocumentRequestImpl;
+
+  constructor(processDefinitionKey: string, request: ModifyDocumentRequestImpl) {
+    this.processDefinitionKey = processDefinitionKey;
+    this.request = request;
+  }
+}
+
+interface ProcessDocumentDefinitionRequest {
+  processDefinitionKey: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
+  canInitializeDocument: boolean;
+  startableByUser: boolean;
+}
+
+class DocumentDefinitionCreateRequest {
+  definition: string;
+
+  constructor(definition: string) {
+    this.definition = definition;
+  }
+}
+
+interface UndeployDocumentDefinitionResult {
+  documentDefinitionName: string;
+  errors: string[];
+}
+
+interface DocumentSendMessageRequest {
+  subject: string;
+  bodyText: string;
+}
+
+interface DocumentRoles {
+  content: DocumentRole[];
+}
+
+interface DocumentRole {
+  name: string;
+}
+
+interface DocumentType {
+  url: string;
+  name: string;
+}
+
+interface ExternalStartFormConfiguration {
+  hasExternalStartForm?: boolean;
+  externalStartFormUrl?: string;
+  externalStartFormDescription?: string;
+}
+
+interface CaseSettings extends ExternalStartFormConfiguration {
+  caseDefinitionKey?: string;
+  caseDefinitionVersionTag?: string;
+  canHaveAssignee?: boolean;
+  autoAssignTasks?: boolean;
+}
+
+interface OpenDocumentCount {
+  documentDefinitionName: string;
+  openDocumentCount: number;
+}
+
+interface CaseListColumn {
+  title: string;
+  key: string;
+  path: string;
+  displayType: DisplayType;
+  sortable: boolean;
+  defaultSort: string;
+  uuid?: string;
+  exportable?: boolean;
+}
+
+interface CaseListColumnView {
+  title: string;
+  key: string;
+  path: string;
+  displayType: string;
+  displayTypeParameters: string;
+  sortable: boolean;
+  defaultSort: string;
+  uuid?: string;
+  exportable?: boolean;
+}
+
+interface DocumentDefinitionVersionsResult {
+  name: string;
+  versions: Array<number>;
+}
+
+interface LoadedValue<T> {
+  isLoading: boolean;
+  value?: T;
+}
+
+interface TemplatePayload {
+  name: string;
+  caseDefinitionKey: string;
+  caseDefinitionVersion: string;
+  description: string;
+}
+
+interface TemplateResponse {
+  $id: string;
+  $schema: string;
+  additionalProperties: boolean;
+  properties: {[key: string]: {[key: string]: string}};
+  title: string;
+  type: string;
+}
+
+interface CaseDefinition {
+  name: string;
+  active: boolean;
+  caseDefinitionKey: string;
+  caseDefinitionVersionTag: string;
+  canHaveAssignee: boolean;
+  autoAssignTasks: boolean;
+}
+
+export {
+  AssignHandlerToDocumentResult,
+  CaseDefinition,
+  CaseDefinitionId,
+  CaseListColumn,
+  CaseListColumnView,
+  CaseSettings,
+  CreateDocumentDefinitionResponse,
+  DocumentDefinitionId,
+  Document,
+  DocumentDefinition,
+  DocumentDefinitionCreateRequest,
+  DocumentDefinitionVersionsResult,
+  DocumentResult,
+  DocumentRole,
+  DocumentRoles,
+  Documents,
+  DocumentSendMessageRequest,
+  DocumentType,
+  ExternalStartFormConfiguration,
+  LoadedValue,
+  ModifyDocumentAndCompleteTaskRequest,
+  ModifyDocumentAndCompleteTaskRequestImpl,
+  ModifyDocumentAndCompleteTaskResult,
+  ModifyDocumentAndStartProcessRequest,
+  ModifyDocumentAndStartProcessRequestImpl,
+  ModifyDocumentAndStartProcessResult,
+  ModifyDocumentRequest,
+  ModifyDocumentRequestImpl,
+  NewDocumentAndStartProcessRequest,
+  NewDocumentAndStartProcessRequestImpl,
+  NewDocumentAndStartProcessResult,
+  NewDocumentRequest,
+  NewDocumentRequestImpl,
+  OpenDocumentCount,
+  Page,
+  Pageable,
+  ProcessDefinitionCaseDefinition,
+  ProcessDefinitionCaseDefinitionId,
+  ProcessDocumentDefinition,
+  ProcessDocumentDefinitionId,
+  ProcessDocumentDefinitionRequest,
+  ProcessDocumentInstance,
+  ProcessDocumentInstanceId,
+  RelatedFile,
+  RelatedFileListItem,
+  SortResult,
+  SpecifiedDocuments,
+  TemplatePayload,
+  TemplateResponse,
+  UndeployDocumentDefinitionResult,
+};

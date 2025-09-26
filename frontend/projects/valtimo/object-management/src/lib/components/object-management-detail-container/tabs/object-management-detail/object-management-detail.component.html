@@ -1,0 +1,69 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<div
+  id="object-datail-content"
+  class="pt-0"
+  *ngIf="{
+    object: object$ | async,
+    loading: loading$ | async,
+  } as obs"
+>
+  <ng-container
+    *ngTemplateOutlet="buttons; context: {object: obs.object, loading: obs.loading}"
+  ></ng-container>
+  <div class="clearfix"></div>
+  <ng-container
+    *ngTemplateOutlet="widget; context: {object: obs.object, loading: obs.loading}"
+  ></ng-container>
+</div>
+
+<ng-template #buttons let-object="object" let-loading="loading">
+  <div class="btn-group mt-m3px mb-3 pr-2 float-right">
+    <button
+      (click)="downloadDefinition(object)"
+      cdsButton="secondary"
+      size="md"
+      [disabled]="loading"
+      class="ml-3"
+    >
+      {{ 'objectManagement.download' | translate }}
+      <svg class="cds--btn__icon" cdsIcon="download" size="16"></svg>
+    </button>
+    <a id="downloadAnchorElement" class="d-none"></a>
+    <button
+      (click)="showEditModal()"
+      cdsButton="primary"
+      size="md"
+      [disabled]="loading"
+      class="ml-3"
+    >
+      {{ 'objectManagement.editObjecttype' | translate }}
+      <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #widget let-object="object">
+  <valtimo-widget>
+    <div class="row bg-white mt-5 mb-2 pl-2 pr-2">
+      <div class="col-5 bg-red">
+        <textarea class="w-100 object-schema" disabled rows="25">{{ object | json }}</textarea>
+      </div>
+    </div>
+  </valtimo-widget>
+</ng-template>
+
+<valtimo-object-management-modal [prefillObject$]="object$"></valtimo-object-management-modal>

@@ -1,0 +1,66 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  valtimoCdsModal
+  class="form-management-create"
+  size="sm"
+  [cdsLayer]="0"
+  [open]="true"
+  (close)="closeModal()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
+      {{ 'formManagement.duplicate' | translate }}
+    </h3>
+  </cds-modal-header>
+
+  <form [formGroup]="duplicateForm">
+    <section cdsModalContent [cdsLayer]="1">
+      <cds-label
+        [invalid]="duplicateFormName?.touched && duplicateFormName?.errors"
+        [invalidText]="
+          (duplicateFormName?.errors?.required && ('formManagement.nameIsRequired' | translate)) ||
+          (duplicateFormName?.errors?.duplicate && ('formManagement.nameIsInUse' | translate)) ||
+          'Error'
+        "
+      >
+        {{ 'formManagement.name' | translate }}
+
+        <input
+          cdsText
+          type="text"
+          id="duplicateFormName"
+          formControlName="duplicateFormName"
+          [invalid]="duplicateFormName?.touched && duplicateFormName?.errors"
+          required
+        />
+      </cds-label>
+    </section>
+
+    <cds-modal-footer [cdsLayer]="1">
+      <cds-modal-footer>
+        <button cdsButton="secondary" (click)="closeModal()">
+          {{ 'interface.cancel' | translate }}
+        </button>
+
+        <button [disabled]="duplicateForm.invalid" cdsButton="primary" (click)="duplicate()">
+          {{ 'formManagement.submit' | translate }}
+        </button>
+      </cds-modal-footer>
+    </cds-modal-footer>
+  </form>
+</cds-modal>

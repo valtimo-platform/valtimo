@@ -1,0 +1,82 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.header-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.draft-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.deployment-panels {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.deployment-panels > div {
+  flex: 1 1 300px;
+  background-color: white;
+  padding: 24px;
+}
+
+.deployment-panel-title {
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  margin-bottom: 16px;
+}
+
+.full-width-notification {
+  max-inline-size: 100%;
+  min-inline-size: 100%;
+}
+
+.release-version-columns {
+  display: flex;
+  width: 100%;
+  margin-bottom: 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.release-version-data {
+  flex: 1 1 300px;
+  padding: 1rem;
+  box-sizing: border-box;
+
+  &__label {
+    font-size: 12px;
+    margin-bottom: 16px;
+    color: var(--cds-text-secondary);
+  }
+
+  &__value {
+    color: var(--cds-text-primary);
+    padding: 16px;
+    border-bottom: 1px solid var(--cds-border-subtle-01);
+    font-size: 14px;
+  }
+}
+
+::ng-deep .cds--inline-notification__title {
+  width: 100%;
+}

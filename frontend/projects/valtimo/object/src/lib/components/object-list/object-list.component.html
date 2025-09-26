@@ -1,0 +1,140 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<ng-container
+  *ngIf="{
+    loading: loading$ | async,
+    pagination: pagination$ | async,
+    disableInput: disableInput$ | async,
+    fields: fields$ | async,
+    objectConfiguration: objectConfiguration$ | async,
+  } as obs"
+>
+  <div class="main-content pt-0">
+    <div class="container-fluid">
+      <div class="col-12 px-0 mb-5">
+        <ng-container *ngIf="obs.loading === false; else loading">
+          <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
+          <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="createNewModal"></ng-container>
+</ng-container>
+
+<ng-template #buttons let-obs="obs">
+  <button
+    (click)="openModal()"
+    cdsButton="primary"
+    size="md"
+    class="ml-3"
+    [disabled]="obs.disableInput || obs.loading"
+  >
+    {{ 'object.createObject' | translate }}
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #searchFields let-obs="obs">
+  <div class="mb-3">
+    <valtimo-search-fields
+      [loading]="obs.loading"
+      [searchFields]="objectSearchFields$ | async"
+      (doSearch)="search($event)"
+      [objectManagementId]="objectManagementId$ | async"
+      [setValuesSubject$]="null"
+    ></valtimo-search-fields>
+  </div>
+</ng-template>
+
+<ng-template #list let-obs="obs">
+  <valtimo-carbon-list
+    [items]="obs.objectConfiguration"
+    [fields]="obs.fields"
+    [header]="false"
+    [pagination]="obs.pagination"
+    paginationIdentifier="objectConfigurationList"
+    (paginationClicked)="paginationClicked($event)"
+    (paginationSet)="paginationSet($event)"
+    (rowClicked)="redirectToDetails($event)"
+  >
+    <ng-container carbonToolbarContent>
+      <button cdsButton="primary" (click)="openModal()">
+        {{ 'object.createObject' | translate }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </ng-container>
+  </valtimo-carbon-list>
+</ng-template>
+
+<ng-template #createNewModal>
+  <cds-modal
+    valtimoCdsModal
+    *ngIf="{
+      show: showModal$ | async,
+      formValid: formValid$ | async,
+      formDefinition: formDefinition$ | async,
+      disableInput: disableInput$ | async,
+    } as modalObs"
+    [open]="modalObs.show"
+    (close)="closeModal()"
+  >
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+      <h3 cdsModalHeaderHeading>
+        {{ 'object.createObject' | translate }}
+      </h3>
+    </cds-modal-header>
+    <section cdsModalContent>
+      <ng-container *ngTemplateOutlet="modalContent; context: {modalObs: modalObs}"></ng-container>
+    </section>
+    <ng-container *ngTemplateOutlet="modalFooter; context: {modalObs: modalObs}"></ng-container>
+  </cds-modal>
+</ng-template>
+
+<ng-template #modalContent let-modalObs="modalObs">
+  <valtimo-form-io
+    [form]="modalObs.formDefinition"
+    (change)="onFormioChange($event)"
+  ></valtimo-form-io>
+</ng-template>
+
+<ng-template #modalFooter let-modalObs="modalObs">
+  <cds-modal-footer>
+    <ng-container>
+      <button
+        cdsButton="secondary"
+        [attr.modal-primary-focus]="true"
+        (click)="closeModal()"
+        [disabled]="modalObs.disableInput"
+      >
+        {{ 'object.close' | translate }}
+      </button>
+      <button
+        cdsButton="primary"
+        [attr.modal-primary-focus]="true"
+        (click)="addObject()"
+        [disabled]="modalObs.disableInput || modalObs.formValid === false"
+      >
+        {{ 'object.save' | translate }}
+      </button>
+    </ng-container>
+  </cds-modal-footer>
+</ng-template>
+
+<ng-template #loading>
+  <valtimo-carbon-list [loading]="true"> </valtimo-carbon-list>
+</ng-template>

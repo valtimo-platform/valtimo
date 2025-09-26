@@ -1,0 +1,103 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+form.dropzone {
+  padding: 30px 20px;
+
+  h2 {
+    text-align: center;
+    font-size: 1.69rem;
+  }
+
+  &.disabled {
+    opacity: 0.7;
+    pointer-events: none;
+    cursor: default;
+  }
+
+  &.preview {
+    padding: 15px 20px;
+    border: none;
+  }
+}
+
+.dz-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dropzone-mobile-trigger {
+  cursor: pointer;
+}
+
+.alert-light {
+  display: flex;
+  align-items: center;
+}
+
+form.dropzone .mdi {
+  background-color: transparent;
+  border-radius: 0;
+  display: inline-block;
+  height: auto;
+  width: auto;
+  margin-bottom: 0;
+  padding: 0;
+}
+
+form.dropzone .message {
+  padding: 1.385rem 2.1542rem;
+}
+
+.file {
+  font-size: 1.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.small-font {
+  font-size: 1rem;
+  color: #959595;
+}
+
+.file-size {
+  margin-left: 5px;
+}
+
+.progress-bar-container {
+  height: auto;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+
+.webcam-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.large-icon {
+  line-height: 60px;
+  font-size: 60px;
+
+  .mdi {
+    line-height: 60px;
+    font-size: 60px;
+  }
+}

@@ -1,0 +1,109 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  *ngIf="{
+    decisionXml: decisionXml$ | async,
+    decisionTitle: decisionTitle$ | async,
+  } as obs"
+  fitPage
+  [disableOverflow]="true"
+  class="dmn-editor"
+>
+  <ng-container *ngTemplateOutlet="diagram"></ng-container>
+</div>
+
+<ng-template #diagram>
+  <div class="editor-parent">
+    <div class="editor-container"></div>
+    <div class="editor-tabs"></div>
+  </div>
+</ng-template>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <div
+      *ngIf="{
+        selectionId: selectionId$ | async,
+        isCreating: isCreating$ | async,
+        context: context$ | async,
+        compactMode: compactMode$ | async,
+        hasEditPermissions: hasEditPermissions$ | async,
+      } as obs"
+      class="decision-modeler-actions"
+    >
+      <ng-container *ngTemplateOutlet="versionSelection"></ng-container>
+
+      <button
+        *ngIf="obs.context === 'case'"
+        cdsButton="secondary"
+        [size]="obs.compactMode ? 'sm' : 'md'"
+        (click)="navigateBack(null)"
+      >
+        <svg class="cds--btn__icon" cdsIcon="arrow--left" size="16"></svg>
+
+        <span>{{ 'interface.back' | translate }}</span>
+      </button>
+
+      @if (obs.selectionId && !obs.isCreating) {
+        <button
+          *ngIf="obs.hasEditPermissions"
+          cdsButton="primary"
+          (click)="deploy()"
+          [size]="obs.compactMode ? 'sm' : 'md'"
+        >
+          {{ 'decisions.deploy' | translate }}
+
+          <svg class="cds--btn__icon" cdsIcon="deploy" size="16"></svg>
+        </button>
+
+        <cds-overflow-menu class="overflow-button">
+          <cds-overflow-menu-option (selected)="download()"
+            >{{ 'interface.export' | translate }}
+          </cds-overflow-menu-option>
+        </cds-overflow-menu>
+      } @else {
+        <button class="btn btn-success btn-space" (click)="deploy()">
+          <i class="icon mdi mdi-upload mr-1"></i>{{ 'decisions.deploy' | translate }}
+        </button>
+      }
+    </div>
+  </ng-template>
+</ng-container>
+
+<ng-template #versionSelection>
+  <ng-container
+    *ngIf="{
+      selectItems: (decisionVersionSelectItems$ | async) || [],
+      isIndependent: isIndependent$ | async,
+      versionSelectionDisabled: versionSelectionDisabled$ | async,
+      selectionId: selectionId$ | async,
+    } as obs"
+  >
+    <v-select
+      *ngIf="obs.isIndependent"
+      name="version"
+      [title]="'decisions.version' | translate"
+      [disabled]="obs.versionSelectionDisabled"
+      [clearable]="false"
+      [loading]="obs.selectItems.length === 0"
+      [items]="obs.selectItems"
+      [defaultSelectionId]="obs.selectionId"
+      [widthInPx]="120"
+      (selectedChange)="switchVersion($event)"
+    ></v-select>
+  </ng-container>
+</ng-template>

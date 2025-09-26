@@ -1,0 +1,131 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.clickable {
+  cursor: pointer;
+}
+
+.container-fluid {
+  background-color: var(--cds-layer);
+}
+
+.tile-holder {
+  background-color: whitesmoke;
+  border: 1px solid transparent;
+  &:hover {
+    background-color: #eee;
+    border: 1px solid #dee2e6;
+  }
+}
+
+th:first-child,
+td:first-child {
+  padding-left: 25px;
+}
+
+::ng-deep tr:has(> td .locked) {
+  cursor: not-allowed;
+
+  td {
+    color: var(--cds-text-on-color-disabled);
+  }
+}
+
+.valtimo-carbon-list {
+  ::ng-deep &__header--hidden thead {
+    display: none;
+  }
+
+  ::ng-deep &--unclickable tr {
+    cursor: default;
+  }
+
+  &__toolbar:empty {
+    display: none;
+  }
+
+  &__no-results {
+    cursor: default;
+
+    td {
+      &:empty,
+      &:not(:empty) + td {
+        display: none;
+      }
+    }
+  }
+
+  &__move-rows,
+  &__draggable {
+    width: 100%;
+    justify-content: flex-end;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+
+    button:not(:last-child) {
+      margin-right: 8px;
+    }
+  }
+
+  &__expand-tag {
+    cursor: pointer;
+  }
+
+  label {
+    margin-bottom: 0 !important;
+  }
+
+  ::ng-deep .tag-template {
+    .cds--tag {
+      margin: 0;
+
+      svg {
+        fill: var(--cds-background);
+      }
+    }
+
+    & > *:not(:last-child) {
+      margin-right: 8px;
+    }
+  }
+
+  ::ng-deep .cds--tag {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    line-height: 24px;
+  }
+
+  ::ng-deep.valtimo-carbon-list__draggable .cds--btn--ghost {
+    cursor: move !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  ::ng-deep &__drag-table-row {
+    cursor: move !important;
+
+    .valtimo-carbon-list__draggable .cds--btn--ghost {
+      outline: 0;
+      border-color: var(--cds-button-focus-color, var(--cds-focus, var(--vcds-color-60)));
+      box-shadow:
+        inset 0 0 0 1px var(--cds-button-focus-color, var(--cds-focus, var(--vcds-color-60))),
+        inset 0 0 0 2px var(--cds-background, #f4f4f4);
+    }
+  }
+}

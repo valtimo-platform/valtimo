@@ -1,0 +1,77 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-tile
+  class="external-case-form-container"
+  *ngIf="{params: params$ | async, caseSettings: caseSettings$ | async} as obs"
+>
+  <h4 class="external-case-form-container__title">
+    {{ 'caseManagement.externalStartForm.title' | translate }}
+  </h4>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" [cdsLayer]="1">
+    <cds-toggle
+      valtimoReadOnly
+      [isReadOnly]="isReadOnly"
+      [disabled]="isReadOnly"
+      formControlName="hasExternalForm"
+      label="{{ 'caseManagement.externalStartForm.enabledToggle' | translate }}"
+      onText="{{ 'caseManagement.externalStartForm.enabledToggleOn' | translate }}"
+      offText="{{ 'caseManagement.externalStartForm.enabledToggleOff' | translate }}"
+    ></cds-toggle>
+
+    <cds-label>
+      {{ 'caseManagement.externalStartForm.externalUrl' | translate }}
+
+      <input
+        cdsText
+        valtimoReadOnly
+        [isReadOnly]="isReadOnly"
+        type="text"
+        formControlName="externalFormUrl"
+        [placeholder]="
+          isReadOnly ? '-' : ('caseManagement.externalStartForm.externalUrlPlaceholder' | translate)
+        "
+        maxlength="512"
+      />
+    </cds-label>
+
+    <cds-label>
+      {{ 'caseManagement.externalStartForm.description' | translate }}
+
+      <input
+        cdsText
+        valtimoReadOnly
+        [isReadOnly]="isReadOnly"
+        type="text"
+        formControlName="description"
+        [placeholder]="
+          isReadOnly ? '-' : ('caseManagement.externalStartForm.descriptionPlaceholder' | translate)
+        "
+        maxlength="512"
+      />
+    </cds-label>
+
+    <button
+      *ngIf="!isReadOnly"
+      cdsButton="primary"
+      type="submit"
+      [disabled]="!form.valid || isReadOnly"
+    >
+      {{ 'caseManagement.externalStartForm.apply' | translate }}
+    </button>
+  </form>
+</cds-tile>

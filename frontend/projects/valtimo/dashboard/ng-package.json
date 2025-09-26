@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../node_modules/ng-packagr/ng-package.schema.json",
+  "dest": "../../../dist/valtimo/dashboard",
+  "lib": {
+    "entryFile": "src/public_api.ts"
+  },
+  "allowedNonPeerDependencies": [
+    "moment",
+    "d3",
+    "d3-cloud",
+    "d3-sankey",
+    "d3-shape",
+    "@ngx-translate/core",
+    "@ngx-translate/http-loader",
+    "@carbon/charts-angular",
+    "muuri",
+    "@types/topojson"
+  ]
+}

@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="valtimo-documenten-api-filter" (click)="$event.stopImmediatePropagation()">
+  <form
+    *ngIf="{
+      confidentialityLevels: confidentialityLevels$ | async,
+      informationObjectTypes: informationObjectTypes$ | async,
+      tags: tags$ | async,
+    } as obs"
+    class="valtimo-documenten-api-filter__form"
+    [formGroup]="formGroup"
+  >
+    <cds-text-label>
+      {{ 'zgw.documentColumns.titel' | translate }}
+
+      <input cdsText formControlName="titel" />
+    </cds-text-label>
+
+    <cds-dropdown
+      [disabled]="!obs.informationObjectTypes?.length"
+      [dropUp]="false"
+      [label]="'zgw.documentColumns.informatieobjecttype' | translate"
+      formControlName="informatieObjectType"
+    >
+      <cds-dropdown-list [items]="obs.informationObjectTypes"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <div class="valtimo-documenten-api-filter__dates">
+      <cds-date-picker
+        #creationDateFrom
+        [label]="'interface.labels.dateCreationFrom' | translate"
+        placeholder="DD-MM-YYYY"
+        [dateFormat]="'d-m-Y'"
+        (valueChange)="onDateSelected('createdFrom', $event)"
+      ></cds-date-picker>
+
+      <cds-date-picker
+        #creationDateTo
+        [label]="'interface.labels.dateCreationTo' | translate"
+        placeholder="DD-MM-YYYY"
+        [dateFormat]="'d-m-Y'"
+        (valueChange)="onDateSelected('createdTo', $event)"
+      ></cds-date-picker>
+    </div>
+
+    <cds-text-label>
+      {{ 'zgw.documentColumns.auteur' | translate }}
+
+      <input cdsText formControlName="auteur" />
+    </cds-text-label>
+
+    <cds-dropdown
+      [dropUp]="false"
+      [label]="'zgw.documentColumns.vertrouwelijkheidaanduiding' | translate"
+      formControlName="vertrouwelijkHeidaanduiding"
+    >
+      <cds-dropdown-list [items]="obs.confidentialityLevels"></cds-dropdown-list>
+    </cds-dropdown>
+
+    <cds-dropdown
+      [label]="'zgw.documentColumns.trefwoorden' | translate"
+      formControlName="trefwoorden"
+      type="multi"
+    >
+      <cds-dropdown-list [items]="obs.tags"></cds-dropdown-list>
+    </cds-dropdown>
+  </form>
+
+  <footer class="valtimo-documenten-api-filter__footer">
+    <button cdsButton="tertiary" (click)="resetFilter()">
+      {{ 'Reset filter' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+    </button>
+  </footer>
+</div>

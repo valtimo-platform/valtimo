@@ -1,0 +1,116 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="
+    fields && {
+      currentDashboard: currentDashboard$ | async,
+      editWidgetConfiguration: editWidgetConfiguration$ | async,
+      loading: loading$ | async,
+      widgetData: widgetData$ | async,
+      dragAndDropDisabled: dragAndDropDisabled$ | async,
+      jsonEditorModel: jsonEditorModel$ | async,
+    } as obs
+  "
+>
+  <div class="dashboard-detail-table">
+    @if (!$jsonEditorActive()) {
+      <valtimo-carbon-list
+        [actionItems]="actionItems"
+        [fields]="fields"
+        [header]="false"
+        [items]="obs.widgetData"
+        [loading]="obs.loading"
+        [dragAndDrop]="true"
+        [dragAndDropDisabled]="obs.dragAndDropDisabled"
+        (itemsReordered)="updateWidgetData($event)"
+        (rowClicked)="editWidget($event)"
+      >
+        <div carbonToolbarContent>
+          <ng-container [ngTemplateOutlet]="viewToggle"></ng-container>
+
+          <ng-container [ngTemplateOutlet]="addWidgetButton"></ng-container>
+        </div>
+
+        <valtimo-no-results
+          [action]="addWidgetButton"
+          description="{{ 'dashboardManagement.widgets.noResults.description' | translate }}"
+          title="{{ 'dashboardManagement.widgets.noResults.title' | translate }}"
+        ></valtimo-no-results>
+      </valtimo-carbon-list>
+    } @else {
+      <valtimo-json-editor
+        [model]="obs.jsonEditorModel"
+        [fitPage]="true"
+        [fitPageExtraSpace]="56"
+        (saveEvent)="updateWidgetData($event)"
+      >
+        <ng-container *ngTemplateOutlet="viewToggle"></ng-container>
+      </valtimo-json-editor>
+    }
+  </div>
+
+  <valtimo-widget-modal
+    [dashboard]="obs.currentDashboard"
+    [editWidgetConfiguration]="obs.editWidgetConfiguration"
+    [showModal$]="showModal$"
+    [type]="modalType"
+    [widgetKey]="obs.editWidgetConfiguration?.key"
+    (saveEvent)="refreshWidgets()"
+  ></valtimo-widget-modal>
+
+  <valtimo-edit-dashboard-modal
+    [dashboard]="obs.currentDashboard"
+    [showModal$]="showEditDashboardModal$"
+    (saveEvent)="refreshDashboard()"
+  >
+  </valtimo-edit-dashboard-modal>
+</ng-container>
+
+<ng-container renderInPageHeader>
+  <ng-template>
+    <button
+      cdsButton="tertiary"
+      [size]="(compactMode$ | async) ? 'sm' : 'md'"
+      (click)="editDashboard()"
+    >
+      {{ 'dashboardManagement.widgets.editButton' | translate }}
+
+      <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
+    </button>
+  </ng-template>
+</ng-container>
+
+<ng-template #addWidgetButton>
+  <button cdsButton="primary" [disabled]="loading$ | async" (click)="addWidget()">
+    {{ 'dashboardManagement.widgets.add' | translate }}
+
+    <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+  </button>
+</ng-template>
+
+<ng-template #viewToggle>
+  <cds-tooltip [description]="'JSON editor'">
+    <button
+      [cdsButton]="$buttonTheme()"
+      data-testid="dashboard-details-switch-view"
+      iconOnly="true"
+      (click)="switchView()"
+    >
+      <svg cdsIcon="code" size="16"></svg>
+    </button>
+  </cds-tooltip>
+</ng-template>

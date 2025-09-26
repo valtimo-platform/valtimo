@@ -1,0 +1,52 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.widget-modal .cds--modal-container {
+  inline-size: 75% !important;
+  max-width: 1200px !important;
+}
+
+.widget-modal .form {
+  &__row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  &__spacer {
+    width: 32px;
+  }
+
+  &__element {
+    width: 100%;
+    margin-bottom: 32px;
+  }
+
+  &__element.--with-button {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: row;
+
+    button {
+      margin-left: 16px;
+    }
+  }
+
+  &__element.--readonly input {
+    background-color: transparent;
+  }
+}

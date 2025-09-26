@@ -1,0 +1,374 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import {DOCUMENT} from '@angular/common';
+import {HttpResponse} from '@angular/common/http';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Inject,
+  Input,
+  Output,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Deploy16, Version16} from '@carbon/icons';
+import {TranslateService} from '@ngx-translate/core';
+import {PageHeaderService} from '@valtimo/components';
+import {getCaseManagementRouteParams, GlobalNotificationService} from '@valtimo/shared';
+import {IconService, ListItem, Notification} from 'carbon-components-angular';
+import {BehaviorSubject, combineLatest, map, Observable, of, switchMap, tap} from 'rxjs';
+import {take} from 'rxjs/operators';
+import {lt, valid} from 'semver';
+import {CaseDetailService, CaseManagementService} from '../../services';
+
+@Component({
+  standalone: false,
+  selector: 'valtimo-case-management-detail-actions',
+  templateUrl: './case-management-detail-actions.component.html',
+  styleUrls: ['./case-management-detail-actions.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class CaseManagementDetailActionsComponent {
+  @ViewChild('exportingMessage')
+  private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
+
+  @Input() public documentDefinitionTitle = '';
+  @Input() public set caseDefinitionKey(value: string) {
+    this.caseDetailService.setSelectedCaseDefinitionKey(value);
+  }
+  @Output() public versionSet = new EventEmitter<number>();
+
+  public readonly CARBON_THEME = 'g10';
+
+  public readonly showAllVersionsModal$ = new BehaviorSubject<boolean>(false);
+  public readonly exporting$ = new BehaviorSubject<boolean>(false);
+  public readonly selectedVersionNumber$ = this.caseDetailService.selectedCaseDefinitionVersionTag$;
+  public readonly selectedVersion$ = new BehaviorSubject<string>('');
+
+  public readonly params$ = getCaseManagementRouteParams(this.route).pipe(
+    tap(({caseDefinitionVersionTag}) => this.selectedVersion$.next(caseDefinitionVersionTag))
+  );
+  public readonly caseDefinitionKey$: Observable<string> = this.params$.pipe(
+    map(params => params.caseDefinitionKey || '')
+  );
+  public readonly caseDefinitionVersionTag$: Observable<string> = this.params$.pipe(
+    map(params => params.caseDefinitionVersionTag || '')
+  );
+
+  public readonly globalActiveVersion$ = this.caseDefinitionKey$.pipe(
+    switchMap(caseDefinitionKey =>
+      this.caseManagementService
+        .getGlobalActiveCase(caseDefinitionKey)
+        .pipe(map(result => result.caseDefinitionVersionTag))
+    )
+  );
+
+  public readonly selectedVersionIsGloballyActive$: Observable<boolean> = combineLatest([
+    this.selectedVersion$,
+    this.globalActiveVersion$,
+  ]).pipe(map(([selectedVersion, globalActiveVersion]) => selectedVersion === globalActiveVersion));
+
+  private readonly _caseDefinitionKey$ = this.caseDetailService.selectedCaseDefinitionKey$;
+  public readonly loadingVersion$ = new BehaviorSubject<boolean>(true);
+  public readonly showGlobalVersionModal$ = new BehaviorSubject<boolean>(false);
+  public readonly showGlobalVersionConfirmationModal$ = new BehaviorSubject<boolean>(false);
+
+  public readonly _globalActiveCase$: Observable<any> = this.caseDefinitionKey$.pipe(
+    switchMap(caseDefinitionKey =>
+      this.caseManagementService.getGlobalActiveCase(caseDefinitionKey)
+    )
+  );
+
+  public readonly _caseDefinitionTitle$: Observable<string> = this._globalActiveCase$.pipe(
+    map(result => result.name)
+  );
+
+  public readonly selectedDocumentDefinition$ = this.caseDetailService.documentDefinition$;
+
+  public readonly selectedDocumentDefinitionIsReadOnly$ =
+    this.caseDetailService.selectedDocumentDefinitionIsReadOnly$;
+
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
+
+  public readonly isOlderVersionSelected$: Observable<boolean> = combineLatest([
+    this.globalActiveVersion$,
+    this.selectedVersion$,
+  ]).pipe(
+    map(([currentVersion, selectedVersion]) => {
+      return valid(currentVersion) && valid(selectedVersion) && lt(selectedVersion, currentVersion);
+    })
+  );
+
+  private readonly _cachedVersions = new BehaviorSubject<ListItem[] | null>(null);
+  public readonly versionSelectorItems$: Observable<ListItem[] | null> = combineLatest([
+    this.route.params,
+    this.selectedVersion$,
+  ]).pipe(
+    switchMap(([{caseDefinitionKey}, selectedVersion]) =>
+      combineLatest([
+        this._cachedVersions.getValue() === null
+          ? this.caseManagementService.getCaseDefinitionVersions(caseDefinitionKey)
+          : this._cachedVersions.asObservable(),
+        of(selectedVersion),
+      ])
+    ),
+    map(([caseDefinitionVersions, selectedVersion]) => {
+      if (!caseDefinitionVersions) {
+        return null;
+      }
+
+      this.loadingVersion$.next(false);
+
+      const dropdownListVersions = caseDefinitionVersions.slice(0, 5);
+      const isSelectedOnTheList = dropdownListVersions.some(
+        version => version.versionTag === selectedVersion
+      );
+
+      let limitedVersions = dropdownListVersions;
+
+      if (!isSelectedOnTheList && selectedVersion) {
+        const selectedVersionObj = caseDefinitionVersions.find(
+          caseVersion => caseVersion.versionTag === selectedVersion
+        );
+        if (selectedVersionObj) {
+          limitedVersions = [...dropdownListVersions.slice(0, 4), selectedVersionObj];
+        }
+      }
+
+      const mapping: ListItem[] = limitedVersions.map(({versionTag, active, final}) => ({
+        content: versionTag,
+        selected: versionTag === selectedVersion,
+        active,
+        tagType: final ? 'green' : 'red',
+        isAllVersionsOption: false,
+        draft: !final,
+      }));
+
+      const allVersionsItem: ListItem = {
+        content: this.translateService.instant('caseManagement.seeAllVersions'),
+        selected: false,
+        active: false,
+        isAllVersionsOption: true,
+      };
+
+      return [...mapping, allVersionsItem];
+    })
+  );
+
+  private _currentNotification!: Notification;
+
+  constructor(
+    @Inject(DOCUMENT) private document: Document,
+    private readonly caseManagementService: CaseManagementService,
+    private readonly caseDetailService: CaseDetailService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly iconService: IconService,
+    private readonly pageHeaderService: PageHeaderService,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly translateService: TranslateService
+  ) {
+    this.iconService.register(Version16);
+    this.iconService.register(Deploy16);
+  }
+
+  public export(): void {
+    this.closeCurrentNotification();
+
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'info',
+      title: '',
+      showClose: false,
+      template: this._exportMessageTemplateRef,
+    });
+
+    let selectedVersionNumber!: string;
+
+    this.startExporting();
+
+    combineLatest([this.selectedVersionNumber$, this._caseDefinitionKey$])
+      .pipe(
+        take(1),
+        tap(([selectedVersion]) => (selectedVersionNumber = selectedVersion ?? '0')),
+        switchMap(([selectedVersion, documentDefinitionName]) =>
+          this.caseManagementService.exportDocumentDefinition(
+            documentDefinitionName,
+            selectedVersion ?? '0'
+          )
+        )
+      )
+      .subscribe({
+        next: response => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant('caseManagement.exportSuccessTitle'),
+            duration: 5000,
+          });
+          this.downloadZip(response, selectedVersionNumber);
+          this.stopExporting();
+        },
+        error: () => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'error',
+            title: this.translateService.instant('caseManagement.exportErrorTitle'),
+            message: this.translateService.instant('caseManagement.exportErrorMessage'),
+            duration: 5000,
+          });
+          this.stopExporting();
+        },
+      });
+  }
+
+  public selectVersion(version: any): void {
+    if (version?.item?.isAllVersionsOption) {
+      this.showAllVersionsModal();
+    } else {
+      this.setVersion(version?.item?.content);
+    }
+  }
+
+  public selectVersionFromModal(version: string): void {
+    this.setVersion(version);
+  }
+
+  public openGlobalActiveVersionModal(): void {
+    this.showGlobalVersionModal$.next(true);
+  }
+
+  public closeGlobalVersionCaseModal(): void {
+    this.showGlobalVersionModal$.next(false);
+  }
+
+  public showAllVersionsModal(): void {
+    this.showAllVersionsModal$.next(true);
+  }
+
+  public closeAllVersionsModal(): void {
+    this.showAllVersionsModal$.next(false);
+  }
+
+  public openGlobalCaseVersionConfirmationModal(): void {
+    this.showGlobalVersionModal$.next(false);
+    this.showGlobalVersionConfirmationModal$.next(true);
+  }
+
+  public closeGlobalCaseConfirmationModal(): void {
+    this.showGlobalVersionConfirmationModal$.next(false);
+  }
+
+  public setGlobalActiveCaseVersion(): void {
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'info',
+      title: '',
+      showClose: false,
+      template: this._exportMessageTemplateRef,
+    });
+
+    combineLatest([this._caseDefinitionKey$, this.selectedVersion$])
+      .pipe(
+        take(1),
+        switchMap(([caseDefinitionKey, selectedVersion]) =>
+          this.caseManagementService.setGlobalActiveCaseVersion(caseDefinitionKey, selectedVersion)
+        ),
+        tap((result: any) => this.selectedVersion$.next(result.caseDefinitionVersionTag))
+      )
+      .subscribe({
+        next: response => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant(
+              'caseManagement.setGlobalActiveVersionSuccessTitle'
+            ),
+            duration: 5000,
+          });
+        },
+        error: () => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'error',
+            title: this.translateService.instant('caseManagement.setGlobalActiveVersionErrorTitle'),
+            message: this.translateService.instant(
+              'caseManagement.setGlobalActiveVersionErrorMessage'
+            ),
+            duration: 5000,
+          });
+        },
+      });
+
+    this.showGlobalVersionConfirmationModal$.next(false);
+  }
+
+  public redirectToDeployment(): void {
+    combineLatest([this.caseDefinitionKey$, this.caseDefinitionVersionTag$])
+      .pipe(
+        tap(([caseDefinitionKey, caseDefinitionVersionTag]) => {
+          this.router.navigate([
+            '/case-management/case',
+            caseDefinitionKey,
+            'version',
+            caseDefinitionVersionTag,
+            'deployment',
+          ]);
+        })
+      )
+      .subscribe();
+  }
+
+  private startExporting(): void {
+    this.exporting$.next(true);
+  }
+
+  private stopExporting(): void {
+    this.exporting$.next(false);
+  }
+
+  private downloadZip(response: HttpResponse<Blob>, caseDefinitionVersionTag: string): void {
+    const link = document.createElement('a');
+    const contentDisposition = response.headers.get('content-disposition');
+    const splitContentDisposition = contentDisposition?.split('filename=') ?? [];
+    const fileName = splitContentDisposition.length > 1 && splitContentDisposition[1];
+
+    link.href = this.document.defaultView?.URL.createObjectURL(response.body) ?? '';
+    link.download = fileName || `${this.caseDefinitionKey}_${caseDefinitionVersionTag}.valtimo.zip`;
+    link.target = '_blank';
+    link.click();
+    link.remove();
+  }
+
+  private closeCurrentNotification(): void {
+    if (this._currentNotification) {
+      this.notificationService.close(this._currentNotification);
+    }
+  }
+
+  private findLargestInArray(array: Array<number>): number {
+    return array.reduce(function (a, b) {
+      return a > b ? a : b;
+    });
+  }
+
+  private setVersion(version: string): void {
+    this.selectedVersion$.next(version);
+    this.router.navigate([`../${version}/${this.route.firstChild?.routeConfig?.path}`], {
+      relativeTo: this.route,
+    });
+  }
+}

@@ -1,0 +1,86 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="cds--toolbar-content">
+  @if (isEditActive()) {
+    <button cdsButton="secondary" (click)="onCancelClick()">
+      {{ 'interface.cancel' | translate }}
+
+      <svg cdsIcon="close" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    <button cdsButton="primary" [disabled]="!isValidJson()" (click)="onSaveClick()">
+      {{ 'interface.save' | translate }}
+
+      <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+    </button>
+  } @else {
+    <ng-content></ng-content>
+
+    <button
+      *ngIf="showEditButton"
+      cdsButton="primary"
+      [disabled]="disableEditButton"
+      (click)="onEditClick()"
+    >
+      {{ 'interface.edit' | translate }}
+
+      <svg cdsIcon="edit" size="16" class="cds--btn__icon"></svg>
+    </button>
+  }
+</div>
+
+<valtimo-editor
+  [disabled]="isDisabled()"
+  [fitPage]="fitPage"
+  [fitPageExtraSpace]="fitPageExtraSpace"
+  [formatOnLoad]="formatOnLoad"
+  [heightPx]="heightPx"
+  [heightStyle]="heightStyle"
+  [jsonSchema]="jsonSchema"
+  [model]="model"
+  [widthPx]="widthPx"
+  (validEvent)="onValidEvent($event)"
+  (valueChangeEvent)="onValueChangeEvent($event)"
+>
+</valtimo-editor>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showSaveConfirmationModal$"
+  cancelButtonTextTranslationKey="interface.cancel"
+  confirmButtonTextTranslationKey="interface.save"
+  contentTranslationKey="interface.jsonEditor.saveModalContent"
+  titleTranslationKey="interface.save"
+  (cancelEvent)="onKeepEditingDefinition()"
+  (confirmEvent)="onSaveChanges()"
+></valtimo-confirmation-modal>
+
+<valtimo-confirmation-modal
+  [showModalSubject$]="showCancelConfirmationModal$"
+  cancelButtonTextTranslationKey="interface.pendingChanges.keepEditing"
+  cancelButtonType="ghost"
+  confirmButtonTextTranslationKey="interface.discard"
+  confirmButtonType="danger"
+  contentTranslationKey="interface.jsonEditor.cancelModal.content"
+  optionalButtonTextTranslationKey="interface.save"
+  optionalButtonType="secondary"
+  titleTranslationKey="interface.jsonEditor.cancelModal.title"
+  showOptionalButton="true"
+  spacerAfterCancelButton="true"
+  (cancelEvent)="onKeepEditingDefinition()"
+  (confirmEvent)="onDiscardChanges()"
+  (optionalEvent)="onSaveChanges()"
+></valtimo-confirmation-modal>

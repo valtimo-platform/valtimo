@@ -1,0 +1,130 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  *ngIf="{
+    currentTab: currentTab$ | async,
+    injectedTabs: injectedCaseManagementTabs$ | async,
+  } as obs"
+  class="case-management-detail-container"
+>
+  <cds-tabs class="case-management-tabs" type="inline">
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.GENERAL"
+      [active]="obs.currentTab === TabEnum.GENERAL"
+      [heading]="'caseManagement.tabs.general' | translate"
+      (selected)="navigateToTab(TabEnum.GENERAL)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.PROCESSES"
+      [active]="obs.currentTab === TabEnum.PROCESSES"
+      [heading]="'caseManagement.tabs.processes' | translate"
+      (selected)="navigateToTab(TabEnum.PROCESSES)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right main-content"
+      [id]="TabEnum.DECISIONS"
+      [active]="obs.currentTab === TabEnum.DECISIONS"
+      [heading]="'caseManagement.tabs.decision' | translate"
+      (selected)="navigateToTab(TabEnum.DECISIONS)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.DOCUMENT"
+      [active]="obs.currentTab === TabEnum.DOCUMENT"
+      [heading]="'caseManagement.tabs.document' | translate"
+      (selected)="navigateToTab(TabEnum.DOCUMENT)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.FORMS"
+      [active]="obs.currentTab === TabEnum.FORMS"
+      [heading]="'caseManagement.tabs.forms' | translate"
+      (selected)="navigateToTab(TabEnum.FORMS)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.FORM_FLOWS"
+      [active]="obs.currentTab === TabEnum.FORM_FLOWS"
+      [heading]="'caseManagement.tabs.formFlows' | translate"
+      (selected)="navigateToTab(TabEnum.FORM_FLOWS)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="no-padding-left-right no-padding-top-bottom"
+      [id]="TabEnum.TASKS"
+      [active]="obs.currentTab === TabEnum.TASKS"
+      [heading]="'caseManagement.tabs.tasks' | translate"
+      (selected)="navigateToTab(TabEnum.TASKS)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.CASE_LIST"
+      [active]="obs.currentTab === TabEnum.CASE_LIST"
+      [heading]="'caseManagement.tabs.caseListTab.title' | translate"
+      (selected)="navigateToTab(TabEnum.CASE_LIST)"
+    >
+    </cds-tab>
+
+    <cds-tab
+      class="main-content no-padding-left-right no-padding-bottom"
+      [id]="TabEnum.CASE_DETAILS"
+      [active]="obs.currentTab === TabEnum.CASE_DETAILS"
+      [heading]="'caseManagement.tabs.caseDetailsTab.title' | translate"
+      (selected)="navigateToTab(TabEnum.CASE_DETAILS)"
+    >
+    </cds-tab>
+
+    @for (injectedTab of obs.injectedTabs; track injectedTab.translationKey) {
+      <cds-tab
+        class="no-padding-left-right no-padding-top-bottom"
+        [active]="obs.currentTab === injectedTab.translationKey"
+        [heading]="injectedTab.translationKey | translate"
+        (selected)="navigateToTab(injectedTab.tabRoute ?? injectedTab.translationKey)"
+      >
+      </cds-tab>
+    }
+  </cds-tabs>
+
+  <div class="case-management-detail-container__content">
+    <router-outlet></router-outlet>
+  </div>
+</div>
+
+<ng-container renderInPageHeader [fullWidth]="true">
+  <ng-template>
+    <valtimo-case-management-detail-actions
+      [documentDefinitionTitle]="documentDefinitionTitle$ | async"
+      [caseDefinitionKey]="caseDefinitionKey$ | async"
+      (versionSet)="onVersionSet($event)"
+    ></valtimo-case-management-detail-actions>
+  </ng-template>
+</ng-container>

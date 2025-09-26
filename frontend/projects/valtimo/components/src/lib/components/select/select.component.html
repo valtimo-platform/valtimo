@@ -1,0 +1,65 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  *ngIf="{
+    placeholderText: placeholder || ('interface.filter' | translate),
+    loadingText: loadingText || ('interface.loading' | translate),
+    clearText: clearText || ('interface.clear' | translate),
+    clearAllText: clearAllText || ('interface.clearAll' | translate),
+    notFoundText: notFoundText || ('interface.noItemsFound' | translate),
+    items: listItems$ | async,
+  } as vars"
+  class="v-select-container"
+  [ngClass]="{
+    'v-select-container--margin': margin,
+    'v-select-container--small-margin': smallMargin,
+    'v-select-container--not-clearable': !clearable,
+  }"
+  [style.width.px]="widthInPx"
+>
+  <v-input-label
+    *ngIf="title || titleTranslationKey"
+    [name]="name"
+    [required]="required"
+    [titleTranslationKey]="titleTranslationKey"
+    [title]="title"
+    [tooltip]="tooltip"
+  >
+  </v-input-label>
+
+  <cds-combo-box
+    [attr.data-testid]="dataTestId"
+    [appendInline]="appendInline"
+    [clearSelectionTitle]="vars.clearText"
+    [clearSelectionsTitle]="vars.clearAllText"
+    [disabled]="$disabled() || loading || (vars?.items || []).length === 0"
+    [dropUp]="dropUp"
+    [invalid]="invalid"
+    [placeholder]="
+      loading
+        ? vars.loadingText
+        : (vars?.items || []).length === 0
+          ? vars.notFoundText
+          : vars.placeholderText
+    "
+    [type]="multiple ? 'multi' : 'single'"
+    (clear)="clear()"
+    (selected)="setSelected($event)"
+  >
+    <cds-dropdown-list [items]="vars?.items || []"></cds-dropdown-list>
+  </cds-combo-box>
+</div>

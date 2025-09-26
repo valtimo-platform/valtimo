@@ -1,0 +1,197 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    disabled: disabled$ | async,
+    isCreate: type === 'create',
+    isDelete: type === 'delete',
+    isEdit: type === 'edit',
+    open: open$ | async,
+  } as vars"
+>
+  <ng-container
+    *ngIf="{
+      create: vars.isCreate && ('dashboardManagement.widgets.add' | translate),
+      delete: vars.isDelete && ('dashboardManagement.widgets.delete' | translate),
+      edit: vars.isEdit && ('dashboardManagement.widgets.edit' | translate),
+    } as titles"
+  >
+    <cds-modal
+      *ngIf="{
+        title: titles.edit || titles.create || titles.delete,
+      } as translations"
+      valtimoCdsModal
+      [open]="vars.open"
+      showFooter="true"
+      size="md"
+      title="{{ translations.title }}"
+      class="widget-modal"
+      (close)="closeModal()"
+    >
+      <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+        <h3 cdsModalHeaderHeading>
+          {{ translations.title }}
+        </h3>
+      </cds-modal-header>
+
+      <section cdsModalContent [cdsLayer]="1">
+        <ng-container *ngIf="vars.isDelete">
+          {{ 'dashboardManagement.widgets.deleteDescription' | translate }}</ng-container
+        >
+
+        <ng-container *ngIf="vars.isEdit || vars.isCreate">
+          <ng-container *ngTemplateOutlet="widgetForm; context: {vars: vars}"></ng-container>
+        </ng-container>
+      </section>
+
+      <cds-modal-footer>
+        <ng-container *ngIf="vars.isEdit || vars.isCreate">
+          <ng-container *ngTemplateOutlet="editButtons; context: {vars: vars}"></ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="vars.isDelete">
+          <ng-container *ngTemplateOutlet="deleteButtons; context: {vars: vars}"></ng-container>
+        </ng-container>
+      </cds-modal-footer>
+    </cds-modal>
+  </ng-container>
+</ng-container>
+
+<ng-template #widgetForm let-vars="vars">
+  <form
+    *ngIf="
+      form && {
+        dataSourceItems: dataSourceItems$ | async,
+        displayTypeDropdownDisabled: displayTypeDropdownDisabled$ | async,
+        displayTypeItems: displayTypeItems$ | async,
+        selectedDataSourceKey: selectedDataSourceKey$ | async,
+        selectedDisplayTypeKey: selectedDisplayTypeKey$ | async,
+      } as obs
+    "
+    [formGroup]="form"
+    class="dashboard-modal__form"
+  >
+    <div class="form__element">
+      <cds-label
+        [helperText]="'dashboardManagement.widgets.form.titleHelperText' | translate"
+        [invalidText]="'dashboardManagement.widgets.form.titleHelperText' | translate"
+        [invalid]="title.dirty && title.invalid"
+      >
+        {{ 'dashboardManagement.widgets.form.title' | translate }}
+
+        <input
+          cdsText
+          formControlName="title"
+          [invalid]="title.dirty && title.invalid"
+          [attr.modal-primary-focus]="true"
+        />
+      </cds-label>
+    </div>
+
+    <div class="form__element" *ngIf="obs.dataSourceItems">
+      <cds-dropdown
+        [appendInline]="true"
+        formControlName="dataSource"
+        [helperText]="'dashboardManagement.widgets.form.dataSourceHelperText' | translate"
+        [invalidText]="'dashboardManagement.widgets.form.dateSourceHelperText' | translate"
+        [invalid]="dataSource.dirty && dataSource.invalid"
+        [label]="'dashboardManagement.widgets.form.dataSource' | translate"
+        (selected)="dataSourceSelected($event)"
+      >
+        <cds-dropdown-list [items]="obs.dataSourceItems" type="multi"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <valtimo-widget-configuration-container
+      *ngIf="obs.selectedDataSourceKey"
+      [dataSourceKey]="obs.selectedDataSourceKey"
+      [disabled]="vars.disabled"
+      [prefillConfiguration]="dataSourcePrefillConfig$ | async"
+      (configurationEvent)="dataSourceConfiguration($event)"
+    ></valtimo-widget-configuration-container>
+
+    <div class="form__element" *ngIf="obs.displayTypeItems">
+      <cds-dropdown
+        [appendInline]="true"
+        formControlName="displayType"
+        [helperText]="'dashboardManagement.widgets.form.displayTypeHelperText' | translate"
+        [invalid]="displayType.dirty && displayType.invalid"
+        [invalidText]="'dashboardManagement.widgets.form.displayTypeHelperText' | translate"
+        [label]="'dashboardManagement.widgets.form.displayType' | translate"
+        (selected)="displayTypeSelected($event)"
+      >
+        <cds-dropdown-list [items]="obs.displayTypeItems" type="multi"></cds-dropdown-list>
+      </cds-dropdown>
+    </div>
+
+    <valtimo-widget-configuration-container
+      *ngIf="obs.selectedDisplayTypeKey"
+      [disabled]="vars.disabled"
+      [displayTypeKey]="obs.selectedDisplayTypeKey"
+      [prefillConfiguration]="displayTypePrefillConfig$ | async"
+      (configurationEvent)="displayTypeConfiguration($event)"
+    ></valtimo-widget-configuration-container>
+
+    <div class="form__element">
+      <cds-label
+        [helperText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
+        [invalidText]="'dashboardManagement.widgets.form.urlHelperText' | translate"
+        [invalid]="url.dirty && url.invalid"
+      >
+        {{ 'dashboardManagement.widgets.form.url' | translate }}
+
+        <input cdsText formControlName="url" [invalid]="url.dirty && url.invalid" />
+      </cds-label>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #editButtons let-vars="vars">
+  <ng-container
+    *ngIf="{
+      dataSourceConfiguration: dataSourceConfiguration$ | async,
+      displayTypeConfiguration: displayTypeConfiguration$ | async,
+    } as obs"
+  >
+    <button cdsButton="ghost" [disabled]="vars.disabled" (click)="closeModal()">
+      {{ 'dashboardManagement.widgets.cancel' | translate }}
+    </button>
+
+    <button
+      cdsButton="primary"
+      [disabled]="
+        form.invalid ||
+        !obs.dataSourceConfiguration.valid ||
+        !obs.displayTypeConfiguration.valid ||
+        vars.disabled
+      "
+      (click)="save()"
+    >
+      {{ 'dashboardManagement.widgets.save' | translate }}
+    </button>
+  </ng-container>
+</ng-template>
+
+<ng-template #deleteButtons let-vars="vars">
+  <button cdsButton="secondary" [disabled]="vars.disabled" (click)="closeModal()">
+    {{ 'dashboardManagement.widgets.cancel' | translate }}
+  </button>
+
+  <button cdsButton="danger" [disabled]="vars.disabled" (click)="delete()">
+    {{ 'dashboardManagement.widgets.delete' | translate }}
+  </button>
+</ng-template>

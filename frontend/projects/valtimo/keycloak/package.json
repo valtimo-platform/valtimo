@@ -1,0 +1,15 @@
+{
+  "name": "@valtimo/keycloak",
+  "license": "EUPL-1.2",
+  "version": "13.0.1",
+  "peerDependencies": {
+    "@angular/common": "^19.2.8",
+    "@angular/core": "^19.2.8"
+  },
+  "dependencies": {
+    "jwt-decode": "4.0.0",
+    "keycloak-angular": "19.0.2",
+    "keycloak-js": "26.1.5",
+    "tslib": "2.8.1"
+  }
+}

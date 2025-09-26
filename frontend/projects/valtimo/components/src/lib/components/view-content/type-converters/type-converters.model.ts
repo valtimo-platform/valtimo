@@ -1,0 +1,98 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import {InjectionToken} from '@angular/core';
+
+import {BooleanTypeConverter} from './booleanTypeConverter';
+import {CurrencyTypeConverter} from './currencyTypeConverter';
+import {DateTimeTypeConverter} from './dateTimeTypeConverter';
+import {DateTypeConverter} from './dateTypeConverter';
+import {EnumTypeConverter} from './enumTypeConverter';
+import {NumberTypeConverter} from './numberTypeConverter';
+import {PercentTypeConverter} from './percentTypeConverter';
+import {RelatedFilesTypeConverter} from './relatedFilesTypeConverter';
+import {StringReplaceUnderscoreTypeConverter} from './stringReplaceUnderscoreTypeConverter';
+import {StringTypeConverter} from './stringTypeConverter';
+import {LinkTypeConverter} from './linkTypeConverter';
+
+export const TYPE_CONVERTER_TOKEN = new InjectionToken<TypeConverter[]>('Type Converter');
+
+export const TYPE_PROVIDERS = [
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: StringTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: BooleanTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: DateTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: DateTimeTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: EnumTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: StringReplaceUnderscoreTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: RelatedFilesTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: NumberTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: PercentTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: CurrencyTypeConverter,
+    multi: true,
+  },
+  {
+    provide: TYPE_CONVERTER_TOKEN,
+    useClass: LinkTypeConverter,
+    multi: true,
+  },
+];
+
+export interface TypeConverter {
+  getTypeString(): string;
+  /*
+   * Returns true if the converter returns a raw value, meaning it should be treated as HTML.
+   */
+  isRawValue(): boolean;
+
+  convert(value: any, definition: any): string;
+}

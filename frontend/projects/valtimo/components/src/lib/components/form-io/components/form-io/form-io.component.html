@@ -1,0 +1,53 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  class="formio-carbon"
+  cdsLayer="1"
+  *ngIf="{
+    currentLanguage: currentLanguage$ | async,
+    formioOptions: formioOptions$ | async,
+    submission: submission$ | async,
+    readOnly: readOnly$ | async,
+    form: form$ | async,
+    errors: errors$ | async,
+    tokenSetInLocalStorage: tokenSetInLocalStorage$ | async,
+  } as obs"
+>
+  <div *ngIf="obs.errors.length > 0" class="alert alert-danger pt-5 pb-5 mb-2">
+    <ol>
+      <li *ngFor="let error of obs.errors">
+        {{ error }}
+      </li>
+    </ol>
+  </div>
+
+  <formio
+    *ngIf="obs.formioOptions && obs.form && obs.tokenSetInLocalStorage"
+    [form]="obs.form"
+    [language]="languageEventEmitter"
+    [options]="obs.formioOptions"
+    [readOnly]="obs.readOnly"
+    [refresh]="refreshForm"
+    [submission]="obs.submission"
+    (change)="onChange($event)"
+    (nextPage)="nextPage()"
+    (prevPage)="prevPage()"
+    (ready)="formReady($event)"
+    (submit)="onSubmit($event)"
+    (customEvent)="onCustomEvent($event)"
+  ></formio>
+</div>

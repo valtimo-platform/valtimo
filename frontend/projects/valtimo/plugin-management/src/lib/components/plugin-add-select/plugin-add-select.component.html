@@ -1,0 +1,71 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container *ngIf="pluginDefinitionsWithLogos$ | async as pluginDefinitions; else loading">
+  <div class="plugin-definition__grid">
+    <ng-container
+      *ngTemplateOutlet="pluginDefinitionsTemplate; context: {pluginDefinitions: pluginDefinitions}"
+    ></ng-container>
+    <ng-container
+      *ngTemplateOutlet="
+        noPluginDefinitionsTemplate;
+        context: {pluginDefinitions: pluginDefinitions}
+      "
+    ></ng-container>
+  </div>
+</ng-container>
+
+<ng-template #noPluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
+  <div *ngIf="pluginDefinitions?.length === 0" class="plugin-definition__no-results">
+    <v-paragraph [center]="true" [fullWidth]="true">{{
+      'pluginManagement.noDefinitions' | translate
+    }}</v-paragraph>
+  </div>
+</ng-template>
+
+<ng-template #pluginDefinitionsTemplate let-pluginDefinitions="pluginDefinitions">
+  <cds-tile-group [multiple]="false" (selected)="selectPluginDefinition($event)" [cdsLayer]="1">
+    <cds-selection-tile
+      *ngFor="let pluginDefinition of pluginDefinitions"
+      [value]="pluginDefinition"
+      [selected]="(selectedPluginDefinition$ | async)?.key === pluginDefinition.key"
+    >
+      <img
+        class="plugin-definition-logo"
+        [title]="'title' | pluginTranslate: pluginDefinition.key | async"
+        [src]="pluginDefinition.pluginLogoBase64"
+      />
+
+      <h5>{{ 'title' | pluginTranslate: pluginDefinition.key | async }}</h5>
+
+      <p>{{ 'description' | pluginTranslate: pluginDefinition.key | async }}</p>
+    </cds-selection-tile>
+  </cds-tile-group>
+</ng-template>
+
+<ng-template #loading>
+  <div class="plugin-definition__grid">
+    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
+    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
+    <ng-container *ngTemplateOutlet="loadingCard"></ng-container>
+  </div>
+</ng-template>
+
+<ng-template #loadingCard>
+  <div class="plugin-definition__item">
+    <cds-loading size="sm"></cds-loading>
+  </div>
+</ng-template>

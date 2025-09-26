@@ -1,0 +1,67 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.page-title-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+
+  &--no-margin {
+    margin-bottom: 0;
+  }
+
+  &--compact {
+    align-items: center;
+  }
+
+  .page-title {
+    flex-shrink: 0;
+    font-weight: 300;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--small-title {
+      font-size: var(--cds-body-compact-01-font-size, 0.875rem);
+      font-weight: var(--cds-body-compact-01-font-weight, 400);
+      line-height: var(--cds-body-compact-01-line-height, 1.28572);
+      letter-spacing: var(--cds-body-compact-01-letter-spacing, 0.16px);
+    }
+  }
+
+  .compact-page-title {
+    margin-left: 8px;
+    flex-shrink: 0;
+  }
+
+  .skeleton-container {
+    .cds--skeleton__placeholder {
+      width: 200px;
+      height: 40px;
+    }
+
+    &--compact {
+      width: 60px;
+      height: 18px;
+      overflow: hidden;
+      margin-left: 8px;
+    }
+  }
+}
+
+.valtimo-page-title--compact {
+  width: 100%;
+}

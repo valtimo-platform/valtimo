@@ -1,0 +1,59 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if (items$ | async; as items) {
+  <ul class="timeline mb-0 py-5">
+    @for (item of items; track item.customData.id) {
+      <li class="timeline-item status-done">
+        <div class="timeline-date">
+          <span>{{ item.date }}</span>
+
+          <br />
+
+          <span>{{ item.time }}</span>
+        </div>
+
+        <div class="timeline-content" *ngIf="actions$ | async as actions">
+          <div class="timeline-header">
+            <span class="timeline-author">{{ item.user }}</span>
+
+            <br />
+
+            <p class="timeline-activity">{{ item.activity }}</p>
+
+            <p class="timeline-summary">
+              {{ item.summaryTranslationKey | translate: item.summaryTranslationParams }}
+            </p>
+          </div>
+
+          <cds-overflow-menu *ngIf="item.supportedActionIds?.length > 0">
+            @for (actionId of item.supportedActionIds; track actionId) {
+              <cds-overflow-menu-option (click)="actions[actionId].callback(item, $event)">
+                <i
+                  *ngIf="!!actions[actionId].icon"
+                  class="icon mdi"
+                  [ngClass]="actions[actionId].icon"
+                ></i>
+
+                {{ actions[actionId]?.label || '-' }}
+              </cds-overflow-menu-option>
+            }
+          </cds-overflow-menu>
+        </div>
+      </li>
+    }
+  </ul>
+}

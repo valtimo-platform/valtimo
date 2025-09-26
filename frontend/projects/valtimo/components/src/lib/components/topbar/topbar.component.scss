@@ -1,0 +1,53 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.user-icon {
+  font-size: 30px;
+}
+
+.be-toggle-right-sidebar {
+  display: flex;
+}
+
+.user-full-name {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: var(--v-top-bar-user-name-spacing);
+  flex-shrink: 0;
+}
+
+::ng-deep .cds--header__name {
+  display: none !important;
+}
+
+.logo-link {
+  height: 100%;
+  padding-left: 16px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.logo-link--large-margin {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.logo-image {
+  height: 100%;
+  object-fit: contain;
+}

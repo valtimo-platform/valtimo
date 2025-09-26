@@ -1,0 +1,21 @@
+{
+  "extends": "../../../.eslintrc.json",
+  "rules": {
+    "@angular-eslint/component-selector": [
+      "error",
+      {
+        "type": "element",
+        "prefix": ["valtimo", "v"],
+        "style": "kebab-case"
+      }
+    ],
+    "@angular-eslint/directive-selector": [
+      "error",
+      {
+        "type": "directive",
+        "prefix": ["valtimo", "v"],
+        "style": "camelCase"
+      }
+    ]
+  }
+}

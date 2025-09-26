@@ -1,0 +1,102 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  valtimoCdsModal
+  [open]="modalOpen$ | async"
+  *ngIf="{
+    deleteTranslation: 'interface.delete' | translate,
+    deleteConfirmationTranslation: 'interface.deleteConfirmation' | translate,
+    cancelTranslation: 'interface.cancel' | translate,
+    titleTranslation: titleTranslationKey | translate,
+    contentTranslation: contentTranslationKey | translate,
+    confirmButtonTranslation: confirmButtonTextTranslationKey | translate,
+    cancelButtonTranslation: cancelButtonTextTranslationKey | translate,
+    optionalButtonTranslation: optionalButtonTextTranslationKey | translate,
+  } as obs"
+  (close)="closeModal()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>
+      {{
+        (titleTranslationKey !== obs.titleTranslation ? obs.titleTranslation : '') ||
+          title ||
+          obs.deleteTranslation
+      }}
+    </h3>
+  </cds-modal-header>
+
+  <section cdsModalContent>
+    {{
+      (contentTranslationKey !== obs.contentTranslation ? obs.contentTranslation : '') ||
+        content ||
+        obs.deleteConfirmationTranslation
+    }}
+
+    <div class="modal-body-content">
+      <ng-content></ng-content>
+    </div>
+  </section>
+
+  <cds-modal-footer>
+    <ng-container>
+      <button
+        data-testid="confirmation-modal-close"
+        [attr.modal-primary-focus]="true"
+        [cdsButton]="cancelButtonType"
+        (click)="closeModal()"
+      >
+        {{
+          (cancelButtonTextTranslationKey !== obs.cancelButtonTranslation
+            ? obs.cancelButtonTranslation
+            : '') ||
+            cancelButtonText ||
+            obs.cancelTranslation
+        }}
+      </button>
+      <div *ngIf="spacerAfterCancelButton" class="modal-spacer"></div>
+      <button
+        *ngIf="showOptionalButton"
+        data-testid="confirmation-modal-optional"
+        [attr.modal-primary-focus]="true"
+        [cdsButton]="optionalButtonType"
+        (click)="onOptional()"
+      >
+        {{
+          (optionalButtonTextTranslationKey !== obs.optionalButtonTranslation
+            ? obs.optionalButtonTranslation
+            : '') ||
+            optionalButtonText ||
+            obs.deleteTranslation
+        }}
+      </button>
+      <button
+        data-testid="confirmation-modal-confirm"
+        [attr.modal-primary-focus]="true"
+        [cdsButton]="confirmButtonType"
+        (click)="onConfirm()"
+      >
+        {{
+          (confirmButtonTextTranslationKey !== obs.confirmButtonTranslation
+            ? obs.confirmButtonTranslation
+            : '') ||
+            confirmButtonText ||
+            obs.deleteTranslation
+        }}
+      </button>
+    </ng-container>
+  </cds-modal-footer>
+</cds-modal>

@@ -1,0 +1,56 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.documenten-metadata-form-columns-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.documenten-metadata-form-column {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.documenten-metada-form-input {
+  margin-bottom: 18px !important;
+  width: 100% !important;
+}
+
+.documenten-metada-form-description-input {
+  width: 100%;
+}
+
+// Fix 100% width for date inputs
+::ng-deep .cds--date-picker,
+::ng-deep .cds--date-picker-container,
+::ng-deep .cds--date-picker__input,
+::ng-deep .cds--date-picker-input__wrapper,
+::ng-deep .cds--date-picker-input__wrapper > span {
+  width: 100%;
+}
+
+::ng-deep .cds--date-picker.cds--date-picker--single .cds--date-picker__input {
+  inline-size: 100%;
+}
+
+.metadata-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.metadata-modal-footer button {
+  width: 100%;
+}

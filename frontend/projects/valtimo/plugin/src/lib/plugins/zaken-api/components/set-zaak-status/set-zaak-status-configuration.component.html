@@ -1,0 +1,89 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-form
+  (valueChange)="formValueChange($event)"
+  *ngIf="{
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    pluginId: pluginId$ | async,
+    selectedInputOption: selectedInputOption$ | async,
+    loading: loading$ | async,
+    statusTypeItems: statusTypeSelectItems$ | async,
+    context: context$ | async,
+  } as obs"
+>
+  <ng-container *ngIf="obs.loading === false; else loading">
+    <v-input
+      name="statustoelichting"
+      [title]="'statustoelichting' | pluginTranslate: obs.pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.statustoelichting"
+      [disabled]="obs.disabled"
+      [required]="false"
+      [tooltip]="'statustoelichtingTooltip' | pluginTranslate: obs.pluginId | async"
+      [fullWidth]="true"
+    >
+    </v-input>
+
+    <v-radio
+      *ngIf="obs?.context?.[0] === 'case'"
+      name="inputTypeZaakStatusToggle"
+      [disabled]="obs.disabled"
+      [title]="'inputTypeZaakStatusToggle' | pluginTranslate: obs.pluginId | async"
+      [radioValues]="inputTypeOptions$ | async"
+      [defaultValue]="selectedInputOption$ | async"
+      [margin]="true"
+    >
+    </v-radio>
+
+    <v-input
+      *ngIf="obs.selectedInputOption === 'text'"
+      name="statustypeUrl"
+      [title]="'statustypeUrl' | pluginTranslate: obs.pluginId | async"
+      [margin]="true"
+      [defaultValue]="obs.prefill?.statustypeUrl"
+      [disabled]="obs.disabled"
+      [required]="true"
+      [trim]="true"
+      [tooltip]="'statustypeUrlTooltip' | pluginTranslate: obs.pluginId | async"
+      [fullWidth]="true"
+    >
+    </v-input>
+
+    <ng-container *ngIf="obs.selectedInputOption === 'selection'">
+      <v-select
+        [items]="obs.statusTypeItems"
+        [margin]="true"
+        [widthInPx]="350"
+        name="statustypeUrl"
+        [title]="'statustypeUrlSelect' | pluginTranslate: obs.pluginId | async"
+        [disabled]="obs.disabled || obs.selectedInputOption === 'text' || !obs.statusTypeItems"
+        [defaultSelectionId]="obs.prefill?.statustypeUrl"
+        [required]="true"
+        [loading]="!obs.statusTypeItems"
+        [tooltip]="'statustypeUrlSelectTooltip' | pluginTranslate: obs.pluginId | async"
+        [clearSelectionSubject$]="clearStatusSelection$"
+      ></v-select>
+    </ng-container>
+  </ng-container>
+</v-form>
+
+<ng-template #loading>
+  <div class="loading-container">
+    <cds-loading></cds-loading>
+  </div>
+</ng-template>

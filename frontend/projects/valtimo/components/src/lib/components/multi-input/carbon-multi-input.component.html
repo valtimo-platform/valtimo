@@ -1,0 +1,186 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div
+  *ngIf="{
+    addRowText:
+      addRowText || addRowTranslationKey
+        ? addRowTranslationKey
+          ? (addRowTranslationKey | translate)
+          : addRowText
+        : ('interface.addRow' | translate),
+    deleteRowText:
+      deleteRowText || deleteRowTranslationKey
+        ? deleteRowTranslationKey
+          ? (deleteRowTranslationKey | translate)
+          : deleteRowText
+        : ('interface.deleteRow' | translate),
+  } as vars"
+  [ngClass]="{'v-multi-input--margin': margin, 'v-multi-input--no-delete-button': hideDeleteButton}"
+  class="v-multi-input"
+>
+  <v-input-label
+    *ngIf="title || titleTranslationKey"
+    [name]="name"
+    [required]="required"
+    [titleTranslationKey]="titleTranslationKey"
+    [title]="title"
+    [tooltip]="tooltip"
+  >
+  </v-input-label>
+
+  <div class="v-multi-input__rows">
+    <div
+      *ngFor="let value of values$ | async as values; trackBy: trackByFn; index as i"
+      class="v-multi-input__row"
+    >
+      @switch (type) {
+        @case ('value') {
+          <valtimo-single-value
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="$disabled()"
+            (valueChange)="onValueChange($event.value, $event.inputValue, 'value')"
+          ></valtimo-single-value>
+        }
+        @case ('keyValue') {
+          <valtimo-key-value
+            [keyColumnTitle]="keyColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="$disabled()"
+            [keyColumnFlex]="keyColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-key-value>
+        }
+        @case ('keyDropdownValue') {
+          <valtimo-key-dropdown-value
+            [keyColumnTitle]="keyColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [dropdownColumnTitle]="dropdownColumnTitle"
+            [index]="i"
+            [value]="value"
+            [dropdownItems$]="getDropdownItemsForRow(i)"
+            [dropdownWidth]="dropdownWidth"
+            [fullWidth]="fullWidth"
+            [disabled]="$disabled()"
+            [keyColumnFlex]="keyColumnFlex"
+            [dropdownColumnFlex]="dropdownColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-key-dropdown-value>
+        }
+        @case ('arbitraryAmount') {
+          <valtimo-arbitrary-amount-value
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="$disabled()"
+            [arbitraryAmountTitles]="arbitraryAmountTitles"
+            [amountOfArbitraryValuesArray$]="amountOfArbitraryValuesArray$"
+            (valueChange)="
+              onValueChange($event.value, $event.inputValue, $event.type, $event.arbitraryIndex)
+            "
+          ></valtimo-arbitrary-amount-value>
+        }
+        @case ('keyValuePathSelector') {
+          <valtimo-key-value-path-selector
+            [keyColumnTitle]="keyColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="$disabled()"
+            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [prefixes]="valuePathSelectorPrefixes"
+            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [notation]="valuePathSelectorNotation"
+            [keyColumnFlex]="keyColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-key-value-path-selector>
+        }
+        @case ('valuePathSelectorValue') {
+          <valtimo-value-path-selector-value
+            [keyColumnTitle]="keyColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="$disabled()"
+            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [prefixes]="valuePathSelectorPrefixes"
+            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [notation]="valuePathSelectorNotation"
+            [keyColumnFlex]="keyColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-value-path-selector-value>
+        }
+        @case ('valuePathSelectorDropdownValue') {
+          <valtimo-value-path-selector-dropdown-value
+            [keyColumnTitle]="keyColumnTitle"
+            [dropdownColumnTitle]="dropdownColumnTitle"
+            [valueColumnTitle]="valueColumnTitle"
+            [index]="i"
+            [value]="value"
+            [fullWidth]="fullWidth"
+            [disabled]="$disabled()"
+            [caseDefinitionKey]="valuePathSelectorCaseDefinitionKey"
+            [prefixes]="valuePathSelectorPrefixes"
+            [dropdownItems$]="getDropdownItemsForRow(i)"
+            [dropdownWidth]="dropdownWidth"
+            [showCaseDefinitionSelector]="valuePathSelectorShowCaseDefinitionSelector"
+            [notation]="valuePathSelectorNotation"
+            [keyColumnFlex]="keyColumnFlex"
+            [dropdownColumnFlex]="dropdownColumnFlex"
+            [valueColumnFlex]="valueColumnFlex"
+            (valueChange)="onValueChange($event.value, $event.inputValue, $event.type)"
+          ></valtimo-value-path-selector-dropdown-value>
+        }
+      }
+
+      <button
+        *ngIf="!hideDeleteButton"
+        cdsButton="danger"
+        [disabled]="values?.length <= this.minimumAmountOfRows || $disabled()"
+        [iconOnly]="true"
+        size="md"
+        (click)="deleteRow(value.uuid)"
+        [title]="vars.deleteRowText"
+      >
+        <svg cdsIcon="trash-can" size="16"></svg>
+      </button>
+    </div>
+
+    <div class="v-multi-input__add-button">
+      <button
+        *ngIf="!hideAddButton"
+        cdsButton="primary"
+        size="md"
+        [disabled]="(addRowEnabled$ | async) === false || $disabled()"
+        (click)="addRow()"
+      >
+        {{ vars.addRowText }}
+
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
+  </div>
+</div>

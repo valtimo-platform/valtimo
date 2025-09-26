@@ -1,0 +1,147 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {CommonModule} from '@angular/common';
+import {Component, OnDestroy, OnInit, ViewChild, ViewContainerRef} from '@angular/core';
+import {
+  BreadcrumbService,
+  CarbonListModule,
+  ColumnConfig,
+  PageTitleService,
+} from '@valtimo/components';
+import {IkoApiService, IkoManagementApiService} from '../../services';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  Observable,
+  Subscription,
+  switchMap,
+  take,
+} from 'rxjs';
+import {ActivatedRoute, Router} from '@angular/router';
+import {map} from 'rxjs/operators';
+import {TabsModule} from 'carbon-components-angular';
+import {IkoManagementTab, IkoManagementTabType} from '../../models';
+import {TranslateModule} from '@ngx-translate/core';
+import {IKO_MANAGEMENT_TABS} from '../../constants';
+
+@Component({
+  selector: 'valtimo-iko-management-details',
+  standalone: true,
+  templateUrl: './iko-management-details.component.html',
+  styleUrl: './iko-management-details.component.scss',
+  imports: [CommonModule, CarbonListModule, TabsModule, TranslateModule],
+})
+export class IkoManagementDetailsComponent implements OnInit, OnDestroy {
+  private readonly _dynamicContainerSubject$ = new BehaviorSubject<ViewContainerRef | null>(null);
+  @ViewChild('tabComponent', {static: false, read: ViewContainerRef})
+  public set dynamicContainer(view: ViewContainerRef) {
+    if (view) this._dynamicContainerSubject$.next(view);
+  }
+  private get _dynamicContainer$(): Observable<ViewContainerRef> {
+    return this._dynamicContainerSubject$.pipe(filter(container => !!container));
+  }
+
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
+  public readonly tabKey$: Observable<IkoManagementTabType> = this.route.params.pipe(
+    map(params => params?.tabKey),
+    filter(key => !!key)
+  );
+
+  private readonly _key$ = this.route.params.pipe(
+    map(params => params?.key),
+    filter(key => !!key)
+  );
+
+  private readonly _apiKey$ = this.route.params.pipe(
+    map(params => params?.apiKey),
+    filter(key => !!key)
+  );
+
+  public readonly currentMenuItem$ = combineLatest([
+    this._key$,
+    this.ikoApiService.cachedMenuItems$,
+  ]).pipe(
+    map(([key, items]) => {
+      const currentItem = items.find(item => item.key === key);
+      if (!currentItem) return;
+      this.pageTitleService.setCustomPageTitle(currentItem.title || '-');
+    })
+  );
+
+  public readonly FIELDS: ColumnConfig[] = [
+    {
+      key: 'title',
+      label: 'ikoManagement.title',
+    },
+  ];
+
+  public readonly TABS = IKO_MANAGEMENT_TABS;
+
+  private readonly _subscriptions = new Subscription();
+
+  constructor(
+    private readonly ikoApiService: IkoApiService,
+    private readonly route: ActivatedRoute,
+    private readonly pageTitleService: PageTitleService,
+    private readonly router: Router,
+    private readonly breadcrumbService: BreadcrumbService,
+    private readonly ikoManagementApiService: IkoManagementApiService
+  ) {}
+
+  public ngOnInit(): void {
+    this.openActivateTabSubscription();
+    this.setThirdBreadcrumb();
+    this.pageTitleService.disableReset();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+    this.pageTitleService.enableReset();
+    this.breadcrumbService.clearThirdBreadcrumb();
+  }
+
+  public onTabSelected(tab: IkoManagementTab): void {
+    this.router.navigate([`../${tab.key}`], {relativeTo: this.route});
+  }
+
+  private openActivateTabSubscription(): void {
+    this._subscriptions.add(
+      combineLatest([this.tabKey$, this._dynamicContainer$]).subscribe(([tabKey, container]) => {
+        const tab = this.TABS.find(tab => tab.key === tabKey);
+        container.clear();
+        container.createComponent(tab.component);
+      })
+    );
+  }
+
+  private setThirdBreadcrumb(): void {
+    this._apiKey$
+      .pipe(
+        take(1),
+        switchMap(apiKey => this.ikoManagementApiService.getIkoRepositoryConfig(apiKey))
+      )
+      .subscribe(repositoryConfig => {
+        this.breadcrumbService.setThirdBreadcrumb({
+          route: [`/iko-management/${repositoryConfig.key}`],
+          content: repositoryConfig?.title ?? '',
+          href: `/iko-management/${repositoryConfig.key}`,
+        });
+      });
+  }
+}
