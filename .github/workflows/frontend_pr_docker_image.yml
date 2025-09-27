@@ -1,0 +1,92 @@
+name: frontend_pr_docker_image.yml
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "feature/dockerize-app"
+
+env:
+  NODE_VERSION: "20.x"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install NPM packages
+        run: npm install
+
+      - name: Build all libraries
+        run: npm run libs-build-all
+
+      - name: Test all libraries
+        run: npm run libs-test-all-cicd
+
+      - name: Lint all libraries
+        run: npm run libs-lint-all-cicd
+
+      - name: Prepare dist folder
+        run: mv Dockerfile dist/
+
+      - name: 'Retain build artifact: dist'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gzac-app-frontend-dist
+          path: dist
+          retention-days: 1
+  buildImage:
+    runs-on: ubuntu-latest
+    needs: build
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract branch name
+        id: vars
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Generate image tags
+        id: generate_tags
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/gzac-frontend
+          tags: |
+            type=raw,value=${{ env.BRANCH_NAME }}.${{github.run_number}},enable=true
+          flavor: |
+            latest=false
+
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gzac-app-frontend-dist
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          file: Dockerfile
+          context: .
+          push: true
+          tags: |
+            ${{ steps.generate_tags.outputs.tags }}
