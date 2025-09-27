@@ -9,7 +9,7 @@ env:
   NODE_VERSION: "20.x"
 
 jobs:
-  build:
+  buildLibraries:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,17 +36,17 @@ jobs:
         run: npm run libs-lint-all-cicd
 
       - name: Prepare dist folder
-        run: mv Dockerfile dist/
+        run: mkdir deployment | mv dist valtimo-libs | mv src httpd.conf valtimo-libs Dockerfile deployment/
 
-      - name: 'Retain build artifact: dist'
+      - name: 'Retain build artifact: deployment'
         uses: actions/upload-artifact@v4
         with:
-          name: gzac-app-frontend-dist
-          path: dist
+          name: gzac-app-frontend-deployment
+          path: deployment
           retention-days: 1
   buildImage:
     runs-on: ubuntu-latest
-    needs: build
+    needs: buildLibraries
 
     permissions:
       contents: read
@@ -55,6 +55,25 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gzac-app-frontend-deployment
+
+      - name: Change working directory
+        run: cd src
+
+      - name: Install NPM packages
+        run: npm install
+
+      - name: Build app
+        run: npm build
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -76,11 +95,6 @@ jobs:
             type=raw,value=${{ env.BRANCH_NAME }}.${{github.run_number}},enable=true
           flavor: |
             latest=false
-
-      - name: Download deployment artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: gzac-app-frontend-dist
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
