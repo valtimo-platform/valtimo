@@ -17,7 +17,7 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "21"
-      - run: ./gradlew assemble
+      - run: ./gradlew app:gzac:assemble
   buildImage:
     runs-on: ubuntu-latest
 
@@ -43,7 +43,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: app/gzac/.
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/gzac-backend-app:${{ env.BRANCH_NAME }}.${{ github.run_number }}
