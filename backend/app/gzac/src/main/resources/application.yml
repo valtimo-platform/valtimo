@@ -1,3 +1,7 @@
+logging:
+    file:
+        name: /tmp/spring.log
+
 management:
     endpoints:
         web:
@@ -9,22 +13,27 @@ management:
             show-details: when_authorized
             roles:
                 - ROLE_ACTUATOR
+
 spring:
+    profiles:
+        active: ${SPRING_PROFILES_ACTIVE}
     application:
-        name: gzac
+        name: GZAC backend
     jackson:
         date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
         time-zone: UTC
     devtools:
         restart:
-            enabled: true
+            enabled: false
         livereload:
-            enabled: true
+            enabled: false
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: org.postgresql.Driver
+        driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.postgresql.Driver}
         url: ${SPRING_DATASOURCE_URL}
-        username: gzac
+        name: ${SPRING_DATASOURCE_NAME}
+        username: ${SPRING_DATASOURCE_USERNAME}
+        password: ${SPRING_DATASOURCE_PASSWORD}
         hikari:
             auto-commit: false
             maximum-pool-size: 25
@@ -63,6 +72,7 @@ spring:
                         client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKJWT_CLIENTID}
                     keycloakapi:
                         client-id: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTID}
+                        client-secret: ${SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTSECRET}
                         authorization-grant-type: authorization_code
                         scope: openid
 
@@ -72,7 +82,8 @@ spring:
     liquibase:
         enabled: false
     jpa:
-        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.PostgreSQLDialect}
+        database: ${SPRING_JPA_DATABASE:postgresql}
         show_sql: false
         open-in-view: false
         properties:
@@ -103,6 +114,7 @@ spring:
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
+            - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
     cloud:
         function:
             definition: kotlinInboxCloudEventConsumer
@@ -131,19 +143,13 @@ spring:
                                 password: guest
                                 virtual-host: /
     rabbitmq:
-        host: localhost
-        port: 5672
-        username: guest
-        password: guest
+        ssl.enabled: ${SPRING_RABBITMQ_SSL_ENABLED:true}
+        host: ${SPRING_RABBITMQ_HOST}
+        port: ${SPRING_RABBITMQ_PORT}
+        username: ${SPRING_RABBITMQ_USERNAME}
+        password: ${SPRING_RABBITMQ_PASSWORD}
         publisher-confirm-type: correlated
         publisher-returns: true
-
-logging:
-    level:
-        org.springframework.beans: DEBUG
-        reactor.netty.http.client.HttpClient: DEBUG
-        org.jboss.resteasy: INFO
-        org.postgresql.jdbc.PgConnection: INFO
 
 server:
     port: 8080
@@ -162,10 +168,12 @@ mailing:
 valtimo:
     app:
         scheme: http
-    database: postgres
+        hostname: ${VALTIMO_APP_HOSTNAME}
+    database: ${VALTIMO_DATABASE:postgres}
     oauth:
         tokenValidityInSeconds: 3600 # Token is valid 1 hour
-
+    plugin:
+        encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
     hardening:
         allowStacktraceOnIps:
             - 127.0.0.1
@@ -218,9 +226,13 @@ valtimo:
     docker:
         filter:
             enabled: true
+    zgw:
+        zaakdetails:
+            linktozaak:
+                enabled: true
 
 spring-actuator:
-    username: ${SPRING_ACTUATOR_USERNAME}
+    username: ${SPRING_ACTUATOR_USERNAME:admin}
     password: ${SPRING_ACTUATOR_PASSWORD}
 
 audit:
@@ -238,12 +250,14 @@ scheduling:
             taskNotificationReminder: 0 0 10 * * ? # Every day at 10:00
 operaton:
     bpm:
+        database:
+            type: ${OPERATON_BPM_DATABASE_TYPE:postgres}
         history-level: AUDIT
         history-level-default: AUDIT
         generic-properties:
             properties:
                 enforceHistoryTimeToLive: false
         admin-user:
-            id: ${OPERATON_BPM_ADMINUSER_ID}
+            id: ${OPERATON_BPM_ADMINUSER_ID:Admin}
             password: ${OPERATON_BPM_ADMINUSER_PASSWORD}
             first-name: Admin account
