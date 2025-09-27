@@ -23,6 +23,7 @@ jobs:
       - run: ./gradlew app:gzac:assemble
   buildImage:
     runs-on: ubuntu-latest
+    needs: assemble
 
     permissions:
       contents: read
@@ -43,10 +44,20 @@ jobs:
         id: vars
         run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
+      - name: Generate image tags
+        id: generate_tags
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/gzac-backend
+          tags: |
+            type=raw,value=${{ env.BRANCH_NAME }}.${{github.run_number}},enable=true
+          flavor: |
+            latest=false
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: app/gzac/.
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/gzac-backend-app:${{ env.BRANCH_NAME }}.${{ github.run_number }}
+            ${{ steps.generate_tags.outputs.tags }}
