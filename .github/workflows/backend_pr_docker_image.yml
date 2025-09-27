@@ -54,10 +54,13 @@ jobs:
           flavor: |
             latest=false
 
+      - name: Change working directory
+        run: cd app/gzac
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: "{{defaultContext}}:backend/app/gzac"
+          context: .
           push: true
           tags: |
             ${{ steps.generate_tags.outputs.tags }}
