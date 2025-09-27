@@ -25,7 +25,7 @@ jobs:
       - run: ./gradlew app:gzac:assemble
 
       - name: Prepare deployment folder
-        run: mkdir deployment | mv build/ Dockerfile deployment/
+        run: mkdir deployment | mv app/gzac/build/ app/gzac/Dockerfile deployment/
 
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4
