@@ -1,6 +1,9 @@
 name: backend_pr_docker_image.yml
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - "feature/dockerize-app"
 
 defaults:
   run:
