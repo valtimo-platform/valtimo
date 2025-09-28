@@ -70,7 +70,7 @@ jobs:
           
           PROJECTS_DIR="projects/valtimo"
           SCOPE="@valtimo"
-          LOCAL_ROOT="deployment/dist/valtimo"
+          LOCAL_ROOT="dist/valtimo"
           PKG_JSON="package.json"
           
           if [ ! -f "$PKG_JSON" ]; then
@@ -115,7 +115,7 @@ jobs:
           cat package.json
 
           echo "Content of deployment directory:"
-          ls -lR deployment
+          ls -lR dist
 
       - name: Build app
         run: npm run build
