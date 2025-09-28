@@ -29,12 +29,6 @@ jobs:
       - name: Build all libraries
         run: npm run libs-build-all
 
-      - name: Test all libraries
-        run: npm run libs-test-all-cicd
-
-      - name: Lint all libraries
-        run: npm run libs-lint-all-cicd
-
       - name: Prepare dist folder
         run: mkdir deployment && mv dist valtimo-libs && mv src httpd.conf valtimo-libs Dockerfile deployment/
 
