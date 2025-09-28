@@ -36,7 +36,7 @@ jobs:
         run: npm run libs-lint-all-cicd
 
       - name: Prepare dist folder
-        run: mkdir deployment | mv dist valtimo-libs | mv src httpd.conf valtimo-libs Dockerfile deployment/
+        run: mkdir deployment && mv dist valtimo-libs && mv src httpd.conf valtimo-libs Dockerfile deployment/
 
       - name: 'Retain build artifact: deployment'
         uses: actions/upload-artifact@v4
