@@ -68,7 +68,7 @@ jobs:
         run: |
           set -euo pipefail
           
-          PROJECTS_DIR="projects"
+          PROJECTS_DIR="projects/valtimo"
           SCOPE="@valtimo"
           LOCAL_ROOT="deployment/valtimo-libs/valtimo"
           PKG_JSON="package.json"
