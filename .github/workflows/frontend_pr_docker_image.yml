@@ -110,7 +110,8 @@ jobs:
           for name in "${NAMES[@]}"; do
             echo " - ${SCOPE}/${name} -> file:${LOCAL_ROOT}/${name}"
           done
-
+          
+          cat package.json
 
       - name: Build app
         run: npm run build
