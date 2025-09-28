@@ -69,8 +69,54 @@ jobs:
       - name: Change working directory
         run: cd src
 
-      - name: Install NPM packages
-        run: npm install
+      - name: Move local devDependencies to dependencies and install
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          PROJECTS_DIR="projects"
+          SCOPE="@valtimo"
+          LOCAL_ROOT="deployment/valtimo-libs/valtimo"
+          PKG_JSON="package.json"
+          
+          if [ ! -f "$PKG_JSON" ]; then
+            echo "❌ $PKG_JSON niet gevonden in repo-root"; exit 1
+          fi
+          if [ ! -d "$PROJECTS_DIR" ]; then
+            echo "ℹ️  '$PROJECTS_DIR' niet gevonden; niets te doen."; exit 0
+          fi
+          
+          echo "🔎 Subfolders in '$PROJECTS_DIR' verzamelen…"
+          mapfile -t NAMES < <(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | grep -v '^\.' || true)
+          
+          if [ "${#NAMES[@]}" -eq 0 ]; then
+            echo "ℹ️  Geen subfolders gevonden; niets te doen."; exit 0
+          fi
+          
+          echo "💾 Backup package.json -> package.json.bak"
+          cp "$PKG_JSON" "${PKG_JSON}.bak"
+          
+          # 1 jq-run voor alle mutaties (snel & atomair)
+          FILTER='.'
+          for name in "${NAMES[@]}"; do
+            PKG="${SCOPE}/${name}"
+            FILESPEC="file:${LOCAL_ROOT}/${name}"
+            # Set dependency en verwijder devDependency als die bestaat
+            FILTER+=" | .dependencies[\"$PKG\"] = \"$FILESPEC\" | ( .devDependencies? // {} | del(.\"$PKG\") ) as \$void | ."
+          done
+          
+          tmp="${PKG_JSON}.tmp"
+          jq "$FILTER" "$PKG_JSON" > "$tmp"
+          mv "$tmp" "$PKG_JSON"
+          
+          echo "📦 npm install…"
+          npm install
+          
+          echo "🎉 Klaar. Geüpdatet packages:"
+          for name in "${NAMES[@]}"; do
+            echo " - ${SCOPE}/${name} -> file:${LOCAL_ROOT}/${name}"
+          done
+
 
       - name: Build app
         run: npm build
