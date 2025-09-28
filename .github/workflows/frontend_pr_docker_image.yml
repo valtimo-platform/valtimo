@@ -47,6 +47,9 @@ jobs:
   buildImage:
     runs-on: ubuntu-latest
     needs: buildLibraries
+    defaults:
+      run:
+        working-directory: frontend
 
     permissions:
       contents: read
