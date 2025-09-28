@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gzac-app-frontend-deployment
-          path: deployment
+          path: frontend/deployment/
           retention-days: 1
   buildImage:
     runs-on: ubuntu-latest
@@ -65,9 +65,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: gzac-app-frontend-deployment
-
-      - name: Change working directory
-        run: cd src
 
       - name: Move local devDependencies to dependencies and install
         shell: bash
