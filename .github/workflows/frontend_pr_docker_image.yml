@@ -111,7 +111,11 @@ jobs:
             echo " - ${SCOPE}/${name} -> file:${LOCAL_ROOT}/${name}"
           done
           
+          echo "Content of package.json:"
           cat package.json
+
+          echo "Content of deployment directory:"
+          ls -lR deployment
 
       - name: Build app
         run: npm run build
