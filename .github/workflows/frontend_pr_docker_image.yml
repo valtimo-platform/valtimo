@@ -115,7 +115,7 @@ jobs:
           cat package.json
 
           echo "Content of deployment directory:"
-          ls -lR deployment
+          ls -l deployment/dist/valtimo
 
       - name: Build app
         run: npm run build
