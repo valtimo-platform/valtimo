@@ -109,6 +109,9 @@ jobs:
           
           echo "Content of package.json:"
           cat package.json
+          
+          echo "Content of dist folder:"
+          ls -lR $LOCAL_ROOT
 
       - name: Build app (optioneel voor andere outputs)
         run: npm run build
