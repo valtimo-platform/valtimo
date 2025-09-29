@@ -95,13 +95,13 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/check")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}/widget/{widgetKey}"))
                     .hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(USER)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_HEADER_WIDGET_URL/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_HEADER_WIDGET_URL/{key}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(DELETE, "$MANAGEMENT_HEADER_WIDGET_URL/{key}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

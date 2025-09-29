@@ -18,7 +18,13 @@ import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 
 @Controller
 @SkipComponentScan
@@ -39,11 +45,10 @@ class CaseHeaderWidgetManagementResource(
         return ResponseEntity.ok(created)
     }
 
-    @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget/{key}")
+    @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget")
     fun get(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable key: String
     ): ResponseEntity<CaseHeaderWidgetDto> {
         val id = CaseHeaderWidgetId(caseDefinitionKey, caseDefinitionVersionTag)
         val widget = runWithoutAuthorization {
@@ -52,11 +57,10 @@ class CaseHeaderWidgetManagementResource(
         return ResponseEntity.ofNullable(widget)
     }
 
-    @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget/{key}")
+    @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget")
     fun update(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable key: String,
         @Valid @RequestBody dto: CaseHeaderWidgetUpdateDto
     ): ResponseEntity<CaseHeaderWidgetDto> {
         val id = CaseHeaderWidgetId(caseDefinitionKey, caseDefinitionVersionTag)
@@ -66,11 +70,10 @@ class CaseHeaderWidgetManagementResource(
         return ResponseEntity.ok(updated)
     }
 
-    @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget/{key}")
+    @DeleteMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget")
     fun delete(
         @PathVariable caseDefinitionKey: String,
         @PathVariable caseDefinitionVersionTag: String,
-        @PathVariable key: String
     ): ResponseEntity<Void> {
         val id = CaseHeaderWidgetId(caseDefinitionKey, caseDefinitionVersionTag)
         runWithoutAuthorization {
