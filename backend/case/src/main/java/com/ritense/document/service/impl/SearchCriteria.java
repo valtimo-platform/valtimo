@@ -18,6 +18,12 @@ package com.ritense.document.service.impl;
 
 import static com.ritense.valtimo.contract.utils.AssertionConcern.assertArgumentNotEmpty;
 
+/**
+ * @deprecated This way of searching is deprecated because of the limited functionality. A more complete way of
+ * searching document content is available through the advanced search request.
+ * {@link com.ritense.document.domain.search.AdvancedSearchRequest}
+ */
+@Deprecated(since="13.3.0", forRemoval=true)
 public class SearchCriteria {
 
     private String path;
