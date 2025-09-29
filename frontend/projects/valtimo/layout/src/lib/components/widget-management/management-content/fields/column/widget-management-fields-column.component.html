@@ -306,25 +306,6 @@
                   />
                 </cds-text-label>
               }
-              @case (WidgetDisplayTypeKey.LINK) {
-                <cds-text-label>
-                  <v-input-label
-                    [title]="'widgetTabManagement.content.fields.linkText' | translate"
-                    [tooltip]="'widgetTabManagement.content.fields.linkTextTooltip' | translate"
-                  >
-                  </v-input-label>
-
-                  <input
-                    cdsText
-                    [attr.data-carbon-theme]="inputTheme"
-                    [placeholder]="
-                      'widgetTabManagement.content.fields.linkTextPlaceholder' | translate
-                    "
-                    type="text"
-                    formControlName="linkText"
-                  />
-                </cds-text-label>
-              }
             }
 
             <cds-text-label

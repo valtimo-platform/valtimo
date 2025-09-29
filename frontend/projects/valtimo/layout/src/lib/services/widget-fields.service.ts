@@ -81,13 +81,6 @@ export class WidgetFieldsService {
       id: WidgetDisplayTypeKey.PERCENT,
       selected: false,
     },
-    {
-      content: this.translateService.instant(
-        `widgetTabManagement.content.displayType.${WidgetDisplayTypeKey.LINK}`
-      ),
-      id: WidgetDisplayTypeKey.LINK,
-      selected: false,
-    },
   ];
 
   constructor(
@@ -133,9 +126,6 @@ export class WidgetFieldsService {
         break;
       case WidgetDisplayTypeKey.DATE_TIME:
         formGroup.addControl('format', this.fb.control(''));
-        break;
-      case WidgetDisplayTypeKey.LINK:
-        formGroup.addControl('linkText', this.fb.control(''));
         break;
       case WidgetDisplayTypeKey.ENUM:
         formGroup.addControl(
