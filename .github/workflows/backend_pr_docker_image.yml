@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - "feature/dockerize-app"
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend_pr_docker_image.yml"
 
 defaults:
   run:
