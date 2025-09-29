@@ -38,10 +38,9 @@
     </changeSet>
 
     <changeSet author="Ritense" id="3">
-        <validCheckSum>9:995511bc5fa910b26b0b65d14ebdbd73</validCheckSum>
         <addForeignKeyConstraint baseTableName="iko_data_aggregate_list_column" baseColumnNames="iko_data_aggregate_key"
                                  constraintName="fk_iko_data_aggregate_list_column_data_aggregate_key"
-                                 referencedTableName="iko_data_aggregate" referencedColumnNames="`key`"
+                                 referencedTableName="iko_data_aggregate" referencedColumnNames="key"
                                  onDelete="CASCADE"/>
     </changeSet>
 
