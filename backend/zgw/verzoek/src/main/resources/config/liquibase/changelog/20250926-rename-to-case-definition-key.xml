@@ -30,9 +30,9 @@
                                          '{verzoekProperties}',
                                          jsonb_agg(
                                              jsonb_set(
-                                                 elem - 'caseDefitionName',
+                                                 elem - 'caseDefinitionName',
                                                  '{caseDefinitionKey}',
-                                                 elem - > 'caseDefitionName',
+                                                 elem - > 'caseDefinitionName',
                                                  true
                                              )
                                          )
@@ -61,9 +61,9 @@
                 JSON_SET(
                 vp.verzoek_property,
                 '$.caseDefinitionKey',
-                JSON_UNQUOTE(JSON_EXTRACT(vp.verzoek_property, '$.caseDefitionName'))
+                JSON_UNQUOTE(JSON_EXTRACT(vp.verzoek_property, '$.caseDefinitionName'))
                 ),
-                '$.caseDefitionName'
+                '$.caseDefinitionName'
                 )
                 )
                 ) AS new_props
