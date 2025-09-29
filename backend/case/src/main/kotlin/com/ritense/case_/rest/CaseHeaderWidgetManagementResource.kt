@@ -54,7 +54,11 @@ class CaseHeaderWidgetManagementResource(
         val widget = runWithoutAuthorization {
             caseHeaderWidgetService.findById(id)
         }
-        return ResponseEntity.ofNullable(widget)
+        return if (widget != null) {
+            ResponseEntity.ok(widget)
+        } else {
+            ResponseEntity.noContent().build()
+        }
     }
 
     @PutMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget")
