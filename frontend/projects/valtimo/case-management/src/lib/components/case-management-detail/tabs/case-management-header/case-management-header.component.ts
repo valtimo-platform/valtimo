@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
 
-export enum TabEnum {
-  GENERAL = 'general',
-  DOCUMENT = 'document',
-  CASE = 'case',
-  PROCESSES = 'processes',
-  SEARCH = 'search',
-  LIST = 'list',
-  TABS = 'tabs',
-  STATUSES = 'statuses',
-  FORMS = 'forms',
-  FORM_FLOWS = 'form-flows',
-  TAGS = 'tags',
-  DECISIONS = 'decisions',
-  CASE_LIST = 'case-list',
-  CASE_DETAILS = 'case-details',
-  TASKS = 'tasks',
-  HEADER = 'header',
-}
+@Component({
+  standalone: true,
+  selector: 'valtimo-case-management-header',
+  templateUrl: './case-management-header.component.html',
+  styleUrls: ['./case-management-header.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [CommonModule],
+})
+export class CaseManagementHeaderComponent {}

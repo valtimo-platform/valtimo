@@ -33,6 +33,7 @@ import {
   ProcessManagementRouteData,
 } from '@valtimo/process-management';
 import {AuthGuardService} from '@valtimo/security';
+
 import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig, ROLE_ADMIN} from '@valtimo/shared';
 import {TaskManagementDetailComponent} from '@valtimo/task-management';
 import {CaseManagementCaseDetailComponent} from './components/case-management-case-detail/case-management-case-detail.component';
