@@ -106,10 +106,7 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
       // Keep track of include flag for template condition
       formValue.includeZakelijkRechtObjectIdentificatie = !!input.includeZakelijkRechtObjectIdentificatie;
 
-      if (
-        formValue.includeZakelijkRechtObjectIdentificatie &&
-        (input.zakelijkRechtIdentificatie || input.zakelijkRechtAvgAard)
-      ) {
+      if (formValue.includeZakelijkRechtObjectIdentificatie) {
         formValue.zaakObjectRequest.objectIdentificatie = {
           identificatie: input.zakelijkRechtIdentificatie,
           avgAard: input.zakelijkRechtAvgAard
@@ -123,12 +120,7 @@ export class CreateZaakObjectConfigurationComponent implements FunctionConfigura
       // Keep track of include flag for template condition
       formValue.includeObjectTypeOverigeDefinitie = !!input.includeObjectTypeOverigeDefinitie;
 
-      if (
-        formValue.includeObjectTypeOverigeDefinitie &&
-        (input.objectTypeOverigeDefinitieUrl ||
-          input.objectTypeOverigeDefinitieSchema ||
-          input.objectTypeOverigeDefinitieObjectData)
-      ) {
+      if (formValue.includeObjectTypeOverigeDefinitie) {
         formValue.zaakObjectRequest.objectTypeOverigeDefinitie = {
           url: input.objectTypeOverigeDefinitieUrl,
           schema: input.objectTypeOverigeDefinitieSchema,

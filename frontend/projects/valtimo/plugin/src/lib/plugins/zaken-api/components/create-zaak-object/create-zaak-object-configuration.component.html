@@ -95,7 +95,7 @@
             [margin]="true"
             [defaultValue]="obs.prefill?.zaakObjectRequest?.objectTypeOverige"
             [disabled]="obs.disabled"
-            [required]="false"
+            [required]="obs.formValue?.zaakObjectRequest?.objectType === 'overige'"
             [tooltip]="'objectTypeOverigeTooltip' | pluginTranslate: obs.pluginId | async"
     ></v-input>
 
