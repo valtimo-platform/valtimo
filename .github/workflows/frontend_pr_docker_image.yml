@@ -30,14 +30,20 @@ jobs:
         run: npm run libs-build-all
 
       - name: Prepare dist folder
-        run: mkdir deployment && mv src httpd.conf dist Dockerfile deployment/
+        run: |
+          set -euo pipefail
+          mkdir -p deployment
+          # verplaats de build-output + benodigde files naar deployment/
+          mv src httpd.conf dist Dockerfile deployment/
 
-      - name: 'Retain build artifact: deployment'
+      - name: Retain build artifact: deployment
         uses: actions/upload-artifact@v4
         with:
           name: gzac-app-frontend-deployment
+          # pad is ten opzichte van repo-root
           path: frontend/deployment/
           retention-days: 1
+
   buildImage:
     runs-on: ubuntu-latest
     needs: buildLibraries
@@ -88,21 +94,10 @@ jobs:
             echo "ℹ️  Geen subfolders gevonden; niets te doen."; exit 0
           fi
           
-          echo "💾 Backup package.json -> package.json.bak"
-          cp "$PKG_JSON" "${PKG_JSON}.bak"
-          
-          # 1 jq-run voor alle mutaties (snel & atomair)
-          FILTER='.'
           for name in "${NAMES[@]}"; do
-            PKG="${SCOPE}/${name}"
-            FILESPEC="file:${LOCAL_ROOT}/${name}"
-            # Set dependency en verwijder devDependency als die bestaat
-            FILTER+=" | .dependencies[\"$PKG\"] = \"$FILESPEC\" | ( .devDependencies? // {} | del(.\"$PKG\") ) as \$void | ."
+            npm pkg delete devDependencies."$SCOPE/$name" || true
+            npm pkg set dependencies.@valtimo/access-control="file:$LOCAL_ROOT/$name"
           done
-          
-          tmp="${PKG_JSON}.tmp"
-          jq "$FILTER" "$PKG_JSON" > "$tmp"
-          mv "$tmp" "$PKG_JSON"
           
           echo "📦 npm install…"
           npm install
@@ -115,7 +110,7 @@ jobs:
           echo "Content of package.json:"
           cat package.json
 
-      - name: Build app
+      - name: Build app (optioneel voor andere outputs)
         run: npm run build
 
       - name: Log in to GitHub Container Registry
@@ -135,15 +130,15 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gzac-frontend
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}.${{github.run_number}},enable=true
+            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
           flavor: |
             latest=false
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          file: Dockerfile
-          context: .
+          # gebruik het ge-downloadde artefact als build context
+          context: deployment
+          file: deployment/Dockerfile
           push: true
-          tags: |
-            ${{ steps.generate_tags.outputs.tags }}
+          tags: ${{ steps.generate_tags.outputs.tags }}
