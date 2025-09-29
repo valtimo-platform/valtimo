@@ -112,6 +112,8 @@ jobs:
           
           echo "Content of dist folder:"
           ls -lR $LOCAL_ROOT
+          
+          sed -i "s/\"dist\/valtimo/\"deployment\/dist\/valtimo/g" angular.json
 
       - name: Build app (optioneel voor andere outputs)
         run: npm run build
