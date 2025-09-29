@@ -20,7 +20,7 @@ import com.ritense.search.BaseIntegrationTest
 import com.ritense.search.domain.DataType
 import com.ritense.search.domain.FieldType
 import com.ritense.search.domain.SearchFieldV2
-import com.ritense.search.web.rest.dto.LegacySearchFieldV2Dto
+import com.ritense.search.web.rest.dto.SearchFieldV2Dto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,7 +38,7 @@ internal class SearchFieldV2IntTest : BaseIntegrationTest() {
         assertThat(searchField).isNotNull
 
         val updatedSearchField = searchField.copy(title = "New Title")
-        val updatedSearchFieldDto = LegacySearchFieldV2Dto(
+        val updatedSearchFieldDto = SearchFieldV2Dto(
             id = updatedSearchField.id,
             ownerId = updatedSearchField.ownerId,
             key = updatedSearchField.key,
@@ -48,11 +48,10 @@ internal class SearchFieldV2IntTest : BaseIntegrationTest() {
             dataType = updatedSearchField.dataType,
             fieldType = updatedSearchField.fieldType,
             matchType = updatedSearchField.matchType,
-            dropdownDataProvider = updatedSearchField.dropdownDataProvider
+            dropdownDataProvider = updatedSearchField.dropdownDataProvider,
+            required = updatedSearchField.required,
         )
         val dbUpdatedSearchField = searchFieldV2Service.update(
-            updatedSearchField.ownerId,
-            updatedSearchField.key,
             updatedSearchFieldDto
         )
 
@@ -72,7 +71,7 @@ internal class SearchFieldV2IntTest : BaseIntegrationTest() {
 
     private fun createSearchField(ownerId: String? = null): SearchFieldV2 =
         searchFieldV2Service.create(
-            LegacySearchFieldV2Dto(
+            SearchFieldV2Dto(
                 ownerId = ownerId ?: "I own this",
                 key = "the magic key",
                 title = "Title",

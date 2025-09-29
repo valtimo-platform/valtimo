@@ -1,41 +1,19 @@
-## Welcome to Valtimo
+## Welcome to the Valtimo frontend
 
-### What is Valtimo?
-
-Valtimo is the low-code platform for Business Process Automation. Our goal is to make implementing
-business process automation and case management easy.
-
-### What does the Valtimo platform contain?
-
-- Valtimo consists of two services:
-  - A Spring Boot Java/Kotlin backend
-  - An Angular frontend
-- Valtimo depends on two services:
-  - Keycloak as an identity and access provider
-  - A database (default is PostgreSQL)
-
-<img src="images/valtimo-platform.png" width="400" alt="Valtimo platform"/>
-
-### What are the 'Valtimo frontend libraries'?
-
-This repository contains:
+This folder contains:
 
 - A collection of Angular libraries that together form the Valtimo frontend.
 - The `app` module, containing an Angular application, used for library development.
 
 ### Starting the Valtimo platform
 
-Starting up the Valtimo platform requires three steps:
+Starting up the Valtimo platform requires two steps:
+1. Starting the Valtimo backend. Instructions can be found
+   [here](../backend/README.md#starting-the-valtimo-backend-from-source)
+2. Starting the Valtimo frontend. Instructions can be found
+   [here](#starting-the-valtimo-frontend-from-source)
 
-1. Starting the supporting Docker containers: Keycloak and PostgreSQL. Instructions for starting the
-   supporting services can be found
-   [here](https://github.com/valtimo-platform/valtimo-backend-libraries/blob/next-minor/README.md#start-docker-containers-for-supporting-services).
-2. Starting the Valtimo backend. Instructions can be found
-   [here](https://github.com/valtimo-platform/valtimo-backend-libraries/blob/next-minor/README.md#starting-the-valtimo-backend-libraries-from-source)
-3. Starting the Valtimo frontend. Instructions can be found
-   [here](#starting-the-valtimo-frontend-libraries-from-source)
-
-### Starting the Valtimo frontend libraries from source
+### Starting the Valtimo frontend from source
 
 #### Prerequisites: node
 
@@ -58,12 +36,12 @@ Run the following command to build all the Valtimo libraries: `npm run libs-buil
 #### Development mode
 
 - If you expect to make changes to multiple libraries at once, use the following commands:
-  - `npm run devMode` to build all libraries, watch them for changes and to start the Angular
-    application.
-  - `npm run devMode:skipLibsBuild`. Use this command if all libraries have already been built.
-    Watches all libraries for changes and starts the Angular application.
+    - `npm run devMode` to build all libraries, watch them for changes and to start the Angular
+      application.
+    - `npm run devMode:skipLibsBuild`. Use this command if all libraries have already been built.
+      Watches all libraries for changes and starts the Angular application.
 
-### Making changes to the Valtimo frontend libraries
+### Making changes to the Valtimo frontend
 
 When making changes to the libraries, the modified libraries have to be rebuilt. The following
 command can be used to build one specific library: `npm run libs:build:libraryName`. Note: it is
@@ -98,31 +76,7 @@ Pull Request.
 
 Run the following command to run the unit tests: `npm run libs:test:libraryName`.
 
-### Contributing
-
-Contributions are welcome! To get you in the right direction, please consult the
-[Valtimo documentation](https://docs.valtimo.nl/readme/contributing) for guidelines on how to
-contribute.
-
 #### Code guidelines
 
 For contributing code, please refer to the [coding guidelines](CODING-GUIDELINES.md).
 
-#### Branching strategy
-
-For more information on what branches to create while working in this project, please refer to
-[this page](https://github.com/valtimo-platform/valtimo-documentation/blob/next-minor/contributing/branching-and-release-strategy.md).
-
-<!--- TODO: change url --->
-
-### License
-
-The source files in this repo are licensed under the
-[EUPL 1.2](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12). If you have any questions
-about the use of this codebase in a larger work: please reach out through the
-[Valtimo website](https://www.valtimo.nl/contact/).
-
-### More information
-
-- Website: https://www.valtimo.nl
-- Documentation: https://docs.valtimo.nl
