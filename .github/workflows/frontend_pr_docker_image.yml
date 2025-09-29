@@ -96,7 +96,7 @@ jobs:
           
           for name in "${NAMES[@]}"; do
             npm pkg delete devDependencies."$SCOPE/$name" || true
-            npm pkg set dependencies.@valtimo/access-control="file:$LOCAL_ROOT/$name"
+            npm pkg set dependencies.@valtimo/$name="file:$LOCAL_ROOT/$name"
           done
           
           echo "📦 npm install…"
