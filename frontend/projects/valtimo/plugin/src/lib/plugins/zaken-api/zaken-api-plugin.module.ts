@@ -47,6 +47,7 @@ import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-he
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {TranslateModule} from '@ngx-translate/core';
 
@@ -66,6 +67,7 @@ import {TranslateModule} from '@ngx-translate/core';
     CreateZaakeigenschapComponent,
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
+    CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
   ],
   imports: [
@@ -100,6 +102,7 @@ import {TranslateModule} from '@ngx-translate/core';
     CreateZaakeigenschapComponent,
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
+    CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
   ],
 })
