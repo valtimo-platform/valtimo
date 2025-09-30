@@ -9,6 +9,12 @@
     "components": [
         {
             "label": "HTML",
+            "attrs": [
+                {
+                    "attr": "",
+                    "value": ""
+                }
+            ],
             "content": "Klik start om uw bezwaar in te dienen.",
             "refreshOnChange": false,
             "key": "html",
@@ -16,23 +22,30 @@
             "input": false,
             "tableView": false
         },
+
         {
-            "label": "Voornaam",
-            "applyMaskOn": "change",
-            "tableView": true,
-            "key": "voornaam",
+            "key": "doc:voornaam",
             "type": "textfield",
-            "defaultValue": "John",
-            "input": true
+            "input": true,
+            "label": "Voornaam",
+            "disableOnInvalid": true,
+            "tableView": true
         },
         {
-            "label": "Achternaam",
-            "applyMaskOn": "change",
-            "tableView": true,
-            "key": "achternaam",
-            "defaultValue": "Doe",
+            "key": "doc:achternaam",
             "type": "textfield",
-            "input": true
+            "input": true,
+            "label": "Achternaam",
+            "disableOnInvalid": true,
+            "tableView": true
+        },
+        {
+            "key": "doc:postcode",
+            "type": "textfield",
+            "input": true,
+            "label": "Postcode",
+            "disableOnInvalid": true,
+            "tableView": true
         },
         {
             "type": "button",

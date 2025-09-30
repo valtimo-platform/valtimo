@@ -34,7 +34,6 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.env.EnvironmentPostProcessor
 import org.springframework.core.env.ConfigurableEnvironment
 import org.springframework.core.env.Environment
-import java.nio.ByteBuffer
 import java.sql.ResultSet
 import java.util.UUID
 
@@ -210,13 +209,7 @@ class ChangeLog20250506MigrateToKeycloakUsername : CustomTaskChange, Environment
             try {
                 val username = getKeycloakUsername(userId)
                 if (userId != username) {
-                    executeUpdate(connection, """
-                        INSERT INTO user_settings (user_id, settings)
-                        SELECT ?, ?
-                        WHERE NOT EXISTS (
-                            SELECT 1 FROM user_settings WHERE user_id = ?
-                        );
-                     """.trimIndent(), username, settings, username)
+                    executeUpdate(connection, "INSERT INTO user_settings VALUES (?,?)", username, settings)
                     executeUpdate(connection, "DELETE FROM user_settings WHERE user_id = ?", userId)
                 }
             } catch (_: KeycloakUserNotFoundException) {
@@ -382,10 +375,7 @@ class ChangeLog20250506MigrateToKeycloakUsername : CustomTaskChange, Environment
     ): UUID? {
         return if (database.databaseProductName == "MySQL") {
             val bytesResult = results.getBytes(columnName)
-            bytesResult?.let {
-                val byteBuffer = ByteBuffer.wrap(it)
-                UUID(byteBuffer.long, byteBuffer.long)
-            }
+            bytesResult?.let { UUID.nameUUIDFromBytes(it) }
         } else {
             val stringResult = results.getString(columnName)
             stringResult?.let { UUID.fromString(it) }

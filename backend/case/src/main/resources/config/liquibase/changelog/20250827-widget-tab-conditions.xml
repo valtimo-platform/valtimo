@@ -1,6 +1,6 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
 <!--
-  ~ Copyright 2015-2024 Ritense BV, the Netherlands.
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
   ~
   ~ Licensed under EUPL, Version 1.2 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -20,8 +20,19 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
     <changeSet id="1" author="Ritense">
-        <addColumn tableName="case_list_column">
-            <column name="exportable" type="BOOLEAN" defaultValueBoolean="false"/>
+        <addColumn tableName="case_widget_tab_widget">
+            <column name="display_conditions" type="${jsonType}"/>
         </addColumn>
     </changeSet>
+
+    <changeSet id="2" author="Ritense">
+        <update tableName="case_widget_tab_widget">
+            <column name="display_conditions" value="[]"/>
+        </update>
+    </changeSet>
+
+    <changeSet id="3" author="Ritense">
+        <addNotNullConstraint tableName="case_widget_tab_widget" columnName="display_conditions"/>
+    </changeSet>
+
 </databaseChangeLog>
