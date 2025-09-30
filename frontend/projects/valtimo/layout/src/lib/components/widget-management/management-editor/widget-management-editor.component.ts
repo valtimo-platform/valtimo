@@ -113,8 +113,11 @@ export class WidgetManagementEditorComponent {
     },
   ];
 
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly widgets$: Observable<CarbonListItem[]> = this._refresh$.pipe(
+    tap(() => this.loading$.next(true)),
     switchMap(() =>
       combineLatest([
         this.widgetManagementService.getWidgetConfiguration(),
@@ -136,7 +139,8 @@ export class WidgetManagementEditorComponent {
           },
         ],
       }))
-    )
+    ),
+    tap(() => this.loading$.next(false))
   );
 
   public readonly $isWizardOpen = signal<boolean>(false);

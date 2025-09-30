@@ -43,7 +43,7 @@ export class CaseHeaderWidgetManagementService
             )
           )
           .pipe(
-            map(widget => [widget]),
+            map(widget => [widget].filter(Boolean)),
             catchError(err => {
               if (err?.status === 404) return of([] as BasicWidget[]);
               throw err;
@@ -66,7 +66,7 @@ export class CaseHeaderWidgetManagementService
           widget
         )
       ),
-      map(updated => [updated])
+      map(updated => [updated].filter(Boolean))
     );
   }
 
