@@ -936,8 +936,7 @@
     },
     "displayConditions": {
       "description": "Configure conditions to control when this widget is shown. If you do not add any conditions, the widget is always displayed.",
-      "conditions": "Conditions",
-      "conditionsHelperText": "Define when this widget becomes visible by comparing case or document properties. Leave empty to always show the widget.",
+      "conditions": "Conditions (Optional)",
       "addCondition": "Add condition",
       "operator": "Operator",
       "path": "Path",

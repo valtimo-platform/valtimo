@@ -951,8 +951,7 @@
     },
     "displayConditions": {
       "description": "Konfigurieren Sie Bedingungen, um zu steuern, wann dieses Widget angezeigt wird. Wenn Sie keine Bedingungen hinzufügen, wird das Widget immer angezeigt.",
-      "conditions": "Bedingungen",
-      "conditionsHelperText": "Definieren Sie, wann dieses Widget sichtbar wird, indem Sie Fall- oder Dokumenteigenschaften vergleichen. Lassen Sie das Feld leer, um das Widget immer anzuzeigen.",
+      "conditions": "Bedingungen (Optional)",
       "addCondition": "Bedingung hinzufügen",
       "operator": "Operator",
       "path": "Pfad",

@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, OnInit, ViewEncapsulation} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {
   CarbonMultiInputModule,
   ListItemWithId,
   MultiInputKeyValue,
-  MultiInputValues,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
-import {BehaviorSubject, map, Observable} from 'rxjs';
+import {BehaviorSubject, filter, map, Observable} from 'rxjs';
 import {AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {Condition, Operator} from '@valtimo/case';
@@ -35,6 +34,8 @@ import {
 import {WidgetWizardService} from '../../../../../../../../services';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
+import {toObservable} from '@angular/core/rxjs-interop';
+import {take} from 'rxjs/operators';
 
 @Component({
   selector: 'valtimo-widget-wizard-display-conditions-step',
@@ -54,10 +55,9 @@ import {ActivatedRoute} from '@angular/router';
     TranslatePipe,
   ],
 })
-export class WidgetWizardDisplayConditionsStepComponent implements OnInit {
+export class WidgetWizardDisplayConditionsStepComponent {
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
-  public readonly defaultConditionValues$ = new BehaviorSubject<MultiInputValues | null>(null);
   public readonly allConditionsValid$ = new BehaviorSubject<boolean>(true);
 
   public readonly params$ = getCaseManagementRouteParams(this.route);
@@ -83,6 +83,20 @@ export class WidgetWizardDisplayConditionsStepComponent implements OnInit {
       )
     );
 
+  public readonly defaultConditionValues$ = toObservable(
+    this.widgetWizardService.$widgetDisplayConditions
+  ).pipe(
+    filter(conditions => conditions !== null),
+    take(1),
+    map((conditions: Array<Condition>) =>
+      conditions.map(condition => ({
+        key: condition.path,
+        dropdown: condition.operator,
+        value: condition.value,
+      }))
+    )
+  );
+
   public readonly form = this.fb.group({
     conditions: this.fb.control(null),
   });
@@ -98,10 +112,6 @@ export class WidgetWizardDisplayConditionsStepComponent implements OnInit {
     private readonly route: ActivatedRoute
   ) {}
 
-  public ngOnInit(): void {
-    this.prefill();
-  }
-
   public onAllConditionsValid(allConditionsValid: boolean): void {
     this.allConditionsValid$.next(allConditionsValid);
   }
@@ -112,25 +122,12 @@ export class WidgetWizardDisplayConditionsStepComponent implements OnInit {
     } else {
       this.conditions.setValue(
         values.map(value => ({
-          queryPath: value.key,
-          queryOperator: value.dropdown,
-          queryValue: value.value,
+          path: value.key,
+          operator: value.dropdown,
+          value: value.value,
         }))
       );
     }
     this.widgetWizardService.$widgetDisplayConditions.set(this.conditions.value);
-  }
-
-  private prefill(): void {
-    const conditions = this.widgetWizardService.$widgetDisplayConditions() as Array<Condition>;
-    if (!conditions) return;
-
-    this.defaultConditionValues$.next(
-      conditions.map(condition => ({
-        key: condition.path,
-        dropdown: condition.operator,
-        value: condition.value,
-      }))
-    );
   }
 }

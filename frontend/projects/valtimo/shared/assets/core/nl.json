@@ -961,8 +961,7 @@
     },
     "displayConditions": {
       "description": "Configureer condities om te bepalen wanneer deze widget wordt getoond. Als je geen condities toevoegt, wordt de widget altijd weergegeven.",
-      "conditions": "Condities",
-      "conditionsHelperText": "Bepaal wanneer deze widget zichtbaar is door dossier- of documenteigenschappen te vergelijken. Laat dit leeg om de widget altijd te tonen.",
+      "conditions": "Condities (Optioneel)",
       "addCondition": "Conditie toevoegen",
       "operator": "Operator",
       "path": "Pad",
