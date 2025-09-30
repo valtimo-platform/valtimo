@@ -21,6 +21,7 @@
   [items]="widgets$ | async"
   [dragAndDrop]="true"
   [dragAndDropDisabled]="$dragAndDropDisabled()"
+  [loading]="loading$ | async"
   (itemsReordered)="onItemsReordered($event)"
   (rowClicked)="editWidget($event)"
 >
