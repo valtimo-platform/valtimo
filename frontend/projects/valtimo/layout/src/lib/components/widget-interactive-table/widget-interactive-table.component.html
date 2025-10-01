@@ -36,7 +36,7 @@
         <div class="valtimo-widget-interactive-table__actions">
           @for (action of widgetConfiguration?.actions; track action.name) {
             <button [cdsButton]="action.buttonType ?? 'ghost'" (click)="onActionClick(action)">
-              {{ widgetConfiguration?.actions[0].name }}
+              {{ action.name }}
             </button>
           }
         </div>
