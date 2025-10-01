@@ -40,28 +40,28 @@
     </cds-progress-indicator>
 
     @switch ($currentStep()) {
-      @case (typeStepIndex) {
+      @case (typeStepIndex$ | async) {
         <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
 
         <valtimo-widget-wizard-type-step
           class="valtimo-widget-wizard-step"
         ></valtimo-widget-wizard-type-step>
       }
-      @case (widthStepIndex) {
+      @case (widthStepIndex$ | async) {
         <p>{{ 'widgetTabManagement.width.description' | translate }}</p>
 
         <valtimo-widget-wizard-width-step
           class="valtimo-widget-wizard-step"
         ></valtimo-widget-wizard-width-step>
       }
-      @case (styleStepIndex()) {
+      @case (styleStepIndex$ | async) {
         <p>{{ 'widgetTabManagement.style.description' | translate }}</p>
 
         <valtimo-widget-wizard-style-step
           class="valtimo-widget-wizard-step"
         ></valtimo-widget-wizard-style-step>
       }
-      @case (contentStepIndex()) {
+      @case (contentStepIndex$ | async) {
         <valtimo-widget-wizard-content-step
           (contentValidEvent)="onContentValidEvent($event)"
         ></valtimo-widget-wizard-content-step>
@@ -79,7 +79,7 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    @if ($currentStep() !== typeStepIndex) {
+    @if ($currentStep() !== (typeStepIndex$ | async)) {
       <button
         class="valtimo-widget-management-wizard__back"
         cdsButton="secondary"
@@ -96,7 +96,10 @@
       [disabled]="$nextButtonDisabled()"
       (click)="onNextButtonClick()"
     >
-      {{ 'interface.' + ($currentStep() === contentStepIndex() ? 'save' : 'next') | translate }}
+      {{
+        'interface.' + ($currentStep() === (contentStepIndex$ | async) ? 'save' : 'next')
+          | translate
+      }}
     </button>
   </cds-modal-footer>
 </cds-modal>

@@ -30,7 +30,7 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="case_widget_type" type="VARCHAR(256)" defaultValue="fields">
+            <column name="type" type="VARCHAR(256)" defaultValue="fields">
                 <constraints nullable="false"/>
             </column>
 
