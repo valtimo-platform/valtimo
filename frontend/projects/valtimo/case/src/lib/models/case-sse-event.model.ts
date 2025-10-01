@@ -14,31 +14,11 @@
  * limitations under the License.
  */
 
-type SseEventType =
-  | 'CASE_CREATED'
-  | 'TASK_UPDATE'
-  | 'DOCUMENT_UPDATED'
-  | 'PROCESS_END'
-  | 'CASE_ASSIGNED'
-  | 'CASE_UNASSIGNED'
-  | 'ESTABLISHED_CONNECTION';
+import {BaseSseEvent} from '@valtimo/sse';
 
-type SseEventListener<T> = (event: T) => void;
-
-// base event containing the event type
-interface BaseSseEvent {
-  eventType?: SseEventType;
-  processInstanceId?: string;
+interface DocumentUpdatedSseEvent extends BaseSseEvent {
+  documentId: string;
+  caseDefinitionKey: string;
 }
 
-interface EstablishedConnectionSseEvent extends BaseSseEvent {
-  subscriptionId: string;
-}
-
-interface SseError {
-  state: number;
-  message: string;
-  data?: any;
-}
-
-export {SseError, EstablishedConnectionSseEvent, BaseSseEvent, SseEventListener, SseEventType};
+export {DocumentUpdatedSseEvent};

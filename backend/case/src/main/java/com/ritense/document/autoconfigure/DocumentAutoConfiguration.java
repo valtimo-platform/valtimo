@@ -54,6 +54,7 @@ import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker;
 import com.ritense.valtimo.contract.database.QueryDialectHelper;
+import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
@@ -82,6 +83,7 @@ public class DocumentAutoConfiguration {
         final UserManagementService userManagementService,
         final AuthorizationService authorizationService,
         final ApplicationEventPublisher applicationEventPublisher,
+        final SseSubscriptionService sseSubscriptionService,
         final OutboxService outboxService,
         final ObjectMapper objectMapper,
         final InternalCaseStatusService internalCaseStatusService,
@@ -95,6 +97,7 @@ public class DocumentAutoConfiguration {
             userManagementService,
             authorizationService,
             applicationEventPublisher,
+            sseSubscriptionService,
             outboxService,
             objectMapper,
             internalCaseStatusService,

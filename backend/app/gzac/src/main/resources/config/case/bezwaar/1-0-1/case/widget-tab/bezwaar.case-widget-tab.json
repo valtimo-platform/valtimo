@@ -10,9 +10,9 @@
                 "highContrast": true,
                 "displayConditions": [
                     {
-                        "path": "doc:partner",
-                        "operator": "!=",
-                        "value": "${null}"
+                        "path": "doc:voornaam",
+                        "operator": "==",
+                        "value": "Peter"
                     }
                 ],
                 "properties": {

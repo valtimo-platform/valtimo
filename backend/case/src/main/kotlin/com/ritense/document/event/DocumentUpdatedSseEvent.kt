@@ -14,12 +14,11 @@
  *  limitations under the License.
  */
 
-package com.ritense.processdocument.sse.event
+package com.ritense.document.event
 
 import com.ritense.valtimo.web.sse.event.BaseSseEvent
 
-class TaskUpdateSseEvent(
-    val taskId: String,
+class DocumentUpdatedSseEvent(
     val documentId: String,
     val caseDefinitionKey: String,
-) : BaseSseEvent("TASK_UPDATE")
+) : BaseSseEvent("DOCUMENT_UPDATED")

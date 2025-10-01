@@ -19,7 +19,7 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, switchMap} from 'rxjs';
+import {combineLatest, filter, map, Observable, startWith, switchMap, withLatestFrom} from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
 import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
 import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
@@ -27,6 +27,8 @@ import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
+import {DocumentUpdatedSseEvent} from '../../../../models';
+import {SseService} from '@valtimo/sse';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -53,10 +55,22 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
 
-  public readonly widgetConfiguration$ = combineLatest([this._documentId$, this._tabKey$]).pipe(
-    switchMap(([documentId, tabKey]) =>
-      this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey)
-    )
+  private readonly _documentUpdates$ = combineLatest([
+    this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED'),
+    this._documentId$,
+  ]).pipe(
+    filter(([event, documentId]) => event.documentId === documentId),
+    startWith(null)
+  );
+
+  public readonly widgetConfiguration$ = combineLatest([
+    this._documentId$,
+    this._tabKey$,
+    this._documentUpdates$,
+  ]).pipe(
+    switchMap(([documentId, tabKey]) => {
+      return this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey);
+    })
   );
 
   public readonly widgetComponentMap: WidgetComponentMap = {
@@ -70,7 +84,8 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly caseTabService: CaseTabService,
-    private readonly widgetsApiService: CaseWidgetsApiService
+    private readonly widgetsApiService: CaseWidgetsApiService,
+    private readonly sseService: SseService
   ) {}
 
   public ngOnInit(): void {

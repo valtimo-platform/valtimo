@@ -15,7 +15,6 @@
  */
 
 import {
-  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -25,7 +24,7 @@ import {
 } from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {v4 as uuid} from 'uuid';
-import {BehaviorSubject, delay, Observable, take} from 'rxjs';
+import {BehaviorSubject, delay, merge, Observable, take} from 'rxjs';
 import Muuri from 'muuri';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {Widget, WidgetComponentMap, WidgetWithUuid} from '../../models';
@@ -44,7 +43,7 @@ import {TranslatePipe} from '@ngx-translate/core';
   imports: [CommonModule, WidgetBlockComponent, LoadingModule, CarbonListModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
+export class WidgetContainerComponent implements OnDestroy {
   @ViewChild('widgetsContainer') private _widgetsContainerRef: ElementRef<HTMLDivElement>;
 
   public readonly widgetsWithUuids$ = new BehaviorSubject<WidgetWithUuid[]>(null);
@@ -52,9 +51,23 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   @Input() public set widgets(value: Widget[]) {
     if (!value) return;
     const widgetsWithUuids = value.map(widget => ({...widget, uuid: uuid()}));
-    this.widgetLayoutService.setWidgets(widgetsWithUuids);
-    this.widgetsWithUuids$.next(widgetsWithUuids);
-    this.loadingWidgetConfiguration$.next(false);
+    // only if configuration has changed, we need to reload the entire layout
+    console.log(
+      'widgetsWithUuids',
+      widgetsWithUuids,
+      this.widgetsWithUuids$.value,
+      widgetsWithUuids == this.widgetsWithUuids$.value,
+      widgetsWithUuids === this.widgetsWithUuids$.value
+    );
+    if (widgetsWithUuids === this.widgetsWithUuids$.value) {
+      //only reset data
+    } else {
+      this.resetLayout();
+      this.widgetLayoutService.setWidgets(widgetsWithUuids);
+      this.widgetsWithUuids$.next(widgetsWithUuids);
+      this.loadingWidgetConfiguration$.next(false);
+      this.initLayout();
+    }
   }
 
   private readonly _widgetComponentMap$ = new BehaviorSubject<WidgetComponentMap>(
@@ -73,13 +86,26 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
 
   public readonly loadingWidgetConfiguration$ = new BehaviorSubject<boolean>(true);
 
-  public readonly loaded$ = this.widgetLayoutService.loaded$.pipe(delay(400));
+  public readonly reload$ = new BehaviorSubject<boolean>(false);
+  public readonly loaded$ = merge(this.reload$, this.widgetLayoutService.loaded$.pipe(delay(400)));
 
   private _observer!: ResizeObserver;
 
   constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
 
-  public ngAfterViewInit(): void {
+  private resetLayout(): void {
+    if (this._observer) {
+      this.reload$.next(false);
+      this.destroyLayout();
+    }
+  }
+
+  private destroyLayout(): void {
+    this.widgetLayoutService.reset();
+    this._observer?.disconnect();
+  }
+
+  public initLayout(): void {
     this._observer = new ResizeObserver(event => {
       this.observerMutation(event);
     });
@@ -89,8 +115,7 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this._observer?.disconnect();
-    this.widgetLayoutService.reset();
+    this.destroyLayout();
   }
 
   private observerMutation(event: Array<ResizeObserverEntry>): void {
