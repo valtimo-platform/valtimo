@@ -20,19 +20,21 @@
   class="valtimo-case-management-widget-process-selector"
 >
   <cds-combo-box
+    cdsLayer="1"
     [label]="'widgetTabManagement.processes.buttonTextLabel' | translate"
     [items]="processDefinitionItems$ | async"
     [placeholder]="'widgetTabManagement.processes.selectorPlaceholder' | translate"
     formControlName="processDefinitionKey"
     (selected)="onProcessSelected($event)"
   >
-    <cds-dropdown-list></cds-dropdown-list>
+    <cds-dropdown-list cdsLayer="1"></cds-dropdown-list>
   </cds-combo-box>
 
   <cds-text-label>
     {{ 'widgetTabManagement.processes.buttonTextLabel' | translate }}
 
     <input
+      cdsLayer="1"
       cdsText
       type="text"
       formControlName="name"
