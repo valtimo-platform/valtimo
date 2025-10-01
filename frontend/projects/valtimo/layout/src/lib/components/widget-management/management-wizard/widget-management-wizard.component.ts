@@ -127,75 +127,77 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
 
   @Output() public closeEvent = new EventEmitter<WidgetWizardCloseEvent>();
 
-  private readonly _secondaryLabels = computed(() => {
-    const selectedWidgetType = this.widgetWizardService.$selectedWidget()?.type ?? '';
-    const selectedWidth = this.widgetWizardService.$widgetWidth() ?? '';
-    const selectedStyle = this.widgetWizardService.$widgetStyle() ?? '';
+  public readonly secondaryLabels$: Observable<Record<number, string>> = combineLatest([
+    toObservable(this.widgetWizardService.$selectedWidget),
+    toObservable(this.widgetWizardService.$widgetWidth),
+    toObservable(this.widgetWizardService.$widgetStyle),
+    this._widgetWizardSteps$,
+  ]).pipe(
+    map(([selectedWidget, selectedWidth, selectedStyle, widgetWizardSteps]) => {
+      const type = selectedWidget?.type ?? '';
+      const width = selectedWidth ?? '';
+      const style = selectedStyle ?? '';
 
-    return {
-      [this.widgetWizardSteps.TYPE]: selectedWidgetType
-        ? `widgetTabManagement.types.${selectedWidgetType}.title`
-        : '',
-      ...(this.hasWidth(this.widgetWizardSteps)
-        ? {[this.widgetWizardSteps.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth] ?? ''}
-        : {}),
-      [this.widgetWizardSteps.STYLE]: WIDGET_STYLE_LABELS[selectedStyle] ?? '',
-    };
-  });
+      return {
+        [widgetWizardSteps.TYPE]: type ? `widgetTabManagement.types.${type}.title` : '',
+        ...('WIDTH' in widgetWizardSteps
+          ? {[widgetWizardSteps.WIDTH]: WIDGET_WIDTH_LABELS[width] ?? ''}
+          : {}),
+        [widgetWizardSteps.STYLE]: WIDGET_STYLE_LABELS[style] ?? '',
+      };
+    })
+  );
 
   public readonly steps$: Observable<Step[]> = combineLatest([
-    toObservable(this._secondaryLabels),
+    this.secondaryLabels$,
     toObservable(this.widgetWizardService.$editMode),
     this._disableWidthStep$,
+    this._widgetWizardSteps$,
     this.translateService.stream('key'),
   ]).pipe(
-    map(([secondaryLabels, editMode, disableWidthStep]) => {
+    map(([secondaryLabels, editMode, disableWidthStep, widgetWizardSteps]) => {
       return [
         {
           label: this.translateService.instant('widgetTabManagement.wizard.steps.type'),
-          ...(secondaryLabels[this.widgetWizardSteps.TYPE] && {
-            secondaryLabel: this.translateService.instant(
-              secondaryLabels[this.widgetWizardSteps.TYPE]
-            ),
+          ...(secondaryLabels[widgetWizardSteps.TYPE] && {
+            secondaryLabel: this.translateService.instant(secondaryLabels[widgetWizardSteps.TYPE]),
           }),
           disabled: editMode,
           complete: !!this.widgetWizardService.$selectedWidget()?.type,
         },
-        ...(disableWidthStep || !this.hasWidth(this.widgetWizardSteps)
+        ...(disableWidthStep || !this.hasWidth(widgetWizardSteps)
           ? []
           : [
               {
                 label: this.translateService.instant('widgetTabManagement.wizard.steps.width'),
-                ...(secondaryLabels[this.widgetWizardSteps.WIDTH] && {
+                ...(secondaryLabels[widgetWizardSteps.WIDTH] && {
                   secondaryLabel: this.translateService.instant(
-                    secondaryLabels[this.widgetWizardSteps.WIDTH]
+                    secondaryLabels[widgetWizardSteps.WIDTH]
                   ),
                 }),
-                disabled: !secondaryLabels[this.widgetWizardSteps.TYPE],
+                disabled: !secondaryLabels[widgetWizardSteps.TYPE],
                 complete: !!this.widgetWizardService.$widgetWidth(),
               },
             ]),
         {
           label: this.translateService.instant('widgetTabManagement.wizard.steps.style'),
-          ...(secondaryLabels[this.widgetWizardSteps.STYLE] && {
-            secondaryLabel: this.translateService.instant(
-              secondaryLabels[this.widgetWizardSteps.STYLE]
-            ),
+          ...(secondaryLabels[widgetWizardSteps.STYLE] && {
+            secondaryLabel: this.translateService.instant(secondaryLabels[widgetWizardSteps.STYLE]),
           }),
           disabled:
-            !disableWidthStep && this.hasWidth(this.widgetWizardSteps)
-              ? !secondaryLabels[this.widgetWizardSteps.WIDTH]
-              : !secondaryLabels[this.widgetWizardSteps.TYPE],
+            !disableWidthStep && this.hasWidth(widgetWizardSteps)
+              ? !secondaryLabels[widgetWizardSteps.WIDTH]
+              : !secondaryLabels[widgetWizardSteps.TYPE],
           complete: !!this.widgetWizardService.$widgetStyle(),
         },
         {
           label: this.translateService.instant('widgetTabManagement.wizard.steps.content'),
           disabled:
-            !secondaryLabels[this.widgetWizardSteps.TYPE] ||
-            (!disableWidthStep && this.hasWidth(this.widgetWizardSteps)
-              ? !secondaryLabels[this.widgetWizardSteps.WIDTH]
+            !secondaryLabels[widgetWizardSteps.TYPE] ||
+            (!disableWidthStep && this.hasWidth(widgetWizardSteps)
+              ? !secondaryLabels[widgetWizardSteps.WIDTH]
               : true) ||
-            !secondaryLabels[this.widgetWizardSteps.STYLE],
+            !secondaryLabels[widgetWizardSteps.STYLE],
           complete: !!this.widgetWizardService.$widgetContent(),
         },
       ];
