@@ -26,6 +26,7 @@ import {
   WidgetLayoutService,
 } from '@valtimo/layout';
 
+// TODO: remove component, document id is required, which makes no sense for iko
 @Component({
   selector: 'valtimo-iko-widget-formio',
   templateUrl: './iko-widget-formio.component.html',
@@ -36,7 +37,6 @@ import {
 export class IkoWidgetFormioComponent {
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
-    this.layoutService.setWidgetWithExternalData(value.uuid);
     this._widgetConfigurationSubject$.next(value);
   }
   @Input() public readonly widgetUuid: string;

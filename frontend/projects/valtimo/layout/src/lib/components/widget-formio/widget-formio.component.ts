@@ -45,6 +45,7 @@ export class WidgetFormioComponent {
 
   @Input() public set widgetUuid(value: string) {
     this.widgetLayoutService.setWidgetDataLoaded(value);
+    this.widgetLayoutService.setWidgetWithExternalData(value);
   }
 
   private readonly _widgetConfigurationSubject$ =
@@ -72,7 +73,7 @@ export class WidgetFormioComponent {
       ])
     ),
     tap(() => {
-      this.widgetLayoutService.setWidgetDataLoaded(this.widgetUuid);
+      this.widgetLayoutService.setWidgetWithExternalDataReady(this.widgetUuid);
     }),
     map(([formDef]) => formDef)
   );
