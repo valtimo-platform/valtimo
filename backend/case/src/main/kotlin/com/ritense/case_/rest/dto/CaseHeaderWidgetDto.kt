@@ -7,7 +7,7 @@ import com.ritense.case_.domain.header.CaseHeaderWidgetId
 data class CaseHeaderWidgetDto(
     val caseDefinitionKey: String,
     val caseDefinitionVersionTag: String,
-    val caseWidgetType: String,
+    val type: String,
     val title: String?,
     val highContrast: Boolean,
     val properties: Map<String, Any?>
@@ -17,7 +17,7 @@ data class CaseHeaderWidgetDto(
             CaseHeaderWidgetDto(
                 caseDefinitionKey = entity.id.caseDefinitionKey,
                 caseDefinitionVersionTag = entity.id.caseDefinitionVersionTag,
-                caseWidgetType = entity.caseWidgetType,
+                type = entity.type,
                 title = entity.title,
                 highContrast = entity.highContrast,
                 properties = entity.properties ?: emptyMap()
