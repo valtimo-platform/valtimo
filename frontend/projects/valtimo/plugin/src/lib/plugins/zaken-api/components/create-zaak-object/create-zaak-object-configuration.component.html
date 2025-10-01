@@ -1,0 +1,145 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<v-form
+        (valueChange)="formValueChange($event)"
+        *ngIf="{
+    pluginId: pluginId$ | async,
+    disabled: disabled$ | async,
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
+    formValue: formValue$ | async,
+  } as obs"
+>
+  <v-input
+          name="object"
+          [title]="'zaakObjectObjectUrl' | pluginTranslate: obs.pluginId | async"
+          [margin]="true"
+          [defaultValue]="obs.prefill?.zaakObjectRequest?.object"
+          [disabled]="obs.disabled"
+          [required]="false"
+          [tooltip]="'zaakObjectObjectUrlTooltip' | pluginTranslate: obs.pluginId | async"
+  ></v-input>
+
+  <v-select
+          [items]="objectTypeOptions"
+          name="objectType"
+          [title]="'objectType' | pluginTranslate: obs.pluginId | async"
+          [disabled]="obs.disabled"
+          [defaultSelectionId]="obs.prefill?.zaakObjectRequest?.objectType"
+          [required]="true"
+          [tooltip]="'objectTypeTooltip' | pluginTranslate: obs.pluginId | async"
+          [margin]="true"
+  ></v-select>
+
+  <v-input
+          name="relatieomschrijving"
+          [title]="'relatieomschrijving' | pluginTranslate: obs.pluginId | async"
+          [margin]="true"
+          [defaultValue]="obs.prefill?.zaakObjectRequest?.relatieomschrijving"
+          [disabled]="obs.disabled"
+          [required]="false"
+          [tooltip]="'relatieomschrijvingTooltip' | pluginTranslate: obs.pluginId | async"
+  ></v-input>
+
+  @if (obs.formValue?.zaakObjectRequest?.objectType === 'zakelijk_recht') {
+    <v-input
+            type="checkbox"
+            name="includeZakelijkRechtObjectIdentificatie"
+            [title]="'objectIdentificatie' | pluginTranslate: obs.pluginId | async"
+            [margin]="true"
+            [defaultValue]="!!(obs.prefill?.zaakObjectRequest?.objectIdentificatie?.identificatie || obs.prefill?.zaakObjectRequest?.objectIdentificatie?.avgAard)"
+            [disabled]="obs.disabled"
+            [required]="false"
+    ></v-input>
+
+    @if (obs.formValue?.includeZakelijkRechtObjectIdentificatie) {
+      <v-input
+              name="zakelijkRechtIdentificatie"
+              [title]="'zakelijkRechtIdentificatie' | pluginTranslate: obs.pluginId | async"
+              [margin]="true"
+              [defaultValue]="obs.prefill?.zaakObjectRequest?.objectIdentificatie?.identificatie"
+              [disabled]="obs.disabled"
+              [required]="obs.formValue?.includeZakelijkRechtObjectIdentificatie"
+              [tooltip]="'zakelijkRechtIdentificatieTooltip' | pluginTranslate: obs.pluginId | async"
+      ></v-input>
+
+      <v-input
+              name="zakelijkRechtAvgAard"
+              [title]="'zakelijkRechtAvgAard' | pluginTranslate: obs.pluginId | async"
+              [margin]="true"
+              [defaultValue]="obs.prefill?.zaakObjectRequest?.objectIdentificatie?.avgAard"
+              [disabled]="obs.disabled"
+              [required]="obs.formValue?.includeZakelijkRechtObjectIdentificatie"
+              [tooltip]="'zakelijkRechtAvgAardTooltip' | pluginTranslate: obs.pluginId | async"
+      ></v-input>
+    }
+  }
+
+  @if (obs.formValue?.zaakObjectRequest?.objectType === 'overige') {
+    <v-input
+            name="objectTypeOverige"
+            [title]="'objectTypeOverige' | pluginTranslate: obs.pluginId | async"
+            [margin]="true"
+            [defaultValue]="obs.prefill?.zaakObjectRequest?.objectTypeOverige"
+            [disabled]="obs.disabled"
+            [required]="obs.formValue?.zaakObjectRequest?.objectType === 'overige'"
+            [tooltip]="'objectTypeOverigeTooltip' | pluginTranslate: obs.pluginId | async"
+    ></v-input>
+
+    <v-input
+            type="checkbox"
+            name="includeObjectTypeOverigeDefinitie"
+            [title]="'objectTypeOverigeDefinitie' | pluginTranslate: obs.pluginId | async"
+            [margin]="true"
+            [defaultValue]="!!(obs.prefill?.zaakObjectRequest?.objectTypeOverigeDefinitie?.url || obs.prefill?.zaakObjectRequest?.objectTypeOverigeDefinitie?.schema || obs.prefill?.zaakObjectRequest?.objectTypeOverigeDefinitie?.objectData)"
+            [disabled]="obs.disabled"
+            [required]="false"
+    ></v-input>
+
+    @if (obs.formValue?.includeObjectTypeOverigeDefinitie) {
+      <v-input
+              name="objectTypeOverigeDefinitieUrl"
+              [title]="'objectTypeOverigeDefinitieUrl' | pluginTranslate: obs.pluginId | async"
+              [margin]="true"
+              [defaultValue]="obs.prefill?.zaakObjectRequest?.objectTypeOverigeDefinitie?.url"
+              [disabled]="obs.disabled"
+              [required]="obs.formValue?.includeObjectTypeOverigeDefinitie"
+              [tooltip]="'objectTypeOverigeDefinitieUrlTooltip' | pluginTranslate: obs.pluginId | async"
+      ></v-input>
+
+      <v-input
+              name="objectTypeOverigeDefinitieSchema"
+              [title]="'objectTypeOverigeDefinitieSchema' | pluginTranslate: obs.pluginId | async"
+              [margin]="true"
+              [defaultValue]="obs.prefill?.zaakObjectRequest?.objectTypeOverigeDefinitie?.schema"
+              [disabled]="obs.disabled"
+              [required]="obs.formValue?.includeObjectTypeOverigeDefinitie"
+              [tooltip]="'objectTypeOverigeDefinitieSchemaTooltip' | pluginTranslate: obs.pluginId | async"
+      ></v-input>
+
+      <v-input
+              name="objectTypeOverigeDefinitieObjectData"
+              [title]="'objectTypeOverigeDefinitieObjectData' | pluginTranslate: obs.pluginId | async"
+              [margin]="true"
+              [defaultValue]="obs.prefill?.zaakObjectRequest?.objectTypeOverigeDefinitie?.objectData"
+              [disabled]="obs.disabled"
+              [required]="obs.formValue?.includeObjectTypeOverigeDefinitie"
+              [tooltip]="'objectTypeOverigeDefinitieObjectDataTooltip' | pluginTranslate: obs.pluginId | async"
+      ></v-input>
+    }
+  }
+
+</v-form>
