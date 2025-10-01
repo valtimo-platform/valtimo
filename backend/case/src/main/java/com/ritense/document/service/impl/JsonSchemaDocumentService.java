@@ -59,7 +59,6 @@ import com.ritense.document.event.DocumentTagsChanged;
 import com.ritense.document.event.DocumentUnassigned;
 import com.ritense.document.event.DocumentUnassignedEvent;
 import com.ritense.document.event.DocumentUpdated;
-import com.ritense.document.event.DocumentUpdatedSseEvent;
 import com.ritense.document.event.DocumentViewed;
 import com.ritense.document.event.DocumentsListed;
 import com.ritense.document.exception.DocumentNotFoundException;
@@ -112,7 +111,7 @@ public class JsonSchemaDocumentService implements DocumentService {
     private final AuthorizationService authorizationService;
 
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final SseSubscriptionService sseSubscriptionService;
+
     private final OutboxService outboxService;
 
     private final ObjectMapper objectMapper;
@@ -129,7 +128,6 @@ public class JsonSchemaDocumentService implements DocumentService {
         UserManagementService userManagementService,
         AuthorizationService authorizationService,
         ApplicationEventPublisher applicationEventPublisher,
-        SseSubscriptionService sseSubscriptionService,
         OutboxService outboxService,
         ObjectMapper objectMapper,
         InternalCaseStatusService internalCaseStatusService,
@@ -142,7 +140,6 @@ public class JsonSchemaDocumentService implements DocumentService {
         this.userManagementService = userManagementService;
         this.authorizationService = authorizationService;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.sseSubscriptionService = sseSubscriptionService;
         this.outboxService = outboxService;
         this.objectMapper = objectMapper;
         this.internalCaseStatusService = internalCaseStatusService;
@@ -374,12 +371,6 @@ public class JsonSchemaDocumentService implements DocumentService {
                         new DocumentUpdated(
                             modifiedDocument.id().toString(),
                             objectMapper.valueToTree(modifiedDocument)
-                        )
-                    );
-                    sseSubscriptionService.notifySubscribers(
-                        new DocumentUpdatedSseEvent(
-                            modifiedDocument.id().toString(),
-                            modifiedDocument.definitionId().name()
                         )
                     );
                 });

@@ -26,7 +26,7 @@ import {CommonModule} from '@angular/common';
 import {v4 as uuid} from 'uuid';
 import {BehaviorSubject, delay, merge, Observable, take} from 'rxjs';
 import Muuri from 'muuri';
-import {WidgetLayoutService} from '../../services/widget-layout.service';
+import {WidgetLayoutService} from '../../services';
 import {Widget, WidgetComponentMap, WidgetWithUuid} from '../../models';
 import {WidgetBlockComponent} from '../widget-block';
 import {filter} from 'rxjs/operators';
@@ -51,23 +51,11 @@ export class WidgetContainerComponent implements OnDestroy {
   @Input() public set widgets(value: Widget[]) {
     if (!value) return;
     const widgetsWithUuids = value.map(widget => ({...widget, uuid: uuid()}));
-    // only if configuration has changed, we need to reload the entire layout
-    console.log(
-      'widgetsWithUuids',
-      widgetsWithUuids,
-      this.widgetsWithUuids$.value,
-      widgetsWithUuids == this.widgetsWithUuids$.value,
-      widgetsWithUuids === this.widgetsWithUuids$.value
-    );
-    if (widgetsWithUuids === this.widgetsWithUuids$.value) {
-      //only reset data
-    } else {
-      this.resetLayout();
-      this.widgetLayoutService.setWidgets(widgetsWithUuids);
-      this.widgetsWithUuids$.next(widgetsWithUuids);
-      this.loadingWidgetConfiguration$.next(false);
-      this.initLayout();
-    }
+    this.resetLayout();
+    this.widgetLayoutService.setWidgets(widgetsWithUuids);
+    this.widgetsWithUuids$.next(widgetsWithUuids);
+    this.loadingWidgetConfiguration$.next(false);
+    this.initLayout();
   }
 
   private readonly _widgetComponentMap$ = new BehaviorSubject<WidgetComponentMap>(

@@ -97,7 +97,6 @@ public class DocumentAutoConfiguration {
             userManagementService,
             authorizationService,
             applicationEventPublisher,
-            sseSubscriptionService,
             outboxService,
             objectMapper,
             internalCaseStatusService,

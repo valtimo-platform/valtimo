@@ -19,6 +19,5 @@ package com.ritense.document.event
 import com.ritense.valtimo.web.sse.event.BaseSseEvent
 
 class DocumentUpdatedSseEvent(
-    val documentId: String,
-    val caseDefinitionKey: String,
+    val documentId: String
 ) : BaseSseEvent("DOCUMENT_UPDATED")
