@@ -15,14 +15,11 @@
   -->
 
 <valtimo-widget-interactive-table
+  *ngIf="widgetConfiguration$ | async as widgetConfiguration"
   [widgetData]="widgetData$ | async"
   [widgetConfiguration]="widgetConfiguration"
+  (actionEvent)="onActionEvent($event)"
   (paginationEvent)="onPaginationEvent($event)"
-  (rowClickEvent)="onRowClickEvent($event)"
+  (rowClickEvent)="onRowClickEvent($event, widgetConfiguration)"
 >
-  @if (widgetConfiguration?.actions?.length >= 1) {
-    <button cdsButton="ghost" (click)="onWidgetActionClick(widgetConfiguration?.actions[0])">
-      {{ widgetConfiguration?.actions[0].name }}
-    </button>
-  }
 </valtimo-widget-interactive-table>

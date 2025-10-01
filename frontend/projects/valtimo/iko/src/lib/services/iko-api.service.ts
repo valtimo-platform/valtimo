@@ -105,18 +105,20 @@ export class IkoApiService extends BaseApiService {
   }
 
   public handleAction(action: WidgetAction, resolved: {[key: string]: string} = null) {
-    if (!action) {
-      return null;
-    }
+    if (!action) return;
+
     const navigateTo = this.resolveProperty(action?.navigateTo, resolved);
     if (navigateTo) {
       this.navigateTo(navigateTo);
+      return;
     }
+
     const caseDefinitionKey = this.resolveProperty(action?.caseDefinitionKey, resolved);
-    if (caseDefinitionKey) {
-      this.startCase(caseDefinitionKey);
-    }
+
+    if (caseDefinitionKey) this.startCase(caseDefinitionKey);
+
     const processDefinitionKey = this.resolveProperty(action?.processDefinitionKey, resolved);
+
     if (processDefinitionKey) {
       this.globalNotificationService.showToast({
         title: 'An unexpected error occurred',

@@ -95,18 +95,11 @@ export class IkoWidgetInteractiveTableComponent {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
   }
 
-  public onRowClickEvent(event: any): void {
-    this.widgetConfiguration$
-      .pipe(take(1))
-      .subscribe((widgetConfiguration: InteractiveTableWidget) => {
-        this.ikoApiService.handleAction(
-          widgetConfiguration.properties.rowClickAction,
-          event.resolved
-        );
-      });
+  public onRowClickEvent(event: any, widgetConfiguration: InteractiveTableWidget): void {
+    this.ikoApiService.handleAction(widgetConfiguration.properties.rowClickAction, event.resolved);
   }
 
-  public onWidgetActionClick(action: WidgetAction): void {
+  public onActionEvent(action: WidgetAction): void {
     this.ikoApiService.handleAction(action);
   }
 }

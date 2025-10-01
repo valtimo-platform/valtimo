@@ -25,16 +25,18 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListItem, CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
-import {Page} from '@valtimo/shared';
 import {
-  ButtonModule,
-  PaginationModel,
-  PaginationModule,
-  TilesModule,
-} from 'carbon-components-angular';
+  CarbonListItem,
+  CarbonListModule,
+  CarbonPaginatorConfig,
+  ColumnConfig,
+  Pagination,
+  ViewType,
+} from '@valtimo/components';
+import {Page} from '@valtimo/shared';
+import {ButtonModule, PaginationModule, TilesModule} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
-import {FieldsWidgetValue, InteractiveTableWidget} from '../../models';
+import {FieldsWidgetValue, InteractiveTableWidget, WidgetAction} from '../../models';
 
 @Component({
   selector: 'valtimo-widget-interactive-table',
@@ -89,7 +91,7 @@ export class WidgetInteractiveTableComponent {
     this.cdr.detectChanges();
   }
 
-  public readonly showPagination = signal<boolean>(false);
+  public readonly $showPagination = signal<boolean>(false);
 
   public readonly widgetData$ = new BehaviorSubject<CarbonListItem[] | null>(null);
 
@@ -100,7 +102,7 @@ export class WidgetInteractiveTableComponent {
   @Input({required: true}) set widgetData(value: any | null) {
     if (!value) return;
 
-    this.showPagination.set(value.totalElements > value.size);
+    this.$showPagination.set(value.totalElements > value.size);
 
     if (!this._initialNumberOfElements) this._initialNumberOfElements = value.numberOfElements;
 
@@ -121,21 +123,21 @@ export class WidgetInteractiveTableComponent {
     this.widgetData$.next(widgetData);
 
     if (!this._paginationInitialized) {
-      this.showPagination.set(widgetPage.totalElements > widgetPage.size);
+      this.$showPagination.set(widgetPage.totalElements > widgetPage.size);
 
-      this.paginationModel.set(
+      this.$paginationModel.set(
         widgetPage.totalPages < 0
           ? null
           : {
-              currentPage: 1,
-              totalDataLength: Math.ceil(widgetPage.totalElements / widgetPage.size),
-              pageLength: widgetPage.size,
+              page: 1,
+              collectionSize: Math.ceil(widgetPage.totalElements / widgetPage.size),
+              size: widgetPage.size,
             }
       );
 
       this._paginationInitialized = true;
     } else {
-      this.paginationModel.update((model: PaginationModel | null) =>
+      this.$paginationModel.update((model: Pagination | null) =>
         !model
           ? null
           : {
@@ -148,19 +150,28 @@ export class WidgetInteractiveTableComponent {
     this.cdr.detectChanges();
   }
 
-  @Output() public readonly paginationEvent = new EventEmitter<PaginationModel>();
+  @Output() public readonly paginationEvent = new EventEmitter<Pagination>();
   @Output() public readonly rowClickEvent = new EventEmitter<any>();
+  @Output() public readonly actionEvent = new EventEmitter<WidgetAction>();
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
 
-  public readonly paginationModel = signal<PaginationModel | null>(new PaginationModel());
+  public readonly $paginationModel = signal<Pagination | null>(null);
+  public readonly $paginatorConfig = signal<CarbonPaginatorConfig>({
+    itemsPerPageOptions: [5, 10, 20, 30],
+    showPageInput: true,
+  });
 
   constructor(private readonly cdr: ChangeDetectorRef) {}
 
-  public onSelectPage(page: number): void {
-    const paginationModel = this.paginationModel();
+  public onActionClick(action: WidgetAction): void {
+    this.actionEvent.emit(action);
+  }
+
+  public onPaginationClicked(page: number): void {
+    const paginationModel = this.$paginationModel();
     if (!paginationModel) return;
-    this.paginationEvent.emit({...paginationModel, currentPage: page});
+    this.paginationEvent.emit({...paginationModel, page});
   }
 
   public rowClick(event: any): void {
