@@ -68,6 +68,7 @@ export class WidgetManagementEditorComponent {
 
     this.widgetWizardService.$availableWidgetTypes.set(value);
   }
+  @Input() public disableWidthStep = false;
 
   public readonly FIELDS: ColumnConfig[] = [
     {
