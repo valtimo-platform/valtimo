@@ -39,14 +39,7 @@ import {
   InputLabelModule,
 } from '@valtimo/components';
 import {getCaseManagementRouteParams} from '@valtimo/shared';
-import {
-  ButtonModule,
-  IconModule,
-  InputModule,
-  LayerModule,
-  Tab,
-  TabsModule,
-} from 'carbon-components-angular';
+import {ButtonModule, IconModule, InputModule, LayerModule, Tab, TabsModule} from 'carbon-components-angular';
 import {debounceTime, map, Subscription} from 'rxjs';
 import {WidgetContentComponent} from '../../../../../../../models';
 import {WidgetWizardService} from '../../../../../../../services';
@@ -70,7 +63,7 @@ import {CaseManagementWidgetFieldsColumnComponent} from './column/case-managemen
     CaseManagementWidgetFieldsColumnComponent,
     CaseManagementWidgetProcessSelectorComponent,
     InputLabelModule,
-    LayerModule,
+    LayerModule
   ],
 })
 export class CaseManagementWidgetFieldsComponent

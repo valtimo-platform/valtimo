@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {TilesModule} from 'carbon-components-angular';
 import {AVAILABLE_WIDGETS, WidgetTypeSelection} from '../../../../../../../../models';
-import {LayerModule, TilesModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../../../../../services';
 
 @Component({
@@ -27,7 +26,7 @@ import {WidgetWizardService} from '../../../../../../../../services';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, TranslateModule, TilesModule, LayerModule],
+  imports: [CommonModule, TranslateModule, TilesModule],
 })
 export class WidgetWizardTypeStepComponent {
   public readonly availableWidgets = AVAILABLE_WIDGETS;

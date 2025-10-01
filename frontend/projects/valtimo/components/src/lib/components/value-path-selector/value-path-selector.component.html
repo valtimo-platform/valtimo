@@ -23,7 +23,8 @@
     showToggle: showToggle$ | async,
   } as obs"
 >
-  <v-input-label [required]="required" [title]="label" [tooltip]="tooltip"> </v-input-label>
+  <v-input-label *ngIf="!!label" [required]="required" [title]="label" [tooltip]="tooltip">
+  </v-input-label>
 
   <form
     [formGroup]="formGroup"
