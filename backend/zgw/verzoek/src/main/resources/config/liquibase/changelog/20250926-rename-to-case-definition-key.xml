@@ -25,20 +25,22 @@
         </preConditions>
         <sql>
             UPDATE plugin_configuration
-            SET properties = (SELECT jsonb_set(
-                                         properties::jsonb,
-                                         '{verzoekProperties}',
-                                         jsonb_agg(
-                                             jsonb_set(
-                                                 elem - 'caseDefinitionName',
-                                                 '{caseDefinitionKey}',
-                                                 elem - > 'caseDefinitionName',
-                                                 true
-                                             )
-                                         )
-                                     ) ::json
-                              FROM jsonb_array_elements((plugin_configuration.properties::jsonb) - > 'verzoekProperties') elem)
-            WHERE (properties::jsonb) - > 'verzoekProperties' IS NOT NULL;
+            SET properties = (
+                SELECT jsonb_set(
+                               properties::jsonb,
+                               '{verzoekProperties}',
+                               jsonb_agg(
+                                       jsonb_set(
+                                               elem - 'caseDefinitionName',
+                                               '{caseDefinitionKey}',
+                                               elem->'caseDefinitionName',
+                                               true
+                                       )
+                               )
+                       )::json
+                FROM jsonb_array_elements((plugin_configuration.properties::jsonb)->'verzoekProperties') elem
+            )
+            WHERE (properties::jsonb)->'verzoekProperties' IS NOT NULL;
         </sql>
     </changeSet>
 
