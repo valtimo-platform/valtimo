@@ -79,7 +79,6 @@ import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.valtimo.contract.resource.Resource;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
-import com.ritense.valtimo.web.sse.service.SseSubscriptionService;
 import jakarta.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
