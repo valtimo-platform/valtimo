@@ -21,7 +21,7 @@ import {TabsModule} from 'carbon-components-angular';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
 import {WidgetManagementEditorComponent} from '../management-editor/widget-management-editor.component';
-import {Observable, map, take, tap} from 'rxjs';
+import {map, Observable, take} from 'rxjs';
 import {BasicWidget, WidgetManagementTab, WidgetType} from '../../../models';
 import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 
@@ -45,6 +45,7 @@ export class WidgetManagementComponent {
     this.widgetManagementService.initParams(value);
   }
   @Input() availableWidgetTypes: WidgetType[];
+  @Input() public disableWidthStep = false;
 
   public readonly jsonModel$: Observable<EditorModel> = this.widgetManagementService
     .getWidgetConfiguration()
