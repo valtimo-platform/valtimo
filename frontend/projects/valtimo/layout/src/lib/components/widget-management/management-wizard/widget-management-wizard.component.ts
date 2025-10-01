@@ -77,7 +77,10 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
     this._disableWidthStep = value;
     this.widgetWizardSteps = WidgetWizardStepsNoWidth;
     this._widgetWizardSteps$.next(WidgetWizardStepsNoWidth);
+    this.widgetWizardService.$widgetWidth.set(4);
   }
+
+  @Input() public disableDuplicate = false;
 
   private hasWidth(
     s: typeof WidgetWizardSteps | typeof WidgetWizardStepsNoWidth
@@ -115,11 +118,9 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
   private get _editMode(): boolean {
     return this.widgetWizardService.$editMode();
   }
-
   @Input() public set editMode(value: boolean) {
     this.widgetWizardService.$editMode.set(value);
   }
-
   public get editMode(): boolean {
     return this._editMode;
   }
@@ -259,8 +260,10 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
   }
 
   public onNextButtonClick(): void {
-    if (this.$currentStep() === this.widgetWizardSteps.CONTENT) {
-      const isDuplicateMode = this.editMode && !this.widgetWizardService.$widgetKey();
+    if (this.$currentStep() === this.contentStepIndex) {
+      const isDuplicateMode =
+        this.editMode && !this.disableDuplicate && !this.widgetWizardService.$widgetKey();
+
       if (isDuplicateMode || !this.editMode) {
         this.widgetWizardService.$widgetKey.set(
           this.keyGeneratorService.getUniqueKey(
@@ -277,7 +280,9 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
             : WidgetWizardCloseEventType.CREATE,
         widget: this.widgetWizardService.$widgetsConfig(),
       });
+
       this.resetWizard();
+
       return;
     }
 
