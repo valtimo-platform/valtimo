@@ -70,6 +70,11 @@ export class WidgetManagementEditorComponent {
   }
   @Input() public disableWidthStep = false;
 
+  public readonly disableDuplicate$ = new BehaviorSubject<boolean>(false);
+  @Input() public set disableDuplicate(value: boolean) {
+    this.disableDuplicate$.next(value);
+  }
+
   public readonly FIELDS: ColumnConfig[] = [
     {
       key: 'title',
@@ -98,21 +103,27 @@ export class WidgetManagementEditorComponent {
     },
   ];
 
-  public readonly ACTION_ITEMS: ActionItem[] = [
-    {
-      label: 'interface.edit',
-      callback: this.editWidget.bind(this),
-    },
-    {
-      label: 'interface.duplicate',
-      callback: this.duplicateWidget.bind(this),
-    },
-    {
-      label: 'interface.delete',
-      callback: this.deleteWidget.bind(this),
-      type: 'danger',
-    },
-  ];
+  public readonly actionItems$: Observable<ActionItem[]> = this.disableDuplicate$.pipe(
+    map(disableDuplicate => [
+      {
+        label: 'interface.edit',
+        callback: this.editWidget.bind(this),
+      },
+      ...(disableDuplicate
+        ? []
+        : [
+            {
+              label: 'interface.duplicate',
+              callback: this.duplicateWidget.bind(this),
+            },
+          ]),
+      {
+        label: 'interface.delete',
+        callback: this.deleteWidget.bind(this),
+        type: 'danger',
+      },
+    ])
+  );
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
 

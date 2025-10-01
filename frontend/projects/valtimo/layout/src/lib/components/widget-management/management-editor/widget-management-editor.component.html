@@ -15,7 +15,7 @@
   -->
 
 <valtimo-carbon-list
-  [actionItems]="ACTION_ITEMS"
+  [actionItems]="actionItems$ | async"
   [fields]="FIELDS"
   [header]="false"
   [items]="widgets$ | async"
@@ -48,6 +48,7 @@
   [editMode]="$isEditMode()"
   [open]="$isWizardOpen()"
   [disableWidthStep]="disableWidthStep"
+  [disableDuplicate]="disableDuplicate$ | async"
   (closeEvent)="onCloseEvent($event)"
 ></valtimo-widget-management-wizard>
 
