@@ -45,7 +45,6 @@ export class CaseWidgetFormioComponent extends WidgetProcess {
   }
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
-    this.layoutService.setWidgetWithExternalData(value.uuid);
     this.baseWidgetConfiguration = value;
     this._widgetConfigurationSubject$.next(value);
   }
