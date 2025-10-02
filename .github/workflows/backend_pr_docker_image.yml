@@ -74,11 +74,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: gzac-app-backend-deployment
+          path: backend/deployment/
 
       - name: buildAndPushDockerImage
         uses: docker/build-push-action@v6
         with:
-          file: Dockerfile
-          context: .
+          file: deployment/Dockerfile
+          context: deployment/
           push: true
           tags: ${{ steps.generate_tags.outputs.tags }}
