@@ -16,7 +16,7 @@
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
-import {filter, map, switchMap} from 'rxjs';
+import {distinctUntilChanged, filter, map, switchMap} from 'rxjs';
 import {CaseHeaderWidgetApiService} from '../../services';
 
 @Component({
@@ -29,7 +29,8 @@ import {CaseHeaderWidgetApiService} from '../../services';
 export class CaseDetailHeaderWidgetComponent {
   private readonly _documentId$ = this.route.params.pipe(
     map(params => params?.documentId),
-    filter(documentId => !!documentId)
+    filter(documentId => !!documentId),
+    distinctUntilChanged()
   );
 
   public readonly headerWidget$ = this._documentId$.pipe(

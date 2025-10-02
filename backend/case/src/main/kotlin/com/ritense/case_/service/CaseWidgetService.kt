@@ -55,7 +55,7 @@ import java.util.UUID
 @Transactional(readOnly = false)
 @Service
 @SkipComponentScan
-class CaseWidgetTabService(
+class CaseWidgetService(
     private val documentService: DocumentService,
     private val caseWidgetTabRepository: CaseWidgetTabRepository,
     private val caseTabRepository: CaseTabRepository,
