@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.catalogiapi.CatalogiApiAuthentication
+import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.domain.PluginConfiguration
@@ -33,7 +34,6 @@ import com.ritense.processdocument.service.impl.result.NewDocumentAndStartProces
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.valtimo.contract.resource.Resource
 import com.ritense.zakenapi.domain.CreateZaakRequest
-import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.SimpleZaakObjectRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
@@ -52,8 +52,8 @@ import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.camunda.bpm.engine.RepositoryService
 import org.assertj.core.api.Assertions.assertThat
+import org.camunda.bpm.engine.RepositoryService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -64,8 +64,8 @@ import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.delegate.DelegateExecution
+import org.camunda.bpm.engine.delegate.DelegateExecution
+import org.mockito.kotlin.eq
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpMethod.POST
@@ -307,7 +307,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             )
         )
 
-        val requestBody = getRequestBody(POST, "${ZAKEN_API_PATH}/zaakobjecten", ZaakObjectRequest::class.java)
+        val requestBody = getRequestBody(POST, "/zaakobjecten", ZaakObjectRequest::class.java)
         assertThat(requestBody.zaakUrl).isEqualTo(zaakUrl)
         assertThat(requestBody.objectUrl).isEqualTo(objectUrl)
         assertThat(requestBody.zaakobjecttype).isEqualTo(zaakobjecttype)
@@ -331,7 +331,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             UUID.randomUUID()
         )
 
-        val requestBody = getRequestBody(POST, "${ZAKEN_API_PATH}/zaakobjecten", ZaakObjectOverigeRequest::class.java)
+        val requestBody = getRequestBody(POST, "/zaakobjecten", ZaakObjectOverigeRequest::class.java)
         assertThat(requestBody.zaakUrl).isEqualTo(zaakUrl)
         assertThat(requestBody.objectUrl).isEqualTo(objectUrl)
         assertThat(requestBody.objectType).isEqualTo(objectType)
@@ -352,8 +352,6 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             documentService.createDocument(
                 NewDocumentRequest(
                     DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
                     objectMapper.readTree("""
                         {
                             "verzoek": {
@@ -394,54 +392,13 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             )
         }
 
-        val requestBody = getRequestBody(POST, "${ZAKEN_API_PATH}/zaakobjecten", ZaakObjectZakelijkRechtRequest::class.java)
+        val requestBody = getRequestBody(POST, "/zaakobjecten", ZaakObjectZakelijkRechtRequest::class.java)
         assertThat(requestBody.zaakUrl).isEqualTo(zaakUrl)
         assertThat(requestBody.objectType).isEqualTo(ZaakObjectType.ZAKELIJK_RECHT)
         assertThat(requestBody.relatieomschrijving).isEqualTo(relatieomschrijving)
         assertThat(requestBody.objectIdentificatie?.identificatie).isEqualTo(edossierNummer)
         assertThat(requestBody.objectIdentificatie?.avgAard).isEqualTo(avgAard)
     }
-
-    private fun setupResourceMock() {
-        val resource = mock<Resource>()
-        whenever(resource.id())
-            .thenReturn(UUID.randomUUID())
-        whenever(resource.name())
-            .thenReturn("name")
-        whenever(resource.sizeInBytes())
-            .thenReturn(1L)
-        whenever(resource.extension())
-            .thenReturn("ext")
-        whenever(resource.createdOn())
-            .thenReturn(LocalDateTime.now())
-
-        whenever(resourceService.getResource(eq(resource.id())))
-            .thenReturn(resource)
-        whenever(resourceProvider.getResource(any()))
-            .thenReturn(resource)
-    }
-
-    private fun zakenApiPlugin() =
-        pluginService.createInstance<ZakenApiPlugin>(UUID.fromString(ZAKEN_API_PLUGIN_ID))
-
-    private fun createDocument(): Document =
-        runWithoutAuthorization {
-            documentService.createDocument(
-                NewDocumentRequest(
-                    DOCUMENT_DEFINITION_KEY,
-                    "profile",
-                    "1.0.0",
-                    objectMapper.createObjectNode()
-                )
-            ).resultingDocument().get()
-        }
-
-    private fun newDocumentRequest() = NewDocumentRequest(
-        DOCUMENT_DEFINITION_KEY,
-        "profile",
-        "1.0.0",
-        objectMapper.createObjectNode()
-    )
 
     private fun setupMockZakenApiServer() {
         val dispatcher: Dispatcher = object : Dispatcher() {
