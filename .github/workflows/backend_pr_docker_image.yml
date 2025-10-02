@@ -1,12 +1,11 @@
 name: backend_pr_docker_image.yml
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "feature/dockerize-app"
-    paths:
-      - "backend/**"
-      - ".github/workflows/backend_pr_docker_image.yml"
+  workflow_call:
+    outputs:
+      imageTag:
+        description: "The Docker image tag"
+        value: ${{ jobs.buildImage.outputs.imageTag }}
 
 defaults:
   run:
@@ -44,6 +43,9 @@ jobs:
       contents: read
       packages: write
 
+    outputs:
+      imageTag: ${{ steps.generate_tags.outputs.tags }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,8 +66,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
-          tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}.${{github.run_number}},enable=true
+          tags: type=raw,value=${{ env.BRANCH_NAME }}.${{github.run_number}},enable=true
           flavor: |
             latest=false
 
@@ -74,11 +75,10 @@ jobs:
         with:
           name: gzac-app-backend-deployment
 
-      - name: Build and push Docker image
+      - name: buildAndPushDockerImage
         uses: docker/build-push-action@v6
         with:
           file: Dockerfile
           context: .
           push: true
-          tags: |
-            ${{ steps.generate_tags.outputs.tags }}
+          tags: ${{ steps.generate_tags.outputs.tags }}

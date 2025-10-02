@@ -1,9 +1,11 @@
 name: frontend_pr_docker_image.yml
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "feature/dockerize-app"
+  workflow_call:
+    outputs:
+      imageTag:
+        description: "The Docker image tag"
+        value: ${{ jobs.buildImage.outputs.imageTag }}
 
 env:
   NODE_VERSION: "20.x"
@@ -47,6 +49,7 @@ jobs:
   buildImage:
     runs-on: ubuntu-latest
     needs: buildLibraries
+
     defaults:
       run:
         working-directory: frontend
@@ -54,6 +57,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+
+    outputs:
+      imageTag: ${{ steps.generate_tags.outputs.tags }}
 
     steps:
       - name: Checkout repository
@@ -134,8 +140,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}/gzac-frontend
-          tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
+          tags: type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
           flavor: |
             latest=false
 

@@ -1,0 +1,20 @@
+name: 'Create test environment for each created PR'
+on:
+  - workflow_dispatch
+  - push:
+      branches:
+        - "feature/dockerize-app"
+
+jobs:
+  buildBackendImage:
+    uses: ./.github/workflows/backend_pr_docker_image.yml
+  buildFrontendImage:
+    uses: ./.github/workflows/frontend_pr_docker_image.yml
+  testResult:
+    runs-on: ubuntu-latest
+    needs: [buildBackendImage, buildFrontendImage]
+    steps:
+      - name: 'Test result'
+        run: |
+          echo "Backend: ${{needs.buildBackendImage.outputs.imageTag}}"
+          echo "Frontend: ${{needs.buildFrontendImage.outputs.imageTag}}"
