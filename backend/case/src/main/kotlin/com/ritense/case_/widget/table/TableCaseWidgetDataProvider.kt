@@ -22,10 +22,10 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
-import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.case_.widget.exception.InvalidCollectionException
 import com.ritense.case_.widget.exception.InvalidCollectionNodeTypeException
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -39,7 +39,7 @@ class TableCaseWidgetDataProvider(
 
     override fun supportedWidgetType() = TableCaseWidget::class.java
 
-    override fun getData(documentId: UUID, widgetTab: CaseWidgetTab, widget: TableCaseWidget, pageable: Pageable): Page<Map<String, Any?>> {
+    override fun getData(documentId: UUID, widget: TableCaseWidget, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Page<Map<String, Any?>> {
         val resolvedCollection =
             valueResolverService.resolveValues(documentId.toString(), listOf(widget.properties.collection))[widget.properties.collection]
         val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedCollection)

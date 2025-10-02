@@ -215,6 +215,7 @@ class CaseWidgetAutoConfiguration {
     @Bean
     fun caseHeaderWidgetResource(
         caseHeaderWidgetService: CaseHeaderWidgetService,
-        documentService: DocumentService
-    ) = CaseHeaderWidgetResource(caseHeaderWidgetService, documentService)
+        documentService: DocumentService,
+        caseWidgetService: CaseWidgetService
+    ) = CaseHeaderWidgetResource(caseHeaderWidgetService, documentService, caseWidgetService)
 }

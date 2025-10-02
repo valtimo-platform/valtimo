@@ -16,15 +16,15 @@
 
 package com.ritense.case_.widget
 
-import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.domain.tab.TestCaseWidgetTabWidget
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.domain.Pageable
 import java.util.UUID
 
 class TestCaseWidgetDataProvider : CaseWidgetDataProvider<TestCaseWidgetTabWidget> {
 
     override fun supportedWidgetType() = TestCaseWidgetTabWidget::class.java
-    override fun getData(documentId: UUID, widgetTab: CaseWidgetTab, widget: TestCaseWidgetTabWidget, pageable: Pageable): Any {
+    override fun getData(documentId: UUID, widget: TestCaseWidgetTabWidget, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Any {
         return mapOf("test" to "test123")
     }
 }
