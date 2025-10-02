@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, DestroyRef} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  DestroyRef,
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {BehaviorSubject, filter, Observable} from 'rxjs';
@@ -46,7 +53,6 @@ export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
   }
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
-    this.layoutService.setWidgetWithExternalData(value.uuid);
     this.baseWidgetConfiguration = value;
     this._widgetConfigurationSubject$.next(value);
   }
