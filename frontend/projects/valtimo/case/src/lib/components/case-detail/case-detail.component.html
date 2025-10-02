@@ -18,6 +18,8 @@
   [ngClass]="{'main-content--no-horizontal-overflow': $tabHorizontalOverflowDisabled()}"
 >
   <div class="container-fluid">
+    <valtimo-case-detail-header-widget></valtimo-case-detail-header-widget>
+
     <ng-container *ngIf="caseTags$ | async as caseTags">
       @if (caseTags && caseTags.length > 0) {
         <div class="spacing-case-tags">

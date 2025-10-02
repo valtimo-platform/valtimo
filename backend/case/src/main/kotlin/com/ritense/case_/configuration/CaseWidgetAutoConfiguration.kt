@@ -22,12 +22,16 @@ import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseTabService
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.listener.CaseTabCaseEventListener
+import com.ritense.case_.repository.CaseHeaderWidgetRepository
 import com.ritense.case_.repository.CaseWidgetTabRepository
 import com.ritense.case_.repository.CaseWidgetTabWidgetSpecificationFactory
+import com.ritense.case_.rest.CaseHeaderWidgetManagementResource
+import com.ritense.case_.rest.CaseHeaderWidgetResource
 import com.ritense.case_.rest.CaseWidgetTabManagementResource
 import com.ritense.case_.rest.CaseWidgetTabResource
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.case_.service.CaseHeaderWidgetService
 import com.ritense.case_.service.CaseWidgetTabExporter
 import com.ritense.case_.service.CaseWidgetTabImporter
 import com.ritense.case_.service.CaseWidgetTabService
@@ -54,9 +58,6 @@ import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import com.ritense.case_.repository.CaseHeaderWidgetRepository
-import com.ritense.case_.service.CaseHeaderWidgetService
-import com.ritense.case_.rest.CaseHeaderWidgetManagementResource
 
 @AutoConfiguration
 @EnableJpaRepositories(
@@ -209,4 +210,11 @@ class CaseWidgetAutoConfiguration {
     fun caseHeaderWidgetManagementResource(
         caseHeaderWidgetService: CaseHeaderWidgetService
     ) = CaseHeaderWidgetManagementResource(caseHeaderWidgetService)
+
+    @ConditionalOnMissingBean(CaseHeaderWidgetResource::class)
+    @Bean
+    fun caseHeaderWidgetResource(
+        caseHeaderWidgetService: CaseHeaderWidgetService,
+        documentService: DocumentService
+    ) = CaseHeaderWidgetResource(caseHeaderWidgetService, documentService)
 }
