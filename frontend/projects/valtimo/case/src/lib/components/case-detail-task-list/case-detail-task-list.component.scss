@@ -59,7 +59,8 @@
   }
 
   &__title {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     font-size: 14px;
     font-weight: 600;
     line-height: 20px;
