@@ -53,7 +53,7 @@ import {
   Subject,
   Subscription,
 } from 'rxjs';
-import {catchError, filter, map, switchMap, take, tap} from 'rxjs/operators';
+import {catchError, filter, map, switchMap, take, tap, shareReplay} from 'rxjs/operators';
 import {
   COLUMN_VIEW_TYPES,
   ConfiguredColumn,
@@ -299,7 +299,8 @@ export class CaseDetailTabDocumentenApiDocumentsComponent implements OnInit, OnD
       this.showZaakLinkWarning = true;
       this._itemsLoading$.next(false);
       return of([]);
-    })
+    }),
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   public readonly enablePbacDocumentenApiDocuments$: Observable<boolean> =
