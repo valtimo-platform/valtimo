@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, DestroyRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {BehaviorSubject, filter, Observable} from 'rxjs';
@@ -24,6 +24,7 @@ import {PermissionService} from '@valtimo/access-control';
 import {DocumentService} from '@valtimo/document';
 import {ButtonModule} from 'carbon-components-angular';
 import {WidgetsService} from '../../widgets.service';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {
   FormioWidgetWidgetWithUuid,
   WidgetAction,
@@ -38,13 +39,14 @@ import {
   imports: [CommonModule, TranslateModule, FormIoModule, ButtonModule, WidgetFormioComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CaseWidgetFormioComponent extends WidgetProcess {
+export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
   @Input() public set documentId(value: string) {
     if (value) this._documentIdSubject$.next(value);
     this.baseDocumentId = value;
   }
   @Input() public set widgetConfiguration(value: FormioWidgetWidgetWithUuid) {
     if (!value) return;
+    this.layoutService.setWidgetWithExternalData(value.uuid);
     this.baseWidgetConfiguration = value;
     this._widgetConfigurationSubject$.next(value);
   }
@@ -56,6 +58,8 @@ export class CaseWidgetFormioComponent extends WidgetProcess {
     return this._widgetConfigurationSubject$.pipe(filter(config => !!config));
   }
 
+  public refreshForm = new EventEmitter<void>();
+
   private readonly _documentIdSubject$ = new BehaviorSubject<string>('');
 
   public get documentId$(): Observable<string> {
@@ -66,9 +70,16 @@ export class CaseWidgetFormioComponent extends WidgetProcess {
     protected readonly documentService: DocumentService,
     protected readonly permissionService: PermissionService,
     private readonly layoutService: WidgetLayoutService,
-    private readonly widgetsService: WidgetsService
+    private readonly widgetsService: WidgetsService,
+    private readonly destroyRef: DestroyRef
   ) {
     super(documentService, permissionService);
+  }
+
+  public ngOnInit(): void {
+    this.widgetsService.refreshWidgets$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshForm.emit());
   }
 
   public onProcessStartClick(process: WidgetAction): void {
