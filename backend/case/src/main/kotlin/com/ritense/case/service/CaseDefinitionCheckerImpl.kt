@@ -34,6 +34,7 @@ class CaseDefinitionCheckerImpl(
     private val caseDefinitionRepository: CaseDefinitionRepository,
     private val environment: Environment,
     private val draftEnvironments: String,
+    private val draftsEnabled: Boolean,
 ) : CaseDefinitionChecker {
 
     override fun existsCaseDefinition(caseDefinitionId: CaseDefinitionId): Boolean {
@@ -97,7 +98,7 @@ class CaseDefinitionCheckerImpl(
     }
 
     private fun isDraftEnvironment(): Boolean {
-        return draftEnvironments.split(',').any { draftEnvironment ->
+        return draftsEnabled || draftEnvironments.split(',').any { draftEnvironment ->
             environment.activeProfiles.any { it == draftEnvironment }
         }
     }
