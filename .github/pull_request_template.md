@@ -6,6 +6,9 @@ Link to the related Github issue:
 <!-- Please add any additional comments that might be relevant for reviewing this pull request  -->
 <!-- Why did you choose to make these changes? Were there any trade-offs you had to consider?   -->
 <!-- Note: add an empty line with a > to use multiple lines  -->
+
+Specify the code branch location: 
+
 **Relevant comments:**
 > 
 
@@ -16,8 +19,9 @@ Link to the related Github issue:
 
 ### Documentation
 <!-- Release notes should be available in the Valtimo documentation.  -->
-- [ ] Release notes have been written for these changes. 
+- [ ] Release notes have been written for these changes.
 
+Specify the documents branch location:
 Link to the pull request in the [Valtimo documentation repository](https://github.com/valtimo-platform/valtimo-documentation):
 >
 
@@ -33,6 +37,11 @@ Unit tests have been added that cover these changes
 Integration tests have been added that cover these changes
 - [ ] Yes
 - [ ] Not applicable
+
+Describe the testing steps
+- [ ] Step 1
+- [ ] Step 2
+- [ ] Step 3
 
 ### Security
 The [Secure by Design principle](https://en.wikipedia.org/wiki/Secure_by_design) has been applied to these changes
