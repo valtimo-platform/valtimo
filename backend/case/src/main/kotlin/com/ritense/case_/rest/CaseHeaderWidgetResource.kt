@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 @SkipComponentScan
@@ -40,7 +41,7 @@ class CaseHeaderWidgetResource(
 ) {
 
     @GetMapping("/v1/case/{documentId}/header-widget")
-    fun get(
+    fun getCaseHeaderWidget(
         @PathVariable documentId: String
     ): ResponseEntity<CaseHeaderWidgetDto> {
         val document = documentService.get(documentId)
@@ -55,5 +56,13 @@ class CaseHeaderWidgetResource(
         } else {
             ResponseEntity.noContent().build()
         }
+    }
+
+    @GetMapping("/v1/case/{documentId}/header-widget/data")
+    fun getCaseHeaderWidgetData(
+        @PathVariable documentId: UUID
+    ): ResponseEntity<Any> {
+        val data = caseWidgetService.getCaseWidgetData(documentId, tabKey, widgetKey, pageable)
+        return ResponseEntity.ofNullable(data)
     }
 }

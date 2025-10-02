@@ -160,7 +160,39 @@ class CaseWidgetService(
         return runWithoutAuthorization {
             caseWidgetDataProviders
                 .first { provider -> provider.supportedWidgetType().isAssignableFrom(widget::class.java) }
-                .getData(document.id().id, widgetTab, widget, pageable)
+                .getData(document.id().id, widget, pageable, widgetTab.id.caseDefinitionId)
+        }
+    }
+
+    @Transactional
+    fun getCaseHeaderWidgetData(documentId: UUID, tabKey: String, widgetKey: String, pageable: Pageable): Any? {
+        val document = runWithoutAuthorization {
+            documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))
+        } ?: return null
+
+        val caseDefinitionId = document.definitionId().caseDefinitionId()
+        checkCaseTabAccess(caseDefinitionId, tabKey, VIEW)
+
+        val widgetTab = caseWidgetTabRepository.findByIdOrNull(CaseTabId(caseDefinitionId, tabKey)) ?: return null
+        val widget = widgetTab.widgets.firstOrNull { it.id.key == widgetKey } ?: return null
+
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                CaseWidgetTabWidget::class.java,
+                CaseWidgetTabWidgetActionProvider.VIEW,
+                widget
+            ).withContext(
+                AuthorizationResourceContext(
+                    JsonSchemaDocument::class.java,
+                    document as JsonSchemaDocument
+                )
+            )
+        )
+
+        return runWithoutAuthorization {
+            caseWidgetDataProviders
+                .first { provider -> provider.supportedWidgetType().isAssignableFrom(widget::class.java) }
+                .getData(document.id().id, widget, pageable, widgetTab.id.caseDefinitionId)
         }
     }
 
