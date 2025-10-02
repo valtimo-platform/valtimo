@@ -182,11 +182,13 @@ class CaseAutoConfiguration {
         caseDefinitionRepository: CaseDefinitionRepository,
         environment: Environment,
         @Value("\${valtimo.draft.environments:inttest,dev,test}") draftEnvironments: String,
+        @Value("\${valtimo.draft.enabled:false}") draftsEnabled: Boolean,
     ): CaseDefinitionChecker {
         return CaseDefinitionCheckerImpl(
             caseDefinitionRepository,
             environment,
             draftEnvironments,
+            draftsEnabled,
         )
     }
 
