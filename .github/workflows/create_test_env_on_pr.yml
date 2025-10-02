@@ -1,9 +1,9 @@
 name: 'Create test environment for each created PR'
 on:
-  - workflow_dispatch:
-  - push:
-      branches:
-        - "feature/dockerize-app"
+  workflow_dispatch:
+  push:
+    branches:
+      - "feature/dockerize-app"
 
 jobs:
   buildBackendImage:
