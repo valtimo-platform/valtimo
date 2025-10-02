@@ -148,7 +148,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           # gebruik het ge-downloadde artefact als build context
-          context: deployment/
-          file: ./deployment/Dockerfile
+          context: frontend/deployment/
+          file: ./frontend/deployment/Dockerfile
           push: true
           tags: ${{ steps.generate_tags.outputs.tags }}
