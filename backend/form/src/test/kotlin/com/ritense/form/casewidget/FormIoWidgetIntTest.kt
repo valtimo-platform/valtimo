@@ -21,7 +21,7 @@ import com.ritense.case.domain.CaseTabType
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
-import com.ritense.case_.service.CaseWidgetTabService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.impl.JsonSchemaDocumentService
 import com.ritense.form.BaseIntegrationTest
@@ -46,7 +46,7 @@ import org.springframework.web.context.WebApplicationContext
 class FormIoWidgetIntTest @Autowired constructor(
     private val webApplicationContext: WebApplicationContext,
     private val tabService: CaseTabService,
-    private val widgetTabService: CaseWidgetTabService,
+    private val widgetTabService: CaseWidgetService,
     private val documentService: JsonSchemaDocumentService
 ) : BaseIntegrationTest() {
 

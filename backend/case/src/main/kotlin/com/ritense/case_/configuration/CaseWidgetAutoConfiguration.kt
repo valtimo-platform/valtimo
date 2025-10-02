@@ -32,9 +32,9 @@ import com.ritense.case_.rest.CaseWidgetTabResource
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.case_.service.ActiveCaseDefinitionService
 import com.ritense.case_.service.CaseHeaderWidgetService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.case_.service.CaseWidgetTabExporter
 import com.ritense.case_.service.CaseWidgetTabImporter
-import com.ritense.case_.service.CaseWidgetTabService
 import com.ritense.case_.widget.CaseWidgetAnnotatedClassResolver
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.case_.widget.CaseWidgetJacksonModule
@@ -71,8 +71,8 @@ class CaseWidgetAutoConfiguration {
 
     @Suppress("UNCHECKED_CAST")
     @Bean
-    @ConditionalOnMissingBean(CaseWidgetTabService::class)
-    fun caseWidgetTabService(
+    @ConditionalOnMissingBean(CaseWidgetService::class)
+    fun caseWidgetService(
         caseWidgetTabRepository: CaseWidgetTabRepository,
         caseTabRepository: CaseTabRepository,
         authorizationService: AuthorizationService,
@@ -80,7 +80,7 @@ class CaseWidgetAutoConfiguration {
         caseWidgetDataProviders: List<CaseWidgetDataProvider<*>>,
         documentService: DocumentService,
         caseDefinitionChecker: CaseDefinitionChecker,
-    ) = CaseWidgetTabService(
+    ) = CaseWidgetService(
         documentService,
         caseWidgetTabRepository,
         caseTabRepository,
@@ -101,8 +101,8 @@ class CaseWidgetAutoConfiguration {
     fun caseWidgetTabExporter(
         objectMapper: ObjectMapper,
         caseTabService: CaseTabService,
-        caseWidgetTabService: CaseWidgetTabService
-    ) = CaseWidgetTabExporter(objectMapper, caseTabService, caseWidgetTabService)
+        caseWidgetService: CaseWidgetService
+    ) = CaseWidgetTabExporter(objectMapper, caseTabService, caseWidgetService)
 
     @Bean
     @ConditionalOnMissingBean(CaseWidgetTabImporter::class)
@@ -121,14 +121,14 @@ class CaseWidgetAutoConfiguration {
     @ConditionalOnMissingBean(CaseWidgetTabResource::class)
     @Bean
     fun caseWidgetTabResource(
-        caseWidgetTabService: CaseWidgetTabService
-    ) = CaseWidgetTabResource(caseWidgetTabService)
+        caseWidgetService: CaseWidgetService
+    ) = CaseWidgetTabResource(caseWidgetService)
 
     @ConditionalOnMissingBean(CaseWidgetTabManagementResource::class)
     @Bean
     fun caseWidgetTabManagementResource(
-        caseWidgetTabService: CaseWidgetTabService
-    ) = CaseWidgetTabManagementResource(caseWidgetTabService)
+        caseWidgetService: CaseWidgetService
+    ) = CaseWidgetTabManagementResource(caseWidgetService)
 
     @ConditionalOnMissingBean(CaseWidgetAnnotatedClassResolver::class)
     @Bean

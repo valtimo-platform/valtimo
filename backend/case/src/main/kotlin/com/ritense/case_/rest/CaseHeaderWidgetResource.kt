@@ -20,6 +20,7 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.case_.domain.header.CaseHeaderWidgetId
 import com.ritense.case_.rest.dto.CaseHeaderWidgetDto
 import com.ritense.case_.service.CaseHeaderWidgetService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -34,7 +35,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseHeaderWidgetResource(
     private val caseHeaderWidgetService: CaseHeaderWidgetService,
-    private val documentService: DocumentService
+    private val documentService: DocumentService,
+    private val caseWidgetService: CaseWidgetService
 ) {
 
     @GetMapping("/v1/case/{documentId}/header-widget")

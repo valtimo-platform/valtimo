@@ -18,7 +18,7 @@ package com.ritense.case_.rest
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
-import com.ritense.case_.service.CaseWidgetTabService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 @SkipComponentScan
 @RequestMapping("/api/management", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseWidgetTabManagementResource(
-    private val caseWidgetTabService: CaseWidgetTabService
+    private val caseWidgetService: CaseWidgetService
 ) {
 
     @GetMapping("/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab/{tabKey}")
@@ -46,7 +46,7 @@ class CaseWidgetTabManagementResource(
     ): ResponseEntity<CaseWidgetTabDto> {
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         val widgetTab =  runWithoutAuthorization {
-            caseWidgetTabService.getWidgetTab(caseDefinitionId, tabKey)
+            caseWidgetService.getWidgetTab(caseDefinitionId, tabKey)
         }
         return ResponseEntity.ofNullable(widgetTab)
     }
@@ -61,7 +61,7 @@ class CaseWidgetTabManagementResource(
         val caseDefinitionId = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         caseWidgetTabDto.validate(caseDefinitionId)
         val widgetTab = runWithoutAuthorization {
-            caseWidgetTabService.updateWidgetTab(caseWidgetTabDto)
+            caseWidgetService.updateWidgetTab(caseWidgetTabDto)
         }
         return ResponseEntity.ofNullable(widgetTab)
     }
