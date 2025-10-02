@@ -103,6 +103,7 @@ import {CaseDetailWidgetsComponent} from './components/case-detail/tab/widgets/w
 import {CaseDetailTaskListComponent} from './components/case-detail-task-list/case-detail-task-list.component';
 import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
 import {AngularSplitModule} from 'angular-split';
+import {CaseDetailHeaderWidgetComponent} from './components/case-detail-header-widget/case-detail-header-widget.component';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -194,6 +195,7 @@ export type TabsFactory = () => Map<string, object>;
     NotificationModule,
     CarbonInputModule,
     TooltipModule,
+    CaseDetailHeaderWidgetComponent,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
 })
