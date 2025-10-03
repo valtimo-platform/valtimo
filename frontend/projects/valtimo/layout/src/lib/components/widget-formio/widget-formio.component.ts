@@ -70,17 +70,13 @@ export class WidgetFormioComponent {
 
   @Input()
   public set refreshForm(value: EventEmitter<void> | null) {
-    if (value === this._refreshEmitter) {
-      return;
-    }
+    if (value === this._refreshEmitter) return;
 
     this._refreshSubscription?.unsubscribe();
     this._refreshSubscription = null;
     this._refreshEmitter = value;
 
-    if (!value) {
-      return;
-    }
+    if (!value) return;
 
     this._refreshSubscription = value
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -113,9 +109,7 @@ export class WidgetFormioComponent {
       ])
     ),
     tap(() => {
-      if (!this._widgetUuid) {
-        return;
-      }
+      if (!this._widgetUuid) return;
 
       if (!this._hasSignalledExternalDataReady) {
         this.widgetLayoutService.setWidgetWithExternalDataReady(this._widgetUuid);

@@ -62,7 +62,8 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     this._documentId$,
   ]).pipe(
     filter(([event, documentId]) => event.documentId === documentId),
-    startWith(null)
+    startWith(null),
+    map(([event]) => event)
   );
 
   private _previousWidgetConfiguration: CaseWidgetsRes | null = null;
@@ -73,25 +74,9 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     this._documentUpdates$,
   ]).pipe(
     switchMap(([documentId, tabKey, documentUpdatedEvent]) => {
-      return this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey).pipe(
-        map(configuration => {
-          const configurationChanged =
-            !this._previousWidgetConfiguration ||
-            !isEqual(this._previousWidgetConfiguration, configuration);
-
-          if (!configurationChanged && documentUpdatedEvent) {
-            this.widgetsService.refreshWidgets();
-            return null;
-          }
-
-          if (configurationChanged) {
-            this._previousWidgetConfiguration = configuration;
-            return configuration;
-          }
-
-          return null;
-        }),
-        filter((configuration): configuration is CaseWidgetsRes => configuration !== null)
+      return this.filterDuplicateConfigurations(
+        this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey),
+        documentUpdatedEvent
       );
     }),
     shareReplay({bufferSize: 1, refCount: true})
@@ -119,5 +104,31 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.caseTabService.enableTabHorizontalOverflow();
+  }
+
+  private filterDuplicateConfigurations(
+    widgetConfiguration: Observable<CaseWidgetsRes>,
+    documentUpdatedEvent: DocumentUpdatedSseEvent | null
+  ): Observable<CaseWidgetsRes> {
+    return widgetConfiguration.pipe(
+      map(configuration => {
+        const configurationChanged =
+          !this._previousWidgetConfiguration ||
+          !isEqual(this._previousWidgetConfiguration, configuration);
+
+        if (!configurationChanged && documentUpdatedEvent) {
+          this.widgetsService.refreshWidgets();
+          return null;
+        }
+
+        if (configurationChanged) {
+          this._previousWidgetConfiguration = configuration;
+          return configuration;
+        }
+
+        return null;
+      }),
+      filter((configuration): configuration is CaseWidgetsRes => configuration !== null)
+    );
   }
 }

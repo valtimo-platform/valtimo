@@ -64,7 +64,7 @@ export class CaseWidgetFormioComponent extends WidgetProcess implements OnInit {
     return this._widgetConfigurationSubject$.pipe(filter(config => !!config));
   }
 
-  public refreshForm = new EventEmitter<void>();
+  public readonly refreshForm = new EventEmitter<void>();
 
   private readonly _documentIdSubject$ = new BehaviorSubject<string>('');
 

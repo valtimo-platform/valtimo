@@ -82,10 +82,10 @@ export class WidgetContainerComponent implements OnDestroy {
   constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
 
   private resetLayout(): void {
-    if (this._observer) {
-      this.reload$.next(false);
-      this.destroyLayout();
-    }
+    if (!this._observer) return;
+
+    this.reload$.next(false);
+    this.destroyLayout();
   }
 
   private destroyLayout(): void {
