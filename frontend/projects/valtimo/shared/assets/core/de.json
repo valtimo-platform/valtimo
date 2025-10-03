@@ -1932,5 +1932,15 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "condition": {
+    "operator" : {
+      "!=" : "Nicht gleichzusetzen mit",
+      "==" : "Gleich",
+      ">" : "Größer als",
+      ">=" : "Größer als oder gleich wie",
+      "<" : "Weniger als",
+      "<=" : "Gleich oder kleiner als"
+    }
   }
 }

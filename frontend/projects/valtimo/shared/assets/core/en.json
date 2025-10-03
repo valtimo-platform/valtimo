@@ -1914,5 +1914,15 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "condition": {
+    "operator" : {
+      "!=" : "Not equal to",
+      "==" : "Equal to",
+      ">" : "Greater than",
+      ">=" : "Greater than or equal to",
+      "<" : "Less than",
+      "<=" : "Less than or equal to"
+    }
   }
 }

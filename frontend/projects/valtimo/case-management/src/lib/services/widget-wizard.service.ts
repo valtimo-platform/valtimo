@@ -21,8 +21,8 @@ import {
   CaseWidgetType,
   CaseWidgetWidth,
   WidgetContentProperties,
-  Condition,
 } from '@valtimo/case';
+import {Condition} from '@valtimo/shared';
 import {WidgetStyle, WidgetTypeSelection} from '../models';
 
 @Injectable({

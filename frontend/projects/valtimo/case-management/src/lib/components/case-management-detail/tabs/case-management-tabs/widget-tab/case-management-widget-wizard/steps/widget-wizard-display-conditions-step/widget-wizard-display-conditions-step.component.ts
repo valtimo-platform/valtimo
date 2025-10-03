@@ -24,7 +24,7 @@ import {
 import {BehaviorSubject, filter, map, Observable} from 'rxjs';
 import {AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {TranslatePipe, TranslateService} from '@ngx-translate/core';
-import {Condition, Operator} from '@valtimo/case';
+import {Condition, Operator} from '@valtimo/shared';
 import {
   DropdownModule,
   InputModule,
@@ -77,7 +77,7 @@ export class WidgetWizardDisplayConditionsStepComponent {
       map(() =>
         this._OPERATORS.map(operator => ({
           id: operator,
-          content: operator,
+          content: this.translateService.instant('condition.operator.' + operator),
           selected: false,
         }))
       )

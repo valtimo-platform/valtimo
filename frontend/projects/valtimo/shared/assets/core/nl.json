@@ -1947,5 +1947,15 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "condition": {
+    "operator" : {
+      "!=" : "Niet gelijk aan",
+      "==" : "Gelijk aan",
+      ">" : "Groter dan",
+      ">=" : "Groter dan of gelijk aan",
+      "<" : "Minder dan",
+      "<=" : "Minder dan of gelijk aan"
+    }
   }
 }
