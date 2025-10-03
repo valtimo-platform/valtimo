@@ -642,7 +642,8 @@
         "title": "Casedetails",
         "tabs": "Tabs",
         "statuses": "Status",
-        "tags": "Etikett"
+        "tags": "Etikett",
+        "header": "Header"
       }
     },
     "tabManagement": {
@@ -817,6 +818,10 @@
       "noResults": {
         "title": "Es wurden keine Widgets konfiguriert",
         "description": "Klicken Sie hier, um Widgets zu konfigurieren"
+      },
+      "noResultsSingle": {
+        "title": "Es wurde noch kein Widget konfiguriert",
+        "description": "Klicken Sie hier, um ein Widget zu konfigurieren"
       }
     },
     "wizard": {

@@ -16,10 +16,10 @@
 
 <valtimo-carbon-list
   [actionItems]="actionItems$ | async"
-  [fields]="FIELDS"
+  [fields]="fields$ | async"
   [header]="false"
   [items]="widgets$ | async"
-  [dragAndDrop]="true"
+  [dragAndDrop]="!(singleWidget$ | async)"
   [dragAndDropDisabled]="$dragAndDropDisabled()"
   [loading]="loading$ | async"
   (itemsReordered)="onItemsReordered($event)"
@@ -31,8 +31,18 @@
 
   <valtimo-no-results
     [action]="addWidgetButton"
-    [description]="'widgetTabManagement.list.noResults.description' | translate"
-    [title]="'widgetTabManagement.list.noResults.title' | translate"
+    [description]="
+      ((singleWidget$ | async)
+        ? 'widgetTabManagement.list.noResultsSingle.description'
+        : 'widgetTabManagement.list.noResults.description'
+      ) | translate
+    "
+    [title]="
+      ((singleWidget$ | async)
+        ? 'widgetTabManagement.list.noResultsSingle.title'
+        : 'widgetTabManagement.list.noResults.title'
+      ) | translate
+    "
   ></valtimo-no-results>
 </valtimo-carbon-list>
 
@@ -40,7 +50,7 @@
   <button
     cdsButton="primary"
     (click)="openAddModal()"
-    [disabled]="singleWidget && ((widgets$ | async) || []).length === 1"
+    [disabled]="(singleWidget$ | async) && ((widgets$ | async) || []).length === 1"
   >
     {{ 'widgetTabManagement.list.add' | translate }}
 
@@ -51,9 +61,9 @@
 <valtimo-widget-management-wizard
   [editMode]="$isEditMode()"
   [open]="$isWizardOpen()"
-  [disableWidthStep]="disableWidthStep"
+  [disableWidthStep]="disableWidthStep$ | async"
   [disableDuplicate]="disableDuplicate$ | async"
-  [disableTitleInput]="disableTitleInput"
+  [disableTitleInput]="disableTitleInput$ | async"
   (closeEvent)="onCloseEvent($event)"
 ></valtimo-widget-management-wizard>
 

@@ -643,7 +643,8 @@
         "title": "Case details",
         "tabs": "Tabs",
         "statuses": "Statuses",
-        "tags": "Tags"
+        "tags": "Tags",
+        "header": "Header"
       }
     },
     "tabManagement": {
@@ -811,6 +812,10 @@
       "noResults": {
         "title": "No widgets have been configured",
         "description": "Click here to configure widgets"
+      },
+      "noResultsSingle": {
+        "title": "No widget has been configured",
+        "description": "Click here to configure a widget"
       }
     },
     "wizard": {

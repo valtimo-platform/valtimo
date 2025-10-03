@@ -650,7 +650,8 @@
         "title": "Dossierdetails",
         "tabs": "Tabbladen",
         "tags": "Tags",
-        "statuses": "Statussen"
+        "statuses": "Statussen",
+        "header": "Header"
       }
     },
     "tabManagement": {
@@ -830,6 +831,10 @@
       "noResults": {
         "title": "Er zijn geen widgets geconfigureerd",
         "description": "Klik hier om widgets te configureren"
+      },
+      "noResultsSingle": {
+        "title": "Er is nog geen widget geconfigureerd",
+        "description": "Klik hier om een widget te configureren"
       }
     },
     "wizard": {
