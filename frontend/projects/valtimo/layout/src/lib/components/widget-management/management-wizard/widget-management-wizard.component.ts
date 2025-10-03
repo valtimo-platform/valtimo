@@ -81,6 +81,7 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
   }
 
   @Input() public disableDuplicate = false;
+  @Input() public disableTitleInput = false;
 
   private hasWidth(
     s: typeof WidgetWizardSteps | typeof WidgetWizardStepsNoWidth

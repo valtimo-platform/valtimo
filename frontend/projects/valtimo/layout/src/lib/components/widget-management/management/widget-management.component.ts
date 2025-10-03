@@ -22,7 +22,7 @@ import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
 import {WidgetManagementEditorComponent} from '../management-editor/widget-management-editor.component';
 import {map, Observable, take} from 'rxjs';
-import {BasicWidget, WidgetManagementTab, WidgetType} from '../../../models';
+import {BasicWidget, WidgetManagementTab, WidgetType, WidgetWidth} from '../../../models';
 import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 
 @Component({
@@ -49,7 +49,8 @@ export class WidgetManagementComponent {
   @Input() public disableDuplicate = false;
   @Input() public singleWidget = false;
   @Input() public disableJsonEditor = false;
-  @Input() public defaultAmountOfColumns!: number;
+  @Input() public defaultWidth!: WidgetWidth;
+  @Input() public disableTitleInput = false;
 
   public readonly jsonModel$: Observable<EditorModel> = this.widgetManagementService
     .getWidgetConfiguration()

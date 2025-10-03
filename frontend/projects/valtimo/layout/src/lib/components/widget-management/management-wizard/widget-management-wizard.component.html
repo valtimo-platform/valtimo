@@ -63,6 +63,7 @@
       }
       @case (contentStepIndex$ | async) {
         <valtimo-widget-wizard-content-step
+          [disableTitleInput]="disableTitleInput"
           (contentValidEvent)="onContentValidEvent($event)"
         ></valtimo-widget-wizard-content-step>
       }

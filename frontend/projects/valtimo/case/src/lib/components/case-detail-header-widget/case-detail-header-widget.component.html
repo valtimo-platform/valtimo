@@ -14,21 +14,23 @@
   ~ limitations under the License.
   -->
 
-<div *ngIf="canViewCaseHeaderWidget$ | async" class="header-widget-container">
+@if (canViewCaseHeaderWidget$ | async) {
   <ng-container
     *ngIf="{
       headerWidget: headerWidget$ | async,
       headerWidgetData: headerWidgetData$ | async,
     } as obs"
   >
-    @if (obs.headerWidget && !obs.headerWidgetData) {
-      <div class="header-widget-container__loader"><cds-loading size="sm"></cds-loading></div>
-    } @else if (obs.headerWidget && obs.headerWidgetData) {
-      <valtimo-widget-field
-        [cdsLayer]="1"
-        [widgetConfiguration]="obs.headerWidget"
-        [widgetData]="obs.headerWidgetData"
-      ></valtimo-widget-field>
-    }
+    <div *ngIf="obs.headerWidget" class="header-widget-container">
+      @if (!obs.headerWidgetData) {
+        <div class="header-widget-container__loader"><cds-loading size="sm"></cds-loading></div>
+      } @else {
+        <valtimo-widget-field
+          [cdsLayer]="1"
+          [widgetConfiguration]="obs.headerWidget"
+          [widgetData]="obs.headerWidgetData"
+        ></valtimo-widget-field>
+      }
+    </div>
   </ng-container>
-</div>
+}

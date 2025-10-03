@@ -43,11 +43,13 @@ export class WidgetWizardService {
 
   public readonly $widgetActions: WritableSignal<WidgetAction[] | undefined> = signal(undefined);
 
+  private _defaultWidth!: WidgetWidth;
+
   public readonly $widgetsConfig: Signal<BasicWidget> = computed(() => ({
     key: this.$widgetKey() ?? '',
     title: this.$widgetTitle() ?? '',
     type: this.$selectedWidget()?.type ?? WidgetType.FIELDS,
-    width: this.$widgetWidth() ?? 4,
+    width: this.$widgetWidth() || this._defaultWidth || 4,
     highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
     properties: this.$widgetContent() ?? ({} as any),
     actions: this.$widgetActions() ?? [],
@@ -61,12 +63,22 @@ export class WidgetWizardService {
 
   public resetWizard(): void {
     this.$selectedWidget.set(null);
-    this.$widgetWidth.set(null);
+    this.$widgetWidth.set(this._defaultWidth || null);
     this.$widgetStyle.set(null);
     this.$widgetContent.set(null);
     this.$widgetTitle.set(null);
     this.$widgetKey.set(null);
     this.$widgetActions.set(undefined);
     this.$editMode.set(false);
+  }
+
+  public setDefaultWidth(width: number): void {
+    if (!this.isWidgetWidth(width)) return;
+    this._defaultWidth = width;
+    this.$widgetWidth.set(this._defaultWidth);
+  }
+
+  private isWidgetWidth(value: unknown): value is WidgetWidth {
+    return [1, 2, 3, 4].includes(value as number);
   }
 }
