@@ -18,3 +18,12 @@ jobs:
         run: |
           echo "Backend: ${{needs.buildBackendImage.outputs.imageTag}}"
           echo "Frontend: ${{needs.buildFrontendImage.outputs.imageTag}}"
+  createTestEnvironment:
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ritense/product-development-infra/.github/workflows/create-gzac-test-environment.yml@main
+    with:
+      envName: "pr-${{ github.event.pull_request.number }}"
+    secrets:
+      token: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}
