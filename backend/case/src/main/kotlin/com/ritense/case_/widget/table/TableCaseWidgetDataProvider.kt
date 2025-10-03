@@ -35,16 +35,23 @@ import java.util.UUID
 class TableCaseWidgetDataProvider(
     private val objectMapper: ObjectMapper,
     private val valueResolverService: ValueResolverService
-) : CaseWidgetDataProvider<TableCaseWidget> {
+) : CaseWidgetDataProvider {
 
-    override fun supportedWidgetType() = TableCaseWidget::class.java
+    override fun supports(widget: Any): Boolean =
+        widget is TableCaseWidget
 
-    override fun getData(documentId: UUID, widget: TableCaseWidget, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Page<Map<String, Any?>> {
+    override fun getData(
+        documentId: UUID,
+        widget: Any,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId
+    ): Page<Map<String, Any?>> {
+        widget as TableCaseWidget
         val resolvedCollection =
             valueResolverService.resolveValues(documentId.toString(), listOf(widget.properties.collection))[widget.properties.collection]
         val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedCollection)
 
-        if(collectionNode.isNull) {
+        if (collectionNode.isNull) {
             return PageImpl(emptyList(), pageable, 0)
         }
 
@@ -52,11 +59,9 @@ class TableCaseWidgetDataProvider(
             throw InvalidCollectionException()
         }
 
-        val pagedCollection = collectionNode.chunked(
-            pageable.pageSize
-        )
+        val pagedCollection = collectionNode.chunked(pageable.pageSize)
 
-        val result = pagedCollection.getOrElse(pageable.pageNumber, defaultValue = { _ -> listOf() })
+        val result = pagedCollection.getOrElse(pageable.pageNumber) { listOf() }
             .onEachIndexed { index, node ->
                 if (!node.isContainerNode) {
                     throw InvalidCollectionNodeTypeException(index)
@@ -88,4 +93,3 @@ class TableCaseWidgetDataProvider(
         val JSONPATH_CONTEXT = JsonPath.using(Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
     }
 }
-

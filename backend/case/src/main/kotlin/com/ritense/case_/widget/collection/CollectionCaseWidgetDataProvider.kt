@@ -35,16 +35,23 @@ import java.util.UUID
 class CollectionCaseWidgetDataProvider(
     private val objectMapper: ObjectMapper,
     private val valueResolverService: ValueResolverService
-) : CaseWidgetDataProvider<CollectionCaseWidget> {
+) : CaseWidgetDataProvider {
 
-    override fun supportedWidgetType() = CollectionCaseWidget::class.java
+    override fun supports(widget: Any): Boolean =
+        widget is CollectionCaseWidget
 
-    override fun getData(documentId: UUID, widget: CollectionCaseWidget, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Page<CollectionCaseWidgetDataResult> {
+    override fun getData(
+        documentId: UUID,
+        widget: Any,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId
+    ): Page<CollectionCaseWidgetDataResult> {
+        widget as CollectionCaseWidget
         val resolvedCollection =
             valueResolverService.resolveValues(documentId.toString(), listOf(widget.properties.collection))[widget.properties.collection]
         val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedCollection)
 
-        if(collectionNode.isNull) {
+        if (collectionNode.isNull) {
             return PageImpl(emptyList(), pageable, 0)
         }
 
@@ -52,11 +59,9 @@ class CollectionCaseWidgetDataProvider(
             throw InvalidCollectionException()
         }
 
-        val pagedCollection = collectionNode.chunked(
-            pageable.pageSize
-        )
+        val pagedCollection = collectionNode.chunked(pageable.pageSize)
 
-        val result = pagedCollection.getOrElse(pageable.pageNumber, defaultValue = { _ -> listOf() })
+        val result = pagedCollection.getOrElse(pageable.pageNumber) { listOf() }
             .onEachIndexed { index, node ->
                 if (!node.isContainerNode) {
                     throw InvalidCollectionNodeTypeException(index)
@@ -79,7 +84,6 @@ class CollectionCaseWidgetDataProvider(
         } else {
             val pointer = if (valueRef.startsWith("/")) valueRef else "/$valueRef"
             val valueNode = child.at(pointer)
-
             if (valueNode.isValueNode && !valueNode.isNull) {
                 objectMapper.treeToValue<Any?>(valueNode)
             } else {
@@ -88,9 +92,9 @@ class CollectionCaseWidgetDataProvider(
         }
     }
 
-
     private companion object {
-        val JSONPATH_CONTEXT = JsonPath.using(Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+        val JSONPATH_CONTEXT = JsonPath.using(
+            Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS)
+        )
     }
 }
-

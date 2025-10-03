@@ -106,6 +106,7 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, HEADER_WIDGET_URL))
                     .hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "$HEADER_WIDGET_URL/data")).hasAuthority(USER)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

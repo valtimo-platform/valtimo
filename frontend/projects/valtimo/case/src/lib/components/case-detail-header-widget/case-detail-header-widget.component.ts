@@ -37,10 +37,15 @@ export class CaseDetailHeaderWidgetComponent {
     switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidget(documentId))
   );
 
+  public readonly headerWidgetData$ = this._documentId$.pipe(
+    switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidgetData(documentId))
+  );
+
   constructor(
     private readonly caseHeaderWidgetApiService: CaseHeaderWidgetApiService,
     private readonly route: ActivatedRoute
   ) {
     this.headerWidget$.subscribe(x => console.log('header widget', x));
+    this.headerWidgetData$.subscribe(x => console.log('header widget data', x));
   }
 }

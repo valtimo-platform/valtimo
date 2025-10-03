@@ -16,6 +16,12 @@
             "action": "view",
             "roleKey": "ROLE_USER",
             "conditions": []
+        },
+        {
+            "resourceType": "com.ritense.case_.domain.header.CaseHeaderWidget",
+            "actions": ["view"],
+            "roleKey": "ROLE_USER",
+            "conditions": []
         }
     ]
 }

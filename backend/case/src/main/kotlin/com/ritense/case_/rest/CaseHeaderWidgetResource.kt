@@ -17,6 +17,7 @@
 package com.ritense.case_.rest
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.case_.domain.header.CaseHeaderWidget
 import com.ritense.case_.domain.header.CaseHeaderWidgetId
 import com.ritense.case_.rest.dto.CaseHeaderWidgetDto
 import com.ritense.case_.service.CaseHeaderWidgetService
@@ -24,6 +25,8 @@ import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -60,9 +63,21 @@ class CaseHeaderWidgetResource(
 
     @GetMapping("/v1/case/{documentId}/header-widget/data")
     fun getCaseHeaderWidgetData(
-        @PathVariable documentId: UUID
+        @PathVariable documentId: UUID,
+        @PageableDefault(size = 5) pageable: Pageable
     ): ResponseEntity<Any> {
-        val data = caseWidgetService.getCaseWidgetData(documentId, tabKey, widgetKey, pageable)
+        val document = documentService.get(documentId.toString())
+        val caseDefinitionId = document.definitionId().caseDefinitionId()
+        val id = CaseHeaderWidgetId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
+        val widgetDto = runWithoutAuthorization { caseHeaderWidgetService.findById(id) } ?: return ResponseEntity.notFound().build()
+        val widget = CaseHeaderWidget(
+            id = id,
+            type = widgetDto.type,
+            title = widgetDto.title,
+            highContrast = widgetDto.highContrast,
+            properties = widgetDto.properties
+        )
+        val data = caseWidgetService.getCaseHeaderWidgetData(document, widget, pageable, caseDefinitionId)
         return ResponseEntity.ofNullable(data)
     }
 }
