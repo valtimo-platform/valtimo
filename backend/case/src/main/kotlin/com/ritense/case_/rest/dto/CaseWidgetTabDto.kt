@@ -60,6 +60,7 @@ data class CaseWidgetTabDto(
         }
 
         @JvmStatic
+        @Deprecated("Use of without document instead")
         fun ofWithContext(
             tab: CaseWidgetTab,
             widgetMappers: List<CaseWidgetMapper<CaseWidgetTabWidget, CaseWidgetTabWidgetDto>>,
@@ -78,13 +79,6 @@ data class CaseWidgetTabDto(
                         }.toDto(widget)
                     }
             )
-        }
-
-        fun andCheck(
-            first: (CaseWidgetTabWidget, JsonSchemaDocument) -> Boolean,
-            second: (CaseWidgetTabWidget, JsonSchemaDocument) -> Boolean,
-        ): (CaseWidgetTabWidget, JsonSchemaDocument) -> Boolean {
-            return { widget, document -> first(widget, document) && second(widget, document) }
         }
     }
 }

@@ -31,7 +31,6 @@ import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.repository.CaseWidgetTabRepository
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
-import com.ritense.case_.rest.dto.CaseWidgetTabDto.Companion.andCheck
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.case_.service.event.CaseTabCreatedEvent
 import com.ritense.case_.widget.CaseWidgetDataProvider
@@ -93,11 +92,14 @@ class CaseWidgetTabService(
                 caseWidgetTabRepository.findByIdOrNull(CaseTabId(existingDocument.definitionId().caseDefinitionId(), key))
                     ?.let { widgetTab ->
                         CaseWidgetTabDto
-                        .ofWithContext(
+                        .of(
                             widgetTab,
                             caseWidgetMappers,
-                            andCheck(this::viewPermissionCheckForContext, this::widgetHiddenCheck),
-                            document as JsonSchemaDocument
+                            { widget ->
+                                document as JsonSchemaDocument
+                                this.viewPermissionCheckForContext(widget, document) &&
+                                    this.widgetHiddenCheck(widget, document)
+                            }
                         )
                     }
             }
