@@ -22,7 +22,7 @@
     } as obs"
   >
     @if (obs.headerWidget && !obs.headerWidgetData) {
-      <cds-loading size="sm"></cds-loading>
+      <div class="header-widget-container__loader"><cds-loading size="sm"></cds-loading></div>
     } @else if (obs.headerWidget && obs.headerWidgetData) {
       <valtimo-widget-field
         [cdsLayer]="1"
