@@ -34,4 +34,13 @@ export class CaseHeaderWidgetApiService extends BaseApiService {
       headers: new HttpHeaders().set(InterceptorSkip, '204'),
     });
   }
+
+  public getHeaderWidgetData(documentId: string, pageSize = 5, page = 0): Observable<any> {
+    return this.httpClient.get<any>(
+      this.getApiUrl(`v1/case/${documentId}/header-widget/data?page=${page}&size=${pageSize}`),
+      {
+        headers: new HttpHeaders().set(InterceptorSkip, '204'),
+      }
+    );
+  }
 }

@@ -16,6 +16,8 @@
 
 package com.ritense.case_.widget.fields
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.case_.domain.header.CaseHeaderWidget
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
@@ -23,30 +25,33 @@ import org.springframework.data.domain.Pageable
 import java.util.UUID
 
 class FieldsCaseWidgetDataProvider(
-    private val valueResolverService: ValueResolverService
-) : CaseWidgetDataProvider<FieldsCaseWidget> {
+    private val valueResolverService: ValueResolverService,
+    private val objectMapper: ObjectMapper
+) : CaseWidgetDataProvider {
 
-    override fun supportedWidgetType() = FieldsCaseWidget::class.java
+    override fun supports(widget: Any): Boolean =
+        widget is FieldsCaseWidget || (widget is CaseHeaderWidget && widget.type == "fields")
 
     override fun getData(
         documentId: UUID,
-        widget: FieldsCaseWidget,
+        widget: Any,
         pageable: Pageable,
         caseDefinitionId: CaseDefinitionId
     ): Any {
-        val valueKeyMap = widget.properties.columns.flatMap { column ->
-            column.map { field ->
-                field.value to field.key
-            }
-        }.toMap()
+        val properties: FieldsWidgetProperties = when (widget) {
+            is FieldsCaseWidget -> widget.properties
+            is CaseHeaderWidget -> objectMapper.convertValue(widget.properties, FieldsWidgetProperties::class.java)
+            else -> error("Unsupported widget type")
+        }
+
+        val valueKeyMap = properties.columns
+            .flatMap { column -> column.map { field -> field.value to field.key } }
+            .toMap()
 
         val resolvedValues = valueResolverService.resolveValues(documentId.toString(), valueKeyMap.keys)
 
-        return widget.properties.columns.flatMap { column ->
-            column.map { field ->
-                field.key to (resolvedValues[field.value] ?: null)
-            }
-        }.toMap()
+        return properties.columns
+            .flatMap { column -> column.map { field -> field.key to (resolvedValues[field.value] ?: null) } }
+            .toMap()
     }
-
 }

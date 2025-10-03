@@ -23,6 +23,7 @@ import com.ritense.case.service.CaseTabService
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.listener.CaseTabCaseEventListener
 import com.ritense.case_.repository.CaseHeaderWidgetRepository
+import com.ritense.case_.repository.CaseHeaderWidgetSpecificationFactory
 import com.ritense.case_.repository.CaseWidgetTabRepository
 import com.ritense.case_.repository.CaseWidgetTabWidgetSpecificationFactory
 import com.ritense.case_.rest.CaseHeaderWidgetManagementResource
@@ -77,7 +78,7 @@ class CaseWidgetAutoConfiguration {
         caseTabRepository: CaseTabRepository,
         authorizationService: AuthorizationService,
         caseWidgetMappers: List<CaseWidgetMapper<*, *>>,
-        caseWidgetDataProviders: List<CaseWidgetDataProvider<*>>,
+        caseWidgetDataProviders: List<CaseWidgetDataProvider>,
         documentService: DocumentService,
         caseDefinitionChecker: CaseDefinitionChecker,
     ) = CaseWidgetService(
@@ -86,7 +87,7 @@ class CaseWidgetAutoConfiguration {
         caseTabRepository,
         authorizationService,
         caseWidgetMappers as List<CaseWidgetMapper<CaseWidgetTabWidget, CaseWidgetTabWidgetDto>>,
-        caseWidgetDataProviders as List<CaseWidgetDataProvider<CaseWidgetTabWidget>>,
+        caseWidgetDataProviders as List<CaseWidgetDataProvider>,
         caseDefinitionChecker,
     )
 
@@ -95,6 +96,12 @@ class CaseWidgetAutoConfiguration {
     fun caseWidgetTabWidgetSpecificationFactory(
         queryDialectHelper: QueryDialectHelper
     ) = CaseWidgetTabWidgetSpecificationFactory(queryDialectHelper)
+
+    @ConditionalOnMissingBean(CaseHeaderWidgetSpecificationFactory::class)
+    @Bean
+    fun caseHeaderWidgetSpecificationFactory(
+        queryDialectHelper: QueryDialectHelper
+    ) = CaseHeaderWidgetSpecificationFactory(queryDialectHelper)
 
     @Bean
     @ConditionalOnMissingBean(CaseWidgetTabExporter::class)
@@ -149,8 +156,9 @@ class CaseWidgetAutoConfiguration {
     @ConditionalOnMissingBean(FieldsCaseWidgetDataProvider::class)
     @Bean
     fun fieldsCaseWidgetDataProvider(
-        valueResolverService: ValueResolverService
-    ) = FieldsCaseWidgetDataProvider(valueResolverService)
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper
+    ) = FieldsCaseWidgetDataProvider(valueResolverService, objectMapper)
 
     @ConditionalOnMissingBean(TableCaseWidgetMapper::class)
     @Bean

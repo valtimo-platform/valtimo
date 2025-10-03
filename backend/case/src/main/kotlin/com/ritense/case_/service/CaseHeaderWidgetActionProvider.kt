@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-package com.ritense.case_.widget
+package com.ritense.case_.service
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import org.springframework.data.domain.Pageable
-import java.util.UUID
+import com.ritense.authorization.Action
+import com.ritense.authorization.ResourceActionProvider
+import com.ritense.case_.domain.header.CaseHeaderWidget
 
-interface CaseWidgetDataProvider{
-    fun supports(widget: Any): Boolean
+class CaseHeaderWidgetActionProvider: ResourceActionProvider<CaseHeaderWidget> {
+    override fun getAvailableActions(): List<Action<CaseHeaderWidget>> {
+        return listOf(VIEW)
+    }
 
-    fun getData(
-        documentId: UUID,
-        widget: Any,
-        pageable: Pageable,
-        caseDefinitionId: CaseDefinitionId
-    ): Any?
+    companion object {
+        @JvmField val VIEW: Action<CaseHeaderWidget> = Action(Action.VIEW)
+    }
 }
