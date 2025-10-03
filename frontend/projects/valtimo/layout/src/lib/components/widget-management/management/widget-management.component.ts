@@ -47,6 +47,9 @@ export class WidgetManagementComponent {
   @Input() availableWidgetTypes: WidgetType[];
   @Input() public disableWidthStep = false;
   @Input() public disableDuplicate = false;
+  @Input() public singleWidget = false;
+  @Input() public disableJsonEditor = false;
+  @Input() public defaultAmountOfColumns!: number;
 
   public readonly jsonModel$: Observable<EditorModel> = this.widgetManagementService
     .getWidgetConfiguration()

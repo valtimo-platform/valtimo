@@ -37,7 +37,11 @@
 </valtimo-carbon-list>
 
 <ng-template #addWidgetButton>
-  <button cdsButton="primary" (click)="openAddModal()">
+  <button
+    cdsButton="primary"
+    (click)="openAddModal()"
+    [disabled]="singleWidget && ((widgets$ | async) || []).length === 1"
+  >
     {{ 'widgetTabManagement.list.add' | translate }}
 
     <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>

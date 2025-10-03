@@ -21,4 +21,8 @@
   background: var(--cds-layer);
   margin-top: 16px;
   margin-bottom: 16px;
+
+  &__loader {
+    margin: 16px;
+  }
 }

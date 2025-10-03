@@ -75,6 +75,8 @@ export class WidgetManagementEditorComponent {
     this.disableDuplicate$.next(value);
   }
 
+  @Input() public singleWidget = false;
+
   public readonly FIELDS: ColumnConfig[] = [
     {
       key: 'title',
