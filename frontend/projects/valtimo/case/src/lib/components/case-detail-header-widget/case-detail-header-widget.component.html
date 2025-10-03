@@ -14,4 +14,21 @@
   ~ limitations under the License.
   -->
 
-case detail header widget works
+<div *ngIf="canViewCaseHeaderWidget$ | async" class="header-widget-container">
+  <ng-container
+    *ngIf="{
+      headerWidget: headerWidget$ | async,
+      headerWidgetData: headerWidgetData$ | async,
+    } as obs"
+  >
+    @if (obs.headerWidget && !obs.headerWidgetData) {
+      <cds-loading size="sm"></cds-loading>
+    } @else if (obs.headerWidget && obs.headerWidgetData) {
+      <valtimo-widget-field
+        [cdsLayer]="1"
+        [widgetConfiguration]="obs.headerWidget"
+        [widgetData]="obs.headerWidgetData"
+      ></valtimo-widget-field>
+    }
+  </ng-container>
+</div>

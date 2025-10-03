@@ -13,3 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.header-widget-container {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  background: var(--cds-layer);
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
