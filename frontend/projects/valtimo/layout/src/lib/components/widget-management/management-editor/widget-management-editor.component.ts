@@ -68,48 +68,77 @@ export class WidgetManagementEditorComponent {
     if (!value) return;
     this.widgetWizardService.$availableWidgetTypes.set(value);
   }
-  @Input() public disableWidthStep = false;
+
+  public readonly disableWidthStep$ = new BehaviorSubject<boolean>(false);
+  @Input() public set disableWidthStep(value: boolean) {
+    this.disableWidthStep$.next(value);
+  }
 
   public readonly disableDuplicate$ = new BehaviorSubject<boolean>(false);
   @Input() public set disableDuplicate(value: boolean) {
     this.disableDuplicate$.next(value);
   }
 
-  @Input() public singleWidget = false;
+  public readonly singleWidget$ = new BehaviorSubject<boolean>(false);
+  @Input() public set singleWidget(value: boolean) {
+    this.singleWidget$.next(value);
+  }
 
   @Input() public set defaultWidth(value: WidgetWidth) {
     this.widgetWizardService.setDefaultWidth(value);
   }
 
-  @Input() public disableTitleInput = false;
+  public readonly disableTitleInput$ = new BehaviorSubject<boolean>(false);
+  @Input() public set disableTitleInput(value: boolean) {
+    this.disableTitleInput$.next(value);
+  }
 
-  public readonly FIELDS: ColumnConfig[] = [
-    {
-      key: 'title',
-      label: 'interface.title',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'tags',
-      label: 'widgetTabManagement.columns.type',
-      viewType: ViewType.TAGS,
-    },
-    {
-      key: 'key',
-      label: 'interface.key',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'widthTranslation',
-      label: 'widgetTabManagement.columns.width',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'highContrast',
-      label: 'widgetTabManagement.columns.highContrast',
-      viewType: ViewType.BOOLEAN,
-    },
-  ];
+  public readonly fields$: Observable<ColumnConfig[]> = combineLatest([
+    this.singleWidget$,
+    this.disableWidthStep$,
+    this.disableTitleInput$,
+  ]).pipe(
+    map(([singleWidget, disableWidthStep, disableTitleInput]) => [
+      ...(!disableTitleInput
+        ? [
+            {
+              key: 'title',
+              label: 'interface.title',
+              viewType: ViewType.TEXT,
+            },
+          ]
+        : []),
+      {
+        key: 'tags',
+        label: 'widgetTabManagement.columns.type',
+        viewType: ViewType.TAGS,
+      },
+      ...(!singleWidget
+        ? [
+            {
+              key: 'key',
+              label: 'interface.key',
+              viewType: ViewType.TEXT,
+            },
+          ]
+        : []),
+      ...(!disableWidthStep
+        ? [
+            {
+              key: 'widthTranslation',
+              label: 'widgetTabManagement.columns.width',
+              viewType: ViewType.TEXT,
+            },
+          ]
+        : []),
+
+      {
+        key: 'highContrast',
+        label: 'widgetTabManagement.columns.highContrast',
+        viewType: ViewType.BOOLEAN,
+      },
+    ])
+  );
 
   public readonly actionItems$: Observable<ActionItem[]> = this.disableDuplicate$.pipe(
     map(disableDuplicate => [
