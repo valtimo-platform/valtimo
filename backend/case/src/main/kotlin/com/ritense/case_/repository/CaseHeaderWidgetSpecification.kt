@@ -38,24 +38,13 @@ class CaseHeaderWidgetSpecification(
         criteriaBuilder: CriteriaBuilder
     ): Predicate {
         val predicates = permissions.stream()
-            .filter { permission: Permission ->
-                CaseHeaderWidget::class.java == permission.resourceType
-                    && permission.actions.contains(authRequest.action)
-            }
-            .map { permission: Permission ->
-                permission.toPredicate(
-                    root,
-                    query,
-                    criteriaBuilder,
-                    authRequest,
-                    queryDialectHelper,
-                )
-            }.toList()
-
+            .filter { it.resourceType == CaseHeaderWidget::class.java && it.actions.contains(authRequest.action) }
+            .map { it.toPredicate(root, query, criteriaBuilder, authRequest, queryDialectHelper) }
+            .toList()
         return combinePredicates(criteriaBuilder, predicates)
     }
 
     override fun identifierToEntity(identifier: String): CaseHeaderWidget {
-        TODO("Not yet implemented")
+        throw UnsupportedOperationException("identifierToEntity not supported for CaseHeaderWidget")
     }
 }

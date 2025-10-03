@@ -159,11 +159,6 @@ class CaseWidgetService(
                 CaseHeaderWidget::class.java,
                 CaseHeaderWidgetActionProvider.VIEW,
                 widget
-            ).withContext(
-                AuthorizationResourceContext(
-                    JsonSchemaDocument::class.java,
-                    document as JsonSchemaDocument
-                )
             )
         )
 

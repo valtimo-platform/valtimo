@@ -101,7 +101,10 @@ class CaseWidgetAutoConfiguration {
     @Bean
     fun caseHeaderWidgetSpecificationFactory(
         queryDialectHelper: QueryDialectHelper
-    ) = CaseHeaderWidgetSpecificationFactory(queryDialectHelper)
+    ): CaseHeaderWidgetSpecificationFactory =
+        CaseHeaderWidgetSpecificationFactory(
+            queryDialectHelper
+        )
 
     @Bean
     @ConditionalOnMissingBean(CaseWidgetTabExporter::class)
