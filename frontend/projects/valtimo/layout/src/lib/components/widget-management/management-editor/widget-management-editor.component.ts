@@ -36,6 +36,7 @@ import {
   WidgetStyle,
   WidgetType,
   WidgetTypeTags,
+  WidgetWidth,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
 } from '../../../models';
@@ -65,7 +66,6 @@ export class WidgetManagementEditorComponent {
   }
   @Input() public set availableWidgetTypes(value: WidgetType[]) {
     if (!value) return;
-
     this.widgetWizardService.$availableWidgetTypes.set(value);
   }
   @Input() public disableWidthStep = false;
@@ -76,6 +76,12 @@ export class WidgetManagementEditorComponent {
   }
 
   @Input() public singleWidget = false;
+
+  @Input() public set defaultWidth(value: WidgetWidth) {
+    this.widgetWizardService.setDefaultWidth(value);
+  }
+
+  @Input() public disableTitleInput = false;
 
   public readonly FIELDS: ColumnConfig[] = [
     {
