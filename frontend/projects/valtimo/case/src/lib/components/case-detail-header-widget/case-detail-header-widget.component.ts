@@ -16,8 +16,13 @@
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
-import {distinctUntilChanged, filter, map, switchMap} from 'rxjs';
+import {distinctUntilChanged, filter, map, Observable, switchMap} from 'rxjs';
 import {CaseHeaderWidgetApiService} from '../../services';
+import {PermissionService} from '@valtimo/access-control';
+import {
+  CAN_VIEW_CASE_HEADER_WIDGET_PERMISSION,
+  CASE_DETAIL_PERMISSION_RESOURCE,
+} from '../../permissions';
 
 @Component({
   standalone: true,
@@ -33,6 +38,15 @@ export class CaseDetailHeaderWidgetComponent {
     distinctUntilChanged()
   );
 
+  public readonly canViewCaseHeaderWidget$: Observable<boolean> = this._documentId$.pipe(
+    switchMap(documentId =>
+      this.permissionService.requestPermission(CAN_VIEW_CASE_HEADER_WIDGET_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.caseHeaderWidget,
+        identifier: documentId,
+      })
+    )
+  );
+
   public readonly headerWidget$ = this._documentId$.pipe(
     switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidget(documentId))
   );
@@ -43,7 +57,8 @@ export class CaseDetailHeaderWidgetComponent {
 
   constructor(
     private readonly caseHeaderWidgetApiService: CaseHeaderWidgetApiService,
-    private readonly route: ActivatedRoute
+    private readonly route: ActivatedRoute,
+    private readonly permissionService: PermissionService
   ) {
     this.headerWidget$.subscribe(x => console.log('header widget', x));
     this.headerWidgetData$.subscribe(x => console.log('header widget data', x));

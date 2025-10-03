@@ -30,6 +30,7 @@ enum CASE_DETAIL_PERMISSION_RESOURCE {
   jsonSchemaDocument = 'com.ritense.document.domain.impl.JsonSchemaDocument',
   note = 'com.ritense.note.domain.Note',
   jsonSchemaDocumentDefinition = 'com.ritense.document.domain.impl.JsonSchemaDocumentDefinition',
+  caseHeaderWidget = 'com.ritense.case_.domain.header.CaseHeaderWidget',
 }
 
 const CAN_CLAIM_CASE_PERMISSION: PermissionRequest = {
@@ -74,7 +75,12 @@ const CAN_DELETE_CASE_PERMISSION: PermissionRequest = {
 
 const CAN_EXPORT_CASE_PERMISSION: PermissionRequest = {
   action: PERMISSION_ACTION.export,
-  resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument
+  resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
+};
+
+const CAN_VIEW_CASE_HEADER_WIDGET_PERMISSION: PermissionRequest = {
+  action: PERMISSION_ACTION.view,
+  resource: CASE_DETAIL_PERMISSION_RESOURCE.caseHeaderWidget,
 };
 
 export {
@@ -88,4 +94,5 @@ export {
   CAN_CREATE_CASE_PERMISSION,
   CAN_DELETE_CASE_PERMISSION,
   CAN_EXPORT_CASE_PERMISSION,
+  CAN_VIEW_CASE_HEADER_WIDGET_PERMISSION,
 };
