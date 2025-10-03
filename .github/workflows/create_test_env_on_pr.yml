@@ -5,6 +5,10 @@ on:
     branches:
       - "feature/dockerize-app"
 
+permissions:
+  actions: read
+  contents: read
+
 jobs:
   buildBackendImage:
     uses: ./.github/workflows/backend_pr_docker_image.yml
