@@ -80,15 +80,9 @@ jobs:
           # replace special characters with -
           SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
 
-          PROJECT_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
-          if [[ "$BRANCH_NAME" == rc-* ]]; then
-              PROJECT_VERSION="${PROJECT_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
-          elif [[ "$BRANCH_NAME" == "next-minor" ]]; then
-              PROJECT_VERSION="${PROJECT_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
-          else
-              # Building feature branch
-              PROJECT_VERSION="${PROJECT_VERSION}-next-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
-          fi
+          SEMVER_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
+          PROJECT_VERSION="${SEMVER_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
+          
           echo "Version is ${PROJECT_VERSION}"
           echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
 
@@ -98,14 +92,7 @@ jobs:
         run: |
           npm run libs-increment-all -- ${PROJECT_VERSION}
           npm run copy-frontend-version
-
-          # @valtimo/config was renamed to @valtimo/shared in commit f1fed37
-          # this condition supports both cases
-          if [ -e './projects/valtimo/shared' ]; then
-              npx ng build @valtimo/shared
-          else
-              npx ng build @valtimo/config
-          fi
+          npx ng build @valtimo/shared
 
       - name: 'Retain build artifact: dist'
         uses: actions/upload-artifact@v4
@@ -136,16 +123,7 @@ jobs:
         run: npm install
 
       - name: Lint all libraries
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        run: |
-          if [[ $BRANCH_NAME == 'rc/12.0.0' || $BRANCH_NAME == 'next-minor' || $BRANCH_NAME == 'next-major' ]]; then
-            echo "Linting in parallel"
-            npm run libs-lint-all-cicd
-          else
-            echo "Linting sequentially"
-            npm run libs-lint-all
-          fi
+        run: npm run libs-lint-all-cicd
 
   # Publishing job that handles both regular and release-candidates publishing
   publish:
