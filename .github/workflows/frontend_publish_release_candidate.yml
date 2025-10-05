@@ -1,4 +1,6 @@
 name: Frontend - publish release candidate
+permissions:
+  contents: read
 on:
   workflow_dispatch:
     inputs:
