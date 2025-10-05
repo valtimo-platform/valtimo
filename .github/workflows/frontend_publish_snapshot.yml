@@ -1,4 +1,4 @@
-name: CI/CD frontend
+name: Frontend - publish snapshot
 on:
   workflow_dispatch:
   push:

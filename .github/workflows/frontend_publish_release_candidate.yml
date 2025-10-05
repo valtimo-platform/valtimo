@@ -1,4 +1,4 @@
-name: CI/CD frontend
+name: Frontend - publish release candidate
 on:
   workflow_dispatch:
     inputs:

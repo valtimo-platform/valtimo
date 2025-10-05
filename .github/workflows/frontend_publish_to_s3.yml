@@ -1,4 +1,4 @@
-name: Frontend Reusable Workflow
+name: Frontend - Build, Lint, Test and Publish to S3
 
 on:
   workflow_call:
