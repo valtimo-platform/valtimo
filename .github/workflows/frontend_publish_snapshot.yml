@@ -1,5 +1,6 @@
 name: CI/CD frontend
 on:
+  workflow_dispatch:
   push:
     branches: ['next-minor', 'feature/*']
     paths:
