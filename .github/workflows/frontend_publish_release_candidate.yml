@@ -1,0 +1,15 @@
+name: CI/CD frontend
+on:
+  workflow_dispatch:
+    inputs:
+      projectVersion:
+        description: 'Project version'
+        required: true
+
+jobs:
+  call_reusable_workflow:
+    uses: ./.github/workflows/frontend_publish_to_s3.yml
+    with:
+      publish_type: 'release-candidate'
+      project_version: ${{ github.event.inputs.projectVersion }}
+    secrets: inherit
