@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       project_version:
-        description: "The determined project version"
+        description: "The determined project version. Required for release-candidate, not for snapshot"
         required: false
         type: string
 
