@@ -8,6 +8,7 @@ on:
 
 jobs:
   call_reusable_workflow:
+    if: ${{ startsWith(github.ref_name, 'rc/') }}
     uses: ./.github/workflows/frontend_publish_to_s3.yml
     with:
       publish_type: 'release-candidate'
