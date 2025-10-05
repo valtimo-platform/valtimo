@@ -16,6 +16,9 @@ defaults:
   run:
     working-directory: frontend
 
+permissions:
+  contents: read
+
 jobs:
   # Install and cache NPM packages for other jobs
   install_packages:
