@@ -211,7 +211,9 @@ export class WidgetManagementEditorComponent {
     this.widgetWizardService.$widgetStyle.set(
       tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
     );
-    this.widgetWizardService.$widgetWidth.set(tabWidget.width);
+    this.widgetWizardService.$widgetWidth.set(
+      tabWidget.width || this.widgetWizardService.defaultWidth
+    );
     this.widgetWizardService.$selectedWidget.set(
       AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
     );

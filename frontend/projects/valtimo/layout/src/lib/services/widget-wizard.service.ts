@@ -45,6 +45,10 @@ export class WidgetWizardService {
 
   private _defaultWidth!: WidgetWidth;
 
+  public get defaultWidth(): WidgetWidth {
+    return this._defaultWidth;
+  }
+
   public readonly $widgetsConfig: Signal<BasicWidget> = computed(() => ({
     key: this.$widgetKey() ?? '',
     title: this.$widgetTitle() ?? '',
