@@ -103,9 +103,13 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
       return acc;
     }, []);
 
-    // if there is more than one group and the last group has only a divider and no widgets, don't render this last group
-    if (groups.length > 1 && groups[groups.length - 1].widgets.length === 0) {
-      groups.pop();
+    // if there is more than one group and trailing groups have only a divider and no widgets, don't render these last groups
+    for (let i = groups.length - 1; i >= 0; i--) {
+      if (groups[i].widgets.length === 0) {
+        groups.pop();
+      } else {
+        break;
+      }
     }
 
     return groups;
