@@ -40,6 +40,7 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.service.DocumentService
+import com.ritense.document.service.JsonSchemaDocumentActionProvider
 import com.ritense.document.service.findByOrNull
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
@@ -156,9 +157,14 @@ class CaseWidgetService(
     fun getCaseHeaderWidgetData(document: Document, widget: CaseHeaderWidget, pageable: Pageable, caseDefinitionId: CaseDefinitionId): Any? {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
-                CaseHeaderWidget::class.java,
-                CaseHeaderWidgetActionProvider.VIEW,
-                widget
+                JsonSchemaDocument::class.java,
+                JsonSchemaDocumentActionProvider.VIEW,
+                document as JsonSchemaDocument
+            ).withContext(
+                AuthorizationResourceContext(
+                    JsonSchemaDocument::class.java,
+                    document
+                )
             )
         )
 
