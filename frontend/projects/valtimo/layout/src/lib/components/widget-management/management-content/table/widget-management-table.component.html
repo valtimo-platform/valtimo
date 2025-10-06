@@ -77,7 +77,6 @@
   </div>
 </form>
 
-<!-- For projecting elements such as process selector in case widgets -->
 <ng-content></ng-content>
 
 <span class="valtimo-widget-management-table__subtitle">
@@ -92,7 +91,7 @@
 <!-- TODO: Implement to work for case as well -->
 <!-- [selectedCollection]="selectedCollection$ | async" -->
 
-<section class="valtimo-widget-management-table__toggle">
+<section *ngIf="showFirstColumnOption" class="valtimo-widget-management-table__toggle">
   <span class="valtimo-widget-management-table__subtitle">
     {{ 'widgetTabManagement.content.table.options' | translate }}
   </span>

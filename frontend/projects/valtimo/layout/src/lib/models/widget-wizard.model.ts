@@ -22,6 +22,7 @@ import {
   WidgetManagementFieldsComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
+import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
 import {IWidgetContentComponent} from '../interfaces';
 import {BasicWidget, WidgetType} from './widget.model';
 
@@ -77,6 +78,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/table.svg',
     type: WidgetType.TABLE,
     component: WidgetManagementTableComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.types.collection.title',
+    descriptionKey: 'widgetTabManagement.types.collection.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/collection.svg',
+    type: WidgetType.INTERACTIVE_TABLE,
+    component: WidgetManagementInteractiveTableComponent,
   },
   {
     titleKey: 'widgetTabManagement.types.collection.title',

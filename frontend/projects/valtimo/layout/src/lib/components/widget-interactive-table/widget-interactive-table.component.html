@@ -20,33 +20,31 @@
     widgetData: widgetData$ | async,
   } as obs"
 >
-  @if (!!obs.widgetData?.length && obs.fields) {
-    <valtimo-carbon-list
-      [header]="false"
-      [fields]="obs.fields"
-      [items]="obs.widgetData"
-      [pagination]="$paginationModel()"
-      [paginatorConfig]="$paginatorConfig()"
-      (paginationClicked)="onPaginationClicked($event)"
-      (rowClicked)="rowClick($event)"
-    >
-      <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
-        <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+  <valtimo-carbon-list
+    [header]="false"
+    [fields]="obs.fields"
+    [items]="obs.widgetData"
+    [pagination]="$paginationModel()"
+    [paginatorConfig]="$paginatorConfig()"
+    (paginationClicked)="onPaginationClicked($event)"
+    (rowClicked)="rowClick($event)"
+  >
+    <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
+      <span class="widget-title">{{ widgetConfiguration?.title }}</span>
 
-        <div class="valtimo-widget-interactive-table__actions">
-          @for (action of widgetConfiguration?.actions; track action.name) {
-            <button [cdsButton]="action.buttonType ?? 'ghost'" (click)="onActionClick(action)">
-              {{ widgetConfiguration?.actions[0].name }}
-            </button>
-          }
-        </div>
-      </section>
-    </valtimo-carbon-list>
-  } @else {
+      <div class="valtimo-widget-interactive-table__actions">
+        @for (action of widgetConfiguration?.actions; track action.name) {
+          <button [cdsButton]="action.buttonType ?? 'ghost'" (click)="onActionClick(action)">
+            {{ action.name }}
+          </button>
+        }
+      </div>
+    </section>
+
     <valtimo-no-results
       [collapseVertically]="true"
       [description]="'case.widgets.noData' | translate"
       [smallPadding]="true"
     ></valtimo-no-results>
-  }
+  </valtimo-carbon-list>
 </ng-container>

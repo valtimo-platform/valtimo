@@ -64,12 +64,9 @@ interface WidgetTableContent {
   defaultPageSize: number;
 }
 
-interface WidgetInteractiveTableContent {
-  columns: FieldsWidgetValue[];
-  collection: string;
-  firstColumnAsTitle: boolean;
+interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstColumnAsTitle'> {
+  canStartInternalCase: boolean;
   rowClickAction: WidgetAction;
-  defaultPageSize: number;
 }
 
 interface WidgetCustomContent {

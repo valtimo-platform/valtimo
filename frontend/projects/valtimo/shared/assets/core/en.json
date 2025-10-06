@@ -841,9 +841,11 @@
       "custom": {"title": "Custom component", "description": "For complex content"},
       "formio": {"title": "Form.io", "description": "Prefilled Form.io form"},
       "table": {"title": "Table", "description": "Create a table"},
-      "collection": {"title": "Collection", "description": "Create a collection"},
-      "collection": {"title": "Collection", "description": "Create a collection"},
-      "divider": {"title": "Divider"}
+      "interactive-table": {
+        "title": "Interactive table",
+        "description": "Create an interactive table"
+      },
+      "collection": {"title": "Collection", "description": "Create a collection"}
     },
     "width": {
       "description": "Select the desired width for the widget.",
