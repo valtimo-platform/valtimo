@@ -22,9 +22,12 @@ import com.ritense.document.domain.event.CaseUnassignedEvent
 import com.ritense.document.event.DocumentAssigned
 import com.ritense.document.event.DocumentCreated
 import com.ritense.document.event.DocumentUnassigned
+import com.ritense.document.event.DocumentUpdated
+import com.ritense.document.event.DocumentUpdatedSseEvent
 import com.ritense.inbox.ValtimoEvent
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -64,6 +67,19 @@ class DocumentSseEventMapperTest {
 
         val sseEvent = documentSseEventMapper.map(valtimoEvent)
         assertInstanceOf(CaseUnassignedEvent::class.java, sseEvent)
+    }
+
+    @Test
+    fun `should map to sse event for a document updated`() {
+        val valtimoEvent = mock<ValtimoEvent>()
+        val documentId = "document-id"
+        whenever(valtimoEvent.type).thenReturn(DocumentUpdated.TYPE)
+        whenever(valtimoEvent.resultId).thenReturn(documentId)
+
+        val sseEvent = documentSseEventMapper.map(valtimoEvent)
+
+        assertInstanceOf(DocumentUpdatedSseEvent::class.java, sseEvent)
+        assertEquals(documentId, (sseEvent as DocumentUpdatedSseEvent).documentId)
     }
 
     @Test

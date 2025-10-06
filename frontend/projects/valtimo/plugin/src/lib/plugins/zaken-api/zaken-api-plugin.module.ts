@@ -51,6 +51,7 @@ import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-he
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 
@@ -73,6 +74,7 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     CreateZaakeigenschapComponent,
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
+    CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
     PatchZaakConfigurationComponent,
   ],
@@ -111,6 +113,7 @@ import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaa
     CreateZaakeigenschapComponent,
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
+    CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
   ],
 })

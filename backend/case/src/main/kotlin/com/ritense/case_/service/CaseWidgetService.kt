@@ -45,6 +45,7 @@ import com.ritense.document.service.findByOrNull
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valueresolver.ValueResolverService
 import jakarta.validation.Valid
 import org.springframework.context.event.EventListener
 import org.springframework.data.domain.Pageable
@@ -66,6 +67,7 @@ class CaseWidgetService(
     private val caseWidgetMappers: List<CaseWidgetMapper<CaseWidgetTabWidget, CaseWidgetTabWidgetDto>>,
     private val caseWidgetDataProviders: List<CaseWidgetDataProvider>,
     private val caseDefinitionChecker: CaseDefinitionChecker,
+    private val valueResolverService: ValueResolverService
 ) {
 
     @EventListener(CaseTabCreatedEvent::class)
@@ -90,11 +92,15 @@ class CaseWidgetService(
                 checkCaseTabAccess(existingDocument as JsonSchemaDocument, caseTab, VIEW)
                 caseWidgetTabRepository.findByIdOrNull(CaseTabId(existingDocument.definitionId().caseDefinitionId(), key))
                     ?.let { widgetTab ->
-                        CaseWidgetTabDto.ofWithContext(
+                        CaseWidgetTabDto
+                        .of(
                             widgetTab,
                             caseWidgetMappers,
-                            this::viewPermissionCheckForContext,
-                            document as JsonSchemaDocument
+                            { widget ->
+                                document as JsonSchemaDocument
+                                this.viewPermissionCheckForContext(widget, document) &&
+                                    this.widgetHiddenCheck(widget, document)
+                            }
                         )
                     }
             }
@@ -219,6 +225,17 @@ class CaseWidgetService(
                 widget
             )
         )
+    }
+
+    private fun widgetHiddenCheck(widget: CaseWidgetTabWidget, document: JsonSchemaDocument): Boolean {
+        return widget.displayConditions.all {
+            it.isValid { valuePath: String ->
+                valueResolverService.resolveValues(
+                    document.id().id.toString(),
+                    listOf(valuePath)
+                )[valuePath]
+            }
+        }
     }
 
     private fun viewPermissionCheckForContext(widget: CaseWidgetTabWidget, document: JsonSchemaDocument): Boolean {

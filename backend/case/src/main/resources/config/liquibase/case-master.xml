@@ -53,4 +53,5 @@
     <include file="changelog/20250807-add-exportable-to-list-column.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250912-update-widget-properties.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250924-add-case-header-widget.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250827-widget-tab-conditions.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
