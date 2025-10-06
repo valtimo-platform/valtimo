@@ -41,7 +41,7 @@ class TaskUpdateListener(
             TaskUpdateSseEvent(
                 taskId = taskEvent.id,
                 documentId = document.id().toString(),
-                caseDefinitionName = document.definitionId().name(),
+                caseDefinitionKey = document.definitionId().name(),
             )
         )
     }

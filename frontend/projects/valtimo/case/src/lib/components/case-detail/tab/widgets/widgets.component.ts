@@ -19,7 +19,7 @@ import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
-import {combineLatest, filter, map, Observable, switchMap} from 'rxjs';
+import {combineLatest, filter, map, Observable, shareReplay, startWith, switchMap} from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
 import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
 import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
@@ -27,6 +27,10 @@ import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
+import {CaseWidgetsRes, DocumentUpdatedSseEvent} from '../../../../models';
+import {SseService} from '@valtimo/sse';
+import {WidgetsService} from './widgets.service';
+import {isEqual} from 'lodash-es';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -53,10 +57,29 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   private readonly _tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
 
-  public readonly widgetConfiguration$ = combineLatest([this._documentId$, this._tabKey$]).pipe(
-    switchMap(([documentId, tabKey]) =>
-      this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey)
-    )
+  private readonly _documentUpdates$ = combineLatest([
+    this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED'),
+    this._documentId$,
+  ]).pipe(
+    filter(([event, documentId]) => event.documentId === documentId),
+    map(([event]) => event),
+    startWith<DocumentUpdatedSseEvent | null>(null)
+  );
+
+  private _previousWidgetConfiguration: CaseWidgetsRes | null = null;
+
+  public readonly widgetConfiguration$ = combineLatest([
+    this._documentId$,
+    this._tabKey$,
+    this._documentUpdates$,
+  ]).pipe(
+    switchMap(([documentId, tabKey, documentUpdatedEvent]) => {
+      return this.filterDuplicateConfigurations(
+        this.widgetsApiService.getWidgetTabConfiguration(documentId, tabKey),
+        documentUpdatedEvent
+      );
+    }),
+    shareReplay({bufferSize: 1, refCount: true})
   );
 
   public readonly widgetComponentMap: WidgetComponentMap = {
@@ -70,7 +93,9 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly caseTabService: CaseTabService,
-    private readonly widgetsApiService: CaseWidgetsApiService
+    private readonly widgetsApiService: CaseWidgetsApiService,
+    private readonly sseService: SseService,
+    private readonly widgetsService: WidgetsService
   ) {}
 
   public ngOnInit(): void {
@@ -79,5 +104,31 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.caseTabService.enableTabHorizontalOverflow();
+  }
+
+  private filterDuplicateConfigurations(
+    widgetConfiguration: Observable<CaseWidgetsRes>,
+    documentUpdatedEvent: DocumentUpdatedSseEvent | null
+  ): Observable<CaseWidgetsRes> {
+    return widgetConfiguration.pipe(
+      map(configuration => {
+        const configurationChanged =
+          !this._previousWidgetConfiguration ||
+          !isEqual(this._previousWidgetConfiguration, configuration);
+
+        if (!configurationChanged && documentUpdatedEvent) {
+          this.widgetsService.refreshWidgets();
+          return null;
+        }
+
+        if (configurationChanged) {
+          this._previousWidgetConfiguration = configuration;
+          return configuration;
+        }
+
+        return null;
+      }),
+      filter((configuration): configuration is CaseWidgetsRes => configuration !== null)
+    );
   }
 }

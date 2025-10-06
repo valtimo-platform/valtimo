@@ -1,2 +1,2 @@
-* @valtimo-platform/valtimo-product-frontend
-* @valtimo-platform/valtimo-product-backend
+/frontend/ @valtimo-platform/valtimo-product-frontend
+/backend/ @valtimo-platform/valtimo-product-backend

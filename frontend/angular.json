@@ -31,12 +31,12 @@
               "src/assets",
               {
                 "glob": "**/*",
-                "input": "node_modules/@valtimo/layout/assets/img",
+                "input": "projects/valtimo/layout/assets/img",
                 "output": "./valtimo-layout/img/"
               },
               {
                 "glob": "**/*",
-                "input": "node_modules/@valtimo/shared/assets/core",
+                "input": "projects/valtimo/shared/assets/core",
                 "output": "./valtimo-translation/core/"
               },
               {
