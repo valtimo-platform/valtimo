@@ -39,7 +39,7 @@ import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rxjs';
 import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../../../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../../../../../services';
-import {CasManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
+import {CaseManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
 
 @Component({
   selector: 'valtimo-case-management-widgets-editor',
@@ -53,7 +53,7 @@ import {CasManagementWidgetWizardComponent} from '../../case-management-widget-w
     ButtonModule,
     IconModule,
     TabsModule,
-    CasManagementWidgetWizardComponent,
+    CaseManagementWidgetWizardComponent,
     ConfirmationModalModule,
   ],
 })
@@ -163,10 +163,11 @@ export class CaseManagementWidgetsEditorComponent {
     this.widgetWizardService.$selectedWidget.set(
       AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
     );
-    this.widgetWizardService.$widgetContent.set(tabWidget.properties);
+    this.widgetWizardService.$widgetContent.set(tabWidget.properties ?? null);
     this.widgetWizardService.$editMode.set(true);
     this.widgetWizardService.$widgetKey.set(tabWidget.key);
     this.widgetWizardService.$widgetActions.set(tabWidget.actions);
+    this.widgetWizardService.$widgetDisplayConditions.set(tabWidget.displayConditions ?? null);
     this.isWizardOpen$.next(true);
   }
 

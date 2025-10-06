@@ -172,7 +172,7 @@
     <div class="v-multi-input__add-button">
       <button
         *ngIf="!hideAddButton"
-        cdsButton="primary"
+        [cdsButton]="addButtonType"
         size="md"
         [disabled]="(addRowEnabled$ | async) === false || $disabled()"
         (click)="addRow()"
