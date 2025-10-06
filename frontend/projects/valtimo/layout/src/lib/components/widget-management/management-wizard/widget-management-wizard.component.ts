@@ -197,7 +197,7 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
             !secondaryLabels[widgetWizardSteps.TYPE] ||
             (!disableWidthStep && this.hasWidth(widgetWizardSteps)
               ? !secondaryLabels[widgetWizardSteps.WIDTH]
-              : true) ||
+              : false) ||
             !secondaryLabels[widgetWizardSteps.STYLE],
           complete: !!this.widgetWizardService.$widgetContent(),
         },
