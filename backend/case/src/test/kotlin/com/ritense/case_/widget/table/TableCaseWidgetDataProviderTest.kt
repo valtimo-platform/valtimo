@@ -188,6 +188,7 @@ class TableCaseWidgetDataProviderTest(
         width = 1,
         highContrast = true,
         actions = emptyList(),
+        displayConditions = emptyList(),
         properties = TableWidgetProperties(
             collection = "test:someCollection",
             defaultPageSize = 2,

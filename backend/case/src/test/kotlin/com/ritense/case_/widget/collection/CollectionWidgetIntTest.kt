@@ -167,6 +167,7 @@ class CollectionWidgetIntTest @Autowired constructor(
                         width = 1,
                         highContrast = false,
                         actions = null,
+                        displayConditions = emptyList(),
                         properties = CollectionWidgetProperties(
                             collection = "test:myCollection",
                             defaultPageSize = 5,

@@ -199,6 +199,7 @@ class CollectionCaseWidgetDataProviderTest(
         width = 1,
         highContrast = true,
         actions = emptyList(),
+        displayConditions = emptyList(),
         properties = CollectionWidgetProperties(
             collection = "test:someCollection",
             defaultPageSize = 2,

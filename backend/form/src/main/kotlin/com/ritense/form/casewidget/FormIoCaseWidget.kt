@@ -20,6 +20,7 @@ import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
@@ -36,12 +37,13 @@ class FormIoCaseWidget(
     width: Int,
     highContrast: Boolean,
     actions: List<WidgetAction>,
+    displayConditions: List<Condition<*>>,
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: FormIoWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, actions
+    id, title, order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = FormIoCaseWidget(
         id = id,
@@ -50,6 +52,7 @@ class FormIoCaseWidget(
         width = width,
         highContrast = highContrast,
         actions = actions,
+        displayConditions = displayConditions?: emptyList(),
         properties = properties
     )
 }

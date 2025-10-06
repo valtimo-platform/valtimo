@@ -18,6 +18,7 @@ package com.ritense.case_.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
@@ -32,6 +33,7 @@ interface CaseWidgetTabWidgetDto {
     val width: Int
     val highContrast: Boolean
     val actions: List<WidgetAction>?
+    val displayConditions: List<Condition<*>>?
 
     /**
      * @param caseDefinitionId the id of the case definition that this widget is configured for

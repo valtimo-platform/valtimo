@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.contract.dashboard
+package com.ritense.valtimo.contract.conditions
 
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class QueryConditionTest {
+class ConditionTest {
 
     @Test
     fun `should deserialize with number value`() {
@@ -31,12 +31,12 @@ class QueryConditionTest {
                 "queryOperator": "==",
                 "queryValue": 69
             }
-        """.trimIndent(), QueryCondition::class.java
+        """.trimIndent(), Condition::class.java
         )
 
         assertThat(value).isNotNull
-        assertThat(value.queryValue).isEqualTo(69)
-        assertThat(value.queryValue).isNotEqualTo("69")
+        assertThat(value.value).isEqualTo(69)
+        assertThat(value.value).isNotEqualTo("69")
     }
 
     @Test
@@ -48,12 +48,12 @@ class QueryConditionTest {
                 "queryOperator": "==",
                 "queryValue": "69"
             }
-        """.trimIndent(), QueryCondition::class.java
+        """.trimIndent(), Condition::class.java
         )
 
         assertThat(value).isNotNull
-        assertThat(value.queryValue).isEqualTo("69")
-        assertThat(value.queryValue).isNotEqualTo(69)
+        assertThat(value.value).isEqualTo("69")
+        assertThat(value.value).isNotEqualTo(69)
     }
 
 }

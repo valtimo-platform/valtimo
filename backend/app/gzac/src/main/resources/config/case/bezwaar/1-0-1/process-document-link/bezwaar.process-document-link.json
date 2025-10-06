@@ -8,5 +8,10 @@
         "processDefinitionKey": "patch-zaak",
         "canInitializeDocument": false,
         "startableByUser": true
+    },
+    {
+        "processDefinitionKey": "change-name",
+        "canInitializeDocument": false,
+        "startableByUser": true
     }
 ]

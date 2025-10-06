@@ -19,6 +19,7 @@ package com.ritense.case_.domain.tab
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.case_.widget.TestCaseWidgetProperties
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
@@ -35,12 +36,13 @@ class TestCaseWidgetTabWidget(
     width: Int,
     highContrast: Boolean,
     actions: List<WidgetAction>,
+    displayConditions: List<Condition<*>>,
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: TestCaseWidgetProperties
 ) : CaseWidgetTabWidget(
-    id, title, order, width, highContrast, actions
+    id, title, order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(id: CaseWidgetTabWidgetId) = TestCaseWidgetTabWidget(
         id = id,
@@ -49,6 +51,7 @@ class TestCaseWidgetTabWidget(
         width = width,
         highContrast = highContrast,
         actions = actions,
+        displayConditions = displayConditions,
         properties = properties
     )
 }

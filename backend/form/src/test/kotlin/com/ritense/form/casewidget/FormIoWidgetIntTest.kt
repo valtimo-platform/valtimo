@@ -130,6 +130,8 @@ class FormIoWidgetIntTest @Autowired constructor(
                         title = "My widget",
                         width = 1,
                         highContrast = true,
+                        actions = null,
+                        displayConditions = emptyList(),
                         properties = FormIoWidgetProperties("form-example")
                     )
                 )

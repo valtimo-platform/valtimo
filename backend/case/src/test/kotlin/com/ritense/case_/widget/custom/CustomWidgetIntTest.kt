@@ -23,6 +23,7 @@ import com.ritense.case.service.CaseTabService
 import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
 import com.ritense.case_.service.CaseWidgetTabService
+import com.ritense.case_.web.rest.dto.displayConditions
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
@@ -106,6 +107,7 @@ class CustomWidgetIntTest @Autowired constructor(
                         width = 2,
                         highContrast = false,
                         actions = null,
+                        displayConditions = emptyList(),
                         properties = CustomWidgetProperties("test-component-key")
                     )
                 )

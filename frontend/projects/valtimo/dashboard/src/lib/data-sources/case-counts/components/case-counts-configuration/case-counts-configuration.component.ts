@@ -23,7 +23,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {ConfigurationOutput, DataSourceConfigurationComponent, Operator} from '../../../../models';
+import {ConfigurationOutput, DataSourceConfigurationComponent} from '../../../../models';
 import {
   BehaviorSubject,
   combineLatest,
@@ -45,9 +45,9 @@ import {DocumentService} from '@valtimo/document';
 import {IconService, ListItem} from 'carbon-components-angular';
 import {ListItemWithId, MultiInputValues, ValuePathSelectorPrefix} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import {WidgetTranslationService} from '../../../../services';
 import {isEqual} from 'lodash';
 import {Add16, TrashCan16} from '@carbon/icons';
+import {Operator} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -150,7 +150,7 @@ export class CaseCountsConfigurationComponent
       map(() =>
         this._OPERATORS.map(operator => ({
           id: operator,
-          content: this.widgetTranslationService.instant(operator, this.dataSourceKey),
+          content: this.translateService.instant('condition.operator.' + operator),
           selected: false,
         }))
       )
@@ -164,7 +164,6 @@ export class CaseCountsConfigurationComponent
     private readonly fb: FormBuilder,
     private readonly documentService: DocumentService,
     private readonly translateService: TranslateService,
-    private readonly widgetTranslationService: WidgetTranslationService,
     private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Add16, TrashCan16]);
