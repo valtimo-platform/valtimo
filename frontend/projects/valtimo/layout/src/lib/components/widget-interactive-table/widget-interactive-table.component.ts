@@ -69,7 +69,6 @@ export class WidgetInteractiveTableComponent {
         key: `data.${column.key}`,
         label: column.title,
         viewType: column.displayProperties?.type ?? ViewType.TEXT,
-        className: `valtimo-widget-interactive-table--transparent ${index === 0 && value.properties.firstColumnAsTitle ? 'valtimo-widget-interactive-table--title' : ''}`,
         ...(!!column.displayProperties?.['format'] && {
           format: column.displayProperties['format'],
         }),

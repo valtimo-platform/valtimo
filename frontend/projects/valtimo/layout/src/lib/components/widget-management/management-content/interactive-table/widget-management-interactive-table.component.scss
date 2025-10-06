@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+.valtimo-widget-management-interactive-table {
+  &__form,
+  &__form > div {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 
-import {TagType} from 'carbon-components-angular';
-import {WidgetType} from './widget.model';
+  &__external-links-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 56px;
+    gap: 16px;
+    align-items: self-end;
+    padding: 12px 16px 16px 16px;
+  }
 
-enum WidgetManagementTab {
-  VISUAL = 'visual',
-  JSON = 'json',
+  valtimo-key-value {
+    width: 100% !important;
+  }
+
+  .v-multi-input__row {
+    padding: 12px 16px 16px 16px;
+  }
 }
-
-const WidgetTypeTags: {[key: string]: TagType} = {
-  [WidgetType.COLLECTION]: 'teal',
-  [WidgetType.CUSTOM]: 'magenta',
-  [WidgetType.FIELDS]: 'blue',
-  [WidgetType.FORMIO]: 'green',
-  [WidgetType.TABLE]: 'purple',
-  [WidgetType.INTERACTIVE_TABLE]: 'magenta',
-};
-
-export {WidgetManagementTab, WidgetTypeTags};

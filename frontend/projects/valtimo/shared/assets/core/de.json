@@ -854,6 +854,10 @@
       "fields": {"title": "Felder", "description": "Textdaten mit Inhalt und einer Beschriftung"},
       "custom": {"title": "Benutzerdefinierte Komponente", "description": "Für komplexe Inhalte"},
       "formio": {"title": "Form.io", "description": "Ausgefülltes Form.io-Formular"},
+      "interactive-table": {
+        "title": "Interaktive Tabelle",
+        "description": "Erstelle eine interaktive Tabelle"
+      },
       "table": {"title": "Tabelle", "description": "Erstellen Sie eine Tabelle"},
       "collection": {"title": "Kollektion", "description": "Erstellen Sie eine Kollektion"},
       "divider": {"title": "Trennlinie"}
@@ -1909,7 +1913,7 @@
       "deleteContent": "Sind Sie sicher, dass Sie dieses Bild löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
       "noResultsTitle": "Es sind keine konfigurierten Bilder vorhanden",
       "noResultsDescription": "Klicken Sie hier, um ein Bild zu konfigurieren."
-    },    
+    },
     "searchActions": {
       "addActionTitle": "Suchaktion hinzufügen",
       "editActionTitle": "Suchaktion bearbeiten",

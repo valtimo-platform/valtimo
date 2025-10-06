@@ -81,6 +81,11 @@ interface InteractiveTableWidget extends BasicWidget {
   properties: WidgetInteractiveTableContent;
 }
 
+interface InteractiveTableWidget extends BasicWidget {
+  type: WidgetType.INTERACTIVE_TABLE;
+  properties: WidgetInteractiveTableContent;
+}
+
 interface CustomWidget extends BasicWidget {
   type: WidgetType.CUSTOM;
   properties: WidgetCustomContent;
