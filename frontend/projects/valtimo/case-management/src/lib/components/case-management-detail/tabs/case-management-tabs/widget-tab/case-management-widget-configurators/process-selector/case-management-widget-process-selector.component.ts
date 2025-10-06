@@ -20,7 +20,7 @@ import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {CaseManagementParams} from '@valtimo/shared';
-import {ComboBoxModule, InputModule, ListItem} from 'carbon-components-angular';
+import {ComboBoxModule, InputModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   debounceTime,
@@ -38,7 +38,14 @@ import {WidgetWizardService} from '../../../../../../../services';
   styleUrl: './case-management-widget-process-selector.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, TranslateModule, InputModule, ReactiveFormsModule, ComboBoxModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    InputModule,
+    ReactiveFormsModule,
+    ComboBoxModule,
+    LayerModule,
+  ],
 })
 export class CaseManagementWidgetProcessSelectorComponent implements OnInit {
   private readonly _params$ = new BehaviorSubject<CaseManagementParams | null>(null);

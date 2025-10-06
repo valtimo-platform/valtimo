@@ -57,6 +57,7 @@ import {NG_VALUE_ACCESSOR} from '@angular/forms';
 })
 export class CarbonMultiInputComponent implements OnInit, OnDestroy {
   @Input() public addRowText = '';
+  @Input() public addButtonType = 'primary';
   @Input() public addRowTranslationKey = '';
   @Input() public arbitraryAmountTitles!: ArbitraryInputTitles;
   @Input() public set arbitraryValueAmount(value: number) {
