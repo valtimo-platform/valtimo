@@ -31,6 +31,7 @@ import {
   filter,
   Observable,
   of,
+  startWith,
   switchMap,
   tap,
 } from 'rxjs';
@@ -89,11 +90,13 @@ export class CaseWidgetTableComponent extends WidgetProcess {
   private readonly _queryParams$ = new BehaviorSubject<string | null>(null);
 
   public readonly tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
+  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
 
   private readonly _initialWidgetData$: Observable<any[] | {} | null> = combineLatest([
     this.widgetConfiguration$,
     this.tabKey$,
     this._documentId$,
+    this._refresh$,
   ]).pipe(
     switchMap(([widget, tabkey, documentId]) =>
       this.caseWidgetsApiService.getWidgetData(

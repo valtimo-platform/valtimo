@@ -18,7 +18,7 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, catchError, combineLatest, Observable, of, switchMap, tap} from 'rxjs';
+import {BehaviorSubject, catchError, combineLatest, Observable, of, startWith, switchMap, tap} from 'rxjs';
 import {WidgetsService} from '../../widgets.service';
 import {PermissionService} from '@valtimo/access-control';
 import {WidgetProcess} from '../widget-process/widget-process';
@@ -65,11 +65,13 @@ export class CaseWidgetFieldComponent extends WidgetProcess {
 
   public readonly widgetConfiguration$ = new BehaviorSubject<FieldsWidget | null>(null);
   public readonly tabKey$: Observable<string> = this.caseTabService.activeTabKey$;
+  private readonly _refresh$ = this.widgetsService.refreshWidgets$.pipe(startWith(null));
 
   public readonly widgetData$: Observable<any[] | {} | null> = combineLatest([
     this.widgetConfiguration$,
     this.tabKey$,
     this._documentId$,
+    this._refresh$,
   ]).pipe(
     switchMap(([widget, tabkey, documentId]) =>
       this.caseWidgetApiService.getWidgetData(documentId, tabkey, widget.key, undefined)
