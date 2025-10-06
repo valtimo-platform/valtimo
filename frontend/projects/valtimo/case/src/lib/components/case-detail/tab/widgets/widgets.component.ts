@@ -62,8 +62,8 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     this._documentId$,
   ]).pipe(
     filter(([event, documentId]) => event.documentId === documentId),
-    startWith(null),
-    map(([event]) => event)
+    map(([event]) => event),
+    startWith<DocumentUpdatedSseEvent | null>(null)
   );
 
   private _previousWidgetConfiguration: CaseWidgetsRes | null = null;
