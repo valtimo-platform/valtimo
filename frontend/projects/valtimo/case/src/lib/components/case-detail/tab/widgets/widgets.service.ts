@@ -18,6 +18,7 @@ import {EventEmitter, Injectable} from '@angular/core';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {
   BehaviorSubject,
+  Subject,
   combineLatest,
   distinctUntilChanged,
   filter,
@@ -32,7 +33,10 @@ import {
 export class WidgetsService {
   private readonly _documentId$ = new BehaviorSubject<string | null>(null);
   private readonly _activeProcessKey$ = new BehaviorSubject<string | null>(null);
+  private readonly _refreshWidgets$ = new Subject<void>();
   public readonly startProcessEvent = new EventEmitter();
+
+  public readonly refreshWidgets$ = this._refreshWidgets$.asObservable();
 
   public set documentId(value: string) {
     this._documentId$.next(value);
@@ -68,5 +72,9 @@ export class WidgetsService {
 
   public finishProcess(): void {
     this._activeProcessKey$.next(null);
+  }
+
+  public refreshWidgets(): void {
+    this._refreshWidgets$.next();
   }
 }
