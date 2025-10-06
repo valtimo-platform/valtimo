@@ -16,19 +16,29 @@
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
-import {distinctUntilChanged, filter, map, Subject, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  filter,
+  map,
+  Subject,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {CaseHeaderWidgetApiService} from '../../services';
 import {PermissionService} from '@valtimo/access-control';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {WidgetFieldComponent} from '@valtimo/layout';
-import {LayerModule, LoadingModule} from 'carbon-components-angular';
+import {InputModule, LayerModule, LoadingModule} from 'carbon-components-angular';
+import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 
 @Component({
   standalone: true,
   selector: 'valtimo-case-detail-header-widget',
   templateUrl: './case-detail-header-widget.component.html',
   styleUrls: ['./case-detail-header-widget.component.scss'],
-  imports: [CommonModule, WidgetFieldComponent, LoadingModule, LayerModule],
+  imports: [CommonModule, WidgetFieldComponent, LoadingModule, LayerModule, InputModule],
 })
 export class CaseDetailHeaderWidgetComponent {
   private readonly _documentId$ = this.route.params.pipe(
@@ -48,10 +58,26 @@ export class CaseDetailHeaderWidgetComponent {
 
   private readonly _fetchData$ = new Subject<null>();
 
+  private readonly _highContrast$ = new BehaviorSubject<boolean>(false);
   public readonly headerWidget$ = this._documentId$.pipe(
     switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidget(documentId)),
     tap(widget => {
-      if (!!widget) this._fetchData$.next(null);
+      if (!!widget) {
+        this._fetchData$.next(null);
+        this._highContrast$.next(widget.highContrast);
+      }
+    })
+  );
+
+  public readonly theme$ = combineLatest([
+    this.cdsThemeService.currentTheme$,
+    this._highContrast$,
+  ]).pipe(
+    map(([theme, highContrast]) => {
+      const isLight = theme === CurrentCarbonTheme.WHITE || theme === CurrentCarbonTheme.G10;
+      const normalTheme = isLight ? CARBON_THEME.G10 : CARBON_THEME.G90;
+      const invertedTheme = normalTheme === CARBON_THEME.G10 ? CARBON_THEME.G90 : CARBON_THEME.G10;
+      return highContrast ? invertedTheme : normalTheme;
     })
   );
 
@@ -63,6 +89,7 @@ export class CaseDetailHeaderWidgetComponent {
   constructor(
     private readonly caseHeaderWidgetApiService: CaseHeaderWidgetApiService,
     private readonly route: ActivatedRoute,
-    private readonly permissionService: PermissionService
+    private readonly permissionService: PermissionService,
+    private readonly cdsThemeService: CdsThemeService
   ) {}
 }

@@ -21,7 +21,11 @@
       headerWidgetData: headerWidgetData$ | async,
     } as obs"
   >
-    <div *ngIf="obs.headerWidget" class="header-widget-container">
+    <div
+      *ngIf="obs.headerWidget"
+      class="header-widget-container"
+      [attr.data-carbon-theme]="theme$ | async"
+    >
       @if (!obs.headerWidgetData) {
         <div class="header-widget-container__loader"><cds-loading size="sm"></cds-loading></div>
       } @else {
