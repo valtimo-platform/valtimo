@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {
@@ -22,7 +22,9 @@ import {
   distinctUntilChanged,
   filter,
   map,
+  startWith,
   Subject,
+  Subscription,
   switchMap,
   tap,
 } from 'rxjs';
@@ -32,6 +34,8 @@ import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../p
 import {WidgetFieldComponent} from '@valtimo/layout';
 import {InputModule, LayerModule, LoadingModule} from 'carbon-components-angular';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
+import {DocumentUpdatedSseEvent} from '../../models';
+import {SseService} from '@valtimo/sse';
 
 @Component({
   standalone: true,
@@ -40,7 +44,7 @@ import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/compon
   styleUrls: ['./case-detail-header-widget.component.scss'],
   imports: [CommonModule, WidgetFieldComponent, LoadingModule, LayerModule, InputModule],
 })
-export class CaseDetailHeaderWidgetComponent {
+export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
   private readonly _documentId$ = this.route.params.pipe(
     map(params => params?.documentId),
     filter(documentId => !!documentId),
@@ -86,10 +90,30 @@ export class CaseDetailHeaderWidgetComponent {
     switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidgetData(documentId))
   );
 
+  private readonly _documentUpdates$ = combineLatest([
+    this.sseService.getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED'),
+    this._documentId$,
+  ]).pipe(
+    filter(([event, documentId]) => event.documentId === documentId),
+    map(([event]) => event),
+    startWith<DocumentUpdatedSseEvent | null>(null)
+  );
+
+  private readonly _subscriptions = new Subscription();
+
   constructor(
     private readonly caseHeaderWidgetApiService: CaseHeaderWidgetApiService,
     private readonly route: ActivatedRoute,
     private readonly permissionService: PermissionService,
-    private readonly cdsThemeService: CdsThemeService
+    private readonly cdsThemeService: CdsThemeService,
+    private readonly sseService: SseService
   ) {}
+
+  public ngOnInit(): void {
+    this._subscriptions.add(this._documentUpdates$.subscribe(() => this._fetchData$.next(null)));
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
 }
