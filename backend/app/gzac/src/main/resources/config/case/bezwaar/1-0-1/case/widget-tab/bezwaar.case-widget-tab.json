@@ -8,6 +8,13 @@
                 "title": "Partner",
                 "width": 4,
                 "highContrast": true,
+                "displayConditions": [
+                    {
+                        "path": "doc:voornaam",
+                        "operator": "==",
+                        "value": "Peter"
+                    }
+                ],
                 "properties": {
                     "columns": [
                         [

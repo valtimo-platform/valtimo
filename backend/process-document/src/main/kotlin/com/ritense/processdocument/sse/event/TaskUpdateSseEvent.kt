@@ -21,5 +21,5 @@ import com.ritense.valtimo.web.sse.event.BaseSseEvent
 class TaskUpdateSseEvent(
     val taskId: String,
     val documentId: String,
-    val caseDefinitionName: String,
+    val caseDefinitionKey: String,
 ) : BaseSseEvent("TASK_UPDATE")

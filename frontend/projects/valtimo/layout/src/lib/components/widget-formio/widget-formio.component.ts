@@ -14,16 +14,27 @@
  * limitations under the License.
  */
 
-import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, DestroyRef} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
-import {BehaviorSubject, combineLatest, filter, map, Observable, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  Subscription,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {FormService} from '@valtimo/form';
 import {FormioForm} from '@formio/angular';
 import {FormIoModule} from '@valtimo/components';
 import {ButtonModule} from 'carbon-components-angular';
 import {FormioWidgetWidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'valtimo-widget-formio',
@@ -44,8 +55,32 @@ export class WidgetFormioComponent {
   }
 
   @Input() public set widgetUuid(value: string) {
+    this._widgetUuid = value;
+    this._hasSignalledExternalDataReady = false;
     this.widgetLayoutService.setWidgetDataLoaded(value);
     this.widgetLayoutService.setWidgetWithExternalData(value);
+  }
+
+  private readonly _refreshTrigger$ = new BehaviorSubject<void>(undefined);
+
+  private _refreshEmitter: EventEmitter<void> | null = null;
+  private _refreshSubscription: Subscription | null = null;
+  private _widgetUuid: string | null = null;
+  private _hasSignalledExternalDataReady = false;
+
+  @Input()
+  public set refreshForm(value: EventEmitter<void> | null) {
+    if (value === this._refreshEmitter) return;
+
+    this._refreshSubscription?.unsubscribe();
+    this._refreshSubscription = null;
+    this._refreshEmitter = value;
+
+    if (!value) return;
+
+    this._refreshSubscription = value
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this._refreshTrigger$.next());
   }
 
   private readonly _widgetConfigurationSubject$ =
@@ -62,6 +97,7 @@ export class WidgetFormioComponent {
   public readonly prefilledFormDefinition$: Observable<FormioForm> = combineLatest([
     this.widgetConfiguration$,
     this._documentId$,
+    this._refreshTrigger$,
   ]).pipe(
     switchMap(([config, documentId]) =>
       combineLatest([
@@ -73,13 +109,19 @@ export class WidgetFormioComponent {
       ])
     ),
     tap(() => {
-      this.widgetLayoutService.setWidgetWithExternalDataReady(this.widgetUuid);
+      if (!this._widgetUuid) return;
+
+      if (!this._hasSignalledExternalDataReady) {
+        this.widgetLayoutService.setWidgetWithExternalDataReady(this._widgetUuid);
+        this._hasSignalledExternalDataReady = true;
+      }
     }),
     map(([formDef]) => formDef)
   );
 
   constructor(
     private readonly formService: FormService,
-    private readonly widgetLayoutService: WidgetLayoutService
+    private readonly widgetLayoutService: WidgetLayoutService,
+    private readonly destroyRef: DestroyRef
   ) {}
 }
