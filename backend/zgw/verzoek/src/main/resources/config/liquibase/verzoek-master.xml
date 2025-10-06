@@ -24,5 +24,6 @@
     <property name="uuidType" value="uuid" dbms="h2,postgresql"/>
 
     <include file="changelog/20230913-move-object-management-id.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250926-rename-to-case-definition-key.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
