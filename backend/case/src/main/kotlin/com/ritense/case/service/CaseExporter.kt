@@ -112,9 +112,12 @@ class CaseExporter(
             )
         }
 
+        val bom = "\uFEFF"
+        val bytesWithBom = (bom + csvText).toByteArray(UTF_8)
+
         return ResponseEntity.ok()
             .headers(responseHeaders)
-            .body(csvText.toByteArray(UTF_8))
+            .body(bytesWithBom)
     }
 
     private fun searchExportable(
