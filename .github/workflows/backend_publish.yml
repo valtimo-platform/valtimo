@@ -1,16 +1,16 @@
-name: CI/CD frontend
+name: Frontend Reusable Workflow
+
 on:
-  pull_request:
-    branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'cicd/*']
-    paths:
-      - frontend/**
-      - .github/workflows/cicd_frontend.yml
-  push:
-    branches: ['rc/*', 'development/*', 'next-minor', 'next-major', 'release/*', 'feature/*']
-    paths:
-      - frontend/**
-      - .github/workflows/cicd_frontend.yml
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      publish_type:
+        description: 'Type of publishing: snapshot, or release-candidate'
+        required: true
+        type: string
+      project_version:
+        description: "The determined project version"
+        required: false
+        type: string
 
 defaults:
   run:
@@ -72,6 +72,7 @@ jobs:
 
       - name: Determine project version
         id: determine_project_version
+        if: inputs.publish_type == 'snapshot'
         env:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
           BUILD_NUMBER: ${{ github.run_number }}
@@ -146,9 +147,8 @@ jobs:
             npm run libs-lint-all
           fi
 
-  # 'publish' only runs on push events from certain branches
+  # Publishing job that handles both regular and release-candidates publishing
   publish:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs:
       - install_packages
@@ -162,15 +162,17 @@ jobs:
         with:
           name: dist
           path: frontend/dist
-      - name: 'Publish all libs'
+
+      - name: 'Publish all libs to S3'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          PROJECT_VERSION: ${{ needs.build_and_test.outputs.project_version }}
+          PROJECT_VERSION: ${{ inputs.project_version || needs.build_and_test.outputs.project_version }}
         run: |
-          npm run libs-publish-all -- s3 $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $PROJECT_VERSION
+          npm run libs-publish-all -- ${{ inputs.publish_type }} $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $PROJECT_VERSION
 
-      - name: 'Publish to SNS topic'
+      - name: 'Publish to SNS topic for snapshots'
+        if: inputs.publish_type == 'snapshot'
         env:
           AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC: ${{ secrets.AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC }}
           PROJECT_VERSION: ${{ needs.build_and_test.outputs.project_version }}
