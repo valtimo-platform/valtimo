@@ -19,6 +19,7 @@ package com.ritense.document.autoconfigure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.document.config.DocumentSpringContextHelper;
+import com.ritense.document.config.DocumentProperties;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.listener.DocumentRelatedFileSubmittedEventListenerImpl;
 import com.ritense.document.domain.impl.listener.RelatedJsonSchemaDocumentAvailableEventListenerImpl;
@@ -62,6 +63,7 @@ import javax.annotation.Nullable;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ResourceLoader;
@@ -71,6 +73,7 @@ import org.zalando.problem.spring.web.advice.AdviceTrait;
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = "com.ritense.document.repository")
 @EntityScan("com.ritense.document.domain")
+@EnableConfigurationProperties(DocumentProperties.class)
 public class DocumentAutoConfiguration {
 
     @Bean
