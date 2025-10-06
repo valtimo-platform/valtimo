@@ -4,7 +4,7 @@ permissions:
 on:
   workflow_dispatch:
   push:
-    branches: ['next-minor', 'feature/*']
+    branches: ['next-minor', 'feature/*', 'fix/snapshot-publishing-script']
     paths:
       - frontend/**
       - .github/workflows/frontend_publish_snapshot.yml
