@@ -820,7 +820,8 @@
         "content": "Choose widget content",
         "style": "Choose widget style",
         "type": "Choose widget type",
-        "width": "Choose widget width"
+        "width": "Choose widget width",
+        "displayConditions": "Set display conditions"
       }
     },
     "notification": {
@@ -932,6 +933,14 @@
         "titleTooltip": "Title for the property",
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
       }
+    },
+    "displayConditions": {
+      "description": "Configure conditions to control when this widget is shown. If you do not add any conditions, the widget is always displayed.",
+      "conditions": "Conditions (Optional)",
+      "addCondition": "Add condition",
+      "operator": "Operator",
+      "path": "Path",
+      "value": "Value"
     },
     "cancelModal": {
       "title": "Leaving the editor",
@@ -1912,6 +1921,16 @@
     "editTab": "Edit tab",
     "tabTypes": {
       "widgets": "Widgets"
+    }
+  },
+  "condition": {
+    "operator" : {
+      "!=" : "Not equal to",
+      "==" : "Equal to",
+      ">" : "Greater than",
+      ">=" : "Greater than or equal to",
+      "<" : "Less than",
+      "<=" : "Less than or equal to"
     }
   }
 }

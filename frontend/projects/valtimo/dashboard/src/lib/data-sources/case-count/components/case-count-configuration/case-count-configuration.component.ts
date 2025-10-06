@@ -23,7 +23,7 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import {ConfigurationOutput, DataSourceConfigurationComponent, Operator} from '../../../../models';
+import {ConfigurationOutput, DataSourceConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, map, Observable, startWith, Subscription} from 'rxjs';
 import {FormBuilder, Validators} from '@angular/forms';
 import {CaseCountConfiguration} from '../../models';
@@ -36,7 +36,7 @@ import {
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import {WidgetTranslationService} from '../../../../services';
+import {Operator} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -91,7 +91,7 @@ export class CaseCountConfigurationComponent
       map(() =>
         this._OPERATORS.map(operator => ({
           id: operator,
-          content: this.widgetTranslationService.instant(operator, this.dataSourceKey),
+          content: this.translateService.instant('condition.operator.' + operator),
           selected: false,
         }))
       )
@@ -136,8 +136,7 @@ export class CaseCountConfigurationComponent
   constructor(
     private readonly fb: FormBuilder,
     private readonly documentService: DocumentService,
-    private readonly translateService: TranslateService,
-    private readonly widgetTranslationService: WidgetTranslationService
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {

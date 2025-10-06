@@ -106,6 +106,7 @@ class CustomWidgetIntTest @Autowired constructor(
                         width = 2,
                         highContrast = false,
                         actions = null,
+                        displayConditions = emptyList(),
                         properties = CustomWidgetProperties("test-component-key")
                     )
                 )

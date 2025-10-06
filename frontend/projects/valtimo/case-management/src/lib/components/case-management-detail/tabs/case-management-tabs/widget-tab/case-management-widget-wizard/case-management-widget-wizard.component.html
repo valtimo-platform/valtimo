@@ -66,6 +66,11 @@
           (contentValidEvent)="onContentValidEvent($event)"
         ></valtimo-widget-wizard-content-step>
       }
+      @case (WidgetWizardSteps.DISPLAY_CONDITIONS) {
+        <valtimo-widget-wizard-display-conditions-step
+          class="valtimo-widget-wizard-step"
+        ></valtimo-widget-wizard-display-conditions-step>
+      }
       @default {
         <p>{{ 'widgetTabManagement.types.description' | translate }}</p>
 
@@ -101,7 +106,8 @@
       (click)="onNextButtonClick()"
     >
       {{
-        'interface.' + ($currentStep() === WidgetWizardSteps.CONTENT ? 'save' : 'next') | translate
+        'interface.' + ($currentStep() === WidgetWizardSteps.DISPLAY_CONDITIONS ? 'save' : 'next')
+          | translate
       }}
     </button>
   </cds-modal-footer>

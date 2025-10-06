@@ -142,6 +142,7 @@ class FieldsWidgetIntTest @Autowired constructor(
                         width = 1,
                         highContrast = true,
                         actions = null,
+                        displayConditions = emptyList(),
                         properties = FieldsWidgetProperties(
                             columns = listOf(
                                 listOf(
