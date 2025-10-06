@@ -189,19 +189,31 @@ class ZakenApiPlugin(
         @PluginActionProperty description: String? = null,
         @PluginActionProperty plannedEndDate: String? = null,
         @PluginActionProperty finalDeliveryDate: String? = null,
+        @PluginActionProperty explanation: String? = null,
+        @PluginActionProperty communicationChannel: String? = null,
+        @PluginActionProperty paymentIndication: String? = null,
+        @PluginActionProperty caseGeometryType: String? = null,
+        @PluginActionProperty caseGeometryCoordinates: String? = null,
+        @PluginActionProperty mainCase: String? = null
     ) {
         withLoggingContext(
             CATALOGI_API.ZAAKTYPE to zaaktypeUrl.toString()
         ) {
             val documentId = UUID.fromString(execution.businessKey)
+            val caseGeometry = geometryOrNullFrom(caseGeometryType , caseGeometryCoordinates)
 
             createZaak(
-                documentId,
-                rsin,
-                zaaktypeUrl,
-                description,
-                plannedEndDate?.let { LocalDate.parse(it) },
-                finalDeliveryDate?.let { LocalDate.parse(it) },
+                documentId = documentId,
+                rsin = rsin,
+                zaaktypeUrl = zaaktypeUrl,
+                description = description,
+                plannedEndDate = plannedEndDate?.let { LocalDate.parse(it) },
+                finalDeliveryDate = finalDeliveryDate?.let { LocalDate.parse(it) },
+                explanation = explanation,
+                communicationChannel = communicationChannel?.let { URI.create(it) },
+                paymentIndication = paymentIndication?.let { Betalingsindicatie.create(it) },
+                caseGeometry = caseGeometry,
+                mainCase = mainCase?.let { URI.create(it) }
             )
 
             logger.info { "Zaak of zaaktype with URL '$zaaktypeUrl' created for document with id '$documentId'" }
@@ -215,6 +227,11 @@ class ZakenApiPlugin(
         description: String? = null,
         plannedEndDate: LocalDate? = null,
         finalDeliveryDate: LocalDate? = null,
+        explanation: String? = null,
+        communicationChannel: URI? = null,
+        paymentIndication: Betalingsindicatie? = null,
+        caseGeometry: Geometry? = null,
+        mainCase: URI? = null
     ) {
         withLoggingContext(
             CATALOGI_API.ZAAKTYPE to zaaktypeUrl.toString(),
@@ -238,11 +255,16 @@ class ZakenApiPlugin(
                 CreateZaakRequest(
                     bronorganisatie = rsin,
                     zaaktype = zaaktypeUrl,
+                    omschrijving = description,
                     verantwoordelijkeOrganisatie = rsin,
                     startdatum = startdatum,
                     uiterlijkeEinddatumAfdoening = uiterlijkeEinddatumAfdoening,
-                    omschrijving = description,
                     einddatumGepland = plannedEndDate,
+                    toelichting = explanation,
+                    communicatiekanaal = communicationChannel,
+                    betalingsindicatie = paymentIndication,
+                    zaakgeometrie = caseGeometry,
+                    hoofdzaak = mainCase
                 )
             )
 
@@ -284,14 +306,7 @@ class ZakenApiPlugin(
         @PluginActionProperty startDateRetentionPeriod: String? = null
     ) {
         val documentId = UUID.fromString(execution.businessKey)
-        val caseGeometry: Geometry? = if (caseGeometryType != null && caseGeometryCoordinates != null) {
-            Geometry(
-                type = GeometryType.entries.find { it.key.uppercase() == caseGeometryType.uppercase() }!!,
-                coordinates = pluginService.getObjectMapper().readValue(caseGeometryCoordinates)
-            )
-        } else {
-            null
-        }
+        val caseGeometry = geometryOrNullFrom(caseGeometryType , caseGeometryCoordinates)
 
         patchZaak(
             documentId = documentId,
@@ -363,6 +378,19 @@ class ZakenApiPlugin(
             logger.info { "Zaak with URL '${zaak.url}' patched successfully for document with id '$documentId''" }
         }
     }
+
+    private fun geometryOrNullFrom(
+        geometryType: String?,
+        geometryCoordinates: String?
+    ): Geometry? =
+        if (geometryType != null && geometryCoordinates != null) {
+            Geometry(
+                type = GeometryType.entries.find { it.key.equals(geometryType, ignoreCase = true) }!!,
+                coordinates = pluginService.getObjectMapper().readValue(geometryCoordinates)
+            )
+        } else {
+            null
+        }
 
     @PluginAction(
         key = "create-natuurlijk-persoon-zaak-rol",
@@ -1183,10 +1211,12 @@ class ZakenApiPlugin(
 
     companion object {
         private val logger = KotlinLogging.logger {}
+
         const val PLUGIN_KEY = "zakenapi"
         const val URL_PROPERTY = "url"
         const val RESOURCE_ID_PROCESS_VAR = "resourceId"
         const val DOCUMENT_URL_PROCESS_VAR = "documentUrl"
+
         fun findConfigurationByUrl(url: URI) = { properties: JsonNode ->
             url.toString().startsWith(properties[URL_PROPERTY].textValue())
         }
