@@ -22,6 +22,8 @@ import com.ritense.document.domain.event.CaseUnassignedEvent
 import com.ritense.document.event.DocumentAssigned
 import com.ritense.document.event.DocumentCreated
 import com.ritense.document.event.DocumentUnassigned
+import com.ritense.document.event.DocumentUpdated
+import com.ritense.document.event.DocumentUpdatedSseEvent
 import com.ritense.inbox.ValtimoEvent
 import com.ritense.valtimo.web.sse.domain.SseEventMapper
 import com.ritense.valtimo.web.sse.event.BaseSseEvent
@@ -33,6 +35,12 @@ class DocumentSseEventMapper : SseEventMapper {
             DocumentCreated.TYPE -> CaseCreatedEvent()
             DocumentAssigned.TYPE -> CaseAssignedEvent()
             DocumentUnassigned.TYPE -> CaseUnassignedEvent()
+            DocumentUpdated.TYPE -> event.let {
+                DocumentUpdatedSseEvent(
+                    it.resultId!!
+                )
+            }
+
             else -> null
         }
     }

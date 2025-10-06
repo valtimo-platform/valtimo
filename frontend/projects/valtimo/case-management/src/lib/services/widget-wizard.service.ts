@@ -22,6 +22,7 @@ import {
   CaseWidgetWidth,
   WidgetContentProperties,
 } from '@valtimo/case';
+import {Condition} from '@valtimo/shared';
 import {WidgetStyle, WidgetTypeSelection} from '../models';
 
 @Injectable({
@@ -36,6 +37,8 @@ export class WidgetWizardService {
 
   public readonly $widgetContent: WritableSignal<WidgetContentProperties | null> = signal(null);
 
+  public readonly $widgetDisplayConditions: WritableSignal<Array<Condition> | null> = signal(null);
+
   public readonly $widgetTitle: WritableSignal<string | null> = signal(null);
 
   public readonly $widgetKey: WritableSignal<string | null> = signal(null);
@@ -43,7 +46,7 @@ export class WidgetWizardService {
   public readonly $widgetActions: WritableSignal<CaseWidgetAction[] | undefined> =
     signal(undefined);
 
-  public readonly $widgetsConfig: Signal<BasicCaseWidget> = computed(() => ({
+  public readonly widgetsConfig: Signal<BasicCaseWidget> = computed(() => ({
     key: this.$widgetKey() ?? '',
     title: this.$widgetTitle() ?? '',
     type: this.$selectedWidget()?.type ?? CaseWidgetType.FIELDS,
@@ -51,6 +54,7 @@ export class WidgetWizardService {
     highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
     properties: this.$widgetContent() ?? ({} as any),
     actions: this.$widgetActions() ?? [],
+    displayConditions: this.$widgetDisplayConditions() ?? [],
   }));
 
   public readonly $editMode: WritableSignal<boolean> = signal(false);
@@ -60,6 +64,7 @@ export class WidgetWizardService {
     this.$widgetWidth.set(null);
     this.$widgetStyle.set(null);
     this.$widgetContent.set(null);
+    this.$widgetDisplayConditions.set(null);
     this.$widgetTitle.set(null);
     this.$widgetKey.set(null);
     this.$widgetActions.set(undefined);

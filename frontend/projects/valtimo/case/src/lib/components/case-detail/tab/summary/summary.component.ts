@@ -21,10 +21,24 @@ import {FormService} from '@valtimo/form';
 import {FormioOptionsImpl, ValtimoFormioOptions} from '@valtimo/components';
 import moment from 'moment';
 import {FormioForm} from '@formio/angular';
-import {BehaviorSubject, combineLatest, map, of, Subscription, take, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  forkJoin,
+  map,
+  of,
+  startWith,
+  Subscription,
+  switchMap,
+  take,
+  tap,
+} from 'rxjs';
 import {NotificationContent} from 'carbon-components-angular';
 import {TranslateService} from '@ngx-translate/core';
 import {catchError} from 'rxjs/operators';
+import {DocumentUpdatedSseEvent} from '../../../../models';
+import {SseService} from '@valtimo/sse';
 
 moment.locale(localStorage.getItem('langKey') || '');
 moment.defaultFormat = 'DD MMM YYYY HH:mm';
@@ -56,7 +70,8 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
     private readonly documentService: DocumentService,
     private readonly route: ActivatedRoute,
     private readonly formService: FormService,
-    private readonly translateService: TranslateService
+    private readonly translateService: TranslateService,
+    private readonly sseService: SseService
   ) {
     this.snapshot = this.route.snapshot.paramMap;
     this.caseDefinitionKey = this.snapshot.get('caseDefinitionKey') || '';
@@ -76,14 +91,25 @@ export class CaseDetailTabSummaryComponent implements OnInit, OnDestroy {
 
   public init(): void {
     this._subscriptions.add(
-      combineLatest([
-        this.documentService.getDocument(this.documentId).pipe(catchError(() => of(null))),
-        this.formService
-          .getFormDefinitionByNamePreFilled(`${this.caseDefinitionKey}.summary`, this.documentId)
-          .pipe(catchError(() => of(null))),
-      ])
+      this.sseService
+        .getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED')
         .pipe(
-          tap(([document, formDefinition]) => {
+          startWith(null),
+          filter(event => event === null || event.documentId === this.documentId),
+          switchMap(() =>
+            forkJoin({
+              document: this.documentService
+                .getDocument(this.documentId)
+                .pipe(catchError(() => of(null))),
+              formDefinition: this.formService
+                .getFormDefinitionByNamePreFilled(
+                  `${this.caseDefinitionKey}.summary`,
+                  this.documentId
+                )
+                .pipe(catchError(() => of(null))),
+            })
+          ),
+          tap(({document, formDefinition}) => {
             this.document$.next(document);
             this.formDefinition$.next(formDefinition);
 
