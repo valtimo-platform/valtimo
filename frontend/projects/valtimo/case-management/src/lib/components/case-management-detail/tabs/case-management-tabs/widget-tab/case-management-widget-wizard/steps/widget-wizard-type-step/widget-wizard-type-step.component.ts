@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, ViewEncapsulation} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {AVAILABLE_WIDGETS, WidgetTypeSelection} from '../../../../../../../../models';
 import {TilesModule} from 'carbon-components-angular';
+import {AVAILABLE_WIDGETS, WidgetTypeSelection} from '../../../../../../../../models';
 import {WidgetWizardService} from '../../../../../../../../services';
 
 @Component({

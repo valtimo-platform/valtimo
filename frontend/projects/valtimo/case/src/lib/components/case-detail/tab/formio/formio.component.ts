@@ -18,9 +18,20 @@ import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {CaseTabService} from '../../../../services';
 import {ActivatedRoute} from '@angular/router';
 import {FormService} from '@valtimo/form';
-import {BehaviorSubject, combineLatest, Observable, of, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {FormioForm} from '@formio/angular';
 import {catchError} from 'rxjs/operators';
+import {DocumentUpdatedSseEvent} from '../../../../models';
+import {SseService} from '@valtimo/sse';
 
 @Component({
   standalone: false,
@@ -36,7 +47,11 @@ export class CaseDetailTabFormioComponent {
   public readonly prefilledForm$: Observable<FormioForm | null> = combineLatest([
     this.tabService.tabs$,
     this.route.params,
+    this.sseService
+      .getSseEventObservable<DocumentUpdatedSseEvent>('DOCUMENT_UPDATED')
+      .pipe(startWith(null)),
   ]).pipe(
+    filter(([_, params, event]) => event === null || event.documentId === params?.documentId),
     switchMap(([tabs, params]) => {
       const currentTabName = params?.tab;
       const documentId = params?.documentId;
@@ -61,6 +76,7 @@ export class CaseDetailTabFormioComponent {
   constructor(
     private readonly tabService: CaseTabService,
     private readonly route: ActivatedRoute,
-    private readonly formService: FormService
+    private readonly formService: FormService,
+    private readonly sseService: SseService
   ) {}
 }
