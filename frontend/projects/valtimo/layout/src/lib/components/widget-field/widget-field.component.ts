@@ -67,6 +67,8 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
     this.isEmptyWidgetData$.next(this.checkEmptyWidgetData(value));
   }
 
+  @Input() public compact = false;
+
   public readonly renderVertically = signal(0);
   public readonly widgetConfiguration$ = new BehaviorSubject<FieldsWidget | null>(null);
   public readonly widgetData$ = new BehaviorSubject<object | null>(null);
@@ -101,7 +103,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
                     isRawValue: this.viewContentService.isRawValue({
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
-                    })
+                    }),
                   },
                 ]
               : []),
