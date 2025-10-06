@@ -1,0 +1,14 @@
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+fieldset {
+  display: flex;
+  gap: 16px;
+}
+
+::ng-deep label {
+  width: 100%;
+}

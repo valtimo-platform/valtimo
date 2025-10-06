@@ -1,0 +1,90 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<form [formGroup]="propertiesFormGroup">
+  @for (propertyField of $fields(); track propertyField.key) {
+    @switch (true) {
+      @case (propertyField.type === 'text' ||
+      propertyField.type === 'url' ||
+      propertyField.type === 'integer') {
+        <cds-label>
+          {{ propertyField.title }}
+          <input
+            [formControlName]="propertyField.key"
+            cdsText
+            cdsLayer
+            [placeholder]="propertyField.title"
+            [attr.modal-primary-focus]="true"
+          />
+        </cds-label>
+      }
+      @case (propertyField.type === 'dropdown') {
+        @if (propertyField?.dropdownList) {
+          <v-select
+            [invalid]="getControlInvalid(propertyField.key)"
+            [formControlName]="propertyField.key"
+            [items]="$selectItems()[propertyField.key]"
+            [title]="propertyField.title"
+            [appendInline]="false"
+            [dropUp]="false"
+          ></v-select>
+        }
+      }
+      @case (propertyField.type === 'keyValueList') {
+        <div [formArrayName]="propertyField.key">
+          @for (keyValueControl of getFa(propertyField.key)?.controls; track keyValueControl) {
+            <cds-text-label>
+              {{ propertyField.title }}
+
+              <fieldset [formGroupName]="$index">
+                <input
+                  formControlName="key"
+                  cdsText
+                  cdsLayer
+                  [placeholder]="'interface.key' | translate"
+                  [attr.modal-primary-focus]="true"
+                />
+                <input
+                  formControlName="value"
+                  cdsText
+                  cdsLayer
+                  [placeholder]="'interface.value' | translate"
+                  [attr.modal-primary-focus]="true"
+                />
+                <button
+                  cdsButton="danger--ghost"
+                  [disabled]="$count === 1"
+                  [iconOnly]="true"
+                  (click)="onDeleteRowClick(propertyField.key, $index)"
+                >
+                  <svg cdsIcon="trash-can" size="16"></svg>
+                </button>
+              </fieldset>
+            </cds-text-label>
+          }
+
+          <button
+            cdsButton="primary"
+            (click)="onAddKeyValue(propertyField.key, propertyField.required)"
+          >
+            Add Key Value
+            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+          </button>
+        </div>
+      }
+    }
+  }
+</form>

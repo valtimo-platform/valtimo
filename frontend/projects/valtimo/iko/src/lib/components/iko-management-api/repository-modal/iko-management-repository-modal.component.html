@@ -1,0 +1,58 @@
+<cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>Add view</h3>
+  </cds-modal-header>
+
+  <form cdsModalContent [cdsLayer]="1" [formGroup]="formGroup" class="iko-api-form">
+    <cds-label [invalid]="getControlInvalid('title')">
+      {{ 'ikoManagement.titleTitle' | translate }}
+
+      <input
+        [invalid]="getControlInvalid('title')"
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'ikoManagement.titlePlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    <cds-label [invalid]="getControlInvalid('key')">
+      {{ 'ikoManagement.keyTitle' | translate }}
+
+      <input
+        [invalid]="getControlInvalid('key')"
+        formControlName="key"
+        cdsText
+        placeholder="{{ 'ikoManagement.keyPlaceholder' | translate }}"
+      />
+    </cds-label>
+
+    @if (enableIkoType) {
+      <v-select
+        [invalid]="getControlInvalid('type')"
+        formControlName="type"
+        [disabled]="!enableIkoType"
+        [items]="ikoRepositoryTypeSelectItems$ | async"
+        [title]="'ikoManagement.typeTitle' | translate"
+        [appendInline]="false"
+        [dropUp]="false"
+      ></v-select>
+    }
+
+    <valtimo-iko-management-properties
+      [propertiesFormGroup]="properties"
+      [fields]="propertyFields$ | async"
+      [prefillData]="$prefillData()?.properties"
+    />
+  </form>
+
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>
