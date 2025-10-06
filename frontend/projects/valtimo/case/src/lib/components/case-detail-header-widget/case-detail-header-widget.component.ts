@@ -19,10 +19,7 @@ import {ActivatedRoute} from '@angular/router';
 import {distinctUntilChanged, filter, map, Subject, switchMap, tap} from 'rxjs';
 import {CaseHeaderWidgetApiService} from '../../services';
 import {PermissionService} from '@valtimo/access-control';
-import {
-  CAN_VIEW_CASE_HEADER_WIDGET_PERMISSION,
-  CASE_DETAIL_PERMISSION_RESOURCE,
-} from '../../permissions';
+import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {WidgetFieldComponent} from '@valtimo/layout';
 import {LayerModule, LoadingModule} from 'carbon-components-angular';
 
@@ -42,8 +39,8 @@ export class CaseDetailHeaderWidgetComponent {
 
   public readonly canViewCaseHeaderWidget$ = this._documentId$.pipe(
     switchMap(documentId =>
-      this.permissionService.requestPermission(CAN_VIEW_CASE_HEADER_WIDGET_PERMISSION, {
-        resource: CASE_DETAIL_PERMISSION_RESOURCE.caseHeaderWidget,
+      this.permissionService.requestPermission(CAN_VIEW_CASE_PERMISSION, {
+        resource: CASE_DETAIL_PERMISSION_RESOURCE.jsonSchemaDocument,
         identifier: documentId,
       })
     )
