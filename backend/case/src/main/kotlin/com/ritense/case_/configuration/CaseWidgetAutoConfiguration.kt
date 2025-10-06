@@ -23,7 +23,6 @@ import com.ritense.case.service.CaseTabService
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.listener.CaseTabCaseEventListener
 import com.ritense.case_.repository.CaseHeaderWidgetRepository
-import com.ritense.case_.repository.CaseHeaderWidgetSpecificationFactory
 import com.ritense.case_.repository.CaseWidgetTabRepository
 import com.ritense.case_.repository.CaseWidgetTabWidgetSpecificationFactory
 import com.ritense.case_.rest.CaseHeaderWidgetManagementResource
@@ -98,15 +97,6 @@ class CaseWidgetAutoConfiguration {
     fun caseWidgetTabWidgetSpecificationFactory(
         queryDialectHelper: QueryDialectHelper
     ) = CaseWidgetTabWidgetSpecificationFactory(queryDialectHelper)
-
-    @ConditionalOnMissingBean(CaseHeaderWidgetSpecificationFactory::class)
-    @Bean
-    fun caseHeaderWidgetSpecificationFactory(
-        queryDialectHelper: QueryDialectHelper
-    ): CaseHeaderWidgetSpecificationFactory =
-        CaseHeaderWidgetSpecificationFactory(
-            queryDialectHelper
-        )
 
     @Bean
     @ConditionalOnMissingBean(CaseWidgetTabExporter::class)
