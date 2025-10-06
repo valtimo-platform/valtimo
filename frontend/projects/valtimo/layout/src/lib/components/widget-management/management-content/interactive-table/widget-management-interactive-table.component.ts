@@ -70,9 +70,9 @@ export class WidgetManagementInteractiveTableComponent
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public formGroup = this.fb.group({
-    canStartInternalCase: this.fb.control<boolean>(
+    canStartCase: this.fb.control<boolean>(
       (this.widgetWizardService.$widgetContent() as WidgetInteractiveTableContent)
-        ?.canStartInternalCase ?? false
+        ?.canStartCase ?? false
     ),
     actions: this.fb.control<MultiInputValues>(
       (this.widgetWizardService.$widgetActions()?.map((action: WidgetAction) => ({
@@ -136,14 +136,14 @@ export class WidgetManagementInteractiveTableComponent
   private openDetailsSubscription(): void {
     this._subscriptions.add(
       this.formGroup.valueChanges.pipe(debounceTime(1000)).subscribe(() => {
-        const {canStartInternalCase, rowClickAction} = this.formGroup.getRawValue();
+        const {canStartCase, rowClickAction} = this.formGroup.getRawValue();
 
         this.widgetWizardService.$widgetContent.update((content: WidgetContentProperties | null) =>
           !content
             ? null
             : ({
                 ...content,
-                canStartInternalCase,
+                canStartCase,
                 rowClickAction,
               } as WidgetInteractiveTableContent)
         );

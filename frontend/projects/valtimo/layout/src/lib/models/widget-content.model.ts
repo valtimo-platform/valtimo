@@ -65,7 +65,7 @@ interface WidgetTableContent {
 }
 
 interface WidgetInteractiveTableContent extends Omit<WidgetTableContent, 'firstColumnAsTitle'> {
-  canStartInternalCase: boolean;
+  canStartCase: boolean;
   rowClickAction: WidgetAction;
 }
 

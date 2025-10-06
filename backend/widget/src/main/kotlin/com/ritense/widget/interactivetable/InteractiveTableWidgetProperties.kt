@@ -31,6 +31,7 @@ data class InteractiveTableWidgetProperties(
     @field:NotEmpty val columns: List<@Valid Column>,
     val firstColumnAsTitle: Boolean = false,
     val rowClickAction: WidgetAction? = null,
+    val canStartCase: Boolean? = false,
 ) {
     @JsonInclude(Include.NON_NULL)
     data class Column(

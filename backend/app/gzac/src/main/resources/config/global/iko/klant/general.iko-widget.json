@@ -132,10 +132,6 @@
             "highContrast": false,
             "actions": [
                 {
-                    "name": "Create new Bezwaar",
-                    "caseDefinitionKey": "bezwaar"
-                },
-                {
                     "name": "Create new Verzoek",
                     "navigateTo": "http://localhost:8003/leningaanvragen/startpagina"
                 }
@@ -145,6 +141,7 @@
                 "rowClickAction": {
                     "navigateTo": "${$.kenmerken[?(@.kenmerk =~ /^originUrl[0-9]*$/)].bron}"
                 },
+                "canStartCase": true,
                 "defaultPageSize": 4,
                 "columns": [
                     {
