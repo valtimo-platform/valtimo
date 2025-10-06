@@ -1,0 +1,45 @@
+<cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()">
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>Add view</h3>
+  </cds-modal-header>
+
+  <form [formGroup]="formGroup" cdsModalContent>
+    <cds-label>
+      {{ 'interface.title' | translate }}
+
+      <input
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'interface.title' | translate }}"
+        [attr.modal-primary-focus]="true"
+      />
+    </cds-label>
+
+    <cds-label>
+      {{ 'interface.key' | translate }}
+
+      <input
+        formControlName="key"
+        cdsText
+        placeholder="{{ 'interface.key' | translate }}"
+        [attr.modal-primary-focus]="true"
+      />
+    </cds-label>
+
+    <valtimo-iko-management-properties
+      [propertiesFormGroup]="properties"
+      [fields]="propertyFields$ | async"
+      [prefillData]="$prefillData()?.properties"
+    />
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="onCancel()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>
