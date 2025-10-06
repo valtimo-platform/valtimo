@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,22 @@
 package com.ritense.zakenapi
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.node.TextNode
 import com.ritense.catalogiapi.CatalogiApiPlugin
-import com.ritense.document.service.DocumentService
 import com.ritense.logging.withLoggingContext
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginAction
 import com.ritense.plugin.annotation.PluginActionProperty
 import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processlink.domain.ActivityTypeWithEventName.SERVICE_TASK_START
 import com.ritense.processlink.domain.ActivityTypeWithEventName.USER_TASK_CREATE
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.validation.Url
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.LinkDocumentRequest
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.domain.AardRelatie
@@ -40,7 +42,6 @@ import com.ritense.zakenapi.domain.CreateZaakResultaatRequest
 import com.ritense.zakenapi.domain.CreateZaakStatusRequest
 import com.ritense.zakenapi.domain.CreateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.Geometry
-import com.ritense.zakenapi.domain.GeometryType
 import com.ritense.zakenapi.domain.Opschorting
 import com.ritense.zakenapi.domain.PatchZaakRequest
 import com.ritense.zakenapi.domain.RelevanteZaak
@@ -51,7 +52,6 @@ import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
 import com.ritense.zakenapi.domain.ZaakObject
-import com.ritense.zakenapi.domain.ZaakObjectRequest
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
 import com.ritense.zakenapi.domain.ZaakStatus
@@ -64,6 +64,8 @@ import com.ritense.zakenapi.domain.rol.RolNietNatuurlijkPersoon
 import com.ritense.zakenapi.domain.rol.RolOrganisatorischeEenheid
 import com.ritense.zakenapi.domain.rol.RolTypeGeneriekeBeschrijving
 import com.ritense.zakenapi.domain.rol.RolVestiging
+import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
+import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
 import com.ritense.zgw.LoggingConstants
@@ -93,7 +95,9 @@ class ZakenApiPlugin(
     private val zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
     private val pluginService: PluginService,
     private val zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
-    private val platformTransactionManager: PlatformTransactionManager
+    private val platformTransactionManager: PlatformTransactionManager,
+    private val valueResolverService: ValueResolverService,
+    private val objectMapper: ObjectMapper,
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -959,28 +963,111 @@ class ZakenApiPlugin(
         }
     }
 
+    @PluginAction(
+        key = "create-zaak-object",
+        title = "Create Zaak Object",
+        description = "This creates a Zaak Object for a Zaak.",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun createZaakObject(
+        execution: DelegateExecution?,
+        @PluginActionProperty zaakObjectRequest: ZaakObjectRequest
+    ) {
+        withLoggingContext(
+            LoggingConstants.ZAKEN_API.ZAAK to zaakObjectRequest.zaakUrl.toString(),
+            LoggingConstants.ZAKEN_API.OBJECT to zaakObjectRequest.objectUrl.toString()
+        ) {
+            val resolvedZaakObjectRequest: ZaakObjectRequest = if (execution != null) {
+                resolveProperties(zaakObjectRequest, execution)
+            } else {
+                zaakObjectRequest
+            }
+
+            if (execution != null && resolvedZaakObjectRequest.zaakUrl == null) {
+                val documentId = UUID.fromString(execution.businessKey)
+                val zaakInstanceLink = zaakInstanceLinkRepository.findByDocumentId(documentId)
+
+                if (zaakInstanceLink != null) {
+                    resolvedZaakObjectRequest.zaakUrl = zaakInstanceLink.zaakInstanceUrl
+                }
+            }
+
+            logger.debug { "Creating zaakobject of type '${resolvedZaakObjectRequest.objectType.value}' with Zaak '${resolvedZaakObjectRequest.zaakUrl}' and Object '${resolvedZaakObjectRequest.objectUrl}'" }
+
+            client.createZaakObject(authenticationPluginConfiguration, url, resolvedZaakObjectRequest)
+
+            logger.info { "Zaakobject with type '${resolvedZaakObjectRequest.objectType.value}', Zaak '${resolvedZaakObjectRequest.zaakUrl}' and Object '${resolvedZaakObjectRequest.objectUrl}' created" }
+        }
+    }
+
+    private fun resolveProperties(zaakObjectRequest: ZaakObjectRequest, execution: DelegateExecution): ZaakObjectRequest {
+        // Convert object to JsonNode
+        val properties = objectMapper.valueToTree<JsonNode>(zaakObjectRequest)
+
+        // Recursively go over all text values and replace them with the value from value resolvers (if applicable)
+        resolveProperties(properties, execution)
+
+        // Convert back to object
+        return objectMapper.convertValue(properties, ZaakObjectRequest::class.java)
+    }
+
+    private fun resolveProperties(node: JsonNode, execution: DelegateExecution) {
+        when (node) {
+            is ObjectNode -> {
+                val fields = node.fieldNames()
+                while (fields.hasNext()) {
+                    val field = fields.next()
+                    val child = node[field]
+                    when {
+                        child.isTextual -> node.replace(field, resolveValueToNode(child, execution))
+                        else -> resolveProperties(child, execution)
+                    }
+                }
+            }
+            is ArrayNode -> {
+                for (i in 0 until node.size()) {
+                    val child = node[i]
+                    when {
+                        child.isTextual -> node.set(i, resolveValueToNode(child, execution))
+                        else -> resolveProperties(child, execution)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun resolveValueToNode(
+        child: JsonNode,
+        execution: DelegateExecution
+    ): JsonNode {
+        val resolvedValues = valueResolverService.resolveValues(
+            execution.processInstanceId,
+            execution,
+            setOf(child.asText())
+        )
+        val resolvedValue: JsonNode = if (resolvedValues[child.textValue()] != null) {
+            TextNode(resolvedValues[child.textValue()].toString())
+        } else {
+            child
+        }
+        return resolvedValue
+    }
+
+    @Deprecated("Use createZaakObject(ZaakObjectRequest) instead")
     fun createZaakObject(
         zaakUrl: URI,
         objectUrl: URI,
         objectTypeOverige: String,
         documentId: UUID
     ) {
-        withLoggingContext(
-            LoggingConstants.ZAKEN_API.ZAAK to zaakUrl.toString(),
-            LoggingConstants.ZAKEN_API.OBJECT to objectUrl.toString()
-        ) {
-            logger.debug { "Creating zaakobject with Zaak '$zaakUrl' and Object '$objectUrl' for document with id '${documentId}'" }
-            val request = ZaakObjectRequest(
+        createZaakObject(
+            null,
+            ZaakObjectOverigeRequest(
                 zaakUrl = zaakUrl,
                 objectUrl = objectUrl,
-                objectType = "overige",
                 objectTypeOverige = objectTypeOverige
             )
-
-            client.createZaakObject(authenticationPluginConfiguration, url, request)
-
-            logger.info { "Zaakobject with Zaak '$zaakUrl' and Object '$objectUrl' created for zaak with URL '$zaakUrl' and document with id '${documentId}'" }
-        }
+        )
     }
 
     fun getZaakInformatieObjecten(zaakUrl: URI): List<ZaakInformatieObject> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 
 package com.ritense.zakenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
@@ -32,6 +34,8 @@ class ZakenApiPluginFactory(
     private val zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
     private val zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
     private val platformTransactionManager: PlatformTransactionManager,
+    private val valueResolverService: ValueResolverService,
+    private val objectMapper: ObjectMapper,
 ) : PluginFactory<ZakenApiPlugin>(pluginService) {
 
     override fun create(): ZakenApiPlugin {
@@ -43,6 +47,8 @@ class ZakenApiPluginFactory(
             pluginService,
             zaakHersteltermijnRepository,
             platformTransactionManager,
+            valueResolverService,
+            objectMapper
         )
     }
 }

@@ -16,9 +16,12 @@
 
 package com.ritense.zakenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.document.service.DocumentService
 import com.ritense.plugin.service.PluginService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZakenApiPlugin.Companion.DOCUMENT_URL_PROCESS_VAR
 import com.ritense.zakenapi.ZakenApiPlugin.Companion.RESOURCE_ID_PROCESS_VAR
 import com.ritense.zakenapi.client.LinkDocumentRequest
@@ -36,7 +39,7 @@ import com.ritense.zakenapi.domain.UpdateZaakeigenschapRequest
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakObject
-import com.ritense.zakenapi.domain.ZaakObjectRequest
+import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakeigenschapResponse
 import com.ritense.zakenapi.domain.ZaakopschortingRequest
@@ -693,6 +696,10 @@ internal class ZakenApiPluginTest {
         val zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock()
         val executionMock: DelegateExecution = mock()
         val authenticationMock: ZakenApiAuthentication = mock()
+        val pluginService: PluginService = mock()
+
+        whenever(pluginService.getObjectMapper())
+            .thenReturn(MapperSingleton.get())
 
         val documentId = UUID.fromString("dff80fb1-e24e-4287-b168-7bb199be5d58")
         val zaakId = "f18146df-4b26-4a32-8e52-122cfa4475bd"
@@ -740,7 +747,7 @@ internal class ZakenApiPluginTest {
             zakenApiClient = zakenApiClient,
             zaakInstanceLinkRepository = zaakInstanceLinkRepository,
             authenticationMock = authenticationMock,
-            pluginService = pluginServiceMock()
+            pluginService = pluginService
         )
 
         plugin.patchZaak(
@@ -1262,7 +1269,9 @@ internal class ZakenApiPluginTest {
         pluginService: PluginService = mock(),
         zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock(),
         platformTransactionManager: PlatformTransactionManager = mock(),
-        authenticationMock: ZakenApiAuthentication = mock()
+        authenticationMock: ZakenApiAuthentication = mock(),
+        valueResolverService: ValueResolverService = mock(),
+        objectMapper: ObjectMapper = mock()
     ): ZakenApiPlugin {
         return ZakenApiPlugin(
             zakenApiClient,
@@ -1271,7 +1280,9 @@ internal class ZakenApiPluginTest {
             zaakInstanceLinkRepository,
             pluginService,
             zaakHersteltermijnRepository,
-            platformTransactionManager
+            platformTransactionManager,
+            valueResolverService,
+            objectMapper
         ).apply {
             this.url = url
             this.authenticationPluginConfiguration = authenticationMock
