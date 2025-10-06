@@ -130,6 +130,7 @@
             "title": "Lopende zaken",
             "width": 4,
             "highContrast": false,
+            "canStartCase": true,
             "actions": [
                 {
                     "name": "Create new Verzoek",
