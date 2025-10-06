@@ -21,6 +21,7 @@ import com.ritense.widget.domain.WidgetAction
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.form.validation.FormDefinitionExistsValidator
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.conditions.Condition
 import jakarta.validation.Valid
 
 @JsonTypeName("formio")
@@ -30,6 +31,7 @@ data class FormIoCaseWidgetDto(
     override val width: Int,
     override val highContrast: Boolean,
     override val actions: List<WidgetAction>? = emptyList(),
+    override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: FormIoWidgetProperties
 ) : CaseWidgetTabWidgetDto {
     override fun validate(caseDefinitionId: CaseDefinitionId) {
