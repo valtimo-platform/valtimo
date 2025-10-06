@@ -59,34 +59,47 @@ switch (destinationArg) {
     exit(1);
 }
 
-const distDir = './dist/valtimo';
-fs.readdirSync(distDir).forEach(dir => {
-  let cwd = process.cwd();
-  process.chdir(path.resolve(`${distDir}/${dir}`));
-  if (destinationArg === 'ritense-nexus' || destinationArg === 'npmjs') {
+const distDir = path.resolve('./dist/valtimo');
+
+if (!fs.existsSync(distDir)) {
+  console.error(`Distribution directory not found: ${distDir}`);
+  process.exit(1);
+}
+
+const packageDirs = fs
+  .readdirSync(distDir)
+  .filter(entry => fs.statSync(path.join(distDir, entry)).isDirectory());
+
+if (!packageDirs.length) {
+  console.error(`No libraries found to publish in ${distDir}.`);
+  process.exit(1);
+}
+
+packageDirs.forEach(dir => {
+  const packagePath = path.join(distDir, dir);
+  if (destinationArg === 'npmjs') {
     fs.writeFileSync(
-      '.npmrc',
+      path.join(packagePath, '.npmrc'),
       `@valtimo:registry=https://${destinationRegistry}\n` +
         `//${destinationRegistry}:_authToken=${accessKeyIdOrNpmToken}\n`
     );
-
-    exec.execSync('npm publish' + accessModifier);
+    exec.execSync('npm publish' + accessModifier, {cwd: packagePath});
   }
   if (destinationArg.startsWith('s3')) {
-    let envCopy = {};
-    for (e in process.env) envCopy[e] = process.env[e];
-    envCopy.AWS_ACCESS_KEY_ID = accessKeyIdOrNpmToken;
-    envCopy.AWS_SECRET_ACCESS_KEY = secretAccessKey;
-    envCopy.AWS_DEFAULT_REGION = 'eu-central-1';
-
-    exec.execSync('npm pack');
+    exec.execSync('npm pack', {cwd: packagePath});
     exec.execSync(
       `aws s3 cp --recursive --exclude \"*\" --include \"*.tgz\" . s3://${bucketName}/snapshots/${packageVersion}/`,
-      {env: envCopy}
+      {
+        env: {
+          ...process.env,
+          AWS_ACCESS_KEY_ID: accessKeyIdOrNpmToken,
+          AWS_SECRET_ACCESS_KEY: secretAccessKey,
+          AWS_DEFAULT_REGION: 'eu-central-1',
+        },
+        cwd: packagePath,
+      }
     );
   }
-
-  process.chdir(cwd);
 });
 
 console.log('Published all libraries');
