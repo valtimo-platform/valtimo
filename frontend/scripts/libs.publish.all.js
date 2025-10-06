@@ -85,7 +85,7 @@ packageDirs.forEach(dir => {
     );
     exec.execSync('npm publish' + accessModifier, {cwd: packagePath});
   }
-  if (destinationArg.startsWith('s3')) {
+  if (destinationRegistry === "s3") {
     exec.execSync('npm pack', {cwd: packagePath});
     exec.execSync(
       `aws s3 cp --recursive --exclude \"*\" --include \"*.tgz\" . s3://${bucketName}/snapshots/${packageVersion}/`,
