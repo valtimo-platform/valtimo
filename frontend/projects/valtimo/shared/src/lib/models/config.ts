@@ -90,6 +90,7 @@ interface ValtimoConfigFeatureToggles {
   enableFormFlowBreadcrumbs?: boolean;
   enablePbacDocumentenApiDocuments?: boolean;
   enableSuppressDocumentError?: boolean;
+  enableIkoType?: boolean;
 }
 
 interface ValtimoConfig {
