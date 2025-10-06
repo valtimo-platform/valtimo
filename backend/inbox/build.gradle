@@ -15,7 +15,7 @@
  */
 
 dockerCompose {
-    projectName = "outbox"
+    projectName = "inbox"
 
     integrationTestingPostgresql {
         isRequiredBy(project.tasks.integrationTestingPostgresql)

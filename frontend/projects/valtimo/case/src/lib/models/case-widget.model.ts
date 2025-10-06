@@ -23,6 +23,7 @@ import {
   WidgetTableContent,
 } from './case-widget-content.model';
 import {CaseWidgetDisplayType} from './case-widget-display.model';
+import {Condition} from '@valtimo/shared';
 
 enum CaseWidgetType {
   FIELDS = 'fields',
@@ -48,6 +49,7 @@ interface BasicCaseWidget {
   key: string;
   properties: WidgetContentProperties;
   actions?: CaseWidgetAction[];
+  displayConditions: Array<Condition>;
 }
 
 interface FieldsCaseWidgetValue {
