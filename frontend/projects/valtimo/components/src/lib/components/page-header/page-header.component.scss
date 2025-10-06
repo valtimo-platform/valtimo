@@ -21,17 +21,17 @@
   align-items: flex-end;
   margin-bottom: 24px;
 
-  &--small-title {
-    align-items: flex-start;
-    margin-bottom: 0;
-  }
-
   &--hidden {
     display: none;
   }
 
   &--compact {
     margin-bottom: 16px;
+  }
+
+  &--small-title {
+    align-items: flex-start;
+    margin-bottom: 0;
   }
 
   &--no-content,

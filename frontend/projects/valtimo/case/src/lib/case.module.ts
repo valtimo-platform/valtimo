@@ -40,6 +40,7 @@ import {
   IsArrayPipe,
   MenuService,
   ModalModule,
+  ObserveSizeDirective,
   ParagraphModule,
   RenderInPageHeaderDirective,
   SearchableDropdownSelectModule,
@@ -196,6 +197,7 @@ export type TabsFactory = () => Map<string, object>;
     CarbonInputModule,
     TooltipModule,
     CaseDetailHeaderWidgetComponent,
+    ObserveSizeDirective,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
 })

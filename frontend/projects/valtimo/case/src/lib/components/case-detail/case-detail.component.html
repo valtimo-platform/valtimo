@@ -18,42 +18,42 @@
   [ngClass]="{'main-content--no-horizontal-overflow': $tabHorizontalOverflowDisabled()}"
 >
   <div class="container-fluid">
-    <valtimo-case-detail-header-widget></valtimo-case-detail-header-widget>
+    <div
+      class="main-content__header"
+      observeSize
+      (heightChange)="onMainContentHeaderHeightChange($event)"
+    >
+      <valtimo-case-detail-header-widget></valtimo-case-detail-header-widget>
 
-    <ng-container *ngIf="caseTags$ | async as caseTags">
-      @if (caseTags && caseTags.length > 0) {
-        <div class="spacing-case-tags">
-          @for (tag of caseTags; track tag) {
-            <cds-tag size="sm" [type]="tag.tagType">
-              {{ tag.title }}
-            </cds-tag>
-          }
-        </div>
-      }
-    </ng-container>
-
-    <ng-container *ngTemplateOutlet="tabs"></ng-container>
-
-    <ng-template #tabs>
-      <ng-container *ngIf="{activeTab: activeTab$ | async} as obs">
-        <cds-tabs *ngIf="tabLoader" type="inline" class="case-detail-tabs">
-          <cds-tab
-            *ngFor="let tab of tabLoader.tabs"
-            [active]="tab.name === (activeTabName$ | async)"
-            heading="{{ tab | tabTranslate | async }}"
-            (selected)="onTabSelected(tab, obs.activeTab)"
-          ></cds-tab>
-        </cds-tabs>
+      <ng-container *ngIf="caseTags$ | async as caseTags">
+        @if (caseTags && caseTags.length > 0) {
+          <div class="spacing-case-tags">
+            @for (tag of caseTags; track tag) {
+              <cds-tag size="sm" [type]="tag.tagType">
+                {{ tag.title }}
+              </cds-tag>
+            }
+          </div>
+        }
       </ng-container>
-    </ng-template>
+
+      <ng-container *ngTemplateOutlet="tabs"></ng-container>
+
+      <ng-template #tabs>
+        <ng-container *ngIf="{activeTab: activeTab$ | async} as obs">
+          <cds-tabs *ngIf="tabLoader" type="inline" class="case-detail-tabs">
+            <cds-tab
+              *ngFor="let tab of tabLoader.tabs"
+              [active]="tab.name === (activeTabName$ | async)"
+              heading="{{ tab | tabTranslate | async }}"
+              (selected)="onTabSelected(tab, obs.activeTab)"
+            ></cds-tab>
+          </cds-tabs>
+        </ng-container>
+      </ng-template>
+    </div>
 
     <div
-      #tabContentContainer
-      class="tab-content-container"
-      [ngClass]="{
-        'tab-content-container--dark': isDarkMode$ | async,
-        'tab-content-container--compact': compactMode$ | async,
-      }"
       *ngIf="{
         noTabsConfigured: noTabsConfigured$ | async,
         showTaskList: showTaskList$ | async,
@@ -62,6 +62,13 @@
         openTaskAndProcessLinkInModal: openTaskAndProcessLinkInModal$ | async,
         taskAndProcessLinkOpenedInPanel: taskAndProcessLinkOpenedInPanel$ | async,
       } as tabContentObs"
+      #tabContentContainer
+      class="tab-content-container"
+      [ngClass]="{
+        'tab-content-container--dark': isDarkMode$ | async,
+        'tab-content-container--compact': compactMode$ | async,
+      }"
+      [style.max-height]="tabContentContainerMaxHeight$ | async"
     >
       <as-split
         direction="horizontal"

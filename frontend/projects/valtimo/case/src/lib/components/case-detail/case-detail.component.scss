@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-$tab-max-height: calc(100vh - 226px);
-$tab-max-height-compact: calc(100vh - 176px);
-
 .main-content {
   overflow: hidden;
   padding-bottom: 0;
@@ -30,12 +27,7 @@ $tab-max-height-compact: calc(100vh - 176px);
   height: min-content;
   min-height: 300px;
   overflow-y: auto;
-  max-height: $tab-max-height;
   overflow-x: hidden;
-
-  &--compact {
-    max-height: $tab-max-height-compact;
-  }
 
   &:has(> .tab--no-margin) {
     padding: 0 !important;
@@ -51,16 +43,10 @@ $tab-max-height-compact: calc(100vh - 176px);
 }
 
 .tab-content-container {
-  overflow: hidden;
   display: flex;
   gap: 32px;
   overflow: auto;
   margin-bottom: 16px;
-  max-height: $tab-max-height;
-
-  &--compact {
-    max-height: $tab-max-height-compact;
-  }
 }
 
 .loading-container {
