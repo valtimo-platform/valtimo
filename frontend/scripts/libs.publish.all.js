@@ -35,19 +35,19 @@ let destinationRegistry = 'localhost';
 let accessModifier = '';
 let bucketName = '';
 switch (destinationArg) {
-  case 's3':
+  case 'snapshot':
     destinationRegistry = 's3';
     if (!accessKeyIdOrNpmToken) throw 'Access key id must be set';
     if (!secretAccessKey) throw 'Secret access key must be set';
     if (!packageVersion) throw 'Package version must be set';
     bucketName = 'valtimo-snapshots/npm';
     break;
-  case 'npmjs':
+  case 'release':
     destinationRegistry = 'registry.npmjs.org/';
     if (!accessKeyIdOrNpmToken) throw 'Invalid npm token';
     accessModifier = ' --access public';
     break;
-  case 's3-release-candidates':
+  case 'release-candidate':
     destinationRegistry = 's3';
     if (!accessKeyIdOrNpmToken) throw 'Access key id must be set';
     if (!secretAccessKey) throw 'Secret access key must be set';
