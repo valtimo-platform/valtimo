@@ -22,11 +22,20 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
-import {IkoDataRequestResponse} from '../../../../../models';
+import {
+  PropertyField,
+  IkoDataRequestResponse,
+  IkoRepositoryConfigResponse,
+  IkoDataAggregateResponse,
+} from '../../../../../models';
+import {filter, map, Observable, switchMap, take} from 'rxjs';
+import {IkoManagementApiService} from '../../../../../services';
+import {toObservable} from '@angular/core/rxjs-interop';
+import {PropertiesFormComponent} from '../../../../iko-management-properties/iko-management-properties.component';
 
 @Component({
   selector: 'valtimo-iko-management-search-action-modal',
@@ -43,6 +52,7 @@ import {IkoDataRequestResponse} from '../../../../../models';
     ValtimoCdsModalDirective,
     ButtonModule,
     LayerModule,
+    PropertiesFormComponent,
   ],
 })
 export class IkoManagementSearchActionModalComponent {
@@ -59,36 +69,68 @@ export class IkoManagementSearchActionModalComponent {
       this.formGroup.get('key')?.enable();
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
+  public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
   @Input() public set prefillData(value: IkoDataRequestResponse | null) {
+    this.$prefillData.set(value);
     if (!value) return;
 
     this.$modalType.set('edit');
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
+  @Input() repositoryKey: string;
   @Input() aggregateKey: string;
 
   @Output() public readonly modalClose = new EventEmitter<IkoDataRequestResponse | null>();
+
+  public readonly propertyFields$: Observable<PropertyField[]> = toObservable(this.$isOpen).pipe(
+    filter((open: boolean) => !!open),
+    map(() => this.repositoryKey),
+    switchMap((repositoryKey: string | null) =>
+      this.ikoManagementApiService.getIkoRepositoryConfig(repositoryKey ?? '')
+    ),
+    switchMap((repository: IkoRepositoryConfigResponse) =>
+      this.ikoManagementApiService.getIkoDataRequestPropertyFields(repository.type)
+    )
+  );
 
   public readonly formGroup = this.fb.group({
     key: this.fb.control<string>('', Validators.required),
     title: this.fb.control<string>('', Validators.required),
     ikoDataAggregateKey: this.fb.control<string>(''),
-    properties: this.fb.control<Record<string, any | null>>({}),
+    properties: this.fb.group({}),
   });
 
-  constructor(private readonly fb: FormBuilder) {}
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly ikoManagementApiService: IkoManagementApiService
+  ) {}
+
+  public get properties(): FormGroup | null {
+    const properties = this.formGroup.get('properties');
+    return !properties ? null : (properties as FormGroup);
+  }
 
   public onCancel(): void {
     this.modalClose.emit(null);
   }
 
   public onSave(): void {
-    this.modalClose.emit({
-      key: this.formGroup.get('key')?.value ?? '',
-      title: this.formGroup.get('title')?.value ?? '',
-      ikoDataAggregateKey: this.formGroup.get('ikoDataAggregateKey')?.value ?? this.aggregateKey,
-      properties: this.formGroup.get('properties')?.value ?? {},
+    this.propertyFields$.pipe(take(1)).subscribe(fields => {
+      const formData = this.formGroup.getRawValue();
+      fields.forEach(field => {
+        if (formData.properties[field.key] && field.type === 'keyValueList') {
+          formData.properties[field.key] = Array.isArray(formData.properties[field.key])
+            ? formData.properties[field.key].reduce((acc: Record<string, any>, cur: any) => {
+                if (cur.key) {
+                  acc[cur.key] = cur.value;
+                }
+                return acc;
+              }, {})
+            : {};
+        }
+      });
+      this.modalClose.emit(formData);
     });
   }
 }
