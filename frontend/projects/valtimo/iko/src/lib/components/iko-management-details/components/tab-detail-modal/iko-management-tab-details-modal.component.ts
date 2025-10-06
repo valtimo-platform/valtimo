@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -23,6 +22,7 @@ import {
   Output,
   signal,
 } from '@angular/core';
+import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
@@ -33,10 +33,8 @@ import {
   SelectItem,
   SelectModule,
   ValtimoCdsModalDirective,
-} from 'dist/valtimo/components';
-import {filter, map, Observable, switchMap} from 'rxjs';
-import {IkoTabType, TabDto} from '../../../../models';
-import {IkoManagementApiService} from '../../../../services';
+} from '@valtimo/components';
+import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
 import {
   ButtonModule,
   InputModule,
@@ -46,8 +44,9 @@ import {
   ToggleModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
+import {filter, map, Observable, switchMap} from 'rxjs';
+import {IkoTabType, TabDto} from '../../../../models';
+import {IkoManagementApiService} from '../../../../services';
 
 @Component({
   selector: 'valtimo-iko-management-tab-details-modal',
