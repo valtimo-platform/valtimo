@@ -17,8 +17,6 @@ jobs:
     env:
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-      SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
       JRELEASER_MAVENCENTRAL_sonatype_STAGE: UPLOAD
 
     steps:
