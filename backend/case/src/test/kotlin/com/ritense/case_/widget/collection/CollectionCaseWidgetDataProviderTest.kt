@@ -37,7 +37,7 @@ class CollectionCaseWidgetDataProviderTest(
         val people = people()
         mockCollection(documentId, widget, people)
 
-        val firstPage = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize))
+        val firstPage = caseWidgetDataProvider.getData(documentId, widget, Pageable.ofSize(widget.properties.defaultPageSize), widgetTab.id.caseDefinitionId)
         JSONAssert.assertEquals("""
             {
               "content": [
@@ -76,7 +76,7 @@ class CollectionCaseWidgetDataProviderTest(
               "sort": []
             }
         """.trimIndent(), objectMapper.writeValueAsString(firstPage), JSONCompareMode.STRICT_ORDER)
-        val secondPage = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(1))
+        val secondPage = caseWidgetDataProvider.getData(documentId, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(1), widgetTab.id.caseDefinitionId)
         JSONAssert.assertEquals("""
             {
               "content": [
@@ -113,7 +113,7 @@ class CollectionCaseWidgetDataProviderTest(
         val collection = objectMapper.valueToTree<JsonNode>(listOf(john()))
         mockCollection(documentId, widget, collection)
 
-        val page = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize))
+        val page = caseWidgetDataProvider.getData(documentId, widget, Pageable.ofSize(widget.properties.defaultPageSize), widgetTab.id.caseDefinitionId)
         val first = page.content.first()
         assertThat(first.title).isEqualTo("John")
         assertThat(first.fields).containsEntry("lastName", "Doe")
@@ -130,7 +130,7 @@ class CollectionCaseWidgetDataProviderTest(
         ))
         mockCollection(documentId, widget, collection)
 
-        val page = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize))
+        val page = caseWidgetDataProvider.getData(documentId, widget, Pageable.ofSize(widget.properties.defaultPageSize), widgetTab.id.caseDefinitionId)
         val first = page.content.first()
         assertThat(first.title).isEqualTo("John")
         assertThat(first.fields).containsEntry("lastName", "Doe")
@@ -144,7 +144,7 @@ class CollectionCaseWidgetDataProviderTest(
         mockCollection(documentId, widget, "justAString")
 
         assertThrows<InvalidCollectionException> {
-            caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize))
+            caseWidgetDataProvider.getData(documentId, widget, Pageable.ofSize(widget.properties.defaultPageSize), widgetTab.id.caseDefinitionId)
         }
     }
 
@@ -157,7 +157,7 @@ class CollectionCaseWidgetDataProviderTest(
         mockCollection(documentId, widget, collection)
 
         assertThrows<InvalidCollectionNodeTypeException> {
-            caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(1))
+            caseWidgetDataProvider.getData(documentId, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(1), widgetTab.id.caseDefinitionId)
         }
     }
 
@@ -168,7 +168,7 @@ class CollectionCaseWidgetDataProviderTest(
         val documentId = UUID.randomUUID()
         mockCollection(documentId, widget, null)
 
-        val data = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(1))
+        val data = caseWidgetDataProvider.getData(documentId, widget, Pageable.ofSize(1), widgetTab.id.caseDefinitionId)
 
         assertThat(data.content.size).isZero()
         assertThat(data.number).isEqualTo(0)
@@ -183,7 +183,7 @@ class CollectionCaseWidgetDataProviderTest(
         val collection = people()
         mockCollection(documentId, widget, collection)
 
-        val data = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(2))
+        val data = caseWidgetDataProvider.getData(documentId, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(2), widgetTab.id.caseDefinitionId)
 
         assertThat(data.content.size).isZero()
         assertThat(data.number).isEqualTo(2)
