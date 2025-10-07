@@ -185,8 +185,9 @@
     }"
     class="v-input--preset-options">
     <span>{{ presetsTitle }}:</span>
-    @for (preset of presetOptions; track $index; let isFirst = $first) {
-      @if (!isFirst) { | }
+
+    @for (preset of presetOptions; track $index) {
+      @if (!$first) { | }
       <a (click)="presetWithValue(preset)" class="v-input--preset-option">{{ preset }}</a>
     }
   </div>

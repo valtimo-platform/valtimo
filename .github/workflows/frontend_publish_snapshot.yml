@@ -1,4 +1,4 @@
-name: Frontend - publish snapshot
+name: Frontend - Publish snapshot
 permissions:
   contents: read
 on:
@@ -9,8 +9,16 @@ on:
       - frontend/**
       - .github/workflows/frontend_publish_snapshot.yml
 
+defaults:
+  run:
+    working-directory: frontend
+
 jobs:
-  call_reusable_workflow:
+  build_and_test:
+    uses: ./.github/workflows/frontend_build_test.yml
+    secrets: inherit
+
+  publish:
     uses: ./.github/workflows/frontend_publish_to_s3.yml
     with:
       publish_type: 'snapshot'

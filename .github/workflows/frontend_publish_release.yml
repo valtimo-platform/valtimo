@@ -1,4 +1,4 @@
-name: Frontend - Publish release candidate
+name: Frontend - Publish release
 
 permissions:
   contents: read
@@ -22,9 +22,8 @@ jobs:
     secrets: inherit
 
   publish:
-    if: ${{ startsWith(github.ref_name, 'rc/') }}
-    uses: ./.github/workflows/frontend_publish_to_s3.yml
+    if: ${{ startsWith(github.ref_name, 'release/') }}
+    uses: ./.github/workflows/frontend_publish_to_npm.yml
     with:
-      publish_type: 'release-candidate'
       project_version: ${{ github.event.inputs.project_version }}
     secrets: inherit
