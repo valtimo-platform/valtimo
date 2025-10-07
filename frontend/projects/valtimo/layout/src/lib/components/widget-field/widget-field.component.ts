@@ -101,7 +101,7 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
                     isRawValue: this.viewContentService.isRawValue({
                       ...property.displayProperties,
                       viewType: property.displayProperties?.type ?? ViewType.TEXT,
-                    })
+                    }),
                   },
                 ]
               : []),
