@@ -66,11 +66,19 @@ class CaseTabDeploymentServiceIT @Autowired constructor(
         assertThat(tabs[0].id.key).isEqualTo("standard")
         assertThat(tabs[0].type).isEqualTo(CaseTabType.STANDARD)
         assertThat(tabs[0].contentKey).isEqualTo("standard")
+        assertThat(tabs[0].showTasks).isEqualTo(false)
 
         assertThat(tabs[1].name).isEqualTo("Custom tab")
         assertThat(tabs[1].id.key).isEqualTo("custom-tab")
         assertThat(tabs[1].type).isEqualTo(CaseTabType.CUSTOM)
         assertThat(tabs[1].contentKey).isEqualTo("some-custom-component")
+        assertThat(tabs[1].showTasks).isEqualTo(false)
+
+        assertThat(tabs[2].name).isEqualTo("FormIO tab")
+        assertThat(tabs[2].id.key).isEqualTo("formio-tab")
+        assertThat(tabs[2].type).isEqualTo(CaseTabType.FORMIO)
+        assertThat(tabs[2].contentKey).isEqualTo("test-form")
+        assertThat(tabs[2].showTasks).isEqualTo(true)
     }
 
     @Test

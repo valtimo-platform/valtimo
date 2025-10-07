@@ -83,7 +83,8 @@ class CaseTabDeploymentService(
                                 key = caseTabDto.key,
                                 name = caseTabDto.name,
                                 type = caseTabDto.type,
-                                contentKey = caseTabDto.contentKey
+                                contentKey = caseTabDto.contentKey,
+                                showTasks = caseTabDto.showTasks
                             )
                         )
                     }
@@ -96,7 +97,7 @@ class CaseTabDeploymentService(
         private const val KEY = "case-tab"
 
         private val STANDARD_CASE_TABS = listOf(
-            CaseTabDto("summary", null, CaseTabType.STANDARD, "summary"),
+            CaseTabDto("summary", null, CaseTabType.STANDARD, "summary", true),
             CaseTabDto("progress", null, CaseTabType.STANDARD, "progress"),
             CaseTabDto("audit", null, CaseTabType.STANDARD, "audit"),
             CaseTabDto("documents", null, CaseTabType.STANDARD, "documents"),
