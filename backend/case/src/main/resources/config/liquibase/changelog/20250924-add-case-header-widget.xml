@@ -34,10 +34,6 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="title" type="VARCHAR(256)">
-                <constraints nullable="true"/>
-            </column>
-
             <column name="high_contrast" type="BOOLEAN" defaultValueBoolean="false">
                 <constraints nullable="false"/>
             </column>

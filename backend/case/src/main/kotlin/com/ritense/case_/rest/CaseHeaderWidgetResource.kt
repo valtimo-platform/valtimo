@@ -73,7 +73,6 @@ class CaseHeaderWidgetResource(
         val widget = CaseHeaderWidget(
             id = id,
             type = widgetDto.type,
-            title = widgetDto.title,
             highContrast = widgetDto.highContrast,
             properties = widgetDto.properties
         )
