@@ -1498,6 +1498,7 @@
     "collapseButtonText": "Ausblenden",
     "searchButtonText": "Suche",
     "clearButtonText": "Löschen",
+    "saveButtonText": "Suche speichern",
     "downloadButtonText": "Konfiguration herunterladen",
     "to": "bis",
     "text": "Text",
@@ -1934,13 +1935,21 @@
     }
   },
   "condition": {
-    "operator" : {
-      "!=" : "Nicht gleichzusetzen mit",
-      "==" : "Gleich",
-      ">" : "Größer als",
-      ">=" : "Größer als oder gleich wie",
-      "<" : "Weniger als",
-      "<=" : "Gleich oder kleiner als"
+    "operator": {
+      "!=": "Nicht gleichzusetzen mit",
+      "==": "Gleich",
+      ">": "Größer als",
+      ">=": "Größer als oder gleich wie",
+      "<": "Weniger als",
+      "<=": "Gleich oder kleiner als"
     }
+  },
+  "quickSearch": {
+    "addItem": "Schnellsuche-Element hinzufügen",
+    "deleteModalTitle": "Schnellsuche-Element löschen",
+    "deleteModalContent": "Sind Sie sicher, dass Sie dieses Schnellsuche-Element löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
+    "rightClickTooltip": "Rechtsklick für Optionen",
+    "deleteHelperText": "Nachdem Sie ein Schnellsuchelement erstellt haben, können Sie es mit einem Rechtsklick darauf löschen",
+    "duplicateError": "Ein Schnellsuchobjekt mit diesem Titel existiert bereits"
   }
 }
