@@ -1,17 +1,19 @@
-name: CI/CD backend
+name: Backend - Test
+
 permissions:
     contents: read
+
 on:
     pull_request:
         types: [synchronize, opened]
         paths:
             - backend/**
-            - .github/workflows/cicd_backend.yml
+            - .github/workflows/backend_test.yml
     push:
-        branches: [next-minor, next-major, rc/*, release/*, development]
+        branches: [next-minor]
         paths:
             - backend/**
-            - .github/workflows/cicd_backend.yml
+            - .github/workflows/backend_test.yml
     workflow_dispatch:
 
 defaults:
