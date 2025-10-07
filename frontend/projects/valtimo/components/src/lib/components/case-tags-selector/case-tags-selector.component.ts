@@ -47,27 +47,26 @@ export class CaseTagsSelectorComponent {
       }))
     );
   }
-  @Input() public set selectedCaseTags(value: CaseTag[]) {
-    this._selectedCaseTags$.next(value);
+  private readonly _selectedCaseTagKeys$ = new BehaviorSubject<string[]>([]);
+  @Input() public set selectedCaseTagKeys(value: string[]) {
+    this._selectedCaseTagKeys$.next(value);
   }
   @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.WHITE;
   @Input() public disabled!: boolean;
 
-  @Output() public selectedCaseTagsChangeEvent = new EventEmitter<CaseTag[]>();
+  @Output() public selectedCaseTagsChangeEvent = new EventEmitter<string[]>();
 
   private readonly _caseTags$ = new BehaviorSubject<CaseTag[]>([]);
 
-  private readonly _selectedCaseTags$ = new BehaviorSubject<CaseTag[]>([]);
-
   public readonly listItems$: Observable<ListItem[]> = combineLatest([
     this._caseTags$,
-    this._selectedCaseTags$,
+    this._selectedCaseTagKeys$,
   ]).pipe(
     filter(([caseTags, selectedCaseTags]) => !!caseTags && !!selectedCaseTags),
     map(([caseTags, selectedCaseTags]) =>
       caseTags.map(caseTag => ({
         content: caseTag.title,
-        selected: !!selectedCaseTags.find(selectedCaseTag => selectedCaseTag.key === caseTag.key),
+        selected: !!selectedCaseTags.find(selectedCaseTagKey => selectedCaseTagKey === caseTag.key),
         key: caseTag.key,
         tagType: caseTag.tagType,
       }))
@@ -81,7 +80,8 @@ export class CaseTagsSelectorComponent {
     this._caseTags$.pipe(take(1)).subscribe(caseTags => {
       const newSelectedCaseTags = newSelectedItems
         .map(item => caseTags.find(caseTag => caseTag.key === item.key))
-        .filter(caseTag => !!caseTag);
+        .filter(caseTag => !!caseTag)
+        .map(caseTag => caseTag?.key ?? '');
 
       this.selectedCaseTagsChangeEvent.emit(newSelectedCaseTags);
     });

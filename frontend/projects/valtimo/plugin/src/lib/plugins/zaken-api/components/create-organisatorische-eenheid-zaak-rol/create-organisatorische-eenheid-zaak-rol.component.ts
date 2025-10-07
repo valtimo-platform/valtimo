@@ -23,9 +23,11 @@ import {INDICATIE_MACHTIGING_VALUES} from '../../models/indicatie-machtiging-val
 @Component({
   standalone: false,
   selector: 'valtimo-create-organisatorische-eenheid-zaak-rol-configuration',
-  templateUrl: './create-organisatorische-eenheid-zaak-rol.component.html'
+  templateUrl: './create-organisatorische-eenheid-zaak-rol.component.html',
 })
-export class CreateOrganisatorischeEenheidZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateOrganisatorischeEenheidZaakRolComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

@@ -17,3 +17,4 @@
 export * from './carbon.constants';
 export * from './view-type-converter.constants';
 export * from './status.constants';
+export * from './quick-search.constants';
