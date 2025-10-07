@@ -30,6 +30,7 @@ import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-he
 import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
 import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
@@ -50,6 +51,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaakeigenschap': CreateZaakeigenschapComponent,
     'update-zaakeigenschap': UpdateZaakeigenschapComponent,
     'delete-zaakeigenschap': DeleteZaakeigenschapComponent,
+    'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
   },
   pluginTranslations: {
@@ -82,6 +84,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       linkDocumentInformation:
         'Deze actie koppelt een document uit de Documenten API aan de zaak die bij het dossier hoort.',
       'create-zaak': 'Zaak aanmaken',
+      'create-zaak-object': 'Zaakobject aanmaken',
       createZaakInformation:
         'Deze actie creëert een zaak in de Zaken API en koppeld de nieuwe zaak aan het dossier.',
       rsin: 'RSIN',
@@ -170,6 +173,26 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'option-vervolg': 'De andere zaak gaf aanleiding tot het starten van de onderhanden zaak.',
       'option-onderwerp': 'De andere zaak is relevant voor cq. is onderwerp van de onderhanden zaak.',
       'option-bijdrage': 'Aan het bereiken van de uitkomst van de andere zaak levert de onderhanden zaak een bijdrage.',
+      zaakObjectObjectUrl: 'Object URL',
+      zaakObjectObjectUrlTooltip: 'URL-referentie naar de resource die het OBJECT beschrijft.',
+      objectType: 'Object Type',
+      objectTypeTooltip: 'Beschrijft het type OBJECT gerelateerd aan de ZAAK. Als er geen passend type is, dan moet het type worden opgegeven onder objectTypeOverige.',
+      relatieomschrijving: 'Relatieomschrijving',
+      relatieomschrijvingTooltip: 'Omschrijving van de betrekking tussen de ZAAK en het OBJECT.',
+      zakelijkRechtIdentificatie: 'Zakelijk recht identificatie',
+      zakelijkRechtIdentificatieTooltip: 'De unieke identificatie van het OBJECT',
+      zakelijkRechtAvgAard: 'Zakelijk recht AVG aard',
+      zakelijkRechtAvgAardTooltip: 'Aanduiding voor de aard van het recht',
+      objectTypeOverige: 'Object type overige',
+      objectTypeOverigeTooltip: 'Beschrijft het type OBJECT als objectType de waarde "overige" heeft.',
+      objectTypeOverigeDefinitie: 'Object type overige definitie',
+      objectTypeOverigeDefinitieUrl: 'URL',
+      objectTypeOverigeDefinitieUrlTooltip: 'URL-referentie naar de objecttype resource in een API. Deze resource moet de JSON-schema-definitie van het objecttype bevatten.',
+      objectTypeOverigeDefinitieSchema: 'Schema',
+      objectTypeOverigeDefinitieSchemaTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de resource uit het url-attribuut om het schema van het objecttype uit te lezen. Bijvoorbeeld: .jsonSchema.',
+      objectTypeOverigeDefinitieObjectData: 'Object data',
+      objectTypeOverigeDefinitieObjectDataTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
+      objectIdentificatie: 'Object identificatie'
     },
     en: {
       title: 'Zaken API',
@@ -200,6 +223,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       linkDocumentInformation:
         'This action links a document from the Documents API to the zaak associated with the case.',
       'create-zaak': 'Create zaak',
+      'create-zaak-object': 'Create zaak object',
       createZaakInformation:
         'This action creates a zaak in the Zaken API and links the new zaak with the case.',
       rsin: 'RSIN',
@@ -288,6 +312,26 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'option-vervolg': 'The other Zaak prompted the start of the current Zaak.',
       'option-onderwerp': 'The other Zaak is relevant to or the subject of the current Zaak.',
       'option-bijdrage': 'The current Zaak contributes to the outcome of the other Zaak.',
+      zaakObjectObjectUrl: "Object URL",
+      zaakObjectObjectUrlTooltip: "URL reference to the resource that describes the OBJECT.",
+      objectType: "Object Type",
+      objectTypeTooltip: "Describes the type of OBJECT related to the ZAAK. If there is no suitable type, then the type must be specified under objectTypeOverige.",
+      relatieomschrijving: "Relationship description",
+      relatieomschrijvingTooltip: "Description of the relationship between the ZAAK and the OBJECT.",
+      zakelijkRechtIdentificatie: "Property right identification",
+      zakelijkRechtIdentificatieTooltip: "The unique identification of the OBJECT",
+      zakelijkRechtAvgAard: "Property right AVG nature",
+      zakelijkRechtAvgAardTooltip: "Indication of the nature of the right",
+      objectTypeOverige: "Object type other",
+      objectTypeOverigeTooltip: "Describes the type of OBJECT when objectType has the value 'overige'.",
+      objectTypeOverigeDefinitie: 'Object type other definition',
+      objectTypeOverigeDefinitieUrl: "URL",
+      objectTypeOverigeDefinitieUrlTooltip: "URL reference to the object type resource in an API. This resource must contain the JSON schema definition of the object type.",
+      objectTypeOverigeDefinitieSchema: "Schema",
+      objectTypeOverigeDefinitieSchemaTooltip: "A valid jq expression. This is combined with the resource from the url attribute to read the schema of the object type. Example: .jsonSchema.",
+      objectTypeOverigeDefinitieObjectData: "Object data",
+      objectTypeOverigeDefinitieObjectDataTooltip: "A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.",
+      objectIdentificatie: 'Object identification'
     },
     de: {
       title: 'Zaken API',
@@ -318,6 +362,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       linkDocumentInformation:
         'Diese Aktion verknüpft ein Dokument aus der Dokumenten-API mit dem mit dem Fall verknüpften Zaak.',
       'create-zaak': 'Zaak erschaffen',
+      'create-zaak-object': 'Zaakobject erschaffen',
       createZaakInformation:
         'Diese Aktion hat einen zaak in der Zaken-API definiert und den neuen zaak mit dem Fall verknüpft.',
       rsin: 'RSIN',
@@ -406,6 +451,26 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'option-vervolg': 'Der andere Zaak gab Anlass zur Einleitung des aktuellen Zaak.',
       'option-onderwerp': 'Der andere Zaak ist relevant für bzw. Gegenstand des aktuellen Zaak.',
       'option-bijdrage': 'Der aktuelle Zaak trägt zum Ergebnis des anderen Zaak bei.',
+      zaakObjectObjectUrl: "Objekt-URL",
+      zaakObjectObjectUrlTooltip: "URL-Referenz zur Ressource, die das OBJECT beschreibt.",
+      objectType: "Objekttyp",
+      objectTypeTooltip: "Beschreibt den Typ des OBJECT, das mit dem ZAAK verbunden ist. Wenn kein passender Typ vorhanden ist, muss der Typ unter objectTypeOverige angegeben werden.",
+      relatieomschrijving: "Beziehungsbeschreibung",
+      relatieomschrijvingTooltip: "Beschreibung der Beziehung zwischen dem ZAAK und dem OBJECT.",
+      zakelijkRechtIdentificatie: "Grundstücksrechtsidentifikation",
+      zakelijkRechtIdentificatieTooltip: "Die eindeutige Identifikation des OBJECT",
+      zakelijkRechtAvgAard: "Grundstücksrecht AVG Art",
+      zakelijkRechtAvgAardTooltip: "Kennzeichnung der Art des Rechts",
+      objectTypeOverige: "Sonstiger Objekttyp",
+      objectTypeOverigeTooltip: "Beschreibt den Typ des OBJECT, wenn objectType den Wert „overige“ hat.",
+      objectTypeOverigeDefinitie: 'Sonstiger Objekttyp-Definition',
+      objectTypeOverigeDefinitieUrl: "URL",
+      objectTypeOverigeDefinitieUrlTooltip: "URL-Referenz zur Objekttyp-Ressource in einer API. Diese Ressource muss die JSON-Schema-Definition des Objekttyps enthalten.",
+      objectTypeOverigeDefinitieSchema: "Schema",
+      objectTypeOverigeDefinitieSchemaTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit der Ressource aus dem URL-Attribut kombiniert, um das Schema des Objekttyps auszulesen. Beispiel: .jsonSchema.",
+      objectTypeOverigeDefinitieObjectData: "Objektdaten",
+      objectTypeOverigeDefinitieObjectDataTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.",
+      objectIdentificatie: 'Objektidentifikation'
     },
   },
 };
