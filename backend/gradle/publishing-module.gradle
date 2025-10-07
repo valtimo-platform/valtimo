@@ -1,0 +1,90 @@
+/*
+ * Copyright 2015-2020 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+def publishToS3 = project.hasProperty('publishToS3') && project.property('publishToS3') == 'true'
+def sonatypeCentralStagingDir = uri("build/staging-deploy")
+def signingConfigSet = false
+if(System.getenv('SIGNING_KEY_BASE64') &&
+    System.getenv('SIGNING_KEY_PASSWORD')
+) {
+    signingConfigSet = true
+}
+
+if(signingConfigSet) {
+    apply plugin: 'signing'
+}
+
+if(System.getenv('SONATYPE_USERNAME') &&
+    System.getenv('SONATYPE_PASSWORD')
+) {
+    apply plugin: 'maven-publish'
+}
+
+publishing {
+    repositories {
+        maven {
+            name "Sonatype"
+            url = sonatypeCentralStagingDir
+        }
+        if (publishToS3) {
+            maven {
+                name "S3"
+                credentials(AwsCredentials) {
+                    accessKey System.getenv('AWS_ACCESS_KEY_ID')
+                    secretKey System.getenv('AWS_SECRET_ACCESS_KEY')
+                }
+                url = 's3://valtimo-snapshots'
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.ritense.valtimo'
+
+            pom {
+                url = 'https://github.com/valtimo-platform/valtimo-backend-libraries'
+                licenses {
+                    license {
+                        name = 'Licensed under EUPL, Version 1.2 (the "License");'
+                        url = 'https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12'
+                    }
+                }
+                scm {
+                    connection = "git@github.com:valtimo-platform/valtimo-backend-libraries.git"
+                    developerConnection = "git@github.com:valtimo-platform/valtimo-backend-libraries.git"
+                    url = "https://github.com/valtimo-platform/valtimo-backend-libraries"
+                }
+            }
+
+            if (components.hasProperty("javaPlatform")) {
+                from components.javaPlatform
+            } else {
+                from components.java
+            }
+        }
+    }
+}
+
+if(signingConfigSet) {
+    signing {
+        def signingKeyBase64 = System.getenv('SIGNING_KEY_BASE64')
+        def signingKeyPassword = System.getenv('SIGNING_KEY_PASSWORD')
+
+        useInMemoryPgpKeys(signingKeyBase64, signingKeyPassword)
+        sign configurations.archives
+        sign publishing.publications.maven
+    }
+}
