@@ -19,6 +19,7 @@ package com.ritense.iko.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.Action
 import com.ritense.authorization.Action.Companion.deny
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.iko.authorization.IkoDataAggregateActionProvider
@@ -46,7 +47,8 @@ class IkoDataAggregateService(
 ) {
 
     fun getDataById(key: String, id: String): JsonNode {
-        val dataAggregate = getByKey(key)
+        val dataAggregate = runWithoutAuthorization { getByKey(key) }
+        requirePermission(dataAggregate, IkoDataAggregateActionProvider.VIEW)
         val ikoRepository = ikoRepositories.first {
             it.getType() == dataAggregate.ikoRepositoryConfig.type
         }
@@ -77,13 +79,7 @@ class IkoDataAggregateService(
 
     fun getByKey(key: String): IkoDataAggregate {
         val ikoDataAggregate = ikoDataAggregateRepository.findById(key).orElseThrow()
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                IkoDataAggregate::class.java,
-                IkoDataAggregateActionProvider.VIEW,
-                ikoDataAggregate,
-            )
-        )
+        requirePermission(ikoDataAggregate, IkoDataAggregateActionProvider.VIEW)
         return ikoDataAggregate
     }
 
@@ -131,11 +127,15 @@ class IkoDataAggregateService(
     }
 
     fun requirePermission(key: String, action: Action<IkoDataAggregate>) {
+        requirePermission(ikoDataAggregateRepository.findById(key).orElseThrow(), action)
+    }
+
+    fun requirePermission(ikoDataAggregate: IkoDataAggregate, action: Action<IkoDataAggregate>) {
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 IkoDataAggregate::class.java,
                 action,
-                ikoDataAggregateRepository.findById(key).orElseThrow(),
+                ikoDataAggregate,
             )
         )
     }

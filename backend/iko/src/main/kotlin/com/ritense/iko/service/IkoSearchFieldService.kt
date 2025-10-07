@@ -16,6 +16,8 @@
 
 package com.ritense.iko.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
 import com.ritense.iko.domain.IkoDataRequestSearchField
 import com.ritense.iko.domain.IkoDataRequestSearchFieldId
 import com.ritense.iko.repository.IkoDataRequestSearchFieldRepository
@@ -32,9 +34,11 @@ import org.springframework.transaction.annotation.Transactional
 class IkoSearchFieldService(
     private val searchFieldService: SearchFieldV2Service,
     private val ikoDataRequestSearchFieldRepository: IkoDataRequestSearchFieldRepository,
+    private val ikoDataAggregateService: IkoDataAggregateService,
 ) {
 
     fun findByKey(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchFieldKey: String): SearchFieldV2? {
+        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
         return ikoDataRequestSearchFieldRepository.findByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyAndSearchFieldKey(
             ikoDataAggregateKey,
             ikoDataRequestKey,
@@ -43,6 +47,7 @@ class IkoSearchFieldService(
     }
 
     fun getByKey(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchFieldKey: String): SearchFieldV2 {
+        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
         return findByKey(ikoDataAggregateKey, ikoDataRequestKey, searchFieldKey)
             ?: error("Unknown searchField key: $searchFieldKey")
     }
@@ -51,6 +56,7 @@ class IkoSearchFieldService(
         ikoDataAggregateKey: String,
         ikoDataRequestKey: String
     ): List<SearchFieldV2> {
+        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
         return ikoDataRequestSearchFieldRepository.findAllByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyOrderBySearchFieldOrder(
             ikoDataAggregateKey,
             ikoDataRequestKey
@@ -58,6 +64,7 @@ class IkoSearchFieldService(
     }
 
     fun deleteByKey(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchFieldKey: String) {
+        ikoDataAggregateService.denyAuthorization()
         ikoDataRequestSearchFieldRepository.deleteByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyAndSearchFieldKey(
             ikoDataAggregateKey = ikoDataAggregateKey,
             ikoDataRequestKey = ikoDataRequestKey,
@@ -67,6 +74,7 @@ class IkoSearchFieldService(
     }
 
     fun create(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchField: SearchFieldV2): SearchFieldV2 {
+        ikoDataAggregateService.denyAuthorization()
         require(
             ikoDataRequestSearchFieldRepository.findByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyAndSearchFieldKey(
                 ikoDataAggregateKey,
@@ -74,7 +82,9 @@ class IkoSearchFieldService(
                 searchField.key
             ) == null
         )
-        val createdSearchField = searchFieldService.create(SearchFieldV2Dto.of(searchField))
+        val createdSearchField = runWithoutAuthorization {
+            searchFieldService.create(SearchFieldV2Dto.of(searchField))
+        }
         ikoDataRequestSearchFieldRepository.save(
             IkoDataRequestSearchField(
                 id = IkoDataRequestSearchFieldId(
@@ -89,6 +99,7 @@ class IkoSearchFieldService(
     }
 
     fun update(ikoDataAggregateKey: String, ikoDataRequestKey: String, searchField: SearchFieldV2): SearchFieldV2 {
+        ikoDataAggregateService.denyAuthorization()
         val ikoDataRequestSearchField =
             ikoDataRequestSearchFieldRepository.findByIdIkoDataAggregateKeyAndIdIkoDataRequestKeyAndSearchFieldKey(
                 ikoDataAggregateKey,
@@ -96,8 +107,9 @@ class IkoSearchFieldService(
                 searchField.key
             )
         requireNotNull(ikoDataRequestSearchField)
-        val updatedSearchField =
+        val updatedSearchField = runWithoutAuthorization {
             searchFieldService.update(SearchFieldV2Dto.of(searchField.copy(id = ikoDataRequestSearchField.id.searchFieldId)))
+        }
         ikoDataRequestSearchFieldRepository.save(
             ikoDataRequestSearchField.copy(
                 searchField = updatedSearchField,

@@ -16,6 +16,7 @@
 
 package com.ritense.iko.service
 
+import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
 import com.ritense.iko.domain.IkoDataAggregateListColumn
 import com.ritense.iko.domain.IkoDataAggregateListColumnId
 import com.ritense.iko.repository.IkoDataAggregateListColumnRepository
@@ -31,9 +32,11 @@ import org.springframework.transaction.annotation.Transactional
 class IkoListColumnService(
     private val listColumnService: SearchListColumnService,
     private val ikoDataAggregateListColumnRepository: IkoDataAggregateListColumnRepository,
+    private val ikoDataAggregateService: IkoDataAggregateService,
 ) {
 
     fun findByKey(ikoDataAggregateKey: String, columnKey: String): SearchListColumn? {
+        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
         return ikoDataAggregateListColumnRepository.findByIdIkoDataAggregateKeyAndColumnKey(
             ikoDataAggregateKey,
             columnKey
@@ -41,16 +44,19 @@ class IkoListColumnService(
     }
 
     fun getByKey(ikoDataAggregateKey: String, columnKey: String): SearchListColumn {
+        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
         return findByKey(ikoDataAggregateKey, columnKey)
             ?: error("Unknown column key: $columnKey")
     }
 
     fun findAllColumnsByIkoDataAggregateKey(ikoDataAggregateKey: String): List<SearchListColumn> {
+        ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
         return ikoDataAggregateListColumnRepository.findAllByIdIkoDataAggregateKeyOrderByColumnOrder(ikoDataAggregateKey)
             .map { it.column }
     }
 
     fun deleteByKey(ikoDataAggregateKey: String, columnKey: String) {
+        ikoDataAggregateService.denyAuthorization()
         ikoDataAggregateListColumnRepository.deleteByIdIkoDataAggregateKeyAndColumnKey(
             ikoDataAggregateKey,
             columnKey
@@ -59,6 +65,7 @@ class IkoListColumnService(
     }
 
     fun create(ikoDataAggregateKey: String, listColumn: SearchListColumn): SearchListColumn {
+        ikoDataAggregateService.denyAuthorization()
         require(
             ikoDataAggregateListColumnRepository.findByIdIkoDataAggregateKeyAndColumnKey(
                 ikoDataAggregateKey,
@@ -79,6 +86,7 @@ class IkoListColumnService(
     }
 
     fun update(ikoDataAggregateKey: String, listColumn: SearchListColumn): SearchListColumn {
+        ikoDataAggregateService.denyAuthorization()
         val ikoDataAggregateColumn =
             ikoDataAggregateListColumnRepository.findByIdIkoDataAggregateKeyAndColumnKey(
                 ikoDataAggregateKey,

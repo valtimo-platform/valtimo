@@ -17,10 +17,9 @@
 package com.ritense.iko.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
-import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
-import com.ritense.iko.domain.IkoDataAggregate
 import com.ritense.iko.domain.IkoDataRequest
 import com.ritense.iko.domain.IkoDataRequestId
 import com.ritense.iko.event.IkoDataRequestPreDeleteEvent
@@ -62,8 +61,8 @@ class IkoDataRequestService(
         }
         return ikoRepository.findAll(
             dataRequest.id.ikoDataAggregate.ikoRepositoryConfig.properties +
-                dataRequest.id.ikoDataAggregate.properties +
-                dataRequest.properties,
+                    dataRequest.id.ikoDataAggregate.properties +
+                    dataRequest.properties,
             filters,
             pageable
         )
@@ -74,6 +73,11 @@ class IkoDataRequestService(
         ikoDataAggregateKey: String? = null,
         title: String? = null,
     ): List<IkoDataRequest> {
+        if (ikoDataAggregateKey != null) {
+            ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
+        } else {
+            ikoDataAggregateService.denyAuthorization()
+        }
         val spec = getSpecification(
             key = key,
             ikoDataAggregateKey = ikoDataAggregateKey,
@@ -88,25 +92,21 @@ class IkoDataRequestService(
     }
 
     fun getByKey(key: String, ikoDataAggregateKey: String): IkoDataRequest {
-        val ikoDataAggregate = ikoDataAggregateService.getByKey(ikoDataAggregateKey)
+        val ikoDataAggregate = runWithoutAuthorization { ikoDataAggregateService.getByKey(ikoDataAggregateKey) }
+        ikoDataAggregateService.requirePermission(ikoDataAggregate, VIEW)
         val id = IkoDataRequestId(key, ikoDataAggregate)
         val ikoDataRequest = ikoDataRequestRepository.findById(id).orElseThrow()
-        authorizationService.requirePermission(
-            EntityAuthorizationRequest(
-                IkoDataAggregate::class.java,
-                VIEW,
-                ikoDataRequest.id.ikoDataAggregate,
-            )
-        )
         return ikoDataRequest
     }
 
     fun create(ikoDataRequest: IkoDataRequest): IkoDataRequest {
+        ikoDataAggregateService.denyAuthorization()
         require(!existsByKey(key = ikoDataRequest.id.key, ikoDataAggregateKey = ikoDataRequest.id.ikoDataAggregate.key))
         return ikoDataRequestRepository.save(ikoDataRequest)
     }
 
     fun update(ikoDataRequest: IkoDataRequest): IkoDataRequest {
+        ikoDataAggregateService.denyAuthorization()
         require(existsByKey(key = ikoDataRequest.id.key, ikoDataAggregateKey = ikoDataRequest.id.ikoDataAggregate.key))
         return ikoDataRequestRepository.save(ikoDataRequest)
     }
@@ -132,11 +132,6 @@ class IkoDataRequestService(
         ikoDataAggregateKey: String? = null,
         titlePart: String? = null,
     ): Specification<IkoDataRequest> {
-        if (ikoDataAggregateKey != null) {
-            ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
-        } else {
-            ikoDataAggregateService.denyAuthorization()
-        }
         var spec = query()
         if (key != null) {
             spec = spec.and(byKey(key))
