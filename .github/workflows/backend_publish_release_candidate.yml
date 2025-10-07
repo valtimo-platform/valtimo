@@ -39,7 +39,7 @@ jobs:
 
       - name: Check license compliance (non-blocking)
         continue-on-error: true
-        run: ./gradlew checkLicense
+        run: ./backend/gradlew checkLicense
 
       - name: Warn if disallowed licenses found
         run: |
@@ -56,10 +56,10 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_rc }}"
+        run: ./backend/gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_rc }}"
 
       - name: Deploy with JReleaser to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./gradlew jreleaserDeploy -PprojectVersion="${{ steps.version.outputs.version_rc }}"
+        run: ./backend/gradlew jreleaserDeploy -PprojectVersion="${{ steps.version.outputs.version_rc }}"
