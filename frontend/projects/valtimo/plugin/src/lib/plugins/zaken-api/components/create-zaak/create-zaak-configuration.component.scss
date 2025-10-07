@@ -23,6 +23,20 @@
   align-items: center;
 }
 
+button.delete-button {
+  height: 46px;
+  width: 46px;
+  margin-top: 20px;
+}
+
+button.delete-button:hover {
+  background-color: #e12717;
+}
+
+button.add-button {
+  margin-block-end: var(--v-input-margin);
+}
+
 ::ng-deep .cds--overflow-menu-options {
   z-index: 10000 !important;
   width: 230px;
@@ -43,6 +57,15 @@
   }
 }
 
-.delete-button:hover {
-  background-color: #e12717;
+div.property-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 92% 8%; /* precise 95/5 split */
+}
+div.property-row > * {
+  box-sizing: border-box; /* keeps borders/padding inside the column width */
+  min-width: 0; /* prevents overflow from long content */
+}
+div.property-delete-col {
+  margin-left: auto;
 }
