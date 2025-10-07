@@ -1,6 +1,8 @@
 name: Backend - Publish release candidate
 on:
   workflow_dispatch:
+  push:
+    branches: ['rc/13.3.0-release-pipeline']
 
 permissions:
   contents: read
