@@ -34,6 +34,7 @@
   }
 
   <valtimo-quick-search-modal
+    [existingItems]="obs.quickSearchItems"
     (closeEvent)="onModalCloseEvent($event, obs.paramsToSave)"
   ></valtimo-quick-search-modal>
 

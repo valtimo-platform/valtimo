@@ -15,7 +15,12 @@
  */
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
-import {SearchField, SearchFieldBoolean, SearchFieldValues} from '@valtimo/shared';
+import {
+  SearchField,
+  SearchFieldBoolean,
+  SearchFieldValue,
+  SearchFieldValues,
+} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, map, Observable, Subject, Subscription, take} from 'rxjs';
 import {SelectItem} from '../../models';
 import {TranslateService} from '@ngx-translate/core';
@@ -46,13 +51,13 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   @Input() public clearValuesSubject$!: Observable<null>;
   private _defaultValues: SearchFieldValues;
   @Input() public set defaultValues(value: SearchFieldValues) {
-    console.log({value});
     this._defaultValues = value;
     this.setDefaultValues();
   }
   public get defaultValues(): SearchFieldValues {
     return this._defaultValues;
   }
+  @Input() public disableSaveSearch: boolean;
   @Input() public inputDisabled = false;
   @Input() public externalSearchField = false;
   @Input() public canSaveSearch = false;
@@ -78,6 +83,13 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   );
   public readonly expanded$ = new BehaviorSubject<boolean>(false);
   public readonly clear$ = new Subject<null>();
+
+  public readonly isSearchEmpty$ = this.values$.pipe(
+    map(
+      (searchFieldValues: SearchFieldValues) =>
+        !Object.values(searchFieldValues).some((value: SearchFieldValue) => !!value)
+    )
+  );
 
   private readonly _subscriptions = new Subscription();
 
@@ -118,6 +130,7 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    this.collapse();
     this._subscriptions.unsubscribe();
   }
 
@@ -282,7 +295,11 @@ export class SearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   private setDefaultValues(): void {
-    if (this.defaultValues && typeof this.defaultValues === 'object') {
+    if (
+      this.defaultValues &&
+      typeof this.defaultValues === 'object' &&
+      !!Object.keys(this.defaultValues).length
+    ) {
       this.values$.next(this.defaultValues);
       this.search();
       this.expand();

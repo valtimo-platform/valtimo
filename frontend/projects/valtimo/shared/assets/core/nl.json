@@ -1964,6 +1964,7 @@
     "deleteModalTitle": "Snelzoekitem verwijderen",
     "deleteModalContent": "Weet u zeker dat u dit snelzoekitem wilt verwijderen? Deze wijziging kan niet ongedaan worden gemaakt.",
     "rightClickTooltip": "Klik met de rechtermuisknop voor opties",
-    "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken"
+    "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
+    "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
   }
 }

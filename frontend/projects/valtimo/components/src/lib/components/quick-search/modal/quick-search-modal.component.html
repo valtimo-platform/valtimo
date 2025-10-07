@@ -34,10 +34,17 @@
         formControlName="title"
         cdsText
         type="text"
+        maxlength="50"
         [placeholder]="'interface.title' | translate"
         [attr.modal-primary-focus]="true"
       />
     </cds-text-label>
+
+    <div *ngIf="$showDuplicateError()" class="valtimo-qiuck-search-modal__error">
+      <svg cdsIcon="warning--filled" size="16"></svg>
+
+      {{ 'quickSearch.duplicateError' | translate }}
+    </div>
 
     <cds-inline-notification
       [notificationObj]="{
