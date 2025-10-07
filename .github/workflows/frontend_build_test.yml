@@ -1,0 +1,125 @@
+name: Frontend - build, lint and test
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "The determined project version. Required for release-candidate and releases, not for snapshot"
+        required: false
+        type: string
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  install_packages:
+    runs-on: ubuntu-latest
+    outputs:
+      npm_package_cachekey: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check whether NPM packages are already cached
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          lookup-only: true
+          path: frontend/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install NPM packages
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Cache NPM packages
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
+
+  build_and_test:
+    runs-on: ubuntu-latest
+    outputs:
+      project_version: ${{ steps.determine_project_version.outputs.project_version }}
+    needs:
+      - install_packages
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get node_modules from cache
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          path: frontend/node_modules
+          key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
+
+      - name: Install node_modules on cache miss
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Build all libraries
+        run: npm run libs-build-all
+
+      - name: Test all libraries
+        run: npm run libs-test-all-cicd
+
+      - name: Determine project version
+        id: determine_project_version
+        if: inputs.project_version == ''
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          # replace special characters with -
+          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
+
+          SEMVER_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
+          PROJECT_VERSION="${SEMVER_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
+          
+          echo "Version is ${PROJECT_VERSION}"
+          echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Set project version on all libraries
+        env:
+          PROJECT_VERSION: ${{ inputs.project_version || steps.determine_project_version.outputs.project_version }}
+        run: |
+          npm run libs-increment-all -- ${PROJECT_VERSION}
+          npm run copy-frontend-version
+          npx ng build @valtimo/shared
+
+      - name: 'Retain build artifact: dist'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: frontend/dist
+          retention-days: 1
+
+  # 'lint' can run in parallel with 'build_and_test'
+  lint:
+    needs:
+      - install_packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get node_modules from cache
+        uses: actions/cache/restore@v4
+        id: restore_node_modules_cache
+        with:
+          path: frontend/node_modules
+          key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
+
+      - name: Install node_modules on cache miss
+        if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
+        run: npm install
+
+      - name: Lint all libraries
+        run: npm run libs-lint-all-cicd

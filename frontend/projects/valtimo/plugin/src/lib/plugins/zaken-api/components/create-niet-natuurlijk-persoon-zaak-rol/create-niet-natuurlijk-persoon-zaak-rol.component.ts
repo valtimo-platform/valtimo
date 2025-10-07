@@ -24,7 +24,9 @@ import {CreateNietNatuurlijkePersoonZaakRolConfig} from '../../models';
   selector: 'valtimo-create-niet-natuurlijk-persoon-zaak-rol-configuration',
   templateUrl: './create-niet-natuurlijk-persoon-zaak-rol.component.html',
 })
-export class CreateNietNatuurlijkPersoonZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateNietNatuurlijkPersoonZaakRolComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;

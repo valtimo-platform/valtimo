@@ -592,7 +592,6 @@ export class CaseManagementListColumnsComponent implements AfterViewInit, OnDest
   }
 
   private mapFormValuesToColumn(formValue: any): CaseListColumn {
-    console.log('this.hideExportButton', this.displayExportButton);
     return {
       key: formValue.key,
       sortable: formValue.sortable,

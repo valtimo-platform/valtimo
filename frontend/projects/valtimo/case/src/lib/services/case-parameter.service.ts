@@ -31,11 +31,11 @@ import {Pagination} from '@valtimo/components';
 
 @Injectable()
 export class CaseParameterService implements OnDestroy {
-  private readonly _dossierParameters$ = new BehaviorSubject<CaseParameters>(undefined);
+  private readonly _caseParameters$ = new BehaviorSubject<CaseParameters>(undefined);
   private readonly _searchFieldValues$ = new BehaviorSubject<SearchFieldValues>({});
 
-  public get dossierParameters$(): Observable<CaseParameters> {
-    return this._dossierParameters$.asObservable();
+  public get caseParameters$(): Observable<CaseParameters> {
+    return this._caseParameters$.asObservable();
   }
 
   public get searchFieldValues$(): Observable<SearchFieldValues> {
@@ -45,9 +45,8 @@ export class CaseParameterService implements OnDestroy {
   public get querySearchParams$(): Observable<SearchFieldValues> {
     return this.route.queryParams.pipe(
       map(params => {
-        if (params.search) {
-          return JSON.parse(atob(params.search)) as SearchFieldValues;
-        }
+        if (params.search) return JSON.parse(atob(params.search)) as SearchFieldValues;
+
         return {};
       }),
       distinctUntilChanged(
@@ -124,17 +123,17 @@ export class CaseParameterService implements OnDestroy {
     );
   }
 
-  private _dossierParametersSubscription!: Subscription;
+  private _caseParametersSubscription!: Subscription;
 
   constructor(
     private readonly router: Router,
     private readonly route: ActivatedRoute
   ) {
-    this.setDossierParameters();
+    this.setCaseParameters();
   }
 
   public ngOnDestroy(): void {
-    this._dossierParametersSubscription?.unsubscribe();
+    this._caseParametersSubscription?.unsubscribe();
   }
 
   public setSearchFieldValues(searchFieldValues: SearchFieldValues): void {
@@ -142,25 +141,25 @@ export class CaseParameterService implements OnDestroy {
   }
 
   public setSearchParameters(searchParameters: SearchFieldValues): void {
-    this._dossierParameters$.pipe(take(1)).subscribe(dossierParameters => {
+    this._caseParameters$.pipe(take(1)).subscribe(caseParameters => {
       if (Object.keys(searchParameters || {}).length > 0) {
-        this._dossierParameters$.next({
-          ...dossierParameters,
-          search: this.objectToBase64(searchParameters),
+        this._caseParameters$.next({
+          ...caseParameters,
+          ...this.getSearchParameter('search', searchParameters),
         });
       } else {
-        if (dossierParameters?.search) {
-          delete dossierParameters.search;
+        if (caseParameters?.search) {
+          delete caseParameters.search;
         }
-        this._dossierParameters$.next(dossierParameters);
+        this._caseParameters$.next(caseParameters);
       }
     });
   }
 
   public setPaginationParameters(pagination: Pagination): void {
     if (pagination) {
-      this._dossierParameters$.pipe(take(1)).subscribe(dossierParameters => {
-        this._dossierParameters$.next({
+      this._caseParameters$.pipe(take(1)).subscribe(dossierParameters => {
+        this._caseParameters$.next({
           ...dossierParameters,
           size: `${pagination.size}`,
           collectionSize: `${pagination.collectionSize}`,
@@ -176,8 +175,8 @@ export class CaseParameterService implements OnDestroy {
   }
 
   public setAssigneeParameter(assigneeFilter: AssigneeFilter): void {
-    this._dossierParameters$.pipe(take(1)).subscribe(dossierParameters => {
-      this._dossierParameters$.next({
+    this._caseParameters$.pipe(take(1)).subscribe(dossierParameters => {
+      this._caseParameters$.next({
         ...dossierParameters,
         assignee: assigneeFilter.toLowerCase(),
       });
@@ -185,33 +184,33 @@ export class CaseParameterService implements OnDestroy {
   }
 
   public setStatusParameter(statusKeyParameters: string[]): void {
-    this._dossierParameters$.pipe(take(1)).subscribe(dossierParameters => {
+    this._caseParameters$.pipe(take(1)).subscribe(dossierParameters => {
       if ((statusKeyParameters || []).length > 0) {
-        this._dossierParameters$.next({
+        this._caseParameters$.next({
           ...dossierParameters,
-          status: this.objectToBase64(statusKeyParameters),
+          ...this.getSearchParameter('status', statusKeyParameters),
         });
       } else {
         if (dossierParameters?.status) {
           delete dossierParameters.status;
         }
-        this._dossierParameters$.next(dossierParameters);
+        this._caseParameters$.next(dossierParameters);
       }
     });
   }
 
   public setCaseTagParameter(caseTagKeyParameters: string[]): void {
-    this._dossierParameters$.pipe(take(1)).subscribe(dossierParameters => {
+    this._caseParameters$.pipe(take(1)).subscribe(dossierParameters => {
       if ((caseTagKeyParameters || []).length > 0) {
-        this._dossierParameters$.next({
+        this._caseParameters$.next({
           ...dossierParameters,
-          casetags: this.objectToBase64(caseTagKeyParameters),
+          ...this.getSearchParameter('casetags', caseTagKeyParameters),
         });
       } else {
         if (dossierParameters?.casetags) {
           delete dossierParameters.casetags;
         }
-        this._dossierParameters$.next(dossierParameters);
+        this._caseParameters$.next(dossierParameters);
       }
     });
   }
@@ -221,12 +220,23 @@ export class CaseParameterService implements OnDestroy {
   }
 
   public clearParameters(): void {
-    this._dossierParameters$.next(undefined);
+    this._caseParameters$.next(undefined);
     this.router.navigate([this.getUrlWithoutParams()], {replaceUrl: true});
   }
 
+  public getSearchParameter(
+    searchParamKey: string,
+    parameters: string[] | SearchFieldValues
+  ): {[key: string]: string} {
+    return {[searchParamKey]: this.objectToBase64(parameters)};
+  }
+
+  public getSearchObject(searchQuery: string): object {
+    return this.base64ToObject(searchQuery);
+  }
+
   private openDossierParametersSubscription(): void {
-    this._dossierParametersSubscription = this.dossierParameters$.subscribe(dossierParams => {
+    this._caseParametersSubscription = this.caseParameters$.subscribe(dossierParams => {
       this.router.navigate([this.getUrlWithoutParams()], {
         queryParams: dossierParams,
         replaceUrl: true,
@@ -238,6 +248,10 @@ export class CaseParameterService implements OnDestroy {
     return btoa(JSON.stringify(jsObject));
   }
 
+  private base64ToObject(string: string): object {
+    return JSON.parse(atob(string));
+  }
+
   private getUrlWithoutParams(): string {
     const urlTree = this.router.parseUrl(this.router.url);
     urlTree.queryParams = {};
@@ -245,7 +259,7 @@ export class CaseParameterService implements OnDestroy {
     return urlTree.toString();
   }
 
-  private setDossierParameters(): void {
+  public setCaseParameters(): void {
     combineLatest([
       this.queryPaginationParams$,
       this.querySearchParams$,

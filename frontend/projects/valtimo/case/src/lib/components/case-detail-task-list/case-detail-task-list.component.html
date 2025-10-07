@@ -95,10 +95,7 @@
       </div>
 
       <div class="task__subtitles">
-        @for (
-          subtitle of taskWithProcessLink.task?.subtitles || [];
-          track subtitle
-        ) {
+        @for (subtitle of taskWithProcessLink.task?.subtitles || []; track subtitle) {
           <p class="task__subtitle">{{ subtitle }}</p>
         }
       </div>

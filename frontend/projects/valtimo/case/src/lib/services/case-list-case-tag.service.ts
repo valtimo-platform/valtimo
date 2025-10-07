@@ -22,7 +22,7 @@ import {CaseParameterService} from './case-parameter.service';
 
 @Injectable()
 export class CaseListCaseTagService {
-  private readonly _selectedCaseTags$ = new BehaviorSubject<CaseTag[]>([]);
+  private readonly _selectedCaseTagKeys$ = new BehaviorSubject<string[]>([]);
 
   private readonly _showCaseTagsSelector$ = new BehaviorSubject<boolean>(false);
 
@@ -37,7 +37,7 @@ export class CaseListCaseTagService {
       let selectedCaseTags;
       if (queryCaseTags) {
         selectedCaseTags = caseTags.filter(caseTag => queryCaseTags.includes(caseTag.key));
-        this.setSelectedCaseTags(selectedCaseTags);
+        this.setSelectedCaseTags(selectedCaseTags.map(selectedCaseTags => selectedCaseTags.key));
       }
     }),
     map(([caseTags]) => caseTags),
@@ -52,8 +52,8 @@ export class CaseListCaseTagService {
     return this._showCaseTagsSelector$.asObservable();
   }
 
-  public get selectedCaseTags$(): Observable<CaseTag[]> {
-    return this._selectedCaseTags$;
+  public get selectedCaseTagKeys$(): Observable<string[]> {
+    return this._selectedCaseTagKeys$;
   }
 
   constructor(
@@ -62,8 +62,8 @@ export class CaseListCaseTagService {
     private readonly caseParameterService: CaseParameterService
   ) {}
 
-  public setSelectedCaseTags(caseTags: CaseTag[]): void {
-    this._selectedCaseTags$.next(caseTags);
-    this.caseParameterService.setCaseTagParameter(caseTags.map(caseTag => caseTag.key));
+  public setSelectedCaseTags(caseTagKeys: string[]): void {
+    this._selectedCaseTagKeys$.next(caseTagKeys);
+    this.caseParameterService.setCaseTagParameter(caseTagKeys);
   }
 }
