@@ -14,6 +14,8 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.skyscreamer.jsonassert.JSONAssert
@@ -180,7 +182,14 @@ class TableCaseWidgetDataProviderTest(
     }
 
     private fun testWidget() = TableCaseWidget(
-        CaseWidgetTabWidgetId("test"), "Test", 0, 1, true, emptyList(), emptyList(), TableWidgetProperties(
+        id = CaseWidgetTabWidgetId("test"),
+        title = "Test",
+        order = 0,
+        width = 1,
+        highContrast = true,
+        actions = emptyList(),
+        displayConditions = emptyList(),
+        properties = TableWidgetProperties(
             collection = "test:someCollection",
             defaultPageSize = 2,
             columns = testColumns()
@@ -199,7 +208,7 @@ class TableCaseWidgetDataProviderTest(
     )
 
     private fun mockCollection(documentId: UUID, widget: TableCaseWidget, collectionValue: Any?) {
-        whenever(valueResolverService.resolveValues(documentId.toString(), listOf(widget.properties.collection))).thenReturn(
+        whenever(valueResolverService.resolveValues(any<Map<String, Any>>(), eq(listOf(widget.properties.collection)))).thenReturn(
             mapOf(widget.properties.collection to collectionValue)
         )
     }

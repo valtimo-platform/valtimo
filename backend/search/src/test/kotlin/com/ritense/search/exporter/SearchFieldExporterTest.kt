@@ -123,7 +123,31 @@ class SearchFieldExporterTest {
         //Remove the timestamp from the changesetId, so we can compare it as usual
         (exportJson as ObjectNode).set<TextNode>(changesetIdField, TextNode(matchResult.groupValues[1]))
         JSONAssert.assertEquals(
-            """{"changesetId":"my-document-definition-name.some-owner-type","collection":[{"ownerId":"my-document-definition-name","searchFields":[{"key":"firstname","title":"Firstname","path":"doc:firstname","dataType":"text","fieldType":"single","matchType":"like"},{"key":"lastname","title":"Lastname","path":"doc:lastname","dataType":"text","fieldType":"single","matchType":"like"}]}]}""",
+            """{
+                "changesetId":"my-document-definition-name.some-owner-type",
+                "collection":[{
+                  "ownerId":"my-document-definition-name",
+                  "searchFields":[{
+                    "key":"firstname",
+                    "title":"Firstname",
+                    "path":"doc:firstname",
+                    "dataType":"text",
+                    "fieldType":"single",
+                    "matchType":"like",
+                    "required":false
+                  },
+                  {
+                    "key":"lastname",
+                    "title":"Lastname",
+                    "path":"doc:lastname",
+                    "dataType":"text",
+                    "fieldType":"single",
+                    "matchType":"like",
+                    "required":false
+                  }
+                ]}
+              ]}""".trimMargin(),
+
             objectMapper.writeValueAsString(exportJson),
             JSONCompareMode.NON_EXTENSIBLE
         )

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.objectenapi.client.ObjectenApiClient
+import com.ritense.objectenapi.ikorepository.ObjectenApiIkoRepository
 import com.ritense.objectenapi.listener.ZaakObjectListener
 import com.ritense.objectenapi.management.ErrorObjectManagementInfoProvider
 import com.ritense.objectenapi.management.ObjectManagementInfoProvider
@@ -35,7 +36,6 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.zakenapi.ZaakUrlProvider
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
@@ -144,6 +144,18 @@ class ObjectenApiAutoConfiguration {
     @ConditionalOnMissingBean(ObjectSpecificationFactory::class)
     fun objectSpecificationFactory(): ObjectSpecificationFactory {
         return ObjectSpecificationFactory()
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ObjectenApiIkoRepository::class)
+    fun objectenApiIkoRepository(
+        pluginService: PluginService,
+        objectMapper: ObjectMapper,
+    ): ObjectenApiIkoRepository {
+        return ObjectenApiIkoRepository(
+            pluginService,
+            objectMapper,
+        )
     }
 
     companion object {

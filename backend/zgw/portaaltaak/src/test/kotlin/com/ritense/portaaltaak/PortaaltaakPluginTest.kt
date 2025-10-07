@@ -124,7 +124,7 @@ internal class PortaaltaakPluginTest {
         whenever(delegateTask.name).thenReturn("delegateTaskName")
         whenever(delegateTask.id).thenReturn("delegateTaskId")
         whenever(jsonSchemaDocumentId.toString()).thenReturn("documentId")
-        whenever(valueResolverService.resolveValues(any(), any())).thenReturn(emptyMap())
+        whenever(valueResolverService.resolveValues(any<String>(), any())).thenReturn(emptyMap())
 
         portaaltaakPlugin.createPortaalTaak(
             delegateTask,
@@ -194,7 +194,7 @@ internal class PortaaltaakPluginTest {
         whenever(delegateTask.name).thenReturn("delegateTaskName")
         whenever(delegateTask.id).thenReturn("delegateTaskId")
         whenever(jsonSchemaDocumentId.toString()).thenReturn("documentId")
-        whenever(valueResolverService.resolveValues(any(), any())).thenReturn(emptyMap())
+        whenever(valueResolverService.resolveValues(any<String>(), any())).thenReturn(emptyMap())
         whenever(pluginService.getObjectMapper()).thenReturn(objectMapper)
 
         portaaltaakPlugin.createPortaalTaak(
@@ -268,7 +268,7 @@ internal class PortaaltaakPluginTest {
         whenever(delegateTask.name).thenReturn("delegateTaskName")
         whenever(delegateTask.id).thenReturn("delegateTaskId")
         whenever(jsonSchemaDocumentId.toString()).thenReturn("documentId")
-        whenever(valueResolverService.resolveValues(any(), any())).thenReturn(emptyMap())
+        whenever(valueResolverService.resolveValues(any<String>(), any())).thenReturn(emptyMap())
         whenever(pluginService.getObjectMapper()).thenReturn(objectMapper)
 
         portaaltaakPlugin.createPortaalTaak(
