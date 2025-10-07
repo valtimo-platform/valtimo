@@ -26,7 +26,6 @@ import {
 import {
   ConfigurationOutput,
   DataSourceConfigurationComponent,
-  Operator,
   QueryCondition,
 } from '../../../../models';
 import {BehaviorSubject, combineLatest, map, Observable, startWith, Subscription} from 'rxjs';
@@ -34,7 +33,7 @@ import {AbstractControl, FormBuilder} from '@angular/forms';
 import {TaskCountConfiguration} from '../../models';
 import {ListItemWithId, MultiInputKeyValue, MultiInputValues} from '@valtimo/components';
 import {TranslateService} from '@ngx-translate/core';
-import {WidgetTranslationService} from '../../../../services';
+import {Operator} from '@valtimo/shared';
 
 @Component({
   standalone: false,
@@ -74,7 +73,7 @@ export class TaskCountConfigurationComponent
       map(() =>
         this._OPERATORS.map(operator => ({
           id: operator,
-          content: this.widgetTranslationService.instant(operator, this.dataSourceKey),
+          content: this.translateService.instant('condition.operator.' + operator),
           selected: false,
         }))
       )
@@ -107,8 +106,7 @@ export class TaskCountConfigurationComponent
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly translateService: TranslateService,
-    private readonly widgetTranslationService: WidgetTranslationService
+    private readonly translateService: TranslateService
   ) {}
 
   public ngOnInit(): void {

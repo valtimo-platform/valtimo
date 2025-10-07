@@ -16,16 +16,16 @@
 
 package com.ritense.zakenapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.document.service.DocumentService
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProperty
 import com.ritense.plugin.service.PluginService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
@@ -51,8 +51,8 @@ internal class ZakenApiPluginFactoryTest {
         val zaakInstanceLinkRepository: ZaakInstanceLinkRepository = mock()
         val zaakHersteltermijnRepository: ZaakHersteltermijnRepository = mock()
         val platformTransactionManager: PlatformTransactionManager = mock()
-        val documentService: DocumentService = mock()
-        val processDocumentAssociationService: ProcessDocumentAssociationService = mock()
+        val valueResolverService: ValueResolverService = mock()
+        val objectMapper: ObjectMapper = mock()
 
         val factory = ZakenApiPluginFactory(
             pluginService,
@@ -62,8 +62,8 @@ internal class ZakenApiPluginFactoryTest {
             zaakInstanceLinkRepository,
             zaakHersteltermijnRepository,
             platformTransactionManager,
-            documentService,
-            processDocumentAssociationService
+            valueResolverService,
+            objectMapper
         )
         val zakenApiPluginProperties: String = """
             {

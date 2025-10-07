@@ -45,6 +45,14 @@
         "key": "widgets",
         "name": "Widgets",
         "type": "widgets",
-        "contentKey": "-"
+        "contentKey": "-",
+        "showTasks": true
+    },
+    {
+        "name": "FormIO",
+        "key": "formio",
+        "type": "formio",
+        "contentKey": "bezwaar-alternate",
+        "showTasks": true
     }
 ]

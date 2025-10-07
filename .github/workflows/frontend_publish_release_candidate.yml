@@ -1,0 +1,30 @@
+name: Frontend - Publish release candidate
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_version:
+        description: 'Project version'
+        required: true
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  build_and_test:
+    uses: ./.github/workflows/frontend_build_test.yml
+    with:
+      project_version: ${{ github.event.inputs.project_version }}
+    secrets: inherit
+
+  publish:
+    if: ${{ startsWith(github.ref_name, 'rc/') }}
+    uses: ./.github/workflows/frontend_publish_to_s3.yml
+    with:
+      publish_type: 'release-candidate'
+      project_version: ${{ github.event.inputs.project_version }}
+    secrets: inherit

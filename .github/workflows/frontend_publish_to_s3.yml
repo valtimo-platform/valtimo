@@ -1,0 +1,60 @@
+name: Frontend - Publish to S3
+
+permissions:
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      publish_type:
+        description: 'Type of publishing: snapshot, or release-candidate'
+        required: true
+        type: string
+      project_version:
+        description: "The determined project version. Required for release-candidate, not for snapshot"
+        required: false
+        type: string
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: 'Restore build artifact: dist'
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: frontend/dist
+
+      - name: 'Publish all libs to S3'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          PROJECT_VERSION: ${{ inputs.project_version }}
+        run: |
+          npm run libs-publish-all -- ${{ inputs.publish_type }} $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $PROJECT_VERSION
+
+      - name: 'Publish to SNS topic for snapshots'
+        if: inputs.publish_type == 'snapshot'
+        env:
+          AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC: ${{ secrets.AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC }}
+          PROJECT_VERSION: ${{ inputs.project_version }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          MESSAGE=$(cat <<EOF
+          {
+            "valtimoVersion": "${PROJECT_VERSION}",
+            "branchName": "${BRANCH}"
+          }
+          EOF)
+
+          aws sns publish --region eu-west-1 \
+            --target-arn $AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC \
+            --message "$MESSAGE"

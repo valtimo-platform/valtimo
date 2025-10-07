@@ -17,6 +17,7 @@
 type SseEventType =
   | 'CASE_CREATED'
   | 'TASK_UPDATE'
+  | 'DOCUMENT_UPDATED'
   | 'PROCESS_END'
   | 'CASE_ASSIGNED'
   | 'CASE_UNASSIGNED'

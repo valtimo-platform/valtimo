@@ -77,7 +77,7 @@ export class IkoManagementApiService extends BaseApiService {
     body: IkoDataAggregateCreateRequest
   ): Observable<IkoDataAggregateResponse> {
     return this.httpClient.post<IkoDataAggregateResponse>(
-      this.getApiUrl(`/v1/iko-data-aggregate/${key}`),
+      this.getApiUrl(`management/v1/iko-data-aggregate/${key}`),
       body
     );
   }
@@ -87,18 +87,30 @@ export class IkoManagementApiService extends BaseApiService {
     body: IkoDataAggregateUpdateRequest
   ): Observable<IkoDataAggregateResponse> {
     return this.httpClient.put<IkoDataAggregateResponse>(
-      this.getApiUrl(`/v1/iko-data-aggregate/${key}`),
+      this.getApiUrl(`management/v1/iko-data-aggregate/${key}`),
       body
     );
   }
 
   public deleteIkoDataAggregate(key: string): Observable<void> {
-    return this.httpClient.delete<void>(this.getApiUrl(`/v1/iko-data-aggregate/${key}`));
+    return this.httpClient.delete<void>(this.getApiUrl(`management/v1/iko-data-aggregate/${key}`));
+  }
+
+  public getIkoRepositoryPropertyFields(type: string): Observable<PropertyField[]> {
+    return this.httpClient.get<PropertyField[]>(
+      this.getApiUrl(`management/v1/iko-property-fields/${type}/repository-config`)
+    );
   }
 
   public getIkoDataAggregatePropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
-      this.getApiUrl(`/v1/iko-property-fields/${type}/data-aggregate`)
+      this.getApiUrl(`management/v1/iko-property-fields/${type}/data-aggregate`)
+    );
+  }
+
+  public getIkoDataAggregateType(key: string): Observable<IkoRepositoryConfigResponse> {
+    return this.httpClient.get<IkoRepositoryConfigResponse>(
+      this.getApiUrl(`/management/v1/iko/${key}`)
     );
   }
 
@@ -173,7 +185,7 @@ export class IkoManagementApiService extends BaseApiService {
 
   public getIkoDataRequestPropertyFields(type: string): Observable<PropertyField[]> {
     return this.httpClient.get<PropertyField[]>(
-      this.getApiUrl(`/v1/iko-property-fields/${type}/data-request`)
+      this.getApiUrl(`management/v1/iko-property-fields/${type}/data-request`)
     );
   }
 
@@ -203,11 +215,14 @@ export class IkoManagementApiService extends BaseApiService {
     key: string,
     body: IkoRepositoryConfigUpdateRequest
   ): Observable<IkoRepositoryConfigResponse> {
-    return this.httpClient.put<IkoRepositoryConfigResponse>(this.getApiUrl(`/v1/iko/${key}`), body);
+    return this.httpClient.put<IkoRepositoryConfigResponse>(
+      this.getApiUrl(`/management/v1/iko/${key}`),
+      body
+    );
   }
 
   public deleteIkoRepositoryConfig(key: string): Observable<void> {
-    return this.httpClient.delete<void>(this.getApiUrl(`/v1/iko/${key}`));
+    return this.httpClient.delete<void>(this.getApiUrl(`/management/v1/iko/${key}`));
   }
 
   public getIkoRepositoryConfigPropertyFields(type: string): Observable<PropertyField[]> {

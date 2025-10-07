@@ -21,6 +21,8 @@ import {PatchZaakConfig} from '../../models';
 import {IconService} from 'carbon-components-angular';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {PatchZaakProperties, PatchZaakPropertyOptions} from '../../models/patch-zaak-properties';
+import {GEOMETRY_TYPES} from '../../models/geometry-types';
+import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
 
 @Component({
   standalone: false,
@@ -40,16 +42,8 @@ export class PatchZaakConfigurationComponent
 
   public readonly propertyOptions: string[] = Object.values(PatchZaakPropertyOptions);
   public readonly propertyList: Array<PatchZaakProperties> = [];
-  public readonly geometryTypes: string[] = [
-    'Point',
-    'MultiPoint',
-    'LineString',
-    'MultiLineString',
-    'Polygon',
-    'GeometryCollection',
-    'MultiPolygon',
-  ];
-  public readonly paymentIndicationTypes: string[] = ['nvt', 'nog_niet', 'gedeeltelijk', 'geheel'];
+  public readonly geometryTypes: string[] = GEOMETRY_TYPES;
+  public readonly paymentIndicationTypes: string[] = PAYMENT_INDICATION_TYPES;
 
   protected readonly CASE_GEOMETRY_TYPE: string = 'caseGeometryType';
   protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';

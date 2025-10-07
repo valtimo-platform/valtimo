@@ -35,24 +35,24 @@ let destinationRegistry = 'localhost';
 let accessModifier = '';
 let bucketName = '';
 switch (destinationArg) {
-  case 's3':
+  case 'snapshot':
     destinationRegistry = 's3';
     if (!accessKeyIdOrNpmToken) throw 'Access key id must be set';
     if (!secretAccessKey) throw 'Secret access key must be set';
     if (!packageVersion) throw 'Package version must be set';
     bucketName = 'valtimo-snapshots/npm';
     break;
-  case 'npmjs':
-    destinationRegistry = 'registry.npmjs.org/';
-    if (!accessKeyIdOrNpmToken) throw 'Invalid npm token';
-    accessModifier = ' --access public';
-    break;
-  case 's3-release-candidates':
+  case 'release-candidate':
     destinationRegistry = 's3';
     if (!accessKeyIdOrNpmToken) throw 'Access key id must be set';
     if (!secretAccessKey) throw 'Secret access key must be set';
     if (!packageVersion) throw 'Package version must be set';
     bucketName = 'valtimo-releases';
+    break;
+  case 'release':
+    destinationRegistry = 'registry.npmjs.org/';
+    if (!accessKeyIdOrNpmToken) throw 'Invalid npm token';
+    accessModifier = ' --access public';
     break;
   default:
     console.error(`Invalid publishing option ${destinationArg}`);
@@ -63,7 +63,7 @@ const distDir = './dist/valtimo';
 fs.readdirSync(distDir).forEach(dir => {
   let cwd = process.cwd();
   process.chdir(path.resolve(`${distDir}/${dir}`));
-  if (destinationArg === 'ritense-nexus' || destinationArg === 'npmjs') {
+  if (destinationRegistry === 'registry.npmjs.org/') {
     fs.writeFileSync(
       '.npmrc',
       `@valtimo:registry=https://${destinationRegistry}\n` +
@@ -72,7 +72,7 @@ fs.readdirSync(distDir).forEach(dir => {
 
     exec.execSync('npm publish' + accessModifier);
   }
-  if (destinationArg.startsWith('s3')) {
+  if (destinationRegistry === 's3') {
     let envCopy = {};
     for (e in process.env) envCopy[e] = process.env[e];
     envCopy.AWS_ACCESS_KEY_ID = accessKeyIdOrNpmToken;

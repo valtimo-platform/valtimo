@@ -24,7 +24,7 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.result.CreateDocumentResult
 import com.ritense.valtimo.contract.Constants
 import com.ritense.valtimo.contract.authorization.UserManagementServiceHolder
-import com.ritense.valtimo.contract.dashboard.QueryCondition
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.valtimo.contract.repository.ExpressionOperator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -92,17 +92,17 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "case:createdBy",
                     ExpressionOperator.EQUAL_TO,
                     Constants.SYSTEM_ACCOUNT
                 ),
-                QueryCondition(
+                Condition(
                     "doc:street",
                     ExpressionOperator.EQUAL_TO,
                     street
                 ),
-                QueryCondition(
+                Condition(
                     "housenumber",
                     ExpressionOperator.EQUAL_TO,
                     1
@@ -165,7 +165,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
             documentDefinitionName,
             path = "doc:street",
             listOf(
-                QueryCondition(
+                Condition(
                     "doc:street",
                     ExpressionOperator.NOT_EQUAL_TO,
                     street3
@@ -219,7 +219,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
                 DocumentCountsQueryItem(
                     livingOnSesameStreet,
                     listOf(
-                        QueryCondition(
+                        Condition(
                             "doc:street",
                             ExpressionOperator.EQUAL_TO,
                             street1
@@ -230,7 +230,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
                 DocumentCountsQueryItem(
                     livingOnMainStreet,
                     listOf(
-                        QueryCondition(
+                        Condition(
                             "doc:street",
                             ExpressionOperator.EQUAL_TO,
                             street2
@@ -241,7 +241,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
                 DocumentCountsQueryItem(
                     livingOn3rdStreet,
                     listOf(
-                        QueryCondition(
+                        Condition(
                             "doc:street",
                             ExpressionOperator.EQUAL_TO,
                             street3
@@ -279,12 +279,12 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "case:createdOn",
                     ExpressionOperator.GREATER_THAN,
                     "\${localDateTimeNow.plusMinutes(1)}"
                 ),
-                QueryCondition(
+                Condition(
                     "doc:street",
                     ExpressionOperator.EQUAL_TO,
                     street
@@ -295,12 +295,12 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties2 = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "case:createdOn",
                     ExpressionOperator.GREATER_THAN,
                     "\${localDateTimeNow.minusMinutes(1)}"
                 ),
-                QueryCondition(
+                Condition(
                     "doc:street",
                     ExpressionOperator.EQUAL_TO,
                     street
@@ -366,7 +366,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "doc:userInfo",
                     ExpressionOperator.EQUAL_TO,
                     "\${currentUserId}"
@@ -377,7 +377,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties2 = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "doc:userInfo",
                     ExpressionOperator.NOT_EQUAL_TO,
                     "\${currentUserId}"
@@ -405,7 +405,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "doc:userInfo",
                     ExpressionOperator.EQUAL_TO,
                     "\${currentUserEmail}"
@@ -416,7 +416,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties2 = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "doc:userInfo",
                     ExpressionOperator.NOT_EQUAL_TO,
                     "\${currentUserEmail}"
@@ -430,7 +430,6 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         assertThat(result.value).isEqualTo(1)
         assertThat(result2.value).isEqualTo(0)
     }
-
 
     @Test
     fun `should support current user identifier in criteria`() {
@@ -445,7 +444,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "doc:userInfo",
                     ExpressionOperator.EQUAL_TO,
                     "\${currentUsername}"
@@ -456,7 +455,7 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         val properties2 = DocumentCountDataSourceProperties(
             documentDefinitionName,
             listOf(
-                QueryCondition(
+                Condition(
                     "doc:userInfo",
                     ExpressionOperator.NOT_EQUAL_TO,
                     "\${currentUsername}"
@@ -471,6 +470,36 @@ class DocumentWidgetDataSourceIntTest @Autowired constructor(
         assertThat(result2.value).isEqualTo(0)
     }
 
+    @Test
+    fun `should support null check in criteria`() {
+        documentRepository.deleteAll()
+
+        val definition = definition()
+
+        createDocument(definition, "", mockedUserEmail)
+
+        val documentDefinitionName = definition.id().name()
+
+        val properties = DocumentCountDataSourceProperties(
+            documentDefinitionName,
+            listOf(
+                Condition(
+                    "doc:city",
+                    ExpressionOperator.EQUAL_TO,
+                    "\${null}"
+                ),
+                Condition(
+                    "doc:street",
+                    ExpressionOperator.NOT_EQUAL_TO,
+                    "\${null}"
+                ),
+            )
+        )
+
+        val result = documentWidgetDataSource.getCaseCount(properties)
+
+        assertThat(result.value).isEqualTo(1)
+    }
 
     private fun createDocument(
         documentDefinition: JsonSchemaDocumentDefinition,
