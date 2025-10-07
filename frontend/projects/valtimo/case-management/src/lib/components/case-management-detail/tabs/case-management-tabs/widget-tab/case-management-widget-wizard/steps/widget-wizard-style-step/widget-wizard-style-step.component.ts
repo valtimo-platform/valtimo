@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
-import {WidgetWizardService} from '../../../../../../../../services';
 import {WidgetStyle} from '../../../../../../../../models';
+import {WidgetWizardService} from '../../../../../../../../services';
 
 @Component({
   selector: 'valtimo-widget-wizard-style-step',

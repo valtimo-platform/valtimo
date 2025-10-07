@@ -19,6 +19,7 @@ package com.ritense.zakenapi.domain
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.net.URI
 
+@Deprecated("Use (an implementation of) the com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest class instead.")
 data class ZaakObjectRequest (
     @JsonProperty("zaak")
     val zaakUrl: URI,

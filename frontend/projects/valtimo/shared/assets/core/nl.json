@@ -839,7 +839,8 @@
         "content": "Kies widget-inhoud",
         "style": "Kies widget-stijl",
         "type": "Kies widget-type",
-        "width": "Kies widget-breedte"
+        "width": "Kies widget-breedte",
+        "displayConditions": "Weergavecondities instellen"
       }
     },
     "notification": {
@@ -957,6 +958,14 @@
         "titleTooltip": "Titel van de eigenschap",
         "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevens-pad"
       }
+    },
+    "displayConditions": {
+      "description": "Configureer condities om te bepalen wanneer deze widget wordt getoond. Als je geen condities toevoegt, wordt de widget altijd weergegeven.",
+      "conditions": "Condities (Optioneel)",
+      "addCondition": "Conditie toevoegen",
+      "operator": "Operator",
+      "path": "Pad",
+      "value": "Waarde"
     },
     "cancelModal": {
       "title": "De editor verlaten",
@@ -1938,6 +1947,16 @@
     "editTab": "Tab bewerken",
     "tabTypes": {
       "widgets": "Widgets"
+    }
+  },
+  "condition": {
+    "operator" : {
+      "!=" : "Niet gelijk aan",
+      "==" : "Gelijk aan",
+      ">" : "Groter dan",
+      ">=" : "Groter dan of gelijk aan",
+      "<" : "Minder dan",
+      "<=" : "Minder dan of gelijk aan"
     }
   },
   "quickSearch": {
