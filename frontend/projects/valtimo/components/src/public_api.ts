@@ -232,6 +232,9 @@ export * from './lib/components/json-editor/json-editor.component';
 // auto key
 export * from './lib/components/auto-key-input/auto-key-input.component';
 
+// Quick search
+export * from './lib/components/quick-search/quick-search.component';
+
 /*
 directives
  */
@@ -263,3 +266,7 @@ export * from './lib/directives/muuri/muuri-item.component';
 export * from './lib/directives/read-only.directive';
 // observe size
 export * from './lib/directives/observe-size/observe-size.directive';
+// context-menu
+export * from './lib/directives/context-menu.directive';
+// interfaces
+export * from './lib/interfaces';

@@ -24,7 +24,9 @@ import {CreateNatuurlijkePersoonZaakRolConfig} from '../../models';
   selector: 'valtimo-create-natuurlijk-persoon-zaak-rol-configuration',
   templateUrl: './create-natuurlijk-persoon-zaak-rol.component.html',
 })
-export class CreateNatuurlijkPersoonZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateNatuurlijkPersoonZaakRolComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -35,8 +37,9 @@ export class CreateNatuurlijkPersoonZaakRolComponent implements FunctionConfigur
 
   private _saveSubscription!: Subscription;
 
-  private readonly _formValue$ =
-    new BehaviorSubject<CreateNatuurlijkePersoonZaakRolConfig | null>(null);
+  private readonly _formValue$ = new BehaviorSubject<CreateNatuurlijkePersoonZaakRolConfig | null>(
+    null
+  );
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
   public ngOnInit(): void {
