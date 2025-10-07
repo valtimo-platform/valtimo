@@ -60,6 +60,7 @@
 
 <ng-template #searchFields let-obs="obs">
   <valtimo-search-fields
+    [disableSaveSearch]="disableSaveSearch$ | async"
     [canSaveSearch]="true"
     [searchFields]="obs.searchFields"
     [caseDefinitionKey]="caseDefinitionKey$ | async"

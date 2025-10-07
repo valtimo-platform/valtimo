@@ -13,9 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use '@carbon/colors';
 
-.valtimo-qiuck-search-modal__content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.valtimo-qiuck-search-modal {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__error {
+    color: colors.$red-60;
+    fill: colors.$red-60;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 }

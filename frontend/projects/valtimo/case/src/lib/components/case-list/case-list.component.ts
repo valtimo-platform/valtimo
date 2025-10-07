@@ -722,6 +722,12 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.disableStartButton$.next(disabled);
   }
 
+  public readonly disableSaveSearch$ = combineLatest([
+    this.statusService.selectedCaseStatuses$,
+    this.caseListCaseTagService.selectedCaseTagKeys$,
+  ]).pipe(
+    map(([selectedStatuses, selectedTags]) => !selectedStatuses.length && !selectedTags.length)
+  );
   public onSaveSearchEvent(event): void {
     combineLatest([
       this.statusService.selectedCaseStatuses$,
@@ -742,7 +748,6 @@ export class CaseListComponent implements OnInit, OnDestroy {
       .pipe(take(1))
       .subscribe(([urlParams, caseDefinitionKey]) => {
         const queryParams = {...urlParams, ...Object.fromEntries(new URLSearchParams(queryPath))};
-        console.log({queryParams});
         this.router.navigate([`/cases/${caseDefinitionKey}`], {
           queryParams,
           replaceUrl: true,
