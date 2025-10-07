@@ -1,11 +1,16 @@
 name: Backend - Publish release candidate
+
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   push:
     branches: ['rc/13.3.0-release-pipeline']
 
-permissions:
-  contents: read
+defaults:
+  run:
+    working-directory: backend
 
 jobs:
   build_publish:
@@ -39,7 +44,7 @@ jobs:
 
       - name: Check license compliance (non-blocking)
         continue-on-error: true
-        run: ./backend/gradlew checkLicense
+        run: ./gradlew checkLicense
 
       - name: Warn if disallowed licenses found
         run: |
@@ -56,10 +61,10 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./backend/gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_rc }}"
+        run: ./gradlew --no-parallel publishAllPublicationsToSonatypeRepository -PprojectVersion="${{ steps.version.outputs.version_rc }}"
 
       - name: Deploy with JReleaser to Maven Central
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ env.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ env.SONATYPE_PASSWORD }}
-        run: ./backend/gradlew jreleaserDeploy -PprojectVersion="${{ steps.version.outputs.version_rc }}"
+        run: ./gradlew jreleaserDeploy -PprojectVersion="${{ steps.version.outputs.version_rc }}"
