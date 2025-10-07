@@ -109,7 +109,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
         """.trimIndent()
         val documentId = createDocument(caseDefinitionId, documentContent).id() as JsonSchemaDocumentId
 
-        val widgetTab = caseWidgetTabService.getWidgetTab(documentId, tabKey)
+        val widgetTab = caseWidgetService.getWidgetTab(documentId, tabKey)
         assertThat(widgetTab).isNotNull
         assertThat(widgetTab!!.widgets).hasSize(1)
         assertThat(widgetTab.widgets.map { it.key }).containsExactly("widget-1")
