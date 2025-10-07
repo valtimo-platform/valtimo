@@ -31,6 +31,7 @@ import com.ritense.case_.rest.CaseWidgetTabManagementResource
 import com.ritense.case_.rest.CaseWidgetTabResource
 import com.ritense.case_.rest.dto.CaseWidgetTabWidgetDto
 import com.ritense.case_.service.ActiveCaseDefinitionService
+import com.ritense.case_.service.CaseHeaderWidgetExporter
 import com.ritense.case_.service.CaseHeaderWidgetImporter
 import com.ritense.case_.service.CaseHeaderWidgetService
 import com.ritense.case_.service.CaseWidgetService
@@ -120,6 +121,13 @@ class CaseWidgetAutoConfiguration {
         caseWidgetTabRepository,
         caseWidgetMappers as List<CaseWidgetMapper<CaseWidgetTabWidget, CaseWidgetTabWidgetDto>>
     )
+
+    @Bean
+    @ConditionalOnMissingBean(CaseHeaderWidgetExporter::class)
+    fun caseHeaderWidgetExporter(
+        objectMapper: ObjectMapper,
+        caseHeaderWidgetRepository: CaseHeaderWidgetRepository
+    ) = CaseHeaderWidgetExporter(objectMapper, caseHeaderWidgetRepository)
 
     @Bean
     @ConditionalOnMissingBean(CaseHeaderWidgetImporter::class)
