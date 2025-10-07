@@ -94,7 +94,7 @@ export class FormioBuilderComponent implements OnInit {
     private readonly configService: ConfigService,
     private readonly injector: Injector,
     private readonly tagsService: FormIoTagsService,
-    private readonly route: ActivatedRoute,
+    private readonly route: ActivatedRoute
   ) {
     this.setOverrideOptions(this.configService.config);
     this.tagsService.reregisterTags(this.injector);

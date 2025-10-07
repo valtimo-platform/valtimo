@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use '@carbon/colors';
 
-export * from './cds-theme.service';
-export * from './choice-field.service';
-export * from './key-generator.service';
-export * from './modal.service';
-export * from './page-header.service';
-export * from './page-subtitle.service';
-export * from './page-title.service';
-export * from './prompt.service';
-export * from './quick-search-state.service';
-export * from './shell.service';
-export * from './stepper.service';
-export * from './user-interface.service';
-export * from './valtimo-modal.service';
-export * from './value-path-selector.service';
+.valtimo-qiuck-search-modal {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__error {
+    color: colors.$red-60;
+    fill: colors.$red-60;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}

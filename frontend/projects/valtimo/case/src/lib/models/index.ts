@@ -25,3 +25,4 @@ export * from './tab-api.model';
 export * from './tabs.model';
 export * from './case-detail-layout.model';
 export * from './case-sse-event.model';
+export * from './case-list-quick-search.model';

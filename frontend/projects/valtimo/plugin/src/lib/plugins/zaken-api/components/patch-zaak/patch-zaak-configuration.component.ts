@@ -30,7 +30,9 @@ import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
   templateUrl: './patch-zaak-configuration.component.html',
   styleUrl: './patch-zaak-configuration.component.scss',
 })
-export class PatchZaakConfigurationComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class PatchZaakConfigurationComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
   @Input() save$: Observable<void>;
@@ -52,9 +54,7 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   private _saveSubscription!: Subscription;
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  constructor(
-    private readonly iconService: IconService
-  ) {
+  constructor(private readonly iconService: IconService) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
@@ -63,8 +63,9 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
       if (prefill) {
-        PatchZaakPropertyOptions.filter(property => !!prefill[property])
-          .forEach(property => this.addProperty(property));
+        PatchZaakPropertyOptions.filter(property => !!prefill[property]).forEach(property =>
+          this.addProperty(property)
+        );
       }
     });
   }
@@ -81,22 +82,22 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
   public onPropertyChanged(property: PatchZaakProperties, value: any): void {
     this._properties.set(property, value);
     const formValue = this._formValue$.value;
-    this._properties.forEach((pValue, pKey) => {
-        formValue[pKey] = pValue;
+    this._properties.forEach((value, key) => {
+      formValue[key] = value;
     });
     this.onFormValueChanged(formValue);
   }
 
   public prefillValueFor(property: string, prefill: PatchZaakConfig): string | null {
-    return (prefill != null) ? prefill[property] : null;
+    return prefill != null ? prefill[property] : null;
   }
 
   public translationKeyFor(property: string): string {
-    return (property === 'description' ? 'omschrijving' : property);
+    return property === 'description' ? 'omschrijving' : property;
   }
 
   public translationKeyForPropertyList(property: string): string {
-    return (property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property));
+    return property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property);
   }
 
   public addProperty(property: PatchZaakProperties): void {
@@ -129,7 +130,7 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
 
   private handleValid(formValue: PatchZaakConfig): void {
     const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
-    const valid = !isPropertyInvalid
+    const valid = !isPropertyInvalid;
     this._valid$.next(valid);
     this.valid.emit(valid);
   }
@@ -140,7 +141,7 @@ export class PatchZaakConfigurationComponent implements FunctionConfigurationCom
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
-            const payload: PatchZaakConfig = { };
+            const payload: PatchZaakConfig = {};
             this.propertyList.forEach(property => (payload[property] = formValue[property]));
             this.configuration.emit(formValue);
           }

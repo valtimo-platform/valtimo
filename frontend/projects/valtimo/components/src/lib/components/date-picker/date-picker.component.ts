@@ -60,7 +60,9 @@ export class DatePickerComponent implements AfterViewInit, OnDestroy {
   @Input() public disabled = false;
   @Input() public tooltip = '';
   @Input() public required = false;
-  @Input() public defaultDate!: string;
+  @Input() public set defaultDate(value: string) {
+    this.dateValue$.next(value);
+  }
   @Input() public defaultDateIsToday!: boolean;
   @Input() public smallLabel = false;
   @Input() public clear$!: Observable<null>;
