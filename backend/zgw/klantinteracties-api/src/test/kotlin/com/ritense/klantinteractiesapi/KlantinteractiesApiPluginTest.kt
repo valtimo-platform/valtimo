@@ -82,10 +82,10 @@ class KlantinteractiesApiPluginTest {
             voornaam = "John",
             voorvoegselAchternaam = null,
             achternaam = "Doe",
-            processVariableName = "parijUrl",
+            processVariableName = "partijUrl",
         )
 
-        verify(executionMock).setVariable("parijUrl", "http://openklant.api/partij/000001")
+        verify(executionMock).setVariable("partijUrl", "http://openklant.api/partij/000001")
         assertEquals(URI("http://klantinteracties.api"), uriCaptor.firstValue)
         assertEquals(authenticationMock, authenticationCaptor.firstValue)
         val createKlantRequest = requestCaptor.firstValue
