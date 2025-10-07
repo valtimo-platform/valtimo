@@ -22,9 +22,6 @@ class CaseHeaderWidget(
     @Column(name = "type", nullable = false, length = 256)
     val type: String = "fields",
 
-    @Column(name = "title", nullable = true, length = 256)
-    val title: String?,
-
     @Column(name = "high_contrast", nullable = false)
     val highContrast: Boolean = false,
 
@@ -35,14 +32,12 @@ class CaseHeaderWidget(
     fun copy(
         id: CaseHeaderWidgetId = this.id,
         type: String = this.type,
-        title: String? = this.title,
         highContrast: Boolean = this.highContrast,
         properties: Map<String, Any?> = this.properties
     ): CaseHeaderWidget =
         CaseHeaderWidget(
             id = id,
             type = type,
-            title = title,
             highContrast = highContrast,
             properties = properties
         )
@@ -53,14 +48,13 @@ class CaseHeaderWidget(
 
         return id == other.id &&
             type == other.type &&
-            title == other.title &&
             highContrast == other.highContrast &&
             properties == other.properties
     }
 
     override fun hashCode(): Int =
-        Objects.hashCode(id, type, title, highContrast, properties)
+        Objects.hashCode(id, type, highContrast, properties)
 
     override fun toString(): String =
-        "CaseHeaderWidget(id='$id', type='$type', title='$title', highContrast=$highContrast)"
+        "CaseHeaderWidget(id='$id', type='$type', highContrast=$highContrast)"
 }

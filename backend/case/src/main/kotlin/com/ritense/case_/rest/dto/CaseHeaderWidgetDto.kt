@@ -8,7 +8,6 @@ data class CaseHeaderWidgetDto(
     val caseDefinitionKey: String,
     val caseDefinitionVersionTag: String,
     val type: String,
-    val title: String?,
     val highContrast: Boolean,
     val properties: Map<String, Any?>
 ) {
@@ -18,7 +17,6 @@ data class CaseHeaderWidgetDto(
                 caseDefinitionKey = entity.id.caseDefinitionKey,
                 caseDefinitionVersionTag = entity.id.caseDefinitionVersionTag,
                 type = entity.type,
-                title = entity.title,
                 highContrast = entity.highContrast,
                 properties = entity.properties ?: emptyMap()
             )
@@ -30,7 +28,6 @@ data class CaseHeaderWidgetDto(
         ): CaseHeaderWidget =
             CaseHeaderWidget(
                 id = CaseHeaderWidgetId(caseDefinitionKey, caseDefinitionVersionTag),
-                title = dto.title,
                 highContrast = dto.highContrast,
                 properties = dto.properties
             )

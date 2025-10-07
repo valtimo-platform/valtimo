@@ -56,7 +56,6 @@ class CaseHeaderWidgetService(
 
         val updated: CaseHeaderWidget = existing.copy(
             id = id,
-            title = dto.title,
             highContrast = dto.highContrast,
             properties = dto.properties
         )

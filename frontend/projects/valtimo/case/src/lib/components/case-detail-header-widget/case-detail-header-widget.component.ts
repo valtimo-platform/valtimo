@@ -63,6 +63,7 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
   private readonly _fetchData$ = new Subject<null>();
 
   private readonly _highContrast$ = new BehaviorSubject<boolean>(false);
+
   public readonly headerWidget$ = this._documentId$.pipe(
     switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidget(documentId)),
     tap(widget => {

@@ -37,6 +37,7 @@ class ValtimoImportTypes {
         const val PROCESS_LINK = "processlink"
         const val SEARCH = "search"
         const val SEARCH_FIELD = "searchField"
+        const val CASE_HEADER_WIDGET = "caseheaderwidget"
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"
