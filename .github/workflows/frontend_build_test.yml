@@ -16,7 +16,6 @@ defaults:
     working-directory: frontend
 
 jobs:
-  # Install and cache NPM packages for other jobs
   install_packages:
     runs-on: ubuntu-latest
     outputs:
@@ -24,6 +23,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Check whether NPM packages are already cached
         uses: actions/cache/restore@v4
         id: restore_node_modules_cache
@@ -31,9 +31,11 @@ jobs:
           lookup-only: true
           path: frontend/node_modules
           key: ${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+
       - name: Install NPM packages
         if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
         run: npm install
+
       - name: Cache NPM packages
         if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
@@ -58,7 +60,6 @@ jobs:
           path: frontend/node_modules
           key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
 
-      # There is a small chance the node_modules that the 'install_packages' job cached were evicted
       - name: Install node_modules on cache miss
         if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
         run: npm install
@@ -116,7 +117,6 @@ jobs:
           path: frontend/node_modules
           key: ${{ needs.install_packages.outputs.npm_package_cachekey }}
 
-      # There is a small chance the node_modules that the 'install_packages' job cached were evicted
       - name: Install node_modules on cache miss
         if: steps.restore_node_modules_cache.outputs.cache-hit != 'true'
         run: npm install
