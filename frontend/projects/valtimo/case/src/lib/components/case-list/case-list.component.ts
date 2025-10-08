@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
@@ -24,10 +24,13 @@ import {
   CarbonListNoResultsMessage,
   CarbonPaginationSelection,
   CASES_WITHOUT_STATUS_KEY,
+  IQuickSearchService,
   ListField,
   ListHiddenColumn,
   PageTitleService,
   Pagination,
+  QUICK_SEARCH_SERVICE,
+  QuickSearchStateService,
   ViewType,
 } from '@valtimo/components';
 import {
@@ -69,12 +72,12 @@ import {
   take,
   tap,
 } from 'rxjs';
-
 import {
   CASE_LIST_NO_RESULTS_MESSAGE,
   CASE_LIST_TABLE_TRANSLATIONS,
   DEFAULT_CASE_LIST_TABS,
 } from '../../constants';
+import {CaseListQuickSearchParams} from '../../models';
 import {
   CAN_CREATE_CASE_PERMISSION,
   CAN_EXPORT_CASE_PERMISSION,
@@ -89,6 +92,7 @@ import {
   CaseListCaseTagService,
   CaseListHiddenColumnsService,
   CaseListPaginationService,
+  CaseListQuickSearchService,
   CaseListSearchService,
   CaseListService,
   CaseListStatusService,
@@ -110,6 +114,10 @@ import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.c
     CaseListStatusService,
     CaseListCaseTagService,
     CaseExportService,
+    {
+      provide: QUICK_SEARCH_SERVICE,
+      useClass: CaseListQuickSearchService,
+    },
   ],
 })
 export class CaseListComponent implements OnInit, OnDestroy {
@@ -150,10 +158,14 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly caseTags$ = this.caseListCaseTagService.caseTags$.pipe(
     tap(() => (this.loadingStatuses = false))
   );
-  public readonly selectedStatuses$ = this.statusService.selectedCaseStatuses$;
-  public readonly selectedCaseTags$ = this.caseListCaseTagService.selectedCaseTags$;
+  public readonly selectedStatusKeys$ = this.statusService.selectedCaseStatuses$;
+  public readonly selectedCaseTagKeys$ = this.caseListCaseTagService.selectedCaseTagKeys$;
 
-  public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$;
+  public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$.pipe(
+    tap((caseDefinitionKey: string) =>
+      this.caseListQuickSearchService.initParams(caseDefinitionKey)
+    )
+  );
 
   public readonly selectedCaseIds$ = new BehaviorSubject<string[]>([]);
   private readonly _refreshHiddenColumns$ = new BehaviorSubject<null>(null);
@@ -344,7 +356,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.assigneeFilter$,
         this.searchFieldValues$,
         this.statusService.selectedCaseStatuses$,
-        this.caseListCaseTagService.selectedCaseTags$,
+        this.caseListCaseTagService.selectedCaseTagKeys$,
         this.listService.forceRefresh$,
         this.hasApiColumnConfig$,
         this.statusService.caseStatuses$,
@@ -358,7 +370,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
           prevAssigneeFilter,
           prevSearchFieldValues,
           prevSelectedStatuses,
-          prevCaseTags,
+          prevCaseTagKeys,
           prevForceRefresh,
         ],
         [
@@ -366,7 +378,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
           currAssigneeFilter,
           currSearchFieldValues,
           currSelectedStatuses,
-          currCaseTags,
+          currCaseTagKeys,
           currForceRefresh,
         ]
       ) =>
@@ -375,16 +387,16 @@ export class CaseListComponent implements OnInit, OnDestroy {
             ...prevSearchRequest,
             assignee: prevAssigneeFilter,
             ...prevSearchFieldValues,
-            ...prevSelectedStatuses.map((status: InternalCaseStatus) => status.key),
-            ...prevCaseTags.map((caseTag: CaseTag) => caseTag.key),
+            ...prevSelectedStatuses,
+            ...prevCaseTagKeys,
             forceRefresh: prevForceRefresh,
           },
           {
             ...currSearchRequest,
             assignee: currAssigneeFilter,
             ...currSearchFieldValues,
-            ...currSelectedStatuses.map((status: InternalCaseStatus) => status.key),
-            ...currCaseTags.map((caseTag: CaseTag) => caseTag.key),
+            ...currSelectedStatuses,
+            ...currCaseTagKeys,
             forceRefresh: currForceRefresh,
           }
         )
@@ -395,16 +407,15 @@ export class CaseListComponent implements OnInit, OnDestroy {
         assigneeFilter,
         searchValues,
         selectedStatuses,
-        selectedCaseTags,
+        selectedCaseTagKeys,
         _,
         hasApiColumnConfig,
         allStatuses,
       ]) => {
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
-        const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
-          status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
+        const statusKeys: (string | null)[] = selectedStatuses.map((statusKey: string) =>
+          statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
         );
-        const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents: !hasApiColumnConfig
@@ -414,7 +425,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   assigneeFilter,
                   this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
-                  caseTagsKeys
+                  selectedCaseTagKeys
                 )
               : this.documentService.getSpecifiedDocumentsSearch(
                   documentSearchRequest,
@@ -422,7 +433,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   assigneeFilter,
                   this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
-                  caseTagsKeys
+                  selectedCaseTagKeys
                 ),
             hasApiColumnConfig: obsApi,
             isSearchResult: of(true),
@@ -438,7 +449,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 undefined,
                 statusKeys,
-                caseTagsKeys
+                selectedCaseTagKeys
               )
             : this.documentService.getSpecifiedDocumentsSearch(
                 documentSearchRequest,
@@ -446,7 +457,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 undefined,
                 statusKeys,
-                caseTagsKeys
+                selectedCaseTagKeys
               ),
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
@@ -572,6 +583,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly caseListCaseTagService: CaseListCaseTagService,
     private readonly caseExportService: CaseExportService,
     private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService
+    private readonly quickSearchStateService: QuickSearchStateService,
+    @Inject(QUICK_SEARCH_SERVICE)
+    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
   ) {}
 
   public ngOnInit(): void {
@@ -718,12 +732,12 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.listService.forceRefresh();
   }
 
-  public onSelectedStatusesChange(statuses: InternalCaseStatus[]): void {
-    this.statusService.setSelectedStatuses(statuses);
+  public onSelectedStatusesChange(statusKeys: string[]): void {
+    this.statusService.setSelectedStatuses(statusKeys);
   }
 
-  public onSelectedCaseTagsChange(caseTags: CaseTag[]): void {
-    this.caseListCaseTagService.setSelectedCaseTags(caseTags);
+  public onSelectedCaseTagsChange(caseTagKeys: string[]): void {
+    this.caseListCaseTagService.setSelectedCaseTags(caseTagKeys);
   }
 
   public onStartButtonDisableEvent(disabled: boolean): void {
@@ -739,6 +753,54 @@ export class CaseListComponent implements OnInit, OnDestroy {
         )
       )
       .subscribe(() => this._refreshHiddenColumns$.next(null));
+}
+
+  public readonly disableSaveSearch$ = combineLatest([
+    this.statusService.selectedCaseStatuses$,
+    this.caseListCaseTagService.selectedCaseTagKeys$,
+  ]).pipe(
+    map(([selectedStatuses, selectedTags]) => !selectedStatuses.length && !selectedTags.length)
+  );
+  public onSaveSearchEvent(event): void {
+    combineLatest([
+      this.statusService.selectedCaseStatuses$,
+      this.caseListCaseTagService.selectedCaseTagKeys$,
+    ])
+      .pipe(take(1))
+      .subscribe(([statusKeys, tags]) => {
+        this.quickSearchStateService.openModal({
+          ...this.parameterService.getSearchParameter('casetags', tags),
+          ...this.parameterService.getSearchParameter('status', statusKeys),
+          ...this.parameterService.getSearchParameter('search', event),
+        });
+      });
+  }
+
+  public onQuickSearchEvent(queryPath: string): void {
+    combineLatest([this.route.queryParams, this.caseDefinitionKey$])
+      .pipe(take(1))
+      .subscribe(([urlParams, caseDefinitionKey]) => {
+        const queryParams = {...urlParams, ...Object.fromEntries(new URLSearchParams(queryPath))};
+        this.router.navigate([`/cases/${caseDefinitionKey}`], {
+          queryParams,
+          replaceUrl: true,
+          queryParamsHandling: 'replace',
+        });
+        this.statusService.setSelectedStatuses(
+          this.parameterService.getSearchObject(queryParams['status']) as string[]
+        );
+        this.caseListCaseTagService.setSelectedCaseTags(
+          this.parameterService.getSearchObject(queryParams['casetags']) as string[]
+        );
+        this.parameterService.setSearchFieldValues(
+          this.parameterService.getSearchObject(queryParams['search']) as SearchFieldValues
+        );
+      });
+  }
+
+  public onClearEvent(): void {
+    this.statusService.setSelectedStatuses([]);
+    this.caseListCaseTagService.setSelectedCaseTags([]);
   }
 
   private openCaseDefinitionKeySubscription(): void {

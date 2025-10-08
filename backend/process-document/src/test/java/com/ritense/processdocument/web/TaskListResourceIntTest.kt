@@ -19,32 +19,33 @@ package com.ritense.processdocument.web
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext
 import com.ritense.case.domain.ColumnDefaultSort
-import com.ritense.case.domain.DisplayType
-import com.ritense.case.domain.EmptyDisplayTypeParameter
-import com.ritense.case.domain.EnumDisplayTypeParameter
 import com.ritense.case.domain.TaskListColumn
 import com.ritense.case.domain.TaskListColumnId
 import com.ritense.case.repository.TaskListColumnRepository
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.processdocument.BaseIntegrationTest
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
+import com.ritense.processdocument.service.SEARCH_FIELD_OWNER_TYPE
 import com.ritense.processdocument.tasksearch.SearchWithConfigRequest
-import com.ritense.processdocument.tasksearch.TaskListSearchFieldV2Dto
 import com.ritense.processdocument.web.request.TaskListSearchDto
 import com.ritense.search.domain.DataType
+import com.ritense.search.domain.DisplayType
+import com.ritense.search.domain.EmptyDisplayTypeParameter
+import com.ritense.search.domain.EnumDisplayTypeParameter
 import com.ritense.search.domain.FieldType
 import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.service.SearchFieldV2Service
+import com.ritense.search.web.rest.dto.SearchFieldV2Dto
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants
 import com.ritense.valtimo.service.OperatonTaskService
 import org.assertj.core.api.Assertions.assertThat
-import org.operaton.bpm.engine.RuntimeService
-import org.operaton.bpm.engine.TaskService
 import org.hamcrest.Matchers.hasItems
 import org.hamcrest.Matchers.hasKey
 import org.hamcrest.Matchers.hasSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.operaton.bpm.engine.RuntimeService
+import org.operaton.bpm.engine.TaskService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
@@ -260,8 +261,9 @@ class TaskListResourceIntTest : BaseIntegrationTest() {
         taskListColumnRepository.saveAllAndFlush(taskListColumns)
 
         searchFieldV2Service.create(
-            TaskListSearchFieldV2Dto(
+            SearchFieldV2Dto(
                 ownerId = DOCUMENT_DEFINITION_NAME,
+                ownerType = SEARCH_FIELD_OWNER_TYPE,
                 key = "firstName",
                 title = "First name",
                 path = "doc:first-name",

@@ -55,6 +55,7 @@ import {
   ValtimoCdsOverflowButtonDirective,
   VModalModule,
   WidgetModule,
+  QuickSearchComponent,
 } from '@valtimo/components';
 import {FormModule} from '@valtimo/form';
 import {ProcessModule} from '@valtimo/process';
@@ -197,6 +198,7 @@ export type TabsFactory = () => Map<string, object>;
     CarbonInputModule,
     TooltipModule,
     ListColumnViewComponent,
+    QuickSearchComponent,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
 })
