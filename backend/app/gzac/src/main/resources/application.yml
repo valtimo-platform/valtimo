@@ -229,7 +229,7 @@ valtimo:
     zgw:
         zaakdetails:
             linktozaak:
-                enabled: true
+                enabled: ${VALTIMO_ZGW_ZAAKDETAILS_LINKTOZAAK_ENABLED:false}
     import:
         whitelistedPaths: "VALTIMO_.*"
     includeDocumentContentInResponse: true
