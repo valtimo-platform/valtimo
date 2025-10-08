@@ -1,7 +1,5 @@
 name: 'Create test environment'
 on:
-  push:
-    branches: ['feature/dockerize-app']
   workflow_call:
     inputs:
       envName:
