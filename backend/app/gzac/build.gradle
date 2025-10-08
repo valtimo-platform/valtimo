@@ -53,7 +53,11 @@ bootRun {
 }
 
 dockerCompose {
-    composeAdditionalArgs = ['--profile', 'zgw']
+    projectName = "gzac-docker-compose"
+    composeAdditionalArgs = ["--profile", "zgw", "--profile", "openklant", "--profile", "iko"]
+    stopContainers = false
+    removeContainers = false
+    removeVolumes = false
 }
 
 tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
