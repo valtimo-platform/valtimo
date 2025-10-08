@@ -20,7 +20,8 @@
                     "name": "FormIO tab",
                     "key": "formio-tab",
                     "type": "formio",
-                    "contentKey": "test-form"
+                    "contentKey": "test-form",
+                    "showTasks": true
                 }
             ]
         }
