@@ -35,4 +35,4 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DISPATCH_URL }} \
-            -d '{"ref":"main","inputs":{"envName":"${{ inputs.envName }}"}'
+            -d '{"ref":"main","inputs":{"envName":"${{ inputs.envName }}"}}'
