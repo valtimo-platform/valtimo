@@ -18,7 +18,7 @@ package com.ritense.case_.widget.custom
 
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
-import com.ritense.case_.rest.dto.CaseWidgetAction
+import com.ritense.widget.domain.WidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
 import io.hypersistence.utils.hibernate.type.json.JsonType
@@ -36,7 +36,7 @@ class CustomCaseWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
-    actions: List<CaseWidgetAction>,
+    actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
     @Type(value = JsonType::class)

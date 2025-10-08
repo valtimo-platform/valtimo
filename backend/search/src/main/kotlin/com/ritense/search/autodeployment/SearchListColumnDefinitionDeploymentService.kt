@@ -57,7 +57,7 @@ class SearchListColumnDefinitionDeploymentService(
                 ) {
                     searchListColumnService.create(searchListColumn)
                 } else {
-                    searchListColumnService.update(searchListColumn.ownerId, searchListColumn.key, searchListColumn)
+                    searchListColumnService.update(searchListColumn)
                 }.also {
                     logger.info("Deployed search list column configuration {}", searchListColumn.id)
                 }
