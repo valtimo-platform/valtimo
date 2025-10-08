@@ -5,11 +5,13 @@ on:
       envName:
         description: 'Environment name'
         required: true
+        type: string
   workflow_dispatch:
     inputs:
       envName:
         description: 'Environment name'
         required: true
+        type: string
 
 permissions:
   actions: read
