@@ -46,7 +46,7 @@ jobs:
       - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: gzac-app-frontend-deployment
+          name: dist
           path: frontend/deployment/
 
       - name: Move local devDependencies to dependencies and install

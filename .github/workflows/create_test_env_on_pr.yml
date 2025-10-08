@@ -2,6 +2,8 @@ name: 'Create test environment for each new PR'
 on:
   pull_request:
     branches: ['next-minor']
+    types:
+      - opened
 
 permissions:
   actions: read
