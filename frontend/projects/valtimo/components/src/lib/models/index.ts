@@ -46,4 +46,5 @@ export * from './title.model';
 export * from './topbar.model';
 export * from './value-path-selector.model';
 export * from './menu.model';
+export * from './list-hidden-column.model';
 export * from './version.model';

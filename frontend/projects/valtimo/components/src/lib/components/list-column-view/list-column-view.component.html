@@ -1,0 +1,74 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+@if (disabled) {
+  <cds-tooltip [description]="'listViewColumns.disabledTooltip' | translate">
+    <button [disabled]="disabled" iconOnly="true" cdsButton="ghost">
+      <svg cdsIcon="view--off" size="16"></svg>
+    </button>
+  </cds-tooltip>
+} @else {
+  <cds-overflow-menu
+    [customTrigger]="customTrigger"
+    [cdsOverflowMenu]="visibleColumns"
+    [customPane]="true"
+    [flip]="true"
+    [description]="'listViewColumns.tooltip' | translate"
+    [offset]="{x: 2, y: 64}"
+    placement="bottom"
+    (openChange)="onOpenChange($event)"
+  >
+  </cds-overflow-menu>
+}
+
+<ng-template #customTrigger>
+  <button iconOnly="true" cdsButton="ghost" (click)="onOpenChange()">
+    <svg cdsIcon="view--off" size="16"></svg>
+  </button>
+
+  <cds-tag type="blue" class="valtimo-list-column-view__tag">
+    {{ $checkedItemsCount() }}/{{ $availableFields().length }}
+  </cds-tag>
+</ng-template>
+
+<ng-template #visibleColumns>
+  <section class="valtimo-list-column-view__container" (click)="$event.stopImmediatePropagation()">
+    <cds-label>{{ 'listViewColumns.label' | translate }}</cds-label>
+
+    <div class="valtimo-list-column-view__content">
+      @for (field of $availableFields(); track field.key) {
+        <cds-checkbox
+          [class.valtimo-list-column-view__checkbox--disabled]="
+            field.selected && $checkedItemsCount() === 1
+          "
+          [disabled]="field.selected && $checkedItemsCount() === 1"
+          [checked]="field.selected"
+          (checkedChange)="onCheckedChange($event, field.key)"
+        >
+          {{ field.label }}
+        </cds-checkbox>
+
+        @if (field.selected && $checkedItemsCount() === 1) {
+          <div class="valtimo-list-column-view__warning">
+            <svg cdsIcon="warning--alt--filled" size="16"></svg>
+
+            {{ 'listViewColumns.warning' | translate }}
+          </div>
+        }
+      }
+    </div>
+  </section>
+</ng-template>

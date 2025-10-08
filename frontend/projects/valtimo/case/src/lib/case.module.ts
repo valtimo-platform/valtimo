@@ -38,6 +38,7 @@ import {
   InputLabelModule,
   InputModule,
   IsArrayPipe,
+  ListColumnViewComponent,
   MenuService,
   ModalModule,
   ParagraphModule,
@@ -56,11 +57,12 @@ import {
   WidgetModule,
   QuickSearchComponent,
 } from '@valtimo/components';
-import {ConfigModule, HttpLoaderFactory} from '@valtimo/shared';
 import {FormModule} from '@valtimo/form';
-import {ProcessLinkModule} from '@valtimo/process-link';
 import {ProcessModule} from '@valtimo/process';
+import {ProcessLinkModule} from '@valtimo/process-link';
+import {ConfigModule, HttpLoaderFactory} from '@valtimo/shared';
 import {TaskModule} from '@valtimo/task';
+import {AngularSplitModule} from 'angular-split';
 import {
   ButtonModule as CarbonButtonModule,
   ComboBoxModule,
@@ -79,31 +81,31 @@ import {
   TilesModule,
   TooltipModule,
 } from 'carbon-components-angular';
-import {NoteModalComponent} from './components/note-modal/note-modal.component';
+
+import {CaseRoutingModule} from './case-routing.module';
 import {CaseAssignUserComponent} from './components/case-assign-user/case-assign-user.component';
 import {CaseBulkAssignModalComponent} from './components/case-bulk-assign-modal/case-bulk-assign-modal.component';
+import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
+import {CaseDetailTaskListComponent} from './components/case-detail-task-list/case-detail-task-list.component';
 import {CaseDetailComponent} from './components/case-detail/case-detail.component';
 import {CaseDetailTabAuditComponent} from './components/case-detail/tab/audit/audit.component';
 import {CaseDetailTabDocumentsComponent} from './components/case-detail/tab/documents/documents.component';
+import {CaseDetailTabFormioComponent} from './components/case-detail/tab/formio/formio.component';
+import {CaseDetailTabNotFoundComponent} from './components/case-detail/tab/not-found/not-found.component';
 import {CaseDetailTabNotesComponent} from './components/case-detail/tab/notes/notes.component';
 import {CaseDetailTabProgressComponent} from './components/case-detail/tab/progress/progress.component';
 import {CaseDetailTabS3DocumentsComponent} from './components/case-detail/tab/s3-documents/s3-documents.component';
 import {CaseDetailTabSummaryComponent} from './components/case-detail/tab/summary/summary.component';
+import {CaseDetailWidgetsComponent} from './components/case-detail/tab/widgets/widgets.component';
 import {CaseListActionsComponent} from './components/case-list-actions/case-list-actions.component';
 import {CaseListComponent} from './components/case-list/case-list.component';
 import {CaseProcessStartModalComponent} from './components/case-process-start-modal/case-process-start-modal.component';
-import {CaseRoutingModule} from './case-routing.module';
 import {CaseSupportingProcessStartModalComponent} from './components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
+import {NoteModalComponent} from './components/note-modal/note-modal.component';
 import {TAB_MAP} from './constants';
-import {CaseBulkAssignService, CaseMenuService, CaseService} from './services';
-import {CaseDetailTabFormioComponent} from './components/case-detail/tab/formio/formio.component';
 import {TabTranslatePipeModule} from './pipes';
-import {CaseDetailTabNotFoundComponent} from './components/case-detail/tab/not-found/not-found.component';
-import {CaseDetailWidgetsComponent} from './components/case-detail/tab/widgets/widgets.component';
-import {CaseDetailTaskListComponent} from './components/case-detail-task-list/case-detail-task-list.component';
-import {CaseDetailsTaskDetailComponent} from './components/case-detail-task-detail/case-detail-task-detail.component';
-import {AngularSplitModule} from 'angular-split';
+import {CaseBulkAssignService, CaseMenuService, CaseService} from './services';
 
 export type TabsFactory = () => Map<string, object>;
 
@@ -195,6 +197,7 @@ export type TabsFactory = () => Map<string, object>;
     NotificationModule,
     CarbonInputModule,
     TooltipModule,
+    ListColumnViewComponent,
     QuickSearchComponent,
   ],
   exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],

@@ -114,7 +114,6 @@ spring:
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
-            - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
     cloud:
         function:
             definition: kotlinInboxCloudEventConsumer
