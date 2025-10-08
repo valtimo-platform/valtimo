@@ -1,0 +1,716 @@
+name: gzac-docker-compose
+
+services:
+    # GZAC core
+
+    gzac-keycloak:
+        container_name: gzac-docker-compose-gzac-keycloak
+        depends_on:
+            - gzac-keycloak-database
+        image: quay.io/keycloak/keycloak:26.2.2
+        ports:
+            - "8081:8080"
+        environment:
+            KEYCLOAK_ADMIN: admin
+            KEYCLOAK_ADMIN_PASSWORD: admin
+            KC_DB: postgres
+            KC_DB_URL: jdbc:postgresql://gzac-keycloak-database/keycloak
+            KC_DB_USERNAME: keycloak
+            KC_DB_PASSWORD: keycloak
+            KC_FEATURES: token-exchange,admin-fine-grained-authz
+            KC_HTTP_RELATIVE_PATH: /auth
+            KC_HOSTNAME_STRICT: false
+            KC_HOSTNAME_STRICT_HTTPS: false
+        volumes:
+            - ./imports/keycloak:/opt/keycloak/data/import
+        command:
+            - start-dev
+            - --import-realm
+            - --http-enabled=true
+            - --hostname-strict=false
+        healthcheck:
+            test: [ 'CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() == 200 ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/auth' ]
+            interval: 10s
+            timeout: 5s
+            retries: 60
+            start_period: 5s
+
+    gzac-keycloak-database:
+        image: postgres:17.4
+        container_name: gzac-docker-compose-gzac-keycloak-database
+        ports:
+            - "54329:5432"
+        environment:
+            POSTGRES_USER: keycloak
+            POSTGRES_PASSWORD: keycloak
+
+    gzac-database:
+        container_name: gzac-docker-compose-gzac-database
+        image: postgres:17.4
+        ports:
+            - "54320:5432"
+        environment:
+            POSTGRES_USER: gzac
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: gzac
+        volumes:
+            - gzac-database-data:/var/lib/postgres # persist data even if container shuts down
+
+    gzac-database-mysql:
+        container_name: gzac-docker-compose-gzac-database-mysql
+        image: mysql/mysql-server:8.0.28-1.2.7-server
+        ports:
+            - "33060:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_DATABASE: gzac
+            MYSQL_USER: gzac
+            MYSQL_PASSWORD: password
+            MYSQL_ROOT_HOST: "%"
+        command:
+            --default-authentication-plugin=mysql_native_password
+            --lower_case_table_names=1
+            --collation-server=utf8mb4_unicode_ci
+            --character-set-server=utf8mb4
+            --explicit_defaults_for_timestamp
+            --ssl=false
+            --innodb_flush_method=O_DIRECT
+            --sql_mode=NO_ENGINE_SUBSTITUTION
+            --transaction-isolation=READ-COMMITTED
+        volumes:
+            - gzac-database-data-mysql:/var/lib/mysql # persist data even if container shuts down
+
+    gzac-rabbitmq:
+        image: rabbitmq:4.1.0-management
+        container_name: gzac-docker-compose-gzac-rabbitmq
+        volumes:
+            - ./imports/gzac-rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+            - ./imports/gzac-rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        environment:
+            RABBITMQ_CONFIG_FILE: /etc/rabbitmq/rabbitmq.conf
+        command: >
+            bash -c "
+              rabbitmq-plugins enable --offline rabbitmq_stream rabbitmq_stream_management &&
+              rabbitmq-server
+            "
+
+    # ZGW
+
+    openzaak:
+        image: openzaak/open-zaak:1.20.0
+        container_name: gzac-docker-compose-openzaak
+        platform: linux/amd64
+        profiles:
+            - zgw
+            - openzaak
+        environment:
+            - DB_HOST=openzaak-database
+            - DB_POST=5433
+            - SECRET_KEY=veryRestrictedSecretKey
+            - DB_USER=openzaak
+            - DB_PASSWORD=openzaak
+            - DB_NAME=openzaak
+            - CACHE_DEFAULT=openzaak-redis:6379/0
+            - CACHE_AXES=openzaak-redis:6379/0
+            - DEBUG=true
+            - ALLOWED_HOSTS=localhost,host.docker.internal,172.17.0.1,openzaak
+            - OPENZAAK_SUPERUSER_USERNAME=admin
+            - OPENZAAK_SUPERUSER_EMAIL=admin@admin.org
+            - DJANGO_SUPERUSER_PASSWORD=admin
+            - SENDFILE_BACKEND=django_sendfile.backends.simple
+            - NOTIFICATIONS_DISABLED=true
+            - DISABLE_2FA=True
+        ports:
+            - "8001:8000"
+        depends_on:
+            - openzaak-database
+            - openzaak-redis
+
+    openzaak-database:
+        image: postgis/postgis:17-3.4
+        container_name: gzac-docker-compose-openzaak-database
+        platform: linux/amd64
+        profiles:
+            - zgw
+            - openzaak
+        environment:
+            - POSTGRES_USER=openzaak
+            - POSTGRES_PASSWORD=openzaak
+            - POSTGRES_DB=openzaak
+        ports:
+            - "5433:5432"
+        volumes:
+            - ./imports/open-zaak:/docker-entrypoint-initdb.d
+
+    openzaak-redis:
+        image: redis:7.4.3
+        container_name: gzac-docker-compose-openzaak-redis
+        profiles:
+            - zgw
+            - openzaak
+
+    objecten-api:
+        image: maykinmedia/objects-api:2.4.4
+        container_name: gzac-docker-compose-objecten-api
+        platform: linux/amd64
+        profiles:
+            - zgw
+            - objecten
+        ports:
+            - "8010:8000"
+        environment: &objects-env
+            - DB_USER=objects
+            - DB_PASSWORD=objects
+            - DB_HOST=objecten-api-database
+            - DJANGO_SETTINGS_MODULE=objects.conf.docker
+            - SECRET_KEY=${SECRET_KEY:-1(@f(-6s_u(5fd&1sg^uvu2s(c-9sapw)1era8q&)g)h@cwxxg}
+            - IS_HTTPS=no
+            - ALLOWED_HOSTS=*
+            - CACHE_DEFAULT=objecten-api-redis:6379/0
+            - CACHE_AXES=objecten-api-redis:6379/0
+            - CELERY_BROKER_URL=redis://objecten-api-redis:6379/1
+            - CELERY_RESULT_BACKEND=redis://objecten-api-redis:6379/1
+            - CELERY_LOGLEVEL=DEBUG
+            - DISABLE_2FA=True
+            - OBJECTS_SUPERUSER_EMAIL=admin@example.org
+            - OBJECTS_SUPERUSER_USERNAME=admin
+            - OBJECTS_SUPERUSER_PASSWORD=admin
+            - DEBUG=True
+        depends_on:
+            - objecten-api-database
+            - objecten-api-redis
+        healthcheck:
+            test: [ "CMD", "python", "-c", "import requests; exit(requests.head('http://localhost:8000/admin/').status_code not in [200, 302])" ]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            # This should allow for enough time for migrations to run before the max
+            # retries have passed. This healthcheck in turn allows other containers
+            # to wait for the database migrations.
+            start_period: 30s
+
+    objecten-api-database:
+        image: postgis/postgis:17-3.4
+        container_name: gzac-docker-compose-objecten-api-database
+        platform: linux/amd64
+        profiles:
+            - zgw
+            - objecten
+        ports:
+            - "54321:5432"
+        environment:
+            - POSTGRES_USER=objects
+            - POSTGRES_PASSWORD=objects
+            - POSTGRES_DB=objects
+
+    objecten-api-import:
+        image: maykinmedia/objects-api:2.4.4
+        container_name: gzac-docker-compose-objects-api-import
+        platform: linux/amd64
+        profiles:
+            - zgw
+            - objecten
+        environment: *objects-env
+        # in the current version of django it is not possible to create a new user with password without user interaction by using the createsuperuser command
+        command: sh init/init.sh
+        volumes:
+            - ./imports/objects-api/fixtures:/app/src/objects/fixtures
+            - ./imports/objects-api/init:/app/init
+        depends_on:
+            objecten-api:
+                condition: service_healthy
+
+    objecten-api-redis:
+        image: redis:7.4.3
+        command: [ "redis-server", "--appendonly", "yes" ]
+        container_name: gzac-docker-compose-objecten-api-redis
+        profiles:
+            - zgw
+            - objecten
+
+    objecten-api-celery:
+        image: maykinmedia/objects-api:2.4.4
+        environment: *objects-env
+        command: /celery_worker.sh
+        healthcheck:
+            test: [ "CMD", "python", "/app/bin/check_celery_worker_liveness.py" ]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
+        depends_on:
+            objecten-api:
+                condition: service_healthy
+        profiles:
+            - zgw
+            - objecten
+
+
+    objecttypen-api:
+        image: maykinmedia/objecttypes-api:3.0.2
+        container_name: gzac-docker-compose-objecttypen-api
+        platform: linux/amd64
+        profiles:
+            - zgw
+            - objecten
+        ports:
+            - "8011:8000"
+        environment: &objecttypes-env
+            - DB_HOST=objecttypen-api-database
+            - DB_USER=objecttypes
+            - DB_PASSWORD=objecttypes
+            - DJANGO_SETTINGS_MODULE=objecttypes.conf.docker
+            - SECRET_KEY=${SECRET_KEY:-fgv=c0hz&tl*8*3m3893@m+1pstrvidc9e^5@fpspmg%cy$$15d}
+            - ALLOWED_HOSTS=*
+            - CACHE_DEFAULT=objecten-api-redis:6379/0
+            - CACHE_AXES=objecten-api-redis:6379/0
+            - CELERY_BROKER_URL=redis://objecten-api-redis:6379/1
+            - CELERY_RESULT_BACKEND=redis://objecten-api-redis:6379/1
+            - CELERY_LOGLEVEL=DEBUG
+            - DISABLE_2FA=True
+            - OBJECTTYPE_SUPERUSER_EMAIL=admin@example.org
+            - OBJECTTYPE_SUPERUSER_USERNAME=admin
+            - OBJECTTYPE_SUPERUSER_PASSWORD=admin
+            - DEBUG=True
+        depends_on:
+            - objecttypen-api-database
+        healthcheck:
+            test: [ "CMD", "python", "-c", "import requests; exit(requests.head('http://localhost:8000/admin/').status_code not in [200, 302])" ]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            # This should allow for enough time for migrations to run before the max
+            # retries have passed. This healthcheck in turn allows other containers
+            # to wait for the database migrations.
+            start_period: 30s
+
+    objecttypen-api-database:
+        image: postgres:17.4
+        container_name: gzac-docker-compose-objecttypen-api-database
+        profiles:
+            - zgw
+            - objecten
+        ports:
+            - "54324:5432"
+        environment:
+            - POSTGRES_USER=objecttypes
+            - POSTGRES_PASSWORD=objecttypes
+            - POSTGRES_DB=objecttypes
+
+    objecttypen-api-import:
+        image: maykinmedia/objecttypes-api:3.0.2
+        container_name: gzac-docker-compose-objecttypen-api-import
+        platform: linux/amd64
+        profiles:
+            - zgw
+            - objecten
+        environment: *objecttypes-env
+        command: sh init/init.sh
+        volumes:
+            - ./imports/objecttypes-api/fixtures:/app/src/objecttypes/fixtures
+            - ./imports/objecttypes-api/init:/app/init
+        depends_on:
+            objecttypen-api:
+                condition: service_healthy
+
+    open-notificaties-rabbitmq:
+        image: rabbitmq:4.1.0-management
+        container_name: gzac-docker-compose-open-notificaties-rabbitmq
+        profiles:
+            - zgw
+        ports:
+            - "5673:5672"
+            - "15673:15672"
+
+    open-notificaties-celery:
+        image: openzaak/open-notificaties:1.8.2
+        container_name: gzac-docker-compose-open-notificaties
+        platform: linux/amd64
+        profiles:
+            - zgw
+        environment: &notificaties-env
+            - DJANGO_SETTINGS_MODULE=nrc.conf.docker
+            - SECRET_KEY=${SECRET_KEY:-4wHY2Cp5`4(q%)]cuWxPQJRp5kN?g+`.Xah>%6Fsq6+)R>p_}
+            - ALLOWED_HOSTS=*
+            - CACHE_DEFAULT=open-notificaties-redis:6379/0
+            - CACHE_AXES=open-notificaties-redis:6379/1
+            - DB_PORT=5432
+            - DB_HOST=open-notificaties-database
+            - DB_NAME=notifications
+            - DB_USER=notifications
+            - DB_PASSWORD=notifications
+            - DEBUG=true
+            - RABBITMQ_HOST=open-notificaties-rabbitmq
+            - PUBLISH_BROKER_URL=redis://open-notificaties-redis:6379/0
+            - CELERY_BROKER_URL=redis://open-notificaties-redis:6379/0
+            - CELERY_RESULT_BACKEND=redis://open-notificaties-redis:6379/0
+            - CELERY_LOGLEVEL=DEBUG
+            - CELERY_WORKER_CONCURRENCY=${CELERY_WORKER_CONCURRENCY:-4}
+            - SUBPATH=${SUBPATH:-/}
+            - DISABLE_2FA=True
+        command: /celery_worker.sh
+        depends_on:
+            - open-notificaties-database
+            - open-notificaties-rabbitmq
+            - open-notificaties-redis
+
+    open-notificaties:
+        image: openzaak/open-notificaties:1.8.1
+        container_name: gzac-docker-compose-open-notificaties-celery
+        platform: linux/amd64
+        profiles:
+            - zgw
+        ports:
+            - "8002:8000"
+        environment: *notificaties-env
+        depends_on:
+            - open-notificaties-database
+            - open-notificaties-rabbitmq
+            - open-notificaties-redis
+
+    open-notificaties-database:
+        image: postgres:17.4
+        container_name: gzac-docker-compose-open-notificaties-database
+        profiles:
+            - zgw
+        ports:
+            - "54319:5432"
+        environment:
+            - POSTGRES_USER=${DB_USER:-notifications}
+            - POSTGRES_PASSWORD=${DB_PASSWORD:-notifications}
+            - POSTGRES_DB=notifications
+        volumes:
+            - ./imports/open-notificaties:/docker-entrypoint-initdb.d
+
+    open-notificaties-redis:
+        image: redis:7.4.3
+        container_name: gzac-docker-compose-open-notificaties-redis
+        profiles:
+            - zgw
+
+    open-forms-database:
+        image: postgres:17.4
+        container_name: gzac-docker-compose-open-forms-database
+        profiles:
+            - openformulieren
+        ports:
+            - "54322:5432"
+        environment:
+            - POSTGRES_USER=${DB_USER:-openforms}
+            - POSTGRES_PASSWORD=${DB_PASSWORD:-openforms}
+        volumes:
+            - ./imports/open-formulieren:/docker-entrypoint-initdb.d
+
+    open-forms-redis:
+        image: redis:7.4.3
+        container_name: gzac-docker-compose-open-forms-redis
+        command: [ "redis-server", "--appendonly", "yes" ]
+        profiles:
+            - openformulieren
+
+    open-forms-web:
+        image: openformulieren/open-forms:3.1.6
+        container_name: gzac-docker-compose-open-forms-web
+        platform: linux/amd64
+        profiles:
+            - openformulieren
+        environment: &web_env
+            - CORS_ALLOW_ALL_ORIGINS=true
+            - DJANGO_SETTINGS_MODULE=openforms.conf.docker
+            - SECRET_KEY=${SECRET_KEY:-@r0w-0(&apjfde5fl6h23!vn)r1ldkp1c_d2#!$$did4z5hun4a}
+            - DB_NAME=openforms
+            - DB_USER=openforms
+            - DB_PASSWORD=openforms
+            - DB_HOST=open-forms-database
+            - CACHE_DEFAULT=open-forms-redis:6379/0
+            - CACHE_AXES=open-forms-redis:6379/0
+            - CACHE_PORTALOCKER=open-forms-redis:6379/0
+            - ALLOWED_HOSTS=*
+            - CELERY_BROKER_URL=redis://open-forms-redis:6379/0
+            - CELERY_RESULT_BACKEND=redis://open-forms-redis:6379/0
+            - CELERY_LOGLEVEL=DEBUG
+            - OPENFORMS_LOCATION_CLIENT=${OPENFORMS_LOCATION_CLIENT:-openforms.contrib.bag.client.BAGClient}
+            # Needed for Celery Flower to match the TIME_ZONE configured in the
+            # settings used by workers and beat containers.
+            - TZ=Europe/Amsterdam
+            # otpauth://totp/admin?secret=7IG6WR32BFB3AAT6ZZ54RAC53QN27B2N&algorithm=SHA1&digits=6&period=30
+            - DEBUG=True
+        extra_hosts:
+            - "keycloak.localhost:host-gateway"
+        volumes:
+            - ./imports/open-formulieren/private_media:/app/private_media
+        ports:
+            - "8003:8000"
+        depends_on:
+            - open-forms-database
+            - open-forms-redis
+
+    open-forms-celery:
+        image: openformulieren/open-forms:3.1.6
+        container_name: gzac-docker-compose-open-forms-celery
+        platform: linux/amd64
+        profiles:
+            - openformulieren
+        environment: *web_env
+        command: /celery_worker.sh
+        healthcheck:
+            test: [ "CMD", "python", "/app/bin/check_celery_worker_liveness.py" ]
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
+        volumes:
+            - ./imports/open-formulieren/private_media:/app/private_media
+        depends_on:
+            - open-forms-database
+            - open-forms-redis
+
+    open-forms-celery-beat:
+        image: openformulieren/open-forms:3.1.6
+        container_name: gzac-docker-compose-open-forms-celery-beat
+        platform: linux/amd64
+        profiles:
+            - openformulieren
+        environment: *web_env
+        command: /celery_beat.sh
+        depends_on:
+            - open-forms-database
+            - open-forms-redis
+
+    open-forms-celery-flower:
+        image: openformulieren/open-forms:3.1.6
+        container_name: gzac-docker-compose-open-forms-celery-flower
+        platform: linux/amd64
+        profiles:
+            - openformulieren
+        environment: *web_env
+        ports:
+            - "5555:5555"
+        command: /celery_flower.sh
+        depends_on:
+            - open-forms-redis
+            - open-forms-celery
+
+    open-forms-busybox:
+        image: busybox:1.37.0
+        container_name: gzac-docker-compose-open-forms-busybox
+        profiles:
+            - openformulieren
+        command: /bin/chown -R 1000 /private_media
+        volumes:
+            - ./imports/open-formulieren/private_media:/private_media
+
+    open-klant:
+        image: maykinmedia/open-klant:2.10.0
+        container_name: gzac-docker-compose-open-klant
+        platform: linux/amd64
+        profiles:
+            - openklant
+        environment:
+            - DJANGO_SETTINGS_MODULE=openklant.conf.docker
+            - SECRET_KEY=${SECRET_KEY:-django-insecure-$$8s@b*ds4t84-q_2#c0j0506@!l2q6r5_pq5e!vm^_9c*#^66b}
+            - DB_NAME=openklant
+            - DB_USER=openklant
+            - DB_PASSWORD=openklant
+            - DB_HOST=open-klant-database
+            - CACHE_DEFAULT=open-klant-redis:6379/0
+            - CACHE_AXES=open-klant-redis:6379/0
+            - ALLOWED_HOSTS=*
+            - DISABLE_2FA=True
+        ports:
+            - "8006:8000"
+        depends_on:
+            - open-klant-database
+
+    open-klant-database:
+        image: postgres:17.4
+        container_name: gzac-docker-compose-open-klant-database
+        profiles:
+            - openklant
+        ports:
+            - "54323:5432"
+        environment:
+            - POSTGRES_USER=${DB_USER:-openklant}
+            - POSTGRES_PASSWORD=${DB_PASSWORD:-openklant}
+        volumes:
+            - ./imports/open-klanten:/docker-entrypoint-initdb.d
+
+    open-klant-redis:
+        image: redis:7.4.3
+        container_name: gzac-docker-compose-open-klant-redis
+        profiles:
+            - openklant
+
+    iko-haalcentraal-personen:
+        image: ghcr.io/brp-api/personen-mock:2.2.1
+        container_name: gzac-docker-compose-iko-haalcentraal-personen
+        platform: linux/amd64
+        profiles:
+            - iko
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Release
+            - ASPNETCORE_URLS=http://+:5010
+        ports:
+            - "5010:5010"
+
+    iko-postgres:
+        image: postgres:17.4
+        container_name: gzac-docker-compose-iko-database
+        profiles:
+            - iko
+        ports:
+            - "54325:5432"
+        environment:
+            - POSTGRES_USER=iko
+            - POSTGRES_PASSWORD=iko
+            - POSTGRES_DB=iko
+
+    iko:
+        image: nielserkamp4ritense/test:0.3.1
+        container_name: gzac-docker-compose-iko
+        platform: linux/amd64
+        profiles:
+            - iko
+        ports:
+            - "8012:8080"
+        environment:
+            SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+            SPRING_DATASOURCE_URL: jdbc:postgresql://iko-postgres:5432/iko
+            SPRING_DATASOURCE_USERNAME: iko
+            SPRING_DATASOURCE_PASSWORD: iko
+            IKO_CONNECTORS_BRP_HOST: http://iko-haalcentraal-personen:5010
+            IKO_CONNECTORS_OPENZAAK_HOST: http://openzaak:8000
+            IKO_CONNECTORS_OPENZAAK_SPECIFICATIONURI: http://openzaak:8000/zaken/api/v1/schema/openapi.yaml
+            IKO_CONNECTORS_OPENZAAK_CLIENTID: valtimo_client
+            IKO_CONNECTORS_OPENZAAK_SECRET: e09b8bc5-5831-4618-ab28-41411304309d
+            IKO_CONNECTORS_BAG_HOST: https://api.bag.kadaster.nl
+            IKO_CONNECTORS_BAG_APIKEY: asd
+            IKO_CONNECTORS_OBJECTENAPI_HOST: http://objecten-api:8000
+            IKO_CONNECTORS_OBJECTENAPI_SPECIFICATIONURI: http://objecten-api:8000/api/v2/schema/openapi.yaml
+            IKO_CONNECTORS_OBJECTENAPI_TOKEN: 182c13e2209161852c53cef53a879f7a2f923430
+            IKO_CONNECTORS_OPENKLANT_HOST: http://open-klant:8000
+            IKO_CONNECTORS_OPENKLANT_SPECIFICATIONURI: http://open-klant:8000/api/v2/schema/openapi.yaml
+            IKO_CONNECTORS_OPENKLANT_TOKEN: 5bf819967d9fdd00d326ce20774768b4182285e5
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI: http://keycloak.localhost:8081/auth/realms/valtimo
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTID: iko
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET: ThisIsNotASecret
+            SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: http://keycloak.localhost:8081/auth/realms/valtimo
+            LOGGING_LEVEL_COM_RITENSE_IKO: debug
+        depends_on:
+            gzac-keycloak:
+                condition: service_healthy
+        extra_hosts:
+            - "keycloak.localhost:host-gateway"
+
+    gzac-backend:
+        image: ritense/gzac-backend:13.1.2
+        container_name: gzac-docker-compose-gzac-backend
+        profiles:
+            - gzac
+        environment:
+            - SPRING_PROFILES_ACTIVE=dev
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:54320/gzac
+            - SPRING_DATASOURCE_NAME=gzac
+            - SPRING_DATASOURCE_USERNAME=gzac
+            - SPRING_DATASOURCE_PASSWORD=password
+            - VALTIMO_APP_HOSTNAME=http://localhost:4200
+            - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI=http://keycloak.localhost:8081/auth/realms/valtimo/protocol/openid-connect/certs
+            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI=http://keycloak.localhost:8081/auth/realms/valtimo
+            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI=http://keycloak.localhost:8081/auth/realms/valtimo
+            - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKJWT_CLIENTID=valtimo-console
+            - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTID=valtimo-user-m2m-client
+            - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTSECRET=6ef6ca16-6b86-482a-a3d9-0561704c1db9
+            - VALTIMO_PLUGIN_ENCRYPTIONSECRET=abcdefghijklmnop
+            - VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDORIGINS=http://localhost
+            - VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDMETHODS=*
+            - VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDHEADERS=*
+            - VALTIMO_WEB_CORS_PATHS=/**
+            - VALTIMO_DOCKER_FILTER_ENABLED=true
+            - VALTIMO_DOCKER_FILTER_PORTS=8080,8001,8002,8003,8006,8010,8011
+            - VALTIMO_CHANGELOG_PBAC_CLEARTABLES=false
+        ports:
+            - 8080:8080
+        depends_on:
+            gzac-keycloak:
+                condition: service_healthy
+        extra_hosts:
+            - "keycloak.localhost:host-gateway"
+
+    gzac-frontend:
+        image: ritense/gzac-frontend:13.1.2
+        container_name: gzac-docker-compose-gzac-frontend
+        profiles:
+            - gzac
+        environment:
+            - API_URI=http://localhost:8080/api
+            - KEYCLOAK_URL=http://keycloak.localhost:8081/auth
+            - KEYCLOAK_REALM=valtimo
+            - KEYCLOAK_CLIENT_ID=valtimo-console
+            - KEYCLOAK_REDIRECT_URI=http://localhost/keycloak/callback
+            - KEYCLOAK_LOGOUT_REDIRECT_URI=http://localhost
+        ports:
+            - 80:8080
+        depends_on:
+            - gzac-backend
+
+    gzac-demo-backend:
+        image: ritense/gzac-evenementenvergunning-demo-backend:13.1.2
+        container_name: gzac-docker-compose-gzac-demo-backend
+        profiles:
+            - demo
+        environment:
+            - SPRING_PROFILES_ACTIVE=dev
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:54320/gzac
+            - SPRING_DATASOURCE_NAME=gzac
+            - SPRING_DATASOURCE_USERNAME=gzac
+            - SPRING_DATASOURCE_PASSWORD=password
+            - VALTIMO_APP_HOSTNAME=http://localhost:4200
+            - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI=http://keycloak.localhost:8081/auth/realms/valtimo/protocol/openid-connect/certs
+            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI=http://keycloak.localhost:8081/auth/realms/valtimo
+            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI=http://keycloak.localhost:8081/auth/realms/valtimo
+            - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKJWT_CLIENTID=valtimo-console
+            - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTID=valtimo-user-m2m-client
+            - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTSECRET=6ef6ca16-6b86-482a-a3d9-0561704c1db9
+            - VALTIMO_PLUGIN_ENCRYPTIONSECRET=abcdefghijklmnop
+            - VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDORIGINS=http://localhost
+            - VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDMETHODS=*
+            - VALTIMO_WEB_CORS_CORSCONFIGURATION_ALLOWEDHEADERS=*
+            - VALTIMO_WEB_CORS_PATHS=/**
+            - VALTIMO_DOCKER_FILTER_ENABLED=true
+            - VALTIMO_DOCKER_FILTER_PORTS=8080,8001,8002,8003,8006,8010,8011
+            - VALTIMO_CHANGELOG_PBAC_CLEARTABLES=false
+        ports:
+            - 8080:8080
+        depends_on:
+            gzac-keycloak:
+                condition: service_healthy
+        networks:
+            default:
+                aliases:
+                    - gzac-backend
+        extra_hosts:
+            - "keycloak.localhost:host-gateway"
+
+    gzac-demo-frontend:
+        image: ritense/gzac-evenementenvergunning-demo-frontend:13.1.2
+        container_name: gzac-docker-compose-gzac-demo-frontend
+        profiles:
+            - demo
+        environment:
+            - API_URI=http://localhost:8080/api
+            - KEYCLOAK_URL=http://keycloak.localhost:8081/auth
+            - KEYCLOAK_REALM=valtimo
+            - KEYCLOAK_CLIENT_ID=valtimo-console
+            - KEYCLOAK_REDIRECT_URI=http://localhost/keycloak/callback
+            - KEYCLOAK_LOGOUT_REDIRECT_URI=http://localhost
+        ports:
+            - 80:8080
+        depends_on:
+            - gzac-demo-backend
+
+volumes:
+    gzac-database-data:
+    gzac-database-data-mysql:

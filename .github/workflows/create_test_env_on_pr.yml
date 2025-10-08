@@ -1,0 +1,17 @@
+name: 'Create test environment for each new PR'
+on:
+  pull_request:
+    branches: ['next-minor']
+    types:
+      - opened
+
+permissions:
+  actions: read
+  contents: read
+  packages: write
+
+jobs:
+  creat_test_environment:
+    uses: ./.github/workflows/create_test_env.yml
+    with:
+      envName: "pr-${{ github.event.number }}"

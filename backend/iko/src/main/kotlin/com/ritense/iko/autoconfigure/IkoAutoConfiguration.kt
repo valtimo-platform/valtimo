@@ -395,11 +395,13 @@ class IkoAutoConfiguration {
         ikoTabService: IkoTabService,
         ikoTabWidgetRepository: IkoTabWidgetRepository,
         widgetService: WidgetService,
+        ikoDataAggregateService: IkoDataAggregateService,
     ): IkoWidgetService {
         return IkoWidgetService(
             ikoTabService,
             ikoTabWidgetRepository,
             widgetService,
+            ikoDataAggregateService,
         )
     }
 
@@ -408,10 +410,12 @@ class IkoAutoConfiguration {
     fun ikoTabService(
         tabService: TabService,
         ikoDataAggregateTabRepository: IkoDataAggregateTabRepository,
+        ikoDataAggregateService: IkoDataAggregateService,
     ): IkoTabService {
         return IkoTabService(
             tabService,
             ikoDataAggregateTabRepository,
+            ikoDataAggregateService,
         )
     }
 
@@ -420,10 +424,12 @@ class IkoAutoConfiguration {
     fun ikoListColumnService(
         listColumnService: SearchListColumnService,
         ikoDataAggregateListColumnRepository: IkoDataAggregateListColumnRepository,
+        ikoDataAggregateService: IkoDataAggregateService,
     ): IkoListColumnService {
         return IkoListColumnService(
             listColumnService,
             ikoDataAggregateListColumnRepository,
+            ikoDataAggregateService,
         )
     }
 
@@ -432,10 +438,12 @@ class IkoAutoConfiguration {
     fun ikoSearchFieldService(
         searchFieldService: SearchFieldV2Service,
         ikoDataRequestSearchFieldRepository: IkoDataRequestSearchFieldRepository,
+        ikoDataAggregateService: IkoDataAggregateService,
     ): IkoSearchFieldService {
         return IkoSearchFieldService(
             searchFieldService,
             ikoDataRequestSearchFieldRepository,
+            ikoDataAggregateService,
         )
     }
 

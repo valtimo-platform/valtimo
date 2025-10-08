@@ -25,8 +25,8 @@
     selectedCaseIds: selectedCaseIds$ | async,
     statuses: statuses$ | async,
     caseTags: caseTags$ | async,
-    selectedStatuses: selectedStatuses$ | async,
-    selectedCaseTags: selectedCaseTags$ | async,
+    selectedStatusKeys: selectedStatusKeys$ | async,
+    selectedCaseTagKeys: selectedCaseTagKeys$ | async,
     showStatusSelector: showStatusSelector$ | async,
     showCaseTagsSelector: showCaseTagsSelector$ | async,
     loaded:
@@ -45,6 +45,8 @@
 
   <ng-container *ngTemplateOutlet="searchFields; context: {obs: obs}"></ng-container>
 
+  <valtimo-quick-search (quickSearchEvent)="onQuickSearchEvent($event)"></valtimo-quick-search>
+
   <ng-container *ngIf="obs.loaded; else loading">
     <ng-container *ngTemplateOutlet="list; context: {obs: obs}"></ng-container>
   </ng-container>
@@ -58,17 +60,21 @@
 
 <ng-template #searchFields let-obs="obs">
   <valtimo-search-fields
+    [disableSaveSearch]="disableSaveSearch$ | async"
+    [canSaveSearch]="true"
     [searchFields]="obs.searchFields"
-    (doSearch)="search($event)"
     [caseDefinitionKey]="caseDefinitionKey$ | async"
     [defaultValues]="searchFieldValues$ | async"
     [inputDisabled]="!obs.loaded"
     [externalSearchField]="obs.showStatusSelector"
+    (clearEvent)="onClearEvent()"
+    (doSearch)="search($event)"
+    (saveSearchEvent)="onSaveSearchEvent($event)"
   >
     <valtimo-status-selector
       *ngIf="obs.showStatusSelector"
       [statuses]="obs.statuses"
-      [selectedStatuses]="obs.selectedStatuses"
+      [selectedStatusKeys]="obs.selectedStatusKeys"
       [disabled]="!obs.loaded"
       (selectedStatusesChangeEvent)="onSelectedStatusesChange($event)"
     ></valtimo-status-selector>
@@ -76,7 +82,7 @@
     <valtimo-case-tags-selector
       *ngIf="obs.showCaseTagsSelector"
       [caseTags]="obs.caseTags"
-      [selectedCaseTags]="obs.selectedCaseTags"
+      [selectedCaseTagKeys]="obs.selectedCaseTagKeys"
       [disabled]="!obs.loaded"
       (selectedCaseTagsChangeEvent)="onSelectedCaseTagsChange($event)"
     ></valtimo-case-tags-selector>

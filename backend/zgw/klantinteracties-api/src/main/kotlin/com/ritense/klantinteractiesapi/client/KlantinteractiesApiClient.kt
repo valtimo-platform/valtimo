@@ -36,7 +36,7 @@ import java.net.URI
 class KlantinteractiesApiClient(
     private val restClientBuilder: RestClient.Builder
 ) {
-    fun getParijen(
+    fun getPartijen(
         authentication: KlantinteractiesApiAuthentication,
         baseUrl: URI,
         request: GetPartijenRequest,
@@ -82,7 +82,7 @@ class KlantinteractiesApiClient(
             .body<Page<Partij>>()!!
     }
 
-    fun getParij(
+    fun getPartij(
         authentication: KlantinteractiesApiAuthentication,
         baseUrl: URI,
         partijUrl: URI,

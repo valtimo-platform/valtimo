@@ -112,24 +112,24 @@ class KlantinteractiesApiPlugin(
     }
 
     fun getPartij(partijUrl: URI): Partij {
-        return klantinteractiesApiClient.getParij(
+        return klantinteractiesApiClient.getPartij(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
             partijUrl = partijUrl
         )
     }
 
-    fun getParijUrl(parijId: UUID): URI {
+    fun getPartijUrl(partijId: UUID): URI {
         return UriComponentsBuilder
             .fromUri(url)
             .pathSegment("partijen")
-            .pathSegment(parijId.toString())
+            .pathSegment(partijId.toString())
             .build()
             .toUri()
     }
 
     fun getPartijen(request: GetPartijenRequest, pageable: Pageable): Page<Partij> {
-        return klantinteractiesApiClient.getParijen(
+        return klantinteractiesApiClient.getPartijen(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
             request = request,

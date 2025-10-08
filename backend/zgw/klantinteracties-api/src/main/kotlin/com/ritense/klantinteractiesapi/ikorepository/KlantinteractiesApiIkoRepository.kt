@@ -88,7 +88,7 @@ class KlantinteractiesApiIkoRepository(
     override fun findById(config: Map<String, Any?>, id: Any): JsonNode {
         val plugin = getPlugin(config)
         val partij = getPlugin(config).getPartij(
-            partijUrl = plugin.getParijUrl(UUID.fromString(id.toString())),
+            partijUrl = plugin.getPartijUrl(UUID.fromString(id.toString())),
         )
         return objectMapper.valueToTree(partij)
     }
