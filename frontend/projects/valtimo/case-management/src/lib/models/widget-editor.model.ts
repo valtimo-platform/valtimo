@@ -28,6 +28,7 @@ const WidgetTypeTags: {[key: string]: TagType} = {
   [CaseWidgetType.FIELDS]: 'blue',
   [CaseWidgetType.FORMIO]: 'green',
   [CaseWidgetType.TABLE]: 'purple',
+  [CaseWidgetType.DIVIDER]: 'outline'
 };
 
 export {WidgetEditorTab, WidgetTypeTags};
