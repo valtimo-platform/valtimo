@@ -36,7 +36,7 @@ import {PermissionService} from '@valtimo/access-control';
 import {ButtonModule} from 'carbon-components-angular';
 import {CustomWidget, CustomWidgetConfig} from '../../models';
 import {CUSTOM_WIDGET_TOKEN} from '../../constants';
-import {WidgetLayoutService} from '../../services';
+import {WidgetLayoutService} from '../../services/widget-layout.service';
 
 @Component({
   selector: 'valtimo-widget-custom',
