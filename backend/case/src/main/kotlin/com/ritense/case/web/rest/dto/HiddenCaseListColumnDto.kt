@@ -1,4 +1,4 @@
-/*!
+/*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,22 +14,8 @@
  * limitations under the License.
  */
 
-.case-list {
-  &-tabs cds-tab {
-    display: none;
-  }
+package com.ritense.case.web.rest.dto
 
-  &-toolbar {
-    display: flex;
-  }
-}
-
-:host {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.loading-spinner {
-  margin: 24px 24px 0px 10px;
-}
+data class HiddenCaseListColumnDto(
+    val columnKey: String
+)
