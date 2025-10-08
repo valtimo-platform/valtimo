@@ -23,6 +23,7 @@ jobs:
 
   publish:
     if: ${{ startsWith(github.ref_name, 'release/') }}
+    needs: build_and_test
     uses: ./.github/workflows/frontend_publish_to_npm.yml
     with:
       project_version: ${{ github.event.inputs.project_version }}

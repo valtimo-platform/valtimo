@@ -1,0 +1,100 @@
+[
+    {
+        "model": "admin_index.appgroup",
+        "fields": {
+            "order": 0,
+            "name": "Accounts",
+            "slug": "accounts",
+            "models": [
+                [
+                    "accounts",
+                    "user"
+                ],
+                [
+                    "auth",
+                    "group"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "admin_index.appgroup",
+        "fields": {
+            "order": 3,
+            "name": "Configuration",
+            "slug": "configuration",
+            "models": [
+                [
+                    "admin_index",
+                    "appgroup"
+                ],
+                [
+                    "notifications",
+                    "notificationsconfig"
+                ],
+                [
+                    "sites",
+                    "site"
+                ],
+                [
+                    "zgw_consumers",
+                    "service"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "admin_index.appgroup",
+        "fields": {
+            "order": 4,
+            "name": "Logging",
+            "slug": "logging",
+            "models": [
+                [
+                    "axes",
+                    "accessattempt"
+                ],
+                [
+                    "axes",
+                    "accesslog"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "admin_index.appgroup",
+        "fields": {
+            "order": 2,
+            "name": "Data",
+            "slug": "data",
+            "models": [
+                [
+                    "core",
+                    "object"
+                ],
+                [
+                    "core",
+                    "objecttype"
+                ]
+            ]
+        }
+    },
+    {
+        "model": "admin_index.appgroup",
+        "fields": {
+            "order": 1,
+            "name": "API Authorizations",
+            "slug": "api-authorizations",
+            "models": [
+                [
+                    "token",
+                    "tokenauth"
+                ],
+                [
+                    "token",
+                    "permission"
+                ]
+            ]
+        }
+    }
+]
