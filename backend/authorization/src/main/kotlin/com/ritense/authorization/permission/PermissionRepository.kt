@@ -16,12 +16,15 @@
 
 package com.ritense.authorization.permission
 
+import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface PermissionRepository : JpaRepository<Permission, UUID> {
+    @EntityGraph(attributePaths = ["role", "actions"])
     fun findAllByRoleKeyInOrderByRoleKeyAscResourceTypeAsc(roleKeys: Collection<String>): List<Permission>
 
+    @EntityGraph(attributePaths = ["role", "actions"])
     fun findAllByResourceTypeAndActions_Key(resourceType: Class<*>, actionKey: String): List<Permission>
     fun deleteByRoleKeyIn(roleKeys: List<String>)
 }
