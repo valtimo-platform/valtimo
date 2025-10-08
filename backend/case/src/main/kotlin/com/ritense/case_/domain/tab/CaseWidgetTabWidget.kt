@@ -18,8 +18,9 @@ package com.ritense.case_.domain.tab
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.base.Objects
-import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.widget.domain.WidgetAction
+import com.ritense.valtimo.contract.conditions.Condition
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn
@@ -59,7 +60,11 @@ abstract class CaseWidgetTabWidget(
 
     @Type(value = JsonType::class)
     @Column(name = "actions", nullable = false)
-    val actions: List<CaseWidgetAction> = emptyList(),
+    val actions: List<WidgetAction> = emptyList(),
+
+    @Type(value = JsonType::class)
+    @Column(name = "display_conditions", nullable = false)
+    val displayConditions: List<Condition<*>> = listOf()
 ) {
     abstract fun copy(id: CaseWidgetTabWidgetId = this.id): CaseWidgetTabWidget
 
@@ -73,6 +78,7 @@ abstract class CaseWidgetTabWidget(
         if (width != other.width) return false
         if (highContrast != other.highContrast) return false
         if (actions != other.actions) return false
+        if (displayConditions != other.displayConditions) return false
 
         return true
     }
@@ -84,6 +90,7 @@ abstract class CaseWidgetTabWidget(
             width,
             highContrast,
             actions,
+            displayConditions
         )
     }
 

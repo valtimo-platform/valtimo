@@ -17,28 +17,27 @@
 package com.ritense.zakenapi.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.case_.listener.ZaakTypeLinkCaseEventListener
 import com.ritense.authorization.AuthorizationService
+import com.ritense.case_.listener.ZaakTypeLinkCaseEventListener
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.document.service.DocumentService
-import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.importer.ZaakTypeLinkImporter
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
 import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPluginFactory
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.exporter.ZaakTypeLinkExporter
+import com.ritense.zakenapi.ikorepository.ZakenApiIkoRepository
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.provider.BsnProvider
 import com.ritense.zakenapi.provider.DefaultZaakUrlProvider
@@ -103,23 +102,23 @@ class ZakenApiAutoConfiguration {
     fun zakenApiPluginFactory(
         pluginService: PluginService,
         zakenApiClient: ZakenApiClient,
-        urlProvider: ZaakUrlProvider,
+        zaakUrlProvider: ZaakUrlProvider,
         storageService: TemporaryResourceStorageService,
         zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
         zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
         platformTransactionManager: PlatformTransactionManager,
-        documentService: DocumentService,
-        processDocumentAssociationService: ProcessDocumentAssociationService,
+        valueResolverService: ValueResolverService,
+        objectMapper: ObjectMapper,
     ) = ZakenApiPluginFactory(
         pluginService,
         zakenApiClient,
-        urlProvider,
+        zaakUrlProvider,
         storageService,
         zaakInstanceLinkRepository,
         zaakHersteltermijnRepository,
         platformTransactionManager,
-        documentService,
-        processDocumentAssociationService,
+        valueResolverService,
+        objectMapper
     )
 
     @Bean
@@ -329,6 +328,18 @@ class ZakenApiAutoConfiguration {
     ): ZaakTypeLinkCaseEventListener {
         return ZaakTypeLinkCaseEventListener(
             zaakTypeLinkService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZakenApiIkoRepository::class)
+    fun zakenApiIkoRepository(
+        pluginService: PluginService,
+        objectMapper: ObjectMapper,
+    ): ZakenApiIkoRepository {
+        return ZakenApiIkoRepository(
+            pluginService,
+            objectMapper,
         )
     }
 }

@@ -1,0 +1,24 @@
+{
+    "ikoDataAggregateKey": "klant",
+    "ikoDataRequestKey": "achternaam-geboortedatum",
+    "ikoSearchFields": [
+        {
+            "key": "achternaam",
+            "title": "Achternaam",
+            "path": "geslachtsnaam",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "exact",
+            "required": true
+        },
+        {
+            "key": "geboortedatum",
+            "title": "Geboortedatum",
+            "path": "geboortedatum",
+            "dataType": "date",
+            "fieldType": "single",
+            "matchType": "exact",
+            "required": true
+        }
+    ]
+}

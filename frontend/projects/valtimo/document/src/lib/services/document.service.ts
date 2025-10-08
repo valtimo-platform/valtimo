@@ -320,14 +320,6 @@ export class DocumentService {
     );
   }
 
-  public findProcessDefinitionCaseDefinitionsByProcessDefinitionKey(
-    processDefinitionKey: string
-  ): Observable<ProcessDefinitionCaseDefinition[]> {
-    return this.http.get<ProcessDefinitionCaseDefinition[]>(
-      `${this.valtimoEndpointUri}v1/process-document/definition/process/${processDefinitionKey}`
-    );
-  }
-
   // Case definition calls
   public getCaseDefinitions(params: any): Observable<CaseDefinition[]> {
     return this.http.get<CaseDefinition[]>(`${this.valtimoEndpointUri}v1/case-definition`, {
@@ -350,14 +342,6 @@ export class DocumentService {
   ): Observable<ProcessDocumentDefinition[]> {
     return this.http.get<ProcessDocumentDefinition[]>(
       `${this.valtimoEndpointUri}v1/process-document/definition/document/${documentDefinitionName}/version/${version}`
-    );
-  }
-
-  public findProcessDocumentDefinitionsByProcessDefinitionKey(
-    processDefinitionKey: string
-  ): Observable<ProcessDocumentDefinition[]> {
-    return this.http.get<ProcessDocumentDefinition[]>(
-      `${this.valtimoEndpointUri}v1/process-document/definition/process/${processDefinitionKey}`
     );
   }
 

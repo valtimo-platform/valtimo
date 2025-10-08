@@ -45,8 +45,10 @@ dependencies {
     implementation project(":logging")
     implementation project(":outbox")
     implementation project(":resource")
+    implementation project(":search")
     implementation project(":value-resolver")
     implementation project(":web")
+    implementation project(":widget")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"

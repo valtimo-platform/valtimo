@@ -17,13 +17,8 @@
 package com.ritense.case.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.jsontype.NamedType
 import com.ritense.authorization.AuthorizationService
 import com.ritense.case.deployment.CaseTabDeploymentService
-import com.ritense.case.domain.BooleanDisplayTypeParameter
-import com.ritense.case.domain.DateFormatDisplayTypeParameter
-import com.ritense.case.domain.EnumDisplayTypeParameter
-import com.ritense.case.domain.TagsDisplayTypeParameter
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.repository.CaseTabDocumentDefinitionMapper
 import com.ritense.case.repository.CaseTabRepository
@@ -46,7 +41,6 @@ import com.ritense.case.service.CaseTabImporter
 import com.ritense.case.service.CaseTabService
 import com.ritense.case.service.CaseTaskListExporter
 import com.ritense.case.service.CaseTaskListImporter
-import com.ritense.case.service.ObjectMapperConfigurer
 import com.ritense.case.service.TaskColumnService
 import com.ritense.case.web.rest.CaseDefinitionResource
 import com.ritense.case.web.rest.CaseInstanceResource
@@ -77,7 +71,6 @@ import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Lazy
-import org.springframework.core.Ordered
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
@@ -182,11 +175,13 @@ class CaseAutoConfiguration {
         caseDefinitionRepository: CaseDefinitionRepository,
         environment: Environment,
         @Value("\${valtimo.draft.environments:inttest,dev,test}") draftEnvironments: String,
+        @Value("\${valtimo.draft.enabled:false}") draftsEnabled: Boolean,
     ): CaseDefinitionChecker {
         return CaseDefinitionCheckerImpl(
             caseDefinitionRepository,
             environment,
             draftEnvironments,
+            draftsEnabled,
         )
     }
 
@@ -276,39 +271,11 @@ class CaseAutoConfiguration {
         return CaseHttpSecurityConfigurer()
     }
 
-    @Order(Ordered.HIGHEST_PRECEDENCE + 20)
+    @Order(HIGHEST_PRECEDENCE + 20)
     @ConditionalOnMissingBean(name = ["caseLiquibaseMasterChangeLogLocation"])
     @Bean
     fun caseLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
         return LiquibaseMasterChangeLogLocation("config/liquibase/case-master.xml")
-    }
-
-    @Bean
-    fun enumDisplayTypeParameterType(): NamedType {
-        return NamedType(EnumDisplayTypeParameter::class.java, "enum")
-    }
-
-    @Bean
-    fun dateFormatDisplayTypeParameterType(): NamedType {
-        return NamedType(DateFormatDisplayTypeParameter::class.java, "date")
-    }
-
-    @Bean
-    fun booleanDisplayTypeParameterType(): NamedType {
-        return NamedType(BooleanDisplayTypeParameter::class.java, "boolean")
-    }
-
-    @Bean
-    fun tagsDisplayTypeParameterType(): NamedType {
-        return NamedType(TagsDisplayTypeParameter::class.java, "tags")
-    }
-
-    @Bean
-    fun caseObjectMapper(
-        objectMapper: ObjectMapper,
-        displayTypeParameterTypes: Collection<NamedType>
-    ): ObjectMapperConfigurer {
-        return ObjectMapperConfigurer(objectMapper, displayTypeParameterTypes)
     }
 
     @Bean

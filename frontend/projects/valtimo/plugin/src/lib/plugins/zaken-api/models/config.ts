@@ -92,8 +92,14 @@ interface CreateZaakConfig {
   zaaktypeUrl: string;
   inputTypeZaakTypeToggle?: InputOption;
   description?: string;
+  explanation?: string;
   plannedEndDate?: string;
   finalDeliveryDate?: string;
+  communicationChannel?: string;
+  paymentIndication?: string;
+  caseGeometryType?: string;
+  caseGeometryCoordinates?: string,
+  mainCase?: string;
 }
 
 interface SetZaakopschortingConfig {
@@ -134,7 +140,7 @@ interface PatchZaakConfig {
   paymentIndication?: string;
   lastPaymentDate?: string;
   caseGeometryType?: string;
-  caseGeometryCoordinates?: string,
+  caseGeometryCoordinates?: string;
   mainCase?: string;
   archiveActionDate?: string;
   startDateRetentionPeriod?: string;

@@ -29,13 +29,17 @@ import {
 } from 'rxjs';
 import {CreateZaakConfig, InputOption} from '../../models';
 import {OpenZaakService, ZaakType, ZaakTypeLink} from '@valtimo/resource';
-import {DocumentService} from '@valtimo/document';
 import {ModalService, RadioValue, SelectItem} from '@valtimo/components';
+import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 import {PluginTranslatePipe} from '../../../../pipes';
 import {Add16, TrashCan16} from '@carbon/icons';
 import {IconService} from 'carbon-components-angular';
-import {CreateZaakExtraProperties, CreateZaakExtraPropertyOptions} from '../../models/create-zaak-properties';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import {
+  CreateZaakExtraProperties,
+  CreateZaakExtraPropertyOptions,
+} from '../../models/create-zaak-properties';
+import {GEOMETRY_TYPES} from '../../models/geometry-types';
+import {PAYMENT_INDICATION_TYPES} from '../../models/payment-indication-types';
 
 @Component({
   standalone: false,
@@ -47,23 +51,23 @@ import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
 export class CreateZaakConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() save$: Observable<void>;
-  @Input() disabled$: Observable<boolean>;
-  @Input() set pluginId(value: string) {
-    this.pluginId$.next(value);
-  }
   @Input() context$: Observable<[ManagementContext, CaseManagementParams]>;
-
+  @Input() disabled$: Observable<boolean>;
+  @Input() pluginId: string;
+  @Input() save$: Observable<void>;
   @Input() prefillConfiguration$: Observable<CreateZaakConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() configuration: EventEmitter<CreateZaakConfig> = new EventEmitter<CreateZaakConfig>();
 
+  public readonly propertyOptions: string[] = Object.values(CreateZaakExtraPropertyOptions);
   public readonly propertyList: Array<CreateZaakExtraProperties> = [];
+  public readonly geometryTypes: string[] = GEOMETRY_TYPES;
+  public readonly paymentIndicationTypes: string[] = PAYMENT_INDICATION_TYPES;
 
-  readonly pluginId$ = new BehaviorSubject<string>('');
-  readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
-
-  readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
+  public readonly pluginId$ = new BehaviorSubject<string>('');
+  public readonly selectedInputOption$ = new BehaviorSubject<InputOption>('selection');
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly inputTypeOptions$: Observable<Array<RadioValue>> = this.pluginId$.pipe(
     filter(pluginId => !!pluginId),
     switchMap(pluginId =>
       combineLatest([
@@ -76,16 +80,7 @@ export class CreateZaakConfigurationComponent
       {value: 'text', title: textTranslation},
     ])
   );
-
-  private saveSubscription!: Subscription;
-
-  private readonly formValue$ = new BehaviorSubject<CreateZaakConfig | null>(null);
-  private readonly valid$ = new BehaviorSubject<boolean>(false);
-  private readonly _properties = new Map<CreateZaakExtraProperties, string>();
-
-  readonly loading$ = new BehaviorSubject<boolean>(true);
-
-  readonly zaakTypeItems$: Observable<Array<SelectItem>> = this.modalService.modalData$.pipe(
+  public readonly zaakTypeItems$: Observable<Array<SelectItem>> = this.modalService.modalData$.pipe(
     switchMap(() => this.context$),
     tap(([context]) => {
       if (context === 'independent') {
@@ -135,9 +130,17 @@ export class CreateZaakConfigurationComponent
     })
   );
 
+  protected readonly CASE_GEOMETRY_TYPE: string = 'caseGeometryType';
+  protected readonly CASE_GEOMETRY_COORDINATES: string = 'caseGeometryCoordinates';
+  protected readonly PAYMENT_INDICATION_TYPE: string = 'paymentIndication';
+
+  private readonly _formValue$ = new BehaviorSubject<CreateZaakConfig>(null);
+  private readonly _properties = new Map<CreateZaakExtraProperties, string>();
+  private saveSubscription!: Subscription;
+  private readonly _valid$ = new BehaviorSubject<boolean>(false);
+
   constructor(
     private readonly openZaakService: OpenZaakService,
-    private readonly documentService: DocumentService,
     private readonly modalService: ModalService,
     private readonly pluginTranslatePipe: PluginTranslatePipe,
     private readonly iconService: IconService
@@ -145,25 +148,24 @@ export class CreateZaakConfigurationComponent
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
 
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
-      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property]).forEach(property =>
-        this.addCaseProperty(property)
+      CreateZaakExtraPropertyOptions.filter(property => prefill && !!prefill[property]).forEach(
+        property => this.addProperty(property)
       );
     });
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: CreateZaakConfig): void {
+  public onFormValueChanged(formValue: CreateZaakConfig): void {
+    const inputTypeZaakTypeToggle = formValue?.inputTypeZaakTypeToggle;
     this._properties.forEach((value, key) => (formValue[key] = value));
-
-    const inputTypeZaakTypeToggle = formValue.inputTypeZaakTypeToggle;
-    this.formValue$.next(formValue);
+    this._formValue$.next(formValue);
     this.handleValid(formValue);
 
     if (inputTypeZaakTypeToggle) {
@@ -171,33 +173,80 @@ export class CreateZaakConfigurationComponent
     }
   }
 
-  oneSelectItem(selectItems: Array<SelectItem>): boolean {
+  public oneSelectItem(selectItems: Array<SelectItem>): boolean {
     if (Array.isArray(selectItems)) {
       return selectItems.length === 1;
     }
-
     return false;
   }
 
-  selectItemsIncludeId(selectItems: Array<SelectItem>, id: string): boolean {
+  public selectItemsIncludeId(selectItems: Array<SelectItem>, id: string): boolean {
     if (Array.isArray(selectItems)) {
       return !!selectItems.find(item => item.id === id);
     }
-
     return false;
+  }
+
+  public prefillValueFor(property: string, prefill: CreateZaakConfig): string | null {
+    return prefill !== null ? (prefill?.[property] ?? null) : null;
+  }
+
+  public translationKeyFor(property: string): string {
+    return property === 'description' ? 'beschrijving' : property;
+  }
+
+  public translationKeyForPropertyList(property: string): string {
+    return property === this.CASE_GEOMETRY_TYPE ? 'caseGeometry' : this.translationKeyFor(property);
+  }
+
+  public addProperty(property: CreateZaakExtraProperties): void {
+    // only add the property to the list if it is not in the list
+    if (this.propertyList.indexOf(property) === -1) {
+      this.propertyList.push(property);
+    }
+    if (property === this.CASE_GEOMETRY_TYPE) {
+      this.addProperty(this.CASE_GEOMETRY_COORDINATES as CreateZaakExtraProperties);
+    }
+  }
+
+  public removeProperty(property: CreateZaakExtraProperties): void {
+    // only remove the property from the list if it is in the list
+    if (this.propertyList.indexOf(property) !== -1) {
+      this.propertyList.splice(this.propertyList.indexOf(property), 1);
+      this.onPropertyChanged(property, undefined);
+    }
+    if (property === this.CASE_GEOMETRY_TYPE) {
+      this.removeProperty(this.CASE_GEOMETRY_COORDINATES as CreateZaakExtraProperties);
+    }
+  }
+
+  public hasPropertyBeenAdded(property: CreateZaakExtraProperties): boolean {
+    return this.propertyList.indexOf(property) !== -1;
+  }
+
+  public onPropertyChanged(property: CreateZaakExtraProperties, value: any): void {
+    this._properties.set(property, value);
+    this._formValue$
+      .pipe(
+        filter(formValue => formValue !== null),
+        take(1)
+      )
+      .subscribe(formValue => {
+        this.onFormValueChanged(formValue);
+      });
   }
 
   private handleValid(formValue: CreateZaakConfig): void {
     const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
     const valid = !!(formValue.rsin && formValue.zaaktypeUrl) && !isPropertyInvalid;
 
-    this.valid$.next(valid);
+    this._valid$.next(valid);
     this.valid.emit(valid);
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this.formValue$, this.valid$])
+    this.saveSubscription = this.save$?.subscribe(() => {
+      combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
           if (valid) {
@@ -211,31 +260,5 @@ export class CreateZaakConfigurationComponent
           }
         });
     });
-  }
-
-  public addCaseProperty(property: CreateZaakExtraProperties): void {
-    this.propertyList.push(property);
-  }
-
-  public removeCaseProperty(property: CreateZaakExtraProperties): void {
-    this.propertyList.splice(this.propertyList.indexOf(property), 1);
-    this._properties.delete(property);
-    this.onPropertyChanged(property, undefined);
-  }
-
-  public hasPropertyBeenAdded(property: CreateZaakExtraProperties): boolean {
-    return this.propertyList.indexOf(property) !== -1;
-  }
-
-  public onPropertyChanged(property: CreateZaakExtraProperties, value: any): void {
-    this._properties.set(property, value);
-    this.formValue$
-      .pipe(
-        filter(formValue => formValue !== null),
-        take(1)
-      )
-      .subscribe(formValue => {
-        this.formValueChange(formValue);
-      });
   }
 }

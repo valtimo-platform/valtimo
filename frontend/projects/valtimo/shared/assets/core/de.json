@@ -826,7 +826,8 @@
         "content": "Wählen Sie den Widget-Inhalt",
         "style": "Wählen Sie den Widget-Stil",
         "type": "Wählen Sie den Widget-Typ",
-        "width": "Wählen Sie die Widget-Breite"
+        "width": "Wählen Sie die Widget-Breite",
+        "displayConditions": "Anzeigebedingungen festlegen"
       }
     },
     "notification": {
@@ -947,6 +948,14 @@
         "titleTooltip": "Titel für die Immobilie",
         "valueTooltip": "Name der Eigenschaft, auf die Sie im zuvor ausgefüllten Tabellendatenpfad zugreifen möchten"
       }
+    },
+    "displayConditions": {
+      "description": "Konfigurieren Sie Bedingungen, um zu steuern, wann dieses Widget angezeigt wird. Wenn Sie keine Bedingungen hinzufügen, wird das Widget immer angezeigt.",
+      "conditions": "Bedingungen (Optional)",
+      "addCondition": "Bedingung hinzufügen",
+      "operator": "Operator",
+      "path": "Pfad",
+      "value": "Wert"
     },
     "cancelModal": {
       "title": "Verlassen des Editors",
@@ -1489,6 +1498,7 @@
     "collapseButtonText": "Ausblenden",
     "searchButtonText": "Suche",
     "clearButtonText": "Löschen",
+    "saveButtonText": "Suche speichern",
     "downloadButtonText": "Konfiguration herunterladen",
     "to": "bis",
     "text": "Text",
@@ -1923,5 +1933,23 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "condition": {
+    "operator": {
+      "!=": "Nicht gleichzusetzen mit",
+      "==": "Gleich",
+      ">": "Größer als",
+      ">=": "Größer als oder gleich wie",
+      "<": "Weniger als",
+      "<=": "Gleich oder kleiner als"
+    }
+  },
+  "quickSearch": {
+    "addItem": "Schnellsuche-Element hinzufügen",
+    "deleteModalTitle": "Schnellsuche-Element löschen",
+    "deleteModalContent": "Sind Sie sicher, dass Sie dieses Schnellsuche-Element löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
+    "rightClickTooltip": "Rechtsklick für Optionen",
+    "deleteHelperText": "Nachdem Sie ein Schnellsuchelement erstellt haben, können Sie es mit einem Rechtsklick darauf löschen",
+    "duplicateError": "Ein Schnellsuchobjekt mit diesem Titel existiert bereits"
   }
 }

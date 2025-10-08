@@ -820,7 +820,8 @@
         "content": "Choose widget content",
         "style": "Choose widget style",
         "type": "Choose widget type",
-        "width": "Choose widget width"
+        "width": "Choose widget width",
+        "displayConditions": "Set display conditions"
       }
     },
     "notification": {
@@ -932,6 +933,14 @@
         "titleTooltip": "Title for the property",
         "valueTooltip": "Name of the property you wish to access within the previously filled collection data path"
       }
+    },
+    "displayConditions": {
+      "description": "Configure conditions to control when this widget is shown. If you do not add any conditions, the widget is always displayed.",
+      "conditions": "Conditions (Optional)",
+      "addCondition": "Add condition",
+      "operator": "Operator",
+      "path": "Path",
+      "value": "Value"
     },
     "cancelModal": {
       "title": "Leaving the editor",
@@ -1474,6 +1483,7 @@
     "collapseButtonText": "Hide",
     "searchButtonText": "Search",
     "clearButtonText": "Clear",
+    "saveButtonText": "Save search",
     "downloadButtonText": "Download configuration",
     "to": "to",
     "text": "Text",
@@ -1905,5 +1915,23 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "condition": {
+    "operator": {
+      "!=": "Not equal to",
+      "==": "Equal to",
+      ">": "Greater than",
+      ">=": "Greater than or equal to",
+      "<": "Less than",
+      "<=": "Less than or equal to"
+    }
+  },
+  "quickSearch": {
+    "addItem": "Add quick search item",
+    "deleteModalTitle": "Delete quick search item",
+    "deleteModalContent": "Are you sure you want to delete this quick search item? This change cannot be undone",
+    "rightClickTooltip": "Right-click for options",
+    "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
+    "duplicateError": "A quick search item with this title already exists"
   }
 }

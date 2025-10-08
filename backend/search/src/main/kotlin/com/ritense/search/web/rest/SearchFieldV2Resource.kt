@@ -51,7 +51,7 @@ class SearchFieldV2Resource(
         @PathVariable key: String,
         @Valid @RequestBody searchFieldV2Dto: SearchFieldV2Dto
     ) =
-        ResponseEntity.ok(searchFieldV2Service.update(ownerId, key, searchFieldV2Dto))
+        ResponseEntity.ok(searchFieldV2Service.update(searchFieldV2Dto))
 
     @PutMapping("/{ownerId}/fields")
     fun updateList(

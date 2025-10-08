@@ -839,7 +839,8 @@
         "content": "Kies widget-inhoud",
         "style": "Kies widget-stijl",
         "type": "Kies widget-type",
-        "width": "Kies widget-breedte"
+        "width": "Kies widget-breedte",
+        "displayConditions": "Weergavecondities instellen"
       }
     },
     "notification": {
@@ -957,6 +958,14 @@
         "titleTooltip": "Titel van de eigenschap",
         "valueTooltip": "Naam van de eigenschap waartoe u toegang wilt krijgen binnen het eerder ingevulde collectiegegevens-pad"
       }
+    },
+    "displayConditions": {
+      "description": "Configureer condities om te bepalen wanneer deze widget wordt getoond. Als je geen condities toevoegt, wordt de widget altijd weergegeven.",
+      "conditions": "Condities (Optioneel)",
+      "addCondition": "Conditie toevoegen",
+      "operator": "Operator",
+      "path": "Pad",
+      "value": "Waarde"
     },
     "cancelModal": {
       "title": "De editor verlaten",
@@ -1501,6 +1510,7 @@
     "collapseButtonText": "Verbergen",
     "searchButtonText": "Zoeken",
     "clearButtonText": "Wissen",
+    "saveButtonText": "Zoekopdracht opslaan",
     "downloadButtonText": "Download configuratie",
     "to": "tot",
     "text": "Tekst",
@@ -1938,5 +1948,23 @@
     "tabTypes": {
       "widgets": "Widgets"
     }
+  },
+  "condition": {
+    "operator": {
+      "!=": "Niet gelijk aan",
+      "==": "Gelijk aan",
+      ">": "Groter dan",
+      ">=": "Groter dan of gelijk aan",
+      "<": "Minder dan",
+      "<=": "Minder dan of gelijk aan"
+    }
+  },
+  "quickSearch": {
+    "addItem": "Snelzoekitem toevoegen",
+    "deleteModalTitle": "Snelzoekitem verwijderen",
+    "deleteModalContent": "Weet u zeker dat u dit snelzoekitem wilt verwijderen? Deze wijziging kan niet ongedaan worden gemaakt.",
+    "rightClickTooltip": "Klik met de rechtermuisknop voor opties",
+    "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
+    "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
   }
 }
