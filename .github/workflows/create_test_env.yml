@@ -16,6 +16,7 @@ on:
 permissions:
   actions: read
   contents: read
+  packages: write
 
 jobs:
   build_backend_image:
