@@ -83,7 +83,7 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
 
   constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
 
-  ngAfterViewInit(): void {
+  public ngAfterViewInit(): void {
     this.initLayout();
   }
 
