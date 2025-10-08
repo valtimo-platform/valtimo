@@ -19,6 +19,7 @@ services:
             KC_DB_PASSWORD: keycloak
             KC_FEATURES: token-exchange,admin-fine-grained-authz
             KC_HTTP_RELATIVE_PATH: /auth
+            KC_HOSTNAME_STRICT: false
             KC_HOSTNAME_STRICT_HTTPS: false
         volumes:
             - ./imports/keycloak:/opt/keycloak/data/import
@@ -26,6 +27,7 @@ services:
             - start-dev
             - --import-realm
             - --http-enabled=true
+            - --hostname-strict=false
         healthcheck:
             test: [ 'CMD-SHELL', '[ -f /tmp/HealthCheck.java ] || echo "public class HealthCheck { public static void main(String[] args) throws java.lang.Throwable { System.exit(((java.net.HttpURLConnection)new java.net.URL(args[0]).openConnection()).getResponseCode() == 200 ? 0 : 1); } }" > /tmp/HealthCheck.java && java /tmp/HealthCheck.java http://localhost:8080/auth' ]
             interval: 10s
@@ -542,6 +544,67 @@ services:
         profiles:
             - openklant
 
+    iko-haalcentraal-personen:
+        image: ghcr.io/brp-api/personen-mock:2.2.1
+        container_name: gzac-docker-compose-iko-haalcentraal-personen
+        platform: linux/amd64
+        profiles:
+            - iko
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Release
+            - ASPNETCORE_URLS=http://+:5010
+        ports:
+            - "5010:5010"
+
+    iko-postgres:
+        image: postgres:17.4
+        container_name: gzac-docker-compose-iko-database
+        profiles:
+            - iko
+        ports:
+            - "54325:5432"
+        environment:
+            - POSTGRES_USER=iko
+            - POSTGRES_PASSWORD=iko
+            - POSTGRES_DB=iko
+
+    iko:
+        image: nielserkamp4ritense/test:0.3.1
+        container_name: gzac-docker-compose-iko
+        platform: linux/amd64
+        profiles:
+            - iko
+        ports:
+            - "8012:8080"
+        environment:
+            SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+            SPRING_DATASOURCE_URL: jdbc:postgresql://iko-postgres:5432/iko
+            SPRING_DATASOURCE_USERNAME: iko
+            SPRING_DATASOURCE_PASSWORD: iko
+            IKO_CONNECTORS_BRP_HOST: http://iko-haalcentraal-personen:5010
+            IKO_CONNECTORS_OPENZAAK_HOST: http://openzaak:8000
+            IKO_CONNECTORS_OPENZAAK_SPECIFICATIONURI: http://openzaak:8000/zaken/api/v1/schema/openapi.yaml
+            IKO_CONNECTORS_OPENZAAK_CLIENTID: valtimo_client
+            IKO_CONNECTORS_OPENZAAK_SECRET: e09b8bc5-5831-4618-ab28-41411304309d
+            IKO_CONNECTORS_BAG_HOST: https://api.bag.kadaster.nl
+            IKO_CONNECTORS_BAG_APIKEY: asd
+            IKO_CONNECTORS_OBJECTENAPI_HOST: http://objecten-api:8000
+            IKO_CONNECTORS_OBJECTENAPI_SPECIFICATIONURI: http://objecten-api:8000/api/v2/schema/openapi.yaml
+            IKO_CONNECTORS_OBJECTENAPI_TOKEN: 182c13e2209161852c53cef53a879f7a2f923430
+            IKO_CONNECTORS_OPENKLANT_HOST: http://open-klant:8000
+            IKO_CONNECTORS_OPENKLANT_SPECIFICATIONURI: http://open-klant:8000/api/v2/schema/openapi.yaml
+            IKO_CONNECTORS_OPENKLANT_TOKEN: 5bf819967d9fdd00d326ce20774768b4182285e5
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI: http://keycloak.localhost:8081/auth/realms/valtimo
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTID: iko
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET: ThisIsNotASecret
+            SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: http://keycloak.localhost:8081/auth/realms/valtimo
+            LOGGING_LEVEL_COM_RITENSE_IKO: debug
+        depends_on:
+            gzac-keycloak:
+                condition: service_healthy
+        extra_hosts:
+            - "keycloak.localhost:host-gateway"
+
     gzac-backend:
         image: ritense/gzac-backend:13.1.2
         container_name: gzac-docker-compose-gzac-backend
@@ -554,9 +617,9 @@ services:
             - SPRING_DATASOURCE_USERNAME=gzac
             - SPRING_DATASOURCE_PASSWORD=password
             - VALTIMO_APP_HOSTNAME=http://localhost:4200
-            - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI=http://host.docker.internal:8081/auth/realms/valtimo/protocol/openid-connect/certs
-            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI=http://host.docker.internal:8081/auth/realms/valtimo
-            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI=http://host.docker.internal:8081/auth/realms/valtimo
+            - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI=http://keycloak.localhost:8081/auth/realms/valtimo/protocol/openid-connect/certs
+            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI=http://keycloak.localhost:8081/auth/realms/valtimo
+            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI=http://keycloak.localhost:8081/auth/realms/valtimo
             - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKJWT_CLIENTID=valtimo-console
             - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTID=valtimo-user-m2m-client
             - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTSECRET=6ef6ca16-6b86-482a-a3d9-0561704c1db9
@@ -573,6 +636,8 @@ services:
         depends_on:
             gzac-keycloak:
                 condition: service_healthy
+        extra_hosts:
+            - "keycloak.localhost:host-gateway"
 
     gzac-frontend:
         image: ritense/gzac-frontend:13.1.2
@@ -581,7 +646,7 @@ services:
             - gzac
         environment:
             - API_URI=http://localhost:8080/api
-            - KEYCLOAK_URL=http://localhost:8081/auth
+            - KEYCLOAK_URL=http://keycloak.localhost:8081/auth
             - KEYCLOAK_REALM=valtimo
             - KEYCLOAK_CLIENT_ID=valtimo-console
             - KEYCLOAK_REDIRECT_URI=http://localhost/keycloak/callback
@@ -603,9 +668,9 @@ services:
             - SPRING_DATASOURCE_USERNAME=gzac
             - SPRING_DATASOURCE_PASSWORD=password
             - VALTIMO_APP_HOSTNAME=http://localhost:4200
-            - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI=http://host.docker.internal:8081/auth/realms/valtimo/protocol/openid-connect/certs
-            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI=http://host.docker.internal:8081/auth/realms/valtimo
-            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI=http://host.docker.internal:8081/auth/realms/valtimo
+            - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI=http://keycloak.localhost:8081/auth/realms/valtimo/protocol/openid-connect/certs
+            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKAPI_ISSUERURI=http://keycloak.localhost:8081/auth/realms/valtimo
+            - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAKJWT_ISSUERURI=http://keycloak.localhost:8081/auth/realms/valtimo
             - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKJWT_CLIENTID=valtimo-console
             - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTID=valtimo-user-m2m-client
             - SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAKAPI_CLIENTSECRET=6ef6ca16-6b86-482a-a3d9-0561704c1db9
@@ -626,6 +691,8 @@ services:
             default:
                 aliases:
                     - gzac-backend
+        extra_hosts:
+            - "keycloak.localhost:host-gateway"
 
     gzac-demo-frontend:
         image: ritense/gzac-evenementenvergunning-demo-frontend:13.1.2
@@ -634,7 +701,7 @@ services:
             - demo
         environment:
             - API_URI=http://localhost:8080/api
-            - KEYCLOAK_URL=http://localhost:8081/auth
+            - KEYCLOAK_URL=http://keycloak.localhost:8081/auth
             - KEYCLOAK_REALM=valtimo
             - KEYCLOAK_CLIENT_ID=valtimo-console
             - KEYCLOAK_REDIRECT_URI=http://localhost/keycloak/callback

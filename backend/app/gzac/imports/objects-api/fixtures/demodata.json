@@ -808,41 +808,44 @@
     },
     {
         "model": "token.tokenauth",
-        "pk": "cd63e158f3aca276ef284e3033d020a22899c728",
+        "pk": 50,
         "fields": {
             "contact_person": "test",
             "email": "let@me.test",
             "organization": "",
             "last_modified": "2020-12-23T11:43:16.820Z",
-            "created": "2020-12-22T16:27:00.751Z"
+            "created": "2020-12-22T16:27:00.751Z",
+            "token": "cd63e158f3aca276ef284e3033d020a22899c728"
         }
     },
     {
         "model": "token.tokenauth",
-        "pk": "182c13e2209161852c53cef53a879f7a2f923430",
+        "pk": 51,
         "fields": {
             "contact_person": "valtimo",
             "email": "test@example.com",
             "organization": "valtimo",
             "last_modified": "2020-12-23T11:43:16.820Z",
-            "created": "2020-12-22T16:27:00.751Z"
+            "created": "2020-12-22T16:27:00.751Z",
+            "token": "182c13e2209161852c53cef53a879f7a2f923430"
         }
     },
     {
         "model": "token.tokenauth",
-        "pk": "d667fec15cd7db980730dd843836604e638d1295",
+        "pk": 52,
         "fields": {
             "contact_person": "openformulieren",
             "email": "openformulieren@example.com",
             "last_modified": "2020-12-23T11:43:16.820Z",
-            "created": "2020-12-22T16:27:00.751Z"
+            "created": "2020-12-22T16:27:00.751Z",
+            "token": "d667fec15cd7db980730dd843836604e638d1295"
         }
     },
     {
         "model": "token.permission",
         "pk": 1,
         "fields": {
-            "token_auth": "cd63e158f3aca276ef284e3033d020a22899c728",
+            "token_auth": 50,
             "object_type": 2,
             "mode": "read_and_write"
         }
@@ -851,7 +854,7 @@
         "model": "token.permission",
         "pk": 2,
         "fields": {
-            "token_auth": "cd63e158f3aca276ef284e3033d020a22899c728",
+            "token_auth": 50,
             "object_type": 1,
             "mode": "read_and_write"
         }
@@ -860,7 +863,7 @@
         "model": "token.permission",
         "pk": 3,
         "fields": {
-            "token_auth": "182c13e2209161852c53cef53a879f7a2f923430",
+            "token_auth": 51,
             "object_type": 4,
             "mode": "read_and_write"
         }
@@ -869,7 +872,7 @@
         "model": "token.permission",
         "pk": 4,
         "fields": {
-            "token_auth": "d667fec15cd7db980730dd843836604e638d1295",
+            "token_auth": 52,
             "object_type": 4,
             "mode": "read_and_write"
         }
@@ -878,7 +881,7 @@
         "model": "token.permission",
         "pk": 5,
         "fields": {
-            "token_auth": "182c13e2209161852c53cef53a879f7a2f923430",
+            "token_auth": 51,
             "object_type": 5,
             "mode": "read_and_write"
         }
@@ -887,7 +890,7 @@
         "model": "token.permission",
         "pk": 6,
         "fields": {
-            "token_auth": "182c13e2209161852c53cef53a879f7a2f923430",
+            "token_auth": 51,
             "object_type": 6,
             "mode": "read_and_write"
         }
@@ -896,7 +899,7 @@
         "model": "token.permission",
         "pk": 7,
         "fields": {
-            "token_auth": "182c13e2209161852c53cef53a879f7a2f923430",
+            "token_auth": 51,
             "object_type": 1,
             "mode": "read_and_write"
         }
@@ -905,7 +908,7 @@
         "model": "token.permission",
         "pk": 8,
         "fields": {
-            "token_auth": "182c13e2209161852c53cef53a879f7a2f923430",
+            "token_auth": 51,
             "object_type": 7,
             "mode": "read_and_write"
         }
@@ -947,10 +950,10 @@
         }
     },
     {
-        "model": "notifications.notificationsconfig",
+        "model": "notifications_api_common.notificationsconfig",
         "pk": 1,
         "fields": {
-            "api_root": "http://open-notificaties:8000/api/v1/"
+            "notifications_api_service_id": 2
         }
     }
 ]

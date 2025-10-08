@@ -3,6 +3,7 @@
         "model": "token.tokenauth",
         "pk": 100,
         "fields": {
+            "identifier": "ritense",
             "contact_person": "Ritense",
             "email": "Ritense@Ritense.test",
             "organization": "",
@@ -1607,27 +1608,12 @@
             "modified_at": "2021-08-02",
             "published_at": "2021-07-12",
             "json_schema": {
-                "title": "Productaanvraag tbv terugbelnotitie Den Haag",
-                "default": {},
-                "examples": [
-                    {
-                        "data": {
-                            "naam": "Jan Jansen",
-                            "omschrijving": "Ik heb een vraag over mijn paspoort",
-                            "telefoonnummer": "0612345678"
-                        },
-                        "type": "terugbelnotitie",
-                        "submission_id": "a43e84ac-e08b-4d5f-8d5c-5874c6dddf56"
-                    }
-                ],
+                "title": "Verzoek",
                 "required": [
-                    "submission_id",
-                    "type",
-                    "data"
+                    "type"
                 ],
                 "properties": {
                     "data": {
-                        "$id": "#/properties/data",
                         "type": "object",
                         "title": "Object met de ingezonden formulierdata",
                         "default": {},
@@ -1635,10 +1621,14 @@
                             {
                                 "field1": "value1"
                             }
-                        ]
+                        ],
+                        "properties": {
+                            "voornaam": {
+                                "type": "string"
+                            }
+                        }
                     },
                     "type": {
-                        "$id": "#/properties/type",
                         "type": "string",
                         "title": "Type productaanvraag",
                         "default": "",
@@ -1647,7 +1637,6 @@
                         ]
                     },
                     "pdf_url": {
-                        "$id": "#/properties/pdf_url",
                         "type": "string",
                         "title": "URL van de pdf van bevestiging in Open Forms",
                         "format": "uri",
@@ -1657,7 +1646,6 @@
                         ]
                     },
                     "attachments": {
-                        "$id": "#/properties/attachments",
                         "type": "array",
                         "items": {
                             "type": "string",
@@ -1672,7 +1660,6 @@
                         ]
                     },
                     "submission_id": {
-                        "$id": "#/properties/submission_id",
                         "type": "string",
                         "title": "ID van de submission in Open Forms",
                         "default": "",

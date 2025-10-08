@@ -4,8 +4,8 @@ echo ">>>>  Waiting until Open Formulieren has initialized the database <<<<"
 useradd openforms
 while true
 do
-    verifier=$(psql -U openforms -d openforms -t -A -c "select count(id)>0 from auth_permission")
-    if [ "t" = $verifier ]
+    verifier=$(psql -U openforms -d openforms -t -A -c "select count(id) from auth_group")
+    if [ "0" != $verifier ]
         then
             echo "Running database setup scripts"
             for file in /docker-entrypoint-initdb.d/database/*.sql
