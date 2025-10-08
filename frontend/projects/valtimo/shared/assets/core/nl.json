@@ -159,7 +159,7 @@
       "noFormSpecified": "Voor dit tabblad is geen formulierdefinitie opgegeven.",
       "formNotFound": "De formulierdefinitie '{{formDefinitionName}}' kan niet worden gevonden."
     },
-    "rowLocked": "Je hebt geen toegang tot dit dossier",
+    "rowLocked": "Je hebt geen toegang tot dit dossier"
   },
   "document": {
     "title": {"single": "Document", "plural": "Document's"},
