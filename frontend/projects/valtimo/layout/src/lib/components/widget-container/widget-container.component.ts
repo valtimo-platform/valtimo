@@ -26,6 +26,7 @@ import {CommonModule} from '@angular/common';
 import {v4 as uuid} from 'uuid';
 import {BehaviorSubject, delay, merge, Observable, take} from 'rxjs';
 import Muuri from 'muuri';
+import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {Widget, WidgetComponentMap, WidgetWithUuid} from '../../models';
 import {WidgetBlockComponent} from '../widget-block';
 import {filter} from 'rxjs/operators';
@@ -33,7 +34,6 @@ import {DEFAULT_WIDGET_COMPONENT_MAP} from '../../constants';
 import {LoadingModule} from 'carbon-components-angular';
 import {CarbonListModule} from '@valtimo/components';
 import {TranslatePipe} from '@ngx-translate/core';
-import {WidgetLayoutService} from '../../services/widget-layout.service';
 
 @Component({
   selector: 'valtimo-widget-container',
