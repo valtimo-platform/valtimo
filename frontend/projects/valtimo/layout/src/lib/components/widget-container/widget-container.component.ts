@@ -15,6 +15,7 @@
  */
 
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -44,7 +45,7 @@ import {TranslatePipe} from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [WidgetLayoutService],
 })
-export class WidgetContainerComponent implements OnDestroy {
+export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('widgetsContainer') private _widgetsContainerRef: ElementRef<HTMLDivElement>;
 
   public readonly widgetsWithUuids$ = new BehaviorSubject<WidgetWithUuid[]>(null);
@@ -82,6 +83,10 @@ export class WidgetContainerComponent implements OnDestroy {
 
   constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
 
+  ngAfterViewInit(): void {
+    this.initLayout();
+  }
+
   private resetLayout(): void {
     if (!this._observer) return;
 
@@ -98,7 +103,7 @@ export class WidgetContainerComponent implements OnDestroy {
     this._observer = new ResizeObserver(event => {
       this.observerMutation(event);
     });
-    this._observer.observe(this._widgetsContainerRef.nativeElement);
+    this._observer.observe(this._widgetsContainerRef?.nativeElement);
 
     this.initMuuri();
   }
