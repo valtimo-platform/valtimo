@@ -19,8 +19,10 @@ import {CatalogiApiConfigurationComponent} from './components/catalogi-api-confi
 import {CommonModule} from '@angular/common';
 import {PluginTranslatePipeModule} from '../../pipes';
 import {FormModule, InputModule, ParagraphModule, SelectModule} from '@valtimo/components';
+import {GetStatustypenConfigurationComponent} from './components/get-statustypen/get-statustypen-configuration.component';
 import {GetStatustypeConfigurationComponent} from './components/get-statustype/get-statustype-configuration.component';
 import {GetBesluittypeConfigurationComponent} from './components/get-besluittype/get-besluittype-configuration.component';
+import {GetResultaattypenConfigurationComponent} from './components/get-resultaattypen/get-resultaattypen-configuration.component';
 import {GetResultaattypeConfigurationComponent} from './components/get-resultaattype/get-resultaattype-configuration.component';
 import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/get-eigenschap-configuration.component';
 
@@ -28,7 +30,9 @@ import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/g
   declarations: [
     CatalogiApiConfigurationComponent,
     GetBesluittypeConfigurationComponent,
+    GetResultaattypenConfigurationComponent,
     GetResultaattypeConfigurationComponent,
+    GetStatustypenConfigurationComponent,
     GetStatustypeConfigurationComponent,
     GetEigenschapConfigurationComponent,
   ],
@@ -43,8 +47,10 @@ import {GetEigenschapConfigurationComponent} from './components/get-eigenschap/g
   exports: [
     CatalogiApiConfigurationComponent,
     GetBesluittypeConfigurationComponent,
+    GetResultaattypenConfigurationComponent,
     GetResultaattypeConfigurationComponent,
     GetStatustypeConfigurationComponent,
+    GetStatustypenConfigurationComponent,
     GetEigenschapConfigurationComponent,
   ],
 })
