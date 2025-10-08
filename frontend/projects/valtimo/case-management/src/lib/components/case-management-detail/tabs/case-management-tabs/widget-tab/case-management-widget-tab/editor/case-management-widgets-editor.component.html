@@ -31,6 +31,7 @@
     (rowClicked)="editWidget($event)"
   >
     <ng-container carbonToolbarContent>
+      <ng-container *ngTemplateOutlet="addDividerButton"></ng-container>
       <ng-container *ngTemplateOutlet="addWidgetButton"></ng-container>
     </ng-container>
 
@@ -40,6 +41,17 @@
       [title]="'widgetTabManagement.list.noResults.title' | translate"
     ></valtimo-no-results>
   </valtimo-carbon-list>
+
+  <ng-template #addDividerButton>
+    <button
+      cdsButton="ghost"
+      (click)="openAddDividerModal()"
+    >
+      {{ 'widgetTabManagement.list.addDivider' | translate }}
+
+      <svg cdsIcon="drag--vertical" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </ng-template>
 
   <ng-template #addWidgetButton>
     <button cdsButton="primary" (click)="openAddModal()">
@@ -54,6 +66,15 @@
     [open]="obs.isWizardOpen"
     (closeEvent)="onCloseEvent($event, obs.items)"
   ></valtimo-case-management-widget-wizard>
+
+  <valtimo-case-management-divider-modal
+    [open]="isDividerModalOpen$ | async"
+    [modalMode]="$dividerModalMode()"
+    [prefillData]="dividerDefinition$ | async"
+    [usedKeys]="_usedKeys"
+    (closeEvent)="onCloseAddDividerModalEvent($event, obs.items)"
+  ></valtimo-case-management-divider-modal>
+
 
   <valtimo-confirmation-modal
     confirmButtonTextTranslationKey="interface.delete"

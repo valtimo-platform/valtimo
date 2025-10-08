@@ -31,6 +31,13 @@ import {CaseWidgetsRes, DocumentUpdatedSseEvent} from '../../../../models';
 import {SseService} from '@valtimo/sse';
 import {WidgetsService} from './widgets.service';
 import {isEqual} from 'lodash-es';
+import {
+  BasicCaseWidget,
+  CaseWidget,
+  CaseWidgetGroup,
+  CaseWidgetType,
+  DividerCaseWidget,
+} from '../../../../models';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -68,7 +75,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   private _previousWidgetConfiguration: CaseWidgetsRes | null = null;
 
-  public readonly widgetConfiguration$ = combineLatest([
+  private readonly _widgetConfiguration$ = combineLatest([
     this._documentId$,
     this._tabKey$,
     this._documentUpdates$,
@@ -80,6 +87,10 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
       );
     }),
     shareReplay({bufferSize: 1, refCount: true})
+  );
+
+  public readonly widgetGroups$: Observable<CaseWidgetGroup[]> = this._widgetConfiguration$.pipe(
+    map(res => this.toCaseWidgetGroups(res.widgets))
   );
 
   public readonly widgetComponentMap: WidgetComponentMap = {
@@ -104,6 +115,29 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this.caseTabService.enableTabHorizontalOverflow();
+  }
+
+  private toCaseWidgetGroups(widgets: BasicCaseWidget[]): CaseWidgetGroup[] {
+    const groups = widgets.reduce<CaseWidgetGroup[]>((acc, widget) => {
+      if (widget.type === CaseWidgetType.DIVIDER) {
+        acc.push({divider: widget as DividerCaseWidget, widgets: []});
+      } else {
+        if (acc.length === 0) acc.push({divider: null, widgets: []});
+        acc[acc.length - 1].widgets.push(widget as CaseWidget);
+      }
+      return acc;
+    }, []);
+
+    // if there is more than one group and trailing groups have only a divider and no widgets, don't render these last groups
+    for (let i = groups.length - 1; i >= 0; i--) {
+      if (groups[i].widgets.length === 0) {
+        groups.pop();
+      } else {
+        break;
+      }
+    }
+
+    return groups;
   }
 
   private filterDuplicateConfigurations(

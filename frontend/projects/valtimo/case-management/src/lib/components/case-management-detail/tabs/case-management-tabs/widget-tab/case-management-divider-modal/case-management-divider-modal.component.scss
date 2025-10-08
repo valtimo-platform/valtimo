@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-export * from './layout.service';
-export * from './widget-fields.service';
-export * from './widget-wizard.service';
+.divider-key-wrapper {
+  display: flex;
+  flex: 1 1 auto;
+  inline-size: 100%;
+}
+
+.title-input {
+  margin-bottom: 32px;
+}

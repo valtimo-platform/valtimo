@@ -25,4 +25,5 @@ export * from './lib/translation-management.module';
 export * from './lib/components';
 export * from './lib/models';
 export * from './lib/constants';
+export * from './lib/services/widget-layout.service';
 export * from './lib/interfaces';

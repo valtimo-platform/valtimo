@@ -14,7 +14,13 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-container
-  [widgets]="(widgetConfiguration$ | async)?.widgets"
-  [widgetComponentMap]="widgetComponentMap"
-></valtimo-widget-container>
+@for (widgetGroup of widgetGroups$ | async; track $index) {
+  <div *ngIf="widgetGroup.divider" class="divider" [ngClass]="{'divider--first': $first}">
+    {{ widgetGroup.divider.title || '-' }}
+  </div>
+
+  <valtimo-widget-container
+          [widgets]="widgetGroup.widgets"
+          [widgetComponentMap]="widgetComponentMap"
+  ></valtimo-widget-container>
+}

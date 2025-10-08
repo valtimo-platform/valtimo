@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-type ModalMode = 'add' | 'edit' | 'delete';
+type ModalMode = 'add' | 'edit' | 'delete' | 'duplicate';
 
 type ModalCloseEvent = 'close' | 'closeAndRefresh';
 
