@@ -21,6 +21,8 @@ import {
   Input,
   OnDestroy,
   signal,
+  Output,
+  EventEmitter
 } from '@angular/core';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
@@ -75,12 +77,16 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
     this._sourceText$.next(value || '');
   }
 
+  @Output() public readonly submitDisabled = new EventEmitter<boolean>();
+
   public $disabled = signal<boolean>(false);
 
   public value = '';
 
   public readonly editingKey$ = new BehaviorSubject<boolean>(true);
   private duplicateInitialized: boolean = false;
+
+  public readonly idError$ = new BehaviorSubject<string | null>(null);
 
   private onChange = (_: any) => {};
   public onTouched = () => {};
@@ -114,6 +120,7 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
   public ngOnDestroy(): void {
     this.subscription.unsubscribe();
     this.duplicateInitialized = false;
+    this.idError$.next(null);
   }
 
   public setDisabledState(disabled: boolean): void {
@@ -133,7 +140,15 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
   }
 
   public onInputChange(event: InputEvent & {target: HTMLInputElement}): void {
-    this.onChange((this.value = event.target.value));
+    const usedKeys = this._usedKeys$.getValue();
+    if(usedKeys.includes(event.target.value)){
+      this.idError$.next('caseManagement.statuses.keyDuplicated');
+      this.submitDisabled.emit(true);
+    } else {
+      this.idError$.next(null);
+      this.submitDisabled.emit(false);
+      this.onChange((this.value = event.target.value));
+    }
   }
 
   public enableKeyEditing(): void {

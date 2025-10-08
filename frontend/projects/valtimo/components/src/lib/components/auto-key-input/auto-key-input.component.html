@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-label>
+<cds-label [invalid]="!!(idError$ | async)" [invalidText]="(idError$ | async) | translate">
   {{ labelTranslationKey | translate }}
 
   <div class="edit-key-input">
@@ -28,6 +28,7 @@
           : (placeholderTranslationKey | translate)
       "
       [readOnly]="!(editingKey$ | async) || (mode$ | async) === 'edit'"
+      [invalid]="!!(idError$ | async)"
       (input)="onInputChange($event)"
       (blur)="onTouched()"
     />

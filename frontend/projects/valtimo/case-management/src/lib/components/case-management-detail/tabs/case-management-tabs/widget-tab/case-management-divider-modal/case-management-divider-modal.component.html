@@ -41,10 +41,10 @@
       [mode]="modalMode"
       [usedKeys]="usedKeys"
       [sourceText]="title.value"
+      (submitDisabled)="setSubmitDisabled($event)"
       formControlName="key"
       labelTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyLabel"
       placeholderTranslationKey="widgetTabManagement.list.dividerModal.dividerKeyPlaceholder"
-
     >
     </valtimo-auto-key-input>
 
@@ -55,7 +55,7 @@
       {{ 'caseManagement.allVersionsModal.closeButton' | translate }}
     </button>
 
-    <button [disabled]="!dividerForm.valid" cdsButton="primary" (click)="onCloseModal(true)">
+    <button [disabled]="!dividerForm.valid || (submitDisabled$ | async)" cdsButton="primary" (click)="onCloseModal(true)">
       {{ buttonLabel | translate }}
     </button>
   </cds-modal-footer>
