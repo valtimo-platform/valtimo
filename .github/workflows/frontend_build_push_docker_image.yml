@@ -4,7 +4,14 @@ permissions:
   contents: read
 
 on:
+  pull_request:
+    branches:
+      - 'next-minor'
+    types:
+      - synchronize
+
   workflow_dispatch:
+
   workflow_call:
     outputs:
       imageTag:

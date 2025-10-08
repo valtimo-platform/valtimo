@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-label>
+<cds-label [invalid]="!!(idError$ | async)" [invalidText]="(idError$ | async) | translate">
   {{ labelTranslationKey | translate }}
 
   <div class="edit-key-input">
@@ -28,12 +28,13 @@
           : (placeholderTranslationKey | translate)
       "
       [readOnly]="!(editingKey$ | async) || (mode$ | async) === 'edit'"
+      [invalid]="!!(idError$ | async)"
       (input)="onInputChange($event)"
       (blur)="onTouched()"
     />
 
     <cds-icon-button
-      *ngIf="(mode$ | async) === 'add' && !(editingKey$ | async)"
+      *ngIf="((mode$ | async) === 'add'|| (mode$ | async) === 'duplicate') && !(editingKey$ | async)"
       [disabled]="$disabled()"
       (click)="enableKeyEditing()"
       kind="secondary"
