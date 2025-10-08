@@ -27,7 +27,7 @@ import {
 import {CARBON_THEME} from '../../models';
 import {CommonModule} from '@angular/common';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {distinctUntilChanged, filter, take} from 'rxjs/operators';
+import {distinctUntilChanged, filter, take, tap} from 'rxjs/operators';
 import {isEqual} from 'lodash';
 import {CASES_WITHOUT_STATUS_KEY} from '../../constants';
 
@@ -48,23 +48,23 @@ export class StatusSelectorComponent {
       }))
     );
   }
-  @Input() public set selectedStatuses(value: InternalCaseStatus[]) {
-    this._selectedStatuses$.next(value);
+  @Input() public set selectedStatusKeys(value: string[]) {
+    this._selectedStatusKeys$.next(value);
   }
   @Input() public carbonTheme: CARBON_THEME = CARBON_THEME.WHITE;
   @Input() public disabled!: boolean;
 
-  @Output() public selectedStatusesChangeEvent = new EventEmitter<InternalCaseStatus[]>();
+  @Output() public selectedStatusesChangeEvent = new EventEmitter<string[]>();
 
   private readonly _statuses$ = new BehaviorSubject<InternalCaseStatus[]>([]);
 
-  private readonly _selectedStatuses$ = new BehaviorSubject<InternalCaseStatus[]>([]);
+  private readonly _selectedStatusKeys$ = new BehaviorSubject<string[]>([]);
 
   public readonly CASES_WITHOUT_STATUS_KEY = CASES_WITHOUT_STATUS_KEY;
 
   public readonly listItems$: Observable<ListItem[]> = combineLatest([
     this._statuses$,
-    this._selectedStatuses$,
+    this._selectedStatusKeys$,
     this.translateService.stream('key'),
   ]).pipe(
     filter(([statuses, selectedStatuses]) => !!statuses && !!selectedStatuses),
@@ -74,7 +74,7 @@ export class StatusSelectorComponent {
           status.key === this.CASES_WITHOUT_STATUS_KEY
             ? this.translateService.instant('caseManagement.statuses.withoutStatus')
             : status.title,
-        selected: !!selectedStatuses.find(selectedStatus => selectedStatus.key === status.key),
+        selected: !!selectedStatuses.find(selectedStatusKey => selectedStatusKey === status.key),
         key: status.key,
         tagType: status.tagType,
       }))
@@ -90,7 +90,8 @@ export class StatusSelectorComponent {
     this._statuses$.pipe(take(1)).subscribe(statuses => {
       const newSelectedStatuses = newSelectedItems
         .map(item => statuses.find(status => status.key === item.key))
-        .filter(status => !!status);
+        .filter(status => !!status)
+        .map(status => status?.key ?? '');
 
       this.selectedStatusesChangeEvent.emit(newSelectedStatuses);
     });

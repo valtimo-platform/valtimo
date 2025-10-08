@@ -1,7 +1,7 @@
 <ng-container
   *ngIf="{
     disabled: disabled$ | async,
-    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null
+    prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
   } as obs"
 >
   <v-paragraph [margin]="true" [italic]="true">
@@ -9,80 +9,80 @@
   </v-paragraph>
 
   <div class="row">
-      <div class="col-12">
-        <button
-            cdsButton="primary"
-            [size]="'md'"
-            [cdsOverflowMenu]="addPropertyList"
-            [customPane]="true"
-            placement="bottom"
-            class="add-button"
-          >
-            {{ 'addPatchZaakProperty' | pluginTranslate: pluginId | async }}
-            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-        </button>
-      </div>
+    <div class="col-12">
+      <button
+        cdsButton="primary"
+        [size]="'md'"
+        [cdsOverflowMenu]="addPropertyList"
+        [customPane]="true"
+        placement="bottom"
+        class="add-button"
+      >
+        {{ 'addPatchZaakProperty' | pluginTranslate: pluginId | async }}
+        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+      </button>
+    </div>
   </div>
 
   <v-form (valueChange)="onFormValueChanged($event)">
     @for (property of propertyList; track property) {
-        <div class="row">
-          <div class="col-11">
-            @if (property === CASE_GEOMETRY_TYPE) {
-              <v-input
-                [name]="CASE_GEOMETRY_TYPE"
-                [title]="translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async"
-                [required]="true"
-                [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
-                [margin]="true"
-                [presetOptions]="geometryTypes"
-                (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
-              />
-            } @else if (property === CASE_GEOMETRY_COORDINATES) {
-              <v-input
-                [name]="CASE_GEOMETRY_COORDINATES"
-                [title]="translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async"
-                [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
-                [required]="true"
-                [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
-                [margin]="true"
-                (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
-              />
-            } @else if (property.includes('Date')) {
-              <v-input
-                [name]="property"
-                [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
-                [tooltip]="'dateformatTooltip' | pluginTranslate: pluginId | async"
-                [required]="true"
-                [defaultValue]="prefillValueFor(property, obs.prefill)"
-                [margin]="true"
-                [trim]="true"
-                (valueChange)="onPropertyChanged(property, $event)"
-              ></v-input>
-            } @else {
-              <v-input
-                [name]="property"
-                [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
-                [required]="true"
-                [defaultValue]="prefillValueFor(property, obs.prefill)"
-                [margin]="true"
-                [trim]="true"
-                [presetOptions]="(property === PAYMENT_INDICATION_TYPE) ? paymentIndicationTypes : []"
-                (valueChange)="onPropertyChanged(property, $event)"
-              />
-            }
-          </div>
-          <div class="col-1">
-            @if (property !== CASE_GEOMETRY_COORDINATES) {
-              <button
-                class="btn btn-space delete-button"
-                (click)="removeProperty(property)">
-                <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-              </button>
-            }
-          </div>
+      <div class="row">
+        <div class="col-11">
+          @if (property === CASE_GEOMETRY_TYPE) {
+            <v-input
+              [name]="CASE_GEOMETRY_TYPE"
+              [title]="translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async"
+              [required]="true"
+              [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
+              [margin]="true"
+              [presetOptions]="geometryTypes"
+              (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
+            />
+          } @else if (property === CASE_GEOMETRY_COORDINATES) {
+            <v-input
+              [name]="CASE_GEOMETRY_COORDINATES"
+              [title]="
+                translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async
+              "
+              [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
+              [required]="true"
+              [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
+              [margin]="true"
+              (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
+            />
+          } @else if (property.includes('Date')) {
+            <v-input
+              [name]="property"
+              [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
+              [tooltip]="'dateformatTooltip' | pluginTranslate: pluginId | async"
+              [required]="true"
+              [defaultValue]="prefillValueFor(property, obs.prefill)"
+              [margin]="true"
+              [trim]="true"
+              (valueChange)="onPropertyChanged(property, $event)"
+            ></v-input>
+          } @else {
+            <v-input
+              [name]="property"
+              [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
+              [required]="true"
+              [defaultValue]="prefillValueFor(property, obs.prefill)"
+              [margin]="true"
+              [trim]="true"
+              [presetOptions]="property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []"
+              (valueChange)="onPropertyChanged(property, $event)"
+            />
+          }
         </div>
-      }
+        <div class="col-1">
+          @if (property !== CASE_GEOMETRY_COORDINATES) {
+            <button class="btn btn-space delete-button" (click)="removeProperty(property)">
+              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+            </button>
+          }
+        </div>
+      </div>
+    }
   </v-form>
 </ng-container>
 

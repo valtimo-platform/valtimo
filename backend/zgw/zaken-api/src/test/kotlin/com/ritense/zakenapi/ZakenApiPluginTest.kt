@@ -685,7 +685,7 @@ internal class ZakenApiPluginTest {
         assertThat(request.uiterlijkeEinddatumAfdoening).isNull()
         assertThat(request.communicatiekanaal).isEqualTo(URI.create(communicationChannel))
         assertThat(request.betalingsindicatie).isEqualTo(Betalingsindicatie.GEDEELTELIJK)
-        assertThat(request.zaakgeometrie).isEqualTo(Geometry(GeometryType.POINT, listOf(52.370216F, 4.895168F)))
+        assertThat(request.zaakgeometrie).isEqualTo(Geometry(GeometryType.POINT, listOf(4.932921F, 52.370087F)))
         assertThat(request.hoofdzaak).isEqualTo(URI.create(mainCase))
     }
 

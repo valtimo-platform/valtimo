@@ -24,7 +24,9 @@ import {CreateVestigingZaakRolConfig} from '../../models';
   selector: 'valtimo-create-vestiging-zaak-rol-configuration',
   templateUrl: './create-vestiging-zaak-rol.component.html',
 })
-export class CreateVestigingZaakRolComponent implements FunctionConfigurationComponent, OnInit, OnDestroy {
+export class CreateVestigingZaakRolComponent
+  implements FunctionConfigurationComponent, OnInit, OnDestroy
+{
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
   @Input() pluginId: string;
@@ -35,8 +37,7 @@ export class CreateVestigingZaakRolComponent implements FunctionConfigurationCom
 
   private _saveSubscription!: Subscription;
 
-  private readonly _formValue$ =
-    new BehaviorSubject<CreateVestigingZaakRolConfig | null>(null);
+  private readonly _formValue$ = new BehaviorSubject<CreateVestigingZaakRolConfig | null>(null);
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
   public ngOnInit(): void {

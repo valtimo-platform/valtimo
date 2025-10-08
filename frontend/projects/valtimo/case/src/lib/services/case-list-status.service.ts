@@ -23,7 +23,7 @@ import {CASE_WITHOUT_STATUS_STATUS} from '../constants';
 
 @Injectable()
 export class CaseListStatusService {
-  private readonly _selectedCaseStatuses$ = new BehaviorSubject<InternalCaseStatus[]>([]);
+  private readonly _selectedCaseStatusKeys$ = new BehaviorSubject<string[]>([]);
 
   private readonly _showStatusSelector$ = new BehaviorSubject<boolean>(false);
 
@@ -45,7 +45,7 @@ export class CaseListStatusService {
               ...statuses.filter(status => status.visibleInCaseListByDefault),
               CASE_WITHOUT_STATUS_STATUS,
             ];
-        this.setSelectedStatuses(selectedStatuses);
+        this.setSelectedStatuses(selectedStatuses.map((status: InternalCaseStatus) => status.key));
       }),
       map(([statuses]) => statuses),
       tap(statuses => this._showStatusSelector$.next((statuses || []).length > 1))
@@ -59,8 +59,8 @@ export class CaseListStatusService {
     return this._showStatusSelector$.asObservable();
   }
 
-  public get selectedCaseStatuses$(): Observable<Array<InternalCaseStatus>> {
-    return this._selectedCaseStatuses$;
+  public get selectedCaseStatuses$(): Observable<Array<string>> {
+    return this._selectedCaseStatusKeys$;
   }
 
   constructor(
@@ -69,8 +69,8 @@ export class CaseListStatusService {
     private readonly caseParameterService: CaseParameterService
   ) {}
 
-  public setSelectedStatuses(statuses: InternalCaseStatus[]): void {
-    this._selectedCaseStatuses$.next(statuses);
-    this.caseParameterService.setStatusParameter(statuses.map(status => status.key));
+  public setSelectedStatuses(statusKeys: string[]): void {
+    this._selectedCaseStatusKeys$.next(statusKeys);
+    this.caseParameterService.setStatusParameter(statusKeys);
   }
 }

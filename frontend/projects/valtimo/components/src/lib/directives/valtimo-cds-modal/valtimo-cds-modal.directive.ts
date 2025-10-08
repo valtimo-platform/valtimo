@@ -103,7 +103,7 @@ export class ValtimoCdsModalDirective implements AfterViewInit, OnDestroy {
   private applyStyleToModalElements(): void {
     if (this.minContentHeight <= 0) return;
 
-    const contentElements = Array.from(this.document.querySelectorAll('.cds--modal-content'));
+    const contentElements = this.elementRef.nativeElement.querySelectorAll('.cds--modal-content');
 
     for (const element of contentElements) {
       this.renderer.setStyle(

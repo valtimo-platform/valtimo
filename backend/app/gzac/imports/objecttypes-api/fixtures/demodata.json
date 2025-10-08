@@ -1,0 +1,1990 @@
+[
+    {
+        "model": "token.tokenauth",
+        "pk": 100,
+        "fields": {
+            "identifier": "ritense",
+            "contact_person": "Ritense",
+            "email": "Ritense@Ritense.test",
+            "organization": "",
+            "last_modified": "2020-12-23T11:43:16.820Z",
+            "created": "2020-12-22T16:27:00.751Z",
+            "token": "cd63e158f3aca276ef284e3033d020a22899c728"
+        }
+    },
+    {
+        "model": "core.objecttype",
+        "pk": 1,
+        "fields": {
+            "uuid": "feeaa795-d212-4fa2-bb38-2c34996e5702",
+            "name": "Boom",
+            "name_plural": "Bomen",
+            "description": "",
+            "data_classification": "open",
+            "maintainer_organization": "Gemeente Delft",
+            "maintainer_department": "",
+            "contact_person": "Jan Eik",
+            "contact_email": "",
+            "source": "",
+            "update_frequency": "unknown",
+            "provider_organization": "",
+            "documentation_url": "",
+            "labels": {},
+            "created_at": "2020-12-01",
+            "modified_at": "2020-12-01"
+        }
+    },
+    {
+        "model": "core.objecttype",
+        "pk": 2,
+        "fields": {
+            "uuid": "3a82fb7f-fc9b-4104-9804-993f639d6d0d",
+            "name": "Straatverlichting",
+            "name_plural": "Straatverlichting",
+            "description": "",
+            "data_classification": "open",
+            "maintainer_organization": "Maykin Media",
+            "maintainer_department": "",
+            "contact_person": "Desiree Lumen",
+            "contact_email": "",
+            "source": "",
+            "update_frequency": "unknown",
+            "provider_organization": "",
+            "documentation_url": "",
+            "labels": {},
+            "created_at": "2020-12-01",
+            "modified_at": "2020-12-01"
+        }
+    },
+    {
+        "model": "core.objecttype",
+        "pk": 3,
+        "fields": {
+            "uuid": "ca754b52-3f37-4c49-837c-130e8149e337",
+            "name": "Melding",
+            "name_plural": "Meldingen",
+            "description": "",
+            "data_classification": "intern",
+            "maintainer_organization": "Dimpact",
+            "maintainer_department": "",
+            "contact_person": "Ad Alarm",
+            "contact_email": "",
+            "source": "",
+            "update_frequency": "unknown",
+            "provider_organization": "",
+            "documentation_url": "",
+            "labels": {},
+            "created_at": "2020-12-01",
+            "modified_at": "2020-12-01"
+        }
+    },
+    {
+        "model": "core.objectversion",
+        "pk": 2,
+        "fields": {
+            "object_type": 1,
+            "version": 2,
+            "created_at": "2020-12-01",
+            "modified_at": "2020-12-01",
+            "published_at": "2020-12-01",
+            "json_schema": {
+                "$id": "https://objecttypes.vng.cloud/schema.json",
+                "type": "object",
+                "title": "Boom",
+                "$schema": "http://json-schema.org/draft-07/schema",
+                "default": {},
+                "examples": [],
+                "required": [],
+                "properties": {
+                    "type": {
+                        "$id": "#/properties/type",
+                        "enum": [
+                            "Haag",
+                            "Fruitteelt",
+                            "Buitenfitness",
+                            "Betonverharding",
+                            "Dilatatievoegovergang",
+                            "Beheervak - brug",
+                            "Dienstgang",
+                            "Vacumpompstation",
+                            "Putschacht",
+                            "Beregeningspomp",
+                            "Behendigheidstoestel",
+                            "Laadperron",
+                            "Schroefpomp",
+                            "Erfafscheidingsput",
+                            "Waaierdeur",
+                            "Kast",
+                            "Trottoirband",
+                            "Hoogspanningskabel",
+                            "Dubbelkerende afsluiter",
+                            "Spijlenhek",
+                            "Met instroomvoorziening",
+                            "Palen met draad",
+                            "Doelwand",
+                            "Faunatunnel groot",
+                            "Hondenpoepbak",
+                            "Waterloop",
+                            "Aansluitleiding",
+                            "Werk in uitvoering-bord",
+                            "Palen met planken",
+                            "Schutsluis",
+                            "Muur met hek",
+                            "Natuurlijke elementen",
+                            "Informatief verkeersbord",
+                            "Speciale bank",
+                            "Sinusvormige verkeersdrempel",
+                            "Verzamelput",
+                            "Gegraven tunnel",
+                            "Stobbe",
+                            "Boomteelt",
+                            "Verkeersplateau",
+                            "Terreindeel",
+                            "Heesters",
+                            "Afsluiter rioolleiding",
+                            "Sportcombinatietoestel",
+                            "Overgangsconstructie voor integraal kunstwerk",
+                            "Klimtoestel",
+                            "Volleybalset",
+                            "Geleidebarrier",
+                            "Boomrooster",
+                            "Familiegraf",
+                            "Sandwichconstructie",
+                            "Spoor",
+                            "Enkele bak",
+                            "Schommel",
+                            "Eenvoudige picknicktafel",
+                            "Overdekte bank",
+                            "Laagspanningskabel",
+                            "Trottoirkolk",
+                            "Hefdeur",
+                            "Gecombineerde straat-trottoirkolk",
+                            "Spiraal gegolfd stalen duikerbuizen",
+                            "Toldeur",
+                            "Beheervak - tunnel",
+                            "Planken beschoeiing",
+                            "Lozingspunt",
+                            "Faunatunnel klein",
+                            "Atletiekbaan",
+                            "Basketbalbord",
+                            "Boom niet vrij uitgroeiend",
+                            "Drinkwatermeter",
+                            "Struikrozen",
+                            "Boomkratten",
+                            "Tunnelobject",
+                            "Middenspanningskabel",
+                            "Infiltratiekolk",
+                            "Veerooster",
+                            "Nestkast voor zoogdieren",
+                            "Bebakeningselement",
+                            "Blauwe spiegel",
+                            "Fruitboom",
+                            "Heide",
+                            "Stedenbandbord",
+                            "Drukrioleringspomp",
+                            "Solitair gras",
+                            "Thematische picknicktafel",
+                            "Rijrichtingbord",
+                            "Drijvende mat",
+                            "Veldafscheiding",
+                            "Verlichtingsobject",
+                            "Picknicktafel zeshoekig",
+                            "Sensor",
+                            "Septictank",
+                            "Zuigerpomp",
+                            "Planten",
+                            "Bedekt",
+                            "Eigen bouw",
+                            "Grote sproeier",
+                            "Ontstoppingsput",
+                            "Parcours",
+                            "Basket",
+                            "Technische gang",
+                            "Houten beschoeiing",
+                            "Afsluiter beregeningsleiding",
+                            "Centrifugaalpomp",
+                            "Damtafel",
+                            "Fietsbeugel",
+                            "Onderbord",
+                            "Sluiswachterskantoor",
+                            "Toegangspoort",
+                            "Standaard reflector",
+                            "Fitnesstoestel",
+                            "Winterverblijf amfibien",
+                            "Avontuurlijke speelplek",
+                            "Hoog raster",
+                            "Reinigende put",
+                            "Opruimplicht hondenpoep",
+                            "Beheervak - gemaal",
+                            "Signaleringsband",
+                            "Onverhard",
+                            "Balspelterrein",
+                            "Kwelder",
+                            "Wervelput",
+                            "Hoekblok",
+                            "Lamellenvoegovergang",
+                            "Stootband",
+                            "Gemaal in natte opstelling",
+                            "Waterinrichtingsobject",
+                            "Lijnmarkering",
+                            "Zinloos geweld tegel",
+                            "Keermuur met bank",
+                            "Meubilair",
+                            "Bouwspeelplaats",
+                            "JongerenOntmoetingsPlek",
+                            "Greppel",
+                            "Waterspeeltoestel",
+                            "Lozingsput",
+                            "Vrijverval rioolleiding",
+                            "Overbruggingsobject",
+                            "Beheervak - verkeersregelinstallatie",
+                            "Duikelrek fitness",
+                            "Vingervoegovergang",
+                            "Grasland agrarisch",
+                            "Scheiding",
+                            "Rijstrook",
+                            "Puntmarkering",
+                            "Voorrangsbord",
+                            "Puntdeur",
+                            "Steilwand",
+                            "Dubbele bak",
+                            "Skateboardbaan",
+                            "Externe overstortconstructie",
+                            "Schampkant",
+                            "Vluchtgang",
+                            "Matten",
+                            "Jeu de Boules",
+                            "Dwarsgang",
+                            "Natte pompkelder",
+                            "Basketbalpaal",
+                            "Meervoudige voegovergang",
+                            "Onderwaterbeschoeiing",
+                            "Schaaktafel",
+                            "Tafeltennistafel",
+                            "Persluchtpomp",
+                            "Graft",
+                            "Boombank",
+                            "Mechanische transportleiding",
+                            "Oorlogsgraf",
+                            "Boom vrij uitgroeiend",
+                            "Oeverzwaluwenwand",
+                            "Leidingelement",
+                            "V-polder",
+                            "Wildspiegel op voet",
+                            "Drijvende bak",
+                            "Overnamepunt",
+                            "Straatkolk",
+                            "Kabelbaan",
+                            "Zandvlakte",
+                            "Zandspeeltoestel",
+                            "Kunststofverharding",
+                            "Leiboom",
+                            "Duikelrek",
+                            "Hondenrooster",
+                            "Midgetgolfbaan",
+                            "Bebouwde kombord",
+                            "Doorspuitput",
+                            "Knotboom",
+                            "Halfverharding",
+                            "Zinkerput",
+                            "Schuine trottoirband",
+                            "Turntoestel",
+                            "Educatietoestel",
+                            "Verbodsbord",
+                            "Verholen goot",
+                            "Buishek",
+                            "Huisvuilcontainerplaats",
+                            "Geleidehek",
+                            "Schotbalk",
+                            "Pompput",
+                            "Roldeur",
+                            "Klimplant",
+                            "Skatevoorziening",
+                            "Uitneembare brug",
+                            "Put",
+                            "Kruisingsput",
+                            "Dynamische snelheidsindicator",
+                            "Glijbaan",
+                            "Fietscrossbaan",
+                            "Vlakmarkering",
+                            "Waterspeelplaats",
+                            "Hek Verre Veld",
+                            "Keersluis",
+                            "Piramideblok",
+                            "Vegetatieobject",
+                            "Fietsabri",
+                            "Trapeziumvormige verkeersdrempel",
+                            "Bijzondere putconstructie",
+                            "Gras- en kruidachtigen",
+                            "GVC beschoeiing",
+                            "GRIP",
+                            "Rioolput met geleiding",
+                            "Buispaal",
+                            "Mattenvoegovergang",
+                            "Bomengranulaat",
+                            "Fietsenrek",
+                            "Beweegbare brug",
+                            "Bord",
+                            "Installatie",
+                            "Flexibele voegovergang",
+                            "IJsvogelwand",
+                            "Kleine sproeier",
+                            "Wanden dak methode tunnel",
+                            "Groenobject",
+                            "IBA",
+                            "Mast",
+                            "Onbedekt",
+                            "Voorwaarschuwingsbord",
+                            "Rimob",
+                            "Backstop",
+                            "Leiplant",
+                            "Wand",
+                            "Standaard",
+                            "Beluchtingsrooster",
+                            "Buffer",
+                            "Elementenverharding",
+                            "Toegangshekinstallatie",
+                            "Rietland",
+                            "Struiken",
+                            "Interne overstortconstructie",
+                            "Uitlaatpunt",
+                            "Beheervak - sluis",
+                            "Begroeid",
+                            "Overstortput",
+                            "Verkeerstegel",
+                            "Afsluiter gasleiding",
+                            "Stuwput",
+                            "Schampblok",
+                            "Grondwatermeter",
+                            "Doorspoelput",
+                            "Staafmathek",
+                            "Poef",
+                            "Bouwwerk",
+                            "Combinatietoestel",
+                            "Visoverwinteringsplek",
+                            "Skateterrein",
+                            "Voetbalveld",
+                            "Roostergoot",
+                            "Duiventil",
+                            "Atletiekvoorziening",
+                            "Perceelaansluitpunt",
+                            "Zandspeelplaats",
+                            "Boomkorf",
+                            "Gaashek",
+                            "Bouwland",
+                            "Boom",
+                            "Tennisbaan",
+                            "Flespaal",
+                            "Infiltratiebassin",
+                            "Bomenzand",
+                            "Reddingsboei",
+                            "Asbaktegel",
+                            "Kunstwerk",
+                            "Eenzijdig kerende afsluiter",
+                            "Gemengd bos",
+                            "Winterverblijf algemene amfibien en kamsalamder",
+                            "Net",
+                            "Vrijverval transportleiding",
+                            "Weginrichtingsobject",
+                            "FunctioneelGebied",
+                            "Watervogels",
+                            "Basaltblokken",
+                            "Nooduitlaat",
+                            "Opsluitband",
+                            "Straatbank",
+                            "Gemaal in droge opstelling",
+                            "DRIP",
+                            "Duin",
+                            "Rijbaan",
+                            "Ijsbaan",
+                            "Reddingshaak",
+                            "Biofilter",
+                            "Doel",
+                            "Klimklauterparcours",
+                            "Brugwachterskantoor",
+                            "Grondwatermeetpunt",
+                            "Wiptoestel",
+                            "Bodembedekkers",
+                            "Laag raster",
+                            "Geleiderail",
+                            "Boombumper",
+                            "Solitaire heester",
+                            "Gierzwaluwtil",
+                            "Bomengrond",
+                            "Moeras",
+                            "Bushalteband",
+                            "Water over weg",
+                            "Slik",
+                            "Adoptiebak",
+                            "Verdekte put",
+                            "Afsluiter waterleiding",
+                            "Fietsklem",
+                            "Vijzelgemaal",
+                            "Afgezonken tunnel",
+                            "Boomjuk",
+                            "Tennisbaanafrastering",
+                            "Berging",
+                            "Leiding",
+                            "Gekandelaberde boom",
+                            "Boostergemaal",
+                            "Gazonband",
+                            "Fietssleuf",
+                            "Trimbaan",
+                            "Nestkast voor vogels",
+                            "Busvriendelijke verkeersdrempel",
+                            "Draaitoestel",
+                            "Paal",
+                            "Velddrain",
+                            "Verbindingsstuk",
+                            "Binnenterrein",
+                            "Microtunneling,",
+                            "Perkoen",
+                            "Fietssteun",
+                            "Rij-ijzer",
+                            "Motorfietsdrempel",
+                            "Zeecontainer",
+                            "Knikkertegel",
+                            "Wildrooster",
+                            "Schijnvoeg",
+                            "Schroefcentrifugaalpomp",
+                            "Paaltje (Amsterdammertje)",
+                            "Winterverblijf rugstreeppad",
+                            "Bromfietsdrempel",
+                            "Korfbalpaal",
+                            "Opbouwputtunnel",
+                            "Water over water",
+                            "Zinkvoeg",
+                            "Weg",
+                            "Waterobject",
+                            "Fietsenkluis",
+                            "Rood wit paaltje (toegangsbeperking)",
+                            "Vaste brug",
+                            "Houtwal",
+                            "Geleideband",
+                            "Monsternamepunt",
+                            "Wegobject",
+                            "Schoolspeelplaats",
+                            "Groot wild",
+                            "Overkapping",
+                            "Loofbos",
+                            "Thematische bank",
+                            "Handbediende slagboom",
+                            "Vijzelpomp",
+                            "Riooleindgemaal",
+                            "Zitmuur",
+                            "Keermuur met plantenbak",
+                            "Verwijsbord",
+                            "Mechanische rioolleiding",
+                            "Waarschuwingsbord",
+                            "Vormboom",
+                            "Geboorde tunnel",
+                            "Speeltuin",
+                            "Sociaal spel",
+                            "Speelkuil",
+                            "Watervlakte",
+                            "Draaiende reflector",
+                            "Naaldbos",
+                            "Bak",
+                            "Omleidingsbord",
+                            "Spuisluis",
+                            "Vluchtdeur",
+                            "Boombunker",
+                            "Speelplek",
+                            "Verborgen voegovergang",
+                            "Grasland overig",
+                            "Asfaltverharding",
+                            "Voegovergang met of zonder balken en randprofielen met afdichtingrubbers",
+                            "Elektrische slagboom",
+                            "Bosplantsoen",
+                            "Verzameldrain",
+                            "Haltetegel",
+                            "Inspectieput",
+                            "Boomkrans",
+                            "Parkeerbord",
+                            "Winterverblijf slangen",
+                            "Sierhek",
+                            "Snelheidsbord",
+                            "Geallieerdengraf",
+                            "Fietstrommel"
+                        ],
+                        "type": "string",
+                        "title": "Type",
+                        "examples": [
+                            "Haag"
+                        ],
+                        "description": "Typering van het beheerobject."
+                    },
+                    "kiemjaar": {
+                        "$id": "#/properties/kiemjaar",
+                        "type": "integer",
+                        "title": "Kiemjaar",
+                        "examples": [],
+                        "description": "Kiemjaar van de boom.\nEenheid: Jaartal"
+                    },
+                    "leeftijd": {
+                        "$id": "#/properties/leeftijd",
+                        "type": "integer",
+                        "title": "Leeftijd",
+                        "examples": [],
+                        "description": "Leeftijd van het beheerobject in jaren.\nEenheid: Aantal"
+                    },
+                    "typeplus": {
+                        "$id": "#/properties/typeplus",
+                        "enum": [
+                            "Grind Rail",
+                            "Overhead Ladder",
+                            "Draaiende stoeltjes (type A)",
+                            "Klimladder",
+                            "Steeple-chase waterbak",
+                            "Dubbele draaibrug",
+                            "Neststeen voor gierzwaluw",
+                            "Drievoudig duikelrek",
+                            "Spoelleiding",
+                            "Waterrad",
+                            "Natuursteen",
+                            "Hoogspringbak",
+                            "Twist en Wobble",
+                            "Squat en Shoulder Press en Lat Pull Down",
+                            "Vacumpompstation",
+                            "Minidoel",
+                            "Roll-In Ramp",
+                            "Ramp",
+                            "Zandbak",
+                            "Mini Box",
+                            "Step block",
+                            "Combinatie - Peuter",
+                            "Type 4 - Meer assen - 1 richting",
+                            "Bootcamp Box en Gear",
+                            "Evenwichtsplateau op veren",
+                            "Pull up bars",
+                            "Sierbestrating",
+                            "Driekhoeksmarkering",
+                            "Infiltratiegreppel",
+                            "Balance beam",
+                            "Speelhuis",
+                            "Nestkast bosuil",
+                            "Nestkast koolmees",
+                            "Type 2 - Rotatie op meerdere assen",
+                            "Triple Bars",
+                            "Betonelement",
+                            "Rietvegetatie",
+                            "Zandtransporttoestel",
+                            "Suspension trainer",
+                            "Cross Trainer",
+                            "Fijne sierheester",
+                            "Botanische rozen",
+                            "Street Workout, Parkour",
+                            "Parkeervak",
+                            "Ruw gras",
+                            "Hellingklimmer",
+                            "Log hop",
+                            "Nestkast boomklever",
+                            "Kliedertafel",
+                            "Chest Press en Horizontal Row",
+                            "Kunstgras",
+                            "Verspringbak",
+                            "Heesters",
+                            "Split Quarter Pipe",
+                            "Ophaalbrug",
+                            "Hurdles",
+                            "Loopbrug",
+                            "Opdrukken",
+                            "Tafeltennistafel rond",
+                            "Lo-Box",
+                            "Hobbelbrug",
+                            "Klaphek",
+                            "Pontje",
+                            "Klimpaal",
+                            "Speelschip",
+                            "Speeltrein",
+                            "Bodembedekkende heesters",
+                            "Overgangsstuk",
+                            "Perceelaansluitleiding",
+                            "Rek- en strekbrug",
+                            "Onderbroken brede streep",
+                            "Weide",
+                            "Body Flexer",
+                            "Ven",
+                            "Gebogen evenwichtsbalk",
+                            "Ballentrechter",
+                            "Behendigheidsparcours",
+                            "Midi Ramp",
+                            "Vertikale ladder",
+                            "Leunhek",
+                            "Wateremmer",
+                            "Nestkast grote bonte specht",
+                            "Bandenloop",
+                            "Gewone normale vaste brug",
+                            "Kogelstotenbak",
+                            "Cultuurrozen",
+                            "Start Box",
+                            "Multi net",
+                            "Zandspeelhuis",
+                            "Loopton",
+                            "Upperbody Trainer - Free Runner - Body Flexer",
+                            "Grasveld",
+                            "Angle Box",
+                            "Struikvormers",
+                            "Type 3B - Meerpunts - Meerdere richtingen",
+                            "Toroveld",
+                            "Verbeterde overstortput",
+                            "Bergingsleiding",
+                            "Wobble en Step",
+                            "Y-stuk",
+                            "Core twist",
+                            "Vast",
+                            "Dubbele taludkabelbaan",
+                            "Wijngaarden",
+                            "Vollegrondsteelt",
+                            "Zonemarkering",
+                            "Hangelduo",
+                            "Instructiebord",
+                            "Big Wedge",
+                            "Drijvende brug",
+                            "Getalmarkering",
+                            "Duo ab - bench en ladder",
+                            "Free Runner - Cross Trainer - Power bike",
+                            "Doorgetrokken en dubbele smalle strepen",
+                            "Nestkast pimpelmees",
+                            "Liggerbrug",
+                            "Step",
+                            "Enterladder",
+                            "Tafeltennistafel vierkant",
+                            "Nestkast boomkruiper",
+                            "Zesvoudig duikelrek",
+                            "Klauterparcours",
+                            "Doorgetrokken brede streep",
+                            "Square Pull Up Station",
+                            "Planten",
+                            "Enkel duikelrek",
+                            "Stapstenen",
+                            "Nestkast zwarte roodstaart",
+                            "Tafelvoetbaltafel",
+                            "Taludglijbaan - type 2",
+                            "Buik- en rugsteun",
+                            "Zand",
+                            "Schuifhek",
+                            "Jump pod",
+                            "Mobile bar",
+                            "Fitnesstoestel",
+                            "Hefbrug",
+                            "Persleiding",
+                            "Parkeerplaats",
+                            "Infiltratieriool",
+                            "Beek",
+                            "Box Ramp",
+                            "Over Under",
+                            "Upright Row en Press Down",
+                            "Natte heide",
+                            "Afgekruist vlak",
+                            "Nestkast roodborst",
+                            "Zandkraan",
+                            "Hexagon Pull Up Station",
+                            "Verkeersdruppel",
+                            "Bootcamp & Circuit Training",
+                            "Zandspeeltafel",
+                            "Klimrek",
+                            "Type 2B - Enkelpunts - Meerdere richtingen",
+                            "Ruimtenet",
+                            "Frame",
+                            "Brug",
+                            "Monkey bar",
+                            "Trapschot",
+                            "Stappalen",
+                            "Type 5 - Zweefwip",
+                            "Verplaatsbaar",
+                            "Vleermuiskast rosse vleermuis",
+                            "Watertappunt",
+                            "Wobble en Swing en Step en Twist",
+                            "Zigzag-markering",
+                            "Kunststof vloer",
+                            "Rolverbinding",
+                            "Dubbelstaafmathek",
+                            "Griend en hakhout",
+                            "Verloopstuk",
+                            "Zwarte grond",
+                            "Tractorband",
+                            "Klapbrug",
+                            "Mini Ramp",
+                            "Jurytrap",
+                            "Handrail Box",
+                            "Kooi",
+                            "Push up bars",
+                            "Pijlmarkering",
+                            "Kanaal",
+                            "Bloemrijk gras",
+                            "Coping",
+                            "Kruipbuis",
+                            "Gecombineerde glijbaan - type 1",
+                            "Ster klim-duikelrek combinatie",
+                            "Double Chest Press",
+                            "Speelauto",
+                            "Grondwaterpomp",
+                            "Fietsparkeervak",
+                            "Spine",
+                            "Type 3 - Rotatie om 1 punt",
+                            "Pannaveld",
+                            "Twist en Swing",
+                            "Nestkast Marter",
+                            "Corner Ramp",
+                            "Netbrug oversteek",
+                            "Pants Driveway",
+                            "Verstopschotten",
+                            "Zandverstuiving",
+                            "Curved Grind Rail",
+                            "Dip Bench",
+                            "Hangtouwen",
+                            "Vakwerkbrug",
+                            "Vijver",
+                            "Beachvolleybalveld",
+                            "Nestkast gierzwaluw",
+                            "Decline Bench",
+                            "Duo pull up bar en ladder",
+                            "Dakboom",
+                            "Enterrek",
+                            "Betonstraatstenen",
+                            "Molens op spoor met voet of hand aangedreven (type D)",
+                            "Gaybrapad",
+                            "Nestkast steenuil",
+                            "Triple Ramp Grinder",
+                            "Vleermuiskast gewone dwergvleermuis",
+                            "Wall with Net",
+                            "Klimgordijn",
+                            "Sit up bench - Power Bike",
+                            "Grove sierheester",
+                            "Open duinvegetatie",
+                            "Externe overstortput",
+                            "Laagstam boomgaarden",
+                            "Crank",
+                            "Droge heide",
+                            "Hoogstam",
+                            "Wiebelbrug",
+                            "Evenwichtsbalk",
+                            "Dichte deklagen",
+                            "Plasberm",
+                            "Stammentrap",
+                            "Voetbaldoelnet",
+                            "Thematische basketbalpaal",
+                            "Klimmuur/ladder combi",
+                            "Trekvaste koppeling",
+                            "Klassieke draaimolen met meedraaiende vloer (type B)",
+                            "Hinkelbaan",
+                            "Quad Box",
+                            "Dubbele basculebrug",
+                            "Verkeersbord",
+                            "Hemelwaterriool",
+                            "Side Panel",
+                            "Turnbrug",
+                            "Lijnvormige haag",
+                            "Fietssymbool",
+                            "Fun box",
+                            "Upperbody Trainer",
+                            "Bochtstuk",
+                            "Enkelvoudige kabelbaan",
+                            "Fly box",
+                            "Bench",
+                            "Platform",
+                            "Pirouette",
+                            "Suspension Trainer, Parallel Bars & Magnetic Bells Link",
+                            "Vogelvide",
+                            "Los",
+                            "Jump Box",
+                            "Speelpaneel",
+                            "Speelplatform",
+                            "Basketbalterrein",
+                            "Valdempend gras",
+                            "Rolbrug",
+                            "Volleybalveld",
+                            "Discuskooi",
+                            "Flensverbinding",
+                            "Double Turbo Challenge",
+                            "Gras- en kruidachtigen",
+                            "Wobble en Swing",
+                            "Ollie Jump",
+                            "Parallel bar",
+                            "Type 2A - Enkelpunts - 1 richting",
+                            "Combi Step",
+                            "Rondobollen",
+                            "Cross Training, Street Workout 130m_",
+                            "Balanceernet",
+                            "Heesterrozen",
+                            "Poel",
+                            "Metaal",
+                            "Praatpaal",
+                            "Bomen en struikvormers",
+                            "Rodeo stier",
+                            "Vrijstaande glijbaan - type 2",
+                            "Fitness Bike",
+                            "Verdrijfstrepen",
+                            "Ballenpaal",
+                            "Basket en doel",
+                            "Meerdelig duikelrek",
+                            "Hoogstam boomgaarden",
+                            "Small Wedge",
+                            "Natuurlijke oeverzwaluwwand",
+                            "Rivier",
+                            "Chill schijf",
+                            "Telefoonpaal",
+                            "Thematisch evenwichtsplateau op veren",
+                            "Bodembedekkende rozen",
+                            "Crosstrainer",
+                            "Waterwip",
+                            "Bokspringpaal",
+                            "Flex Wheel - Body Flexer",
+                            "Magnetic bells, suspension trainer en multi net link",
+                            "Blokboom",
+                            "Workout combination",
+                            "Boomstam",
+                            "Nestkast spreeuw",
+                            "Hand Bike",
+                            "Stretch Bar",
+                            "Circuit Training",
+                            "Steunbrug",
+                            "Magnetic bells",
+                            "Nestkast Eekhoorn",
+                            "Tuibrug",
+                            "Sit up bench",
+                            "Trapoefenwand",
+                            "Plas",
+                            "Loopvlonder",
+                            "Open grond",
+                            "Lasverbinding",
+                            "Drievoudig duikelrek gebogen",
+                            "Enkelvoudige taludkabelbaan",
+                            "Boogbrug",
+                            "Cross Training, Circuit Training, Bootcamp, Street Workout 256m_",
+                            "Gesloten duinvegetatie",
+                            "Type 1 - Wip - 1 richting",
+                            "Vaste planten",
+                            "Bedrijfsaansluitleiding",
+                            "Ruigte",
+                            "Twist en Step",
+                            "Grind Bench",
+                            "Type 6 - Schommelwip met enkelvoudige hoge as",
+                            "Geknipte boom",
+                            "Klimnet met duikelrekken",
+                            "Enkelstaafmathek",
+                            "Nestkast bonte vliegenvanger",
+                            "Kolkaansluitleiding",
+                            "Gazon",
+                            "Pompunit",
+                            "Flat Bank",
+                            "Drukleiding",
+                            "Overige markering",
+                            "Klimwand",
+                            "T-stuk",
+                            "Vouwhek",
+                            "Double Overhead Ladder",
+                            "Ongewapend verdeuveld beton",
+                            "Bolboom",
+                            "Zandgraver",
+                            "Pleinplakker",
+                            "Grind Box",
+                            "Draaihek",
+                            "Transportrioolleiding",
+                            "Hout",
+                            "Trainingsdoeltje",
+                            "Pull up bars, parallel bars & multi net link",
+                            "Voethek",
+                            "Kunstmatige oeverzwaluwwand",
+                            "Taludglijbaan - type 1",
+                            "Roll-off Ramp",
+                            "Glas",
+                            "Draaiende evenwichtsbalk",
+                            "Schudzeef",
+                            "Strip",
+                            "Boomvormers",
+                            "Flat Bank with Platform",
+                            "Braakliggend",
+                            "Bron",
+                            "Voetbaldoel",
+                            "Ongewapend nietverdeuveld beton",
+                            "Haven",
+                            "Tuinbouwgrond",
+                            "Supernova",
+                            "Puzzelbord",
+                            "Zoab en open deklagen",
+                            "Ruig gras",
+                            "Zandstransportband",
+                            "Archimedesspiraal",
+                            "Container",
+                            "Zinker",
+                            "Net",
+                            "Type 4 - Contactschommel",
+                            "Glijverbinding",
+                            "Combinatie van een smalle doorgetrokken en een smalle onderbroken streep",
+                            "High rotator",
+                            "Horden",
+                            "Doel P-model",
+                            "Schraalgrasland",
+                            "Ingemetselde nestkast",
+                            "Turnparcours",
+                            "JOP",
+                            "Plaatbrug",
+                            "Flex Wheel",
+                            "Bollenteelt",
+                            "Chin up",
+                            "Ringenrek met balanceertouw",
+                            "Pendelwaag",
+                            "Hang- en zweefmolens (type C)",
+                            "Street Spine",
+                            "Balansvorm",
+                            "Straatbaksteen",
+                            "Hellende enterladder",
+                            "Cladding",
+                            "Enkelvoudige platformkabelbaan",
+                            "Evenwichtsparcours",
+                            "Tegels",
+                            "Vacumleiding",
+                            "Bodembedekkende vaste planten",
+                            "Ollie Hurdle",
+                            "Volcano",
+                            "Bodembedekkers",
+                            "Touwbalans",
+                            "Speeltafel",
+                            "Touwbrug",
+                            "Talud verkeersdrempel",
+                            "Touwduikelrek",
+                            "Gracht",
+                            "Combi",
+                            "Gecombineerde glijbaan - type 2",
+                            "Quarterpipe",
+                            "Lijmverbinding",
+                            "Zee",
+                            "Sloot",
+                            "Tuinachtige grond",
+                            "Vuilwaterriool",
+                            "Kogelslingerkooi",
+                            "Half Pipe",
+                            "Draaibrug",
+                            "Woordmarkering",
+                            "Dubbele platformkabelbaan",
+                            "Nestkast winterkoning",
+                            "Wiebelplaat",
+                            "Akkerbouw",
+                            "Frame klimtoestel",
+                            "Body Flexer - Upperbody Trainer",
+                            "Looptouw",
+                            "Helmgras",
+                            "Hink-stapspringbak",
+                            "Speelboot",
+                            "Springkussen",
+                            "Geschoren boom",
+                            "Stuwrioolleiding",
+                            "Nestkast torenvalk",
+                            "Dip - bar",
+                            "Trampoline",
+                            "Strand en strandwal",
+                            "Duikerbrug",
+                            "Interne overstortput",
+                            "Ladder",
+                            "Frame & net",
+                            "Voorwaarschuwingsdriehoek",
+                            "Drievoudig duikelrek zigzag",
+                            "Free Runner - Cross Trainer",
+                            "Gewapend beton",
+                            "Bootcamp Base",
+                            "Samenhangend",
+                            "Zwevende evenwichtsbalk",
+                            "Oppervlakbehandelingen",
+                            "Bergbezinkleiding",
+                            "Rioolstreng",
+                            "Flat Ramp",
+                            "Take Off Ramp",
+                            "Goot",
+                            "Onderbroken smalle streep",
+                            "Basculebrug",
+                            "Optrekken",
+                            "Panel",
+                            "Steps",
+                            "Pull up Station",
+                            "Combinatie - Kleuter",
+                            "Monkey bar extended",
+                            "Dubbele ophaalbrug",
+                            "Shaped Grind Rail",
+                            "Parallel bars",
+                            "Push up bars met paal",
+                            "Kindertafel",
+                            "Laagstam",
+                            "Verspring- en hinkstapspringbak",
+                            "Draaischijf (type E)",
+                            "Piramidevorm",
+                            "Touw tornado",
+                            "ZinloosGeweldMarkering",
+                            "Step en Swing",
+                            "Vrijstaande glijbaan - type 1",
+                            "Jongerenbank",
+                            "Slinger-klim-entercombi",
+                            "Vormhaag",
+                            "Hangbrug",
+                            "Speelspoor",
+                            "Speelstoel en tafel",
+                            "Nestkast huismus",
+                            "Springplank",
+                            "Moerasvegetatie",
+                            "Type 1 - Rotatie om 1 as",
+                            "Polsstokhoogspringbak",
+                            "Draaimolen",
+                            "Overstortleiding",
+                            "Incline Press",
+                            "Boter-kaas-eieren",
+                            "Palenwoud",
+                            "Waterpomp",
+                            "Klimschans",
+                            "Vlot",
+                            "Dubbele kabelbaan",
+                            "Rear Panel",
+                            "Gemengd riool",
+                            "Hockeydoel",
+                            "Free Runner",
+                            "Planter for Steps",
+                            "Waterglijbaan",
+                            "Jump Ramp",
+                            "Pyramid",
+                            "Combinatie - Kind",
+                            "Doorgetrokken smalle streep",
+                            "Wisselperken",
+                            "Natuurlijke grasvegetatie",
+                            "Wall Ride",
+                            "Blokhaag",
+                            "Meer",
+                            "Draadcircus",
+                            "Puntstukken en witte vlakken",
+                            "Klein fruit",
+                            "Power Bike",
+                            "Type 3A - Meerpunts - 1 richting",
+                            "Stammenstapel",
+                            "Steunsprong",
+                            "Wiebelloop",
+                            "Zitpaal",
+                            "Cross & Circuit Training"
+                        ],
+                        "type": "string",
+                        "title": "TypePlus",
+                        "examples": [
+                            "Grind Rail"
+                        ],
+                        "description": "Nadere typering van het type beheerobject."
+                    },
+                    "verplant": {
+                        "$id": "#/properties/verplant",
+                        "type": "boolean",
+                        "title": "Verplant",
+                        "examples": [],
+                        "description": "Aanduidig of het groen- of vegetatieobject verplant is."
+                    },
+                    "boombeeld": {
+                        "$id": "#/properties/boombeeld",
+                        "enum": [
+                            "Niet van toepassing",
+                            "Verwaarloosd boombeeld",
+                            "Aanvaard boombeeld",
+                            "Achterstallig boombeeld",
+                            "Boombeeld regulier (HB)",
+                            "Niet te beoordelen"
+                        ],
+                        "type": "string",
+                        "title": "Boombeeld",
+                        "examples": [
+                            "Niet van toepassing"
+                        ],
+                        "description": "Onderhoudssituatie van de boom."
+                    },
+                    "boomgroep": {
+                        "$id": "#/properties/boomgroep",
+                        "enum": [
+                            "Laanboom",
+                            "Boomweide",
+                            "Solitaire boom"
+                        ],
+                        "type": "string",
+                        "title": "Boomgroep",
+                        "examples": [
+                            "Laanboom"
+                        ],
+                        "description": "Aanduiding of de boom onderdeel is van een boomgroep."
+                    },
+                    "groeifase": {
+                        "$id": "#/properties/groeifase",
+                        "enum": [
+                            "Jeugdfase",
+                            "Volwassen fase",
+                            "Eindfase",
+                            "Aanlegfase",
+                            "Onbekend",
+                            "Niet te beoordelen"
+                        ],
+                        "type": "string",
+                        "title": "Groeifase",
+                        "examples": [
+                            "Jeugdfase"
+                        ],
+                        "description": "Aanduiding van de groeifase van een boom.\nToelichting: Er is geen volledige eenduidigheid over de indeling, maar over het algemeen worden bij een boom zon 4 groeifasen onderscheiden. Het onderscheid is gebaseerd op de verschillen in beheermaatregelen."
+                    },
+                    "snoeifase": {
+                        "$id": "#/properties/snoeifase",
+                        "enum": [
+                            "Begeleidingssnoeifase",
+                            "Onbekend",
+                            "Niet van toepassing",
+                            "Onderhoudssnoeifase"
+                        ],
+                        "type": "string",
+                        "title": "Snoeifase",
+                        "examples": [
+                            "Begeleidingssnoeifase"
+                        ],
+                        "description": "Aanduiding van de snoeifase van de boom."
+                    },
+                    "boomspiegel": {
+                        "$id": "#/properties/boomspiegel",
+                        "type": "string",
+                        "title": "Boomspiegel",
+                        "examples": [],
+                        "description": "Wanneer een boomspiegel aanwezig is, wordt het GUID van het beheerobject Boomspiegel gekoppeld aan het object Boom.\nToelichting: Boomspiegel: afgebakend oppervlak rondom de stam van een boom, dat niet is ingeplant."
+                    },
+                    "kroonvolume": {
+                        "$id": "#/properties/kroonvolume",
+                        "type": "integer",
+                        "title": "Kroonvolume",
+                        "examples": [],
+                        "description": "Volume van de boomkroon in kubieke meters\nEenheid: m3"
+                    },
+                    "meerstammig": {
+                        "$id": "#/properties/meerstammig",
+                        "type": "boolean",
+                        "title": "Meerstammig",
+                        "examples": [],
+                        "description": "Aanduiding voor meerstammigheid bij een Boom"
+                    },
+                    "transponder": {
+                        "$id": "#/properties/transponder",
+                        "type": "string",
+                        "title": "Transponder",
+                        "examples": [],
+                        "description": "Nummer of identificatie van een transponder op een beheerobject."
+                    },
+                    "vrijetakval": {
+                        "$id": "#/properties/vrijetakval",
+                        "enum": [
+                            "Onbekend",
+                            "Geen vrije takval mogelijk",
+                            "Vrije takval mogelijk"
+                        ],
+                        "type": "string",
+                        "title": "VrijeTakval",
+                        "examples": [
+                            "Onbekend"
+                        ],
+                        "description": "Aanduiding of vrije takval is toegestaan."
+                    },
+                    "stamdiameter": {
+                        "$id": "#/properties/stamdiameter",
+                        "type": "integer",
+                        "title": "Stamdiameter",
+                        "examples": [],
+                        "description": "Aanduiding voor de diameter van de stam.\nEenheid: cm"
+                    },
+                    "takvrijestam": {
+                        "$id": "#/properties/takvrijestam",
+                        "enum": [
+                            "0 m.",
+                            "Anders, namelijk",
+                            "4 m.",
+                            "2 m.",
+                            "8 m.",
+                            "6 m.",
+                            "Onbekend",
+                            "Niet te beoordelen"
+                        ],
+                        "type": "string",
+                        "title": "TakvrijeStam",
+                        "examples": [
+                            "0 m."
+                        ],
+                        "description": "De benodigde takvrije stam in het eindbeeld, gemeten vanaf maaiveld tot aan de onderste gesteltak.\nEenheid: m\nToelichting: Takvrije stam: gedeelte van de stam, gemeten vanaf maaiveld tot aan eerste gesteltak. Eindbeeld: vorm van een boom in volgroeide staat, omschreven door middel van takvrije zone en/of takvrije stam. Als synoniem wordt vaak gebruikt de opkroonhoogte: de verticaal gemeten vrije hoogte tussen maaiveld en kroon van de boom."
+                    },
+                    "verplantbaar": {
+                        "$id": "#/properties/verplantbaar",
+                        "type": "boolean",
+                        "title": "Verplantbaar",
+                        "examples": [],
+                        "description": "Aanduiding of de boom verplant kan worden."
+                    },
+                    "beleidsstatus": {
+                        "$id": "#/properties/beleidsstatus",
+                        "enum": [
+                            "Structuurbepalend/hoofd(groen/bomen)structuur",
+                            "Geen specifieke status-verkorte omloop (tot ca. 20 jaar) en bomen 3e grootte",
+                            "Beschermwaardig/monumentaal",
+                            "Geen specifieke status-functionele laan- en parkbomen"
+                        ],
+                        "type": "string",
+                        "title": "Beleidsstatus",
+                        "examples": [
+                            "Structuurbepalend/hoofd(groen/bomen)structuur"
+                        ],
+                        "description": "Beleidsstatus is een functiecategorie bomen conform de richtlijnen NVTB, t.b.v. de bepaling van de monetaire waarde."
+                    },
+                    "boombeschermer": {
+                        "$id": "#/properties/boombeschermer",
+                        "type": "string",
+                        "title": "Boombeschermer",
+                        "examples": [],
+                        "description": "Wanneer een boombeschermer aanwezig is, wordt het GUID van het beheerobject Boombeschermer gekoppeld aan het object Boom.\nToelichting: Constructie, meestal van metaal, rondom het onderste  gedeelte van de stam, bedoeld ter bescherming van de stam."
+                    },
+                    "herplantplicht": {
+                        "$id": "#/properties/herplantplicht",
+                        "type": "boolean",
+                        "title": "Herplantplicht",
+                        "examples": [],
+                        "description": "Aanduiding of er in het kader van de Wet Natuurbescherming sprake is van een herplantplicht."
+                    },
+                    "feestverlichting": {
+                        "$id": "#/properties/feestverlichting",
+                        "type": "string",
+                        "title": "Feestverlichting",
+                        "examples": [],
+                        "description": "Wanneer Feestverlichting aanwezig is, wordt het GUID van het beheerobject Feestverlichting gekoppeld aan het gekoppelde beheerobject."
+                    },
+                    "beoogdeomlooptijd": {
+                        "$id": "#/properties/beoogdeomlooptijd",
+                        "enum": [
+                            "75-100 jaar",
+                            "30-50 jaar",
+                            ">200 jaar",
+                            "50-75 jaar",
+                            "20-30 jaar",
+                            "100-150 jaar",
+                            "< 10 jaar",
+                            "Onbekend",
+                            "10-20 jaar",
+                            "150-200 jaar"
+                        ],
+                        "type": "string",
+                        "title": "BeoogdeOmlooptijd",
+                        "examples": [
+                            "75-100 jaar"
+                        ],
+                        "description": "De potentieel haalbare omlooptijd, in relatie tot de standplaats (schatting)."
+                    },
+                    "boomhoogteactueel": {
+                        "$id": "#/properties/boomhoogteactueel",
+                        "type": "integer",
+                        "title": "BoomhoogteActueel",
+                        "examples": [],
+                        "description": "Hoogte van de boom in meters.\nEenheid: m"
+                    },
+                    "controlefrequentie": {
+                        "$id": "#/properties/controlefrequentie",
+                        "enum": [
+                            "TODO"
+                        ],
+                        "type": "string",
+                        "title": "Controlefrequentie",
+                        "examples": [
+                            "TODO"
+                        ],
+                        "description": "Aanduiding van de frequentie van de controle van het beheerobject.\nToelichting: \"De frequentie van de boomveiligheidscontrole. Dit is de periodieke visuele controle van een boom in het kader van de zorgplicht (voortkomend uit artikel 6:162 van het BW) ten behoeve van het vaststellen van een (potentieel toekomstig) risico dat de boom vormt voor zijn omgeving. \nDe term boomveiligheidscontrole heeft betrekking op het gehele proces om in het veld de benodigde gegevens te verkrijgen voor het logboek, zoals beschreven in de CROW Richtlijn Boomveiligheidsregistratie.\n\""
+                    },
+                    "stamdiameterklasse": {
+                        "$id": "#/properties/stamdiameterklasse",
+                        "enum": [
+                            "TODO"
+                        ],
+                        "type": "string",
+                        "title": "Stamdiameterklasse",
+                        "examples": [
+                            "TODO"
+                        ],
+                        "description": "Aanduiding van de diameter van de stam in diameterklassen."
+                    },
+                    "vrijedoorrijhoogte": {
+                        "$id": "#/properties/vrijedoorrijhoogte",
+                        "enum": [
+                            "4,5 m. en groter",
+                            "6,5 m. en groter",
+                            "0 m.",
+                            "2,5 m. en groter",
+                            "Onbekend"
+                        ],
+                        "type": "string",
+                        "title": "VrijeDoorrijhoogte",
+                        "examples": [
+                            "4,5 m. en groter"
+                        ],
+                        "description": "De benodigde vrije ruimte tussen de weg of het fietspad, en de onderkant van de boomkroon of van een bouwwerk boven de weg, zoals een viaduct of tunnel.\nEenheid: m\nToelichting: Takvrije zone boven het wegdek en onder de kroon waar bestuurders van voertuigen vrije doorgang genieten tot een hoogte zoals is bepaald door de wegbeheerder."
+                    },
+                    "boomboomvoorziening": {
+                        "$id": "#/properties/boomboomvoorziening",
+                        "enum": [
+                            "TODO"
+                        ],
+                        "type": "string",
+                        "title": "BoomBoomvoorziening",
+                        "examples": [
+                            "TODO"
+                        ],
+                        "description": "Mogelijkheid om 1 of meerdere boomvoorzieningen bij een boom te registreren."
+                    },
+                    "monetaireboomwaarde": {
+                        "$id": "#/properties/monetaireboomwaarde",
+                        "type": "number",
+                        "title": "MonetaireBoomwaarde",
+                        "examples": [],
+                        "description": "Monetaire waarde volgens richtlijnen NVTB.\nEenheid: "
+                    },
+                    "takvrijezoneprimair": {
+                        "$id": "#/properties/takvrijezoneprimair",
+                        "type": "integer",
+                        "title": "TakvrijeZonePrimair",
+                        "examples": [],
+                        "description": "De benodigde takvrije ruimte tussen de weg of het fietspad en de onderkant van de boomkroon (eindbeeld van de boom). Als aan beide zijden van de boom een weg en een fietspad ligt, wordt de takvrije ruimte boven de weg aangeduid met primair, en de takvrijke ruimte boven het fietspad met secundair.\nEenheid: m\nToelichting: Takvrije zone: vrije ruimte ten behoeve van verkeer of andere omgevingsfactoren."
+                    },
+                    "boomveiligheidsklasse": {
+                        "$id": "#/properties/boomveiligheidsklasse",
+                        "enum": [
+                            "Niet te beoordelen",
+                            "Boom zonder gebreken",
+                            "Onbekend",
+                            "Attentieboom",
+                            "Risicoboom"
+                        ],
+                        "type": "string",
+                        "title": "Boomveiligheidsklasse",
+                        "examples": [
+                            "Niet te beoordelen"
+                        ],
+                        "description": "Aanduiding van de veiligheid van de boom, ingedeeld in vaste klassen.\nToelichting: Voor bosplantsoen met boomvormers is de mate van veiligheid van het beheerobject voor de omgeving relevant. Hiervoor is nog geen landelijk vastgestelde classificatie. Boomveiligheid: Aanduiding voor de veiligheid van personen, dieren, objecten en goederen in de nabijheid van een boom."
+                    },
+                    "groeiplaatsinrichting": {
+                        "$id": "#/properties/groeiplaatsinrichting",
+                        "type": "string",
+                        "title": "Groeiplaatsinrichting",
+                        "examples": [],
+                        "description": "Wanneer een groeiplaatsinrichting aanwezig is, wordt het GUID van het beheerobject Groeiplaatsinrichting gekoppeld aan het object Boom"
+                    },
+                    "takvrijezonesecundair": {
+                        "$id": "#/properties/takvrijezonesecundair",
+                        "type": "integer",
+                        "title": "TakvrijeZoneSecundair",
+                        "examples": [],
+                        "description": "De benodigde takvrije ruimte tussen het fietspad en de onderkant van de boomkroon (eindbeeld van de boom). Als aan beide zijden van de boom een weg en een fietspad ligt, wordt de takvrije ruimte boven de weg aangeduid met primair, en de takvrijke ruimte boven het fietspad met secundair.\nEenheid: m\nToelichting: Takvrije zone: vrije ruimte ten behoeve van verkeer of andere omgevingsfactoren."
+                    },
+                    "typebeschermingsstatus": {
+                        "$id": "#/properties/typebeschermingsstatus",
+                        "enum": [
+                            "Monumentale boom",
+                            "Geen beschermingsstatus",
+                            "Rust - en of verblijfplaats fauna"
+                        ],
+                        "type": "string",
+                        "title": "TypeBeschermingsstatus",
+                        "examples": [
+                            "Monumentale boom"
+                        ],
+                        "description": "Aanduiding voor de speciale status van de boom."
+                    },
+                    "typevermeerderingsvorm": {
+                        "$id": "#/properties/typevermeerderingsvorm",
+                        "enum": [
+                            "Veredeld",
+                            "Eigen wortel",
+                            "Onbekend",
+                            "Gent",
+                            "Gezaaid"
+                        ],
+                        "type": "string",
+                        "title": "TypeVermeerderingsvorm",
+                        "examples": [
+                            "Veredeld"
+                        ],
+                        "description": "Wijze waarop de plant of boom is vermeerderd."
+                    },
+                    "boomhoogteklasseactueel": {
+                        "$id": "#/properties/boomhoogteklasseactueel",
+                        "enum": [
+                            "TODO"
+                        ],
+                        "type": "string",
+                        "title": "BoomhoogteklasseActueel",
+                        "examples": [
+                            "TODO"
+                        ],
+                        "description": "Aanduiding van de boomhoogte in meters ingedeeld in vaste klassen.\nToelichting: Boomhoogte in meters, ingedeeld in vaste klassen,  gemeten vanaf het maaiveld tot de top van de boom, bij vormbomen gemeten tot de hoogste knot of de gewenste hoogte (Bron: RAW)"
+                    },
+                    "takvrijeruimtetotgebouw": {
+                        "$id": "#/properties/takvrijeruimtetotgebouw",
+                        "type": "integer",
+                        "title": "TakvrijeRuimteTotGebouw",
+                        "examples": [],
+                        "description": "De benodigde takvrije ruimte tussen het gebouw en de zijkant van de boom.\nEenheid: m"
+                    },
+                    "boomhoogteklasseeindbeeld": {
+                        "$id": "#/properties/boomhoogteklasseeindbeeld",
+                        "enum": [
+                            "TODO"
+                        ],
+                        "type": "string",
+                        "title": "BoomhoogteklasseEindbeeld",
+                        "examples": [
+                            "TODO"
+                        ],
+                        "description": "Aanduiding van de boomhoogte van het eindbeeld, in meters ingedeeld in vaste klassen.\nToelichting: Boomhoogte in meters, ingedeeld in vaste klassen,  gemeten vanaf het maaiveld tot de top van de boom, bij vormbomen gemeten tot de hoogste knot of de gewenste hoogte (Bron: RAW)"
+                    },
+                    "typeomgevingsrisicoklasse": {
+                        "$id": "#/properties/typeomgevingsrisicoklasse",
+                        "enum": [
+                            "Hoog",
+                            "Gemiddeld",
+                            "Laag",
+                            "Onbekend",
+                            "Geen"
+                        ],
+                        "type": "string",
+                        "title": "TypeOmgevingsrisicoklasse",
+                        "examples": [
+                            "Hoog"
+                        ],
+                        "description": "Aanduiding van het omgevingsrisico van het beheerobject.\nToelichting: Classificering voor de intensiteit van het gebruik van de omgeving van een boom en daarmee de mate waarin de omgeving van de boom risicoverhogend is voor eventuele schade bij stambreuk, takbreuk of instabiliteit. Aanvullende informatie: vast te stellen door de boomeigenaar."
+                    },
+                    "vrijedoorrijhoogteprimair": {
+                        "$id": "#/properties/vrijedoorrijhoogteprimair",
+                        "enum": [
+                            "4,5 m. en groter",
+                            "6,5 m. en groter",
+                            "0 m.",
+                            "2,5 m. en groter",
+                            "Onbekend"
+                        ],
+                        "type": "string",
+                        "title": "VrijeDoorrijhoogtePrimair",
+                        "examples": [
+                            "4,5 m. en groter"
+                        ],
+                        "description": "De benodigde vrije ruimte tussen de weg of het fietspad, en de onderkant van de boomkroon of van een bouwwerk boven de weg, zoals een viaduct. Als aan beide zijden van de boom een weg en een fietspad ligt, wordt de vrije doorrijhoogte boven de weg aangeduid met primair, en de takvrije ruimte boven het fietspad met secundair.\nEenheid: m"
+                    },
+                    "kroondiameterklasseactueel": {
+                        "$id": "#/properties/kroondiameterklasseactueel",
+                        "enum": [
+                            "TODO"
+                        ],
+                        "type": "string",
+                        "title": "KroondiameterklasseActueel",
+                        "examples": [
+                            "TODO"
+                        ],
+                        "description": "Diameter van de kroon van de boom in meters ingedeeld in vaste klassen."
+                    },
+                    "vrijedoorrijhoogtesecundair": {
+                        "$id": "#/properties/vrijedoorrijhoogtesecundair",
+                        "enum": [
+                            "4,5 m. en groter",
+                            "6,5 m. en groter",
+                            "0 m.",
+                            "2,5 m. en groter",
+                            "Onbekend"
+                        ],
+                        "type": "string",
+                        "title": "VrijeDoorrijhoogteSecundair",
+                        "examples": [
+                            "4,5 m. en groter"
+                        ],
+                        "description": "De benodigde vrije ruimte tussen de weg of het fietspad, en de onderkant van de boomkroon of van een bouwwerk boven de weg, zoals een viaduct. Als aan beide zijden van de boom een weg en een fietspad ligt, wordt de vrije doorrijhoogte boven de weg aangeduid met primair, en de takvrije ruimte boven het fietspad met secundair.\nEenheid: m"
+                    },
+                    "kroondiameterklasseeindbeeld": {
+                        "$id": "#/properties/kroondiameterklasseeindbeeld",
+                        "enum": [
+                            "TODO"
+                        ],
+                        "type": "string",
+                        "title": "KroondiameterklasseEindbeeld",
+                        "examples": [
+                            "TODO"
+                        ],
+                        "description": "Diameter van de kroon van het eindbeeld van de boom in meters ingedeeld in vaste klassen."
+                    },
+                    "boomtypebeschermingsstatusplus": {
+                        "$id": "#/properties/boomtypebeschermingsstatusplus",
+                        "enum": [
+                            "TODO"
+                        ],
+                        "type": "string",
+                        "title": "BoomTypeBeschermingsstatusPlus",
+                        "examples": [
+                            "TODO"
+                        ],
+                        "description": "Nadere aanduiding voor de speciale status van de boom."
+                    }
+                },
+                "description": "Een houtachtig gewas (loofboom of conifeer) met een wortelgestel en een enkele, stevige, houtige stam, die zich boven de grond vertakt.\nToelichting: Een houtachtig gewas (loofboom of conifeer) met een wortelgestel en een enkele, stevige, houtige stam, die zich boven de grond vertakt.",
+                "additionalProperties": false
+            },
+            "status": "published"
+        }
+    },
+    {
+        "model": "core.objectversion",
+        "pk": 3,
+        "fields": {
+            "object_type": 2,
+            "version": 1,
+            "created_at": "2020-12-01",
+            "modified_at": "2020-12-01",
+            "published_at": "2020-09-28",
+            "json_schema": {
+                "type": "object",
+                "title": "Straatverlichting",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "required": [
+                    "id_nummer"
+                ],
+                "properties": {
+                    "id_nummer": {
+                        "type": "integer",
+                        "title": "ID-nummer",
+                        "description": "Identificatienummer"
+                    }
+                }
+            },
+            "status": "published"
+        }
+    },
+    {
+        "model": "core.objectversion",
+        "pk": 4,
+        "fields": {
+            "object_type": 3,
+            "version": 1,
+            "created_at": "2020-12-01",
+            "modified_at": "2020-12-01",
+            "published_at": "2020-10-02",
+            "json_schema": {
+                "type": "object",
+                "title": "Melding",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "required": [
+                    "description"
+                ],
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "Explanation what happened"
+                    }
+                }
+            },
+            "status": "published"
+        }
+    },
+    {
+        "model": "core.objecttype",
+        "pk": 4,
+        "fields": {
+            "uuid": "021f685e-9482-4620-b157-34cd4003da6b",
+            "name": "productaanvraag",
+            "name_plural": "productaanvragen",
+            "description": "Aanvragen van terugbelverzoeken voor Den Haag",
+            "data_classification": "intern",
+            "maintainer_organization": "Den Haag",
+            "maintainer_department": "",
+            "contact_person": "",
+            "contact_email": "",
+            "source": "",
+            "update_frequency": "unknown",
+            "provider_organization": "",
+            "documentation_url": "",
+            "labels": {},
+            "created_at": "2021-07-12",
+            "modified_at": "2021-08-02"
+        }
+    },
+    {
+        "model": "core.objectversion",
+        "pk": 11,
+        "fields": {
+            "object_type": 4,
+            "version": 1,
+            "created_at": "2021-07-12",
+            "modified_at": "2021-08-02",
+            "published_at": "2021-07-12",
+            "json_schema": {
+                "title": "Verzoek",
+                "required": [
+                    "type"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "title": "Object met de ingezonden formulierdata",
+                        "default": {},
+                        "examples": [
+                            {
+                                "field1": "value1"
+                            }
+                        ],
+                        "properties": {
+                            "voornaam": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Type productaanvraag",
+                        "default": "",
+                        "examples": [
+                            "terugbelnotitie"
+                        ]
+                    },
+                    "pdf_url": {
+                        "type": "string",
+                        "title": "URL van de pdf van bevestiging in Open Forms",
+                        "format": "uri",
+                        "default": "",
+                        "examples": [
+                            "https://openforms.nl/media/submission.pdf"
+                        ]
+                    },
+                    "attachments": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        "title": "Lijst met URLs van de bijlagen in een Documenten API",
+                        "default": [],
+                        "examples": [
+                            [
+                                "https://documenten.nl/api/v1/enkelvoudiginformatieobjecten/1"
+                            ]
+                        ]
+                    },
+                    "submission_id": {
+                        "type": "string",
+                        "title": "ID van de submission in Open Forms",
+                        "default": "",
+                        "examples": [
+                            "a43e84ac-e08b-4d5f-8d5c-5874c6dddf56"
+                        ]
+                    },
+                    "additionalProperties": true
+                }
+            },
+            "status": "draft"
+        }
+    },
+    {
+        "model": "core.objecttype",
+        "pk": 5,
+        "fields": {
+            "uuid": "3e852115-277a-4570-873a-9a64be3aeb34",
+            "name": "taak",
+            "name_plural": "taken",
+            "description": "Taken",
+            "data_classification": "intern",
+            "maintainer_organization": "Den Haag",
+            "maintainer_department": "",
+            "contact_person": "",
+            "contact_email": "",
+            "source": "",
+            "update_frequency": "unknown",
+            "provider_organization": "",
+            "documentation_url": "",
+            "labels": {},
+            "created_at": "2022-02-03",
+            "modified_at": "2022-02-03"
+        }
+    },
+    {
+        "model": "core.objectversion",
+        "pk": 12,
+        "fields": {
+            "object_type": 5,
+            "version": 1,
+            "created_at": "2022-02-03",
+            "modified_at": "2022-02-03",
+            "published_at": "2022-02-03",
+            "json_schema": {
+                "title": "ObjectType Taak",
+                "type": "object",
+                "examples": [
+                    {
+                        "bsn": "123456782",
+                        "kvk": "82395551",
+                        "identificatie": {
+                            "type": "BSN",
+                            "value": "82395551"
+                        },
+                        "verwerker_taak_id": "18af0b6a-967b-4f81-bb8e-a44988e0c2f0",
+                        "formulier_id": "Formulier123",
+                        "formulier_url": "http://localhost:8010/api/v2/objects/4e40fb4c-a29a-4e48-944b-c34a1ff6c8f4",
+                        "formulier": {
+                            "type:": "url",
+                            "value": "http://localhost:8010/api/v2/objects/4e40fb4c-a29a-4e48-944b-c34a1ff6c8f4"
+                        },
+                        "title": "Check loan",
+                        "data": {
+                            "voornaam": "Jan",
+                            "achternaam": "Smit",
+                            "geboortedatum": "01-01-1970",
+                            "toestemming": true
+                        },
+                        "verzonden_data": {
+                            "voornaam": "Jan",
+                            "achternaam": "Smit",
+                            "geboortedatum": "01-01-1971",
+                            "toestemming": false
+                        },
+                        "status": "open"
+                    }
+                ],
+                "properties": {
+                    "bsn": {
+                        "type": "string",
+                        "pattern": "^[0-9]+$"
+                    },
+                    "kvk": {
+                        "type": "string",
+                        "pattern": "^[0-9]+$"
+                    },
+                    "identificatie": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "verwerker_taak_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "formulier_id": {
+                        "type": "string"
+                    },
+                    "formulier_url": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "patternProperties": {
+                            "^.*$": {
+                                "not": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "formulier": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "enum": [
+                                    "id",
+                                    "object"
+                                ],
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "verzonden_data": {
+                        "type": "object",
+                        "patternProperties": {
+                            "^.*$": {
+                                "not": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "open",
+                            "ingediend",
+                            "verwerkt",
+                            "gesloten"
+                        ]
+                    }
+                },
+                "allOf": [
+                    {
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "bsn"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "kvk"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "identificatie"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "formulier_id"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "formulier_url"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "formulier"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "required": [
+                            "verwerker_taak_id",
+                            "status"
+                        ]
+                    }
+                ]
+            },
+            "status": "draft"
+        }
+    },
+    {
+        "model": "core.objecttype",
+        "pk": 6,
+        "fields": {
+            "uuid": "4b5f4fba-0746-11ed-b939-0242ac120002",
+            "name": "formio",
+            "name_plural": "formio",
+            "description": "FormIO",
+            "data_classification": "intern",
+            "maintainer_organization": "Den Haag",
+            "maintainer_department": "",
+            "contact_person": "",
+            "contact_email": "",
+            "source": "",
+            "update_frequency": "unknown",
+            "provider_organization": "",
+            "documentation_url": "",
+            "labels": {},
+            "created_at": "2022-07-19",
+            "modified_at": "2022-07-19"
+        }
+    },
+    {
+        "model": "core.objectversion",
+        "pk": 13,
+        "fields": {
+            "object_type": 6,
+            "version": 1,
+            "created_at": "2022-07-19",
+            "modified_at": "2022-07-19",
+            "published_at": "2022-07-19",
+            "json_schema": {
+                "title": "ObjectType FormIO",
+                "type": "object",
+                "examples": [
+                    {
+                        "formDefinition": {
+                            "display": "form",
+                            "settings": {
+                                "pdf": {
+                                    "id": "1ec0f8ee-6685-5d98-a847-26f67b67d6f0",
+                                    "src": "https://files.form.io/pdf/5692b91fd1028f01000407e3/file/1ec0f8ee-6685-5d98-a847-26f67b67d6f0"
+                                }
+                            },
+                            "components": [
+                                {
+                                    "label": "Firstname",
+                                    "tableView": true,
+                                    "key": "firstname",
+                                    "type": "textfield",
+                                    "input": true
+                                },
+                                {
+                                    "type": "button",
+                                    "label": "Send",
+                                    "key": "submit",
+                                    "disableOnInvalid": true,
+                                    "input": true,
+                                    "tableView": false
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "required": [
+                    "formDefinition"
+                ],
+                "properties": {
+                    "formDefinition": {
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "status": "draft"
+        }
+    },
+    {
+        "model": "core.objecttype",
+        "pk": 7,
+        "fields": {
+            "uuid": "007f0b7d-c6f7-4269-85e1-62003310230b",
+            "name": "Bezwaar",
+            "name_plural": "Bezwaren",
+            "description": "Bezwaar",
+            "data_classification": "open",
+            "maintainer_organization": "Ritense",
+            "maintainer_department": "",
+            "contact_person": "",
+            "contact_email": "",
+            "source": "",
+            "update_frequency": "unknown",
+            "provider_organization": "",
+            "documentation_url": "",
+            "labels": {},
+            "created_at": "2024-03-29",
+            "modified_at": "2024-03-29"
+        }
+    },
+    {
+        "model": "core.objectversion",
+        "pk": 14,
+        "fields": {
+            "object_type": 7,
+            "version": 1,
+            "created_at": "2024-03-29",
+            "modified_at": "2024-03-29",
+            "published_at": "2024-03-29",
+            "json_schema": {
+                "title": "ObjectType Bezwaar",
+                "type": "object",
+                "properties": {
+                    "additionalProperties": true
+                }
+            },
+            "status": "draft"
+        }
+    }
+]

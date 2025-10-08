@@ -1,0 +1,42 @@
+{
+    "ikoDataAggregateKey": "klant",
+    "ikoDataRequestKey": "adres",
+    "ikoSearchFields": [
+        {
+            "key": "postcode",
+            "title": "Postcode",
+            "path": "postcode",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "exact",
+            "required": true
+        },
+        {
+            "key": "huisnummer",
+            "title": "Huisnummer",
+            "path": "huisnummer",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "exact",
+            "required": true
+        },
+        {
+            "key": "huisletter",
+            "title": "Huisletter",
+            "path": "huisletter",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "exact",
+            "required": true
+        },
+        {
+            "key": "toevoeging",
+            "title": "Toevoeging",
+            "path": "toevoeging",
+            "dataType": "text",
+            "fieldType": "single",
+            "matchType": "exact",
+            "required": true
+        }
+    ]
+}

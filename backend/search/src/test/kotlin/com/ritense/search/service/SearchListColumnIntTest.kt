@@ -38,8 +38,6 @@ internal class SearchListColumnIntTest : BaseIntegrationTest() {
 
         val updatedSearchListColumn = searchListColumn.copy(title = "New Title")
         val dbUpdatedSearchListColumn = searchListColumnService.update(
-            updatedSearchListColumn.ownerId,
-            updatedSearchListColumn.key,
             updatedSearchListColumn
         )
 
