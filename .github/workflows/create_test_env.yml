@@ -25,6 +25,7 @@ jobs:
     uses: ./.github/workflows/frontend_build_push_docker_image.yml
   create_test_environment:
     runs-on: ubuntu-latest
+    needs: [build_backend_image, build_frontend_image]
     steps:
       - name: Create test environment
         run: |
