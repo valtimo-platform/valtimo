@@ -582,7 +582,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly statusService: CaseListStatusService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
     private readonly caseExportService: CaseExportService,
-    private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService
+    private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService,
     private readonly quickSearchStateService: QuickSearchStateService,
     @Inject(QUICK_SEARCH_SERVICE)
     private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
