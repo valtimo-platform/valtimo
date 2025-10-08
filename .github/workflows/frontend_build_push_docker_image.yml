@@ -43,11 +43,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Download deployment artifact
+      - name: Download dist artifact
         uses: actions/download-artifact@v4
         with:
           name: dist
-          path: frontend/deployment/
+          path: frontend/dist/
 
       - name: Move local devDependencies to dependencies and install
         shell: bash
@@ -56,7 +56,7 @@ jobs:
           
           PROJECTS_DIR="projects/valtimo"
           SCOPE="@valtimo"
-          LOCAL_ROOT="deployment/dist/valtimo"
+          LOCAL_ROOT="dist/valtimo"
           PKG_JSON="package.json"
           
           if [ ! -f "$PKG_JSON" ]; then
@@ -89,7 +89,7 @@ jobs:
           echo "Content of package.json:"
           cat package.json
           
-          sed -i "s/\"dist\/valtimo/\"deployment\/dist\/valtimo/g" angular.json
+          sed -i "s/\"dist\/valtimo/\"dist\/valtimo/g" angular.json
 
       - name: Build app (optioneel voor andere outputs)
         run: npm run build
@@ -118,7 +118,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           # gebruik het ge-downloadde artefact als build context
-          context: frontend/deployment/
-          file: ./frontend/deployment/Dockerfile
+          context: frontend/
+          file: ./frontend/Dockerfile
           push: true
           tags: ${{ steps.generate_tags.outputs.tags }}
