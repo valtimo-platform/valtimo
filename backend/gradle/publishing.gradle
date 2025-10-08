@@ -19,6 +19,7 @@ def projectsExcludedFromDeploy = [
     'app',
     'gzac',
     'gradle',
+    'haalcentraal',
     'dependencies',
     'cve-report',
     'license-report'
