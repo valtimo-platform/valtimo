@@ -47,7 +47,6 @@ import com.ritense.processdocument.service.ProcessDocumentDeletedEventListener
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processdocument.service.ProcessDocumentsService
 import com.ritense.processdocument.service.ValueResolverDelegateService
-import com.ritense.processdocument.tasksearch.TaskListSearchFieldV2Mapper
 import com.ritense.processdocument.tasksearch.TaskSearchFieldExporter
 import com.ritense.processdocument.tasksearch.TaskSearchFieldImporter
 import com.ritense.processdocument.web.CaseDefinitionProcessManagementResource
@@ -262,14 +261,6 @@ class ProcessDocumentsAutoConfiguration {
             caseTaskListSearchService,
             operatonTaskService
         )
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(TaskListSearchFieldV2Mapper::class)
-    fun taskListSearchFieldV2Mapper(
-        objectMapper: ObjectMapper
-    ): TaskListSearchFieldV2Mapper {
-        return TaskListSearchFieldV2Mapper(objectMapper)
     }
 
     @Bean

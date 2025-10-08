@@ -20,8 +20,6 @@ import com.ritense.BaseTest
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.specification.AuthorizationSpecification
 import com.ritense.case.domain.ColumnDefaultSort
-import com.ritense.case.domain.DisplayType
-import com.ritense.case.domain.EnumDisplayTypeParameter
 import com.ritense.case.exception.InvalidListColumnException
 import com.ritense.case.exception.UnknownCaseDefinitionException
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
@@ -31,6 +29,8 @@ import com.ritense.case.web.rest.mapper.CaseListColumnMapper
 import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.case_.repository.CaseDefinitionRepository
 import com.ritense.document.service.DocumentDefinitionService
+import com.ritense.search.domain.DisplayType
+import com.ritense.search.domain.EnumDisplayTypeParameter
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.valueresolver.exception.ValueResolverValidationException
