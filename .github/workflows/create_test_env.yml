@@ -1,0 +1,31 @@
+name: 'Create test environment'
+on:
+  workflow_call:
+    inputs:
+      envName:
+        description: 'Environment name'
+        required: true
+  workflow_dispatch:
+    inputs:
+      envName:
+        description: 'Environment name'
+        required: true
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build_backend_image:
+    uses: ./.github/workflows/backend_build_push_docker_image.yml
+  build_frontend_image:
+    uses: ./.github/workflows/frontend_build_push_docker_image.yml
+  create_test_environment:
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ritense/product-development-infra/.github/workflows/create-gzac-test-environment.yml@main
+    with:
+      envName: "${{ inputs.envName }}"
+    secrets:
+      token: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}

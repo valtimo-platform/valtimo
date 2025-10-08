@@ -1,33 +1,14 @@
-name: 'Create test environment for each created PR'
+name: 'Create test environment for each new PR'
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - "feature/dockerize-app"
+  pull_request:
+    branches: ['next-minor']
 
 permissions:
   actions: read
   contents: read
 
 jobs:
-  buildBackendImage:
-    uses: ./.github/workflows/backend_pr_docker_image.yml
-  buildFrontendImage:
-    uses: ./.github/workflows/frontend_pr_docker_image.yml
-  testResult:
-    runs-on: ubuntu-latest
-    needs: [buildBackendImage, buildFrontendImage]
-    steps:
-      - name: 'Test result'
-        run: |
-          echo "Backend: ${{needs.buildBackendImage.outputs.imageTag}}"
-          echo "Frontend: ${{needs.buildFrontendImage.outputs.imageTag}}"
-  createTestEnvironment:
-    permissions:
-      contents: read
-      pull-requests: write
-    uses: ritense/product-development-infra/.github/workflows/create-gzac-test-environment.yml@main
+  creat_test_environment:
+    uses: ./.github/workflows/create_test_env.yml
     with:
-      envName: "pr-${{ github.event.pull_request.number }}"
-    secrets:
-      token: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}
+      envName: "pr-${{ github.event.number }}"

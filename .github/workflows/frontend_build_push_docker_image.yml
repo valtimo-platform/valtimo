@@ -1,4 +1,8 @@
-name: frontend_pr_docker_image.yml
+name: Frontend - build and push Docker image
+
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   workflow_call:
@@ -7,52 +11,21 @@ on:
         description: "The Docker image tag"
         value: ${{ jobs.buildImage.outputs.imageTag }}
 
+defaults:
+  run:
+    working-directory: frontend
+
 env:
   NODE_VERSION: "20.x"
 
 jobs:
-  buildLibraries:
+  build_and_test:
+    uses: ./.github/workflows/frontend_build_test.yml
+    secrets: inherit
+
+  build_image:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install NPM packages
-        run: npm install
-
-      - name: Build all libraries
-        run: npm run libs-build-all
-
-      - name: Prepare dist folder
-        run: |
-          set -euo pipefail
-          mkdir -p deployment
-          # verplaats de build-output + benodigde files naar deployment/
-          mv src conf dist Dockerfile deployment/
-
-      - name: Retain build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: gzac-app-frontend-deployment
-          # pad is ten opzichte van repo-root
-          path: frontend/deployment/
-          retention-days: 1
-
-  buildImage:
-    runs-on: ubuntu-latest
-    needs: buildLibraries
-
-    defaults:
-      run:
-        working-directory: frontend
+    needs: build_and_test
 
     permissions:
       contents: read
