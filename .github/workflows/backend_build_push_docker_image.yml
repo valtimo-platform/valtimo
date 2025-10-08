@@ -9,6 +9,14 @@ on:
       - 'next-minor'
     types:
       - synchronize
+    paths:
+      - backend/**
+
+  push:
+    branches:
+      - 'next-minor'
+    paths:
+      - backend/**
 
   workflow_dispatch:
 
