@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 jobs:
-  creat_test_environment:
+  create_test_environment:
     uses: ./.github/workflows/create_test_env.yml
     with:
       envName: "pr-${{ github.event.number }}"
