@@ -125,6 +125,8 @@ export class AnalyseProcessDiagramComponent implements OnInit, OnDestroy {
       this.bpmnViewer.destroy();
     }
     this.pageTitleService.enableReset();
+    this.pageTitleService.clearPageActionsViewContainerRef();
+    this.pageTitleService.setHasPageActions(true);
   }
 
   public loadProcessDefinition(processDefinitionKey: string): void {
