@@ -65,15 +65,15 @@ class FormCaseEventListener(
 
         val deployedFormDefinitions = formDefinitionService.getFormDefinitions(event.caseDefinitionId)
 
-        // skip if form definitions have already been deployed for newly created process definition
-        if (deployedFormDefinitions.isNotEmpty()) {
-            return;
+        val formDefinitionIdMapping = if (deployedFormDefinitions.isEmpty()) {
+            copyFormDefinitions(
+                event.basedOnCaseDefinitionId!!,
+                event.caseDefinitionId!!
+            )
+        } else {
+            val sourceFormDefinitions = formDefinitionService.getFormDefinitions(event.basedOnCaseDefinitionId)
+            deployedFormDefinitions.associate { df -> sourceFormDefinitions.single { it.name == df.name }.id to df.id }
         }
-
-        val formDefinitionIdMapping = copyFormDefinitions(
-            event.basedOnCaseDefinitionId!!,
-            event.caseDefinitionId!!
-        )
 
         event.copiedProcessLinks.forEach { processLink ->
             if (processLink !is FormProcessLink) return
