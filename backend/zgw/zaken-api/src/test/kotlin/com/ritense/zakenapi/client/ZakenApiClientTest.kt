@@ -62,31 +62,27 @@ import kotlin.test.assertNull
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ZakenApiClientTest {
 
-    lateinit var mockApi: MockWebServer
+    private val objectMapper: ObjectMapper = MapperSingleton.get()
+    private val restClientBuilder: RestClient.Builder = RestClient.builder()
 
-    lateinit var objectMapper: ObjectMapper
-
-    lateinit var outboxService: OutboxService
-
-    lateinit var authorizationService: AuthorizationService
-
-    lateinit var applicationEventPublisher: ApplicationEventPublisher
+    private lateinit var mockApi: MockWebServer
+    private lateinit var outboxService: OutboxService
+    private lateinit var authorizationService: AuthorizationService
+    private lateinit var applicationEventPublisher: ApplicationEventPublisher
 
     @BeforeAll
     fun setUp() {
         mockApi = MockWebServer()
         mockApi.start()
-        objectMapper = MapperSingleton.get()
-        outboxService = mock()
-        authorizationService = mock()
-        applicationEventPublisher = mock()
-        whenever(authorizationService.hasPermission<Any>(any())).thenReturn(true)
     }
 
     @BeforeEach
     fun beforeEach() {
-        reset(outboxService)
-        reset(applicationEventPublisher)
+        outboxService = mock()
+        authorizationService = mock {
+            on { this.hasPermission<Any>(any()) } doReturn true
+        }
+        applicationEventPublisher = mock()
     }
 
     @AfterAll
@@ -96,15 +92,16 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send link document request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val zaakUrl = zaakUri()
+        val zaakUrlAsString = zaakUrl.toASCIIString()
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-              "url": "https://example.com",
+              "url": "$HTTPS_EXAMPLE_COM",
               "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-              "informatieobject": "https://example.com",
-              "zaak": "https://example.com",
+              "informatieobject": "$HTTPS_EXAMPLE_COM",
+              "zaak": "$zaakUrl",
               "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
               "titel": "string",
               "beschrijving": "string",
@@ -115,13 +112,13 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.linkDocument(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            LinkDocumentRequest(
-                "https://example.com",
-                "https://example.com",
-                "title",
-                "description"
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            request = LinkDocumentRequest(
+                informatieobject = HTTPS_EXAMPLE_COM,
+                zaak = zaakUrlAsString,
+                titel = "title",
+                beschrijving = "description"
             )
         )
 
@@ -131,14 +128,14 @@ internal class ZakenApiClientTest {
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
 
-        assertEquals("https://example.com", parsedOutput["informatieobject"])
-        assertEquals("https://example.com", parsedOutput["zaak"])
+        assertEquals(HTTPS_EXAMPLE_COM, parsedOutput["informatieobject"])
+        assertEquals(zaakUrlAsString, parsedOutput["zaak"])
         assertEquals("title", parsedOutput["titel"])
         assertEquals("description", parsedOutput["beschrijving"])
 
-        assertEquals("https://example.com", result.url)
-        assertEquals("https://example.com", result.informatieobject)
-        assertEquals("https://example.com", result.zaak)
+        assertEquals(HTTPS_EXAMPLE_COM, result.url)
+        assertEquals(HTTPS_EXAMPLE_COM, result.informatieobject)
+        assertEquals(zaakUrlAsString, result.zaak)
         assertEquals(UUID.fromString("095be615-a8ad-4c33-8e9c-c7612fbf6c9f"), result.uuid)
         assertEquals("string", result.titel)
         assertEquals("string", result.beschrijving)
@@ -148,19 +145,19 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not include null fields when creating zaakstatus`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val zaakUrl = zaakUri()
+        val client = zakenApiClient()
 
         mockApi.enqueue(mockResponse("").setResponseCode(400))
 
         assertThrows<HttpClientErrorException> {
             client.createZaakStatus(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                CreateZaakStatusRequest(
-                    zaak = URI("https://example.com"),
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                request = CreateZaakStatusRequest(
+                    zaak = zaakUrl,
                     datumStatusGezet = LocalDateTime.parse("2023-03-03T03:03:00"),
-                    statustype = URI("https://example.com"),
+                    statustype = exampleUri(),
                     statustoelichting = null
                 )
             )
@@ -170,23 +167,22 @@ internal class ZakenApiClientTest {
         val requestString = recordedRequest.body.readUtf8()
         val parsedOutput: Map<String, Any> = objectMapper.readValue(requestString)
 
-        assertEquals("https://example.com", parsedOutput["zaak"])
-        assertEquals("https://example.com", parsedOutput["statustype"])
+        assertEquals(zaakUrl.toASCIIString(), parsedOutput["zaak"])
+        assertEquals(HTTPS_EXAMPLE_COM, parsedOutput["statustype"])
         assertNull(parsedOutput["statustoelichting"])
     }
 
     @Test
     fun `should send outbox message on linking document`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val uuid = "095be615-a8ad-4c33-8e9c-c7612fbf6c9f"
         val responseBody = """
             {
-              "url": "https://example.com",
+              "url": "$HTTPS_EXAMPLE_COM",
               "uuid": "$uuid",
-              "informatieobject": "https://example.com",
-              "zaak": "https://example.com",
+              "informatieobject": "$HTTPS_EXAMPLE_COM",
+              "zaak": "${zaakUri()}",
               "aardRelatieWeergave": "Hoort bij, omgekeerd: kent",
               "titel": "string",
               "beschrijving": "string",
@@ -199,13 +195,13 @@ internal class ZakenApiClientTest {
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
         client.linkDocument(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            LinkDocumentRequest(
-                "https://example.com",
-                "https://example.com",
-                "title",
-                "description"
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            request = LinkDocumentRequest(
+                informatieobject = HTTPS_EXAMPLE_COM,
+                zaak = zaakUri().toASCIIString(),
+                titel = "title",
+                beschrijving = "description"
             )
         )
 
@@ -225,8 +221,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to link document`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         mockApi.enqueue(mockResponse("").setResponseCode(400))
 
@@ -234,13 +229,13 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.linkDocument(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                LinkDocumentRequest(
-                    "https://example.com",
-                    "https://example.com",
-                    "title",
-                    "description"
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                request = LinkDocumentRequest(
+                    informatieobject = HTTPS_EXAMPLE_COM,
+                    zaak = zaakUri().toASCIIString(),
+                    titel = "title",
+                    beschrijving = "description"
                 )
             )
         }
@@ -252,20 +247,21 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send get zaakobjecten request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val zaakObjectId = "095be615-a8ad-4c33-8e9c-c7612fbf6c9f"
+        val zaakUrl = zaakUri()
+        val client = zakenApiClient()
 
         val responseBody = """
             {
               "count": 1,
-              "next": "https://example.com",
-              "previous": "https://example.com",
+              "next": "$HTTPS_EXAMPLE_COM",
+              "previous": "$HTTPS_EXAMPLE_COM",
               "results": [
                 {
-                  "url": "https://example.com",
-                  "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                  "zaak": "https://example.com",
-                  "object": "https://example.com",
+                  "url": "$HTTPS_EXAMPLE_COM",
+                  "uuid": "$zaakObjectId",
+                  "zaak": "$zaakUrl",
+                  "object": "$HTTPS_EXAMPLE_COM",
                   "objectType": "adres",
                   "objectTypeOverige": "string",
                   "relatieomschrijving": "string"
@@ -277,26 +273,26 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.getZaakObjecten(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            URI("https://example.com"),
-            1
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakUrl = exampleUri(),
+            page = 1
         )
 
         val recordedRequest = mockApi.takeRequest()
         val requestUrl = recordedRequest.requestUrl
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
-        assertEquals("https://example.com", requestUrl?.queryParameter("zaak"))
+        assertEquals(HTTPS_EXAMPLE_COM, requestUrl?.queryParameter("zaak"))
         assertEquals("1", requestUrl?.queryParameter("page"))
 
         assertEquals(1, result.count)
-        assertEquals(URI("https://example.com"), result.next)
-        assertEquals(URI("https://example.com"), result.previous)
-        assertEquals(URI("https://example.com"), result.results[0].url)
-        assertEquals(UUID.fromString("095be615-a8ad-4c33-8e9c-c7612fbf6c9f"), result.results[0].uuid)
-        assertEquals(URI("https://example.com"), result.results[0].zaakUrl)
-        assertEquals(URI("https://example.com"), result.results[0].objectUrl)
+        assertEquals(exampleUri(), result.next)
+        assertEquals(exampleUri(), result.previous)
+        assertEquals(exampleUri(), result.results[0].url)
+        assertEquals(UUID.fromString(zaakObjectId), result.results[0].uuid)
+        assertEquals(zaakUrl, result.results[0].zaakUrl)
+        assertEquals(exampleUri(), result.results[0].objectUrl)
         assertEquals("adres", result.results[0].objectType)
         assertEquals("string", result.results[0].objectTypeOverige)
         assertEquals("string", result.results[0].relatieomschrijving)
@@ -304,20 +300,19 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send outbox message on retrieving zaakobjecten`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
               "count": 1,
-              "next": "https://example.com",
-              "previous": "https://example.com",
+              "next": "$HTTPS_EXAMPLE_COM",
+              "previous": "$HTTPS_EXAMPLE_COM",
               "results": [
                 {
-                  "url": "https://example.com",
+                  "url": "$HTTPS_EXAMPLE_COM",
                   "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                  "zaak": "https://example.com",
-                  "object": "https://example.com",
+                  "zaak": "${zaakUri()}",
+                  "object": "$HTTPS_EXAMPLE_COM",
                   "objectType": "adres",
                   "objectTypeOverige": "string",
                   "relatieomschrijving": "string"
@@ -331,10 +326,10 @@ internal class ZakenApiClientTest {
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
         val result = client.getZaakObjecten(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            URI("https://example.com"),
-            1
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakUrl = exampleUri(),
+            page = 1
         )
 
         mockApi.takeRequest()
@@ -351,8 +346,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to retrieve zaakobjecten`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         mockApi.enqueue(mockResponse("").setResponseCode(400))
 
@@ -360,10 +354,10 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.getZaakObjecten(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                URI("https://example.com"),
-                1
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                zaakUrl = exampleUri(),
+                page = 1
             )
         }
 
@@ -374,8 +368,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send get zaakinformatieobjecten request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val informatieObjectJson = """
             {
@@ -400,16 +393,16 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.getZaakInformatieObjecten(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            URI("https://example.com")
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakUrl = exampleUri()
         )
 
         val recordedRequest = mockApi.takeRequest()
         val requestUrl = recordedRequest.requestUrl
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
-        assertEquals("https://example.com", requestUrl?.queryParameter("zaak"))
+        assertEquals(HTTPS_EXAMPLE_COM, requestUrl?.queryParameter("zaak"))
         assertEquals(2, result.size)
 
         val value = result.first()
@@ -427,8 +420,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send outbox message on retrieving zaakinformatieobjecten`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val informatieObjectJson = """
             {
@@ -455,9 +447,9 @@ internal class ZakenApiClientTest {
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
         val result = client.getZaakInformatieObjecten(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            URI("https://example.com")
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakUrl = exampleUri()
         )
 
         mockApi.takeRequest()
@@ -474,8 +466,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to retrieve zaakinformatieobjecten`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         mockApi.enqueue(mockResponse("").setResponseCode(400))
 
@@ -483,9 +474,9 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.getZaakInformatieObjecten(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                URI("https://example.com")
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                zaakUrl = exampleUri()
             )
         }
 
@@ -496,20 +487,19 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send get zaakrollen request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
               "count": 1,
-              "next": "https://example.com/next",
-              "previous": "https://example.com/previous",
+              "next": "$HTTPS_EXAMPLE_COM/next",
+              "previous": "$HTTPS_EXAMPLE_COM/previous",
               "results": [
                 {
-                  "zaak": "https://example.com/zaak",
-                  "betrokkene": "https://example.com/betrokkene",
+                  "zaak": "$HTTPS_EXAMPLE_COM/zaak",
+                  "betrokkene": "$HTTPS_EXAMPLE_COM/betrokkene",
                   "betrokkeneType": "natuurlijk_persoon",
-                  "roltype": "https://example.com/roltype",
+                  "roltype": "$HTTPS_EXAMPLE_COM/roltype",
                   "roltoelichting": "initiator",
                   "betrokkeneIdentificatie": {
                     "inpBsn": "059861095"
@@ -523,47 +513,46 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.getZaakRollen(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            URI("https://example.com"),
-            1,
-            RolTypeGeneriekeBeschrijving.INITIATOR
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakUrl = exampleUri(),
+            page = 1,
+            omschrijvingGeneriek = RolTypeGeneriekeBeschrijving.INITIATOR
         )
 
         val recordedRequest = mockApi.takeRequest()
         val requestUrl = recordedRequest.requestUrl
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
-        assertEquals("https://example.com", requestUrl?.queryParameter("zaak"))
+        assertEquals(HTTPS_EXAMPLE_COM, requestUrl?.queryParameter("zaak"))
         assertEquals("1", requestUrl?.queryParameter("page"))
 
         assertEquals(1, result.count)
-        assertEquals(URI("https://example.com/next"), result.next)
-        assertEquals(URI("https://example.com/previous"), result.previous)
-        assertEquals(URI("https://example.com/betrokkene"), result.results.first().betrokkene)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/next"), result.next)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/previous"), result.previous)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/betrokkene"), result.results.first().betrokkene)
         assertEquals(BetrokkeneType.NATUURLIJK_PERSOON, result.results.first().betrokkeneType)
-        assertEquals(URI("https://example.com/zaak"), result.results.first().zaak)
-        assertEquals(URI("https://example.com/roltype"), result.results.first().roltype)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/zaak"), result.results.first().zaak)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/roltype"), result.results.first().roltype)
         assertEquals("initiator", result.results.first().roltoelichting)
         assertEquals(RolNatuurlijkPersoon(inpBsn = "059861095"), result.results.first().betrokkeneIdentificatie)
     }
 
     @Test
     fun `should send outbox message on retrieving zaakrollen`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
               "count": 1,
-              "next": "https://example.com/next",
-              "previous": "https://example.com/previous",
+              "next": "$HTTPS_EXAMPLE_COM/next",
+              "previous": "$HTTPS_EXAMPLE_COM/previous",
               "results": [
                 {
-                  "zaak": "https://example.com/zaak",
-                  "betrokkene": "https://example.com/betrokkene",
+                  "zaak": "$HTTPS_EXAMPLE_COM/zaak",
+                  "betrokkene": "$HTTPS_EXAMPLE_COM/betrokkene",
                   "betrokkeneType": "natuurlijk_persoon",
-                  "roltype": "https://example.com/roltype",
+                  "roltype": "$HTTPS_EXAMPLE_COM/roltype",
                   "roltoelichting": "initiator",
                   "betrokkeneIdentificatie": {
                     "inpBsn": "059861095"
@@ -579,11 +568,11 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.getZaakRollen(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            URI("https://example.com"),
-            1,
-            RolTypeGeneriekeBeschrijving.INITIATOR
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakUrl = exampleUri(),
+            page = 1,
+            omschrijvingGeneriek = RolTypeGeneriekeBeschrijving.INITIATOR
         )
 
         mockApi.takeRequest()
@@ -600,8 +589,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to retrieve zaakrollen`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
@@ -609,11 +597,11 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.getZaakRollen(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                URI("https://example.com"),
-                1,
-                RolTypeGeneriekeBeschrijving.INITIATOR
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                zaakUrl = exampleUri(),
+                page = 1,
+                omschrijvingGeneriek = RolTypeGeneriekeBeschrijving.INITIATOR
             )
         }
 
@@ -624,17 +612,16 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send create natuurlijk persoon zaakrol request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-              "url": "https://example.com/rol/d31cd83f-11da-4932-bde8-a9123c9821d3",
+              "url": "$HTTPS_EXAMPLE_COM/rol/d31cd83f-11da-4932-bde8-a9123c9821d3",
               "uuid": "d31cd83f-11da-4932-bde8-a9123c9821d3",
-              "zaak": "https://example.com/zaak",
-              "betrokkene": "https://example.com/betrokkene",
+              "zaak": "$HTTPS_EXAMPLE_COM/zaak",
+              "betrokkene": "$HTTPS_EXAMPLE_COM/betrokkene",
               "betrokkeneType": "natuurlijk_persoon",
-              "roltype": "https://example.com/roltype",
+              "roltype": "$HTTPS_EXAMPLE_COM/roltype",
               "omschrijving": "omschrijving",
               "omschrijvingGeneriek": "initiator",
               "roltoelichting": "roltoelichting",
@@ -674,12 +661,12 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.createZaakRol(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            Rol(
-                zaak = URI("https://example.com/zaak"),
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            rol = Rol(
+                zaak = URI("$HTTPS_EXAMPLE_COM/zaak"),
                 betrokkeneType = BetrokkeneType.NATUURLIJK_PERSOON,
-                roltype = URI("https://example.com/roltype"),
+                roltype = URI("$HTTPS_EXAMPLE_COM/roltype"),
                 roltoelichting = "test",
                 betrokkeneIdentificatie = RolNatuurlijkPersoon()
             )
@@ -692,12 +679,12 @@ internal class ZakenApiClientTest {
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
 
-        assertEquals(URI("https://example.com/rol/d31cd83f-11da-4932-bde8-a9123c9821d3"), result.url)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/rol/d31cd83f-11da-4932-bde8-a9123c9821d3"), result.url)
         assertEquals(UUID.fromString("d31cd83f-11da-4932-bde8-a9123c9821d3"), result.uuid)
-        assertEquals(URI("https://example.com/zaak"), result.zaak)
-        assertEquals(URI("https://example.com/betrokkene"), result.betrokkene)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/zaak"), result.zaak)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/betrokkene"), result.betrokkene)
         assertEquals(BetrokkeneType.NATUURLIJK_PERSOON, result.betrokkeneType)
-        assertEquals(URI("https://example.com/roltype"), result.roltype)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/roltype"), result.roltype)
         assertEquals("omschrijving", result.omschrijving)
         assertEquals(ZaakRolOmschrijving.INITIATOR, result.omschrijvingGeneriek)
         assertEquals("roltoelichting", result.roltoelichting)
@@ -718,17 +705,16 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send create niet-natuurlijk persoon zaakrol request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-              "url": "https://example.com/rol/d31cd83f-11da-4932-bde8-a9123c9821d3",
+              "url": "$HTTPS_EXAMPLE_COM/rol/d31cd83f-11da-4932-bde8-a9123c9821d3",
               "uuid": "d31cd83f-11da-4932-bde8-a9123c9821d3",
-              "zaak": "https://example.com/zaak",
-              "betrokkene": "https://example.com/betrokkene",
+              "zaak": "$HTTPS_EXAMPLE_COM/zaak",
+              "betrokkene": "$HTTPS_EXAMPLE_COM/betrokkene",
               "betrokkeneType": "niet_natuurlijk_persoon",
-              "roltype": "https://example.com/roltype",
+              "roltype": "$HTTPS_EXAMPLE_COM/roltype",
               "omschrijving": "omschrijving",
               "omschrijvingGeneriek": "initiator",
               "roltoelichting": "roltoelichting",
@@ -747,12 +733,12 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.createZaakRol(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            Rol(
-                zaak = URI("https://example.com/zaak"),
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            rol = Rol(
+                zaak = URI("$HTTPS_EXAMPLE_COM/zaak"),
                 betrokkeneType = BetrokkeneType.NIET_NATUURLIJK_PERSOON,
-                roltype = URI("https://example.com/roltype"),
+                roltype = URI("$HTTPS_EXAMPLE_COM/roltype"),
                 roltoelichting = "test",
                 betrokkeneIdentificatie = RolNietNatuurlijkPersoon(
                     annIdentificatie = "annIdentificatie"
@@ -765,12 +751,12 @@ internal class ZakenApiClientTest {
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
 
-        assertEquals(URI("https://example.com/rol/d31cd83f-11da-4932-bde8-a9123c9821d3"), result.url)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/rol/d31cd83f-11da-4932-bde8-a9123c9821d3"), result.url)
         assertEquals(UUID.fromString("d31cd83f-11da-4932-bde8-a9123c9821d3"), result.uuid)
-        assertEquals(URI("https://example.com/zaak"), result.zaak)
-        assertEquals(URI("https://example.com/betrokkene"), result.betrokkene)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/zaak"), result.zaak)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/betrokkene"), result.betrokkene)
         assertEquals(BetrokkeneType.NIET_NATUURLIJK_PERSOON, result.betrokkeneType)
-        assertEquals(URI("https://example.com/roltype"), result.roltype)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/roltype"), result.roltype)
         assertEquals("omschrijving", result.omschrijving)
         assertEquals(ZaakRolOmschrijving.INITIATOR, result.omschrijvingGeneriek)
         assertEquals("roltoelichting", result.roltoelichting)
@@ -787,17 +773,16 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send update zaakrol request and parse response`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-              "url": "https://example.com/rol/d31cd83f-11da-4932-bde8-a9123c9821d3",
+              "url": "$HTTPS_EXAMPLE_COM/rol/d31cd83f-11da-4932-bde8-a9123c9821d3",
               "uuid": "d31cd83f-11da-4932-bde8-a9123c9821d3",
-              "zaak": "https://example.com/zaak",
-              "betrokkene": "https://example.com/betrokkene",
+              "zaak": "$HTTPS_EXAMPLE_COM/zaak",
+              "betrokkene": "$HTTPS_EXAMPLE_COM/betrokkene",
               "betrokkeneType": "niet_natuurlijk_persoon",
-              "roltype": "https://example.com/roltype",
+              "roltype": "$HTTPS_EXAMPLE_COM/roltype",
               "omschrijving": "omschrijving",
               "omschrijvingGeneriek": "initiator",
               "roltoelichting": "roltoelichting",
@@ -816,13 +801,13 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.updateZaakRol(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            UUID.fromString("d31cd83f-11da-4932-bde8-a9123c9821d3"),
-            Rol(
-                zaak = URI("https://example.com/zaak"),
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            rolUuid = UUID.fromString("d31cd83f-11da-4932-bde8-a9123c9821d3"),
+            rol = Rol(
+                zaak = URI("$HTTPS_EXAMPLE_COM/zaak"),
                 betrokkeneType = BetrokkeneType.NIET_NATUURLIJK_PERSOON,
-                roltype = URI("https://example.com/roltype"),
+                roltype = URI("$HTTPS_EXAMPLE_COM/roltype"),
                 roltoelichting = "test",
                 betrokkeneIdentificatie = RolNietNatuurlijkPersoon(
                     annIdentificatie = "annIdentificatie"
@@ -837,12 +822,12 @@ internal class ZakenApiClientTest {
 
         assertEquals("Bearer test", recordedRequest.getHeader("Authorization"))
 
-        assertEquals(URI("https://example.com/rol/d31cd83f-11da-4932-bde8-a9123c9821d3"), result.url)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/rol/d31cd83f-11da-4932-bde8-a9123c9821d3"), result.url)
         assertEquals(UUID.fromString("d31cd83f-11da-4932-bde8-a9123c9821d3"), result.uuid)
-        assertEquals(URI("https://example.com/zaak"), result.zaak)
-        assertEquals(URI("https://example.com/betrokkene"), result.betrokkene)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/zaak"), result.zaak)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/betrokkene"), result.betrokkene)
         assertEquals(BetrokkeneType.NIET_NATUURLIJK_PERSOON, result.betrokkeneType)
-        assertEquals(URI("https://example.com/roltype"), result.roltype)
+        assertEquals(URI("$HTTPS_EXAMPLE_COM/roltype"), result.roltype)
         assertEquals("omschrijving", result.omschrijving)
         assertEquals(ZaakRolOmschrijving.INITIATOR, result.omschrijvingGeneriek)
         assertEquals("roltoelichting", result.roltoelichting)
@@ -859,17 +844,16 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send outbox message on creating zaakrol`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-              "url": "https://example.com/rol/d31cd83f-11da-4932-bde8-a9123c9821d3",
+              "url": "$HTTPS_EXAMPLE_COM/rol/d31cd83f-11da-4932-bde8-a9123c9821d3",
               "uuid": "d31cd83f-11da-4932-bde8-a9123c9821d3",
-              "zaak": "https://example.com/zaak",
-              "betrokkene": "https://example.com/betrokkene",
+              "zaak": "$HTTPS_EXAMPLE_COM/zaak",
+              "betrokkene": "$HTTPS_EXAMPLE_COM/betrokkene",
               "betrokkeneType": "niet_natuurlijk_persoon",
-              "roltype": "https://example.com/roltype",
+              "roltype": "$HTTPS_EXAMPLE_COM/roltype",
               "omschrijving": "omschrijving",
               "omschrijvingGeneriek": "initiator",
               "roltoelichting": "roltoelichting",
@@ -890,12 +874,12 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.createZaakRol(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            Rol(
-                zaak = URI("https://example.com/zaak"),
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            rol = Rol(
+                zaak = URI("$HTTPS_EXAMPLE_COM/zaak"),
                 betrokkeneType = BetrokkeneType.NIET_NATUURLIJK_PERSOON,
-                roltype = URI("https://example.com/roltype"),
+                roltype = URI("$HTTPS_EXAMPLE_COM/roltype"),
                 roltoelichting = "test",
                 betrokkeneIdentificatie = RolNietNatuurlijkPersoon(
                     annIdentificatie = "annIdentificatie"
@@ -918,8 +902,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to create zaakrol`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
@@ -927,12 +910,12 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.createZaakRol(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                Rol(
-                    zaak = URI("https://example.com/zaak"),
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                rol = Rol(
+                    zaak = URI("$HTTPS_EXAMPLE_COM/zaak"),
                     betrokkeneType = BetrokkeneType.NIET_NATUURLIJK_PERSOON,
-                    roltype = URI("https://example.com/roltype"),
+                    roltype = URI("$HTTPS_EXAMPLE_COM/roltype"),
                     roltoelichting = "test",
                     betrokkeneIdentificatie = RolNietNatuurlijkPersoon(
                         annIdentificatie = "annIdentificatie"
@@ -949,15 +932,14 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send outbox message on creating zaak`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-                "url": "https://example.com",
+                "url": "$HTTPS_EXAMPLE_COM",
                 "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
                 "bronorganisatie": "002564440",
-                "zaaktype": "https://example.com",
+                "zaaktype": "$HTTPS_EXAMPLE_COM",
                 "verantwoordelijkeOrganisatie": "002564440",
                 "startdatum": "2019-08-24"
             }
@@ -968,11 +950,11 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.createZaak(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            CreateZaakRequest(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            request = CreateZaakRequest(
                 bronorganisatie = Rsin("002564440"),
-                zaaktype = URI("https://example.com"),
+                zaaktype = exampleUri(),
                 startdatum = LocalDate.of(2019, 8, 24),
                 verantwoordelijkeOrganisatie = Rsin("002564440")
             )
@@ -993,15 +975,15 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send outbox message on creating zaakstatus`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val zaakUrl = zaakUri()
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-                "url": "https://example.com",
+                "url": "$HTTPS_EXAMPLE_COM",
                 "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                "zaak": "https://example.com",
-                "statustype": "https://example.com",
+                "zaak": "$zaakUrl",
+                "statustype": "$HTTPS_EXAMPLE_COM",
                 "statustoelichting": "test",
                 "datumStatusGezet": "2018-07-14T17:45:55.9483536"
             }
@@ -1012,12 +994,12 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.createZaakStatus(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            CreateZaakStatusRequest(
-                zaak = URI("https://example.com"),
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            request = CreateZaakStatusRequest(
+                zaak = zaakUrl,
                 datumStatusGezet = LocalDateTime.of(2023, 8, 3, 3, 3),
-                statustype = URI("https://example.com")
+                statustype = exampleUri()
             )
         )
 
@@ -1035,8 +1017,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to create zaakstatus`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
@@ -1044,12 +1025,12 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.createZaakStatus(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                CreateZaakStatusRequest(
-                    zaak = URI("https://example.com"),
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                request = CreateZaakStatusRequest(
+                    zaak = zaakUri(),
                     datumStatusGezet = LocalDateTime.of(2023, 8, 3, 3, 3),
-                    statustype = URI("https://example.com")
+                    statustype = exampleUri()
                 )
             )
         }
@@ -1061,15 +1042,14 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send outbox message on creating zaakresultaat`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-                "url": "https://example.com",
+                "url": "$HTTPS_EXAMPLE_COM",
                 "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
-                "zaak": "https://example.com",
-                "resultaattype": "https://example.com",
+                "zaak": "${zaakUri()}",
+                "resultaattype": "$HTTPS_EXAMPLE_COM",
                 "toelichting": "test"
             }
         """.trimIndent()
@@ -1079,11 +1059,11 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.createZaakResultaat(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            CreateZaakResultaatRequest(
-                zaak = URI("https://example.com"),
-                resultaattype = URI("https://example.com"),
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            request = CreateZaakResultaatRequest(
+                zaak = zaakUri(),
+                resultaattype = exampleUri(),
             )
         )
 
@@ -1103,8 +1083,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to create zaakresultaat`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
@@ -1112,11 +1091,11 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.createZaakResultaat(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                CreateZaakResultaatRequest(
-                    zaak = URI("https://example.com"),
-                    resultaattype = URI("https://example.com"),
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                request = CreateZaakResultaatRequest(
+                    zaak = zaakUri(),
+                    resultaattype = exampleUri(),
                 )
             )
         }
@@ -1129,15 +1108,14 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send outbox message on setting zaak opschorting`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-                "url": "https://example.com",
+                "url": "$HTTPS_EXAMPLE_COM",
                 "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
                 "bronorganisatie": "002564440",
-                "zaaktype": "https://example.com",
+                "zaaktype": "$HTTPS_EXAMPLE_COM",
                 "verantwoordelijkeOrganisatie": "002564440",
                 "omschrijving": "test",
                 "toelichting": "test",
@@ -1168,9 +1146,9 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.setZaakOpschorting(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
-            ZaakopschortingRequest(
+            authentication = TestAuthentication(),
+            url = zakenApiBaseUri(),
+            request = ZaakopschortingRequest(
                 verlenging = Verlenging(
                     reden = "test",
                     duur = "test"
@@ -1196,8 +1174,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to set zaak opschorting`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
@@ -1205,9 +1182,9 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.setZaakOpschorting(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
-                ZaakopschortingRequest(
+                authentication = TestAuthentication(),
+                url = zakenApiBaseUri(),
+                request = ZaakopschortingRequest(
                     verlenging = Verlenging(
                         reden = "test",
                         duur = "test"
@@ -1227,15 +1204,14 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should send outbox message on retrieving zaak`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val responseBody = """
             {
-                "url": "https://example.com",
+                "url": "$HTTPS_EXAMPLE_COM",
                 "uuid": "095be615-a8ad-4c33-8e9c-c7612fbf6c9f",
                 "bronorganisatie": "002564440",
-                "zaaktype": "https://example.com",
+                "zaaktype": "$HTTPS_EXAMPLE_COM",
                 "verantwoordelijkeOrganisatie": "002564440",
                 "omschrijving": "test",
                 "toelichting": "test",
@@ -1248,7 +1224,7 @@ internal class ZakenApiClientTest {
                 "betalingsindicatieWeergave": "test",
                 "selectielijstklasse": "test",
                 "deelzaken": ["test"],
-                "relevanteAndereZaken": [{"url": "https://example.com", "aardRelatie": "overig"}],
+                "relevanteAndereZaken": [{"url": "$HTTPS_EXAMPLE_COM", "aardRelatie": "overig"}],
                 "eigenschappen": ["test"],
                 "kenmerken": [{"kenmerk": "test", "bron": "test"}],
                 "archiefstatus": "gearchiveerd",
@@ -1266,8 +1242,8 @@ internal class ZakenApiClientTest {
         mockApi.enqueue(mockResponse(responseBody))
 
         val result = client.getZaak(
-            TestAuthentication(),
-            URI(mockApi.url("/").toString()),
+            authentication = TestAuthentication(),
+            zaakUrl = zakenApiBaseUri(),
         )
 
         mockApi.takeRequest()
@@ -1284,8 +1260,7 @@ internal class ZakenApiClientTest {
 
     @Test
     fun `should not send outbox message on failing to retrieve zaak`() {
-        val restClientBuilder = RestClient.builder()
-        val client = ZakenApiClient(restClientBuilder, outboxService, objectMapper, authorizationService, applicationEventPublisher = applicationEventPublisher)
+        val client = zakenApiClient()
 
         val eventCapture = argumentCaptor<Supplier<BaseEvent>>()
 
@@ -1293,8 +1268,8 @@ internal class ZakenApiClientTest {
 
         assertThrows<HttpClientErrorException> {
             client.getZaak(
-                TestAuthentication(),
-                URI(mockApi.url("/").toString()),
+                authentication = TestAuthentication(),
+                zaakUrl = zakenApiBaseUri(),
             )
         }
 
@@ -1302,6 +1277,277 @@ internal class ZakenApiClientTest {
 
         verify(outboxService, times(0)).send(eventCapture.capture())
     }
+
+    @Test
+    fun `should send get zaaknotities request and parse response`() {
+        val zaakUrl = zaakUri()
+
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+              "count": 2,
+              "next": null,
+              "previous": null,
+              "results": [
+                {
+                  "url": "${zaakNotitieUri("0105bd5b-4c92-4fb2-9cb8-aa5b041ac776")}",
+                  "onderwerp": "Onderwerp 1",
+                  "tekst": "Tekst 1",
+                  "aangemaaktDoor": "jan",
+                  "notitieType": "intern",
+                  "status": "concept",
+                  "aanmaakdatum": "2024-01-01T10:00:00",
+                  "wijzigingsdatum": "2024-01-01T10:00:00",
+                  "gerelateerdAan": "$zaakUrl"
+                },
+                {
+                  "url": "${zaakNotitieUri("6f394e5d-ee7e-4c2f-b85a-b84220f29063")}",
+                  "onderwerp": "Onderwerp 2",
+                  "tekst": "Tekst 2",
+                  "aangemaaktDoor": null,
+                  "notitieType": "extern",
+                  "status": "definitief",
+                  "aanmaakdatum": "2024-01-02T11:00:00",
+                  "wijzigingsdatum": "2024-01-02T11:00:00",
+                  "gerelateerdAan": "$zaakUrl"
+                }
+              ]
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val result = client.getZaakNotities(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakUrl = zaakUrl,
+            page = 1
+        )
+
+        mockApi.takeRequest().requestUrl!!.let { requestUrl ->
+            assertThat(requestUrl.queryParameter("zaak")).isEqualTo(zaakUrl.toASCIIString())
+            assertThat(requestUrl.queryParameter("page")).isEqualTo("1")
+        }
+        assertThat(result.count).isEqualTo(2)
+        assertThat(result.results[0].onderwerp).isEqualTo("Onderwerp 1")
+        assertThat(result.results[1].notitieType?.key).isEqualTo("extern")
+        assertThat(result.results[1].status?.key).isEqualTo("definitief")
+    }
+
+    @Test
+    fun `should send outbox message on retrieving zaaknotities`() {
+        val zaakUrl = zaakUri()
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+              "count": 1,
+              "next": null,
+              "previous": null,
+              "results": [
+                {
+                  "url": "${zaakNotitieUri()}",
+                  "onderwerp": "Onderwerp",
+                  "tekst": "Tekst",
+                  "aangemaaktDoor": "jan",
+                  "notitieType": "intern",
+                  "status": "concept",
+                  "aanmaakdatum": "2024-01-01T10:00:00",
+                  "wijzigingsdatum": "2024-01-01T10:00:00",
+                  "gerelateerdAan": "$zaakUrl"
+                }
+              ]
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        argumentCaptor<Supplier<BaseEvent>> {
+            val result = client.getZaakNotities(
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                zaakUrl = zaakUrl,
+                page = 1
+            )
+
+            mockApi.takeRequest()
+
+            verify(outboxService).send(capture())
+
+            firstValue.get().let { event ->
+                assertThat(event).isInstanceOf(ZaakNotitiesListed::class.java)
+                objectMapper.readValue<List<ZaakNotitie>>(event.result.toString()).let { zaakNotities ->
+                    assertThat(zaakNotities.first().onderwerp).isEqualTo(result.results.first().onderwerp)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `should not send outbox message on failing to retrieve zaaknotities`() {
+        val client = zakenApiClient()
+
+        mockApi.enqueue(mockResponse("").setResponseCode(400))
+
+        assertThrows<HttpClientErrorException> {
+            client.getZaakNotities(
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                zaakUrl = zaakUri(),
+                page = 1
+            )
+        }
+
+        mockApi.takeRequest()
+
+        verify(outboxService, times(0)).send(any())
+    }
+
+    @Test
+    fun `should send outbox message on creating zaaknotitie`() {
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+              "url": "${zaakNotitieUri()}",
+              "onderwerp": "Onderwerp",
+              "tekst": "Tekst",
+              "aangemaaktDoor": "jan",
+              "notitieType": "intern",
+              "status": "concept",
+              "aanmaakdatum": "2024-01-01T10:00:00",
+              "wijzigingsdatum": "2024-01-01T10:00:00",
+              "gerelateerdAan": "$HTTPS_EXAMPLE_COM/zaken/1"
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        argumentCaptor<Supplier<BaseEvent>> {
+            val result = client.createZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                request = CreateZaakNotitieRequest(
+                    onderwerp = "Onderwerp",
+                    tekst = "Tekst",
+                    gerelateerdAan = zaakUri(),
+                    aangemaaktDoor = "jan",
+                    notitieType = NotitieType.INTERN,
+                    status = NotitieStatus.CONCEPT
+                )
+            )
+
+            mockApi.takeRequest()
+
+            verify(applicationEventPublisher).publishEvent(anyVararg(ZaakNotitieCreated::class))
+            verify(outboxService).send(capture())
+
+            firstValue.get().let { event ->
+                assertThat(event).isInstanceOf(ZaakNotitieCreated::class.java)
+                assertThat(result.url.toString()).isEqualTo(event.resultId)
+                objectMapper.readValue<ZaakNotitie>(event.result.toString()).let { zaakNotitie ->
+                    assertThat(zaakNotitie.onderwerp).isEqualTo(result.onderwerp)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `should validate host when creating zaaknotitie`() {
+        val client = zakenApiClient()
+
+        assertThrows<IllegalArgumentException> {
+            client.createZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = URI("https://api.example.com"),
+                request = CreateZaakNotitieRequest(
+                    onderwerp = "Onderwerp",
+                    tekst = "Tekst",
+                    gerelateerdAan = zaakUri()
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should send outbox message on patching zaaknotitie`() {
+        val zaakNotitieUrl = zaakNotitieUri()
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+              "url": "$zaakNotitieUrl",
+              "onderwerp": "Onderwerp nieuw",
+              "tekst": "Tekst",
+              "aangemaaktDoor": "jan",
+              "notitieType": "intern",
+              "status": "concept",
+              "aanmaakdatum": "2024-01-01T10:00:00",
+              "wijzigingsdatum": "2024-01-01T12:00:00",
+              "gerelateerdAan": "${zaakUri()}"
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        argumentCaptor<Supplier<BaseEvent>> {
+            val result = client.patchZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                notitieUrl = zaakNotitieUrl,
+                request = PatchZaakNotitieRequest(
+                    onderwerp = "Onderwerp nieuw"
+                )
+            )
+            mockApi.takeRequest()
+
+            verify(applicationEventPublisher).publishEvent(anyVararg(ZaakNotitiePatched::class))
+            verify(outboxService).send(capture())
+
+            firstValue.get().let { event ->
+                assertThat(event).isInstanceOf(ZaakNotitiePatched::class.java)
+
+                objectMapper.readValue<ZaakNotitie>(event.result.toString()).let { zaakNotitie ->
+                    assertThat(result.tekst).isEqualTo(zaakNotitie.tekst)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `should validate host when patching zaaknotitie`() {
+        val client = zakenApiClient()
+
+        assertThrows<IllegalArgumentException> {
+            client.patchZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = URI("https://api1.example.com"),
+                notitieUrl = URI("https://api2.example.com/zaaknotities/1"),
+                request = PatchZaakNotitieRequest(
+                    onderwerp = "x"
+                )
+            )
+        }
+    }
+
+    private fun zakenApiClient() = ZakenApiClient(
+        restClientBuilder = restClientBuilder,
+        outboxService = outboxService,
+        objectMapper = objectMapper,
+        authorizationService = authorizationService,
+        applicationEventPublisher = applicationEventPublisher
+    )
+
+    private fun zaakUri(id: String = "1100e54b-51e5-4f7c-a27d-54761bfc5b82") =
+        zakenApiBaseUri("/zaken/$id")
+
+    private fun zaakNotitieUri(id: String = "396ef930-7f6b-49e0-bb3a-4905458ba63e") =
+        zakenApiBaseUri("/zaaknotities/$id")
+
+    private fun zakenApiBaseUri(path: String = "/") = mockApi.url(path).toUri()
+
+    private fun exampleUri() = URI(HTTPS_EXAMPLE_COM)
 
     private fun mockResponse(body: String): MockResponse {
         return MockResponse()
@@ -1322,5 +1568,9 @@ internal class ZakenApiClientTest {
             }.build()
             return next.exchange(filteredRequest)
         }
+    }
+
+    companion object {
+        private const val HTTPS_EXAMPLE_COM = "https://example.com"
     }
 }
