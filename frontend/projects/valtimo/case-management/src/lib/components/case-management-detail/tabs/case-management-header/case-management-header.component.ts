@@ -31,7 +31,6 @@ import {Subscription} from 'rxjs';
   standalone: true,
   selector: 'valtimo-case-management-header',
   templateUrl: './case-management-header.component.html',
-  styleUrls: ['./case-management-header.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, WidgetManagementComponent],
   providers: [
