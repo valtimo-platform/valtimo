@@ -23,6 +23,7 @@ import {
   OnInit,
   Output,
   ViewEncapsulation,
+  effect,
 } from '@angular/core';
 import {FormArray, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
@@ -71,8 +72,8 @@ export class WidgetManagementInteractiveTableComponent
 
   public formGroup = this.fb.group({
     canStartCase: this.fb.control<boolean>(
-      (this.widgetWizardService.$widgetContent() as WidgetInteractiveTableContent)
-        ?.canStartCase ?? false
+      (this.widgetWizardService.$widgetContent() as WidgetInteractiveTableContent)?.canStartCase ??
+        false
     ),
     actions: this.fb.control<MultiInputValues>(
       (this.widgetWizardService.$widgetActions()?.map((action: WidgetAction) => ({
@@ -92,7 +93,11 @@ export class WidgetManagementInteractiveTableComponent
   constructor(
     private readonly fb: FormBuilder,
     private readonly widgetWizardService: WidgetWizardService
-  ) {}
+  ) {
+    effect(() => {
+      if (this.widgetWizardService.$editMode()) this.changeValidEvent.emit(true);
+    });
+  }
 
   public ngOnInit(): void {
     this.openActionsSubscription();
@@ -106,8 +111,8 @@ export class WidgetManagementInteractiveTableComponent
   public onAddExternalLinkClick(): void {
     this.actionsControl.push(
       this.fb.group({
-        name: this.fb.control<string>('', Validators.required),
-        navigateTo: this.fb.control<string>('', Validators.required),
+        key: this.fb.control<string>('', Validators.required),
+        value: this.fb.control<string>('', Validators.required),
       })
     );
   }
@@ -118,8 +123,10 @@ export class WidgetManagementInteractiveTableComponent
 
   private openActionsSubscription(): void {
     this._subscriptions.add(
-      this.actionsControl.valueChanges.pipe(debounceTime(1000)).subscribe(val => {
-        const valid = this.actionsControl.valid;
+      this.actionsControl.valueChanges.pipe(debounceTime(500)).subscribe(() => {
+        const valid = !this.actionsControl
+          .getRawValue()
+          .some(action => !action.key || !action.value);
         this.changeValidEvent.emit(valid);
 
         if (!valid) return;
@@ -144,7 +151,10 @@ export class WidgetManagementInteractiveTableComponent
             : ({
                 ...content,
                 canStartCase,
-                rowClickAction,
+                rowClickAction: {
+                  name: '',
+                  navigateTo: rowClickAction,
+                },
               } as WidgetInteractiveTableContent)
         );
       })

@@ -1380,7 +1380,8 @@
     "yes": "Ja",
     "no": "Nee",
     "upload": "Uploaden",
-    "noTranslationFound": "Geen vertaling gevonden"
+    "noTranslationFound": "Geen vertaling gevonden",
+    "url": "URL"
   },
   "taskDetail": {"taskCreated": "Aangemaakt op", "taskCompleted": "is succesvol afgerond"},
   "assignTask": {

@@ -98,17 +98,8 @@ import {
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
   IkoPluginModule,
-  ikoPluginSpecification,
-<<<<<<< HEAD
-<<<<<<< HEAD
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
-=======
->>>>>>> 98141a48a (Iko: plugin configuration (#1567))
-=======
-  KlantinteractiesApiPluginModule,
-  klantinteractiesApiPluginSpecification,
->>>>>>> 3addf0f56 (IKO: Add Klant Plugins (#1578))
   NotificatiesApiPluginModule,
   notificatiesApiPluginSpecification,
   ObjectenApiPluginModule,
@@ -215,7 +206,6 @@ export function tabsFactory() {
     OpenZaakPluginModule,
     SmartDocumentsPluginModule,
     DocumentenApiPluginModule,
-    IkoPluginModule,
     KlantinteractiesApiPluginModule,
     ObjecttypenApiPluginModule,
     OpenKlantTokenAuthenticationPluginModule,
@@ -240,10 +230,10 @@ export function tabsFactory() {
     FormViewModelModule,
     LoggingModule,
     FormManagementModule,
-    IkoModule,
     BpmnJsDiagramModule,
     MenuModule,
     WidgetModule,
+    IkoPluginModule,
     IkoModule,
   ],
   providers: [
@@ -255,7 +245,6 @@ export function tabsFactory() {
         besluitenApiPluginSpecification,
         catalogiApiPluginSpecification,
         documentenApiPluginSpecification,
-        ikoPluginSpecification,
         klantinteractiesApiPluginSpecification,
         notificatiesApiPluginSpecification,
         objectenApiPluginSpecification,

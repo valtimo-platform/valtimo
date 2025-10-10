@@ -69,21 +69,6 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly $keyToDelete = signal<string | null>(null);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
 
-  public readonly ikoDataAggregates$ = this._apiKey$.pipe(
-    switchMap(apiKey =>
-      this.ikoManagementApiService
-        .getManagementIkoDataAggregates(undefined, undefined, apiKey)
-        .pipe(
-          map(dataAggregatePage => dataAggregatePage.content),
-          tap(() => this.$loading.set(false))
-        )
-    )
-  );
-  public readonly $modalOpen = signal<boolean>(false);
-  public readonly $prefillData = signal<any | null>(null);
-  public readonly $keyToDelete = signal<string | null>(null);
-  public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
-
   public readonly FIELDS: ColumnConfig[] = [
     {
       key: 'title',

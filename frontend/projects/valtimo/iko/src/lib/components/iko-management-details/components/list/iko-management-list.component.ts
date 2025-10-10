@@ -240,29 +240,6 @@ export class IkoManagementListComponent implements OnInit, OnDestroy {
       });
   }
 
-  public onDeleteClicked(event: ListColumnDto): void {
-    const listColumnDto = this.$ikoListColumnDtos().find(column => column.key === event.key);
-    if (!listColumnDto) return;
-    this.$selectedListColumn.set({...listColumnDto});
-    this.openConfirmationModal$.next(true);
-  }
-
-  public onDeleteListColumn(event: ListColumnDto): void {
-    this.disableInput();
-
-    this._dataAggregateKey$
-      .pipe(switchMap(key => this.ikoManagementApiService.deleteIkoListColumn(key, event.key)))
-      .subscribe({
-        next: () => {
-          this.reloadColumns();
-          this.enableInput();
-        },
-        error: () => {
-          this.enableInput();
-        },
-      });
-  }
-
   public openModal(): void {
     this.$openModal.set(true);
   }

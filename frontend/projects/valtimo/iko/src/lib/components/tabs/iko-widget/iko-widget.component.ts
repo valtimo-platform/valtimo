@@ -76,14 +76,6 @@ export class IkoWidgetComponent {
     [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
   };
 
-  public readonly widgetComponentMap: WidgetComponentMap = {
-    [WidgetType.FIELDS]: IkoWidgetFieldComponent,
-    [WidgetType.CUSTOM]: IkoWidgetCustomComponent,
-    [WidgetType.FORMIO]: IkoWidgetFormioComponent,
-    [WidgetType.TABLE]: IkoWidgetTableComponent,
-    [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
-  };
-
   constructor(
     private readonly ikoTabService: IkoTabService,
     private readonly ikoApiService: IkoApiService,
