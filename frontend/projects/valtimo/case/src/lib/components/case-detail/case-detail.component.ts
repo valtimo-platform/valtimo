@@ -165,6 +165,7 @@ export class CaseDetailComponent
         this.document = document;
         this._caseStatusKey$.next(document?.internalStatus || 'NOT_AVAILABLE');
         this._caseTags$.next(document?.caseTags || null);
+        console.log('document', document?.caseTags);
       }
     })
   );
