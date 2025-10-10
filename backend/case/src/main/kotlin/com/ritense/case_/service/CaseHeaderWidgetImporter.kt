@@ -19,7 +19,6 @@ package com.ritense.case_.service
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.case_.domain.header.CaseHeaderWidget
-import com.ritense.case_.domain.header.CaseHeaderWidgetId
 import com.ritense.case_.repository.CaseHeaderWidgetRepository
 import com.ritense.case_.rest.dto.CaseHeaderWidgetCreateDto
 import com.ritense.importer.ImportRequest
@@ -55,7 +54,7 @@ class CaseHeaderWidgetImporter(
         validator.check(headerWidget)
 
         val widget = CaseHeaderWidget(
-            id = CaseHeaderWidgetId(caseDefinitionId.key, caseDefinitionId.versionTag.toString()),
+            id = CaseDefinitionId(caseDefinitionId.key, caseDefinitionId.versionTag.toString()),
             type = headerWidget.type,
             highContrast = headerWidget.highContrast,
             properties = headerWidget.properties

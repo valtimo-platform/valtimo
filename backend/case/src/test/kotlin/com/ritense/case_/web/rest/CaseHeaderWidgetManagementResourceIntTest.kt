@@ -37,14 +37,14 @@ class CaseHeaderWidgetManagementResourceIntTest @Autowired constructor(
 
     @Test
     @WithMockUser(username = "admin@ritense.com", authorities = [ADMIN])
-    fun `should return no content when header widget not found`() {
+    fun `should return not found when header widget not found`() {
         val key = "some-case-type"
         val version = "1.2.3"
 
         mockMvc.perform(
             get("/api/management/v1/case-definition/{key}/version/{version}/header-widget", key, version)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-        ).andExpect(status().isNoContent)
+        ).andExpect(status().isNotFound)
     }
 
     @Test
@@ -174,6 +174,6 @@ class CaseHeaderWidgetManagementResourceIntTest @Autowired constructor(
         mockMvc.perform(
             get("/api/management/v1/case-definition/{key}/version/{version}/header-widget", key, version)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
-        ).andExpect(status().isNoContent)
+        ).andExpect(status().isNotFound)
     }
 }

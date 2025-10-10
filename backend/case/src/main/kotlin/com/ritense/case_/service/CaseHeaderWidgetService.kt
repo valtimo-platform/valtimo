@@ -17,12 +17,12 @@
 package com.ritense.case_.service
 
 import com.ritense.case_.domain.header.CaseHeaderWidget
-import com.ritense.case_.domain.header.CaseHeaderWidgetId
 import com.ritense.case_.repository.CaseHeaderWidgetRepository
 import com.ritense.case_.rest.dto.CaseHeaderWidgetCreateDto
 import com.ritense.case_.rest.dto.CaseHeaderWidgetDto
 import com.ritense.case_.rest.dto.CaseHeaderWidgetUpdateDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import jakarta.validation.Valid
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -38,7 +38,7 @@ class CaseHeaderWidgetService(
 ) {
 
     @Transactional(readOnly = true)
-    fun findById(id: CaseHeaderWidgetId): CaseHeaderWidgetDto? =
+    fun findById(id: CaseDefinitionId): CaseHeaderWidgetDto? =
         repository.findByIdOrNull(id)?.let { CaseHeaderWidgetDto.of(it) }
 
     @Transactional
@@ -47,7 +47,7 @@ class CaseHeaderWidgetService(
         caseDefinitionVersionTag: String,
         @Valid dto: CaseHeaderWidgetCreateDto
     ): CaseHeaderWidgetDto {
-        val id = CaseHeaderWidgetId(caseDefinitionKey, caseDefinitionVersionTag)
+        val id = CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)
         if (repository.existsById(id)) {
             throw IllegalArgumentException("CaseHeaderWidget with id '$id' already exists.")
         }
@@ -59,7 +59,7 @@ class CaseHeaderWidgetService(
     }
 
     @Transactional
-    fun update(id: CaseHeaderWidgetId, @Valid dto: CaseHeaderWidgetUpdateDto): CaseHeaderWidgetDto {
+    fun update(id: CaseDefinitionId, @Valid dto: CaseHeaderWidgetUpdateDto): CaseHeaderWidgetDto {
         val existing = repository.findByIdOrNull(id)
             ?: throw NoSuchElementException("CaseHeaderWidget with id '$id' not found.")
 
@@ -73,7 +73,7 @@ class CaseHeaderWidgetService(
     }
 
     @Transactional
-    fun delete(id: CaseHeaderWidgetId) {
+    fun delete(id: CaseDefinitionId) {
         if (!repository.existsById(id)) {
             throw NoSuchElementException("CaseHeaderWidget with id '$id' not found.")
         }

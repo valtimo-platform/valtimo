@@ -19,6 +19,7 @@ package com.ritense.case_.domain.header
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.base.Objects
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.EmbeddedId
@@ -33,7 +34,7 @@ class CaseHeaderWidget(
 
     @EmbeddedId
     @JsonProperty("id")
-    val id: CaseHeaderWidgetId,
+    val id: CaseDefinitionId,
 
     @Column(name = "type", nullable = false, length = 256)
     val type: String = "fields",
@@ -46,7 +47,7 @@ class CaseHeaderWidget(
     val properties: Map<String, Any?> = emptyMap()
 ) {
     fun copy(
-        id: CaseHeaderWidgetId = this.id,
+        id: CaseDefinitionId = this.id,
         type: String = this.type,
         highContrast: Boolean = this.highContrast,
         properties: Map<String, Any?> = this.properties
