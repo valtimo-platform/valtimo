@@ -133,25 +133,6 @@ export class IkoManagementApiService extends BaseApiService {
     );
   }
 
-  public getManagementIkoDataAggregates(
-    key?: string,
-    title?: string,
-    ikoRepositoryConfigKey?: string,
-    page: number = 0,
-    size: number = 100,
-    sort: string = 'title,asc'
-  ): Observable<Page<IkoDataAggregateResponse>> {
-    let params = new HttpParams().set('page', page).set('size', size).set('sort', sort);
-    if (key) params = params.set('key', key);
-    if (title) params = params.set('title', title);
-    if (ikoRepositoryConfigKey)
-      params = params.set('ikoRepositoryConfigKey', ikoRepositoryConfigKey);
-    return this.httpClient.get<Page<IkoDataAggregateResponse>>(
-      this.getApiUrl(`management/v1/iko-data-aggregate`),
-      {params}
-    );
-  }
-
   public getManagementIkoDataRequests(aggregateKey: string): Observable<IkoDataRequestResponse[]> {
     return this.httpClient.get<IkoDataRequestResponse[]>(
       this.getApiUrl(`management/v1/iko-data-aggregate/${aggregateKey}/data-request`)
@@ -297,12 +278,6 @@ export class IkoManagementApiService extends BaseApiService {
     );
   }
 
-  // public getIkoWidgets(aggregateKey: string, tabKey: string): Observable<BasicWidget[]> {
-  //   return this.httpClient.get<BasicWidget[]>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget`)
-  //   );
-  // }
-
   public getIkoWidget(
     aggregateKey: string,
     tabKey: string,
@@ -310,165 +285,6 @@ export class IkoManagementApiService extends BaseApiService {
   ): Observable<WidgetDto> {
     return this.httpClient.get<WidgetDto>(
       this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`)
-    );
-  }
-
-  // public createIkoWidget(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   widgetKey: string,
-  //   body: WidgetDto
-  // ): Observable<WidgetDto> {
-  //   return this.httpClient.post<WidgetDto>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`),
-  //     body
-  //   );
-  // }
-
-  // public updateIkoWidgets(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   body: WidgetDto[]
-  // ): Observable<WidgetDto[]> {
-  //   return this.httpClient.put<WidgetDto[]>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget`),
-  //     body
-  //   );
-  // }
-
-  // public deleteIkoWidget(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   widgetKey: string
-  // ): Observable<void> {
-  //   return this.httpClient.delete<void>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`)
-  //   );
-  // }
-
-  public getIkoSearchFields(
-    aggregateKey: string,
-    requestKey: string
-  ): Observable<IkoSearchField[]> {
-    return this.httpClient.get<IkoSearchField[]>(
-      this.getApiUrl(
-        `management/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field`
-      )
-    );
-  }
-
-  public getIkoSearchField(
-    aggregateKey: string,
-    requestKey: string,
-    key: string
-  ): Observable<IkoSearchField> {
-    return this.httpClient.get<IkoSearchField>(
-      this.getApiUrl(
-        `/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field/${key}`
-      )
-    );
-  }
-
-  public createIkoSearchField(
-    aggregateKey: string,
-    requestKey: string,
-    key: string,
-    body: IkoSearchFieldCreateRequest
-  ): Observable<IkoSearchField> {
-    return this.httpClient.post<IkoSearchField>(
-      this.getApiUrl(
-        `management/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field/${key}`
-      ),
-      body
-    );
-  }
-
-  public updateIkoSearchFields(
-    aggregateKey: string,
-    requestKey: string,
-    body: IkoSearchField[]
-  ): Observable<IkoSearchField[]> {
-    return this.httpClient.put<IkoSearchField[]>(
-      this.getApiUrl(
-        `management/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field`
-      ),
-      body
-    );
-  }
-
-  public updateIkoSearchField(
-    aggregateKey: string,
-    requestKey: string,
-    fieldKey: string,
-    body: IkoSearchField
-  ): Observable<IkoSearchField[]> {
-    return this.httpClient.put<IkoSearchField[]>(
-      this.getApiUrl(
-        `management/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field/${fieldKey}`
-      ),
-      body
-    );
-  }
-
-  public deleteIkoSearchField(
-    aggregateKey: string,
-    requestKey: string,
-    key: string
-  ): Observable<void> {
-    return this.httpClient.delete<void>(
-      this.getApiUrl(
-        `management/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field/${key}`
-      )
-    );
-  }
-
-  public getIkoListColumns(aggregateKey: string): Observable<ListColumnDto[]> {
-    return this.httpClient.get<ListColumnDto[]>(
-      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column`)
-    );
-  }
-
-  public getIkoListColumn(aggregateKey: string, columnKey: string): Observable<ListColumnDto> {
-    return this.httpClient.get<ListColumnDto>(
-      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`)
-    );
-  }
-
-  public createIkoListColumn(
-    aggregateKey: string,
-    columnKey: string,
-    body: IkoListColumnRequest
-  ): Observable<ListColumnDto> {
-    return this.httpClient.post<ListColumnDto>(
-      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`),
-      body
-    );
-  }
-
-  public updateListColumn(
-    aggregateKey: string,
-    columnKey: string,
-    body: IkoListColumnRequest
-  ): Observable<ListColumnDto> {
-    return this.httpClient.put<ListColumnDto>(
-      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`),
-      body
-    );
-  }
-
-  public updateIkoListColumnOrder(
-    aggregateKey: string,
-    body: IkoListColumnRequest[]
-  ): Observable<ListColumnDto[]> {
-    return this.httpClient.put<ListColumnDto[]>(
-      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column`),
-      body
-    );
-  }
-
-  public deleteIkoListColumn(aggregateKey: string, columnKey: string): Observable<void> {
-    return this.httpClient.delete<void>(
-      this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`)
     );
   }
 

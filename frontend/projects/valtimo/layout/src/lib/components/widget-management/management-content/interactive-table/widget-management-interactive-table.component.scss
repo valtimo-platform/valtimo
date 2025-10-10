@@ -36,4 +36,14 @@
   .v-multi-input__row {
     padding: 12px 16px 16px 16px;
   }
+
+  cds-text-label {
+    padding: 16px;
+    background-color: var(--cds-layer-01);
+  }
+
+  .v-multi-input__row {
+    padding: 12px 16px 16px 16px;
+    background-color: var(--cds-layer-01);
+  }
 }

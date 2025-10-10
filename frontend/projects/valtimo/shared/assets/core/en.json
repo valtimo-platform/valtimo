@@ -1353,7 +1353,8 @@
     "yes": "Yes",
     "no": "No",
     "upload": "Upload",
-    "noTranslationFound": "No translation found"
+    "noTranslationFound": "No translation found",
+    "url": "URL"
   },
   "taskDetail": {"taskCreated": "Created", "taskCompleted": "has successfully been completed"},
   "assignTask": {

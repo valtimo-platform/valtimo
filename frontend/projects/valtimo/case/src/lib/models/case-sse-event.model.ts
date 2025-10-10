@@ -14,4 +14,11 @@
  * limitations under the License.
  */
 
-export * from './widget-interactive-table.component';
+import {BaseSseEvent} from '@valtimo/sse';
+
+interface DocumentUpdatedSseEvent extends BaseSseEvent {
+  documentId: string;
+  caseDefinitionKey: string;
+}
+
+export {DocumentUpdatedSseEvent};

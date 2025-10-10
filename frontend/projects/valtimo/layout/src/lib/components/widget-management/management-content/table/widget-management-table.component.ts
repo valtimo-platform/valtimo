@@ -40,7 +40,7 @@ import {
   ValuePathSelectorPrefix,
   ValuePathType,
 } from '@valtimo/components';
-import {ButtonModule, InputModule, ToggleModule} from 'carbon-components-angular';
+import {ButtonModule, InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
 import {IWidgetContentComponent} from '../../../../interfaces';
 import {WidgetWizardService} from '../../../../services';
@@ -63,6 +63,7 @@ import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '..
     ToggleModule,
     ButtonModule,
     InputLabelModule,
+    LayerModule,
   ],
 })
 export class WidgetManagementTableComponent implements IWidgetContentComponent, OnInit, OnDestroy {

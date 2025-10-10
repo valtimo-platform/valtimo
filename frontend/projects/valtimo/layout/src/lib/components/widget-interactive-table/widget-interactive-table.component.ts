@@ -80,6 +80,7 @@ export class WidgetInteractiveTableComponent {
   }
 
   @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
+    console.log({value});
     this._widgetConfiguration = value;
 
     this.fields$.next(
@@ -159,6 +160,7 @@ export class WidgetInteractiveTableComponent {
           ? null
           : {
               ...model,
+              collectionSize: Math.ceil(widgetPage.totalElements / widgetPage.size),
               currentPage: widgetPage.number + 1,
             }
       );

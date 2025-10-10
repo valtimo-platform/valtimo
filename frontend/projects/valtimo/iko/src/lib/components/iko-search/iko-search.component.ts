@@ -16,7 +16,7 @@
 import {CommonModule} from '@angular/common';
 import {Component, OnDestroy} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, PageTitleService} from '@valtimo/components';

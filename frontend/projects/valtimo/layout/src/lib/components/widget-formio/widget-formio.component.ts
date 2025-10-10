@@ -55,10 +55,6 @@ export class WidgetFormioComponent {
   }
 
   @Input() public set widgetUuid(value: string) {
-    this.widgetLayoutService.setWidgetDataLoaded(value);
-  }
-
-  @Input() public set widgetUuid(value: string) {
     this._widgetUuid = value;
     this._hasSignalledExternalDataReady = false;
     this.widgetLayoutService.setWidgetDataLoaded(value);

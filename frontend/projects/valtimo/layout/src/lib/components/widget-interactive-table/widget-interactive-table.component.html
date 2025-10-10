@@ -34,6 +34,7 @@
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
       <cds-overflow-menu
+        *ngIf="!!widgetConfiguration?.actions?.length"
         [customTrigger]="externalLinkTrigger"
         placement="bottom"
         flip="true"
@@ -46,7 +47,10 @@
         }
       </cds-overflow-menu>
 
-      <cds-menu-button [label]="'Start Case' | translate">
+      <cds-menu-button
+        *ngIf="widgetConfiguration?.properties?.canStartCase"
+        [label]="'Start Case' | translate"
+      >
         @for (definition of obs.caseDefinitions; track definition.caseDefinitionKey) {
           <cds-menu-item
             [label]="definition.name"
