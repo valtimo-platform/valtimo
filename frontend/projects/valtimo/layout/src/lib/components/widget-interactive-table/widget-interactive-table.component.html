@@ -18,8 +18,11 @@
   *ngIf="{
     fields: fields$ | async,
     widgetData: widgetData$ | async,
+    caseDefinitions: caseDefinitions$ | async,
   } as obs"
 >
+  <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+
   <valtimo-carbon-list
     [header]="false"
     [fields]="obs.fields"
@@ -30,15 +33,27 @@
     (rowClicked)="rowClick($event)"
   >
     <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
-      <span class="widget-title">{{ widgetConfiguration?.title }}</span>
-
-      <div class="valtimo-widget-interactive-table__actions">
+      <cds-overflow-menu
+        [customTrigger]="externalLinkTrigger"
+        placement="bottom"
+        flip="true"
+        [offset]="{x: 4, y: 44}"
+      >
         @for (action of widgetConfiguration?.actions; track action.name) {
-          <button [cdsButton]="action.buttonType ?? 'ghost'" (click)="onActionClick(action)">
+          <cds-overflow-menu-option (click)="onActionClick(action)">
             {{ action.name }}
-          </button>
+          </cds-overflow-menu-option>
         }
-      </div>
+      </cds-overflow-menu>
+
+      <cds-menu-button [label]="'Start Case' | translate">
+        @for (definition of obs.caseDefinitions; track definition.caseDefinitionKey) {
+          <cds-menu-item
+            [label]="definition.name"
+            (click)="onCaseStart(definition)"
+          ></cds-menu-item>
+        }
+      </cds-menu-button>
     </section>
 
     <valtimo-no-results
@@ -47,4 +62,10 @@
       [smallPadding]="true"
     ></valtimo-no-results>
   </valtimo-carbon-list>
+
+  <ng-template #externalLinkTrigger>
+    <button cdsButton="ghost" iconOnly="true">
+      <svg cdsIcon="link" size="16"></svg>
+    </button>
+  </ng-template>
 </ng-container>

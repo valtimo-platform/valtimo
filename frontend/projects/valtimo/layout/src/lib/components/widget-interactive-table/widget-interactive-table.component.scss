@@ -15,16 +15,14 @@
  */
 
 .valtimo-widget-interactive-table {
-  padding: 24px;
   display: flex;
   flex-direction: column;
 
   &__header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     width: 100%;
-    padding-left: 16px;
   }
 
   &__content {
@@ -42,5 +40,10 @@
     font-weight: 600;
     font-size: 16px;
     line-height: 24px;
+    padding: 12px 0 0 16px;
   }
+}
+
+.cds--menu-item__label {
+  overflow: unset !important;
 }
