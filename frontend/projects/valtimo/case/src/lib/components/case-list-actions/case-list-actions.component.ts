@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {CommonModule} from '@angular/common';
 import {Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 import {Router} from '@angular/router';
-import {TranslateService} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {RenderInBodyComponent, ValtimoCdsModalDirective} from '@valtimo/components';
 import {CaseSettings, DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {GlobalNotificationService} from '@valtimo/shared';
+import {DialogModule, ModalModule, TilesModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
   combineLatest,
@@ -28,16 +31,27 @@ import {
   Subscription,
   switchMap,
 } from 'rxjs';
+
 import {CaseListService} from '../../services';
 import {CaseProcessStartModalComponent} from '../case-process-start-modal/case-process-start-modal.component';
 
 declare const $;
 
 @Component({
-  standalone: false,
+  standalone: true,
   selector: 'valtimo-case-list-actions',
   templateUrl: './case-list-actions.component.html',
   styleUrls: ['./case-list-actions.component.scss'],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    DialogModule,
+    ModalModule,
+    ValtimoCdsModalDirective,
+    TilesModule,
+    CaseProcessStartModalComponent,
+    RenderInBodyComponent,
+  ],
 })
 export class CaseListActionsComponent implements OnInit {
   @ViewChild('processStartModal') processStart: CaseProcessStartModalComponent;
@@ -46,13 +60,7 @@ export class CaseListActionsComponent implements OnInit {
   @Input() set loading(value: boolean) {
     this._loading$.next(value);
   }
-  private readonly _caseDefinitionKey$ = new BehaviorSubject<string>('');
-  @Input() set caseDefinitionKey(value: string | null) {
-    if (!value) return;
-
-    this._caseDefinitionKey$.next(value);
-  }
-  @Input() useExternalKey = false;
+  @Input() navigateAfterSubmit = true;
 
   @Output() public readonly formFlowComplete = new EventEmitter();
   @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
@@ -67,7 +75,8 @@ export class CaseListActionsComponent implements OnInit {
 
   public readonly associatedProcessDocumentDefinitions$: Observable<
     Array<ProcessDefinitionCaseDefinition>
-  > = (this.useExternalKey ? this._caseDefinitionKey$ : this.listService.caseDefinitionKey$).pipe(
+  > = this.listService.caseDefinitionKey$.pipe(
+    filter(caseDefinitionKey => !!caseDefinitionKey),
     switchMap(caseDefinitionKey =>
       combineLatest([
         caseDefinitionKey
@@ -108,6 +117,7 @@ export class CaseListActionsComponent implements OnInit {
     this._subscriptions.add(
       this.listService.caseDefinitionKey$
         .pipe(
+          filter(caseDefinitionKey => !!caseDefinitionKey),
           switchMap(caseDefinitionKey => this.documentService.getCaseSettings(caseDefinitionKey))
         )
         .subscribe(caseSettings => {
