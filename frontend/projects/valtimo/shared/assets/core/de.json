@@ -1957,6 +1957,7 @@
     "tabTypePlaceholder": "Tabtyp eingeben",
     "addTab": "Tab hinzufügen",
     "editTab": "Tab bearbeiten",
+    "rowAction": "Zeilenaktion",
     "tabTypes": {
       "widgets": "Widgets"
     }

@@ -19,11 +19,13 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  HostBinding,
   Input,
   Output,
   signal,
   ViewEncapsulation,
 } from '@angular/core';
+import {Link16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CarbonListItem,
@@ -33,9 +35,20 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
+import {CaseDefinition, DocumentService} from '@valtimo/document';
 import {Page} from '@valtimo/shared';
-import {ButtonModule, PaginationModule, TilesModule} from 'carbon-components-angular';
-import {BehaviorSubject} from 'rxjs';
+import {
+  ButtonModule,
+  ContextMenuModule,
+  DialogModule,
+  IconModule,
+  IconService,
+  MenuButtonModule,
+  PaginationModule,
+  TilesModule,
+} from 'carbon-components-angular';
+import {BehaviorSubject, Observable} from 'rxjs';
+
 import {FieldsWidgetValue, InteractiveTableWidget, WidgetAction} from '../../models';
 
 @Component({
@@ -52,9 +65,14 @@ import {FieldsWidgetValue, InteractiveTableWidget, WidgetAction} from '../../mod
     TilesModule,
     TranslateModule,
     ButtonModule,
+    DialogModule,
+    MenuButtonModule,
+    ContextMenuModule,
+    IconModule,
   ],
 })
 export class WidgetInteractiveTableComponent {
+  @HostBinding('class') public readonly class = 'valtimo-widget-interactive-table';
   private _widgetConfiguration: InteractiveTableWidget;
 
   public get widgetConfiguration(): InteractiveTableWidget {
@@ -152,8 +170,11 @@ export class WidgetInteractiveTableComponent {
   @Output() public readonly paginationEvent = new EventEmitter<Pagination>();
   @Output() public readonly rowClickEvent = new EventEmitter<any>();
   @Output() public readonly actionEvent = new EventEmitter<WidgetAction>();
+  @Output() public readonly caseStartEvent = new EventEmitter<CaseDefinition>();
 
   public readonly fields$ = new BehaviorSubject<ColumnConfig[]>([]);
+  public readonly caseDefinitions$: Observable<CaseDefinition[]> =
+    this.documentService.getCaseDefinitions({active: true});
 
   public readonly $paginationModel = signal<Pagination | null>(null);
   public readonly $paginatorConfig = signal<CarbonPaginatorConfig>({
@@ -161,10 +182,20 @@ export class WidgetInteractiveTableComponent {
     showPageInput: true,
   });
 
-  constructor(private readonly cdr: ChangeDetectorRef) {}
+  constructor(
+    private readonly cdr: ChangeDetectorRef,
+    private readonly documentService: DocumentService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.register(Link16);
+  }
 
   public onActionClick(action: WidgetAction): void {
     this.actionEvent.emit(action);
+  }
+
+  public onCaseStart(definition: CaseDefinition): void {
+    this.caseStartEvent.emit(definition);
   }
 
   public onPaginationClicked(page: number): void {

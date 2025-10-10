@@ -1875,7 +1875,6 @@
   },
   "ikoManagement": {
     "ikoServer": "IKO Server",
-
     "dataUrl": "Data URL",
     "title": "Configuration",
     "list": "List",
@@ -1931,6 +1930,7 @@
     "tabTypePlaceholder": "Enter tab type",
     "addTab": "Add tab",
     "editTab": "Edit tab",
+    "rowAction": "Row action",
     "tabTypes": {
       "widgets": "Widgets"
     }

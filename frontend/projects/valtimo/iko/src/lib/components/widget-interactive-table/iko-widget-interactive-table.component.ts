@@ -32,6 +32,7 @@ import {
 } from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
+import {CaseDefinition} from '@valtimo/document';
 
 @Component({
   selector: 'valtimo-iko-widget-interactive-table',
@@ -101,5 +102,9 @@ export class IkoWidgetInteractiveTableComponent {
 
   public onActionEvent(action: WidgetAction): void {
     this.ikoApiService.handleAction(action);
+  }
+
+  public onCaseStartEvent(caseDefintion: CaseDefinition): void {
+    console.log({caseDefintion});
   }
 }

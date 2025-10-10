@@ -46,6 +46,13 @@ export class CaseListActionsComponent implements OnInit {
   @Input() set loading(value: boolean) {
     this._loading$.next(value);
   }
+  private readonly _caseDefinitionKey$ = new BehaviorSubject<string>('');
+  @Input() set caseDefinitionKey(value: string | null) {
+    if (!value) return;
+
+    this._caseDefinitionKey$.next(value);
+  }
+  @Input() useExternalKey = false;
 
   @Output() public readonly formFlowComplete = new EventEmitter();
   @Output() public readonly startButtonDisableEvent = new EventEmitter<boolean>();
@@ -60,7 +67,7 @@ export class CaseListActionsComponent implements OnInit {
 
   public readonly associatedProcessDocumentDefinitions$: Observable<
     Array<ProcessDefinitionCaseDefinition>
-  > = this.listService.caseDefinitionKey$.pipe(
+  > = (this.useExternalKey ? this._caseDefinitionKey$ : this.listService.caseDefinitionKey$).pipe(
     switchMap(caseDefinitionKey =>
       combineLatest([
         caseDefinitionKey

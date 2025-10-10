@@ -1963,6 +1963,7 @@
     "tabTypePlaceholder": "Voer tabtype in",
     "addTab": "Tab toevoegen",
     "editTab": "Tab bewerken",
+    "rowAction": "Rijactie",
     "tabTypes": {
       "widgets": "Widgets"
     }
