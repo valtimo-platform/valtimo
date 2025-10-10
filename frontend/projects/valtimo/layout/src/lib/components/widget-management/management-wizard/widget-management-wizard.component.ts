@@ -248,11 +248,11 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
     private readonly keyGeneratorService: KeyGeneratorService,
     private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService
-  ) {
+  ) {}
+
+  public ngOnInit(): void {
     this.openLastStepSubscription();
   }
-
-  public ngOnInit(): void {}
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();

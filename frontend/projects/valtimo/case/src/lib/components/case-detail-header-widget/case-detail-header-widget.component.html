@@ -19,12 +19,13 @@
     *ngIf="{
       headerWidget: headerWidget$ | async,
       headerWidgetData: headerWidgetData$ | async,
+      theme: theme$ | async,
     } as obs"
   >
     <div
       *ngIf="obs.headerWidget"
       class="header-widget-container"
-      [attr.data-carbon-theme]="theme$ | async"
+      [attr.data-carbon-theme]="obs.theme"
     >
       @if (!obs.headerWidgetData) {
         <div class="header-widget-container__loader"><cds-loading size="sm"></cds-loading></div>
