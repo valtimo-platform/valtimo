@@ -14,25 +14,33 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {CaseListActionsComponent, CaseListService} from '@valtimo/case';
 import {CarbonListModule} from '@valtimo/components';
+import {CaseDefinition} from '@valtimo/document';
+import {
+  InteractiveTableWidget,
+  WidgetAction,
+  WidgetInteractiveTableComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {
   ButtonModule,
+  ModalModule,
   PaginationModel,
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {BehaviorSubject, combineLatest, of, switchMap, take, tap} from 'rxjs';
-import {
-  InteractiveTableWidget,
-  WidgetAction,
-  WidgetLayoutService,
-  WidgetInteractiveTableComponent,
-} from '@valtimo/layout';
+import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
-import {CaseDefinition} from '@valtimo/document';
 
 @Component({
   selector: 'valtimo-iko-widget-interactive-table',
@@ -48,9 +56,14 @@ import {CaseDefinition} from '@valtimo/document';
     TranslateModule,
     ButtonModule,
     WidgetInteractiveTableComponent,
+    CaseListActionsComponent,
+    ModalModule,
   ],
+  providers: [CaseListService],
 })
 export class IkoWidgetInteractiveTableComponent {
+  @ViewChild(CaseListActionsComponent) listActionsComponent: CaseListActionsComponent;
+
   private _widgetConfiguration: InteractiveTableWidget;
   public readonly widgetConfiguration$ = new BehaviorSubject<InteractiveTableWidget | null>(null);
   @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
@@ -73,6 +86,7 @@ export class IkoWidgetInteractiveTableComponent {
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
+    this.listService.forceRefresh$,
   ]).pipe(
     switchMap(([widgetConfiguration, widgetParams]) =>
       !widgetParams || !widgetConfiguration
@@ -89,7 +103,8 @@ export class IkoWidgetInteractiveTableComponent {
 
   constructor(
     private readonly ikoApiService: IkoApiService,
-    private readonly widgetLayoutService: WidgetLayoutService
+    private readonly widgetLayoutService: WidgetLayoutService,
+    private readonly listService: CaseListService
   ) {}
 
   public onPaginationEvent(event: PaginationModel): void {
@@ -105,6 +120,7 @@ export class IkoWidgetInteractiveTableComponent {
   }
 
   public onCaseStartEvent(caseDefintion: CaseDefinition): void {
-    console.log({caseDefintion});
+    this.listService.setCaseDefinitionKey(caseDefintion.caseDefinitionKey);
+    this.listActionsComponent.startCase();
   }
 }
