@@ -24,8 +24,6 @@ import com.ritense.case.web.rest.dto.CaseTabDto
 import com.ritense.case_.TestResolverFactory
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
 import com.ritense.case_.service.CaseWidgetService
-import com.ritense.case_.widget.displayproperties.BooleanFieldDisplayProperties
-import com.ritense.case_.service.CaseWidgetTabService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
