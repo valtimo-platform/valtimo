@@ -17,7 +17,6 @@
 package com.ritense.case_.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.case_.domain.header.CaseHeaderWidgetId
 import com.ritense.case_.repository.CaseHeaderWidgetRepository
 import com.ritense.case_.rest.dto.CaseHeaderWidgetCreateDto
 import com.ritense.exporter.ExportFile
@@ -25,6 +24,7 @@ import com.ritense.exporter.ExportPrettyPrinter
 import com.ritense.exporter.ExportResult
 import com.ritense.exporter.Exporter
 import com.ritense.exporter.request.DocumentDefinitionExportRequest
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional(readOnly = true)
@@ -42,7 +42,7 @@ class CaseHeaderWidgetExporter(
             "${it.major}-${it.minor}-${it.patch}"
         }
 
-        val headerId = CaseHeaderWidgetId(caseDefinitionKey, caseDefinitionId.versionTag.toString())
+        val headerId = CaseDefinitionId(caseDefinitionKey, caseDefinitionId.versionTag.toString())
         val headerWidget = caseHeaderWidgetRepository.findById(headerId).orElse(null)
             ?: return ExportResult()
 

@@ -18,12 +18,12 @@ package com.ritense.case_.rest
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.domain.header.CaseHeaderWidget
-import com.ritense.case_.domain.header.CaseHeaderWidgetId
 import com.ritense.case_.rest.dto.CaseHeaderWidgetDto
 import com.ritense.case_.service.CaseHeaderWidgetService
 import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -49,7 +49,7 @@ class CaseHeaderWidgetResource(
     ): ResponseEntity<CaseHeaderWidgetDto> {
         val document = documentService.get(documentId)
         val caseDefinitionId = document.definitionId().caseDefinitionId()
-        val id = CaseHeaderWidgetId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
+        val id = CaseDefinitionId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
         val widget = runWithoutAuthorization {
             caseHeaderWidgetService.findById(id)
         }
@@ -57,7 +57,7 @@ class CaseHeaderWidgetResource(
         return if (widget != null) {
             ResponseEntity.ok(widget)
         } else {
-            ResponseEntity.noContent().build()
+            ResponseEntity.notFound().build()
         }
     }
 
@@ -68,7 +68,7 @@ class CaseHeaderWidgetResource(
     ): ResponseEntity<Any> {
         val document = documentService.get(documentId.toString())
         val caseDefinitionId = document.definitionId().caseDefinitionId()
-        val id = CaseHeaderWidgetId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
+        val id = CaseDefinitionId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
         val widgetDto = runWithoutAuthorization { caseHeaderWidgetService.findById(id) } ?: return ResponseEntity.notFound().build()
         val widget = CaseHeaderWidget(
             id = id,

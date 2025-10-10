@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.BaseIntegrationTest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.domain.header.CaseHeaderWidget
-import com.ritense.case_.domain.header.CaseHeaderWidgetId
 import com.ritense.case_.repository.CaseHeaderWidgetRepository
 import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.DEVELOPER
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,14 +48,14 @@ class CaseHeaderWidgetResourceIntTest @Autowired constructor(
 
     @Test
     @WithMockUser(username = "user@ritense.com", authorities = [USER])
-    fun `should return no content when header widget not found`() {
+    fun `should return not found when header widget not found`() {
         val documentId = createDocumentOnly()
 
         mockMvc.perform(
             get("/api/v1/case/{documentId}/header-widget", documentId)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
         ).andDo(print())
-            .andExpect(status().isNoContent)
+            .andExpect(status().isNotFound)
     }
 
     @Test
@@ -159,7 +159,7 @@ class CaseHeaderWidgetResourceIntTest @Autowired constructor(
             ).resultingDocument().get()
 
             val caseDefinitionId = document.definitionId().caseDefinitionId()
-            val id = CaseHeaderWidgetId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
+            val id = CaseDefinitionId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
 
             val props: Map<String, Any?> = mapOf("title" to "My Header", "badge" to "42")
 
@@ -189,7 +189,7 @@ class CaseHeaderWidgetResourceIntTest @Autowired constructor(
             ).resultingDocument().get()
 
             val caseDefinitionId = document.definitionId().caseDefinitionId()
-            val id = CaseHeaderWidgetId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
+            val id = CaseDefinitionId(caseDefinitionId.key, caseDefinitionId.versionTag.toString())
             val widgetType = "test-header"
             val highContrast = true
             val props: Map<String, Any?> = mapOf("title" to "My Header", "badge" to "42")

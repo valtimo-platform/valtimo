@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, CaseManagementParams, ConfigService} from '@valtimo/shared';
+import {
+  BaseApiService,
+  CaseManagementParams,
+  ConfigService,
+  InterceptorSkip,
+} from '@valtimo/shared';
 import {BasicWidget, IWidgetManagementService} from '@valtimo/layout';
 import {BehaviorSubject, catchError, filter, map, Observable, of, switchMap} from 'rxjs';
 import {isEqual} from 'lodash';
@@ -56,7 +61,10 @@ export class CaseHeaderWidgetManagementService
               `management/v1/case-definition/${encodeURIComponent(
                 caseDefinitionKey
               )}/version/${encodeURIComponent(caseDefinitionVersionTag)}/header-widget`
-            )
+            ),
+            {
+              headers: new HttpHeaders().set(InterceptorSkip, '404'),
+            }
           )
           .pipe(
             map(widget => [widget].filter(Boolean)),
