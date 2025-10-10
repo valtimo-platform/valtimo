@@ -18,8 +18,8 @@ package com.ritense.case_.domain.tab
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.base.Objects
-import com.ritense.case_.rest.dto.CaseWidgetAction
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.widget.domain.WidgetAction
 import com.ritense.valtimo.contract.conditions.Condition
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
@@ -60,7 +60,7 @@ abstract class CaseWidgetTabWidget(
 
     @Type(value = JsonType::class)
     @Column(name = "actions", nullable = false)
-    val actions: List<CaseWidgetAction> = emptyList(),
+    val actions: List<WidgetAction> = emptyList(),
 
     @Type(value = JsonType::class)
     @Column(name = "display_conditions", nullable = false)

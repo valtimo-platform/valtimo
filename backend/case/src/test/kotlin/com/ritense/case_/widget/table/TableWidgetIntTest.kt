@@ -25,10 +25,12 @@ import com.ritense.case_.TestResolverFactory
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
 import com.ritense.case_.service.CaseWidgetService
 import com.ritense.case_.widget.displayproperties.BooleanFieldDisplayProperties
+import com.ritense.case_.service.CaseWidgetTabService
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.widget.displayproperties.BooleanFieldDisplayProperties
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -160,7 +162,13 @@ class TableWidgetIntTest @Autowired constructor(
                 key = tabKey,
                 widgets = listOf(
                     TableCaseWidgetDto(
-                        widgetKey, "My widget", 1, true, null, emptyList(), TableWidgetProperties(
+                        key = widgetKey,
+                        title = "My widget",
+                        width = 1,
+                        highContrast = true,
+                        actions = null,
+                        displayConditions = emptyList(),
+                        properties = TableWidgetProperties(
                             collection = "test:myCollection",
                             defaultPageSize = 5,
                             columns = listOf(

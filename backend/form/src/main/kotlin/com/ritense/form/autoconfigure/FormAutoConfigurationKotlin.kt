@@ -45,10 +45,12 @@ import com.ritense.form.web.rest.IntermediateSubmissionResource
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.service.ProcessLinkService
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService
 import com.ritense.valtimo.service.OperatonTaskService
 import com.ritense.valueresolver.ValueResolverService
+import com.ritense.widget.interactivetable.InteractiveTableWidgetDataProvider
+import com.ritense.widget.table.TableWidgetDataProvider
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
@@ -146,6 +148,20 @@ class FormAutoConfigurationKotlin {
         formDefinitionService: FormDefinitionService,
         formService: PrefillFormService
     ) = FormIoCaseWidgetDataProvider(formDefinitionService, formService)
+
+    @ConditionalOnMissingBean(TableWidgetDataProvider::class)
+    @Bean
+    fun tableWidgetDataProvider(
+        objectMapper: ObjectMapper,
+        valueResolverService: ValueResolverService,
+    ) = TableWidgetDataProvider(objectMapper, valueResolverService)
+
+    @ConditionalOnMissingBean(InteractiveTableWidgetDataProvider::class)
+    @Bean
+    fun interactiveTableWidgetDataProvider(
+        objectMapper: ObjectMapper,
+        valueResolverService: ValueResolverService,
+    ) = InteractiveTableWidgetDataProvider(objectMapper, valueResolverService)
 
     @ConditionalOnMissingBean(FormDefinitionExistsValidator::class)
     @Bean

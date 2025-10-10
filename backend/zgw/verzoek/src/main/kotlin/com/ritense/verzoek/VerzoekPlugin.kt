@@ -33,6 +33,7 @@ import com.ritense.plugin.service.PluginService
 import com.ritense.verzoek.domain.CopyStrategy
 import com.ritense.verzoek.domain.VerzoekProperties
 import com.ritense.zgw.Rsin
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import jakarta.validation.ValidationException
 import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
@@ -78,8 +79,9 @@ class VerzoekPlugin(
                             caseDefinitionKey = property.caseDefinitionKey,
                             caseDefinitionVersionTag = property.caseDefinitionVersionTag,
                         )
-                        require(caseDefinitions.isNotEmpty()) {
-                            "No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'."
+                        if (caseDefinitions.isEmpty()) {
+                            // Case Definitions might not exist yet because the auto deployment of Case Definitions happens later.
+                            logger.warn { "No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'." }
                         }
                         caseDefinitions.map { caseDefinition ->
                             documentDefinitionService.findByCaseDefinitionId(
@@ -125,5 +127,9 @@ class VerzoekPlugin(
                 )
             )
         }
+    }
+
+    companion object {
+        private val logger = KotlinLogging.logger {}
     }
 }

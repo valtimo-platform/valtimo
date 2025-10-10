@@ -98,7 +98,9 @@ export * from './lib/plugins/catalogi-api/catalogi-api-plugin-module';
 export * from './lib/plugins/catalogi-api/catalogi-api-plugin.specification';
 export * from './lib/plugins/catalogi-api/components/catalogi-api-configuration/catalogi-api-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-besluittype/get-besluittype-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-resultaattypen/get-resultaattypen-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-resultaattype/get-resultaattype-configuration.component';
+export * from './lib/plugins/catalogi-api/components/get-statustypen/get-statustypen-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-statustype/get-statustype-configuration.component';
 export * from './lib/plugins/catalogi-api/components/get-eigenschap/get-eigenschap-configuration.component';
 /* notificaties api plugin */

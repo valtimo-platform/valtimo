@@ -19,6 +19,7 @@
  */
 
 export * from './lib/services';
+export * from './lib/services/widget-layout.service';
 export * from './lib/components/layout/layout.component';
 export * from './lib/layout.module';
 export * from './lib/translation-management.module';

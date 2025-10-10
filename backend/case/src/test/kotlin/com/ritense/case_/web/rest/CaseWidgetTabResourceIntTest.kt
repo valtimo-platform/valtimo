@@ -25,12 +25,12 @@ import com.ritense.case_.rest.dto.CaseWidgetTabDto
 import com.ritense.case_.service.CaseWidgetService
 import com.ritense.case_.web.rest.dto.TestCaseWidgetTabWidgetDto
 import com.ritense.case_.widget.TestCaseWidgetProperties
-import com.ritense.case_.widget.displayproperties.CurrencyFieldDisplayProperties
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.DEVELOPER
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.USER
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
+import com.ritense.widget.displayproperties.CurrencyFieldDisplayProperties
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -196,11 +196,11 @@ class CaseWidgetTabResourceIntTest @Autowired constructor(
                 tabKey,
                 widgets = listOf(
                     TestCaseWidgetTabWidgetDto(
-                        widgetKey,
-                        "My widget",
-                        1,
-                        true,
-                        TestCaseWidgetProperties(
+                        key = widgetKey,
+                        title = "My widget",
+                        width = 1,
+                        highContrast = true,
+                        properties = TestCaseWidgetProperties(
                             displayProperties = CurrencyFieldDisplayProperties(
                                 currencyCode = "EUR"
                             )
