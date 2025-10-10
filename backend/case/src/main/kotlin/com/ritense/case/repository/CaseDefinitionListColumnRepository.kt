@@ -19,12 +19,13 @@ package com.ritense.case.repository
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.domain.CaseListColumnId
 import jakarta.persistence.QueryHint
+import org.hibernate.jpa.HibernateHints
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.QueryHints
 
 interface CaseDefinitionListColumnRepository : JpaRepository<CaseListColumn, CaseListColumnId> {
     fun existsByIdCaseDefinitionNameAndIdKey(caseDefinitionName: String, key: String): Boolean
-    @QueryHints(value = [QueryHint(name = org.hibernate.annotations.QueryHints.READ_ONLY, value = "true")])
+    @QueryHints(value = [QueryHint(name = HibernateHints.HINT_READ_ONLY, value = "true")])
     fun findByIdCaseDefinitionNameOrderByOrderAsc(caseDefinitionName: String): List<CaseListColumn>
     fun deleteByIdCaseDefinitionNameAndIdKey(caseDefinitionName: String, key: String)
     fun countByIdCaseDefinitionName(caseDefinitionName: String): Int
