@@ -232,6 +232,9 @@ export * from './lib/components/json-editor/json-editor.component';
 // auto key
 export * from './lib/components/auto-key-input/auto-key-input.component';
 
+// List column view
+export * from './lib/components/list-column-view/list-column-view.component';
+
 // Quick search
 export * from './lib/components/quick-search/quick-search.component';
 

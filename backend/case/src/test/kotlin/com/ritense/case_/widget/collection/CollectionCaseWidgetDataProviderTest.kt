@@ -17,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.skyscreamer.jsonassert.JSONAssert
@@ -256,14 +258,14 @@ class CollectionCaseWidgetDataProviderTest(
     }
 
     private fun testWidget() = CollectionCaseWidget(
-        CaseWidgetTabWidgetId("test"),
-        "Test",
-        0,
-        1,
-        true,
-        emptyList(),
-        emptyList(),
-        CollectionWidgetProperties(
+        id = CaseWidgetTabWidgetId("test"),
+        title = "Test",
+        order = 0,
+        width = 1,
+        highContrast = true,
+        actions = emptyList(),
+        displayConditions = emptyList(),
+        properties = CollectionWidgetProperties(
             collection = "test:someCollection",
             defaultPageSize = 2,
             title = CollectionWidgetProperties.TitleField("$.firstName"),
@@ -282,12 +284,7 @@ class CollectionCaseWidgetDataProviderTest(
     )
 
     private fun mockCollection(documentId: UUID, widget: CollectionCaseWidget, collectionValue: Any?) {
-        whenever(
-            valueResolverService.resolveValues(
-                documentId.toString(),
-                listOf(widget.properties.collection)
-            )
-        ).thenReturn(
+        whenever(valueResolverService.resolveValues(any<Map<String, Any>>(), eq(listOf(widget.properties.collection)))).thenReturn(
             mapOf(widget.properties.collection to collectionValue)
         )
     }

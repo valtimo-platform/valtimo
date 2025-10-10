@@ -1,0 +1,32 @@
+{
+    "ikoDataAggregateKey": "klant",
+    "ikoDataRequests": [
+        {
+            "key": "bsn",
+            "title": "Zoek met BSN",
+            "properties": {
+                "endpointQueryParameters": {
+                    "type":  "RaadpleegMetBurgerservicenummer"
+                }
+            }
+        },
+        {
+            "key": "achternaam-geboortedatum",
+            "title": "Zoek met achternaam en geboortedatum",
+            "properties": {
+                "endpointQueryParameters": {
+                    "type":  "ZoekMetGeslachtsnaamEnGeboortedatum"
+                }
+            }
+        },
+        {
+            "key": "adres",
+            "title": "Zoek met adres",
+            "properties": {
+                "endpointQueryParameters": {
+                    "type":  "ZoekMetAdres"
+                }
+            }
+        }
+    ]
+}

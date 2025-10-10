@@ -44,5 +44,14 @@ class ValtimoImportTypes {
         const val ZGW_DOCUMENT_TREFWOORD = "zgwdocumenttrefwoord"
         const val ZGW_DOCUMENT_UPLOAD_FIELD = "zgwdocumentuploadfield"
         const val ZGW_ZAAK_TYPE_LINK = "zgwzaaktypelink"
+
+        // IKO
+        const val IKO_REPOSITORY_CONFIG = "ikorepositoryconfig"
+        const val IKO_DATA_AGGREGATE = "ikodataaggregate"
+        const val IKO_DATA_REQUEST = "ikodatarequest"
+        const val IKO_SEARCH_FIELD = "ikosearchfield"
+        const val IKO_LIST_COLUMN = "ikolistcolumn"
+        const val IKO_TAB = "ikotab"
+        const val IKO_WIDGET = "ikowidget"
     }
 }

@@ -32,4 +32,5 @@ export * from './case-list-case-tag.service';
 export * from './case-export.service';
 export * from './case-menu.service';
 export * from './case-header-widget-api.service';
+export * from './case-list-hidden-columns.service';
 export * from './case-list-quick-search.service';

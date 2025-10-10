@@ -16,7 +16,7 @@
 
 package com.ritense.case_.domain.tab
 
-import com.ritense.case_.rest.dto.CaseWidgetAction
+import com.ritense.widget.domain.WidgetAction
 import com.ritense.case_.widget.TestCaseWidgetProperties
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.conditions.Condition
@@ -35,7 +35,7 @@ class TestCaseWidgetTabWidget(
     order: Int,
     width: Int,
     highContrast: Boolean,
-    actions: List<CaseWidgetAction>,
+    actions: List<WidgetAction>,
     displayConditions: List<Condition<*>>,
 
     @Type(value = JsonType::class)

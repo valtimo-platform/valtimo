@@ -23,6 +23,7 @@ jobs:
 
   publish:
     if: ${{ startsWith(github.ref_name, 'rc/') }}
+    needs: build_and_test
     uses: ./.github/workflows/frontend_publish_to_s3.yml
     with:
       publish_type: 'release-candidate'
