@@ -20,6 +20,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
     <changeSet id="1" author="Ritense">
+        <validCheckSum>9:1674218d038e85ab14a6617879d4902b</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="postgresql"/>
         </preConditions>
@@ -30,12 +31,17 @@
                                properties::jsonb,
                                '{verzoekProperties}',
                                jsonb_agg(
-                                       jsonb_set(
-                                               elem - 'caseDefinitionName',
-                                               '{caseDefinitionKey}',
-                                               elem->'caseDefinitionName',
-                                               true
-                                       )
+                                       CASE
+                                           WHEN elem ? 'caseDefinitionName' THEN
+                                               jsonb_set(
+                                                       elem - 'caseDefinitionName',
+                                                       '{caseDefinitionKey}',
+                                                       elem->'caseDefinitionName',
+                                                       true
+                                               )
+                                           ELSE
+                                               elem
+                                           END
                                )
                        )::json
                 FROM jsonb_array_elements((plugin_configuration.properties::jsonb)->'verzoekProperties') elem
@@ -45,6 +51,7 @@
     </changeSet>
 
     <changeSet id="2" author="Ritense">
+        <validCheckSum>9:e086b386761efcf5b997b87606fb9ca8</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <dbms type="mysql"/>
             <sqlCheck expectedResult="1">
@@ -59,7 +66,9 @@
                 c.properties,
                 '$.verzoekProperties',
                 JSON_ARRAYAGG(
-                JSON_REMOVE(
+                CASE
+                WHEN JSON_CONTAINS_PATH(vp.verzoek_property, 'one', '$.caseDefinitionName')
+                THEN JSON_REMOVE(
                 JSON_SET(
                 vp.verzoek_property,
                 '$.caseDefinitionKey',
@@ -67,6 +76,8 @@
                 ),
                 '$.caseDefinitionName'
                 )
+                ELSE vp.verzoek_property
+                END
                 )
                 ) AS new_props
                 FROM plugin_configuration c,
