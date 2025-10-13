@@ -21,14 +21,12 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.case_.listener.ZaakTypeLinkCaseEventListener
 import com.ritense.catalogiapi.service.CatalogiService
 import com.ritense.catalogiapi.service.ZaaktypeUrlProvider
-import com.ritense.document.service.DocumentService
 import com.ritense.documentenapi.service.DocumentenApiService
 import com.ritense.documentenapi.service.DocumentenApiVersionService
 import com.ritense.outbox.OutboxService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.importer.ZaakTypeLinkImporter
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
-import com.ritense.processdocument.service.ProcessDocumentAssociationService
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.resource.service.TemporaryResourceStorageService
 import com.ritense.temporaryresource.repository.ResourceStorageMetadataRepository
@@ -39,6 +37,7 @@ import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPluginFactory
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.exporter.ZaakTypeLinkExporter
+import com.ritense.zakenapi.ikorepository.ZakenApiIkoRepository
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zakenapi.provider.BsnProvider
 import com.ritense.zakenapi.provider.DefaultZaakUrlProvider
@@ -63,7 +62,6 @@ import com.ritense.zakenapi.service.ZakenApiEventListener
 import com.ritense.zakenapi.service.ZakenDocumentDeleteHandler
 import com.ritense.zakenapi.web.rest.DefaultZaakTypeLinkResource
 import com.ritense.zakenapi.web.rest.ZaakDocumentResource
-import kotlin.contracts.ExperimentalContracts
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -75,6 +73,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.web.client.RestClient
+import kotlin.contracts.ExperimentalContracts
 
 @AutoConfiguration
 @EnableJpaRepositories(basePackages = ["com.ritense.zakenapi.repository"])
@@ -103,7 +102,7 @@ class ZakenApiAutoConfiguration {
     fun zakenApiPluginFactory(
         pluginService: PluginService,
         zakenApiClient: ZakenApiClient,
-        urlProvider: ZaakUrlProvider,
+        zaakUrlProvider: ZaakUrlProvider,
         storageService: TemporaryResourceStorageService,
         zaakInstanceLinkRepository: ZaakInstanceLinkRepository,
         zaakHersteltermijnRepository: ZaakHersteltermijnRepository,
@@ -113,7 +112,7 @@ class ZakenApiAutoConfiguration {
     ) = ZakenApiPluginFactory(
         pluginService,
         zakenApiClient,
-        urlProvider,
+        zaakUrlProvider,
         storageService,
         zaakInstanceLinkRepository,
         zaakHersteltermijnRepository,
@@ -329,6 +328,18 @@ class ZakenApiAutoConfiguration {
     ): ZaakTypeLinkCaseEventListener {
         return ZaakTypeLinkCaseEventListener(
             zaakTypeLinkService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(ZakenApiIkoRepository::class)
+    fun zakenApiIkoRepository(
+        pluginService: PluginService,
+        objectMapper: ObjectMapper,
+    ): ZakenApiIkoRepository {
+        return ZakenApiIkoRepository(
+            pluginService,
+            objectMapper,
         )
     }
 }

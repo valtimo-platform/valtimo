@@ -1,0 +1,99 @@
+name: Backend - build and push docker image
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - "next-minor"
+    types:
+      - synchronize
+
+  workflow_dispatch:
+
+  workflow_call:
+    outputs:
+      imageTag:
+        description: "The Docker image tag"
+        value: ${{ jobs.build_image.outputs.imageTag }}
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - run: ./gradlew app:gzac:assemble
+
+      - name: Prepare deployment folder
+        run: mkdir deployment | mv app/gzac/build/ app/gzac/Dockerfile deployment/
+
+      - name: Archive deployment folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: gzac-app-backend-deployment
+          path: backend/deployment/
+          retention-days: 1
+
+  build_image:
+    runs-on: ubuntu-latest
+    needs: assemble
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      imageTag: ${{ steps.generate_tags.outputs.tags }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract branch name
+        id: vars
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Generate image tags
+        id: generate_tags
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/gzac-backend
+          tags: type=raw,value=${{ env.BRANCH_NAME }}.${{github.run_number}},enable=true
+          flavor: |
+            latest=false
+
+      - name: Download deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: gzac-app-backend-deployment
+          path: backend/deployment/
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          file: ./backend/deployment/Dockerfile
+          context: backend/deployment/
+          push: true
+          tags: ${{ steps.generate_tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

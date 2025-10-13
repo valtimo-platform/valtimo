@@ -16,30 +16,31 @@
 
 <ng-container
   *ngIf="{
+    context: context$ | async,
     disabled: disabled$ | async,
+    loading: loading$ | async,
     prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null,
-    pluginId: pluginId$ | async,
     selectedInputOption: selectedInputOption$ | async,
     zaakTypeSelectItems: zaakTypeItems$ | async,
-    loading: loading$ | async,
-    context: context$ | async,
   } as obs"
 >
-  <ng-container *ngIf="obs.loading === false; else loading">
+  @if (obs.loading) {
+    <cds-loading></cds-loading>
+  } @else {
     <v-paragraph [margin]="true" [italic]="true">
-      {{ 'createZaakInformation' | pluginTranslate: obs.pluginId | async }}
+      {{ 'createZaakInformation' | pluginTranslate: pluginId | async }}
     </v-paragraph>
 
-    <v-form (valueChange)="formValueChange($event)">
+    <v-form (valueChange)="onFormValueChanged($event)">
       <v-input
         name="rsin"
-        [title]="'rsin' | pluginTranslate: obs.pluginId | async"
-        [margin]="true"
+        [title]="'rsin' | pluginTranslate: pluginId | async"
+        [tooltip]="'rsinTooltip' | pluginTranslate: pluginId | async"
         [defaultValue]="obs.prefill?.rsin"
         [disabled]="obs.disabled"
         [required]="true"
         [trim]="true"
-        [tooltip]="'rsinTooltip' | pluginTranslate: obs.pluginId | async"
+        [margin]="true"
         [widthPx]="350"
       >
       </v-input>
@@ -47,10 +48,10 @@
       <v-radio
         *ngIf="obs?.context?.[0] === 'case'"
         name="inputTypeZaakTypeToggle"
-        [disabled]="obs.disabled"
-        [title]="'inputTypeZaakTypeToggle' | pluginTranslate: obs.pluginId | async"
-        [radioValues]="inputTypeOptions$ | async"
+        [title]="'inputTypeZaakTypeToggle' | pluginTranslate: pluginId | async"
         [defaultValue]="selectedInputOption$ | async"
+        [radioValues]="inputTypeOptions$ | async"
+        [disabled]="obs.disabled"
         [margin]="true"
       >
       </v-radio>
@@ -58,139 +59,127 @@
       <v-input
         *ngIf="obs.selectedInputOption === 'text'"
         name="zaaktypeUrl"
-        [title]="'zaakTypeUrl' | pluginTranslate: obs.pluginId | async"
-        [margin]="true"
+        [title]="'zaakTypeUrl' | pluginTranslate: pluginId | async"
+        [tooltip]="'zaakTypeTooltip' | pluginTranslate: pluginId | async"
         [defaultValue]="obs.prefill?.zaaktypeUrl"
         [disabled]="obs.disabled || obs.selectedInputOption === 'selection'"
         [required]="true"
         [trim]="true"
-        [tooltip]="'zaakTypeTooltip' | pluginTranslate: obs.pluginId | async"
-        [fullWidth]="true"
+        [margin]="true"
+        [widthPx]="700"
       >
       </v-input>
 
-      <ng-container *ngIf="obs.selectedInputOption === 'selection'">
-        <v-select
-          [items]="obs.zaakTypeSelectItems"
-          [margin]="true"
-          [widthInPx]="350"
-          name="zaaktypeUrl"
-          [title]="'zaakType' | pluginTranslate: obs.pluginId | async"
-          [disabled]="
-            obs.disabled ||
-            obs.selectedInputOption === 'text' ||
-            oneSelectItem(obs.zaakTypeSelectItems)
-          "
-          [defaultSelectionId]="
-            (selectItemsIncludeId(obs.zaakTypeSelectItems, obs.prefill?.zaaktypeUrl) &&
-              obs.prefill?.zaaktypeUrl) ||
-            (oneSelectItem(obs.zaakTypeSelectItems) && obs.zaakTypeSelectItems[0].id)
-          "
-          [required]="true"
-          [loading]="!obs.zaakTypeSelectItems"
-          [tooltip]="'zaakTypeSelectTooltip' | pluginTranslate: obs.pluginId | async"
-        ></v-select>
-      </ng-container>
+      <v-select
+        *ngIf="obs.selectedInputOption === 'selection'"
+        name="zaaktypeUrl"
+        [title]="'zaakType' | pluginTranslate: pluginId | async"
+        [tooltip]="'zaakTypeSelectTooltip' | pluginTranslate: pluginId | async"
+        [required]="true"
+        [items]="obs.zaakTypeSelectItems"
+        [loading]="!obs.zaakTypeSelectItems"
+        [disabled]="
+          obs.disabled ||
+          obs.selectedInputOption === 'text' ||
+          oneSelectItem(obs.zaakTypeSelectItems)
+        "
+        [margin]="true"
+        [defaultSelectionId]="
+          (selectItemsIncludeId(obs.zaakTypeSelectItems, obs.prefill?.zaaktypeUrl) &&
+            obs.prefill?.zaaktypeUrl) ||
+          (oneSelectItem(obs.zaakTypeSelectItems) && obs.zaakTypeSelectItems[0].id)
+        "
+        [widthInPx]="350"
+      ></v-select>
+
+      <div class="property-row">
+        <div class="property-input-col">
+          <button
+            cdsButton="primary"
+            class="add-button"
+            [size]="'md'"
+            [cdsOverflowMenu]="addCasePropertyList"
+            [customPane]="true"
+            placement="bottom,top"
+          >
+            {{ 'addZaakProperty' | pluginTranslate: pluginId | async }}
+
+            <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
+          </button>
+        </div>
+      </div>
 
       @for (property of propertyList; track property) {
-        @if (property === 'description') {
-          <div class="property-input">
-            <v-input
-              name="description"
-              [title]="'beschrijving' | pluginTranslate: obs.pluginId | async"
-              [margin]="true"
-              [defaultValue]="obs.prefill?.description"
-              [required]="true"
-              (valueChange)="onPropertyChanged('description', $event)"
-            />
-
-            <button class="btn btn-space delete-button" (click)="removeCaseProperty('description')">
-              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-            </button>
+        <div class="property-row">
+          <div class="property-input-col">
+            @switch (property) {
+              @case (CASE_GEOMETRY_TYPE) {
+                <v-input
+                  [name]="CASE_GEOMETRY_TYPE"
+                  [title]="
+                    translationKeyFor(CASE_GEOMETRY_TYPE) | pluginTranslate: pluginId | async
+                  "
+                  [defaultValue]="prefillValueFor(CASE_GEOMETRY_TYPE, obs.prefill)"
+                  (valueChange)="onPropertyChanged(CASE_GEOMETRY_TYPE, $event)"
+                  [required]="true"
+                  [margin]="true"
+                  [presetOptions]="geometryTypes"
+                />
+              }
+              @case (CASE_GEOMETRY_COORDINATES) {
+                <v-input
+                  [name]="CASE_GEOMETRY_COORDINATES"
+                  [title]="
+                    translationKeyFor(CASE_GEOMETRY_COORDINATES) | pluginTranslate: pluginId | async
+                  "
+                  [tooltip]="translationKeyFor(`${CASE_GEOMETRY_COORDINATES}Tooltip`) | pluginTranslate: pluginId | async"
+                  [defaultValue]="prefillValueFor(CASE_GEOMETRY_COORDINATES, obs.prefill)"
+                  (valueChange)="onPropertyChanged(CASE_GEOMETRY_COORDINATES, $event)"
+                  [required]="true"
+                  [margin]="true"
+                />
+              }
+              @default {
+                <v-input
+                  [name]="property"
+                  [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
+                  [tooltip]="
+                    property.includes('Date')
+                      ? ('dateformatTooltip' | pluginTranslate: pluginId | async)
+                      : null
+                  "
+                  [defaultValue]="prefillValueFor(property, obs.prefill)"
+                  (valueChange)="onPropertyChanged(property, $event)"
+                  [required]="true"
+                  [margin]="true"
+                  [trim]="true"
+                  [presetOptions]="
+                    property === PAYMENT_INDICATION_TYPE ? paymentIndicationTypes : []
+                  "
+                />
+              }
+            }
           </div>
-        } @else if (property === 'plannedEndDate') {
-          <div class="property-input">
-            <v-input
-              name="plannedEndDate"
-              [title]="'plannedEndDate' | pluginTranslate: obs.pluginId | async"
-              [margin]="true"
-              [defaultValue]="obs.prefill?.plannedEndDate"
-              [required]="true"
-              [trim]="true"
-              [tooltip]="'dateformatTooltip' | pluginTranslate: obs.pluginId | async"
-              (valueChange)="onPropertyChanged('plannedEndDate', $event)"
-            ></v-input>
 
-            <button
-              class="btn btn-space delete-button"
-              (click)="removeCaseProperty('plannedEndDate')"
-            >
-              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-            </button>
+          <div class="property-delete-col">
+            @if (property !== CASE_GEOMETRY_COORDINATES) {
+              <button class="btn btn-space delete-button" (click)="removeProperty(property)">
+                <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
+              </button>
+            }
           </div>
-        } @else if (property === 'finalDeliveryDate') {
-          <div class="property-input">
-            <v-input
-              name="finalDeliveryDate"
-              [title]="'finalDeliveryDate' | pluginTranslate: obs.pluginId | async"
-              [margin]="true"
-              [defaultValue]="obs.prefill?.finalDeliveryDate"
-              [required]="true"
-              [trim]="true"
-              [tooltip]="'dateformatTooltip' | pluginTranslate: obs.pluginId | async"
-              (valueChange)="onPropertyChanged('finalDeliveryDate', $event)"
-            ></v-input>
-
-            <button
-              class="btn btn-space delete-button"
-              (click)="removeCaseProperty('finalDeliveryDate')"
-            >
-              <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
-            </button>
-          </div>
-        }
+        </div>
       }
-
-      <button
-        cdsButton="primary"
-        [size]="'md'"
-        [cdsOverflowMenu]="addCasePropertyList"
-        [customPane]="true"
-        placement="bottom"
-      >
-        {{ 'addZaakProperty' | pluginTranslate: obs.pluginId | async }}
-
-        <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
-      </button>
     </v-form>
-  </ng-container>
+  }
 </ng-container>
 
-<ng-template #loading>
-  <div class="loading-container">
-    <cds-loading></cds-loading>
-  </div>
-</ng-template>
-
 <ng-template #addCasePropertyList>
-  <cds-overflow-menu-option
-    (click)="addCaseProperty('description')"
-    *ngIf="!hasPropertyBeenAdded('description')"
-  >
-    {{ 'beschrijving' | pluginTranslate: (pluginId$ | async) | async }}
-  </cds-overflow-menu-option>
-
-  <cds-overflow-menu-option
-    (click)="addCaseProperty('plannedEndDate')"
-    *ngIf="!hasPropertyBeenAdded('plannedEndDate')"
-  >
-    {{ 'plannedEndDate' | pluginTranslate: (pluginId$ | async) | async }}
-  </cds-overflow-menu-option>
-
-  <cds-overflow-menu-option
-    (click)="addCaseProperty('finalDeliveryDate')"
-    *ngIf="!hasPropertyBeenAdded('finalDeliveryDate')"
-  >
-    {{ 'finalDeliveryDate' | pluginTranslate: (pluginId$ | async) | async }}
-  </cds-overflow-menu-option>
+  @for (propertyOption of propertyOptions; track propertyOption) {
+    @if (propertyOption !== CASE_GEOMETRY_COORDINATES && !hasPropertyBeenAdded(propertyOption)) {
+      <cds-overflow-menu-option (click)="addProperty(propertyOption)">
+        {{ translationKeyForPropertyList(propertyOption) | pluginTranslate: pluginId | async }}
+      </cds-overflow-menu-option>
+    }
+  }
 </ng-template>

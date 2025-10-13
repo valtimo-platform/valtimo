@@ -1,0 +1,133 @@
+name: Frontend - build and push Docker image
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches:
+      - "next-minor"
+    types:
+      - synchronize
+
+  workflow_dispatch:
+
+  workflow_call:
+    outputs:
+      imageTag:
+        description: "The Docker image tag"
+        value: ${{ jobs.buildImage.outputs.imageTag }}
+
+defaults:
+  run:
+    working-directory: frontend
+
+env:
+  NODE_VERSION: "20.x"
+
+jobs:
+  build_and_test:
+    uses: ./.github/workflows/frontend_build_test.yml
+    secrets: inherit
+
+  build_image:
+    runs-on: ubuntu-latest
+    needs: build_and_test
+
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      imageTag: ${{ steps.generate_tags.outputs.tags }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: frontend/dist/
+
+      - name: Move local devDependencies to dependencies and install
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROJECTS_DIR="projects/valtimo"
+          SCOPE="@valtimo"
+          LOCAL_ROOT="dist/valtimo"
+          PKG_JSON="package.json"
+
+          if [ ! -f "$PKG_JSON" ]; then
+            echo "❌ $PKG_JSON niet gevonden in repo-root"; exit 1
+          fi
+          if [ ! -d "$PROJECTS_DIR" ]; then
+            echo "ℹ️  '$PROJECTS_DIR' niet gevonden; niets te doen."; exit 0
+          fi
+
+          echo "🔎 Subfolders in '$PROJECTS_DIR' verzamelen…"
+          mapfile -t NAMES < <(find "$PROJECTS_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' | grep -v '^\.' || true)
+
+          if [ "${#NAMES[@]}" -eq 0 ]; then
+            echo "ℹ️  Geen subfolders gevonden; niets te doen."; exit 0
+          fi
+
+          for name in "${NAMES[@]}"; do
+            npm pkg delete devDependencies."$SCOPE/$name" || true
+            npm pkg set dependencies.@valtimo/$name="file:$LOCAL_ROOT/$name"
+          done
+
+          echo "📦 npm install…"
+          npm install
+
+          echo "🎉 Klaar. Geüpdatet packages:"
+          for name in "${NAMES[@]}"; do
+            echo " - ${SCOPE}/${name} -> file:${LOCAL_ROOT}/${name}"
+          done
+
+          echo "Content of package.json:"
+          cat package.json
+
+          sed -i "s/\"dist\/valtimo/\"dist\/valtimo/g" angular.json
+
+      - name: Build app (optioneel voor andere outputs)
+        run: npm run build
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract branch name
+        id: vars
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Generate image tags
+        id: generate_tags
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/gzac-frontend
+          tags: type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
+          flavor: |
+            latest=false
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          # gebruik het ge-downloadde artefact als build context
+          context: frontend/
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.generate_tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

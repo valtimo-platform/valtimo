@@ -69,6 +69,9 @@ htmlDependencyReport {
     projects = project.allprojects
 }
 
+apply plugin: 'application'
+mainClassName = 'com.ritense.gzac.Application'
+
 //Sonarqube
 tasks.named("sonar") {
     dependsOn tasks.named("build")
@@ -244,7 +247,12 @@ subprojects { subproject ->
             }
         }
     }
+    if(project.name != "app" && project.name != "gradle" && project.name != "dependencies") {
+        apply from: "$rootProject.projectDir/gradle/publishing-module.gradle"
+    }
 }
+
+apply from: "gradle/publishing.gradle"
 
 tasks.withType(PublishToMavenRepository) {
     enabled = false

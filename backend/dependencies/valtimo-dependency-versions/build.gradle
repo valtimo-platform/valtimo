@@ -40,6 +40,7 @@ dependencies {
         api(project(":form-view-model"))
         api(project(":command-handling"))
         api(project(":importer"))
+        api(project(":iko"))
         api(project(":inbox"))
         api(project(":keycloak-iam"))
         api(project(":document-generation:local-document-generation"))
@@ -64,12 +65,14 @@ dependencies {
         api(project(":test-utils-common"))
         api(project(":value-resolver"))
         api(project(":dependencies:valtimo-dependencies"))
+        api(project(":widget"))
         api(project(":web"))
         api(project(":mail:wordpress-mail"))
 
         //GZAC
         api(project(":plugin-authentication:notificaties-api-authentication"))
         api(project(":plugin-authentication:objecten-api-authentication"))
+        api(project(":plugin-authentication:openklant-authentication"))
         api(project(":plugin-authentication:openzaak-plugin-authentication"))
 
         api(project(":zgw"))
@@ -77,6 +80,7 @@ dependencies {
         api(project(":zgw:besluiten-api"))
         api(project(":zgw:catalogi-api"))
         api(project(":zgw:documenten-api"))
+        api(project(":zgw:klantinteracties-api"))
         api(project(":zgw:notificaties-api"))
         api(project(":zgw:object-management"))
         api(project(":zgw:objecten-api"))

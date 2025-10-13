@@ -15,6 +15,7 @@
  */
 
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
   ElementRef,
@@ -26,7 +27,7 @@ import {CommonModule} from '@angular/common';
 import {v4 as uuid} from 'uuid';
 import {BehaviorSubject, delay, merge, Observable, take} from 'rxjs';
 import Muuri from 'muuri';
-import {WidgetLayoutService} from '../../services';
+import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {Widget, WidgetComponentMap, WidgetWithUuid} from '../../models';
 import {WidgetBlockComponent} from '../widget-block';
 import {filter} from 'rxjs/operators';
@@ -42,8 +43,9 @@ import {TranslatePipe} from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, WidgetBlockComponent, LoadingModule, CarbonListModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [WidgetLayoutService],
 })
-export class WidgetContainerComponent implements OnDestroy {
+export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   @ViewChild('widgetsContainer') private _widgetsContainerRef: ElementRef<HTMLDivElement>;
 
   public readonly widgetsWithUuids$ = new BehaviorSubject<WidgetWithUuid[]>(null);
@@ -81,6 +83,10 @@ export class WidgetContainerComponent implements OnDestroy {
 
   constructor(private readonly widgetLayoutService: WidgetLayoutService) {}
 
+  public ngAfterViewInit(): void {
+    this.initLayout();
+  }
+
   private resetLayout(): void {
     if (!this._observer) return;
 
@@ -97,7 +103,7 @@ export class WidgetContainerComponent implements OnDestroy {
     this._observer = new ResizeObserver(event => {
       this.observerMutation(event);
     });
-    this._observer.observe(this._widgetsContainerRef.nativeElement);
+    this._observer.observe(this._widgetsContainerRef?.nativeElement);
 
     this.initMuuri();
   }

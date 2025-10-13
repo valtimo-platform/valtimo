@@ -13,7 +13,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <ng-container *ngIf="loading">
   <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
 </ng-container>
@@ -599,7 +598,12 @@
     *ngTemplateOutlet="noSearchFieldsTemplate; context: {noSearchFields: noSearchFields}"
   ></ng-container>
 
-  <div class="buttons-container" *ngIf="!noSearchFields && {expanded: expanded$ | async} as obs">
+  <div
+    class="buttons-container"
+    *ngIf="
+      !noSearchFields && {expanded: expanded$ | async, isSearchEmpty: isSearchEmpty$ | async} as obs
+    "
+  >
     <div class="right-buttons">
       <button
         *ngIf="obs.expanded"
@@ -613,6 +617,20 @@
         <svg cdsIcon="trash-can" size="16" class="cds--btn__icon"></svg>
 
         {{ 'searchFields.clearButtonText' | translate }}
+      </button>
+
+      <button
+        *ngIf="obs.expanded && canSaveSearch"
+        cdsButton="secondary"
+        data-testid="search-fields-save-button"
+        [disabled]="disableSaveSearch && obs.isSearchEmpty"
+        (click)="saveSearch()"
+        type="button"
+        id="save"
+      >
+        <svg cdsIcon="save" size="16" class="cds--btn__icon"></svg>
+
+        {{ 'searchFields.saveButtonText' | translate }}
       </button>
 
       <button

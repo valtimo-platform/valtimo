@@ -1,0 +1,68 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  valtimoCdsModal
+  [minContentHeight]="0"
+  [open]="$modalOpen()"
+  size="sm"
+  showFooter="true"
+  (close)="closeModal()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
+    <h3 cdsModalHeaderHeading>{{ 'quickSearch.addItem' | translate }}</h3>
+  </cds-modal-header>
+
+  <form cdsModalContent class="valtimo-qiuck-search-modal__content" [formGroup]="formGroup">
+    <cds-text-label>
+      {{ 'interface.title' | translate }}
+
+      <input
+        formControlName="title"
+        cdsText
+        type="text"
+        maxlength="50"
+        [placeholder]="'interface.title' | translate"
+        [attr.modal-primary-focus]="true"
+      />
+    </cds-text-label>
+
+    <div *ngIf="$showDuplicateError()" class="valtimo-qiuck-search-modal__error">
+      <svg cdsIcon="warning--filled" size="16"></svg>
+
+      {{ 'quickSearch.duplicateError' | translate }}
+    </div>
+
+    <cds-inline-notification
+      [notificationObj]="{
+        type: 'info',
+        message: 'quickSearch.deleteHelperText' | translate,
+        showClose: false,
+        lowContrast: true,
+      }"
+    ></cds-inline-notification>
+  </form>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" (click)="closeModal()">
+      {{ 'interface.cancel' | translate }}
+    </button>
+
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="closeModal(true)">
+      {{ 'interface.save' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

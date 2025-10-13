@@ -1,9 +1,18 @@
+plugins {
+    id 'war'
+}
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     implementation(platform(project(":dependencies:valtimo-dependency-versions")))
 
     implementation(project(":dependencies:valtimo-gzac-dependencies"))
     implementation(project(":mail:local-mail"))
     implementation(project(":document-generation:smartdocuments"))
+    implementation(project(":iko"))
     implementation(project(":logging"))
     implementation(project(":zgw:portaaltaak"))
     implementation(project(":outbox:outbox-rabbitmq"))
@@ -43,13 +52,20 @@ bootRun {
     }
 }
 
+dockerCompose {
+    projectName = "gzac-docker-compose"
+    composeAdditionalArgs = ["--profile", "zgw", "--profile", "openklant", "--profile", "iko"]
+    stopContainers = false
+    removeContainers = false
+    removeVolumes = false
+}
+
 tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
     group = "application"
     description = "Starts docker containers and then runs this project as a Spring Boot application"
     classpath = sourceSets.main.runtimeClasspath
     mainClass = "com.ritense.gzac.GzacApplicationKt"
 
-    dependsOn("composeUpGzac")
     doFirst {
         File f = file(".env.properties")
         if (f.isFile()) {
@@ -62,4 +78,4 @@ tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
     }
 }
 
-apply from: "$rootProject.projectDir/gradle/dockerComposeGzac.gradle"
+dockerCompose.isRequiredBy(bootRunWithDocker)

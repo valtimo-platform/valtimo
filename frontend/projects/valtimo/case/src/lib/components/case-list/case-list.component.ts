@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {TranslateService} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
@@ -24,21 +24,15 @@ import {
   CarbonListNoResultsMessage,
   CarbonPaginationSelection,
   CASES_WITHOUT_STATUS_KEY,
+  IQuickSearchService,
   ListField,
+  ListHiddenColumn,
   PageTitleService,
   Pagination,
+  QUICK_SEARCH_SERVICE,
+  QuickSearchStateService,
   ViewType,
 } from '@valtimo/components';
-import {
-  AssigneeFilter,
-  CaseListTab,
-  ConfigService,
-  DefinitionColumn,
-  Direction,
-  SearchField,
-  SearchFieldValues,
-  SortState,
-} from '@valtimo/shared';
 import {
   AdvancedDocumentSearchRequest,
   AdvancedDocumentSearchRequestImpl,
@@ -50,7 +44,17 @@ import {
   InternalCaseStatusUtils,
   SpecifiedDocuments,
 } from '@valtimo/document';
-import {Tab, Tabs, TagType} from 'carbon-components-angular';
+import {
+  AssigneeFilter,
+  CaseListTab,
+  ConfigService,
+  DefinitionColumn,
+  Direction,
+  SearchField,
+  SearchFieldValues,
+  SortState,
+} from '@valtimo/shared';
+import {Tab, Tabs} from 'carbon-components-angular';
 import {isEqual} from 'lodash';
 import {
   BehaviorSubject,
@@ -68,12 +72,12 @@ import {
   take,
   tap,
 } from 'rxjs';
-
 import {
   CASE_LIST_NO_RESULTS_MESSAGE,
   CASE_LIST_TABLE_TRANSLATIONS,
   DEFAULT_CASE_LIST_TABS,
 } from '../../constants';
+import {CaseListQuickSearchParams} from '../../models';
 import {
   CAN_CREATE_CASE_PERMISSION,
   CAN_EXPORT_CASE_PERMISSION,
@@ -86,7 +90,9 @@ import {
   CaseExportService,
   CaseListAssigneeService,
   CaseListCaseTagService,
+  CaseListHiddenColumnsService,
   CaseListPaginationService,
+  CaseListQuickSearchService,
   CaseListSearchService,
   CaseListService,
   CaseListStatusService,
@@ -108,6 +114,10 @@ import {CaseListActionsComponent} from '../case-list-actions/case-list-actions.c
     CaseListStatusService,
     CaseListCaseTagService,
     CaseExportService,
+    {
+      provide: QUICK_SEARCH_SERVICE,
+      useClass: CaseListQuickSearchService,
+    },
   ],
 })
 export class CaseListComponent implements OnInit, OnDestroy {
@@ -148,12 +158,23 @@ export class CaseListComponent implements OnInit, OnDestroy {
   public readonly caseTags$ = this.caseListCaseTagService.caseTags$.pipe(
     tap(() => (this.loadingStatuses = false))
   );
-  public readonly selectedStatuses$ = this.statusService.selectedCaseStatuses$;
-  public readonly selectedCaseTags$ = this.caseListCaseTagService.selectedCaseTags$;
+  public readonly selectedStatusKeys$ = this.statusService.selectedCaseStatuses$;
+  public readonly selectedCaseTagKeys$ = this.caseListCaseTagService.selectedCaseTagKeys$;
 
-  public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$;
+  public readonly caseDefinitionKey$ = this.listService.caseDefinitionKey$.pipe(
+    tap((caseDefinitionKey: string) =>
+      this.caseListQuickSearchService.initParams(caseDefinitionKey)
+    )
+  );
 
   public readonly selectedCaseIds$ = new BehaviorSubject<string[]>([]);
+  private readonly _refreshHiddenColumns$ = new BehaviorSubject<null>(null);
+  public readonly hiddenColumns$: Observable<ListField[]> = this._refreshHiddenColumns$.pipe(
+    switchMap(() => this.caseDefinitionKey$),
+    switchMap((caseDefinitionKey: string) =>
+      this.caseListHiddenColumnsService.getHiddenColumns(caseDefinitionKey)
+    )
+  );
 
   public readonly schema$ = this.listService.caseDefinitionKey$.pipe(
     switchMap(caseDefinitionKey => this.documentService.getDocumentDefinition(caseDefinitionKey)),
@@ -202,13 +223,13 @@ export class CaseListComponent implements OnInit, OnDestroy {
       this.loadingPagination = false;
     })
   );
-  private readonly _hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
+  public readonly hasApiColumnConfig$ = new BehaviorSubject<boolean>(false);
   private readonly _canHaveAssignee$: Observable<boolean> = this.assigneeService.canHaveAssignee$;
   private readonly _columns$: Observable<Array<DefinitionColumn>> =
     this.listService.caseDefinitionKey$.pipe(
       switchMap(caseDefinitionKey => this.columnService.getDefinitionColumns(caseDefinitionKey)),
       map(res => {
-        this._hasApiColumnConfig$.next(res.hasApiConfig);
+        this.hasApiColumnConfig$.next(res.hasApiConfig);
         return res.columns;
       }),
       tap(columns => {
@@ -233,10 +254,10 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.INTERNAL_STATUS_COLUMN,
   ]);
   private readonly _caseTagsKeys$ = new BehaviorSubject<string[]>([this.CASE_TAGS_COLUMN]);
-  public readonly fields$: Observable<Array<ListField>> = combineLatest([
+  public readonly availableFields$: Observable<ListField[]> = combineLatest([
     this._canHaveAssignee$,
     this._columns$,
-    this._hasApiColumnConfig$,
+    this.hasApiColumnConfig$,
     this.statuses$,
     this.translateService.stream('key'),
   ]).pipe(
@@ -279,7 +300,19 @@ export class CaseListComponent implements OnInit, OnDestroy {
       ) && !hasApiConfig
         ? [...fieldsToReturn, this._statusField]
         : fieldsToReturn;
-    }),
+    })
+  );
+
+  public readonly fields$: Observable<ListField[]> = combineLatest([
+    this.availableFields$,
+    this.hiddenColumns$,
+  ]).pipe(
+    map(([fields, hiddenColumns]) =>
+      fields.filter(
+        (field: ListField) =>
+          !hiddenColumns.find((hiddenColumn: ListField) => hiddenColumn.key === field.key)
+      )
+    ),
     tap(listFields => {
       const defaultListField = listFields.find(field => field.default);
       // set default sort state if no pagination query parameters for sorting are available
@@ -323,9 +356,9 @@ export class CaseListComponent implements OnInit, OnDestroy {
         this.assigneeFilter$,
         this.searchFieldValues$,
         this.statusService.selectedCaseStatuses$,
-        this.caseListCaseTagService.selectedCaseTags$,
+        this.caseListCaseTagService.selectedCaseTagKeys$,
         this.listService.forceRefresh$,
-        this._hasApiColumnConfig$,
+        this.hasApiColumnConfig$,
         this.statusService.caseStatuses$,
         this.caseListCaseTagService.caseTags$,
       ]).pipe(debounceTime(50))
@@ -337,7 +370,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
           prevAssigneeFilter,
           prevSearchFieldValues,
           prevSelectedStatuses,
-          prevCaseTags,
+          prevCaseTagKeys,
           prevForceRefresh,
         ],
         [
@@ -345,7 +378,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
           currAssigneeFilter,
           currSearchFieldValues,
           currSelectedStatuses,
-          currCaseTags,
+          currCaseTagKeys,
           currForceRefresh,
         ]
       ) =>
@@ -354,16 +387,16 @@ export class CaseListComponent implements OnInit, OnDestroy {
             ...prevSearchRequest,
             assignee: prevAssigneeFilter,
             ...prevSearchFieldValues,
-            ...prevSelectedStatuses.map((status: InternalCaseStatus) => status.key),
-            ...prevCaseTags.map((caseTag: CaseTag) => caseTag.key),
+            ...prevSelectedStatuses,
+            ...prevCaseTagKeys,
             forceRefresh: prevForceRefresh,
           },
           {
             ...currSearchRequest,
             assignee: currAssigneeFilter,
             ...currSearchFieldValues,
-            ...currSelectedStatuses.map((status: InternalCaseStatus) => status.key),
-            ...currCaseTags.map((caseTag: CaseTag) => caseTag.key),
+            ...currSelectedStatuses,
+            ...currCaseTagKeys,
             forceRefresh: currForceRefresh,
           }
         )
@@ -374,16 +407,15 @@ export class CaseListComponent implements OnInit, OnDestroy {
         assigneeFilter,
         searchValues,
         selectedStatuses,
-        selectedCaseTags,
+        selectedCaseTagKeys,
         _,
         hasApiColumnConfig,
         allStatuses,
       ]) => {
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
-        const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
-          status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
+        const statusKeys: (string | null)[] = selectedStatuses.map((statusKey: string) =>
+          statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
         );
-        const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents: !hasApiColumnConfig
@@ -393,7 +425,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   assigneeFilter,
                   this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
-                  caseTagsKeys
+                  selectedCaseTagKeys
                 )
               : this.documentService.getSpecifiedDocumentsSearch(
                   documentSearchRequest,
@@ -401,7 +433,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                   assigneeFilter,
                   this.searchService.mapSearchValuesToFilters(searchValues),
                   statusKeys,
-                  caseTagsKeys
+                  selectedCaseTagKeys
                 ),
             hasApiColumnConfig: obsApi,
             isSearchResult: of(true),
@@ -417,7 +449,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 undefined,
                 statusKeys,
-                caseTagsKeys
+                selectedCaseTagKeys
               )
             : this.documentService.getSpecifiedDocumentsSearch(
                 documentSearchRequest,
@@ -425,7 +457,7 @@ export class CaseListComponent implements OnInit, OnDestroy {
                 assigneeFilter,
                 undefined,
                 statusKeys,
-                caseTagsKeys
+                selectedCaseTagKeys
               ),
           hasApiColumnConfig: obsApi,
           isSearchResult: of(false),
@@ -549,7 +581,11 @@ export class CaseListComponent implements OnInit, OnDestroy {
     private readonly permissionService: PermissionService,
     private readonly statusService: CaseListStatusService,
     private readonly caseListCaseTagService: CaseListCaseTagService,
-    private readonly caseExportService: CaseExportService
+    private readonly caseExportService: CaseExportService,
+    private readonly caseListHiddenColumnsService: CaseListHiddenColumnsService,
+    private readonly quickSearchStateService: QuickSearchStateService,
+    @Inject(QUICK_SEARCH_SERVICE)
+    private readonly caseListQuickSearchService: IQuickSearchService<CaseListQuickSearchParams>
   ) {}
 
   public ngOnInit(): void {
@@ -696,16 +732,75 @@ export class CaseListComponent implements OnInit, OnDestroy {
     this.listService.forceRefresh();
   }
 
-  public onSelectedStatusesChange(statuses: InternalCaseStatus[]): void {
-    this.statusService.setSelectedStatuses(statuses);
+  public onSelectedStatusesChange(statusKeys: string[]): void {
+    this.statusService.setSelectedStatuses(statusKeys);
   }
 
-  public onSelectedCaseTagsChange(caseTags: CaseTag[]): void {
-    this.caseListCaseTagService.setSelectedCaseTags(caseTags);
+  public onSelectedCaseTagsChange(caseTagKeys: string[]): void {
+    this.caseListCaseTagService.setSelectedCaseTags(caseTagKeys);
   }
 
   public onStartButtonDisableEvent(disabled: boolean): void {
     this.disableStartButton$.next(disabled);
+  }
+
+  public onViewUpdateEvent(hiddenColumns: ListHiddenColumn[]): void {
+    this.caseDefinitionKey$
+      .pipe(
+        take(1),
+        switchMap((caseDefinitionKey: string) =>
+          this.caseListHiddenColumnsService.saveHiddenColumns(caseDefinitionKey, hiddenColumns)
+        )
+      )
+      .subscribe(() => this._refreshHiddenColumns$.next(null));
+}
+
+  public readonly disableSaveSearch$ = combineLatest([
+    this.statusService.selectedCaseStatuses$,
+    this.caseListCaseTagService.selectedCaseTagKeys$,
+  ]).pipe(
+    map(([selectedStatuses, selectedTags]) => !selectedStatuses.length && !selectedTags.length)
+  );
+  public onSaveSearchEvent(event): void {
+    combineLatest([
+      this.statusService.selectedCaseStatuses$,
+      this.caseListCaseTagService.selectedCaseTagKeys$,
+    ])
+      .pipe(take(1))
+      .subscribe(([statusKeys, tags]) => {
+        this.quickSearchStateService.openModal({
+          ...this.parameterService.getSearchParameter('casetags', tags),
+          ...this.parameterService.getSearchParameter('status', statusKeys),
+          ...this.parameterService.getSearchParameter('search', event),
+        });
+      });
+  }
+
+  public onQuickSearchEvent(queryPath: string): void {
+    combineLatest([this.route.queryParams, this.caseDefinitionKey$])
+      .pipe(take(1))
+      .subscribe(([urlParams, caseDefinitionKey]) => {
+        const queryParams = {...urlParams, ...Object.fromEntries(new URLSearchParams(queryPath))};
+        this.router.navigate([`/cases/${caseDefinitionKey}`], {
+          queryParams,
+          replaceUrl: true,
+          queryParamsHandling: 'replace',
+        });
+        this.statusService.setSelectedStatuses(
+          this.parameterService.getSearchObject(queryParams['status']) as string[]
+        );
+        this.caseListCaseTagService.setSelectedCaseTags(
+          this.parameterService.getSearchObject(queryParams['casetags']) as string[]
+        );
+        this.parameterService.setSearchFieldValues(
+          this.parameterService.getSearchObject(queryParams['search']) as SearchFieldValues
+        );
+      });
+  }
+
+  public onClearEvent(): void {
+    this.statusService.setSelectedStatuses([]);
+    this.caseListCaseTagService.setSelectedCaseTags([]);
   }
 
   private openCaseDefinitionKeySubscription(): void {
