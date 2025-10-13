@@ -390,9 +390,13 @@ export class DossierListComponent implements OnInit, OnDestroy {
       ]) => {
         const obsEnv: Observable<boolean> = of(hasEnvColumnConfig);
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
-        const statusKeys: (string | null)[] = selectedStatuses.map((status: InternalCaseStatus) =>
-          status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
-        );
+        const statusKeys: (string | null)[] =
+          // if no case statusses have been configured, prevent from sending the empty filter
+          allStatuses.length === 1
+            ? []
+            : selectedStatuses.map((status: InternalCaseStatus) =>
+                status.key === CASES_WITHOUT_STATUS_KEY ? null : status.key
+              );
         const caseTagsKeys = selectedCaseTags.map(caseTag => caseTag.key);
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
