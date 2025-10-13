@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {computed, Injectable, Signal, signal, WritableSignal} from '@angular/core';
+import {
+  computed,
+  Injectable,
+  Injector,
+  runInInjectionContext,
+  Signal,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import {
   BasicWidget,
   WidgetAction,
@@ -24,6 +32,8 @@ import {
   WidgetTypeSelection,
   WidgetWidth,
 } from '../models';
+import {Observable} from 'rxjs';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
@@ -61,9 +71,15 @@ export class WidgetWizardService {
 
   public readonly $editMode: WritableSignal<boolean> = signal(false);
 
+  public get editMode$(): Observable<boolean> {
+    return runInInjectionContext(this.injector, () => toObservable(this.$editMode));
+  }
+
   public readonly $usedWidgetKeys: WritableSignal<string[]> = signal([]);
 
   public readonly $availableWidgetTypes: WritableSignal<WidgetType[] | null> = signal(null);
+
+  constructor(private readonly injector: Injector) {}
 
   public resetWizard(): void {
     this.$selectedWidget.set(null);

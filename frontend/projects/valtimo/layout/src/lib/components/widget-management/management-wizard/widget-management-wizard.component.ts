@@ -314,16 +314,15 @@ export class WidgetManagementWizardComponent implements OnInit, OnDestroy {
 
   private openLastStepSubscription(): void {
     this._subscriptions.add(
-      combineLatest([
-        toObservable(this.widgetWizardService.$editMode),
-        this._widgetWizardSteps$,
-      ]).subscribe(([editMode, steps]) => {
-        if (!editMode) return;
-        const last = Math.max(
-          ...Object.values(steps).filter((v): v is number => typeof v === 'number')
-        );
-        this.$currentStep.set(last);
-      })
+      combineLatest([this.widgetWizardService.editMode$, this._widgetWizardSteps$]).subscribe(
+        ([editMode, steps]) => {
+          if (!editMode) return;
+          const last = Math.max(
+            ...Object.values(steps).filter((v): v is number => typeof v === 'number')
+          );
+          this.$currentStep.set(last);
+        }
+      )
     );
   }
 }
