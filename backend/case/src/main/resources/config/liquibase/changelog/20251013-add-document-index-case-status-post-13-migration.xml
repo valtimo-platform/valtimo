@@ -19,20 +19,9 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
     <changeSet author="Ritense" id="1">
-        <preConditions onFail="MARK_RAN">
-            <columnExists tableName="json_schema_document" columnName="case_definition_name" />
-        </preConditions>
         <createIndex indexName="idx_json_schema_document_case_status_key" tableName="json_schema_document">
             <column name="internal_case_status_key"/>
-            <column name="case_definition_name"/>
+            <column name="ics_case_definition_key"/>
         </createIndex>
-
-    </changeSet>
-
-    <changeSet author="Ritense" id="2">
-        <preConditions onFail="MARK_RAN">
-            <indexExists indexName="idx_json_schema_document_case_status_key" tableName="json_schema_document"/>
-        </preConditions>
-        <dropIndex tableName="json_schema_document" indexName="idx_json_schema_document_case_status_key"/>
     </changeSet>
 </databaseChangeLog>
