@@ -1932,6 +1932,7 @@
     "addTab": "Add tab",
     "editTab": "Edit tab",
     "rowAction": "Row action",
+    "canStartCase": "Can start case",
     "tabTypes": {
       "widgets": "Widgets"
     }

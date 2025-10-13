@@ -1959,6 +1959,7 @@
     "addTab": "Tab hinzufügen",
     "editTab": "Tab bearbeiten",
     "rowAction": "Zeilenaktion",
+    "canStartCase": "Kann Case starten",
     "tabTypes": {
       "widgets": "Widgets"
     }

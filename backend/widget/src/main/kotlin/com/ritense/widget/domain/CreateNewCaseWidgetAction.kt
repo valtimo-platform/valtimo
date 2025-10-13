@@ -20,6 +20,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 
 @JsonTypeName("createNewCase")
 data class CreateNewCaseWidgetAction(
-        val name: String,
-        val caseDefinitionKey: String,
+    val name: String,
+    val caseDefinitionKey: String,
 ) : WidgetAction

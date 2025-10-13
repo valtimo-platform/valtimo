@@ -1965,6 +1965,7 @@
     "addTab": "Tab toevoegen",
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",
+    "canStartCase": "Kan zaak starten",
     "tabTypes": {
       "widgets": "Widgets"
     }
