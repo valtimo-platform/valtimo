@@ -23,7 +23,7 @@
     } as obs"
   >
     <div
-      *ngIf="obs.headerWidget"
+      *ngIf="obs.headerWidget && !$hide()"
       class="header-widget-container"
       [attr.data-carbon-theme]="obs.theme"
     >

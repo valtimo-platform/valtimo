@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {
@@ -60,6 +60,8 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
     )
   );
 
+  public readonly $hide = signal<boolean>(false);
+
   private readonly _fetchData$ = new Subject<null>();
 
   private readonly _highContrast$ = new BehaviorSubject<boolean>(false);
@@ -88,7 +90,10 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
 
   public readonly headerWidgetData$ = this._fetchData$.pipe(
     switchMap(() => this._documentId$),
-    switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidgetData(documentId))
+    switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidgetData(documentId)),
+    tap(data => {
+      this.$hide.set(Object.values(data).every(value => value === null));
+    })
   );
 
   private readonly _documentUpdates$ = combineLatest([
