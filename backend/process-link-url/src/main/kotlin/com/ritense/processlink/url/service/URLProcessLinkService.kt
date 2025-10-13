@@ -18,7 +18,7 @@ package com.ritense.processlink.url.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext
-import com.ritense.authorization.ValtimoAuthorizationService
+import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest
@@ -55,7 +55,7 @@ class URLProcessLinkService(
     private val objectMapper: ObjectMapper,
     private val urlVariables: URLVariables,
     private val operatonTaskService: OperatonTaskService,
-    private val authorizationService: ValtimoAuthorizationService
+    private val authorizationService: AuthorizationService
 ) {
 
     fun submit(
