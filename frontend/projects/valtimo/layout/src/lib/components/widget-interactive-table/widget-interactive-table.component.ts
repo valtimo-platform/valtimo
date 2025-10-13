@@ -80,7 +80,6 @@ export class WidgetInteractiveTableComponent {
   }
 
   @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
-    console.log({value});
     this._widgetConfiguration = value;
 
     this.fields$.next(
