@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.catalogiapi.CatalogiApiAuthentication
-import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.domain.PluginConfiguration
@@ -41,19 +40,13 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectType
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectZakelijkRechtRequest
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zgw.Rsin
-import java.lang.Thread.sleep
-import java.net.URI
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.Optional
-import java.util.UUID
-import kotlin.test.assertEquals
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.camunda.bpm.engine.RepositoryService
+import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -64,8 +57,6 @@ import org.mockito.kotlin.doCallRealMethod
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import org.camunda.bpm.engine.delegate.DelegateExecution
-import org.mockito.kotlin.eq
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpMethod.POST
@@ -75,6 +66,13 @@ import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
+import java.lang.Thread.sleep
+import java.net.URI
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.Optional
+import java.util.UUID
+import kotlin.test.assertEquals
 
 @Transactional
 class ZakenApiPluginIT : BaseIntegrationTest() {
@@ -307,7 +305,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             )
         )
 
-        val requestBody = getRequestBody(POST, "/zaakobjecten", ZaakObjectRequest::class.java)
+        val requestBody = getRequestBody(POST, "/zaken/zaakobjecten", ZaakObjectRequest::class.java)
         assertThat(requestBody.zaakUrl).isEqualTo(zaakUrl)
         assertThat(requestBody.objectUrl).isEqualTo(objectUrl)
         assertThat(requestBody.zaakobjecttype).isEqualTo(zaakobjecttype)
@@ -331,7 +329,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             UUID.randomUUID()
         )
 
-        val requestBody = getRequestBody(POST, "/zaakobjecten", ZaakObjectOverigeRequest::class.java)
+        val requestBody = getRequestBody(POST, "/zaken/zaakobjecten", ZaakObjectOverigeRequest::class.java)
         assertThat(requestBody.zaakUrl).isEqualTo(zaakUrl)
         assertThat(requestBody.objectUrl).isEqualTo(objectUrl)
         assertThat(requestBody.objectType).isEqualTo(objectType)
@@ -392,7 +390,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
             )
         }
 
-        val requestBody = getRequestBody(POST, "/zaakobjecten", ZaakObjectZakelijkRechtRequest::class.java)
+        val requestBody = getRequestBody(POST, "/zaken/zaakobjecten", ZaakObjectZakelijkRechtRequest::class.java)
         assertThat(requestBody.zaakUrl).isEqualTo(zaakUrl)
         assertThat(requestBody.objectType).isEqualTo(ZaakObjectType.ZAKELIJK_RECHT)
         assertThat(requestBody.relatieomschrijving).isEqualTo(relatieomschrijving)
@@ -411,7 +409,7 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
                     "GET /catalogi/my-zaaktype-id" -> getZaaktypeResponse()
                     "POST /zaken/zaken" -> createZaakResponse()
                     "GET /catalogi/informatieobjecttypen?status=definitief&page=1" -> MockResponse().setResponseCode(200)
-                    "POST /zaakobjecten" -> createZaakObjectResponse()
+                    "POST /zaken/zaakobjecten" -> createZaakObjectResponse()
                     else -> MockResponse().setResponseCode(404)
                 }
                 return response
