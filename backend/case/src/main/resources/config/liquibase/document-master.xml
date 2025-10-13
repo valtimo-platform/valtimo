@@ -50,4 +50,5 @@
     <include file="changelog/20250210-add-case-tag-link-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20241220-update-document-sequence.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20250113-major13-upgrade.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20251009-add-document-index-case-status.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
