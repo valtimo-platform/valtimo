@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.outbox.domain.BaseEvent
-import com.ritense.outbox.exception.OutboxTransactionReadOnlyException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -28,11 +27,16 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.transaction.IllegalTransactionStateException
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 
 class ValtimoOutboxServiceIntTest : BaseIntegrationTest() {
 
     @Autowired
     lateinit var outboxService: ValtimoOutboxService
+
+    @Autowired
+    lateinit var transactionManager: PlatformTransactionManager
 
     @Test
     @Transactional
@@ -48,13 +52,18 @@ class ValtimoOutboxServiceIntTest : BaseIntegrationTest() {
     }
 
     @Test
-    @Transactional(readOnly = true)
-    fun `should throw error when read-only transaction`() {
+    fun `should create OutboxMessage even when caller transaction is read-only`() {
         val event = OrderCreatedEvent("textBook")
 
-        assertThrows<OutboxTransactionReadOnlyException> {
+        TransactionTemplate(transactionManager).apply {
+            isReadOnly = true
+        }.executeWithoutResult {
             outboxService.send(objectMapper.writeValueAsString(event))
         }
+
+        val messages = outboxMessageRepository.findAll()
+        assertThat(messages.size).isEqualTo(1)
+        assertThat(messages[0].message).isEqualTo("""{"name":"textBook"}""")
     }
 
     @Test
