@@ -21,6 +21,7 @@
     <changeSet author="Ritense" id="1">
         <createIndex indexName="idx_json_schema_document_case_status_key" tableName="json_schema_document">
             <column name="internal_case_status_key"/>
+            <column name="case_definition_name"/>
         </createIndex>
 
     </changeSet>
