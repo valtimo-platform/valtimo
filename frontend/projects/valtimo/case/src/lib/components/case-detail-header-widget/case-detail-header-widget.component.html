@@ -23,9 +23,10 @@
     } as obs"
   >
     <div
-      *ngIf="obs.headerWidget && !$hide()"
+      *ngIf="obs.headerWidget"
       class="header-widget-container"
       [attr.data-carbon-theme]="obs.theme"
+      [style.display]="$noVisibleFields() && 'none'"
     >
       @if (!obs.headerWidgetData) {
         <div class="header-widget-container__loader"><cds-loading size="sm"></cds-loading></div>
@@ -35,6 +36,7 @@
           [widgetConfiguration]="obs.headerWidget"
           [widgetData]="obs.headerWidgetData"
           [compact]="true"
+          (noVisibleFieldsEvent)="onNoVisibleFields($event)"
         ></valtimo-widget-field>
       }
     </div>

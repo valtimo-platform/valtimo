@@ -60,8 +60,6 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
     )
   );
 
-  public readonly $hide = signal<boolean>(false);
-
   private readonly _fetchData$ = new Subject<null>();
 
   private readonly _highContrast$ = new BehaviorSubject<boolean>(false);
@@ -90,10 +88,7 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
 
   public readonly headerWidgetData$ = this._fetchData$.pipe(
     switchMap(() => this._documentId$),
-    switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidgetData(documentId)),
-    tap(data => {
-      this.$hide.set(Object.values(data).every(value => value === null));
-    })
+    switchMap(documentId => this.caseHeaderWidgetApiService.getHeaderWidgetData(documentId))
   );
 
   private readonly _documentUpdates$ = combineLatest([
@@ -106,6 +101,8 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
   );
 
   private readonly _subscriptions = new Subscription();
+
+  public readonly $noVisibleFields = signal<boolean>(false);
 
   constructor(
     private readonly caseHeaderWidgetApiService: CaseHeaderWidgetApiService,
@@ -121,5 +118,9 @@ export class CaseDetailHeaderWidgetComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  public onNoVisibleFields(noVisibleFields: boolean): void {
+    this.$noVisibleFields.set(noVisibleFields);
   }
 }
