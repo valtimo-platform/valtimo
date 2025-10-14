@@ -47,6 +47,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 
     api "org.camunda.bpm:camunda-engine:${camundaVersion}"
     api "org.zalando:problem-spring-web:${problemSpringWebVersion}"

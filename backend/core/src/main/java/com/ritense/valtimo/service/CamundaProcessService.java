@@ -83,6 +83,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 public class CamundaProcessService {
 
     private static final String UNDEFINED_BUSINESS_KEY = "UNDEFINED_BUSINESS_KEY";
@@ -178,16 +179,19 @@ public class CamundaProcessService {
         return camundaExecutionRepository.findByBusinessKey(businessKey).orElse(null);
     }
 
+    @Transactional
     public void deleteProcessInstanceById(String processInstanceId, String reason) {
         denyAuthorization();
         runtimeService.deleteProcessInstance(processInstanceId, reason, true, true, true, false);
     }
 
+    @Transactional
     public void removeProcessVariables(String processInstanceId, Collection<String> variableNames) {
         denyAuthorization();
         runtimeService.removeVariables(processInstanceId, variableNames);
     }
 
+    @Transactional
     public ProcessInstanceWithDefinition startProcess(
         String processDefinitionKey, String businessKey, Map<String, Object> variables
     ) {

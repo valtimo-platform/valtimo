@@ -24,6 +24,7 @@ import com.ritense.zakenapi.link.ZaakInstanceLinkNotFoundException
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import mu.KLogger
 import mu.KotlinLogging
+import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.util.UUID
 
@@ -33,6 +34,7 @@ class DefaultZaakUrlProvider(
 ) : ZaakUrlProvider {
 
     @Throws(ZaakInstanceLinkNotFoundException::class)
+    @Transactional(readOnly = true)
     override fun getZaakUrl(
         @LoggableResource(resourceType = JsonSchemaDocument::class) documentId: UUID
     ): URI {

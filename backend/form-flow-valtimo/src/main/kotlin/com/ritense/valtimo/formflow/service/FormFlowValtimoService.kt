@@ -29,10 +29,12 @@ import com.ritense.logging.withLoggingContext
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.json.patch.JsonPatchBuilder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import kotlin.jvm.optionals.getOrNull
 
 @Service
 @SkipComponentScan
+@Transactional(readOnly = true)
 class FormFlowValtimoService(
     private val formDefinitionService: FormIoFormDefinitionService,
     private val objectMapper: ObjectMapper,

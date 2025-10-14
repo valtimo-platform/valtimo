@@ -41,16 +41,19 @@ class FormFlowService(
     private val formFlowStepTypeHandlers: List<FormFlowStepTypeHandler>
 ) {
 
+    @Transactional(readOnly = true)
     fun getFormFlowDefinitions(): List<FormFlowDefinition> {
         return formFlowDefinitionRepository.findAll()
     }
 
+    @Transactional(readOnly = true)
     fun findDefinition(formFlowId: FormFlowDefinitionId): FormFlowDefinition {
         withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowId.toString()) {
             return formFlowDefinitionRepository.getReferenceById(formFlowId)
         }
     }
 
+    @Transactional(readOnly = true)
     fun findDefinition(formFlowDefinitionId: String): FormFlowDefinition? {
         return withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowDefinitionId) {
             val formFlowIdAsArray = formFlowDefinitionId.split(":")
@@ -65,6 +68,7 @@ class FormFlowService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun findLatestDefinitionByKey(formFlowKey: String): FormFlowDefinition? {
         return formFlowDefinitionRepository.findFirstByIdKeyOrderByIdVersionDesc(formFlowKey)
     }
@@ -79,12 +83,14 @@ class FormFlowService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun getInstanceById(formFlowInstanceId: FormFlowInstanceId): FormFlowInstance {
         return withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowInstanceId.toString()) {
             formFlowInstanceRepository.getReferenceById(formFlowInstanceId)
         }
     }
 
+    @Transactional(readOnly = true)
     fun getByInstanceIdIfExists(formFlowInstanceId: FormFlowInstanceId): FormFlowInstance? {
         return withLoggingContext(FormFlowDefinition::class.java.canonicalName to formFlowInstanceId.toString()) {
             formFlowInstanceRepository.getReferenceById(formFlowInstanceId)
@@ -97,6 +103,7 @@ class FormFlowService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun findInstances(additionalProperties: Map<String, Any>): List<FormFlowInstance> {
         return formFlowAdditionalPropertiesSearchRepository.findInstances(additionalProperties)
     }

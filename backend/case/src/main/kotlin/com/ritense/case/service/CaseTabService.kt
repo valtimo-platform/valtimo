@@ -57,6 +57,7 @@ class CaseTabService(
     private val userManagementService: UserManagementService,
     private val documentService: DocumentService
 ) {
+    @Transactional(readOnly = true)
     fun getCaseTab(caseDefinitionName: String, key: String): CaseTab {
         val caseTab = caseTabRepository.getReferenceById(CaseTabId(caseDefinitionName, key))
         authorizationService.requirePermission(
@@ -69,7 +70,7 @@ class CaseTabService(
         return caseTab
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     fun getCaseTabs(caseDefinitionName: String): List<CaseTab> {
         val spec = authorizationService.getAuthorizationSpecification(
             EntityAuthorizationRequest(
@@ -80,7 +81,7 @@ class CaseTabService(
         return caseTabRepository.findAll(spec.and(byCaseDefinitionName(caseDefinitionName)), Sort.by(TAB_ORDER))
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     fun getCaseTabs(documentId: JsonSchemaDocumentId): List<CaseTab> {
         val document = runWithoutAuthorization { documentService.findByOrNull(documentId) }
 

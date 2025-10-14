@@ -35,6 +35,7 @@ import jakarta.validation.ConstraintViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
@@ -44,14 +45,17 @@ class ObjectSyncService(
     private val connectorTypeInstanceRepository: ConnectorTypeInstanceRepository
 ) {
 
+    @Transactional(readOnly = true)
     fun getObjectSyncConfig(id: UUID): ObjectSyncConfig? {
         return objectSyncConfigRepository.getReferenceById(ObjectSyncConfigId.existingId(id))
     }
 
+    @Transactional(readOnly = true)
     fun getObjectSyncConfig(documentDefinitionName: String, pageable: Pageable = Pageable.unpaged()): Page<ObjectSyncConfig> {
         return objectSyncConfigRepository.findAllByDocumentDefinitionName(documentDefinitionName, pageable)
     }
 
+    @Transactional(readOnly = true)
     fun getObjectSyncConfig(pageable: Pageable = Pageable.unpaged()): Page<ObjectSyncConfig> {
         return objectSyncConfigRepository.findAll(pageable)
     }

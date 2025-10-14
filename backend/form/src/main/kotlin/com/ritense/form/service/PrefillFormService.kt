@@ -62,6 +62,7 @@ class PrefillFormService(
     private val authorizationService: AuthorizationService,
 ) {
 
+    @Transactional(readOnly = true)
     fun getPrefilledFormDefinition(
         formDefinitionId: UUID,
         @LoggableResource(resourceType = CamundaExecution::class) processInstanceId: String,
@@ -80,6 +81,7 @@ class PrefillFormService(
         return formDefinition
     }
 
+    @Transactional(readOnly = true)
     fun getPrefilledFormDefinition(
         formDefinitionId: UUID,
         documentId: UUID?,

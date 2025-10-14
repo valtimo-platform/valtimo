@@ -54,6 +54,7 @@ public class AuditSearchServiceImpl implements AuditSearchService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<AuditRecord> search(List<SearchCriteria> criteriaList, Pageable pageable) {
         denyAuthorization();
         final CriteriaBuilder cb = entityManager.getCriteriaBuilder();

@@ -40,18 +40,21 @@ class DefaultZaakTypeLinkService(
     private val processDocumentAssociationService: ProcessDocumentAssociationService
 ) : ZaakTypeLinkService {
 
+    @Transactional(readOnly = true)
     override fun get(
         @LoggableResource("documentDefinitionName") documentDefinitionName: String
     ): ZaakTypeLink? {
         return zaakTypeLinkRepository.findByDocumentDefinitionName(documentDefinitionName)
     }
 
+    @Transactional(readOnly = true)
     override fun getByPluginConfigurationId(
         @LoggableResource(resourceType = PluginConfiguration::class) id: UUID
     ): List<ZaakTypeLink> {
         return zaakTypeLinkRepository.findByZakenApiPluginConfigurationId(id)
     }
 
+    @Transactional(readOnly = true)
     override fun getByProcess(
         @LoggableResource("processDefinitionKey") processDefinitionKey: String
     ): List<ZaakTypeLink> {

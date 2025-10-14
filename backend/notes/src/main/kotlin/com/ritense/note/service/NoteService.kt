@@ -57,6 +57,7 @@ class NoteService(
     private val objectMapper: ObjectMapper
 ) {
 
+    @Transactional(readOnly = true)
     fun getNotes(
         documentId: UUID,
         pageable: Pageable = Pageable.unpaged(),
@@ -131,6 +132,7 @@ class NoteService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun getNoteById(noteId: UUID): Note {
         val note = noteRepository.findById(noteId)
 

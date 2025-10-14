@@ -55,6 +55,7 @@ public class AuditServiceImpl implements AuditService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AuditRecord findById(AuditRecordId auditRecordId) {
         denyAuthorization();
         return auditRecordRepository
@@ -63,6 +64,7 @@ public class AuditServiceImpl implements AuditService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<AuditRecord> findByEventAndDocumentId(List<Class<? extends AuditEvent>> eventTypes, UUID documentId, Pageable pageable) {
         var document = AuthorizationContext.runWithoutAuthorization(() -> documentService.get(documentId.toString()));
 
@@ -78,18 +80,21 @@ public class AuditServiceImpl implements AuditService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuditRecord> findByEventAndOccurredBetween(Class<? extends AuditEvent> eventType, LocalDateTime from, LocalDateTime until, Pageable pageable) {
         denyAuthorization();
         return auditRecordRepository.findByEventAndOccurredBetween(eventType.getName(), from, until, pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<AuditRecord> findByProperty(String key, Object value, Pageable pageable) {
         denyAuthorization();
         return auditRecordRepository.findAuditRecordsByProperty(key, value, pageable);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuditRecord> findByEventTypeAndProperty(Class<? extends AuditEvent> eventType, String key, Object value) {
         denyAuthorization();
         return auditRecordRepository.findAuditRecordsByEventAndProperty(eventType.getName(), key, value);

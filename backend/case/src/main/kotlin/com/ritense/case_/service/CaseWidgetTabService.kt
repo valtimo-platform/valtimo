@@ -122,7 +122,6 @@ class CaseWidgetTabService(
         )
     }
 
-    @Transactional
     fun getCaseWidgetData(documentId: UUID, tabKey: String, widgetKey: String, pageable: Pageable): Any? {
         val document = runWithoutAuthorization {
             documentService.findByOrNull(JsonSchemaDocumentId.existingId(documentId))

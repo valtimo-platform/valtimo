@@ -24,6 +24,7 @@ import com.ritense.search.web.rest.dto.SearchFieldV2Dto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 
 @Service
@@ -71,16 +72,21 @@ class SearchFieldV2Service(
         )
     }
 
+    @Transactional(readOnly = true)
     fun findAllByOwnerType(ownerId: String) = searchFieldV2Repository.findAllByOwnerTypeOrderByOrder(ownerId)
 
     @Deprecated("Since 12.1.0", ReplaceWith("com.ritense.search.service.SearchFieldV2Service.findAllByOwnerTypeAndOwnerId()"))
+    @Transactional(readOnly = true)
     fun findAllByOwnerId(ownerId: String) = searchFieldV2Repository.findAllByOwnerTypeAndOwnerIdOrderByOrder(LEGACY_OWNER_TYPE, ownerId)
 
+    @Transactional(readOnly = true)
     fun findAllByOwnerTypeAndOwnerId(ownerType: String, ownerId: String) = searchFieldV2Repository.findAllByOwnerTypeAndOwnerIdOrderByOrder(ownerType, ownerId)
 
     @Deprecated("Since 12.1.0", ReplaceWith("com.ritense.search.service.SearchFieldV2Service.findByOwnerTypeAndOwnerIdAndKey()"))
+    @Transactional(readOnly = true)
     fun findByOwnerIdAndKey(ownerId: String, key: String) = searchFieldV2Repository.findByOwnerTypeAndOwnerIdAndKeyOrderByOrder(LEGACY_OWNER_TYPE, ownerId, key)
 
+    @Transactional(readOnly = true)
     fun findByOwnerTypeAndOwnerIdAndKey(ownerType: String, ownerId: String, key: String) = searchFieldV2Repository.findByOwnerTypeAndOwnerIdAndKeyOrderByOrder(ownerType, ownerId, key)
 
     @Deprecated("Since 12.1.0", ReplaceWith("com.ritense.search.service.SearchFieldV2Service.delete()"))

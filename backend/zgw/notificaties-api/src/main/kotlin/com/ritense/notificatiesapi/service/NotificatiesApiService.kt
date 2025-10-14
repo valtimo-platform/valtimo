@@ -24,6 +24,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 @SkipComponentScan
@@ -39,6 +40,7 @@ class NotificatiesApiService(
         )
     }
 
+    @Transactional(readOnly = true)
     fun findAbonnementSubscription(authHeader: String): NotificatiesApiAbonnementLink {
         return notificatiesApiAbonnementLinkRepository.findByAuth(authHeader)
             ?: throw AuthorizationException()

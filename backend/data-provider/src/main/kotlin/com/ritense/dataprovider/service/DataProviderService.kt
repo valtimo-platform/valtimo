@@ -20,6 +20,7 @@ import com.ritense.dataprovider.domain.DataProvider
 import com.ritense.dataprovider.exception.ProviderNotFoundException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 @SkipComponentScan
@@ -31,11 +32,13 @@ class DataProviderService(
         return dataProviders.entries.filter { it.value.supportsCategory(category) }.map { it.key }
     }
 
+    @Transactional(readOnly = true)
     fun <T> getAllData(category: String, providerName: String?, query: Map<String, Any>): List<T> {
         return getDataProviders<T>(category, providerName)
             .mapNotNull { provider -> provider.get(query) }
     }
 
+    @Transactional(readOnly = true)
     fun <T> getData(category: String, providerName: String?, query: Map<String, Any>): T? {
         val dataList = getAllData<T>(category, providerName, query)
         return if (dataList.isEmpty()) {
