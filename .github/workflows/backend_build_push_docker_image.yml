@@ -6,7 +6,7 @@ permissions:
 on:
   pull_request:
     branches:
-      - 'next-minor'
+      - "next-minor"
     types:
       - synchronize
     paths:
@@ -107,3 +107,5 @@ jobs:
           context: backend/deployment/
           push: true
           tags: ${{ steps.generate_tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

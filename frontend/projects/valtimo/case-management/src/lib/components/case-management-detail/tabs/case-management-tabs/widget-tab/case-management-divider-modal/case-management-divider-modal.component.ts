@@ -128,7 +128,7 @@ export class CaseManagementDividerModalComponent {
     width: 4,
     highContrast: false,
     key: '',
-    displayConditions: null
+    displayConditions: []
   };
 
   constructor(

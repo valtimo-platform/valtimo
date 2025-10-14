@@ -98,6 +98,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     [WidgetType.CUSTOM]: CaseWidgetCustomComponent,
     [WidgetType.FORMIO]: CaseWidgetFormioComponent,
     [WidgetType.TABLE]: CaseWidgetTableComponent,
+    [WidgetType.INTERACTIVE_TABLE]: CaseWidgetTableComponent,
     [WidgetType.COLLECTION]: CaseWidgetCollectionComponent,
   };
 

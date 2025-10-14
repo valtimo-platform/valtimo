@@ -841,9 +841,11 @@
       "custom": {"title": "Custom component", "description": "For complex content"},
       "formio": {"title": "Form.io", "description": "Prefilled Form.io form"},
       "table": {"title": "Table", "description": "Create a table"},
-      "collection": {"title": "Collection", "description": "Create a collection"},
-      "collection": {"title": "Collection", "description": "Create a collection"},
-      "divider": {"title": "Divider"}
+      "interactive-table": {
+        "title": "Interactive table",
+        "description": "Create an interactive table"
+      },
+      "collection": {"title": "Collection", "description": "Create a collection"}
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -1351,7 +1353,8 @@
     "yes": "Yes",
     "no": "No",
     "upload": "Upload",
-    "noTranslationFound": "No translation found"
+    "noTranslationFound": "No translation found",
+    "url": "URL"
   },
   "taskDetail": {"taskCreated": "Created", "taskCompleted": "has successfully been completed"},
   "assignTask": {
@@ -1873,11 +1876,18 @@
   },
   "ikoManagement": {
     "ikoServer": "IKO Server",
-    "view": "View",
+    "dataUrl": "Data URL",
     "title": "Configuration",
     "list": "List",
     "tabs": {"title": "Tabs"},
     "widgets": {"title": "Widgets"},
+    "views": {
+      "title": "Views",
+      "add": "Add view",
+      "deleteContent": "Are you sure you want to delete this view? This change cannot be reverted",
+      "noResultsTitle": "There are no configured views",
+      "noResultsDescription": "Click here to configure a view."
+    },
     "searchActions": {
       "addActionTitle": "Add search action",
       "editActionTitle": "Edit search action",
@@ -1921,6 +1931,8 @@
     "tabTypePlaceholder": "Enter tab type",
     "addTab": "Add tab",
     "editTab": "Edit tab",
+    "rowAction": "Row action",
+    "canStartCase": "Can start case",
     "tabTypes": {
       "widgets": "Widgets"
     }
