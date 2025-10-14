@@ -118,6 +118,11 @@ public class PostgresQueryDialectHelper implements QueryDialectHelper {
         );
     }
 
+    @Override
+    public String getColumnJsonType() {
+        return "JSONB";
+    }
+
     private List<String> splitPath(String path) {
         String pathToSplit;
         if (path.startsWith("$.")) {

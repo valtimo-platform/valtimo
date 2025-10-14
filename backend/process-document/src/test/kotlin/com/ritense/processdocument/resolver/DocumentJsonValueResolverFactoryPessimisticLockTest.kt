@@ -85,7 +85,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
         valueResolver.handleValues(documentId, values)
 
         // Then - Should call updateDocumentAtomic instead of modifyDocument
-        verify(documentService).updateDocumentAtomic(eq(documentId), any())
+        verify(documentService).modifyDocumentAtomic(eq(JsonSchemaDocumentId.existingId(documentId)), any())
         verify(documentService, never()).modifyDocument(any(), any())
     }
 
@@ -110,7 +110,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
 
         // Then - Should call modifyDocument instead of updateDocumentAtomic
         verify(documentService).modifyDocument(any(), any())
-        verify(documentService, never()).updateDocumentAtomic(any(), any())
+        verify(documentService, never()).modifyDocumentAtomic(any(), any())
     }
 
     @Test

@@ -22,24 +22,22 @@ import org.springframework.boot.context.properties.bind.ConstructorBinding;
 @ConfigurationProperties(prefix = "valtimo.document")
 public class DocumentProperties {
 
-    private final boolean usePessimisticLocking;
-    private final int lockTimeoutInMillis;
+    private final Method method;
 
     @ConstructorBinding
-    public DocumentProperties(Boolean usePessimisticLocking, Integer lockTimeoutInMillis) {
-        this.usePessimisticLocking = usePessimisticLocking != null ? usePessimisticLocking : false;
-        this.lockTimeoutInMillis = lockTimeoutInMillis != null ? lockTimeoutInMillis : 30000;
+    public DocumentProperties(Method method) {
+        this.method = method != null ? method : new DocumentProperties.Method();
     }
 
-    public boolean isUsePessimisticLocking() {
-        return usePessimisticLocking;
+    public Method getMethod() {
+        return method;
     }
 
-    public int getLockTimeoutInMillis() {
-        return lockTimeoutInMillis;
-    }
+    public static class Method {
+        private boolean pessimisticLockingInValueResolverEnabled;
 
-    public int getLockTimeoutInSeconds() {
-        return lockTimeoutInMillis / 1000;
+        public boolean isPessimisticLockingInValueResolverEnabled() {
+            return pessimisticLockingInValueResolverEnabled;
+        }
     }
 }

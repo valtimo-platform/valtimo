@@ -30,6 +30,7 @@ import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.JsonDocumentContent
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.patch.JsonPatchService
 import com.ritense.document.exception.ModifyDocumentException
 import com.ritense.document.exception.UnknownDocumentDefinitionException
@@ -43,7 +44,6 @@ import com.ritense.valueresolver.ValueResolverFactory
 import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.exception.ValueResolverValidationException
-import jakarta.transaction.Transactional
 import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.dao.OptimisticLockingFailureException
 import java.util.UUID
@@ -99,7 +99,7 @@ class DocumentJsonValueResolverFactory(
         variableScope: VariableScope?,
         values: Map<String, Any?>
     ) {
-        if (documentProperties.isUsePessimisticLocking) {
+        if (documentProperties.method.isPessimisticLockingInValueResolverEnabled) {
             handleValuesWithAtomicUpdate(processInstanceId, variableScope, values)
         } else {
             handleValuesWithOptimisticRetry(processInstanceId, variableScope, values)
@@ -116,7 +116,7 @@ class DocumentJsonValueResolverFactory(
         }
 
         AuthorizationContext.runWithoutAuthorization {
-            documentService.updateDocumentAtomic(document.id().getId()) { lockedDocument ->
+            documentService.modifyDocumentAtomic(document.id()) { lockedDocument ->
                 val documentContent = lockedDocument.content().asJson()
                 buildJsonPatch(documentContent, values)
 
@@ -129,7 +129,7 @@ class DocumentJsonValueResolverFactory(
                     null
                 )
                 val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
-                result.resultingDocument().orElseThrow()
+                result.resultingDocument().orElseThrow().content()
             }
         }
     }
@@ -172,7 +172,7 @@ class DocumentJsonValueResolverFactory(
     }
 
     override fun handleValues(documentId: UUID, values: Map<String, Any?>) {
-        if (documentProperties.isUsePessimisticLocking) {
+        if (documentProperties.method.isPessimisticLockingInValueResolverEnabled) {
             handleValuesWithAtomicUpdate(documentId, values)
         } else {
             handleValuesWithOptimisticRetry(documentId, values)
@@ -181,7 +181,7 @@ class DocumentJsonValueResolverFactory(
 
     private fun handleValuesWithAtomicUpdate(documentId: UUID, values: Map<String, Any?>) {
         AuthorizationContext.runWithoutAuthorization {
-            documentService.updateDocumentAtomic(documentId) { lockedDocument ->
+            documentService.modifyDocumentAtomic(JsonSchemaDocumentId.existingId(documentId)) { lockedDocument ->
                 val documentContent = lockedDocument.content().asJson()
                 buildJsonPatch(documentContent, values)
 
@@ -194,7 +194,7 @@ class DocumentJsonValueResolverFactory(
                     null
                 )
                 val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
-                result.resultingDocument().orElseThrow()
+                result.resultingDocument().orElseThrow().content()
             }
         }
     }

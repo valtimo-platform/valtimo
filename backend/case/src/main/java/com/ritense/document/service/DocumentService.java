@@ -18,6 +18,7 @@ package com.ritense.document.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ritense.document.domain.Document;
+import com.ritense.document.domain.DocumentContent;
 import com.ritense.document.domain.RelatedFile;
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest;
 import com.ritense.document.domain.impl.request.NewDocumentRequest;
@@ -50,7 +51,7 @@ public interface DocumentService {
 
     ModifyDocumentResult modifyDocument(ModifyDocumentRequest modifyDocumentRequest);
 
-    Document updateDocumentAtomic(UUID documentId, Function<Document, Document> modifier);
+    void modifyDocumentAtomic(Document.Id documentId, Function<Document, DocumentContent> modifier);
 
     void assignDocumentRelation(Document.Id documentId, DocumentRelation documentRelation);
 

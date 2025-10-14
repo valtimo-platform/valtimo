@@ -39,6 +39,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest;
 import com.ritense.authorization.role.Role;
 import com.ritense.authorization.specification.AuthorizationSpecification;
 import com.ritense.document.domain.Document;
+import com.ritense.document.domain.DocumentContent;
 import com.ritense.document.domain.RelatedFile;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
@@ -75,11 +76,13 @@ import com.ritense.valtimo.contract.audit.utils.AuditHelper;
 import com.ritense.valtimo.contract.authentication.NamedUser;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
+import com.ritense.valtimo.contract.database.QueryDialectHelper;
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent;
 import com.ritense.valtimo.contract.resource.Resource;
 import com.ritense.valtimo.contract.utils.RequestHelper;
 import com.ritense.valtimo.contract.utils.SecurityUtils;
 import jakarta.annotation.Nullable;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +123,10 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private final CaseTagService caseTagService;
 
+    private final QueryDialectHelper queryDialectHelper;
+
+    private final EntityManager entityManager;
+
     public JsonSchemaDocumentService(
         JsonSchemaDocumentRepository documentRepository,
         JsonSchemaDocumentDefinitionService documentDefinitionService,
@@ -131,7 +138,9 @@ public class JsonSchemaDocumentService implements DocumentService {
         OutboxService outboxService,
         ObjectMapper objectMapper,
         InternalCaseStatusService internalCaseStatusService,
-        CaseTagService caseTagService
+        CaseTagService caseTagService,
+        QueryDialectHelper queryDialectHelper,
+        EntityManager entityManager
     ) {
         this.documentRepository = documentRepository;
         this.documentDefinitionService = documentDefinitionService;
@@ -144,6 +153,8 @@ public class JsonSchemaDocumentService implements DocumentService {
         this.objectMapper = objectMapper;
         this.internalCaseStatusService = internalCaseStatusService;
         this.caseTagService = caseTagService;
+        this.queryDialectHelper = queryDialectHelper;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -382,11 +393,14 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     @Override
     @Transactional(timeout = 30, rollbackFor = {Exception.class})
-    public Document updateDocumentAtomic(UUID documentId, Function<Document, Document> modifier) {
-        return withLoggingContext(
+    public void modifyDocumentAtomic(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) Document.Id documentId,
+        Function<Document, DocumentContent> modifier
+    ) {
+        withLoggingContext(
             JsonSchemaDocument.class, documentId.toString(), () -> {
                 final var lockedDocument = runWithoutAuthorization(
-                    () -> documentRepository.findByIdForUpdate(documentId)
+                    () -> documentRepository.findByIdForUpdate(documentId.getId())
                         .orElseThrow(
                             () -> new DocumentNotFoundException("Document not found with id " + documentId)
                         )
@@ -400,19 +414,29 @@ public class JsonSchemaDocumentService implements DocumentService {
                     )
                 );
 
-                final Document modifiedDocument = modifier.apply(lockedDocument);
+                final DocumentContent documentContent = modifier.apply(lockedDocument);
 
-                if (modifiedDocument instanceof JsonSchemaDocument jsonSchemaDoc) {
-                    final var savedDocument = documentRepository.save(jsonSchemaDoc);
+                if (documentContent instanceof JsonDocumentContent jsonDocumentContent) {
+                    entityManager.createNativeQuery("UPDATE json_schema_document " +
+                            "SET json_document_content = CAST(:content AS " + queryDialectHelper.getColumnJsonType() + "), " +
+                            "    modified_on = :modifiedOn, " +
+                            "    version = :version " +
+                            "WHERE json_schema_document_id = :id ")
+                        .setParameter("content", jsonDocumentContent.asJson().toString())
+                        .setParameter("modifiedOn", LocalDateTime.now())
+                        .setParameter("version", lockedDocument.version() + 1)
+                        .setParameter("id", lockedDocument.id().getId())
+                        .executeUpdate();
+                    entityManager.refresh(lockedDocument);
                     outboxService.send(() ->
                         new DocumentUpdated(
-                            savedDocument.id().toString(),
-                            objectMapper.valueToTree(savedDocument)
+                            lockedDocument.id().toString(),
+                            objectMapper.valueToTree(lockedDocument)
                         )
                     );
-                    return savedDocument;
+                    return lockedDocument;
                 } else {
-                    throw new IllegalArgumentException("Modified document must be of type JsonSchemaDocument");
+                    throw new IllegalArgumentException("Modified document content must be of type JsonDocumentContent");
                 }
             }
         );

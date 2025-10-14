@@ -106,4 +106,9 @@ public class MysqlQueryDialectHelper implements QueryDialectHelper {
     public Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column) {
         return cb.function("BIN_TO_UUID", String.class, column);
     }
+
+    @Override
+    public String getColumnJsonType() {
+        return "JSON";
+    }
 }
