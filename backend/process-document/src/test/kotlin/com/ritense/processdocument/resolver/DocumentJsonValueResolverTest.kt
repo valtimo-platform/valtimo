@@ -69,7 +69,7 @@ internal class DocumentJsonValueResolverTest {
         processDocumentService = mock()
         documentService = mock()
         documentDefinitionService = mock()
-        val documentProperties = DocumentProperties(false, 30000)
+        val documentProperties = DocumentProperties(null)
         documentValueResolver = DocumentJsonValueResolverFactory(
             processDocumentService,
             documentService,

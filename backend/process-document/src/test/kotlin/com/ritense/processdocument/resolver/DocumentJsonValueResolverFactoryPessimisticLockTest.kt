@@ -68,7 +68,9 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
     @Test
     fun `should use atomic updates when pessimistic locking enabled`() {
         // Given
-        val pessimisticProperties = DocumentProperties(true, 30000)
+        val vr = DocumentProperties.Locking.ValueResolver()
+        vr.isPessimisticEnabled = true
+        val pessimisticProperties = DocumentProperties(DocumentProperties.Locking(vr))
         whenever(documentService.get(documentId.toString())).thenReturn(mockDocument)
 
         val valueResolver = DocumentJsonValueResolverFactory(
@@ -92,7 +94,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
     @Test
     fun `should use optimistic retry when pessimistic locking disabled`() {
         // Given
-        val optimisticProperties = DocumentProperties(false, 30000)
+        val optimisticProperties = DocumentProperties(null)
         whenever(documentService.get(documentId.toString())).thenReturn(mockDocument)
 
         val valueResolver = DocumentJsonValueResolverFactory(
@@ -116,7 +118,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
     @Test
     fun `should retry on OptimisticLockingFailureException`() {
         // Given
-        val optimisticProperties = DocumentProperties(false, 30000)
+        val optimisticProperties = DocumentProperties(null)
         whenever(documentService.get(documentId.toString())).thenReturn(mockDocument)
 
         var attemptCount = 0
@@ -155,7 +157,7 @@ class DocumentJsonValueResolverFactoryPessimisticLockTest {
     @Test
     fun `should fail after max retry attempts`() {
         // Given
-        val optimisticProperties = DocumentProperties(false, 30000)
+        val optimisticProperties = DocumentProperties(null)
         whenever(documentService.get(documentId.toString())).thenReturn(mockDocument)
         whenever(documentService.modifyDocument(any(), any())).thenAnswer {
             val optimisticException = OptimisticLockingFailureException("Persistent failure")
