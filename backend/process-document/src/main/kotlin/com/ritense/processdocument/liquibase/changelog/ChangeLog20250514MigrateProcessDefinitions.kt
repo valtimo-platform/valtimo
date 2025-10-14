@@ -17,7 +17,7 @@
 package com.ritense.processdocument.liquibase.changelog
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.service.OperatonProcessService.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX
 import io.github.oshai.kotlinlogging.KotlinLogging
 import liquibase.change.custom.CustomTaskChange
 import liquibase.database.Database
@@ -37,7 +37,6 @@ import java.sql.ResultSet
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.UUID
-import java.util.function.Consumer
 
 class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
@@ -398,7 +397,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
             decisionDefinitions = decisionDefinitionSet.decisionDefinitions.map { decisionDefinition ->
                 decisionDefinition.copy(
                     id = UUID.randomUUID().toString(),
-                    versionTag = OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
+                    versionTag = OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag),
                     version = decisionDefinition.version + 1,
                     deploymentId = deploymentId,
                 )
@@ -453,7 +452,7 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
 
         val statement = connection.prepareStatement(existingProcDefQuery)
         statement.setString(1, decisionDefinitionKey)
-        statement.setString(2, OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag))
+        statement.setString(2, OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + CaseDefinitionId.of(caseDefinitionKey, caseDefinitionVersionTag))
 
         val resultSet = statement.executeQuery()
         resultSet.next()
@@ -1015,15 +1014,15 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         val referencedDecisions = mutableListOf<String>()
 
         bpmnModel.getDefinitions().getChildElementsByType<Process?>(Process::class.java).forEach { process: Process? ->
-            process!!.setOperatonVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
+            process!!.setOperatonVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
         }
 
         bpmnModel.getModelElementsByType<CallActivity>(CallActivity::class.java).forEach {callActivity ->
             val elementBinding = callActivity.getOperatonCalledElementBinding()
             // when the element binding is null, it means it's set to latest
-            if (elementBinding == null || callActivity.operatonCalledElementVersionTag?.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
+            if (elementBinding == null || callActivity.operatonCalledElementVersionTag?.startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
                 callActivity.setOperatonCalledElementBinding("versionTag")
-                callActivity.setOperatonCalledElementVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
+                callActivity.setOperatonCalledElementVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX+ caseDefinitionId)
                 referencedProcesses.add(callActivity.calledElement)
             }
         }
@@ -1031,9 +1030,9 @@ class ChangeLog20250514MigrateProcessDefinitions : CustomTaskChange {
         bpmnModel.getModelElementsByType(BusinessRuleTask::class.java).forEach { businessRuleTask ->
             val elementBinding = businessRuleTask.getOperatonDecisionRefBinding()
             // when the element binding is null, it means it's set to latest
-            if (elementBinding == null || businessRuleTask.operatonDecisionRefVersionTag?.startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
+            if (elementBinding == null || businessRuleTask.operatonDecisionRefVersionTag?.startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.key) == true) {
                 businessRuleTask.setOperatonDecisionRefBinding("versionTag")
-                businessRuleTask.setOperatonDecisionRefVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
+                businessRuleTask.setOperatonDecisionRefVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId)
                 referencedDecisions.add(businessRuleTask.operatonDecisionRef)
             }
         }

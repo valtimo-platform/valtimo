@@ -18,6 +18,7 @@ package com.ritense.valtimo.contract.case_
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.ritense.valtimo.contract.domain.AbstractId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.repository.SemverConverter
 import com.ritense.valtimo.contract.serializer.SemverSerializer
 import jakarta.persistence.Column
@@ -71,8 +72,8 @@ data class CaseDefinitionId(
 
         @JvmStatic
         fun fromProcessVersionTag(versionTag: String?): CaseDefinitionId? {
-            if (versionTag == null || !versionTag.startsWith("CD:")) return null
-            val parts = versionTag.removePrefix("CD:").split(":")
+            if (versionTag == null || !versionTag.startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX)) return null
+            val parts = versionTag.removePrefix(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX).split(":")
             if (parts.size != 2) return null
 
             val (key, tag) = parts
