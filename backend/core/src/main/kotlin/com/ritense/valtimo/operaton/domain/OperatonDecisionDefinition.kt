@@ -17,6 +17,7 @@
 package com.ritense.valtimo.operaton.domain
 
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -89,8 +90,8 @@ class OperatonDecisionDefinition(
     }
 
     fun getCaseDefinitionId(): CaseDefinitionId? {
-        return if (versionTag != null && versionTag.startsWith("CD:")) {
-            val caseDefinitionIdAsArray = versionTag.substringAfter("CD:").split(":")
+        return if (versionTag != null && versionTag.startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX)) {
+            val caseDefinitionIdAsArray = versionTag.substringAfter(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX).split(":")
             CaseDefinitionId.of(caseDefinitionIdAsArray[0], caseDefinitionIdAsArray[1])
         } else {
             null
