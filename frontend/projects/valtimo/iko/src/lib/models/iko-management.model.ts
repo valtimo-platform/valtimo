@@ -15,6 +15,7 @@
  */
 
 import {Type} from '@angular/core';
+import {ViewType} from '@valtimo/components';
 
 interface IkoDataAggregateCreateRequest {
   ikoRepositoryConfigKey: string;

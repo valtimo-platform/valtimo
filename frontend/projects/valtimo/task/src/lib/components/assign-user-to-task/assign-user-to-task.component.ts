@@ -107,7 +107,7 @@ export class AssignUserToTaskComponent implements OnInit, OnChanges, OnDestroy {
   public readonly open$ = new Subject<boolean>();
   public readonly disabled$ = new BehaviorSubject<boolean>(true);
 
-  public readonly toggletipTheme$ = this.cdsThemeService.toggletipTheme$;
+  public readonly toggletipTheme$ = this.cdsThemeService.currentTheme$;
 
   private readonly _subscriptions = new Subscription();
 

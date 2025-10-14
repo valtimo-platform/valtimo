@@ -28,6 +28,7 @@ const WidgetTypeTags: {[key: string]: TagType} = {
   [WidgetType.FIELDS]: 'blue',
   [WidgetType.FORMIO]: 'green',
   [WidgetType.TABLE]: 'purple',
+  [WidgetType.INTERACTIVE_TABLE]: 'magenta',
 };
 
 export {WidgetManagementTab, WidgetTypeTags};

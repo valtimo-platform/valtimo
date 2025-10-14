@@ -81,7 +81,6 @@ import {
   TilesModule,
   TooltipModule,
 } from 'carbon-components-angular';
-
 import {CaseRoutingModule} from './case-routing.module';
 import {CaseAssignUserComponent} from './components/case-assign-user/case-assign-user.component';
 import {CaseBulkAssignModalComponent} from './components/case-bulk-assign-modal/case-bulk-assign-modal.component';
@@ -113,7 +112,6 @@ export type TabsFactory = () => Map<string, object>;
   declarations: [
     CaseBulkAssignModalComponent,
     CaseListComponent,
-    CaseListActionsComponent,
     CaseDetailComponent,
     CaseDetailTabSummaryComponent,
     CaseDetailTabProgressComponent,
@@ -121,7 +119,6 @@ export type TabsFactory = () => Map<string, object>;
     CaseDetailTabDocumentsComponent,
     CaseDetailTabNotesComponent,
     CaseUpdateComponent,
-    CaseProcessStartModalComponent,
     CaseSupportingProcessStartModalComponent,
     CaseDetailTabS3DocumentsComponent,
     CaseDetailTabNotFoundComponent,
@@ -199,8 +196,10 @@ export type TabsFactory = () => Map<string, object>;
     TooltipModule,
     ListColumnViewComponent,
     QuickSearchComponent,
+    CaseProcessStartModalComponent,
+    CaseListActionsComponent,
   ],
-  exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
+  exports: [CaseListComponent, CaseDetailComponent],
 })
 export class CaseModule {
   static forRoot(tabsFactory: TabsFactory): ModuleWithProviders<CaseModule> {

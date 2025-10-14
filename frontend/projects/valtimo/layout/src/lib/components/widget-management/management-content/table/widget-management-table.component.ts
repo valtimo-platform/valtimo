@@ -20,6 +20,7 @@ import {
   computed,
   EventEmitter,
   HostBinding,
+  Input,
   OnDestroy,
   OnInit,
   Output,
@@ -39,7 +40,7 @@ import {
   ValuePathSelectorPrefix,
   ValuePathType,
 } from '@valtimo/components';
-import {ButtonModule, InputModule, ToggleModule} from 'carbon-components-angular';
+import {ButtonModule, InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
 import {IWidgetContentComponent} from '../../../../interfaces';
 import {WidgetWizardService} from '../../../../services';
@@ -47,6 +48,7 @@ import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-man
 import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
 
 @Component({
+  selector: 'valtimo-widget-management-table',
   templateUrl: './widget-management-table.component.html',
   styleUrl: './widget-management-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,10 +63,12 @@ import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '..
     ToggleModule,
     ButtonModule,
     InputLabelModule,
+    LayerModule,
   ],
 })
 export class WidgetManagementTableComponent implements IWidgetContentComponent, OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-table';
+  @Input() public showFirstColumnOption = true;
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public readonly form: FormGroup = this.fb.group({
@@ -100,7 +104,7 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
   public readonly ValuePathType = ValuePathType;
 
-  private readonly _contentValid = signal<boolean>(this.widgetWizardService.$editMode());
+  private readonly _$contentValid = signal<boolean>(this.widgetWizardService.$editMode());
   private readonly _subscriptions = new Subscription();
 
   constructor(
@@ -124,13 +128,13 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
             }) as WidgetTableContent
         );
 
-        this.changeValidEvent.emit(this.form.valid && this._contentValid());
+        this.changeValidEvent.emit(this.form.valid && this._$contentValid());
       })
     );
   }
 
   public ngOnDestroy(): void {
-    this._contentValid.set(false);
+    this._$contentValid.set(false);
     this._subscriptions.unsubscribe();
     this.changeValidEvent.emit(false);
     this.form.reset();
@@ -142,7 +146,7 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
       (content: WidgetContentProperties | null) =>
         ({...content, columns: data}) as WidgetTableContent
     );
-    this._contentValid.set(valid);
+    this._$contentValid.set(valid);
     this.changeValidEvent.emit(valid && this.form.valid);
   }
 
