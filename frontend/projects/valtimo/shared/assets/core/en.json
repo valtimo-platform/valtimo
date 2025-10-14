@@ -1948,5 +1948,14 @@
     "rightClickTooltip": "Right-click for options",
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
+  },
+  "bezwaarStartForm": {
+    "htmlLabel": "HTML",
+    "startInstruction": "Click Start to submit your objection.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "start": "Start",
+    "firstNameDefault": "John",
+    "lastNameDefault": "Doe"
   }
 }

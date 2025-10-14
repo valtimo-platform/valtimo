@@ -1980,5 +1980,14 @@
     "rightClickTooltip": "Klik met de rechtermuisknop voor opties",
     "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
     "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
+  },
+  "bezwaarStartForm": {
+    "htmlLabel": "HTML",
+    "startInstruction": "Klik op Start om uw bezwaar in te dienen.",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "start": "Start",
+    "firstNameDefault": "Jan",
+    "lastNameDefault": "Doo"
   }
 }
