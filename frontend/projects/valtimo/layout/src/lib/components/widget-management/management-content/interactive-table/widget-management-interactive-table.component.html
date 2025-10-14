@@ -13,18 +13,22 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<valtimo-widget-management-table [showFirstColumnOption]="false">
+<valtimo-widget-management-table
+  [showFirstColumnOption]="false"
+  (changeValidEvent)="onTableChangeValidEvent($event)"
+>
   <form [formGroup]="formGroup" class="valtimo-widget-management-interactive-table__form">
     <cds-checkbox formControlName="canStartCase">
       {{ 'ikoManagement.canStartCase' | translate }}
     </cds-checkbox>
 
-    <cds-text-label>
+    <cds-text-label class="valtimo-widget-management-interactive-table__row-action">
       {{ 'ikoManagement.rowAction' | translate }}
 
       <input
         formControlName="rowClickAction"
         cdsText
+        cdsLayer="1"
         [placeholder]="'ikoManagement.rowAction' | translate"
         type="text"
       />

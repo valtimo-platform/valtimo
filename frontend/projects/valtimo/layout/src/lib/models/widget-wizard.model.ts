@@ -80,9 +80,9 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     component: WidgetManagementTableComponent,
   },
   {
-    titleKey: 'widgetTabManagement.types.collection.title',
-    descriptionKey: 'widgetTabManagement.types.collection.description',
-    illustrationUrl: 'valtimo-layout/img/widget-management/types/collection.svg',
+    titleKey: 'widgetTabManagement.types.interactive-table.title',
+    descriptionKey: 'widgetTabManagement.types.interactive-table.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/table.svg',
     type: WidgetType.INTERACTIVE_TABLE,
     component: WidgetManagementInteractiveTableComponent,
   },
