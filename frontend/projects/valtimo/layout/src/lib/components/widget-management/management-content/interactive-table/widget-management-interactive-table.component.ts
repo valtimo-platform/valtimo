@@ -121,6 +121,10 @@ export class WidgetManagementInteractiveTableComponent
     this.actionsControl.removeAt(index);
   }
 
+  public onTableChangeValidEvent(valid: boolean): void {
+    this.changeValidEvent.emit(valid);
+  }
+
   private openActionsSubscription(): void {
     this._subscriptions.add(
       this.actionsControl.valueChanges.pipe(debounceTime(500)).subscribe(() => {
