@@ -17,6 +17,7 @@
 dependencies {
     api(project(":audit"))
     api(project(":authorization"))
+    api(project(":building-block"))
     api(project(":case"))
     api(project(":changelog"))
     api(project(":contract"))
