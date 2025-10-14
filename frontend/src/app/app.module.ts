@@ -97,6 +97,7 @@ import {
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
+  IkoPluginModule,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
@@ -138,6 +139,7 @@ import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
 import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
+import {IkoModule} from '@valtimo/iko';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -231,6 +233,8 @@ export function tabsFactory() {
     BpmnJsDiagramModule,
     MenuModule,
     WidgetModule,
+    IkoPluginModule,
+    IkoModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

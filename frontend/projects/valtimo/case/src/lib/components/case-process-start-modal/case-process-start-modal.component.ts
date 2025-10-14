@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import {CommonModule} from '@angular/common';
 import {
   Component,
   ComponentRef,
   EventEmitter,
   Inject,
+  Input,
   OnDestroy,
   OnInit,
   Optional,
@@ -27,39 +28,55 @@ import {
   ViewContainerRef,
   ViewEncapsulation,
 } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {Router} from '@angular/router';
+import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
+import {TranslateModule} from '@ngx-translate/core';
 import {PermissionService} from '@valtimo/access-control';
-import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {
+  FormioComponent,
+  FormIoModule,
+  FormioOptionsImpl,
+  FormioSubmission,
+  RenderInBodyComponent,
+  ValtimoCdsModalDirective,
+  ValtimoFormioOptions,
+} from '@valtimo/components';
+import {ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {ProcessService} from '@valtimo/process';
 import {
   FORM_CUSTOM_COMPONENT_TOKEN,
   FormCustomComponent,
   FormCustomComponentConfig,
-  FormFlowService,
   FormSubmissionResult,
+  ProcessLinkModule,
   ProcessLinkService,
   UrlResolverService,
 } from '@valtimo/process-link';
-import {ProcessService} from '@valtimo/process';
-import {
-  FormioComponent,
-  FormioOptionsImpl,
-  FormioSubmission,
-  ValtimoFormioOptions,
-} from '@valtimo/components';
-import {FormioBeforeSubmit, FormioForm} from '@formio/angular';
 import {UserProviderService} from '@valtimo/security';
+import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
+import {DialogModule, LayerModule, ModalModule} from 'carbon-components-angular';
+import {BehaviorSubject, Subscription} from 'rxjs';
 import {take} from 'rxjs/operators';
 import {CAN_VIEW_CASE_PERMISSION, CASE_DETAIL_PERMISSION_RESOURCE} from '../../permissions';
 import {CaseListService, StartModalService} from '../../services';
-import {ConfigService, FORM_VIEW_MODEL_TOKEN, FormViewModel} from '@valtimo/shared';
-import {BehaviorSubject, Subscription} from 'rxjs';
 
 @Component({
-  standalone: false,
+  standalone: true,
   selector: 'valtimo-case-process-start-modal',
   templateUrl: './case-process-start-modal.component.html',
   styleUrls: ['./case-process-start-modal.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ProcessLinkModule,
+    FormIoModule,
+    ValtimoCdsModalDirective,
+    DialogModule,
+    ModalModule,
+    LayerModule,
+    RenderInBodyComponent,
+  ],
 })
 export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   public processDefinitionKey: string;
@@ -77,6 +94,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   public isAdmin: boolean;
   public isFormViewModel = false;
   public isUIComponent = false;
+  @Input() navigateAfterSubmit = true;
   @ViewChild('form', {static: false}) form: FormioComponent;
   @ViewChild('formViewModelComponent', {static: true, read: ViewContainerRef})
   public formViewModelDynamicContainer: ViewContainerRef;
@@ -94,12 +112,9 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
   public readonly closeModalEvent = new EventEmitter();
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private processService: ProcessService,
-    private documentService: DocumentService,
     private processLinkService: ProcessLinkService,
-    private formFlowService: FormFlowService,
     private userProviderService: UserProviderService,
     private permissionService: PermissionService,
     private listService: CaseListService,
@@ -117,15 +132,15 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
     this._formCustomComponentConfig$.next(formCustomComponentConfig);
   }
 
-  ngOnInit() {
+  public ngOnInit(): void {
     this.isUserAdmin();
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
 
-  private loadProcessLink() {
+  private loadProcessLink(): void {
     this.processLinkId = null;
     this.formDefinition = null;
     this.formFlowInstanceId = null;
@@ -257,7 +272,7 @@ export class CaseProcessStartModalComponent implements OnInit, OnDestroy {
         identifier: formSubmissionResult.documentId,
       })
       .subscribe(canViewCase => {
-        if (canViewCase) {
+        if (canViewCase && this.navigateAfterSubmit) {
           this.router.navigate([
             'cases',
             this.caseDefinitionKey,

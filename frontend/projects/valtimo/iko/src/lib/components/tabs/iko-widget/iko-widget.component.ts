@@ -24,6 +24,7 @@ import {IkoWidgetCollectionComponent} from '../../widget-collection';
 import {IkoWidgetCustomComponent} from '../../widget-custom';
 import {IkoWidgetFieldComponent} from '../../widget-field';
 import {IkoWidgetFormioComponent} from '../../widget-formio';
+import {IkoWidgetInteractiveTableComponent} from '../../widget-interactive-table';
 import {IkoWidgetTableComponent} from '../../widget-table';
 
 @Component({
@@ -71,6 +72,7 @@ export class IkoWidgetComponent {
     [WidgetType.CUSTOM]: IkoWidgetCustomComponent,
     [WidgetType.FORMIO]: IkoWidgetFormioComponent,
     [WidgetType.TABLE]: IkoWidgetTableComponent,
+    [WidgetType.INTERACTIVE_TABLE]: IkoWidgetInteractiveTableComponent,
     [WidgetType.COLLECTION]: IkoWidgetCollectionComponent,
   };
 

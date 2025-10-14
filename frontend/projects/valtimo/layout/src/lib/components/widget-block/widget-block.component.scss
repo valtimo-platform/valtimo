@@ -28,6 +28,10 @@
   background-color: var(--cds-layer-01);
   background-clip: content-box;
 
+  &__content {
+    height: 100%;
+  }
+
   &__not-available {
     padding: 16px;
   }
