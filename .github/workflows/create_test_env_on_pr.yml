@@ -16,6 +16,8 @@ jobs:
     environment:
       name: pr-test-environment
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - uses: ./.github/workflows/create_test_env.yml
         with:
           envName: "pr-${{ github.event.number }}"
