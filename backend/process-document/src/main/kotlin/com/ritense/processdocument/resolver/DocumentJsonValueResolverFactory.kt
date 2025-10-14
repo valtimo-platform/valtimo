@@ -99,7 +99,7 @@ class DocumentJsonValueResolverFactory(
         variableScope: VariableScope?,
         values: Map<String, Any?>
     ) {
-        if (documentProperties.method.isPessimisticLockingInValueResolverEnabled) {
+        if (documentProperties.locking.valueResolver.isPessimisticEnabled) {
             handleValuesWithAtomicUpdate(processInstanceId, variableScope, values)
         } else {
             handleValuesWithOptimisticRetry(processInstanceId, variableScope, values)
@@ -172,7 +172,7 @@ class DocumentJsonValueResolverFactory(
     }
 
     override fun handleValues(documentId: UUID, values: Map<String, Any?>) {
-        if (documentProperties.method.isPessimisticLockingInValueResolverEnabled) {
+        if (documentProperties.locking.valueResolver.isPessimisticEnabled) {
             handleValuesWithAtomicUpdate(documentId, values)
         } else {
             handleValuesWithOptimisticRetry(documentId, values)

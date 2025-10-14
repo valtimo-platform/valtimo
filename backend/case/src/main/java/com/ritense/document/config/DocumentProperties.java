@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,22 +22,40 @@ import org.springframework.boot.context.properties.bind.ConstructorBinding;
 @ConfigurationProperties(prefix = "valtimo.document")
 public class DocumentProperties {
 
-    private final Method method;
+    private final Locking locking;
 
     @ConstructorBinding
-    public DocumentProperties(Method method) {
-        this.method = method != null ? method : new DocumentProperties.Method();
+    public DocumentProperties(Locking locking) {
+        this.locking = locking != null ? locking : new Locking(new Locking.ValueResolver());
     }
 
-    public Method getMethod() {
-        return method;
+    public Locking getLocking() {
+        return locking;
     }
 
-    public static class Method {
-        private boolean pessimisticLockingInValueResolverEnabled;
+    public static class Locking {
 
-        public boolean isPessimisticLockingInValueResolverEnabled() {
-            return pessimisticLockingInValueResolverEnabled;
+        private final ValueResolver valueResolver;
+
+        @ConstructorBinding
+        public Locking(ValueResolver valueResolver) {
+            this.valueResolver = valueResolver != null ? valueResolver : new ValueResolver();
+        }
+
+        public ValueResolver getValueResolver() {
+            return valueResolver;
+        }
+
+        public static class ValueResolver {
+            private boolean pessimisticEnabled;
+
+            public boolean isPessimisticEnabled() {
+                return pessimisticEnabled;
+            }
+
+            public void setPessimisticEnabled(boolean pessimisticEnabled) {
+                this.pessimisticEnabled = pessimisticEnabled;
+            }
         }
     }
 }
