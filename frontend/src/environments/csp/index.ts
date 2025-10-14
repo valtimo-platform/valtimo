@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-export * from './csp.dev';
-export * from './csp.test';
-export * from './csp.prod';
+export * from './csp';
