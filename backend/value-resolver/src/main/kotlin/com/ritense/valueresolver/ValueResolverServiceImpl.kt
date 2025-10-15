@@ -20,6 +20,7 @@ import com.ritense.logging.LoggableResource
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.camunda.bpm.engine.delegate.VariableScope
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
@@ -49,6 +50,7 @@ class ValueResolverServiceImpl(
     }
 
     @Deprecated("Use getResolvableKeys with ValueResolverOptionRequest object instead")
+    @Transactional(readOnly = true)
     override fun getResolvableKeys(
         prefixes: List<String>,
         @LoggableResource("documentDefinitionName") documentDefinitionName: String
@@ -59,6 +61,7 @@ class ValueResolverServiceImpl(
     }
 
     @Deprecated("Use getResolvableKeys with ValueResolverOptionRequest object instead")
+    @Transactional(readOnly = true)
     override fun getResolvableKeys(
         prefixes: List<String>,
         @LoggableResource("documentDefinitionName") documentDefinitionName: String,
@@ -70,6 +73,7 @@ class ValueResolverServiceImpl(
     }
 
 
+    @Transactional(readOnly = true)
     override fun getResolvableKeys(
         request: ValueResolverOptionRequest,
         @LoggableResource("documentDefinitionName") documentDefinitionName: String
@@ -81,6 +85,7 @@ class ValueResolverServiceImpl(
         }
     }
 
+    @Transactional(readOnly = true)
     override fun getResolvableKeys(
         request: ValueResolverOptionRequest,
         @LoggableResource("documentDefinitionName") documentDefinitionName: String,
@@ -106,6 +111,7 @@ class ValueResolverServiceImpl(
      * @param requestedValues The requestedValues that should be resolved into values.
      * @return A map where the key is the requestedValue, and the value the resolved value.
      */
+    @Transactional(readOnly = true)
     override fun resolveValues(
         @LoggableResource("com.ritense.valtimo.camunda.domain.CamundaExecution") processInstanceId: String,
         variableScope: VariableScope,
@@ -156,6 +162,7 @@ class ValueResolverServiceImpl(
      * @param requestedValues The requestedValues that should be resolved into values.
      * @return A map where the key is the requestedValue, and the value the resolved value.
      */
+    @Transactional(readOnly = true)
     override fun resolveValues(
         @LoggableResource("com.ritense.document.domain.impl.JsonSchemaDocument") documentInstanceId: String,
         requestedValues: Collection<String>

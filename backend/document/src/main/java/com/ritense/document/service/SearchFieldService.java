@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import com.ritense.logging.LoggableResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Transactional;
 import org.zalando.problem.Status;
 
 public class SearchFieldService {
@@ -77,6 +78,7 @@ public class SearchFieldService {
         searchFieldRepository.save(searchField);
     }
 
+    @Transactional(readOnly = true)
     public List<SearchField> getSearchFields(
         @LoggableResource("documentDefinitionName") String documentDefinitionName
     ) {

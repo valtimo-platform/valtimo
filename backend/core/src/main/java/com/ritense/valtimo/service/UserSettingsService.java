@@ -21,6 +21,7 @@ import com.ritense.valtimo.domain.user.UserSettings;
 import com.ritense.valtimo.repository.UserSettingsRepository;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public class UserSettingsService {
 
@@ -30,6 +31,7 @@ public class UserSettingsService {
         this.userSettingsRepository = userSettingsRepository;
     }
 
+    @Transactional(readOnly = true)
     public Optional<UserSettings> findUserSettings(ManageableUser user) {
         return userSettingsRepository.findById(user.getUserIdentifier());
     }

@@ -45,7 +45,7 @@ import java.time.format.DateTimeFormatter
 import java.util.function.Supplier
 import kotlin.text.Charsets.UTF_8
 
-@Transactional
+@Transactional(readOnly = true)
 class CaseExporter(
     private val caseDefinitionListColumnRepository: CaseDefinitionListColumnRepository,
     private val documentSearchService: JsonSchemaDocumentSearchService,

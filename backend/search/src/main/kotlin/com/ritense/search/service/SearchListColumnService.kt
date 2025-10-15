@@ -21,6 +21,7 @@ import com.ritense.search.repository.SearchListColumnRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.util.Optional
 import java.util.UUID
@@ -61,8 +62,10 @@ class SearchListColumnService(
         } ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Search list column not found")
     }
 
+    @Transactional(readOnly = true)
     fun findByOwnerId(ownerId: String) = searchListColumnRepository.findAllByOwnerIdOrderByOrder(ownerId)
 
+    @Transactional(readOnly = true)
     fun findById(id: UUID): Optional<SearchListColumn> = searchListColumnRepository.findById(id)
 
     private fun findByOwnerIdAndKey(ownerId: String, key: String) =

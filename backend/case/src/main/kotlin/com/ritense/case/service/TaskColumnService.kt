@@ -107,6 +107,7 @@ class TaskColumnService(
     }
 
     @Throws(UnknownDocumentDefinitionException::class)
+    @Transactional(readOnly = true)
     fun getListColumns(caseDefinitionName: String): List<TaskListColumnDto> {
         // TODO: Implement PBAC:
         // It currently relies on the VIEW check in findLatestByName via assertDocumentDefinitionExists.

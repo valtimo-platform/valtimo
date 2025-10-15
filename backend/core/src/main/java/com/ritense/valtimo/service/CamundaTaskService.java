@@ -116,6 +116,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 public class CamundaTaskService {
 
     private static final Logger logger = LoggerFactory.getLogger(CamundaTaskService.class);
@@ -174,14 +175,12 @@ public class CamundaTaskService {
         return task;
     }
 
-    @Transactional
     public void assignByEmail(String taskId, String assigneeEmail) throws IllegalStateException {
         var assignee = userManagementService.findNamedUserByEmail(assigneeEmail)
             .orElseThrow(() -> new IllegalStateException("Error. No registered user found with email: " + assigneeEmail));
         assign(taskId, assignee.getId());
     }
 
-    @Transactional
     public void assign(String taskId, String assignee) throws IllegalStateException {
         if (assignee == null) {
             unassign(taskId);
@@ -223,7 +222,6 @@ public class CamundaTaskService {
         }
     }
 
-    @Transactional
     public void unassign(String taskId) {
         final CamundaTask task = runWithoutAuthorization(() -> findTaskById(taskId));
         requirePermission(task, ASSIGN);
@@ -238,7 +236,6 @@ public class CamundaTaskService {
         }
     }
 
-    @Transactional
     public void setDueDate(String taskId, LocalDateTime dueDate) throws IllegalStateException {
         if (dueDate == null) {
             removeDueDate(taskId);
@@ -263,7 +260,6 @@ public class CamundaTaskService {
         }
     }
 
-    @Transactional
     public void removeDueDate(String taskId) {
         final CamundaTask task = runWithoutAuthorization(() -> findTaskById(taskId));
         requirePermission(task, MODIFY);
@@ -317,7 +313,6 @@ public class CamundaTaskService {
         return userManagementService.findNamedUserByRoles(candidateGroups);
     }
 
-    @Transactional
     public void complete(String taskId) {
         final CamundaTask task = runWithoutAuthorization(() -> findTaskById(taskId));
         requirePermission(task, COMPLETE);
@@ -327,7 +322,6 @@ public class CamundaTaskService {
         outboxService.send(() -> new TaskCompleted(taskId, objectMapper.valueToTree(task)));
     }
 
-    @Transactional
     public void completeTaskWithFormData(String taskId, Map<String, Object> variables) {
         try {
             if (variables == null || variables.isEmpty()) {
@@ -349,7 +343,6 @@ public class CamundaTaskService {
         }
     }
 
-    @Transactional
     public void completeTaskAndDeleteFiles(String taskId, TaskCompletionDTO taskCompletionDTO) {
         completeTaskWithFormData(taskId, taskCompletionDTO.getVariables());
         optionalResourceService.ifPresent(
@@ -556,7 +549,6 @@ public class CamundaTaskService {
      * @deprecated Task comments will be removed in the future.
      */
     @Deprecated(since = "11.1.0", forRemoval = true)
-    @Transactional
     public void createComment(@Nullable String taskId, @Nullable String processInstanceId, String message) {
         if (taskId != null) {
             final CamundaTask task = runWithoutAuthorization(() -> findTaskById(taskId));

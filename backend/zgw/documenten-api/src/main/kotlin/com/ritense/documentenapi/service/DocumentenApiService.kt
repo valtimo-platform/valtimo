@@ -155,6 +155,7 @@ class DocumentenApiService(
         documentApiPlugin.deleteInformatieObject(documentUrl)
     }
 
+    @Transactional(readOnly = true)
     fun getColumns(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<DocumentenApiColumn> {
@@ -172,6 +173,7 @@ class DocumentenApiService(
         return documentenApiColumnRepository.findAllByIdCaseDefinitionNameOrderByOrder(caseDefinitionName)
     }
 
+    @Transactional(readOnly = true)
     fun getAllColumnKeys(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<DocumentenApiColumnKey> {
@@ -239,6 +241,7 @@ class DocumentenApiService(
         return documentenApiUploadFieldRepository.save(uploadField)
     }
 
+    @Transactional(readOnly = true)
     fun getUploadFields(caseDefinitionName: String): List<DocumentenApiUploadField> {
         logger.debug { "Get Documenten API UploadFields" }
         denyAuthorization()

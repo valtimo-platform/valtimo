@@ -27,6 +27,7 @@ class IntermediateSubmissionService(
     private val camundaTaskService: CamundaTaskService
 ) {
 
+    @Transactional(readOnly = true)
     fun get(
         @LoggableResource(resourceType = CamundaTask::class) taskInstanceId: String
     ): IntermediateSubmission? {

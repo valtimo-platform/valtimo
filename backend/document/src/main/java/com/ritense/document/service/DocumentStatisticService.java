@@ -28,6 +28,7 @@ import com.ritense.document.repository.DocumentRepository;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Transactional;
 
 public class DocumentStatisticService {
 
@@ -44,6 +45,7 @@ public class DocumentStatisticService {
         this.authorizationService = authorizationService;
     }
 
+    @Transactional(readOnly = true)
     public List<UnassignedDocumentCountDto> getUnassignedDocumentCountDtos() {
         final var authSpec = authorizationService.getAuthorizationSpecification(
             new EntityAuthorizationRequest<>(
@@ -57,6 +59,7 @@ public class DocumentStatisticService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
     private UnassignedDocumentCountDto getUnassignedDocumentCountDto(String documentDefinitionName, Specification authSpec) {
         long count = documentRepository.count(authSpec.and(byDocumentDefinitionName(documentDefinitionName).and(byUnassigned())));
         return new UnassignedDocumentCountDto(documentDefinitionName, count);

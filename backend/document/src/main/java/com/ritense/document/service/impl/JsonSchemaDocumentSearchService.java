@@ -77,7 +77,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
+@Transactional(readOnly = true)
 public class JsonSchemaDocumentSearchService implements DocumentSearchService {
 
     private static final String DOCUMENT_DEFINITION_ID = "documentDefinitionId";

@@ -67,6 +67,7 @@ class CaseDefinitionService(
     )
 
     @Throws(UnknownDocumentDefinitionException::class)
+    @Transactional(readOnly = true)
     fun getCaseSettings(caseDefinitionName: String): CaseDefinitionSettings {
         // TODO: Implement PBAC:
         // It currently relies on the VIEW check in findLatestByName via assertDocumentDefinitionExists.
@@ -143,6 +144,7 @@ class CaseDefinitionService(
 
 
     @Throws(UnknownDocumentDefinitionException::class)
+    @Transactional(readOnly = true)
     fun getListColumns(caseDefinitionName: String): List<CaseListColumnDto> {
         // TODO: Implement PBAC:
         // It currently relies on the VIEW check in findLatestByName via assertDocumentDefinitionExists.
