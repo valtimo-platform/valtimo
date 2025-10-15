@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -857,7 +857,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should update zaakopschorting and verlenging`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -896,7 +895,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should start hersteltermijn`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -945,7 +943,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should not start hersteltermijn twice`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -992,7 +989,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should end hersteltermijn`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -1048,7 +1044,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should create zaakeigenschap`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -1096,7 +1091,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should update zaakeigenschap`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -1146,7 +1140,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should delete zaakeigenschap`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -1189,7 +1182,6 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should relateer zaken`() {
-
         // given
         val zakenApiClient: ZakenApiClient = mock()
         val zaakUrlProvider: ZaakUrlProvider = mock()
@@ -1261,37 +1253,22 @@ internal class ZakenApiPluginTest {
     }
 
     @Test
-    fun `should get zaaknotities and set variable`() {
-        val documentId = UUID.randomUUID()
+    fun `should return list of zaaknotities`() {
+        // given
         val zaakUrl = zaakUri()
+        val zaakNotitie1: ZaakNotitie = mock {
+            on { this.url } doReturn URI("https://example.com/zaaknotities/1")
+            on { this.gerelateerdAan } doReturn zaakUrl
+        }
+        val zaakNotitie2: ZaakNotitie = mock {
+            on { this.url } doReturn URI("https://example.com/zaaknotities/2")
+            on { this.gerelateerdAan } doReturn zaakUrl
+        }
         val page = Page(
             count = 2,
             next = null,
             previous = null,
-            results = listOf(
-                ZaakNotitie(
-                    url = URI("https://example.com/zaaknotities/1"),
-                    onderwerp = "o1",
-                    tekst = "t1",
-                    aangemaaktDoor = "jan",
-                    notitieType = NotitieType.INTERN,
-                    status = NotitieStatus.CONCEPT,
-                    aanmaakdatum = java.time.LocalDateTime.parse("2024-01-01T10:00:00"),
-                    wijzigingsdatum = java.time.LocalDateTime.parse("2024-01-01T10:00:00"),
-                    gerelateerdAan = zaakUrl
-                ),
-                ZaakNotitie(
-                    url = URI("https://example.com/zaaknotities/2"),
-                    onderwerp = "o2",
-                    tekst = "t2",
-                    aangemaaktDoor = null,
-                    notitieType = NotitieType.EXTERN,
-                    status = NotitieStatus.DEFINITIEF,
-                    aanmaakdatum = java.time.LocalDateTime.parse("2024-01-02T10:00:00"),
-                    wijzigingsdatum = java.time.LocalDateTime.parse("2024-01-02T10:00:00"),
-                    gerelateerdAan = zaakUrl
-                )
-            )
+            results = listOf(zaakNotitie1, zaakNotitie2)
         )
 
         val authenticationMock: ZakenApiAuthentication = mock()
@@ -1305,36 +1282,63 @@ internal class ZakenApiPluginTest {
                 )
             } doReturn page
         }
-        val zaakUrlProvider: ZaakUrlProvider = mock {
-            on { this.getZaakUrl(eq(documentId)) } doReturn zaakUrl
-        }
-        val executionMock: DelegateExecution = mock {
-            on { this.businessKey } doReturn documentId.toString()
-        }
 
         val plugin = zakenApiPlugin(
-            zaakUrlProvider = zaakUrlProvider,
             zakenApiClient = zakenApiClient,
-            authenticationMock = authenticationMock,
-            objectMapper = MapperSingleton.get()
+            authenticationMock = authenticationMock
         )
 
-        plugin.getZaakNotities(
-            execution = executionMock,
-            resultVariable = "notities"
-        )
+        // when
+        val actual = plugin.getZaakNotities(zaakUrl)
 
+        // then
+        assertThat(actual).hasSize(2)
         verify(zakenApiClient, times(1)).getZaakNotities(
             authentication = any(),
             baseUrl = any(),
-            zaakUrl = any(),
-            page = any()
+            zaakUrl = eq(zaakUrl),
+            page = eq(1)
         )
-        verify(executionMock).setVariable(eq("notities"), any())
+    }
+
+    @Test
+    fun `should return zaaknotitie`() {
+        // given
+        val zaakUrl = zaakUri()
+        val zaakNotitieUrl = URI("https://example.com/zaaknotities/1")
+        val zaakNotitie: ZaakNotitie = mock {
+            on { this.url } doReturn zaakNotitieUrl
+            on { this.gerelateerdAan } doReturn zaakUrl
+        }
+
+        val authenticationMock: ZakenApiAuthentication = mock()
+        val zakenApiClient: ZakenApiClient = mock {
+            on {
+                this.getZaakNotitie(
+                    authentication = eq(authenticationMock),
+                    zaakNotitieUrl = eq(zaakNotitieUrl)
+                )
+            } doReturn zaakNotitie
+        }
+
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        plugin.getZaakNotitie(zaakNotitieUrl)
+
+        // then
+        verify(zakenApiClient, times(1)).getZaakNotitie(
+            authentication = any(),
+            zaakNotitieUrl = eq(zaakNotitieUrl)
+        )
     }
 
     @Test
     fun `should create zaaknotitie for current zaak`() {
+        // given
         val documentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
 
@@ -1351,15 +1355,17 @@ internal class ZakenApiPluginTest {
             zakenApiClient = zakenApiClient
         )
 
+        // when
         plugin.createZaakNotitie(
             execution = executionMock,
             onderwerp = "Onderwerp",
             tekst = "Tekst",
             aangemaaktDoor = "jan",
-            notitieType = "intern",
-            status = "concept"
+            notitieType = NotitieType.INTERN.key,
+            status = NotitieStatus.CONCEPT.key
         )
 
+        // then
         argumentCaptor<CreateZaakNotitieRequest> {
             verify(zakenApiClient).createZaakNotitie(
                 authentication = any(),
@@ -1380,27 +1386,36 @@ internal class ZakenApiPluginTest {
 
     @Test
     fun `should patch zaaknotitie`() {
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+
         val zakenApiClient: ZakenApiClient = mock()
-        val executionMock = mock<DelegateExecution>()
-        val authenticationMock = mock<ZakenApiAuthentication>()
+        val zaakUrlProvider: ZaakUrlProvider = mock {
+            on { this.getZaakUrl(eq(documentId)) } doReturn zaakUrl
+        }
+        val executionMock: DelegateExecution = mock {
+            on { this.businessKey } doReturn documentId.toString()
+        }
 
         val plugin = zakenApiPlugin(
-            zakenApiClient = zakenApiClient,
-            authenticationMock = authenticationMock
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient
         )
 
-        val notitieUrl = URI("https://example.com/zaaknotities/1")
+        val notitieUrl = zaakNotitieUri()
 
+        // when
         plugin.patchZaakNotitie(
             execution = executionMock,
             notitieUrl = notitieUrl,
             onderwerp = "nieuw",
             tekst = "Tekst",
             aangemaaktDoor = "jan",
-            notitieType = "extern",
-            status = "definitief"
+            notitieType = NotitieType.EXTERN.key,
+            status = NotitieStatus.DEFINITIEF.key
         )
 
+        // then
         argumentCaptor<PatchZaakNotitieRequest> {
             verify(zakenApiClient).patchZaakNotitie(
                 authentication = any(),
@@ -1472,6 +1487,9 @@ internal class ZakenApiPluginTest {
 
     private fun resultaatTypeUrl(id: String = "e85ae64e-4083-44a0-b512-e21c6114bd58") = "${zakenApiUrl()}/resultaattypen/$id"
     private fun resultaatTypeUri(id: String = "e85ae64e-4083-44a0-b512-e21c6114bd58") = URI(resultaatTypeUrl(id))
+
+    private fun zaakNotitieUrl(id: String = "bd07950e-19af-4ecf-af83-f2d61de70d34") = "${zakenApiUrl()}/zaaknotities/$id"
+    private fun zaakNotitieUri(id: String = "bd07950e-19af-4ecf-af83-f2d61de70d34") = URI(resultaatTypeUrl(id))
 
     private fun objectUrl() = "https://object.url"
     private fun objectUri() = URI(objectUrl())

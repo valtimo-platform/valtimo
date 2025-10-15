@@ -72,6 +72,7 @@ import com.ritense.zakenapi.event.ZaakeigenschapListed
 import com.ritense.zakenapi.event.ZaakeigenschapUpdated
 import com.ritense.zakenapi.event.ZaakNotitieCreated
 import com.ritense.zakenapi.event.ZaakNotitiePatched
+import com.ritense.zakenapi.event.ZaakNotitieViewed
 import com.ritense.zakenapi.event.ZaakNotitiesListed
 import com.ritense.zakenapi.exception.ZaakRolNotUpdatedException
 import com.ritense.zgw.ClientTools
@@ -692,19 +693,41 @@ class ZakenApiClient(
         page: Int
     ): Page<ZaakNotitie> =
         buildRestClient(authentication)
-        .get()
-        .uri {
-            ClientTools.baseUrlToBuilder(it, baseUrl)
-                .path("zaaknotities")
-                .queryParam("page", page)
-                .queryParam("zaak", zaakUrl)
-                .build()
-        }
-        .retrieve()
-        .body<Page<ZaakNotitie>>()!!
-        .also {
-            outboxService.send { ZaakNotitiesListed(objectMapper.valueToTree(it.results)) }
-        }
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .path("zaaknotities")
+                    .queryParam("page", page)
+                    .queryParam("zaak", zaakUrl)
+                    .build()
+            }
+            .retrieve()
+            .body<Page<ZaakNotitie>>()!!
+            .also {
+                outboxService.send {
+                    ZaakNotitiesListed(
+                        notities = objectMapper.valueToTree(it.results)
+                    )
+                }
+            }
+
+    fun getZaakNotitie(
+        authentication: ZakenApiAuthentication,
+        zaakNotitieUrl: URI
+    ): ZaakNotitie =
+        buildRestClient(authentication)
+            .get()
+            .uri(zaakNotitieUrl)
+            .retrieve()
+            .body<ZaakNotitie>()!!
+            .also { zaakNotitie ->
+                outboxService.send {
+                    ZaakNotitieViewed(
+                        notitieUrl = zaakNotitie.url.toString(),
+                        notitie = objectMapper.valueToTree(zaakNotitie)
+                    )
+                }
+            }
 
     fun createZaakNotitie(
         authentication: ZakenApiAuthentication,
@@ -720,8 +743,11 @@ class ZakenApiClient(
             .body(request)
             .retrieve()
             .body<ZaakNotitie>()!!
-            .also { result ->
-                ZaakNotitieCreated(result.url.toString(), objectMapper.valueToTree(result)).let { event ->
+            .also { zaakNotitie ->
+                ZaakNotitieCreated(
+                    notitieUrl = zaakNotitie.url.toString(),
+                    notitie = objectMapper.valueToTree(zaakNotitie)
+                ).let { event ->
                     applicationEventPublisher.publishEvent(event)
                     outboxService.send { event }
                 }
@@ -732,9 +758,12 @@ class ZakenApiClient(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
         notitieUrl: URI,
-        request: PatchZaakNotitieRequest,
+        request: PatchZaakNotitieRequest
     ): ZaakNotitie {
         validateUrlHost(baseUrl, notitieUrl)
+        if (request.gerelateerdAan != null) {
+            validateUrlHost(baseUrl, request.gerelateerdAan)
+        }
         return buildRestClient(authentication)
             .patch()
             .uri(notitieUrl)
@@ -743,8 +772,11 @@ class ZakenApiClient(
             .body(request)
             .retrieve()
             .body<ZaakNotitie>()!!
-            .also { result ->
-                ZaakNotitiePatched(result.url.toString(), objectMapper.valueToTree(result)).let { event ->
+            .also { zaakNotitie ->
+                ZaakNotitiePatched(
+                    notitieUrl = zaakNotitie.url.toString(),
+                    notitie = objectMapper.valueToTree(zaakNotitie)
+                ).let { event ->
                     applicationEventPublisher.publishEvent(event)
                     outboxService.send { event }
                 }

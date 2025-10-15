@@ -58,6 +58,7 @@ import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
+import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
@@ -1205,26 +1206,24 @@ class ZakenApiPlugin(
         client.deleteZaak(authenticationPluginConfiguration, url, zaakUrl)
     }
 
-    @PluginAction(
-        key = "get-zaaknotities",
-        title = "Get zaaknotities",
-        description = "Retrieves all zaaknotities for the current zaak",
-        activityTypes = [SERVICE_TASK_START]
-    )
-    fun getZaakNotities(
-        execution: DelegateExecution,
-        @PluginActionProperty resultVariable: String = "zaaknotities"
-    ) {
-        val documentId = UUID.fromString(execution.businessKey)
-        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
-
-        val all = Page.getAll(100) { page ->
-            client.getZaakNotities(authenticationPluginConfiguration, url, zaakUrl, page)
+    fun getZaakNotities(zaakUrl: URI): List<ZaakNotitie> {
+        logger.debug { "Fetching zaak notities for Zaak with URL '$zaakUrl'" }
+        return Page.getAll(100) { page ->
+            client.getZaakNotities(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                zaakUrl = zaakUrl,
+                page = page
+            )
         }
+    }
 
-        val json: JsonNode = objectMapper.valueToTree(all)
-        execution.setVariable(resultVariable, json.toString())
-        logger.info { "Fetched ${'$'}{all.size} zaaknotities for zaak ${'$'}zaakUrl and stored in variable '${'$'}resultVariable'" }
+    fun getZaakNotitie(zaakNotitieUrl: URI): ZaakNotitie {
+        logger.debug { "Fetching zaaknotitie with URL '$zaakNotitieUrl'" }
+        return client.getZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            zaakNotitieUrl = zaakNotitieUrl
+        )
     }
 
     @PluginAction(
@@ -1244,17 +1243,23 @@ class ZakenApiPlugin(
         val documentId = UUID.fromString(execution.businessKey)
         val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
-        val request = CreateZaakNotitieRequest(
-            onderwerp = onderwerp,
-            tekst = tekst,
-            aangemaaktDoor = aangemaaktDoor,
-            notitieType = notitieType?.let { NotitieType.entries.single { it.key == notitieType } },
-            status = status?.let { NotitieStatus.entries.single { it.key == status } },
-            gerelateerdAan = zaakUrl,
-        )
-
-        val created = client.createZaakNotitie(authenticationPluginConfiguration, url, request)
-        logger.info { "Zaaknotitie created with URL '${'$'}{created.url}' for zaak '${'$'}zaakUrl'" }
+        client.createZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            request = CreateZaakNotitieRequest(
+                onderwerp = onderwerp,
+                tekst = tekst,
+                aangemaaktDoor = aangemaaktDoor,
+                notitieType = notitieType?.let { NotitieType.entries.single { it.key == notitieType } },
+                status = status?.let { NotitieStatus.entries.single { it.key == status } },
+                gerelateerdAan = zaakUrl,
+            )
+        ).also {
+            logger.info {
+                "Zaaknotitie with URL '${it.url}' created for " +
+                    "Zaak with URL '$zaakUrl' and Document with ID '$documentId'"
+            }
+        }
     }
 
     @PluginAction(
@@ -1272,7 +1277,10 @@ class ZakenApiPlugin(
         @PluginActionProperty notitieType: String? = null,
         @PluginActionProperty status: String? = null,
     ) {
-        val patched = client.patchZaakNotitie(
+        val documentId = UUID.fromString(execution.businessKey)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+
+        client.patchZaakNotitie(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
             notitieUrl = notitieUrl,
@@ -1283,9 +1291,12 @@ class ZakenApiPlugin(
                 notitieType = notitieType?.let { NotitieType.entries.single { it.key == notitieType } },
                 status = status?.let { NotitieStatus.entries.single { it.key == status } },
             )
-        )
-
-        logger.info { "Zaaknotitie with URL '${'$'}notitieUrl' patched. New URL: '${'$'}{patched.url}'" }
+        ).also {
+            logger.info {
+                "Zaaknotitie with URL '$notitieUrl' patched for " +
+                    "Zaak with URL '$zaakUrl' and Document with ID '$documentId'"
+            }
+        }
     }
 
     private fun calculateUiterlijkeEinddatumAfdoening(zaaktypeUrl: URI, startdatum: LocalDate): LocalDate? {
