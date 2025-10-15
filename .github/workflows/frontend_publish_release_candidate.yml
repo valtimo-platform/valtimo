@@ -28,7 +28,7 @@ jobs:
     needs: ["determine_version"]
     uses: ./.github/workflows/frontend_build_test.yml
     with:
-      project_version: ${{ steps.determine_version.outputs.project_version }}
+      project_version: ${{ needs.determine_version.outputs.project_version }}
     secrets: inherit
 
   publish:
@@ -37,5 +37,5 @@ jobs:
     uses: ./.github/workflows/frontend_publish_to_s3.yml
     with:
       publish_type: 'release-candidate'
-      project_version: ${{ steps.determine_version.outputs.project_version }}
+      project_version: ${{ needs.determine_version.outputs.project_version }}
     secrets: inherit
