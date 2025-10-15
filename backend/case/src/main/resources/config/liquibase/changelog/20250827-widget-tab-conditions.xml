@@ -32,7 +32,7 @@
     </changeSet>
 
     <changeSet id="3" author="Ritense">
-        <addNotNullConstraint tableName="case_widget_tab_widget" columnName="display_conditions"/>
+        <addNotNullConstraint tableName="case_widget_tab_widget" columnName="display_conditions" columnDataType="${jsonType}"/>
     </changeSet>
 
 </databaseChangeLog>
