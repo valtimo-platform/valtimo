@@ -16,6 +16,8 @@
 
 package com.ritense.buildingblock.configuration
 
+import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionResource
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -28,14 +30,25 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @AutoConfiguration
 @EnableJpaRepositories(
     basePackageClasses = [
+        BuildingBlockDefinitionRepository::class,
     ]
 )
-@EntityScan(basePackages = ["com.ritense.case.domain"])
+@EntityScan(basePackages = ["com.ritense.buildingblock.domain"])
  class BuildingBlockAutoConfiguration {
     @Order(HIGHEST_PRECEDENCE + 27)
     @ConditionalOnMissingBean(name = ["buildingBlockLiquibaseMasterChangeLogLocation"])
     @Bean
     fun buildingBlockLiquibaseMasterChangeLogLocation(): LiquibaseMasterChangeLogLocation {
         return LiquibaseMasterChangeLogLocation("config/liquibase/building-block-master.xml")
+    }
+
+    @ConditionalOnMissingBean(name = ["buildingBlockDefinitionResource"])
+    @Bean
+    fun buildingBlockDefinitionResource(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+    ): BuildingBlockDefinitionResource {
+        return BuildingBlockDefinitionResource(
+            buildingBlockDefinitionRepository
+        )
     }
 }
