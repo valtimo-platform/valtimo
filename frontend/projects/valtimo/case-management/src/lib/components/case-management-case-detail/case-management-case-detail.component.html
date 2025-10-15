@@ -50,5 +50,15 @@
         *ngIf="currentTab === TabEnum.TAGS"
       ></valtimo-case-management-tags>
     </cds-tab>
+
+    <cds-tab
+      [active]="currentTab === TabEnum.HEADER"
+      [heading]="'caseManagement.tabs.caseDetailsTab.header' | translate"
+      (selected)="switchTab(TabEnum.HEADER)"
+    >
+      <valtimo-case-management-header
+        *ngIf="currentTab === TabEnum.HEADER"
+      ></valtimo-case-management-header>
+    </cds-tab>
   </cds-tabs>
 }
