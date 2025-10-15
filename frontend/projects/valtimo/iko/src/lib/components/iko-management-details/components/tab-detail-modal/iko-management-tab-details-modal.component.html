@@ -46,7 +46,7 @@
       labelTranslationKey="ikoManagement.keyTitle"
       placeholderTranslationKey="ikoManagement.tabKeyPlaceholder"
       [usedKeys]="usedKeys"
-      [sourceText]="title.value"
+      [sourceText]="modalMode === 'edit' ? key.value : title.value"
       [mode]="modalMode"
     >
     </valtimo-auto-key-input>

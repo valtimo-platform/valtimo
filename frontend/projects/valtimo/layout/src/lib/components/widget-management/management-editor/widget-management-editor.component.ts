@@ -208,7 +208,10 @@ export class WidgetManagementEditorComponent {
     this.widgetManagementService
       .updateWidgetConfiguration(widgets)
       .pipe(take(1))
-      .subscribe(() => this.$dragAndDropDisabled.set(false));
+      .subscribe(() => {
+        this.$dragAndDropDisabled.set(false);
+        this._refresh$.next(null);
+      });
   }
 
   private deleteWidget(tabWidget: BasicWidget): void {
