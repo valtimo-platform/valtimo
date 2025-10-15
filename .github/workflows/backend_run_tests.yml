@@ -4,16 +4,8 @@ permissions:
   contents: read
 
 on:
-  pull_request:
-    types: [synchronize, opened]
-    paths:
-      - backend/**
-      - .github/workflows/backend_run_tests.yml
-  push:
-    branches: [next-minor]
-    paths:
-      - backend/**
-      - .github/workflows/backend_run_tests.yml
+  workflow_call:
+
   workflow_dispatch:
 
 defaults:

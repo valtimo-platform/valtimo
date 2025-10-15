@@ -26,6 +26,7 @@ import {
 import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
 import {
   TableWidget,
+  WidgetAction,
   WidgetLayoutService,
   WidgetTableComponent,
   WidgetTableContent,
@@ -98,5 +99,9 @@ export class IkoWidgetTableComponent {
 
   private getPageSizeParam(widgetConfiguration: WidgetWithUuid): string {
     return `size=${(widgetConfiguration.properties as WidgetTableContent).defaultPageSize}`;
+  }
+
+  public onWidgetActionClick(action: WidgetAction): void {
+    this.ikoApiService.handleAction(action);
   }
 }

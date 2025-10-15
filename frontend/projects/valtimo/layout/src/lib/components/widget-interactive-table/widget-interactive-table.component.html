@@ -1,0 +1,75 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    fields: fields$ | async,
+    widgetData: widgetData$ | async,
+    caseDefinitions: caseDefinitions$ | async,
+  } as obs"
+>
+  <span class="widget-title">{{ widgetConfiguration?.title }}</span>
+
+  <valtimo-carbon-list
+    [header]="false"
+    [fields]="obs.fields"
+    [items]="obs.widgetData"
+    [pagination]="$paginationModel()"
+    [paginatorConfig]="$paginatorConfig()"
+    (paginationClicked)="onPaginationClicked($event)"
+    (rowClicked)="rowClick($event)"
+  >
+    <section class="valtimo-widget-interactive-table__header" carbonToolbarContent>
+      <cds-overflow-menu
+        *ngIf="!!widgetConfiguration?.actions?.length"
+        [customTrigger]="externalLinkTrigger"
+        placement="bottom"
+        flip="true"
+        [offset]="{x: 4, y: 44}"
+      >
+        @for (action of widgetConfiguration?.actions; track action.name) {
+          <cds-overflow-menu-option (click)="onActionClick(action)">
+            {{ action.name }}
+          </cds-overflow-menu-option>
+        }
+      </cds-overflow-menu>
+
+      <cds-menu-button
+        *ngIf="widgetConfiguration?.properties?.canStartCase"
+        [label]="'Start Case' | translate"
+      >
+        @for (definition of obs.caseDefinitions; track definition.caseDefinitionKey) {
+          <cds-menu-item
+            [label]="definition.name"
+            (click)="onCaseStart(definition)"
+          ></cds-menu-item>
+        }
+      </cds-menu-button>
+    </section>
+
+    <valtimo-no-results
+      [collapseVertically]="true"
+      [description]="'widgets.noData' | translate"
+      [smallPadding]="true"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
+
+  <ng-template #externalLinkTrigger>
+    <button cdsButton="ghost" iconOnly="true">
+      <svg cdsIcon="link" size="16"></svg>
+    </button>
+  </ng-template>
+</ng-container>
