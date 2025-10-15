@@ -16,14 +16,41 @@
 
 package com.ritense.buildingblock.domain.definition
 
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockId
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.repository.SemverConverter
+import com.ritense.valtimo.contract.serializer.SemverSerializer
+import jakarta.persistence.Column
+import jakarta.persistence.Convert
 import jakarta.persistence.EmbeddedId
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
+import org.semver4j.Semver
+import org.springframework.data.annotation.CreatedBy
+import org.springframework.data.annotation.CreatedDate
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "building_block_definition")
 data class BuildingBlockDefinition(
     @EmbeddedId
-    val id: BuildingBlockId
+    val id: BuildingBlockDefinitionId,
+    @Column(name = "title")
+    val name: String,
+    @Column(name = "description")
+    val description: String? = null,
+    @CreatedBy
+    @Column(name = "created_by", updatable = false) @JsonIgnore
+    val createdBy: String? = null,
+    @CreatedDate
+    @Column(name = "created_date", updatable = false)
+    @JsonIgnore
+    val createdDate: LocalDateTime?,
+    @Convert(converter = SemverConverter::class)
+    @Column(name = "based_on_version_tag", updatable = false)
+    @JsonSerialize(using = SemverSerializer::class)
+    val basedOnVersionTag: Semver? = null,
+    @Column(name = "is_final")
+    val final: Boolean = false,
 )

@@ -26,14 +26,14 @@ import jakarta.persistence.Embeddable
 import org.semver4j.Semver
 
 @Embeddable
-data class BuildingBlockId(
+data class BuildingBlockDefinitionId(
     @Column(name = "building_block_definition_key", nullable = false, updatable = false)
     val key: String,
     @Convert(converter = SemverConverter::class)
     @Column(name = "building_block_definition_version_tag", nullable = false, updatable = true)
     @JsonSerialize(using = SemverSerializer::class)
     val versionTag: Semver
-) : AbstractId<BuildingBlockId>() {
+) : AbstractId<BuildingBlockDefinitionId>() {
 
     constructor(
         key: String,
@@ -58,19 +58,19 @@ data class BuildingBlockId(
 
     companion object {
         @JvmStatic
-        fun of(key: String, versionTag: String): BuildingBlockId {
-            return BuildingBlockId(key, versionTag)
+        fun of(key: String, versionTag: String): BuildingBlockDefinitionId {
+            return BuildingBlockDefinitionId(key, versionTag)
         }
 
         @JvmStatic
-        fun of(buildingBlockId: String): BuildingBlockId {
+        fun of(buildingBlockId: String): BuildingBlockDefinitionId {
             val parts = buildingBlockId.split(":")
 
             return of(parts[0], parts[1])
         }
 
         @JvmStatic
-        fun fromProcessVersionTag(versionTag: String?): BuildingBlockId? {
+        fun fromProcessVersionTag(versionTag: String?): BuildingBlockDefinitionId? {
             if (versionTag == null || !versionTag.startsWith("BB:")) return null
             val parts = versionTag.removePrefix("BB:").split(":")
             if (parts.size != 2) return null

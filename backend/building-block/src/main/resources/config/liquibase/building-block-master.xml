@@ -32,4 +32,5 @@
     <property name="booleanFalseValue" value="false" dbms="postgresql"/>
 
     <include file="changelog/20251014-add-building-block-definition-table.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20251015-add-building-block-definition-process-definition.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
