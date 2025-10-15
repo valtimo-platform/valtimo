@@ -1250,9 +1250,9 @@ class ZakenApiPlugin(
                 onderwerp = onderwerp,
                 tekst = tekst,
                 aangemaaktDoor = aangemaaktDoor,
-                notitieType = notitieType?.let { NotitieType.entries.single { it.key == notitieType } },
-                status = status?.let { NotitieStatus.entries.single { it.key == status } },
-                gerelateerdAan = zaakUrl,
+                notitieType = notitieTypeFrom(notitieType),
+                status = notitieStatusFrom(status),
+                gerelateerdAan = zaakUrl
             )
         ).also {
             logger.info {
@@ -1288,8 +1288,8 @@ class ZakenApiPlugin(
                 onderwerp = onderwerp,
                 tekst = tekst,
                 aangemaaktDoor = aangemaaktDoor,
-                notitieType = notitieType?.let { NotitieType.entries.single { it.key == notitieType } },
-                status = status?.let { NotitieStatus.entries.single { it.key == status } },
+                notitieType = notitieTypeFrom(notitieType),
+                status = notitieStatusFrom(status)
             )
         ).also {
             logger.info {
@@ -1298,6 +1298,20 @@ class ZakenApiPlugin(
             }
         }
     }
+
+    private fun notitieTypeFrom(value: String?): NotitieType? =
+        if (value.isNullOrBlank()) {
+            null
+        } else {
+            NotitieType.entries.single { it.key == value }
+        }
+
+    private fun notitieStatusFrom(value: String?): NotitieStatus? =
+        if (value.isNullOrBlank()) {
+            null
+        } else {
+            NotitieStatus.entries.single { it.key == value }
+        }
 
     private fun calculateUiterlijkeEinddatumAfdoening(zaaktypeUrl: URI, startdatum: LocalDate): LocalDate? {
         return getCatalogiApiPlugin(zaaktypeUrl)
