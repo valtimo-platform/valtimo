@@ -18,8 +18,8 @@ package com.ritense.document.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
-import com.ritense.document.config.DocumentSpringContextHelper;
 import com.ritense.document.config.DocumentProperties;
+import com.ritense.document.config.DocumentSpringContextHelper;
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition;
 import com.ritense.document.domain.impl.listener.DocumentRelatedFileSubmittedEventListenerImpl;
 import com.ritense.document.domain.impl.listener.RelatedJsonSchemaDocumentAvailableEventListenerImpl;
@@ -91,7 +91,6 @@ public class DocumentAutoConfiguration {
         final ObjectMapper objectMapper,
         final InternalCaseStatusService internalCaseStatusService,
         final CaseTagService caseTagService,
-        final QueryDialectHelper queryDialectHelper,
         final EntityManager entityManager
     ) {
         return new JsonSchemaDocumentService(
@@ -106,7 +105,6 @@ public class DocumentAutoConfiguration {
             objectMapper,
             internalCaseStatusService,
             caseTagService,
-            queryDialectHelper,
             entityManager
         );
     }

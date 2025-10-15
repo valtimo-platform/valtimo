@@ -43,7 +43,6 @@ import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
-import com.ritense.valtimo.contract.database.QueryDialectHelper;
 import com.ritense.valtimo.contract.json.MapperSingleton;
 import com.ritense.valtimo.contract.resource.Resource;
 import jakarta.persistence.EntityManager;
@@ -80,7 +79,6 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
     private InternalCaseStatusService internalCaseStatusService;
 
     private CaseTagService caseTagService;
-    private QueryDialectHelper queryDialectHelper;
     private EntityManager entityManager;
 
     private final String documentDefinitionName = "name";
@@ -97,7 +95,6 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
         outboxService = mock(OutboxService.class);
         internalCaseStatusService = mock();
         caseTagService = mock();
-        queryDialectHelper = mock();
         entityManager = mock();
 
         jsonSchemaDocumentService = spy(new JsonSchemaDocumentService(
@@ -112,7 +109,6 @@ class JsonSchemaDocumentServiceTest extends BaseTest {
             MapperSingleton.INSTANCE.get(),
             internalCaseStatusService,
             caseTagService,
-            queryDialectHelper,
             entityManager
         ));
 

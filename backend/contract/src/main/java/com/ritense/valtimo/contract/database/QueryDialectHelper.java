@@ -33,6 +33,4 @@ public interface QueryDialectHelper {
     Predicate getJsonArrayContainsExpression(CriteriaBuilder cb, Path column, String path, String value);
 
     Expression<String> uuidToString(CriteriaBuilder cb, Path<UUID> column);
-
-    String getColumnJsonType();
 }

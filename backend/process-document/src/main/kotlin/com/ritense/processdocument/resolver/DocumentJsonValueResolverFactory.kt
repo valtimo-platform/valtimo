@@ -111,16 +111,15 @@ class DocumentJsonValueResolverFactory(
         variableScope: VariableScope?,
         values: Map<String, Any?>
     ) {
-        val document = AuthorizationContext.runWithoutAuthorization {
-            processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+        val documentId = AuthorizationContext.runWithoutAuthorization {
+            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), variableScope)
         }
 
         AuthorizationContext.runWithoutAuthorization {
-            documentService.modifyDocumentAtomic(document.id()) { lockedDocument ->
+            documentService.modifyDocumentAtomic(documentId) { lockedDocument ->
                 val documentContent = lockedDocument.content().asJson()
                 buildJsonPatch(documentContent, values)
 
-                // Return the document with modified content
                 val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
                 val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
                 val modifiedContent = JsonDocumentContent.build(
@@ -129,7 +128,7 @@ class DocumentJsonValueResolverFactory(
                     null
                 )
                 val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
-                result.resultingDocument().orElseThrow().content()
+                result.resultingDocument().orElseThrow()
             }
         }
     }
@@ -194,7 +193,7 @@ class DocumentJsonValueResolverFactory(
                     null
                 )
                 val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
-                result.resultingDocument().orElseThrow().content()
+                result.resultingDocument().orElseThrow()
             }
         }
     }

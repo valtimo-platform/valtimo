@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.BaseIntegrationTest;
-import com.ritense.document.domain.Document;
 import com.ritense.document.domain.impl.JsonDocumentContent;
 import com.ritense.document.domain.impl.JsonSchemaDocument;
 import com.ritense.document.domain.impl.JsonSchemaDocumentId;
@@ -89,11 +88,15 @@ class JsonSchemaDocumentServiceAtomicUpdateIntTest extends BaseIntegrationTest {
                 try {
                     var contentNode = objectMapper.readTree(jsonDoc.content().asJson().toString());
                     ((com.fasterxml.jackson.databind.node.ObjectNode) contentNode).put("person.firstName", "Jane");
-                    return JsonDocumentContent.build(
+                    var newContent = JsonDocumentContent.build(
                         jsonDoc.content().asJson(),
                         contentNode,
                         null
                     );
+                    return jsonDoc.applyModifiedContent(
+                        newContent,
+                        documentDefinitionService.findBy(jsonDoc.definitionId()).get()
+                    ).resultingDocument().orElseThrow();
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to modify document", e);
                 }
@@ -134,11 +137,15 @@ class JsonSchemaDocumentServiceAtomicUpdateIntTest extends BaseIntegrationTest {
                                     currentCounter + 1
                                 );
 
-                                return JsonDocumentContent.build(
+                                var newContent = JsonDocumentContent.build(
                                     jsonDoc.content().asJson(),
                                     contentNode,
                                     null
                                 );
+                                return jsonDoc.applyModifiedContent(
+                                    newContent,
+                                    documentDefinitionService.findBy(jsonDoc.definitionId()).get()
+                                ).resultingDocument().orElseThrow();
                             } catch (Exception e) {
                                 throw new RuntimeException("Failed to modify document", e);
                             }
@@ -176,7 +183,7 @@ class JsonSchemaDocumentServiceAtomicUpdateIntTest extends BaseIntegrationTest {
 
         assertThrows(
             DocumentNotFoundException.class, () ->
-                documentService.modifyDocumentAtomic(nonExistentId, Document::content)
+                documentService.modifyDocumentAtomic(nonExistentId, document -> document)
         );
     }
 
