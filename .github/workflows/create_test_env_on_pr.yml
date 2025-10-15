@@ -21,4 +21,4 @@ jobs:
       - uses: ./.github/workflows/create_test_env.yml
         with:
           envName: "pr-${{ github.event.number }}"
-        secrets: inherit
+    secrets: inherit
