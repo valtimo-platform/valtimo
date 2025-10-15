@@ -32,6 +32,7 @@
     </changeSet>
 
     <changeSet id="3" author="Ritense">
+        <validCheckSum>9:d8671936cda57a7b491cac541b49a4a4</validCheckSum>
         <addNotNullConstraint tableName="case_widget_tab_widget" columnName="display_conditions" columnDataType="${jsonType}"/>
     </changeSet>
 
