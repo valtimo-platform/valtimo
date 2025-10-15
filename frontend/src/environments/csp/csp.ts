@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {BLOB, CSPHeaderParams, DATA, SELF, UNSAFE_EVAL, UNSAFE_INLINE} from 'csp-header';
+import {CSPHeaderParams, DATA, SELF, UNSAFE_EVAL, UNSAFE_INLINE, BLOB} from 'csp-header';
 import {UrlUtils} from '@valtimo/shared';
-import {authenticationKeycloak} from '../auth/keycloak-config.test';
+import {authenticationKeycloak} from '../auth/keycloak-config';
 
-export const cspHeaderParamsTest: CSPHeaderParams = {
+export const cspHeaderParamsDev: CSPHeaderParams = {
   directives: {
     'default-src': [SELF],
     'img-src': [SELF, DATA],

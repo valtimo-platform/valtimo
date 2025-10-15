@@ -15,10 +15,13 @@
   -->
 
 <valtimo-carbon-list
-  *ngIf="listConfig$ | async as listConfig"
-  [fields]="listConfig.fields"
-  [items]="listConfig.items"
-  [loading]="loading$ | async"
+  *ngIf="{
+    listConfig: listConfig$ | async,
+    loading: loading$ | async,
+  } as obs"
+  [fields]="obs.listConfig?.fields"
+  [items]="obs.listConfig?.items"
+  [loading]="obs.loading"
   [hideToolbar]="true"
   (rowClicked)="onRowClicked($event)"
 ></valtimo-carbon-list>
