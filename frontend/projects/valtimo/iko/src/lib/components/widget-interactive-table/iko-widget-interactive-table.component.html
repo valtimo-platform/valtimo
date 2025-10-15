@@ -14,14 +14,15 @@
   ~ limitations under the License.
   -->
 
-<valtimo-carbon-list
-  *ngIf="{
-    listConfig: listConfig$ | async,
-    loading: loading$ | async,
-  } as obs"
-  [fields]="obs.listConfig?.fields"
-  [items]="obs.listConfig?.items"
-  [loading]="obs.loading"
-  [hideToolbar]="true"
-  (rowClicked)="onRowClicked($event)"
-></valtimo-carbon-list>
+<valtimo-widget-interactive-table
+  *ngIf="widgetConfiguration$ | async as widgetConfiguration"
+  [widgetData]="widgetData$ | async"
+  [widgetConfiguration]="widgetConfiguration"
+  (actionEvent)="onActionEvent($event)"
+  (paginationEvent)="onPaginationEvent($event)"
+  (rowClickEvent)="onRowClickEvent($event, widgetConfiguration)"
+  (caseStartEvent)="onCaseStartEvent($event)"
+>
+</valtimo-widget-interactive-table>
+
+<valtimo-case-list-actions [navigateAfterSubmit]="false"></valtimo-case-list-actions>

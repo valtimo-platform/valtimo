@@ -18,6 +18,7 @@ import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
 import {AuthGuardService} from '@valtimo/security';
 import {ROLE_ADMIN} from '@valtimo/shared';
+
 import {IkoDetailsComponent} from './components/iko-details/iko-details.component';
 import {IkoListComponent} from './components/iko-list/iko-list.component';
 import {IkoManagementApiComponent} from './components/iko-management-api/iko-management-api.component';
@@ -99,6 +100,26 @@ const routes: Routes = [
     canActivate: [AuthGuardService],
     data: {
       title: 'IKO Widget details',
+      roles: [ROLE_ADMIN],
+    },
+  },
+  {
+    path: 'iko-management/:apiKey',
+    component: IkoManagementComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Iko',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+    },
+  },
+  {
+    path: 'iko-management/:apiKey/:key/:tabKey',
+    component: IkoManagementDetailsComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      customPageTitle: true,
+      title: 'IKO Details',
       roles: [ROLE_ADMIN],
     },
   },

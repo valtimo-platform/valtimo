@@ -278,12 +278,6 @@ export class IkoManagementApiService extends BaseApiService {
     );
   }
 
-  // public getIkoWidgets(aggregateKey: string, tabKey: string): Observable<BasicWidget[]> {
-  //   return this.httpClient.get<BasicWidget[]>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget`)
-  //   );
-  // }
-
   public getIkoWidget(
     aggregateKey: string,
     tabKey: string,
@@ -293,39 +287,6 @@ export class IkoManagementApiService extends BaseApiService {
       this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`)
     );
   }
-
-  // public createIkoWidget(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   widgetKey: string,
-  //   body: WidgetDto
-  // ): Observable<WidgetDto> {
-  //   return this.httpClient.post<WidgetDto>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`),
-  //     body
-  //   );
-  // }
-
-  // public updateIkoWidgets(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   body: WidgetDto[]
-  // ): Observable<WidgetDto[]> {
-  //   return this.httpClient.put<WidgetDto[]>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget`),
-  //     body
-  //   );
-  // }
-
-  // public deleteIkoWidget(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   widgetKey: string
-  // ): Observable<void> {
-  //   return this.httpClient.delete<void>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`)
-  //   );
-  // }
 
   public getIkoSearchFields(
     aggregateKey: string,

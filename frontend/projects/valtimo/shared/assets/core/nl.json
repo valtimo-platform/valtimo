@@ -865,8 +865,11 @@
       "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},
       "formio": {"title": "Form.io", "description": "Ingevuld Form.io-formulier"},
       "table": {"title": "Tabel", "description": "Maak een tabel aan"},
-      "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
-      "divider": {"title": "Scheiding"}
+      "interactive-table": {
+        "title": "Interactieve tabel",
+        "description": "Maak een interactieve tabel"
+      },
+      "collection": {"title": "Collectie", "description": "Maak een collectie aan"}
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
@@ -1382,7 +1385,8 @@
     "yes": "Ja",
     "no": "Nee",
     "upload": "Uploaden",
-    "noTranslationFound": "Geen vertaling gevonden"
+    "noTranslationFound": "Geen vertaling gevonden",
+    "url": "URL"
   },
   "taskDetail": {"taskCreated": "Aangemaakt op", "taskCompleted": "is succesvol afgerond"},
   "assignTask": {
@@ -1911,10 +1915,17 @@
   "ikoManagement": {
     "title": "Configuratie",
     "ikoServer": "IKO Server",
-    "view": "Beeld",
+    "dataUrl": "Gegevens-URL",
     "list": "Lijst",
     "tabs": {"title": "Tabbladen"},
     "widgets": {"title": "Widgets"},
+    "views": {
+      "title": "Beelden",
+      "add": "Beeld toevoegen",
+      "deleteContent": "Weet u zeker dat u dit beeld wilt verwijderen? Deze wijziging kan niet ongedaan worden gemaakt.",
+      "noResultsTitle": "Er zijn geen geconfigureerde beelden",
+      "noResultsDescription": "Klik hier om een beeld te configureren."
+    },
     "searchActions": {
       "addActionTitle": "Zoekactie toevoegen",
       "editActionTitle": "Zoekactie bewerken",
@@ -1958,6 +1969,8 @@
     "tabTypePlaceholder": "Voer tabtype in",
     "addTab": "Tab toevoegen",
     "editTab": "Tab bewerken",
+    "rowAction": "Rijactie",
+    "canStartCase": "Kan zaak starten",
     "tabTypes": {
       "widgets": "Widgets"
     }

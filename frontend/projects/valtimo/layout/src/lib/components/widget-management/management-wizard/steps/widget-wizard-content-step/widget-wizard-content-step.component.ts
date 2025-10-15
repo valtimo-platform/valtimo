@@ -61,9 +61,9 @@ export class WidgetWizardContentStepComponent implements OnInit {
     const componentInstance = this._vcr.createComponent(widget.component).instance;
     if (!componentInstance) return;
 
-    componentInstance.changeValidEvent.subscribe((valid: boolean) =>
-      this.contentValidEvent.emit(valid)
-    );
+    componentInstance.changeValidEvent.subscribe((valid: boolean) => {
+      this.contentValidEvent.emit(valid);
+    });
 
     if (this.disableTitleInput && componentInstance.setTitleInputVisible) {
       componentInstance.setTitleInputVisible(false);
