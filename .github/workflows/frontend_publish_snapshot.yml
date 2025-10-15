@@ -11,9 +11,8 @@ defaults:
 jobs:
   build_and_test:
     uses: ./.github/workflows/frontend_build_test.yml
-    outputs:
-      project_version: ${{ steps.build_and_test.outputs.project_version }}
     secrets: inherit
+
   publish:
     needs: [build_and_test]
     uses: ./.github/workflows/frontend_publish_to_s3.yml

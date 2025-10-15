@@ -10,6 +10,10 @@ on:
         description: "The determined project version. Required for release-candidate and releases, not for snapshot"
         required: false
         type: string
+    outputs:
+      project_version:
+        description: "The determined project version"
+        value: ${{ jobs.build_and_test.outputs.project_version }}
 
 defaults:
   run:
