@@ -32,7 +32,7 @@
                                '{verzoekProperties}',
                                jsonb_agg(
                                        CASE
-                                           WHEN elem ? 'caseDefinitionName' THEN
+                                           WHEN jsonb_exists(elem, 'caseDefinitionName') THEN
                                                jsonb_set(
                                                        elem - 'caseDefinitionName',
                                                        '{caseDefinitionKey}',
