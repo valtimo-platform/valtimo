@@ -29,12 +29,7 @@ import {
 import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config';
 import {cspHeaderParamsDev} from './csp';
-import {
-  DARK_MODE_LOGO_BASE_64,
-  DARK_MODE_LOGO_BASE_64_PNG,
-  LOGO_BASE_64,
-  LOGO_BASE_64_PNG,
-} from './logo';
+import {DARK_MODE_LOGO_BASE_64, DARK_MODE_LOGO_BASE_64_PNG, LOGO_BASE_64, LOGO_BASE_64_PNG} from './logo';
 
 const defaultDefinitionColumns: Array<DefinitionColumn> = [
   {
@@ -259,6 +254,9 @@ export const environment: ValtimoConfig = {
       },
     },
   },
+  translationResources: [
+    './assets/i18n/'
+  ],
 };
 
 /*
