@@ -1,0 +1,66 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~ Licensed under EUPL, Version 1.2
+  -->
+
+<v-form
+  (valueChange)="onFormValueChanged($event)"
+  *ngIf="{ disabled: disabled$ | async, prefill: prefillConfiguration$ ? (prefillConfiguration$ | async) : null, pluginId: pluginId } as obs"
+>
+  <v-input
+    name="onderwerp"
+    [title]="'onderwerp' | pluginTranslate: obs.pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.onderwerp"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [trim]="true"
+    [fullWidth]="true"
+  ></v-input>
+
+  <v-input
+    name="tekst"
+    [title]="'tekst' | pluginTranslate: obs.pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.tekst"
+    [disabled]="obs.disabled"
+    [required]="true"
+    [trim]="true"
+    [fullWidth]="true"
+  ></v-input>
+
+  <v-input
+    name="aangemaaktDoor"
+    [title]="'aangemaaktDoor' | pluginTranslate: obs.pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.aangemaaktDoor"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [trim]="true"
+    [fullWidth]="true"
+  ></v-input>
+
+  <v-input
+    name="notitieType"
+    [title]="'notitieType' | pluginTranslate: obs.pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.notitieType"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [trim]="true"
+    [fullWidth]="true"
+    [presetOptions]="notitieTypeOptions"
+  ></v-input>
+
+  <v-input
+    name="status"
+    [title]="'status' | pluginTranslate: obs.pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.status"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [trim]="true"
+    [fullWidth]="true"
+    [presetOptions]="statusOptions"
+  ></v-input>
+</v-form>

@@ -36,6 +36,8 @@ import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create
 import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {CreateZaaknotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
+import {PatchZaaknotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -61,6 +63,8 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-zaak-object': CreateZaakObjectConfigurationComponent,
     'relateer-zaken': RelateerZakenComponent,
     'patch-zaak': PatchZaakConfigurationComponent,
+    'create-zaaknotitie': CreateZaaknotitieConfigurationComponent,
+    'patch-zaaknotitie': PatchZaaknotitieConfigurationComponent,
   },
   pluginTranslations: {
     nl: {
@@ -108,6 +112,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakTypeToggle: 'Invoertype Zaaktype-URL',
       text: 'Tekst',
       selection: 'Selectie',
+      'create-zaaknotitie': 'Zaaknotitie aanmaken',
+      'patch-zaaknotitie': 'Zaaknotitie bijwerken',
+      notitieUrl: 'Notitie URL',
+      onderwerp: 'Onderwerp',
+      tekst: 'Tekst',
+      aangemaaktDoor: 'Aangemaakt door',
+      notitieType: 'Notitietype',
+      status: 'Status',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - Natuurlijk persoon',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - Niet natuurlijk persoon',
       'create-medewerker-zaak-rol': 'Zaakrol aanmaken - Medewerker',
@@ -309,6 +321,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakTypeToggle: 'Input type Zaaktype-URL',
       text: 'Text',
       selection: 'Selection',
+      'create-zaaknotitie': 'Create zaaknotitie',
+      'patch-zaaknotitie': 'Patch zaaknotitie',
+      notitieUrl: 'Note URL',
+      onderwerp: 'Subject',
+      tekst: 'Text',
+      aangemaaktDoor: 'Created by',
+      notitieType: 'Note type',
+      status: 'Status',
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - not a natural person',
       'create-medewerker-zaak-rol': 'Create Zaakrol - Employee',
@@ -510,6 +530,14 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakTypeToggle: 'Eingabetyp Zaaktype-URL',
       text: 'Text',
       selection: 'Auswahl',
+      'create-zaaknotitie': 'Zaaknotitie erstellen',
+      'patch-zaaknotitie': 'Zaaknotitie aktualisieren',
+      notitieUrl: 'Notiz-URL',
+      onderwerp: 'Betreff',
+      tekst: 'Text',
+      aangemaaktDoor: 'Erstellt von',
+      notitieType: 'Notiztyp',
+      status: 'Status',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – keine natürliche Person',
       'create-medewerker-zaak-rol': 'Zaakrol erstellen – Mitarbeiter',

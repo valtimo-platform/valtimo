@@ -151,6 +151,23 @@ interface RelateerZakenConfig {
   aardRelatie: string;
 }
 
+interface CreateZaaknotitieConfig {
+  onderwerp: string;
+  tekst: string;
+  aangemaaktDoor?: string;
+  notitieType?: string;
+  status?: string;
+}
+
+interface PatchZaaknotitieConfig {
+  notitieUrl: string;
+  onderwerp?: string;
+  tekst?: string;
+  aangemaaktDoor?: string;
+  notitieType?: string;
+  status?: string;
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,
@@ -169,4 +186,6 @@ export {
   DeleteZaakeigenschapConfig,
   PatchZaakConfig,
   RelateerZakenConfig,
+  CreateZaaknotitieConfig,
+  PatchZaaknotitieConfig,
 };
