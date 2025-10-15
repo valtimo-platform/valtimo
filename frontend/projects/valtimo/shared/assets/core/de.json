@@ -1973,14 +1973,5 @@
     "rightClickTooltip": "Rechtsklick für Optionen",
     "deleteHelperText": "Nachdem Sie ein Schnellsuchelement erstellt haben, können Sie es mit einem Rechtsklick darauf löschen",
     "duplicateError": "Ein Schnellsuchobjekt mit diesem Titel existiert bereits"
-  },
-  "bezwaarStartForm": {
-    "htmlLabel": "HTML",
-    "startInstruction": "Klicken Sie auf Start, um Ihren Einspruch einzureichen.",
-    "firstName": "Vorname",
-    "lastName": "Nachname",
-    "start": "Start",
-    "firstNameDefault": "Johann",
-    "lastNameDefault": "Doh"
   }
 }
