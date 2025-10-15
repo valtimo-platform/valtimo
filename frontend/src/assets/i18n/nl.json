@@ -1,0 +1,11 @@
+{
+  "bezwaarStartForm": {
+    "htmlLabel": "HTML",
+    "startInstruction": "Klik op Start om uw bezwaar in te dienen.",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "start": "Start",
+    "firstNameDefault": "Jan",
+    "lastNameDefault": "Doo"
+  }
+}
