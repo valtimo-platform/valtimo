@@ -14,40 +14,33 @@
   ~ limitations under the License.
   -->
 
-<cds-modal
-  valtimoCdsModal
-  [open]="startSelectionModalOpen$ | async"
-  size="xs"
-  *ngIf="{
-    associatedProcessDocumentDefinitions: associatedProcessDocumentDefinitions$ | async,
-    caseSettings: caseSettings$ | async,
-  } as obs"
->
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()"
-    ><h3 cdsModalHeaderHeading>
-      {{ 'dashboard.startProcess.title' | translate }}
-    </h3>
-  </cds-modal-header>
+<valtimo-render-in-body>
+  <cds-modal
+    valtimoCdsModal
+    [open]="startSelectionModalOpen$ | async"
+    size="xs"
+    *ngIf="associatedProcessDocumentDefinitions$ | async as associatedProcessDocumentDefinitions"
+  >
+    <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()"
+      ><h3 cdsModalHeaderHeading>
+        {{ 'dashboard.startProcess.title' | translate }}
+      </h3>
+    </cds-modal-header>
 
-  <section cdsModalContent class="start-modal-content" [cdsLayer]="1">
-    <cds-clickable-tile
-      *ngIf="obs.caseSettings?.hasExternalStartForm"
-      (click)="openExternalCaseStartForm(true)"
-    >
-      {{ obs?.caseSettings.externalStartFormDescription || '-' }}
-    </cds-clickable-tile>
-
-    <cds-clickable-tile
-      *ngFor="let processDocumentDefinition of obs.associatedProcessDocumentDefinitions"
-      (click)="selectProcess(processDocumentDefinition)"
-    >
-      {{ processDocumentDefinition.processDefinitionName }}
-    </cds-clickable-tile>
-  </section>
-</cds-modal>
+    <section cdsModalContent class="start-modal-content" [cdsLayer]="1">
+      <cds-clickable-tile
+        *ngFor="let processDocumentDefinition of associatedProcessDocumentDefinitions"
+        (click)="selectProcess(processDocumentDefinition)"
+      >
+        {{ processDocumentDefinition.processDefinitionName }}
+      </cds-clickable-tile>
+    </section>
+  </cds-modal>
+</valtimo-render-in-body>
 
 <valtimo-case-process-start-modal
   #processStartModal
+  [navigateAfterSubmit]="navigateAfterSubmit"
   (formFlowComplete)="onFormFlowComplete()"
   (noProcessLinked)="onNoProcessLinked($event)"
 ></valtimo-case-process-start-modal>

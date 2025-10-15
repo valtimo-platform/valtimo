@@ -13,7 +13,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
+<valtimo-render-in-body>
 <cds-modal [open]="modalOpen$ | async" size="sm" valtimoCdsModal [minContentHeight]="480">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCloseSelect()"
     ><h3 cdsModalHeaderHeading>
@@ -68,3 +68,4 @@
     }
   </section>
 </cds-modal>
+</valtimo-render-in-body>

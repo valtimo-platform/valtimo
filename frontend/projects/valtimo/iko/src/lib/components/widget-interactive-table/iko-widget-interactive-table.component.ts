@@ -14,30 +14,37 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Input, ViewEncapsulation} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {CaseListActionsComponent, CaseListService} from '@valtimo/case';
 import {CarbonListModule} from '@valtimo/components';
+import {CaseDefinition} from '@valtimo/document';
+import {
+  InteractiveTableWidget,
+  WidgetAction,
+  WidgetInteractiveTableComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {
   ButtonModule,
+  ModalModule,
   PaginationModel,
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, of, switchMap, tap} from 'rxjs';
-import {
-  TableWidget,
-  WidgetAction,
-  WidgetLayoutService,
-  WidgetTableComponent,
-  WidgetTableContent,
-  WidgetWithUuid,
-} from '@valtimo/layout';
 import {IkoWidgetParams} from '../../models';
 import {IkoApiService} from '../../services';
 
 @Component({
-  selector: 'valtimo-iko-widget-table',
-  templateUrl: './iko-widget-table.component.html',
+  selector: 'valtimo-iko-widget-interactive-table',
+  templateUrl: './iko-widget-interactive-table.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
@@ -48,17 +55,22 @@ import {IkoApiService} from '../../services';
     TilesModule,
     TranslateModule,
     ButtonModule,
-    WidgetTableComponent,
+    WidgetInteractiveTableComponent,
+    CaseListActionsComponent,
+    ModalModule,
   ],
+  providers: [CaseListService],
 })
-export class IkoWidgetTableComponent {
-  private _widgetConfiguration: TableWidget;
-  public readonly widgetConfiguration$ = new BehaviorSubject<TableWidget | null>(null);
-  @Input({required: true}) public set widgetConfiguration(value: TableWidget) {
+export class IkoWidgetInteractiveTableComponent {
+  @ViewChild(CaseListActionsComponent) listActionsComponent: CaseListActionsComponent;
+
+  private _widgetConfiguration: InteractiveTableWidget;
+  public readonly widgetConfiguration$ = new BehaviorSubject<InteractiveTableWidget | null>(null);
+  @Input({required: true}) public set widgetConfiguration(value: InteractiveTableWidget) {
     this._widgetConfiguration = value;
     this.widgetConfiguration$.next(value);
   }
-  public get widgetConfiguration(): TableWidget {
+  public get widgetConfiguration(): InteractiveTableWidget {
     return this._widgetConfiguration;
   }
 
@@ -74,6 +86,7 @@ export class IkoWidgetTableComponent {
   public readonly widgetData$ = combineLatest([
     this.widgetConfiguration$,
     this._widgetParams$,
+    this.listService.forceRefresh$,
   ]).pipe(
     switchMap(([widgetConfiguration, widgetParams]) =>
       !widgetParams || !widgetConfiguration
@@ -90,18 +103,24 @@ export class IkoWidgetTableComponent {
 
   constructor(
     private readonly ikoApiService: IkoApiService,
-    private readonly widgetLayoutService: WidgetLayoutService
+    private readonly widgetLayoutService: WidgetLayoutService,
+    private readonly listService: CaseListService
   ) {}
 
   public onPaginationEvent(event: PaginationModel): void {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
   }
 
-  private getPageSizeParam(widgetConfiguration: WidgetWithUuid): string {
-    return `size=${(widgetConfiguration.properties as WidgetTableContent).defaultPageSize}`;
+  public onRowClickEvent(event: any, widgetConfiguration: InteractiveTableWidget): void {
+    this.ikoApiService.handleAction(widgetConfiguration.properties.rowClickAction, event.resolved);
   }
 
-  public onWidgetActionClick(action: WidgetAction): void {
+  public onActionEvent(action: WidgetAction): void {
     this.ikoApiService.handleAction(action);
+  }
+
+  public onCaseStartEvent(caseDefintion: CaseDefinition): void {
+    this.listService.setCaseDefinitionKey(caseDefintion.caseDefinitionKey);
+    this.listActionsComponent.startCase();
   }
 }

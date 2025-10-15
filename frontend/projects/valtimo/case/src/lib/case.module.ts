@@ -82,6 +82,7 @@ import {
   TooltipModule,
 } from 'carbon-components-angular';
 import {NoteModalComponent} from './components/note-modal/note-modal.component';
+import {CaseRoutingModule} from './case-routing.module';
 import {CaseAssignUserComponent} from './components/case-assign-user/case-assign-user.component';
 import {CaseBulkAssignModalComponent} from './components/case-bulk-assign-modal/case-bulk-assign-modal.component';
 import {CaseDetailComponent} from './components/case-detail/case-detail.component';
@@ -94,7 +95,6 @@ import {CaseDetailTabSummaryComponent} from './components/case-detail/tab/summar
 import {CaseListActionsComponent} from './components/case-list-actions/case-list-actions.component';
 import {CaseListComponent} from './components/case-list/case-list.component';
 import {CaseProcessStartModalComponent} from './components/case-process-start-modal/case-process-start-modal.component';
-import {CaseRoutingModule} from './case-routing.module';
 import {CaseSupportingProcessStartModalComponent} from './components/case-supporting-process-start-modal/case-supporting-process-start-modal.component';
 import {CaseUpdateComponent} from './components/case-update/case-update.component';
 import {TAB_MAP} from './constants';
@@ -114,7 +114,6 @@ export type TabsFactory = () => Map<string, object>;
   declarations: [
     CaseBulkAssignModalComponent,
     CaseListComponent,
-    CaseListActionsComponent,
     CaseDetailComponent,
     CaseDetailTabSummaryComponent,
     CaseDetailTabProgressComponent,
@@ -122,7 +121,6 @@ export type TabsFactory = () => Map<string, object>;
     CaseDetailTabDocumentsComponent,
     CaseDetailTabNotesComponent,
     CaseUpdateComponent,
-    CaseProcessStartModalComponent,
     CaseSupportingProcessStartModalComponent,
     CaseDetailTabS3DocumentsComponent,
     CaseDetailTabNotFoundComponent,
@@ -202,8 +200,10 @@ export type TabsFactory = () => Map<string, object>;
     CaseDetailHeaderWidgetComponent,
     ObserveSizeDirective,
     QuickSearchComponent,
+    CaseProcessStartModalComponent,
+    CaseListActionsComponent,
   ],
-  exports: [CaseListComponent, CaseDetailComponent, CaseProcessStartModalComponent],
+  exports: [CaseListComponent, CaseDetailComponent],
 })
 export class CaseModule {
   static forRoot(tabsFactory: TabsFactory): ModuleWithProviders<CaseModule> {
