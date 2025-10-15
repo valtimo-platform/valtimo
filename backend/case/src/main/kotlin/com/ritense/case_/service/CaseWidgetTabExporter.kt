@@ -30,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional
 class CaseWidgetTabExporter(
     private val objectMapper: ObjectMapper,
     private val caseTabService: CaseTabService,
-    private val caseWidgetTabService: CaseWidgetTabService
+    private val caseWidgetService: CaseWidgetService
 ) : Exporter<DocumentDefinitionExportRequest> {
 
     override fun supports() = DocumentDefinitionExportRequest::class.java
@@ -52,7 +52,7 @@ class CaseWidgetTabExporter(
             objectMapper.writer(ExportPrettyPrinter()).writeValueAsBytes(
                 caseTabs
                     .filter { it.type == CaseTabType.WIDGETS }
-                    .map { caseWidgetTabService.getWidgetTab(it.id.caseDefinitionId, it.id.key)!! }
+                    .map { caseWidgetService.getWidgetTab(it.id.caseDefinitionId, it.id.key)!! }
             )
         )
 

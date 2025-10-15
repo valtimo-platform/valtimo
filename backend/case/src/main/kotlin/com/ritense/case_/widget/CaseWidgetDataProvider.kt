@@ -16,12 +16,17 @@
 
 package com.ritense.case_.widget
 
-import com.ritense.case_.domain.tab.CaseWidgetTab
-import com.ritense.case_.domain.tab.CaseWidgetTabWidget
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.springframework.data.domain.Pageable
 import java.util.UUID
 
-interface CaseWidgetDataProvider<WIDGET: CaseWidgetTabWidget> {
-    fun supportedWidgetType(): Class<WIDGET>
-    fun getData(documentId: UUID, widgetTab: CaseWidgetTab, widget: WIDGET, pageable: Pageable): Any?
+interface CaseWidgetDataProvider{
+    fun supports(widget: Any): Boolean
+
+    fun getData(
+        documentId: UUID,
+        widget: Any,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId
+    ): Any?
 }

@@ -2,10 +2,12 @@ package com.ritense.case_.widget.collection
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.TextNode
+import com.ritense.case.domain.CaseTabId
 import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.case_.widget.exception.InvalidCollectionException
 import com.ritense.case_.widget.exception.InvalidCollectionNodeTypeException
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.contract.json.MapperSingleton
 import com.ritense.valueresolver.ValueResolverService
 import org.assertj.core.api.Assertions.assertThat
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mock
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -28,19 +31,36 @@ class CollectionCaseWidgetDataProviderTest(
     @Mock private val valueResolverService: ValueResolverService
 ) {
 
-    private val caseWidgetDataProvider = CollectionCaseWidgetDataProvider(MapperSingleton.get(), valueResolverService)
+    private val caseWidgetDataProvider =
+        CollectionCaseWidgetDataProvider(MapperSingleton.get(), valueResolverService)
     private val objectMapper = MapperSingleton.get()
+
+    private val testCaseDefinitionId = CaseDefinitionId("test-case", "1.0.0")
+
+    private fun mockWidgetTab(): CaseWidgetTab =
+        mock {
+            on { id } doReturn CaseTabId(
+                caseDefinitionId = testCaseDefinitionId,
+                key = "test-tab"
+            )
+        }
 
     @Test
     fun `should resolve data`() {
-        val widgetTab = mock<CaseWidgetTab>()
+        val widgetTab = mockWidgetTab()
         val widget = testWidget()
         val documentId = UUID.randomUUID()
         val people = people()
         mockCollection(documentId, widget, people)
 
-        val firstPage = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize))
-        JSONAssert.assertEquals("""
+        val firstPage = caseWidgetDataProvider.getData(
+            documentId,
+            widget,
+            Pageable.ofSize(widget.properties.defaultPageSize),
+            widgetTab.id.caseDefinitionId
+        )
+        JSONAssert.assertEquals(
+            """
             {
               "content": [
                 {
@@ -77,9 +97,19 @@ class CollectionCaseWidgetDataProviderTest(
               "number": 0,
               "sort": []
             }
-        """.trimIndent(), objectMapper.writeValueAsString(firstPage), JSONCompareMode.STRICT_ORDER)
-        val secondPage = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(1))
-        JSONAssert.assertEquals("""
+            """.trimIndent(),
+            objectMapper.writeValueAsString(firstPage),
+            JSONCompareMode.STRICT_ORDER
+        )
+
+        val secondPage = caseWidgetDataProvider.getData(
+            documentId,
+            widget,
+            Pageable.ofSize(widget.properties.defaultPageSize).withPage(1),
+            widgetTab.id.caseDefinitionId
+        )
+        JSONAssert.assertEquals(
+            """
             {
               "content": [
                 {
@@ -104,18 +134,26 @@ class CollectionCaseWidgetDataProviderTest(
               "number": 1,
               "sort": []
             }
-        """.trimIndent(), objectMapper.writeValueAsString(secondPage), JSONCompareMode.STRICT_ORDER)
+            """.trimIndent(),
+            objectMapper.writeValueAsString(secondPage),
+            JSONCompareMode.STRICT_ORDER
+        )
     }
 
     @Test
     fun `should resolve data when JsonNode collection is resolved`() {
-        val widgetTab = mock<CaseWidgetTab>()
+        val widgetTab = mockWidgetTab()
         val widget = testWidget()
         val documentId = UUID.randomUUID()
         val collection = objectMapper.valueToTree<JsonNode>(listOf(john()))
         mockCollection(documentId, widget, collection)
 
-        val page = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize))
+        val page = caseWidgetDataProvider.getData(
+            documentId,
+            widget,
+            Pageable.ofSize(widget.properties.defaultPageSize),
+            widgetTab.id.caseDefinitionId
+        )
         val first = page.content.first()
         assertThat(first.title).isEqualTo("John")
         assertThat(first.fields).containsEntry("lastName", "Doe")
@@ -123,16 +161,23 @@ class CollectionCaseWidgetDataProviderTest(
 
     @Test
     fun `should resolve data when resolved field value is a JsonNode`() {
-        val widgetTab = mock<CaseWidgetTab>()
+        val widgetTab = mockWidgetTab()
         val widget = testWidget()
         val documentId = UUID.randomUUID()
-        val collection = listOf(mapOf(
-            "firstName" to TextNode.valueOf("John"),
-            "lastName" to TextNode.valueOf("Doe"),
-        ))
+        val collection = listOf(
+            mapOf(
+                "firstName" to TextNode.valueOf("John"),
+                "lastName" to TextNode.valueOf("Doe"),
+            )
+        )
         mockCollection(documentId, widget, collection)
 
-        val page = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize))
+        val page = caseWidgetDataProvider.getData(
+            documentId,
+            widget,
+            Pageable.ofSize(widget.properties.defaultPageSize),
+            widgetTab.id.caseDefinitionId
+        )
         val first = page.content.first()
         assertThat(first.title).isEqualTo("John")
         assertThat(first.fields).containsEntry("lastName", "Doe")
@@ -140,37 +185,52 @@ class CollectionCaseWidgetDataProviderTest(
 
     @Test
     fun `should throw error if collection placeholder value is not a collection`() {
-        val widgetTab = mock<CaseWidgetTab>()
+        val widgetTab = mockWidgetTab()
         val widget = testWidget()
         val documentId = UUID.randomUUID()
         mockCollection(documentId, widget, "justAString")
 
         assertThrows<InvalidCollectionException> {
-            caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize))
+            caseWidgetDataProvider.getData(
+                documentId,
+                widget,
+                Pageable.ofSize(widget.properties.defaultPageSize),
+                widgetTab.id.caseDefinitionId
+            )
         }
     }
 
     @Test
     fun `should throw error if collection node is not an object`() {
-        val widgetTab = mock<CaseWidgetTab>()
+        val widgetTab = mockWidgetTab()
         val widget = testWidget()
         val documentId = UUID.randomUUID()
         val collection = people() + listOf("")
         mockCollection(documentId, widget, collection)
 
         assertThrows<InvalidCollectionNodeTypeException> {
-            caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(1))
+            caseWidgetDataProvider.getData(
+                documentId,
+                widget,
+                Pageable.ofSize(widget.properties.defaultPageSize).withPage(1),
+                widgetTab.id.caseDefinitionId
+            )
         }
     }
 
     @Test
     fun `should return empty page when resolved collection is null`() {
-        val widgetTab = mock<CaseWidgetTab>()
+        val widgetTab = mockWidgetTab()
         val widget = testWidget()
         val documentId = UUID.randomUUID()
         mockCollection(documentId, widget, null)
 
-        val data = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(1))
+        val data = caseWidgetDataProvider.getData(
+            documentId,
+            widget,
+            Pageable.ofSize(1),
+            widgetTab.id.caseDefinitionId
+        )
 
         assertThat(data.content.size).isZero()
         assertThat(data.number).isEqualTo(0)
@@ -179,13 +239,18 @@ class CollectionCaseWidgetDataProviderTest(
 
     @Test
     fun `should return empty page when page number is unavailable`() {
-        val widgetTab = mock<CaseWidgetTab>()
+        val widgetTab = mockWidgetTab()
         val widget = testWidget()
         val documentId = UUID.randomUUID()
         val collection = people()
         mockCollection(documentId, widget, collection)
 
-        val data = caseWidgetDataProvider.getData(documentId, widgetTab, widget, Pageable.ofSize(widget.properties.defaultPageSize).withPage(2))
+        val data = caseWidgetDataProvider.getData(
+            documentId,
+            widget,
+            Pageable.ofSize(widget.properties.defaultPageSize).withPage(2),
+            widgetTab.id.caseDefinitionId
+        )
 
         assertThat(data.content.size).isZero()
         assertThat(data.number).isEqualTo(2)
@@ -230,11 +295,23 @@ class CollectionCaseWidgetDataProviderTest(
         Person()
     )
 
-    private fun john(firstName: String? = "John", lastName: String? = "Doe", real: Boolean? = false, age: Int? = 30, partner: Person? = null): Person {
+    private fun john(
+        firstName: String? = "John",
+        lastName: String? = "Doe",
+        real: Boolean? = false,
+        age: Int? = 30,
+        partner: Person? = null
+    ): Person {
         return Person(firstName, lastName, real, age, partner)
     }
 
-    private fun jane(firstName: String? = "Jane", lastName: String? = "Doe", real: Boolean? = true, age: Int? = 25, partner: Person? = null): Person {
+    private fun jane(
+        firstName: String? = "Jane",
+        lastName: String? = "Doe",
+        real: Boolean? = true,
+        age: Int? = 25,
+        partner: Person? = null
+    ): Person {
         return Person(firstName, lastName, real, age, partner)
     }
 

@@ -17,7 +17,7 @@
 package com.ritense.case_.rest
 
 import com.ritense.case_.rest.dto.CaseWidgetTabDto
-import com.ritense.case_.service.CaseWidgetTabService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.document.domain.impl.JsonSchemaDocumentId.existingId
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -34,7 +34,7 @@ import java.util.UUID
 @SkipComponentScan
 @RequestMapping("/api", produces = [APPLICATION_JSON_UTF8_VALUE])
 class CaseWidgetTabResource(
-    private val caseWidgetTabService: CaseWidgetTabService
+    private val caseWidgetService: CaseWidgetService
 ) {
 
     @GetMapping("/v1/document/{documentId}/widget-tab/{tabKey}")
@@ -42,7 +42,7 @@ class CaseWidgetTabResource(
         @PathVariable documentId: String,
         @PathVariable tabKey: String
     ): ResponseEntity<CaseWidgetTabDto> {
-        val widgetTab = caseWidgetTabService.getWidgetTab(existingId(UUID.fromString(documentId)), tabKey)
+        val widgetTab = caseWidgetService.getWidgetTab(existingId(UUID.fromString(documentId)), tabKey)
         return ResponseEntity.ofNullable(widgetTab)
     }
 
@@ -53,7 +53,7 @@ class CaseWidgetTabResource(
         @PathVariable widgetKey: String,
         @PageableDefault(size = 5) pageable: Pageable
     ): ResponseEntity<Any> {
-        val data = caseWidgetTabService.getCaseWidgetData(documentId, tabKey, widgetKey, pageable)
+        val data = caseWidgetService.getCaseWidgetData(documentId, tabKey, widgetKey, pageable)
         return ResponseEntity.ofNullable(data)
     }
 }
