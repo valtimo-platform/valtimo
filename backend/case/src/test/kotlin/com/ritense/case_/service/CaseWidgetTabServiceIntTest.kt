@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 class CaseWidgetTabServiceIntTest @Autowired constructor(
     private val caseTabService: CaseTabService,
     private val caseWidgetTabRepository: CaseWidgetTabRepository,
-    private val caseWidgetTabService: CaseWidgetTabService,
+    private val caseWidgetService: CaseWidgetService,
 ) : BaseIntegrationTest() {
 
     @Test
@@ -62,7 +62,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
 
         createCaseWidgetTab(caseDefinitionId, tabKey)
 
-        val widgetTab = caseWidgetTabService.getWidgetTab(caseDefinitionId, tabKey)
+        val widgetTab = caseWidgetService.getWidgetTab(caseDefinitionId, tabKey)
         assertThat(widgetTab).isNotNull
         assertThat(widgetTab!!.widgets).hasSize(2)
         assertThat(widgetTab.widgets.map { it.key }).doesNotContain("deny")
@@ -109,7 +109,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
         """.trimIndent()
         val documentId = createDocument(caseDefinitionId, documentContent).id() as JsonSchemaDocumentId
 
-        val widgetTab = caseWidgetTabService.getWidgetTab(documentId, tabKey)
+        val widgetTab = caseWidgetService.getWidgetTab(documentId, tabKey)
         assertThat(widgetTab).isNotNull
         assertThat(widgetTab!!.widgets).hasSize(1)
         assertThat(widgetTab.widgets.map { it.key }).containsExactly("widget-1")
@@ -183,7 +183,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
         assertThat(widgetTab!!.widgets).isNotEmpty
 
         runWithoutAuthorization {
-            caseWidgetTabService.updateWidgetTab(
+            caseWidgetService.updateWidgetTab(
                 CaseWidgetTabDto(
                     caseDefinitionId.key,
                     caseDefinitionId.versionTag.version,
@@ -216,7 +216,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
         assertThat(widgetTab.widgets[1].order).isEqualTo(1)
 
         runWithoutAuthorization {
-            caseWidgetTabService.updateWidgetTab(
+            caseWidgetService.updateWidgetTab(
                 CaseWidgetTabDto(
                     caseDefinitionId.key,
                     caseDefinitionId.versionTag.version,
@@ -262,7 +262,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
         createCaseWidgetTab(caseDefinitionId, tabKey)
         val documentId = createDocument(caseDefinitionId).id().id
 
-        val widgetData = caseWidgetTabService.getCaseWidgetData(documentId, tabKey, "widget-1", Pageable.unpaged())
+        val widgetData = caseWidgetService.getCaseWidgetData(documentId, tabKey, "widget-1", Pageable.unpaged())
         assertThat(widgetData).isInstanceOf(Map::class.java)
         assertThat((widgetData as Map<String, Any>)).containsEntry("test", "test123")
     }
@@ -277,7 +277,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
         val documentId = createDocument(caseDefinitionId).id().id
 
         assertThrows<AccessDeniedException> {
-            caseWidgetTabService.getCaseWidgetData(documentId, tabKey, "deny", Pageable.unpaged())
+            caseWidgetService.getCaseWidgetData(documentId, tabKey, "deny", Pageable.unpaged())
         }
     }
 
@@ -298,7 +298,7 @@ class CaseWidgetTabServiceIntTest @Autowired constructor(
                 widgets
             }
 
-            caseWidgetTabService.updateWidgetTab(
+            caseWidgetService.updateWidgetTab(
                 CaseWidgetTabDto(
                     caseDefinitionId.key,
                     caseDefinitionId.versionTag.version,

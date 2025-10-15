@@ -134,13 +134,10 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input()
   public set pagination(value: Partial<Pagination> | false) {
-    if (!value) {
-      return;
-    }
+    if (!value) return;
 
-    if (!this._pagination) {
-      this._pagination = {...DEFAULT_PAGINATION, ...value};
-    }
+
+    if (!this._pagination) this._pagination = {...DEFAULT_PAGINATION, ...value};
 
     this._pagination = {...this._pagination, ...value};
     this.buildPaginationModel();
@@ -465,6 +462,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
               return new TableItem({
                 data,
                 template: this.booleanTemplate,
+                item,
               });
             case ViewType.TAGS: {
               return new TableItem({
@@ -472,6 +470,7 @@ export class CarbonListComponent implements OnInit, AfterViewInit, OnDestroy {
                   tags: this.resolveTagObject(item, field.key),
                   tagAmount: field?.tagAmount || 1,
                 },
+                item,
                 template: this.tagTemplate,
               });
             }

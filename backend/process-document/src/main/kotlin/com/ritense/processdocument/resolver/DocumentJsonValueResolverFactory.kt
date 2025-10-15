@@ -25,8 +25,12 @@ import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import com.jayway.jsonpath.internal.path.PathCompiler
 import com.ritense.authorization.AuthorizationContext
+import com.ritense.document.config.DocumentProperties
 import com.ritense.document.domain.Document
+import com.ritense.document.domain.impl.JsonDocumentContent
+import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentId
 import com.ritense.document.domain.patch.JsonPatchService
 import com.ritense.document.exception.ModifyDocumentException
 import com.ritense.document.exception.UnknownDocumentDefinitionException
@@ -41,8 +45,10 @@ import com.ritense.valueresolver.ValueResolverOption
 import com.ritense.valueresolver.ValueResolverOptionType
 import com.ritense.valueresolver.exception.ValueResolverValidationException
 import org.operaton.bpm.engine.delegate.VariableScope
+import org.springframework.dao.OptimisticLockingFailureException
 import java.util.UUID
 import java.util.function.Function
+import kotlin.random.Random
 
 /**
  * This resolver can resolve requestedValues against the Document JSON content
@@ -54,6 +60,7 @@ class DocumentJsonValueResolverFactory(
     private val documentService: DocumentService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
     private val objectMapper: ObjectMapper,
+    private val documentProperties: DocumentProperties,
 ) : ValueResolverFactory {
 
     override fun supportedPrefix(): String {
@@ -92,37 +99,130 @@ class DocumentJsonValueResolverFactory(
         variableScope: VariableScope?,
         values: Map<String, Any?>
     ) {
-        val document = AuthorizationContext.runWithoutAuthorization {
-            processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+        if (documentProperties.locking.valueResolver.isPessimisticEnabled) {
+            handleValuesWithAtomicUpdate(processInstanceId, variableScope, values)
+        } else {
+            handleValuesWithOptimisticRetry(processInstanceId, variableScope, values)
         }
-        val documentContent = document.content().asJson()
-        buildJsonPatch(documentContent, values)
+    }
 
-        try {
-            //TODO: PBAC MODIFY check
-            AuthorizationContext.runWithoutAuthorization {
-                documentService.modifyDocument(document, documentContent)
+    private fun handleValuesWithAtomicUpdate(
+        processInstanceId: String,
+        variableScope: VariableScope?,
+        values: Map<String, Any?>
+    ) {
+        val documentId = AuthorizationContext.runWithoutAuthorization {
+            processDocumentService.getDocumentId(OperatonProcessInstanceId(processInstanceId), variableScope)
+        }
+
+        AuthorizationContext.runWithoutAuthorization {
+            documentService.modifyDocumentAtomic(documentId) { lockedDocument ->
+                val documentContent = lockedDocument.content().asJson()
+                buildJsonPatch(documentContent, values)
+
+                val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
+                val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
+                val modifiedContent = JsonDocumentContent.build(
+                    jsonSchemaDoc.content().asJson(),
+                    documentContent,
+                    null
+                )
+                val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
+                result.resultingDocument().orElseThrow()
             }
-        } catch (exception: ModifyDocumentException) {
-            throw RuntimeException(
-                "Failed to handle values for processInstance '$processInstanceId'. Values: ${values}.",
-                exception
-            )
+        }
+    }
+
+    private fun handleValuesWithOptimisticRetry(
+        processInstanceId: String,
+        variableScope: VariableScope?,
+        values: Map<String, Any?>
+    ) {
+        var attempt = 0
+        val maxAttempts = 3
+
+        while (attempt < maxAttempts) {
+            try {
+                val document = AuthorizationContext.runWithoutAuthorization {
+                    processDocumentService.getDocument(OperatonProcessInstanceId(processInstanceId), variableScope)
+                }
+                val documentContent = document.content().asJson()
+                buildJsonPatch(documentContent, values)
+
+                //TODO: PBAC MODIFY check
+                AuthorizationContext.runWithoutAuthorization {
+                    documentService.modifyDocument(document, documentContent)
+                }
+                return // Success, exit retry loop
+            } catch (exception: ModifyDocumentException) {
+                val cause = exception.cause
+                if (cause is OptimisticLockingFailureException && attempt < maxAttempts - 1) {
+                    attempt++
+                    val delayMs = (50 * (1 shl attempt)) + Random.nextInt(50) // Exponential backoff with jitter
+                    Thread.sleep(delayMs.toLong())
+                } else {
+                    throw RuntimeException(
+                        "Failed to handle values for processInstance '$processInstanceId'. Values: ${values}. Attempts: ${attempt + 1}",
+                        exception
+                    )
+                }
+            }
         }
     }
 
     override fun handleValues(documentId: UUID, values: Map<String, Any?>) {
-        val document = AuthorizationContext.runWithoutAuthorization { documentService.get(documentId.toString()) }
-        val documentContent = document.content().asJson()
-        buildJsonPatch(documentContent, values)
+        if (documentProperties.locking.valueResolver.isPessimisticEnabled) {
+            handleValuesWithAtomicUpdate(documentId, values)
+        } else {
+            handleValuesWithOptimisticRetry(documentId, values)
+        }
+    }
 
-        try {
-            AuthorizationContext.runWithoutAuthorization { documentService.modifyDocument(document, documentContent) }
-        } catch (exception: ModifyDocumentException) {
-            throw RuntimeException(
-                "Failed to handle values for document '$documentId'. Values: ${values}.",
-                exception
-            )
+    private fun handleValuesWithAtomicUpdate(documentId: UUID, values: Map<String, Any?>) {
+        AuthorizationContext.runWithoutAuthorization {
+            documentService.modifyDocumentAtomic(JsonSchemaDocumentId.existingId(documentId)) { lockedDocument ->
+                val documentContent = lockedDocument.content().asJson()
+                buildJsonPatch(documentContent, values)
+
+                // Return the document with modified content
+                val jsonSchemaDoc = lockedDocument as JsonSchemaDocument
+                val documentDefinition = documentDefinitionService.findBy(jsonSchemaDoc.definitionId()).orElseThrow()
+                val modifiedContent = JsonDocumentContent.build(
+                    jsonSchemaDoc.content().asJson(),
+                    documentContent,
+                    null
+                )
+                val result = jsonSchemaDoc.applyModifiedContent(modifiedContent, documentDefinition)
+                result.resultingDocument().orElseThrow()
+            }
+        }
+    }
+
+    private fun handleValuesWithOptimisticRetry(documentId: UUID, values: Map<String, Any?>) {
+        var attempt = 0
+        val maxAttempts = 3
+
+        while (attempt < maxAttempts) {
+            try {
+                val document = AuthorizationContext.runWithoutAuthorization { documentService.get(documentId.toString()) }
+                val documentContent = document.content().asJson()
+                buildJsonPatch(documentContent, values)
+
+                AuthorizationContext.runWithoutAuthorization { documentService.modifyDocument(document, documentContent) }
+                return // Success, exit retry loop
+            } catch (exception: ModifyDocumentException) {
+                val cause = exception.cause
+                if (cause is OptimisticLockingFailureException && attempt < maxAttempts - 1) {
+                    attempt++
+                    val delayMs = (50 * (1 shl attempt)) + Random.nextInt(50) // Exponential backoff with jitter
+                    Thread.sleep(delayMs.toLong())
+                } else {
+                    throw RuntimeException(
+                        "Failed to handle values for document '$documentId'. Values: ${values}. Attempts: ${attempt + 1}",
+                        exception
+                    )
+                }
+            }
         }
     }
 

@@ -162,7 +162,6 @@ export class CaseManagementWidgetsEditorComponent {
   public readonly isDividerModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly $dividerModalMode = signal<ModalMode>('add');
 
-
   public readonly $dragAndDropDisabled = signal(false);
 
   private _usedKeys: string[];

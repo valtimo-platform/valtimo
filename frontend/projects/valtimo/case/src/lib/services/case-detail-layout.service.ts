@@ -27,6 +27,7 @@ import {
 } from '../constants';
 import {CaseDetailLayout} from '../models';
 import {CaseTabService} from './case-tab.service';
+import {PageHeaderService} from '@valtimo/components';
 
 @Injectable()
 export class CaseDetailLayoutService {
@@ -41,6 +42,8 @@ export class CaseDetailLayoutService {
     CASE_DETAIL_DEFAULT_DISPLAY_SIZE
   );
   private readonly _refreshTasks$ = new BehaviorSubject<null>(null);
+  private readonly _mainContentHeaderHeight$ = new BehaviorSubject<number>(0);
+  private readonly _hasCaseTags$ = new BehaviorSubject<boolean>(false);
 
   public get refreshTasks$(): Observable<null> {
     return this._refreshTasks$.asObservable();
@@ -58,7 +61,24 @@ export class CaseDetailLayoutService {
     return this._formDisplaySize$.asObservable();
   }
 
-  constructor(private readonly caseTabService: CaseTabService) {}
+  public get tabContentContainerMaxHeight$(): Observable<string> {
+    return combineLatest([
+      this.pageHeaderService.compactMode$,
+      this._mainContentHeaderHeight$,
+      this._hasCaseTags$,
+    ]).pipe(
+      map(([compactMode, mainContentHeaderHeight, hasCaseTags]) =>
+        !compactMode && !hasCaseTags
+          ? `calc(100vh - ${202 + mainContentHeaderHeight}px)`
+          : `calc(100vh - ${160 + mainContentHeaderHeight}px)`
+      )
+    );
+  }
+
+  constructor(
+    private readonly caseTabService: CaseTabService,
+    private readonly pageHeaderService: PageHeaderService
+  ) {}
 
   public readonly caseDetailLayout$: Observable<CaseDetailLayout | any> = combineLatest([
     this.tabContentContainerWidth$,
@@ -111,6 +131,14 @@ export class CaseDetailLayoutService {
 
   public refreshTasks(): void {
     this._refreshTasks$.next(null);
+  }
+
+  public setMainContentHeaderHeight(height: number): void {
+    this._mainContentHeaderHeight$.next(height);
+  }
+
+  public setHasCaseTags(hasCaseTags: boolean): void {
+    this._hasCaseTags$.next(hasCaseTags);
   }
 
   private getInitialLayout(): CaseDetailLayout {

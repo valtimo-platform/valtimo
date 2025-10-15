@@ -11,7 +11,11 @@ defaults:
     working-directory: backend
 
 jobs:
+  run_tests:
+    uses: ./.github/workflows/backend_run_tests.yml
+
   build_publish:
+    needs: [run_tests]
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref_name, 'release/') }}
     env:

@@ -66,7 +66,7 @@
               *ngTemplateOutlet="fieldWidthDropdown; context: {index: $index}"
             ></ng-container>
 
-            <div class="valtimo-widget-management-field-column__path-selector">
+            <cds-text-label>
               <v-input-label
                 [title]="'widgetTabManagement.content.fields.value' | translate"
                 [tooltip]="
@@ -89,7 +89,7 @@
                 [caseDefinitionVersionTag]="params?.caseDefinitionVersionTag"
                 [parentItem]="selectedCollection"
               ></valtimo-value-path-selector> -->
-            </div>
+            </cds-text-label>
           </div>
 
           <div class="valtimo-widget-management-field-column__options">

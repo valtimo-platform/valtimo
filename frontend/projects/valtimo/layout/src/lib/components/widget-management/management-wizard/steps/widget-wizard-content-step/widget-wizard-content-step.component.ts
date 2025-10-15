@@ -19,6 +19,7 @@ import {
   ChangeDetectorRef,
   Component,
   EventEmitter,
+  Input,
   OnInit,
   Output,
   ViewChild,
@@ -39,6 +40,8 @@ export class WidgetWizardContentStepComponent implements OnInit {
   @ViewChild('contentRenderer', {static: true, read: ViewContainerRef})
   private readonly _vcr: ViewContainerRef;
 
+  @Input() public disableTitleInput = false;
+
   @Output() public contentValidEvent = new EventEmitter<boolean>();
 
   constructor(
@@ -52,15 +55,19 @@ export class WidgetWizardContentStepComponent implements OnInit {
 
   private renderComponent(): void {
     this._vcr.clear();
-    const $widget = this.widgetWizardService.$selectedWidget();
-    if (!$widget) return;
+    const widget = this.widgetWizardService.$selectedWidget();
+    if (!widget) return;
 
-    const componentInstance = this._vcr.createComponent($widget.component).instance;
+    const componentInstance = this._vcr.createComponent(widget.component).instance;
     if (!componentInstance) return;
 
-    componentInstance.changeValidEvent.subscribe((valid: boolean) =>
-      this.contentValidEvent.emit(valid)
-    );
+    componentInstance.changeValidEvent.subscribe((valid: boolean) => {
+      this.contentValidEvent.emit(valid);
+    });
+
+    if (this.disableTitleInput && componentInstance.setTitleInputVisible) {
+      componentInstance.setTitleInputVisible(false);
+    }
 
     this.cdr.detectChanges();
   }

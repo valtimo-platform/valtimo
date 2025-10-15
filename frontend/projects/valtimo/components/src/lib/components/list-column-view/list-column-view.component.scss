@@ -1,0 +1,67 @@
+/*!
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+::ng-deep.cds--overflow-menu-options {
+  min-width: max-content;
+}
+
+.valtimo-list-column-view {
+  &__icon {
+    display: inline-block;
+    position: relative;
+  }
+
+  &__container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  &__tag {
+    position: absolute;
+    left: 20px;
+    z-index: 2;
+    top: -8px;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    ::ng-deep .cds--checkbox-label-text {
+      color: var(--cds-text-primary);
+    }
+  }
+
+  &__warning {
+    display: flex;
+    gap: 8px;
+
+    margin-left: 3px;
+    align-items: center;
+    font-size: 12px;
+
+    svg {
+      fill: var(--warning);
+
+      ::ng-deep path[data-icon-path='inner-path'] {
+        fill: black;
+      }
+    }
+  }
+}

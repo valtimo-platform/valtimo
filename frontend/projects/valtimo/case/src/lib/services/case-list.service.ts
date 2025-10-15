@@ -16,7 +16,6 @@
 import {Injectable} from '@angular/core';
 import {Documents, SpecifiedDocuments} from '@valtimo/document';
 import {BehaviorSubject, map, Observable, take} from 'rxjs';
-import {CaseColumnService} from '.';
 
 @Injectable()
 export class CaseListService {
@@ -36,8 +35,6 @@ export class CaseListService {
   get forceRefresh$(): Observable<boolean> {
     return this._forceRefresh$.asObservable();
   }
-
-  constructor(private readonly caseColumnService: CaseColumnService) {}
 
   public setCaseDefinitionKey(caseDefinitionKey: string): void {
     this._caseDefinitionKey$.next(caseDefinitionKey);
