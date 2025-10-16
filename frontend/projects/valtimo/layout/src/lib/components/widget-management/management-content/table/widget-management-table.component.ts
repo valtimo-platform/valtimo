@@ -20,6 +20,7 @@ import {
   computed,
   EventEmitter,
   HostBinding,
+  Inject,
   Input,
   OnDestroy,
   OnInit,
@@ -29,7 +30,6 @@ import {
   WritableSignal,
 } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_THEME,
@@ -37,15 +37,17 @@ import {
   CurrentCarbonTheme,
   InputLabelModule,
   ValuePathItem,
+  ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
   ValuePathType,
 } from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
-import {IWidgetContentComponent} from '../../../../interfaces';
+import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
+import {IWidgetContentComponent, IWidgetManagementService} from '../../../../interfaces';
+import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
-import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
 
 @Component({
   selector: 'valtimo-widget-management-table',
@@ -64,6 +66,7 @@ import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '..
     ButtonModule,
     InputLabelModule,
     LayerModule,
+    ValuePathSelectorComponent,
   ],
 })
 export class WidgetManagementTableComponent implements IWidgetContentComponent, OnInit, OnDestroy {
@@ -91,7 +94,9 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
       currentTheme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
     )
   );
+  public readonly params$ = this.widgetManagementService.params$;
 
+  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
   public readonly $content = this.widgetWizardService
     .$widgetContent as WritableSignal<WidgetTableContent>;
   public readonly $checked = computed(
@@ -111,7 +116,8 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
     private readonly widgetWizardService: WidgetWizardService,
-    private readonly route: ActivatedRoute
+    @Inject(WIDGET_MANAGEMENT_SERVICE)
+    private widgetManagementService: IWidgetManagementService<any>
   ) {}
 
   public ngOnInit(): void {

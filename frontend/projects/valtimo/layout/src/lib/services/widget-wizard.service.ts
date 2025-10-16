@@ -27,6 +27,7 @@ import {
   BasicWidget,
   WidgetAction,
   WidgetContentProperties,
+  WidgetContext,
   WidgetStyle,
   WidgetType,
   WidgetTypeSelection,
@@ -52,6 +53,8 @@ export class WidgetWizardService {
   public readonly $widgetKey: WritableSignal<string | null> = signal(null);
 
   public readonly $widgetActions: WritableSignal<WidgetAction[] | undefined> = signal(undefined);
+
+  public readonly $widgetContext: WritableSignal<WidgetContext | null> = signal(null);
 
   private _defaultWidth!: WidgetWidth;
 
