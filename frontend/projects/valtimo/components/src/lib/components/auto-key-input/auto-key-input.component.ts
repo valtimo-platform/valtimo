@@ -22,7 +22,7 @@ import {
   OnDestroy,
   signal,
   Output,
-  EventEmitter
+  EventEmitter,
 } from '@angular/core';
 import {ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule} from '@angular/forms';
 import {CommonModule} from '@angular/common';
@@ -141,7 +141,7 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
 
   public onInputChange(event: InputEvent & {target: HTMLInputElement}): void {
     const usedKeys = this._usedKeys$.getValue();
-    if(usedKeys.includes(event.target.value)){
+    if (usedKeys.includes(event.target.value)) {
       this.idError$.next('caseManagement.statuses.keyDuplicated');
       this.submitDisabled.emit(true);
     } else {
