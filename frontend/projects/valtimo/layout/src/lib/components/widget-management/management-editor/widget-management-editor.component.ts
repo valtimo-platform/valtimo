@@ -15,6 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Inject, Input, signal} from '@angular/core';
+import {DragVertical16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
@@ -24,7 +25,8 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
+import {ModalMode} from '@valtimo/shared';
+import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
@@ -41,6 +43,7 @@ import {
   WidgetWizardCloseEventType,
 } from '../../../models';
 import {WidgetWizardService} from '../../../services';
+import {WidgetManagementDividerModalComponent} from '../management-divider-modal/widget-management-divider-modal.component';
 import {WidgetManagementWizardComponent} from '../management-wizard/widget-management-wizard.component';
 
 @Component({
@@ -57,6 +60,7 @@ import {WidgetManagementWizardComponent} from '../management-wizard/widget-manag
     TabsModule,
     WidgetManagementWizardComponent,
     ConfirmationModalModule,
+    WidgetManagementDividerModalComponent,
   ],
 })
 export class WidgetManagementEditorComponent {
@@ -191,20 +195,29 @@ export class WidgetManagementEditorComponent {
     ),
     tap(() => this.loading$.next(false))
   );
+  public readonly usedKeys$ = this.widgets$.pipe(
+    map((widgets: CarbonListItem[]) => widgets.map((widget: CarbonListItem) => widget.key))
+  );
+  public readonly dividerDefinition$ = new BehaviorSubject<Widget | null>(null);
 
   public readonly $isWizardOpen = signal<boolean>(false);
   public readonly $isEditMode = this.widgetWizardService.$editMode;
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly $deleteWidget = signal<BasicWidget | null>(null);
 
+  public readonly $isDividerModalOpen = signal<boolean>(false);
+  public readonly $dividerModalMode = signal<ModalMode>('add');
   public readonly $dragAndDropDisabled = signal(false);
 
   constructor(
+    private readonly iconService: IconService,
     private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
     private widgetManagementService: IWidgetManagementService<any>
-  ) {}
+  ) {
+    this.iconService.registerAll([DragVertical16]);
+  }
 
   public editWidget(tabWidget: Widget): void {
     this.widgetWizardService.$widgetTitle.set(tabWidget.title);
@@ -267,6 +280,26 @@ export class WidgetManagementEditorComponent {
         this.$dragAndDropDisabled.set(false);
         this._refresh$.next(null);
       });
+  }
+
+  public openAddDividerModal(): void {
+    this.$isDividerModalOpen.set(true);
+  }
+
+  public onCloseDividerModalEvent(dividerDefinition: BasicWidget): void {
+    if (!dividerDefinition) return;
+
+    (this.$dividerModalMode() === 'add'
+      ? this.widgetManagementService.createWidget(dividerDefinition)
+      : this.widgetManagementService.updateWidget(dividerDefinition)
+    )
+      .pipe(take(1))
+      .subscribe(() => this._refresh$.next(null));
+
+    this.$isDividerModalOpen.set(false);
+    this.widgetWizardService.resetWizard();
+    this.dividerDefinition$.next(null);
+    this.$dividerModalMode.set('add');
   }
 
   private deleteWidget(tabWidget: BasicWidget): void {
