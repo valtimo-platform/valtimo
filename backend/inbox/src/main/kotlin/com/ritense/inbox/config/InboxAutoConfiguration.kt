@@ -19,10 +19,13 @@ package com.ritense.inbox.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.inbox.InboxEventHandler
 import com.ritense.inbox.InboxHandlingService
+import com.ritense.inbox.LocalCloudEventListener
+import com.ritense.inbox.ValtimoCloudEventMapper
 import com.ritense.inbox.ValtimoEventHandler
 import com.ritense.inbox.ValtimoInboxEventHandler
 import com.ritense.inbox.consumer.InboxCloudEventConsumer
 import org.springframework.boot.autoconfigure.AutoConfiguration
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 
@@ -38,11 +41,28 @@ class InboxAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(ValtimoCloudEventMapper::class)
+    fun valtimoCloudEventMapper(
+        objectMapper: ObjectMapper
+    ): ValtimoCloudEventMapper {
+        return ValtimoCloudEventMapper(objectMapper)
+    }
+
+    @Bean
     fun valtimoInboxEventHandler(
         eventHandlers: List<ValtimoEventHandler>,
-        objectMapper: ObjectMapper
+        cloudEventMapper: ValtimoCloudEventMapper
     ): InboxEventHandler {
-        return ValtimoInboxEventHandler(eventHandlers, objectMapper)
+        return ValtimoInboxEventHandler(eventHandlers, cloudEventMapper)
+    }
+
+    @Bean
+    @ConditionalOnBean(name = ["localOutboxService"])
+    fun localCloudEventListener(
+        eventHandlers: List<ValtimoEventHandler>,
+        cloudEventMapper: ValtimoCloudEventMapper
+    ): LocalCloudEventListener {
+        return LocalCloudEventListener(eventHandlers, cloudEventMapper)
     }
 
     @Bean

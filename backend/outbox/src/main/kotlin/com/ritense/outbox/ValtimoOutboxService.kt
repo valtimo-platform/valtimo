@@ -16,47 +16,27 @@
 
 package com.ritense.outbox
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.outbox.domain.BaseEvent
-import com.ritense.outbox.domain.CloudEventData
 import com.ritense.outbox.exception.OutboxTransactionReadOnlyException
 import com.ritense.outbox.repository.OutboxMessageRepository
-import io.cloudevents.core.builder.CloudEventBuilder
 import io.cloudevents.core.provider.EventFormatProvider
 import io.cloudevents.jackson.JsonFormat
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionSynchronizationManager
-import java.net.URI
-import java.time.ZonedDateTime
 import java.util.UUID
 import java.util.function.Supplier
 import kotlin.text.Charsets.UTF_8
 
 open class ValtimoOutboxService(
     private val outboxMessageRepository: OutboxMessageRepository,
-    private val objectMapper: ObjectMapper,
-    private val userProvider: UserProvider,
-    private val cloudEventSource: String,
+    private val cloudEventFactory: CloudEventFactory
 ) : OutboxService {
 
     @Transactional(propagation = Propagation.MANDATORY)
     override fun send(eventSupplier: Supplier<BaseEvent>) {
-        val baseEvent = eventSupplier.get()
-
-        val userId = baseEvent.userId ?: userProvider.getCurrentUserLogin() ?: "System"
-        val roles = baseEvent.roles.ifEmpty { userProvider.getCurrentUserRoles() }
-        val cloudEventData =
-            CloudEventData(userId, roles.toSet(), baseEvent.resultType, baseEvent.resultId, baseEvent.result)
-        val cloudEvent = CloudEventBuilder.v1()
-            .withId(baseEvent.id.toString())
-            .withSource(URI(cloudEventSource))
-            .withTime(baseEvent.date.atOffset(ZonedDateTime.now().offset))
-            .withType(baseEvent.type)
-            .withDataContentType("application/json")
-            .withData(objectMapper.writeValueAsBytes(cloudEventData))
-            .build()
+        val cloudEvent = cloudEventFactory.create(eventSupplier.get())
         val serializedCloudEvent = EventFormatProvider
             .getInstance()
             .resolveFormat(JsonFormat.CONTENT_TYPE)!!
