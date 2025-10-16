@@ -16,6 +16,7 @@
 
 package com.ritense.iko.web.rest
 
+import com.ritense.exporter.ExportService
 import com.ritense.iko.IkoServerRepository.Companion.ENDPOINT_PATH
 import com.ritense.iko.domain.IkoDataAggregate
 import com.ritense.iko.domain.IkoRepositoryConfig
@@ -55,13 +56,15 @@ internal class IkoDataAggregateManagementResourceTest {
     private lateinit var mockMvc: MockMvc
     private lateinit var resource: IkoDataAggregateManagementResource
     private lateinit var service: IkoDataAggregateService
+    private lateinit var exportService: ExportService
 
     private val objectMapper = MapperSingleton.get()
 
     @BeforeEach
     fun init() {
         service = mock()
-        resource = IkoDataAggregateManagementResource(service)
+        exportService = mock()
+        resource = IkoDataAggregateManagementResource(service, exportService)
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))

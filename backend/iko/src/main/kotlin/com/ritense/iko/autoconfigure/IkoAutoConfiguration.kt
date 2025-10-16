@@ -18,12 +18,19 @@ package com.ritense.iko.autoconfigure
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.exporter.ExportService
 import com.ritense.iko.IkoServerRepository
 import com.ritense.iko.IkoValueResolverFactory
 import com.ritense.iko.authorization.IkoDataAggregateSpecificationFactory
 import com.ritense.iko.client.IkoClient
 import com.ritense.iko.event.IkoDataAggregateEventListener
 import com.ritense.iko.event.IkoDataRequestEventListener
+import com.ritense.iko.exporter.IkoDataAggregateExporter
+import com.ritense.iko.exporter.IkoDataRequestsExporter
+import com.ritense.iko.exporter.IkoListColumnsExporter
+import com.ritense.iko.exporter.IkoSearchFieldsExporter
+import com.ritense.iko.exporter.IkoTabsExporter
+import com.ritense.iko.exporter.IkoWidgetsExporter
 import com.ritense.iko.importer.IkoDataAggregateImporter
 import com.ritense.iko.importer.IkoDataRequestImporter
 import com.ritense.iko.importer.IkoListColumnImporter
@@ -175,9 +182,11 @@ class IkoAutoConfiguration {
     @ConditionalOnMissingBean(IkoDataAggregateManagementResource::class)
     fun ikoDataAggregateManagementResource(
         service: IkoDataAggregateService,
+        exportService: ExportService,
     ): IkoDataAggregateManagementResource {
         return IkoDataAggregateManagementResource(
             service,
+            exportService,
         )
     }
 
@@ -384,6 +393,78 @@ class IkoAutoConfiguration {
         ikoWidgetService: IkoWidgetService,
     ): IkoWidgetImporter {
         return IkoWidgetImporter(
+            objectMapper,
+            ikoWidgetService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IkoDataAggregateExporter::class)
+    fun ikoDataAggregateExporter(
+        objectMapper: ObjectMapper,
+        ikoDataAggregateService: IkoDataAggregateService,
+    ): IkoDataAggregateExporter {
+        return IkoDataAggregateExporter(
+            objectMapper,
+            ikoDataAggregateService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IkoDataRequestsExporter::class)
+    fun ikoDataRequestExporter(
+        objectMapper: ObjectMapper,
+        ikoDataRequestService: IkoDataRequestService,
+    ): IkoDataRequestsExporter {
+        return IkoDataRequestsExporter(
+            objectMapper,
+            ikoDataRequestService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IkoListColumnsExporter::class)
+    fun ikoListColumnsExporter(
+        objectMapper: ObjectMapper,
+        ikoListColumnService: IkoListColumnService,
+    ): IkoListColumnsExporter {
+        return IkoListColumnsExporter(
+            objectMapper,
+            ikoListColumnService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IkoSearchFieldsExporter::class)
+    fun ikoSearchFieldsExporter(
+        objectMapper: ObjectMapper,
+        ikoSearchFieldService: IkoSearchFieldService,
+    ): IkoSearchFieldsExporter {
+        return IkoSearchFieldsExporter(
+            objectMapper,
+            ikoSearchFieldService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IkoTabsExporter::class)
+    fun ikoTabsExporter(
+        objectMapper: ObjectMapper,
+        ikoTabService: IkoTabService,
+    ): IkoTabsExporter {
+        return IkoTabsExporter(
+            objectMapper,
+            ikoTabService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IkoWidgetsExporter::class)
+    fun ikoWidgetsExporter(
+        objectMapper: ObjectMapper,
+        ikoWidgetService: IkoWidgetService,
+    ): IkoWidgetsExporter {
+        return IkoWidgetsExporter(
             objectMapper,
             ikoWidgetService,
         )

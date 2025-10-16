@@ -1,0 +1,213 @@
+{
+  "ikoDataAggregateKey" : "klant",
+  "ikoTabKey" : "general",
+  "ikoWidgets" : [
+    {
+      "type" : "fields",
+      "key" : "klant",
+      "title" : "Klant",
+      "width" : 1,
+      "highContrast" : true,
+      "actions" : [],
+      "properties" : {
+        "columns" : [
+          [
+            {
+              "key" : "naam",
+              "title" : "Naam",
+              "value" : "iko:/naam/volledigeNaam"
+            },
+            {
+              "key" : "geboortedatum",
+              "title" : "Geboortedatum",
+              "value" : "iko:/geboorte/datum/datum",
+              "displayProperties" : {
+                "type" : "date",
+                "format" : "DD-MM-YYYY",
+                "hideWhenEmpty" : false
+              }
+            },
+            {
+              "key" : "bsn",
+              "title" : "BSN",
+              "value" : "iko:/burgerservicenummer"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "type" : "collection",
+      "key" : "nationaliteiten",
+      "title" : "Nationaliteiten",
+      "width" : 1,
+      "highContrast" : false,
+      "actions" : [],
+      "properties" : {
+        "collection" : "iko:/nationaliteiten",
+        "defaultPageSize" : 4,
+        "title" : {
+          "value" : "/nationaliteit/omschrijving"
+        },
+        "fields" : [
+          {
+            "key" : "nationaliteit",
+            "title" : "Nationaliteit",
+            "value" : "/nationaliteit/omschrijving",
+            "width" : "full"
+          },
+          {
+            "key" : "datumIngangGeldigheid",
+            "title" : "Ingangsdatum",
+            "value" : "/datumIngangGeldigheid/langFormaat",
+            "width" : "full"
+          }
+        ]
+      }
+    },
+    {
+      "type" : "fields",
+      "key" : "verblijfplaats",
+      "title" : "Verblijfplaats",
+      "width" : 1,
+      "highContrast" : true,
+      "actions" : [],
+      "properties" : {
+        "columns" : [
+          [
+            {
+              "key" : "verblijfadres",
+              "title" : "Verblijfadres",
+              "value" : "iko:/verblijfplaats/verblijfadres/korteStraatnaam"
+            },
+            {
+              "key" : "huisnummer",
+              "title" : "Huisnummer",
+              "value" : "iko:/verblijfplaats/verblijfadres/huisnummer"
+            },
+            {
+              "key" : "postcode",
+              "title" : "Postcode",
+              "value" : "iko:/verblijfplaats/verblijfadres/postcode"
+            },
+            {
+              "key" : "ingangGeldigheid",
+              "title" : "Ingangsdatum",
+              "value" : "iko:/verblijfplaats/datumIngangGeldigheid/langFormaat"
+            }
+          ]
+        ]
+      }
+    },
+    {
+      "type" : "collection",
+      "key" : "partners",
+      "title" : "Partners",
+      "width" : 1,
+      "highContrast" : false,
+      "actions" : [],
+      "properties" : {
+        "collection" : "iko:/partners",
+        "defaultPageSize" : 4,
+        "title" : {
+          "value" : "/burgerservicenummer"
+        },
+        "fields" : [
+          {
+            "key" : "burgerservicenummer",
+            "title" : "Burgerservicenummer",
+            "value" : "/burgerservicenummer",
+            "width" : "full"
+          },
+          {
+            "key" : "voornamen",
+            "title" : "Voornamen",
+            "value" : "/naam/voornamen",
+            "width" : "full"
+          },
+          {
+            "key" : "geslachtsnaam",
+            "title" : "Geslachtsnaam",
+            "value" : "/naam/geslachtsnaam",
+            "width" : "full"
+          }
+        ]
+      }
+    },
+    {
+      "type" : "interactive-table",
+      "key" : "lopendeZaken",
+      "title" : "Lopende zaken",
+      "width" : 4,
+      "highContrast" : false,
+      "actions" : [
+        {
+          "name" : "Create new Verzoek",
+          "navigateTo" : "http://localhost:8003/leningaanvragen/startpagina"
+        }
+      ],
+      "properties" : {
+        "collection" : "iko:?ikoDataAggregateKey=zaak&identificatie=ZAAK-2025-0000000001&id=",
+        "defaultPageSize" : 4,
+        "columns" : [
+          {
+            "key" : "identificatie",
+            "title" : "Identificatie",
+            "value" : "/identificatie"
+          },
+          {
+            "key" : "verantwoordelijkeOrganisatie",
+            "title" : "VerantwoordelijkeOrganisatie",
+            "value" : "/verantwoordelijkeOrganisatie"
+          },
+          {
+            "key" : "uiterlijkeEinddatum",
+            "title" : "Uiterlijke einddatum",
+            "value" : "/uiterlijkeEinddatumAfdoening",
+            "displayProperties" : {
+              "type" : "date",
+              "format" : "DD-MM-YYYY",
+              "hideWhenEmpty" : false
+            }
+          }
+        ],
+        "firstColumnAsTitle" : false,
+        "rowClickAction" : {
+          "name" : null,
+          "navigateTo" : "${$.kenmerken[?(@.kenmerk =~ /^originUrl[0-9]*$/)].bron}"
+        },
+        "canStartCase" : true
+      }
+    },
+    {
+      "type" : "table",
+      "key" : "bomen",
+      "title" : "Bomen",
+      "width" : 4,
+      "highContrast" : false,
+      "actions" : [],
+      "properties" : {
+        "collection" : "iko:?ikoDataAggregateKey=boom&boombeeld=Aanvaard boombeeld&id=",
+        "defaultPageSize" : 4,
+        "columns" : [
+          {
+            "key" : "boombeeld",
+            "title" : "Boombeeld",
+            "value" : "/record/data/boombeeld"
+          },
+          {
+            "key" : "groeifase",
+            "title" : "Groeifase",
+            "value" : "/record/data/groeifase"
+          },
+          {
+            "key" : "boomveiligheidsklasse",
+            "title" : "Boomveiligheidsklasse",
+            "value" : "/record/data/boomveiligheidsklasse"
+          }
+        ],
+        "firstColumnAsTitle" : false
+      }
+    }
+  ]
+}
