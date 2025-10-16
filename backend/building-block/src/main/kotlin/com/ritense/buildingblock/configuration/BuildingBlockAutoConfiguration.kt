@@ -17,7 +17,8 @@
 package com.ritense.buildingblock.configuration
 
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
-import com.ritense.buildingblock.web.rest.BuildingBlockDefinitionResource
+import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -42,12 +43,19 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
         return LiquibaseMasterChangeLogLocation("config/liquibase/building-block-master.xml")
     }
 
+    @Order(270)
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockHttpSecurityConfigurer::class)
+    fun buildingBlockHttpSecurityConfigurer(): BuildingBlockHttpSecurityConfigurer {
+        return BuildingBlockHttpSecurityConfigurer()
+    }
+
     @ConditionalOnMissingBean(name = ["buildingBlockDefinitionResource"])
     @Bean
-    fun buildingBlockDefinitionResource(
+    fun buildingBlockManagementResource(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-    ): BuildingBlockDefinitionResource {
-        return BuildingBlockDefinitionResource(
+    ): BuildingBlockManagementResource {
+        return BuildingBlockManagementResource(
             buildingBlockDefinitionRepository
         )
     }

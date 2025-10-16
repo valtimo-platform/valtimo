@@ -37,7 +37,7 @@ data class BuildingBlockDefinition(
     @EmbeddedId
     val id: BuildingBlockDefinitionId,
     @Column(name = "title")
-    val name: String,
+    val title: String,
     @Column(name = "description")
     val description: String? = null,
     @CreatedBy
