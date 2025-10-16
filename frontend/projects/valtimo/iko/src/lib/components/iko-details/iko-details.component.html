@@ -19,7 +19,7 @@
   renderInPageHeader
 >
   <ng-template>
-    <cds-tabs>
+    <cds-tabs class="valtimo-iko-details">
       @for (tab of obs.tabs; track tab.key) {
         <cds-tab
           [active]="obs.activeTabKey === tab.key"

@@ -50,7 +50,12 @@ import {ModalCloseEvent, ModalMode} from '@valtimo/shared';
 export class IkoManagementTabsComponent implements OnInit, OnDestroy {
   public readonly $disableInput = signal<boolean>(true);
   public readonly $ikoTabDtos = signal<TabDto[]>([]);
-  public readonly $usedKeys = computed(() => this.$ikoTabDtos().map(tab => tab.key));
+  public readonly $usedKeys = computed(() =>
+    this.$ikoTabDtos().reduce(
+      (acc, curr) => [...acc, ...(curr.key === this.$selectedTab()?.key ? [] : [curr.key])],
+      [] as string[]
+    )
+  );
   public readonly $loading = signal<boolean>(true);
   public readonly $selectedTab = signal<TabDto | null>(null);
   public readonly $openModal = signal<boolean>(false);
@@ -188,6 +193,7 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
 
   public onCreateButtonClicked(): void {
     this.$modalMode.set('add');
+    this.$selectedTab.set({title: '', key: '', type: ''});
     this.openModal();
   }
 
