@@ -38,7 +38,7 @@ export class PageTitleService implements OnDestroy {
 
   private _routeSubscription!: Subscription;
 
-  private _preventReset!: boolean;
+  private readonly _preventReset$ = new BehaviorSubject<boolean>(false);
 
   public get customPageTitle$(): Observable<string> {
     return this._customPageTitle$.asObservable();
@@ -95,11 +95,11 @@ export class PageTitleService implements OnDestroy {
   }
 
   public disableReset(): void {
-    this._preventReset = true;
+    this._preventReset$.next(true);
   }
 
   public enableReset(): void {
-    this._preventReset = false;
+    this._preventReset$.next(false);
   }
 
   public setPageActionsViewContainerRef(ref: ViewContainerRef): void {
@@ -127,7 +127,11 @@ export class PageTitleService implements OnDestroy {
   }
 
   private openRouteSubscription(): void {
-    this._routeSubscription = combineLatest([this.router.events, this.pageActionsViewContainerRef$])
+    this._routeSubscription = combineLatest([
+      this.router.events,
+      this.pageActionsViewContainerRef$,
+      this._preventReset$,
+    ])
       .pipe(
         filter(
           ([event]) =>
@@ -135,15 +139,15 @@ export class PageTitleService implements OnDestroy {
             event instanceof NavigationStart ||
             event instanceof ResolveEnd
         ),
-        tap(([_, pageActionsViewContainerRef]) => {
-          if (!this._preventReset) {
+        tap(([_, pageActionsViewContainerRef, preventReset]) => {
+          if (!preventReset) {
             this._customPageTitle$.next('');
             this._customPageTitleSet$.next(false);
             this._customPageSubtitle$.next('');
             this._customPageSubtitleSet$.next(false);
           }
 
-          if (pageActionsViewContainerRef && !this._preventReset) {
+          if (pageActionsViewContainerRef && !preventReset) {
             pageActionsViewContainerRef.clear();
             this.setHasPageActions(false);
           }

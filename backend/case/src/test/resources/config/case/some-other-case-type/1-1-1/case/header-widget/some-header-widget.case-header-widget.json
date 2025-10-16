@@ -1,0 +1,46 @@
+{
+    "type": "fields",
+    "highContrast": false,
+    "properties": {
+        "columns": [
+            [
+                {
+                    "key": "voornaam",
+                    "title": "Voornaam",
+                    "value": "doc:voornaam",
+                    "displayProperties": { "type": "text" }
+                },
+                {
+                    "key": "achternaam",
+                    "title": "Achternaam",
+                    "value": "doc:achternaam",
+                    "displayProperties": { "type": "text" }
+                }
+            ],
+            [
+                {
+                    "key": "aangemaakt-op",
+                    "title": "Aangemaakt op",
+                    "value": "case:createdOn",
+                    "displayProperties": { "type": "date" }
+                }
+            ],
+            [
+                {
+                    "key": "aangemaakt-door",
+                    "title": "Aangemaakt door",
+                    "value": "case:createdBy",
+                    "displayProperties": { "type": "text" }
+                }
+            ],
+            [
+                {
+                    "key": "e-mail",
+                    "title": "E-mail",
+                    "value": "doc:e-mailadres",
+                    "displayProperties": { "type": "text" }
+                }
+            ]
+        ]
+    }
+}

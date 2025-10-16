@@ -33,6 +33,7 @@ import {
   BreadcrumbService,
   CdsThemeService,
   CurrentCarbonTheme,
+  ObserveSizeDirective,
   PageHeaderService,
   PageTitleService,
   PendingChangesComponent,
@@ -90,7 +91,7 @@ import {WidgetsService} from './tab/widgets/widgets.service';
   standalone: false,
   templateUrl: './case-detail.component.html',
   styleUrls: ['./case-detail.component.scss'],
-  providers: [CaseTabService, CaseDetailLayoutService],
+  providers: [CaseTabService, CaseDetailLayoutService, ObserveSizeDirective],
 })
 export class CaseDetailComponent
   extends PendingChangesComponent
@@ -207,7 +208,8 @@ export class CaseDetailComponent
   );
 
   public readonly hasCaseTags$: Observable<boolean> = this._caseTags$.pipe(
-    map(caseTags => Array.isArray(caseTags) && caseTags.length > 0)
+    map(caseTags => Array.isArray(caseTags) && caseTags.length > 0),
+    tap((hasCaseTags: boolean) => this.caseDetailLayoutService.setHasCaseTags(hasCaseTags))
   );
 
   public readonly userId$: Observable<string | undefined> = of(
@@ -294,6 +296,9 @@ export class CaseDetailComponent
   public readonly isDarkMode$ = this.cdsThemeService.currentTheme$.pipe(
     map(currentTheme => currentTheme === CurrentCarbonTheme.G90)
   );
+
+  public readonly tabContentContainerMaxHeight$ =
+    this.caseDetailLayoutService.tabContentContainerMaxHeight$;
 
   private _snapshot: ParamMap;
   private _initialTabName: string;
@@ -517,6 +522,10 @@ export class CaseDetailComponent
     this.caseDetailLayoutService.setTaskAndProcessLinkOpenedInPanel(null);
     this.caseDetailLayoutService.refreshTasks();
     this.tabLoader?.refreshView();
+  }
+
+  public onMainContentHeaderHeightChange(height: number): void {
+    this.caseDetailLayoutService.setMainContentHeaderHeight(height);
   }
 
   protected onConfirmRedirect(): void {

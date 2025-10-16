@@ -27,7 +27,6 @@ import {
   ViewType,
 } from '@valtimo/components';
 import {
-  ConfigService,
   EditPermissionsService,
   getCaseManagementRouteParams,
   getDisplayTypeParametersView,

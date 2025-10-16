@@ -16,7 +16,6 @@
 
 package com.ritense.form.casewidget
 
-import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.domain.tab.CaseWidgetTabWidgetId
 import com.ritense.form.domain.FormIoFormDefinition
 import com.ritense.form.service.FormDefinitionService
@@ -53,22 +52,28 @@ class FormIoCaseWidgetDataProviderTest(
         val formDefinitionId = UUID.randomUUID()
         whenever(formDefinition.id).thenReturn(formDefinitionId)
 
-        whenever(formDefinitionService.getFormDefinitionByName(eq(formDefinitionName), any())).thenReturn(Optional.of(formDefinition))
+        whenever(formDefinitionService.getFormDefinitionByName(eq(formDefinitionName), any())).thenReturn(
+            Optional.of(
+                formDefinition
+            )
+        )
         whenever(formService.getPrefilledFormDefinition(formDefinitionId, documentId)).thenReturn(formDefinition)
 
-        whenever(formDefinition.asJson()).thenReturn("""
+        whenever(formDefinition.asJson()).thenReturn(
+            """
             {
                 "x": true,
                 "y": false
             }
-            """.trimIndent().toJsonNode())
+            """.trimIndent().toJsonNode()
+        )
 
         val data = dataProvider.getData(
-            documentId, mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS), FormIoCaseWidget(
+            documentId, FormIoCaseWidget(
                 CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
-            ), Pageable.unpaged()
+            ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
         )!!
         assertThat(data.at("/x").booleanValue()).isEqualTo(true)
         assertThat(data.at("/y").booleanValue()).isEqualTo(false)
@@ -82,11 +87,11 @@ class FormIoCaseWidgetDataProviderTest(
         whenever(formDefinitionService.getFormDefinitionByName(formDefinitionName)).thenReturn(Optional.empty())
 
         val data = dataProvider.getData(
-            documentId, mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS), FormIoCaseWidget(
+            documentId, FormIoCaseWidget(
                 CaseWidgetTabWidgetId("k"), "t", 0, 4, false, emptyList(), emptyList(), FormIoWidgetProperties(
                     formDefinitionName
                 )
-            ), Pageable.unpaged()
+            ), Pageable.unpaged(), mock(defaultAnswer = Answers.RETURNS_DEEP_STUBS)
         )
         assertThat(data).isNull()
     }

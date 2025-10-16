@@ -19,9 +19,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  EventEmitter,
   HostBinding,
   Input,
   OnDestroy,
+  Output,
   signal,
   ViewChild,
   ViewEncapsulation,
@@ -66,6 +68,10 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
     this.widgetData$.next(value);
     this.isEmptyWidgetData$.next(this.checkEmptyWidgetData(value));
   }
+
+  @Input() public compact = false;
+
+  @Output() public readonly noVisibleFieldsEvent = new EventEmitter<boolean>();
 
   public readonly renderVertically = signal(0);
   public readonly widgetConfiguration$ = new BehaviorSubject<FieldsWidget | null>(null);
@@ -154,8 +160,14 @@ export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
   private checkEmptyFields(columns: any[][]): void {
     columns.forEach(column => {
       column.forEach(field => {
-        if (!field?.hideWhenEmpty || (field?.hideWhenEmpty && field?.value && field?.value !== '-'))
+        if (
+          !field?.hideWhenEmpty ||
+          (field?.hideWhenEmpty && field?.value && field?.value !== '-')
+        ) {
           this.noVisibleFields$.next(false);
+        }
+
+        this.noVisibleFieldsEvent.emit(this.noVisibleFields$.getValue());
       });
     });
   }

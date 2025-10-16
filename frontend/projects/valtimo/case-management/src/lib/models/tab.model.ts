@@ -30,4 +30,5 @@ export enum TabEnum {
   CASE_LIST = 'case-list',
   CASE_DETAILS = 'case-details',
   TASKS = 'tasks',
+  HEADER = 'header',
 }

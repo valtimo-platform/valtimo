@@ -19,7 +19,7 @@ package com.ritense.case_.deployment
 import com.ritense.BaseIntegrationTest
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case_.repository.CaseWidgetTabRepository
-import com.ritense.case_.service.CaseWidgetTabService
+import com.ritense.case_.service.CaseWidgetService
 import com.ritense.case_.widget.fields.FieldsCaseWidgetDto
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import org.assertj.core.api.Assertions.assertThat
@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class CaseWidgetTabDeployerIntTest @Autowired constructor(
-    private val caseWidgetTabService: CaseWidgetTabService,
+    private val caseWidgetService: CaseWidgetService,
     private val caseWidgetTabRepository: CaseWidgetTabRepository
 ) : BaseIntegrationTest() {
 
@@ -39,7 +39,7 @@ class CaseWidgetTabDeployerIntTest @Autowired constructor(
         val tabKey = "widget-tab"
 
         val widgetTab = runWithoutAuthorization {
-            caseWidgetTabService.getWidgetTab(caseDefinitionId, tabKey)
+            caseWidgetService.getWidgetTab(caseDefinitionId, tabKey)
         }
 
         assertThat(widgetTab).isNotNull

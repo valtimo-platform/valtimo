@@ -26,9 +26,15 @@ import {WidgetManagementInteractiveTableComponent} from '../components/widget-ma
 import {IWidgetContentComponent} from '../interfaces';
 import {BasicWidget, WidgetType} from './widget.model';
 
-enum WidgetWizardStep {
+enum WidgetWizardSteps {
   TYPE,
   WIDTH,
+  STYLE,
+  CONTENT,
+}
+
+enum WidgetWizardStepsNoWidth {
+  TYPE,
   STYLE,
   CONTENT,
 }
@@ -108,7 +114,8 @@ const WIDGET_STYLE_LABELS: {[key: string]: string} = {
 };
 
 export {
-  WidgetWizardStep,
+  WidgetWizardSteps,
+  WidgetWizardStepsNoWidth,
   WidgetTypeSelection,
   AVAILABLE_WIDGETS,
   WidgetStyle,

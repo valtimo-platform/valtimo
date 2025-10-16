@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import {computed, Injectable, Signal, signal, WritableSignal} from '@angular/core';
+import {
+  computed,
+  Injectable,
+  Injector,
+  runInInjectionContext,
+  Signal,
+  signal,
+  WritableSignal,
+} from '@angular/core';
 import {
   BasicWidget,
   WidgetAction,
@@ -24,6 +32,8 @@ import {
   WidgetTypeSelection,
   WidgetWidth,
 } from '../models';
+import {Observable} from 'rxjs';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
@@ -43,11 +53,17 @@ export class WidgetWizardService {
 
   public readonly $widgetActions: WritableSignal<WidgetAction[] | undefined> = signal(undefined);
 
+  private _defaultWidth!: WidgetWidth;
+
+  public get defaultWidth(): WidgetWidth {
+    return this._defaultWidth;
+  }
+
   public readonly $widgetsConfig: Signal<BasicWidget> = computed(() => ({
     key: this.$widgetKey() ?? '',
     title: this.$widgetTitle() ?? '',
     type: this.$selectedWidget()?.type ?? WidgetType.FIELDS,
-    width: this.$widgetWidth() ?? 4,
+    width: this.$widgetWidth() || this._defaultWidth || 4,
     highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
     properties: this.$widgetContent() ?? ({} as any),
     actions: this.$widgetActions() ?? [],
@@ -55,18 +71,34 @@ export class WidgetWizardService {
 
   public readonly $editMode: WritableSignal<boolean> = signal(false);
 
+  public get editMode$(): Observable<boolean> {
+    return runInInjectionContext(this.injector, () => toObservable(this.$editMode));
+  }
+
   public readonly $usedWidgetKeys: WritableSignal<string[]> = signal([]);
 
   public readonly $availableWidgetTypes: WritableSignal<WidgetType[] | null> = signal(null);
 
+  constructor(private readonly injector: Injector) {}
+
   public resetWizard(): void {
     this.$selectedWidget.set(null);
-    this.$widgetWidth.set(null);
+    this.$widgetWidth.set(this._defaultWidth || null);
     this.$widgetStyle.set(null);
     this.$widgetContent.set(null);
     this.$widgetTitle.set(null);
     this.$widgetKey.set(null);
     this.$widgetActions.set(undefined);
     this.$editMode.set(false);
+  }
+
+  public setDefaultWidth(width: number): void {
+    if (!this.isWidgetWidth(width)) return;
+    this._defaultWidth = width;
+    this.$widgetWidth.set(this._defaultWidth);
+  }
+
+  private isWidgetWidth(value: unknown): value is WidgetWidth {
+    return [1, 2, 3, 4].includes(value as number);
   }
 }
