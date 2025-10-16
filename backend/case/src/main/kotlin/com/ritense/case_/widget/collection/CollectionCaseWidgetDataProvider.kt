@@ -22,10 +22,10 @@ import com.fasterxml.jackson.module.kotlin.treeToValue
 import com.jayway.jsonpath.Configuration
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.Option
-import com.ritense.case_.domain.tab.CaseWidgetTab
 import com.ritense.case_.widget.CaseWidgetDataProvider
 import com.ritense.case_.widget.exception.InvalidCollectionException
 import com.ritense.case_.widget.exception.InvalidCollectionNodeTypeException
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.PAGEABLE
 import com.ritense.valueresolver.ValueResolverService
@@ -37,18 +37,25 @@ import java.util.UUID
 class CollectionCaseWidgetDataProvider(
     private val objectMapper: ObjectMapper,
     private val valueResolverService: ValueResolverService
-) : CaseWidgetDataProvider<CollectionCaseWidget> {
+) : CaseWidgetDataProvider {
 
-    override fun supportedWidgetType() = CollectionCaseWidget::class.java
+    override fun supports(widget: Any): Boolean =
+        widget is CollectionCaseWidget
 
-    override fun getData(documentId: UUID, widgetTab: CaseWidgetTab, widget: CollectionCaseWidget, pageable: Pageable): Page<CollectionCaseWidgetDataResult> {
+    override fun getData(
+        documentId: UUID,
+        widget: Any,
+        pageable: Pageable,
+        caseDefinitionId: CaseDefinitionId
+    ): Page<CollectionCaseWidgetDataResult> {
+        widget as CollectionCaseWidget
         val resolvedCollection = valueResolverService.resolveValues(
             mapOf(DOCUMENT_ID to documentId.toString(), PAGEABLE to pageable),
             listOf(widget.properties.collection)
         )[widget.properties.collection]
         val collectionNode = objectMapper.valueToTree<JsonNode>(resolvedCollection)
 
-        if(collectionNode.isNull) {
+        if (collectionNode.isNull) {
             return PageImpl(emptyList(), pageable, 0)
         }
 
@@ -56,11 +63,9 @@ class CollectionCaseWidgetDataProvider(
             throw InvalidCollectionException()
         }
 
-        val pagedCollection = collectionNode.chunked(
-            pageable.pageSize
-        )
+        val pagedCollection = collectionNode.chunked(pageable.pageSize)
 
-        val result = pagedCollection.getOrElse(pageable.pageNumber, defaultValue = { _ -> listOf() })
+        val result = pagedCollection.getOrElse(pageable.pageNumber) { listOf() }
             .onEachIndexed { index, node ->
                 if (!node.isContainerNode) {
                     throw InvalidCollectionNodeTypeException(index)
@@ -83,7 +88,6 @@ class CollectionCaseWidgetDataProvider(
         } else {
             val pointer = if (valueRef.startsWith("/")) valueRef else "/$valueRef"
             val valueNode = child.at(pointer)
-
             if (valueNode.isValueNode && !valueNode.isNull) {
                 objectMapper.treeToValue<Any?>(valueNode)
             } else {
@@ -92,9 +96,9 @@ class CollectionCaseWidgetDataProvider(
         }
     }
 
-
     private companion object {
-        val JSONPATH_CONTEXT = JsonPath.using(Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS))
+        val JSONPATH_CONTEXT = JsonPath.using(
+            Configuration.defaultConfiguration().addOptions(Option.SUPPRESS_EXCEPTIONS)
+        )
     }
 }
-

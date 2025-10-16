@@ -642,7 +642,8 @@
         "title": "Casedetails",
         "tabs": "Tabs",
         "statuses": "Status",
-        "tags": "Etikett"
+        "tags": "Etikett",
+        "header": "Header"
       }
     },
     "tabManagement": {
@@ -832,6 +833,10 @@
       "noResults": {
         "title": "Es wurden keine Widgets konfiguriert",
         "description": "Klicken Sie hier, um Widgets zu konfigurieren"
+      },
+      "noResultsSingle": {
+        "title": "Es wurde noch kein Widget konfiguriert",
+        "description": "Klicken Sie hier, um ein Widget zu konfigurieren"
       }
     },
     "wizard": {
@@ -854,6 +859,10 @@
       "fields": {"title": "Felder", "description": "Textdaten mit Inhalt und einer Beschriftung"},
       "custom": {"title": "Benutzerdefinierte Komponente", "description": "Für komplexe Inhalte"},
       "formio": {"title": "Form.io", "description": "Ausgefülltes Form.io-Formular"},
+      "interactive-table": {
+        "title": "Interaktive Tabelle",
+        "description": "Erstelle eine interaktive Tabelle"
+      },
       "table": {"title": "Tabelle", "description": "Erstellen Sie eine Tabelle"},
       "collection": {"title": "Kollektion", "description": "Erstellen Sie eine Kollektion"},
       "divider": {"title": "Trennlinie"}
@@ -1375,7 +1384,8 @@
     "yes": "Ja",
     "no": "Nein",
     "upload": "Hochladen",
-    "noTranslationFound": "Keine Übersetzung gefunden"
+    "noTranslationFound": "Keine Übersetzung gefunden",
+    "url": "URL"
   },
   "taskDetail": {"taskCreated": "Erstellt", "taskCompleted": "erfolgreich abgeschlossen"},
   "assignTask": {
@@ -1898,11 +1908,18 @@
   },
   "ikoManagement": {
     "ikoServer": "IKO Server",
-    "view": "Bild",
+    "dataUrl": "Daten-URL",
     "title": "Konfiguration",
     "list": "Liste",
     "tabs": {"title": "Tabs"},
     "widgets": {"title": "Widgets"},
+    "views": {
+      "title": "Bilder",
+      "add": "Bild hinzufügen",
+      "deleteContent": "Sind Sie sicher, dass Sie dieses Bild löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
+      "noResultsTitle": "Es sind keine konfigurierten Bilder vorhanden",
+      "noResultsDescription": "Klicken Sie hier, um ein Bild zu konfigurieren."
+    },
     "searchActions": {
       "addActionTitle": "Suchaktion hinzufügen",
       "editActionTitle": "Suchaktion bearbeiten",
@@ -1946,6 +1963,8 @@
     "tabTypePlaceholder": "Tabtyp eingeben",
     "addTab": "Tab hinzufügen",
     "editTab": "Tab bearbeiten",
+    "rowAction": "Zeilenaktion",
+    "canStartCase": "Kann Case starten",
     "tabTypes": {
       "widgets": "Widgets"
     }

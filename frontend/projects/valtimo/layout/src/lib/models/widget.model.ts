@@ -20,11 +20,13 @@ import {
   WidgetCustomContent,
   WidgetFieldsContent,
   WidgetTableContent,
+  WidgetInteractiveTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
 
 enum WidgetType {
   FIELDS = 'fields',
+  INTERACTIVE_TABLE = 'interactive-table',
   TABLE = 'table',
   CUSTOM = 'custom',
   COLLECTION = 'collection',
@@ -36,7 +38,9 @@ type CollectionFieldWidth = 'half' | 'full';
 
 interface WidgetAction {
   name?: string;
-  processDefinitionKey: string;
+  processDefinitionKey?: string;
+  caseDefinitionKey?: string;
+  navigateTo?: string;
 }
 
 interface BasicWidget {
@@ -72,6 +76,16 @@ interface TableWidget extends BasicWidget {
   properties: WidgetTableContent;
 }
 
+interface InteractiveTableWidget extends BasicWidget {
+  type: WidgetType.INTERACTIVE_TABLE;
+  properties: WidgetInteractiveTableContent;
+}
+
+interface InteractiveTableWidget extends BasicWidget {
+  type: WidgetType.INTERACTIVE_TABLE;
+  properties: WidgetInteractiveTableContent;
+}
+
 interface CustomWidget extends BasicWidget {
   type: WidgetType.CUSTOM;
   properties: WidgetCustomContent;
@@ -84,7 +98,13 @@ interface FormioWidget extends BasicWidget {
   };
 }
 
-type Widget = FieldsWidget | CollectionWidget | CustomWidget | TableWidget | FormioWidget;
+type Widget =
+  | FieldsWidget
+  | CollectionWidget
+  | CustomWidget
+  | TableWidget
+  | InteractiveTableWidget
+  | FormioWidget;
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -170,6 +190,7 @@ export {
   CustomWidgetConfig,
   CustomWidget,
   TableWidget,
+  InteractiveTableWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,

@@ -22,12 +22,19 @@ import {
   WidgetManagementFieldsComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
+import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
 import {IWidgetContentComponent} from '../interfaces';
 import {BasicWidget, WidgetType} from './widget.model';
 
-enum WidgetWizardStep {
+enum WidgetWizardSteps {
   TYPE,
   WIDTH,
+  STYLE,
+  CONTENT,
+}
+
+enum WidgetWizardStepsNoWidth {
+  TYPE,
   STYLE,
   CONTENT,
 }
@@ -79,6 +86,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     component: WidgetManagementTableComponent,
   },
   {
+    titleKey: 'widgetTabManagement.types.interactive-table.title',
+    descriptionKey: 'widgetTabManagement.types.interactive-table.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/table.svg',
+    type: WidgetType.INTERACTIVE_TABLE,
+    component: WidgetManagementInteractiveTableComponent,
+  },
+  {
     titleKey: 'widgetTabManagement.types.collection.title',
     descriptionKey: 'widgetTabManagement.types.collection.description',
     illustrationUrl: 'valtimo-layout/img/widget-management/types/collection.svg',
@@ -100,7 +114,8 @@ const WIDGET_STYLE_LABELS: {[key: string]: string} = {
 };
 
 export {
-  WidgetWizardStep,
+  WidgetWizardSteps,
+  WidgetWizardStepsNoWidth,
   WidgetTypeSelection,
   AVAILABLE_WIDGETS,
   WidgetStyle,

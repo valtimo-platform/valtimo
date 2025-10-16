@@ -36,6 +36,7 @@ import {
   WidgetStyle,
   WidgetType,
   WidgetTypeTags,
+  WidgetWidth,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
 } from '../../../models';
@@ -65,56 +66,107 @@ export class WidgetManagementEditorComponent {
   }
   @Input() public set availableWidgetTypes(value: WidgetType[]) {
     if (!value) return;
-
     this.widgetWizardService.$availableWidgetTypes.set(value);
   }
 
-  public readonly FIELDS: ColumnConfig[] = [
-    {
-      key: 'title',
-      label: 'interface.title',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'tags',
-      label: 'widgetTabManagement.columns.type',
-      viewType: ViewType.TAGS,
-    },
-    {
-      key: 'key',
-      label: 'interface.key',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'widthTranslation',
-      label: 'widgetTabManagement.columns.width',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'highContrast',
-      label: 'widgetTabManagement.columns.highContrast',
-      viewType: ViewType.BOOLEAN,
-    },
-  ];
+  public readonly disableWidthStep$ = new BehaviorSubject<boolean>(false);
+  @Input() public set disableWidthStep(value: boolean) {
+    this.disableWidthStep$.next(value);
+  }
 
-  public readonly ACTION_ITEMS: ActionItem[] = [
-    {
-      label: 'interface.edit',
-      callback: this.editWidget.bind(this),
-    },
-    {
-      label: 'interface.duplicate',
-      callback: this.duplicateWidget.bind(this),
-    },
-    {
-      label: 'interface.delete',
-      callback: this.deleteWidget.bind(this),
-      type: 'danger',
-    },
-  ];
+  public readonly disableDuplicate$ = new BehaviorSubject<boolean>(false);
+  @Input() public set disableDuplicate(value: boolean) {
+    this.disableDuplicate$.next(value);
+  }
+
+  public readonly singleWidget$ = new BehaviorSubject<boolean>(false);
+  @Input() public set singleWidget(value: boolean) {
+    this.singleWidget$.next(value);
+  }
+
+  @Input() public set defaultWidth(value: WidgetWidth) {
+    this.widgetWizardService.setDefaultWidth(value);
+  }
+
+  public readonly disableTitleInput$ = new BehaviorSubject<boolean>(false);
+  @Input() public set disableTitleInput(value: boolean) {
+    this.disableTitleInput$.next(value);
+  }
+
+  public readonly fields$: Observable<ColumnConfig[]> = combineLatest([
+    this.singleWidget$,
+    this.disableWidthStep$,
+    this.disableTitleInput$,
+  ]).pipe(
+    map(([singleWidget, disableWidthStep, disableTitleInput]) => [
+      ...(!disableTitleInput
+        ? [
+            {
+              key: 'title',
+              label: 'interface.title',
+              viewType: ViewType.TEXT,
+            },
+          ]
+        : []),
+      {
+        key: 'tags',
+        label: 'widgetTabManagement.columns.type',
+        viewType: ViewType.TAGS,
+      },
+      ...(!singleWidget
+        ? [
+            {
+              key: 'key',
+              label: 'interface.key',
+              viewType: ViewType.TEXT,
+            },
+          ]
+        : []),
+      ...(!disableWidthStep
+        ? [
+            {
+              key: 'widthTranslation',
+              label: 'widgetTabManagement.columns.width',
+              viewType: ViewType.TEXT,
+            },
+          ]
+        : []),
+
+      {
+        key: 'highContrast',
+        label: 'widgetTabManagement.columns.highContrast',
+        viewType: ViewType.BOOLEAN,
+      },
+    ])
+  );
+
+  public readonly actionItems$: Observable<ActionItem[]> = this.disableDuplicate$.pipe(
+    map(disableDuplicate => [
+      {
+        label: 'interface.edit',
+        callback: this.editWidget.bind(this),
+      },
+      ...(disableDuplicate
+        ? []
+        : [
+            {
+              label: 'interface.duplicate',
+              callback: this.duplicateWidget.bind(this),
+            },
+          ]),
+      {
+        label: 'interface.delete',
+        callback: this.deleteWidget.bind(this),
+        type: 'danger',
+      },
+    ])
+  );
+
+  public readonly loading$ = new BehaviorSubject<boolean>(true);
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly widgets$: Observable<CarbonListItem[]> = this._refresh$.pipe(
+    tap(() => this.loading$.next(true)),
     switchMap(() =>
       combineLatest([
         this.widgetManagementService.getWidgetConfiguration(),
@@ -136,7 +188,8 @@ export class WidgetManagementEditorComponent {
           },
         ],
       }))
-    )
+    ),
+    tap(() => this.loading$.next(false))
   );
 
   public readonly $isWizardOpen = signal<boolean>(false);
@@ -158,7 +211,9 @@ export class WidgetManagementEditorComponent {
     this.widgetWizardService.$widgetStyle.set(
       tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
     );
-    this.widgetWizardService.$widgetWidth.set(tabWidget.width);
+    this.widgetWizardService.$widgetWidth.set(
+      tabWidget.width || this.widgetWizardService.defaultWidth
+    );
     this.widgetWizardService.$selectedWidget.set(
       AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
     );
@@ -208,7 +263,10 @@ export class WidgetManagementEditorComponent {
     this.widgetManagementService
       .updateWidgetConfiguration(widgets)
       .pipe(take(1))
-      .subscribe(() => this.$dragAndDropDisabled.set(false));
+      .subscribe(() => {
+        this.$dragAndDropDisabled.set(false);
+        this._refresh$.next(null);
+      });
   }
 
   private deleteWidget(tabWidget: BasicWidget): void {
