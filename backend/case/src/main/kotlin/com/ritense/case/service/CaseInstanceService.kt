@@ -16,6 +16,7 @@
 
 package com.ritense.case.service
 
+import com.ritense.authorization.AuthorizationContext
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.case.domain.CaseListColumn
@@ -69,10 +70,15 @@ class CaseInstanceService(
         request: CaseDefinitionQuickSearchDto,
         currentUserId: String,
     ) {
+        val caseDefinition = AuthorizationContext.runWithoutAuthorization {
+            caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
+        }
+
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW_LIST
+                CaseDefinitionActionProvider.VIEW_LIST,
+                caseDefinition
             )
         )
 
@@ -101,10 +107,16 @@ class CaseInstanceService(
         currentUserId: String,
         quickSearchTitle: String,
     ) {
+
+        val caseDefinition = AuthorizationContext.runWithoutAuthorization {
+            caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
+        }
+
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW_LIST
+                CaseDefinitionActionProvider.VIEW_LIST,
+                caseDefinition
             )
         )
 
@@ -123,10 +135,15 @@ class CaseInstanceService(
     }
 
     fun getQuickSearchList(caseDefinitionKey: String, currentUserId: String): List<QuickSearch> {
+
+        val caseDefinition = AuthorizationContext.runWithoutAuthorization {
+            caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
+        }
         authorizationService.requirePermission(
             EntityAuthorizationRequest(
                 CaseDefinition::class.java,
-                CaseDefinitionActionProvider.VIEW_LIST
+                CaseDefinitionActionProvider.VIEW_LIST,
+                caseDefinition
             )
         )
 
