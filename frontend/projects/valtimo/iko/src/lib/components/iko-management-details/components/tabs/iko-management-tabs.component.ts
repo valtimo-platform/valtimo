@@ -193,12 +193,12 @@ export class IkoManagementTabsComponent implements OnInit, OnDestroy {
 
   public onCreateButtonClicked(): void {
     this.$modalMode.set('add');
+    this.$selectedTab.set({title: '', key: '', type: ''});
     this.openModal();
   }
 
   private closeModal(): void {
     this.$openModal.set(false);
-    this.$selectedTab.set(null);
   }
 
   public onCloseModalEvent(event: ModalCloseEvent): void {
