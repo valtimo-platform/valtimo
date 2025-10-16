@@ -229,10 +229,15 @@ export * from './lib/components/render-in-body/render-in-body.component';
 // JSON editor
 export * from './lib/components/json-editor/json-editor.component';
 
+// auto key
+export * from './lib/components/auto-key-input/auto-key-input.component';
+
 // List column view
 export * from './lib/components/list-column-view/list-column-view.component';
+
 // Quick search
 export * from './lib/components/quick-search/quick-search.component';
+
 /*
 directives
  */
@@ -262,8 +267,8 @@ export * from './lib/directives/muuri/muuri.directive';
 export * from './lib/directives/muuri/muuri-item.component';
 // read-only
 export * from './lib/directives/read-only.directive';
-// auto key
-export * from './lib/components/auto-key-input/auto-key-input.component';
+// observe size
+export * from './lib/directives/observe-size/observe-size.directive';
 // context-menu
 export * from './lib/directives/context-menu.directive';
 // interfaces

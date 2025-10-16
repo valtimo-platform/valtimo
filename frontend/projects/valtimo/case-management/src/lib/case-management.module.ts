@@ -27,10 +27,12 @@ import {
   EllipsisPipe,
   FormModule,
   InputModule,
+  JsonEditorComponent,
   ModalModule,
   MultiselectDropdownModule,
   MuuriDirectiveModule,
   ParagraphModule,
+  ReadOnlyDirective,
   RenderInPageHeaderDirective,
   SelectModule,
   SpinnerModule,
@@ -40,8 +42,6 @@ import {
   ValtimoCdsOverflowButtonDirective,
   ValuePathSelectorComponent,
   WidgetModule,
-  ReadOnlyDirective,
-  JsonEditorComponent,
 } from '@valtimo/components';
 import {FormManagementComponent} from '@valtimo/form-management';
 import {ConfigModule} from '@valtimo/shared';
@@ -97,6 +97,7 @@ import {CaseManagementUploadComponent} from './components/case-management-upload
 import {CaseManagementUploadStepComponent} from './components/case-management-upload/step/case-management-upload-step.component';
 import {TabManagementService} from './services';
 import {CaseManagementDraftWarningComponent} from './components/case-management-draft-warning/case-management-draft-warning.component';
+import {CaseManagementHeaderComponent} from './components/case-management-detail/tabs/case-management-header/case-management-header.component';
 
 @NgModule({
   declarations: [
@@ -184,6 +185,7 @@ import {CaseManagementDraftWarningComponent} from './components/case-management-
     ReadOnlyDirective,
     CaseManagementDraftWarningComponent,
     JsonEditorComponent,
+    CaseManagementHeaderComponent,
   ],
   providers: [TabManagementService],
 })

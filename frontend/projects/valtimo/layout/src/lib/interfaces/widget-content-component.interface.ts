@@ -18,4 +18,5 @@ import {EventEmitter} from '@angular/core';
 
 export interface IWidgetContentComponent {
   changeValidEvent: EventEmitter<boolean>;
+  setTitleInputVisible?: (visible: boolean) => void;
 }

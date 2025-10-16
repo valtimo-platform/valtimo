@@ -18,6 +18,7 @@
 
 <form [formGroup]="form">
   <cds-text-label
+    *ngIf="$showTitleInput()"
     [attr.data-carbon-theme]="theme$ | async"
     class="valtimo-widget-management-fields__input"
   >
