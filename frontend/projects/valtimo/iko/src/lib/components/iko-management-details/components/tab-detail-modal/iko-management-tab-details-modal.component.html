@@ -53,6 +53,7 @@
 
     <v-select
       [invalid]="type.dirty && type.invalid"
+      [dropUp]="false"
       formControlName="type"
       [items]="tabTypeSelectItems"
       titleTranslationKey="ikoManagement.tabTypeTitle"
