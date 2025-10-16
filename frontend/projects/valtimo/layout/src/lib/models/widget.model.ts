@@ -31,6 +31,7 @@ enum WidgetType {
   CUSTOM = 'custom',
   COLLECTION = 'collection',
   FORMIO = 'formio',
+  DIVIDER = 'divider',
 }
 
 type WidgetWidth = 1 | 2 | 3 | 4;
@@ -49,7 +50,7 @@ interface BasicWidget {
   width: WidgetWidth;
   highContrast: boolean;
   key: string;
-  properties: WidgetContentProperties;
+  properties?: WidgetContentProperties;
   actions?: WidgetAction[];
 }
 
@@ -167,7 +168,7 @@ interface CustomWidgetConfig {
   [componentKey: string]: Type<any>;
 }
 
-type WidgetComponentMap = Record<WidgetType, Type<any>>;
+type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
 
 type WidgetContext = 'case' | 'iko';
 
