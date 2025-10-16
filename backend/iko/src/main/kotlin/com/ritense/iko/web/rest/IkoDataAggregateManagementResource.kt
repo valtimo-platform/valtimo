@@ -17,12 +17,15 @@
 package com.ritense.iko.web.rest
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
+import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
 import com.ritense.exporter.ExportService
 import com.ritense.iko.exporter.IkoDataAggregateExportRequest
 import com.ritense.iko.service.IkoDataAggregateService
 import com.ritense.iko.web.rest.request.IkoDataAggregateCreateRequest
 import com.ritense.iko.web.rest.request.IkoDataAggregateUpdateRequest
 import com.ritense.iko.web.rest.response.IkoDataAggregateResponse
+import com.ritense.importer.ImportService
+import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import com.ritense.valtimo.contract.iko.PropertyField
@@ -43,6 +46,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.multipart.MultipartFile
 
 @Controller
 @SkipComponentScan
@@ -50,6 +54,7 @@ import org.springframework.web.bind.annotation.RequestParam
 class IkoDataAggregateManagementResource(
     private val service: IkoDataAggregateService,
     private val exportService: ExportService,
+    private val importService: ImportService,
 ) {
 
     @RunWithoutAuthorization
@@ -140,5 +145,19 @@ class IkoDataAggregateManagementResource(
             .ok()
             .header("Content-Disposition", "attachment;filename=$fileName")
             .body(baos.toByteArray())
+    }
+
+    @PostMapping("/v1/iko-data-aggregate/import")
+    @RunWithoutAuthorization
+    fun import(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<Unit> {
+        return try {
+            importService.importGlobal(file.inputStream)
+            ResponseEntity.ok().build()
+        } catch (exception: ImportServiceException) {
+            logger.error(exception) { "Import failed" }
+            ResponseEntity.badRequest().build()
+        }
     }
 }

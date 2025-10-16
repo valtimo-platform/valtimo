@@ -65,6 +65,7 @@ import com.ritense.iko.web.rest.IkoTabManagementResource
 import com.ritense.iko.web.rest.IkoTabResource
 import com.ritense.iko.web.rest.IkoWidgetManagementResource
 import com.ritense.iko.web.rest.IkoWidgetResource
+import com.ritense.importer.ImportService
 import com.ritense.plugin.service.PluginService
 import com.ritense.search.service.SearchFieldV2Service
 import com.ritense.search.service.SearchListColumnService
@@ -183,10 +184,12 @@ class IkoAutoConfiguration {
     fun ikoDataAggregateManagementResource(
         service: IkoDataAggregateService,
         exportService: ExportService,
+        importService: ImportService,
     ): IkoDataAggregateManagementResource {
         return IkoDataAggregateManagementResource(
             service,
             exportService,
+            importService,
         )
     }
 
