@@ -17,6 +17,7 @@
 package com.ritense.widget.interactivetable
 
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
 import io.hypersistence.utils.hibernate.type.json.JsonType
@@ -37,12 +38,13 @@ class InteractiveTableWidget(
     width: Int,
     highContrast: Boolean,
     actions: List<WidgetAction> = emptyList(),
+    displayConditions: List<Condition<*>>,
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)
     val properties: InteractiveTableWidgetProperties
 ) : Widget(
-    id, key, title, order, width, highContrast, actions
+    id, key, title, order, width, highContrast, actions, displayConditions
 ) {
     override fun copy(
         id: UUID,
@@ -52,6 +54,7 @@ class InteractiveTableWidget(
         width: Int,
         highContrast: Boolean,
         actions: List<WidgetAction>,
+        displayConditions: List<Condition<*>>,
     ) = InteractiveTableWidget(
         id = id,
         key = key,
@@ -60,6 +63,7 @@ class InteractiveTableWidget(
         width = width,
         highContrast = highContrast,
         actions = actions,
+        displayConditions = displayConditions,
         properties = properties,
     )
 
@@ -69,6 +73,7 @@ class InteractiveTableWidget(
         width = this.width,
         highContrast = this.highContrast,
         actions = this.actions,
+        displayConditions = this.displayConditions,
         properties = this.properties,
     )
 

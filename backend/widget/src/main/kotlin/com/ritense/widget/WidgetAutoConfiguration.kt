@@ -72,10 +72,12 @@ class WidgetAutoConfiguration {
     fun widgetService(
         widgetRepository: WidgetRepository,
         widgetDataProviders: List<WidgetDataProvider<*>>,
+        valueResolverService: ValueResolverService,
     ): WidgetService {
         return WidgetService(
             widgetRepository,
             widgetDataProviders as List<WidgetDataProvider<Widget>>,
+            valueResolverService,
         )
     }
 

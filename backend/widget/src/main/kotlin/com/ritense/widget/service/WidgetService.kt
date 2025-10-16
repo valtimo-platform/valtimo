@@ -18,6 +18,10 @@ package com.ritense.widget.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_DATA_AGGREGATE_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
+import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.repository.WidgetRepository
@@ -31,6 +35,7 @@ import kotlin.jvm.optionals.getOrNull
 class WidgetService(
     private val widgetRepository: WidgetRepository,
     private val widgetDataProviders: List<WidgetDataProvider<Widget>>,
+    private val valueResolverService: ValueResolverService,
 ) {
 
     fun create(widget: Widget): Widget {
@@ -50,6 +55,21 @@ class WidgetService(
 
     fun findById(id: UUID): Widget? =
         widgetRepository.findById(id).getOrNull()
+
+    fun filterWidgetsOnDisplayConditions(widgets: List<Widget>, properties: Map<String, Any>): List<Widget> {
+        return widgets.filter { widget ->
+            widget.displayConditions.all {
+                it.isValid { valuePath: String ->
+                    valueResolverService.resolveValues(
+                        properties + mapOf(
+                            WIDGET_KEY to widget.key,
+                        ),
+                        listOf(valuePath)
+                    )[valuePath]
+                }
+            }
+        }
+    }
 
     fun getById(id: UUID): Widget =
         findById(id) ?: error("Widget $id not found")
