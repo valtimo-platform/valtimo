@@ -169,6 +169,8 @@ interface CustomWidgetConfig {
 
 type WidgetComponentMap = Record<WidgetType, Type<any>>;
 
+type WidgetContext = 'case' | 'iko';
+
 export {
   BasicWidget,
   Widget,
@@ -177,7 +179,6 @@ export {
   WidgetContentHeightsPx,
   WidgetContentHeightsPxWithContainerWidth,
   WidgetPackResult,
-  // WidgetsRes,
   WidgetType,
   WidgetWidth,
   WidgetWidthsPx,
@@ -196,4 +197,5 @@ export {
   FormioWidgetWidgetWithUuid,
   MaxRectsResult,
   WidgetComponentMap,
+  WidgetContext,
 };
