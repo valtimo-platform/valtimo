@@ -1972,6 +1972,10 @@
       "title": "Title",
       "key": "Key",
       "versionTag": "Version"
+    },
+    "noResults": {
+      "title": "There are no building blocks",
+      "description": "Add a building block to get started"
     }
   }
 }

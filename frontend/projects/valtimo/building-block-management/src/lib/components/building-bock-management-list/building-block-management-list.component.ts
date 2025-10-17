@@ -18,13 +18,15 @@ import {CommonModule} from '@angular/common';
 import {CarbonListModule, ColumnConfig} from '@valtimo/components';
 import {BuildingBlockManagementApiService} from '../../services';
 import {tap} from 'rxjs';
+import {ButtonModule, IconModule} from 'carbon-components-angular';
+import {TranslatePipe} from '@ngx-translate/core';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-list',
   templateUrl: './building-block-management-list.component.html',
   styleUrls: ['./building-block-management-list.component.scss'],
-  imports: [CommonModule, CarbonListModule],
+  imports: [CommonModule, CarbonListModule, ButtonModule, IconModule, TranslatePipe],
 })
 export class BuildingBlockManagementListComponent {
   public readonly $loading = signal<boolean>(true);

@@ -19,5 +19,32 @@
     [fields]="FIELDS"
     [items]="obs.buildingBlockDefinitions"
     [loading]="$loading()"
-  ></valtimo-carbon-list>
+  >
+    <ng-container
+      carbonToolbarContent
+      [ngTemplateOutlet]="importBuildingBlockDefinitionButton"
+    ></ng-container>
+
+    <valtimo-no-results
+      [action]="importBuildingBlockDefinitionButton"
+      [description]="'buildingBlockManagement.noResults.description' | translate"
+      [title]="'buildingBlockManagement.noResults.title' | translate"
+    ></valtimo-no-results>
+  </valtimo-carbon-list>
 </ng-container>
+
+<ng-template #importBuildingBlockDefinitionButton>
+  <div class="valtimo-building-block-management-list__actions">
+    <button cdsButton="ghost" (click)="showUploadModal()">
+      {{ 'Upload' | translate }}
+
+      <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    <button cdsButton="primary" (click)="showCreateModal()">
+      {{ 'interface.create' | translate }}
+
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </div>
+</ng-template>
