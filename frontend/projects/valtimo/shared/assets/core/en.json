@@ -1967,6 +1967,11 @@
     "duplicateError": "A quick search item with this title already exists"
   },
   "buildingBlockManagement": {
-    "title": "Building blocks"
+    "title": "Building blocks",
+    "listColumns": {
+      "title": "Title",
+      "key": "Key",
+      "versionTag": "Version"
+    }
   }
 }

@@ -15,21 +15,31 @@
  */
 import {Component, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CarbonListModule} from '@valtimo/components';
+import {CarbonListModule, ColumnConfig} from '@valtimo/components';
 import {BuildingBlockManagementApiService} from '../../services';
+import {tap} from 'rxjs';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-list',
   templateUrl: './building-block-management-list.component.html',
   styleUrls: ['./building-block-management-list.component.scss'],
-  imports: [CommonModule, CarbonListModule]
+  imports: [CommonModule, CarbonListModule],
 })
 export class BuildingBlockManagementListComponent {
   public readonly $loading = signal<boolean>(true);
 
-  public readonly buildingBlockDefinitions$ = this.buildingBlockManagementApiService.getBuildingBlockDefinitions();
+  public readonly buildingBlockDefinitions$ = this.buildingBlockManagementApiService
+    .getBuildingBlockDefinitions()
+    .pipe(tap(() => this.$loading.set(false)));
 
-  constructor(private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService) {
-  }
+  public readonly FIELDS: ColumnConfig[] = [
+    {key: 'title', label: 'buildingBlockManagement.listColumns.title'},
+    {key: 'key', label: 'buildingBlockManagement.listColumns.key'},
+    {key: 'versionTag', label: 'buildingBlockManagement.listColumns.versionTag'},
+  ];
+
+  constructor(
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService
+  ) {}
 }
