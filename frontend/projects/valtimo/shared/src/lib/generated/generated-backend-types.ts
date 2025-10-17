@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-10-17 10:37:39.
+// Generated using typescript-generator version 3.2.1263 on 2025-10-17 15:14:37.
 
 export interface BuildingBlockDefinitionDto {
     key: string;
@@ -11,6 +11,13 @@ export interface BuildingBlockDefinitionDto {
     createdDate: DateAsString | null;
     basedOnVersionTag: string | null;
     final: boolean;
+}
+
+export interface CreateBuildingBlockDefinitionDto {
+    key: string;
+    versionTag: string;
+    title: string;
+    description: string | null;
 }
 
 export interface CaseDefinitionCheckResponse {
@@ -934,25 +941,25 @@ export interface ProcessDefinitionDto {
 
 export interface HistoricActivityInstance {
     executionId: string;
+    processInstanceId: string;
+    processDefinitionId: string;
+    activityType: string;
+    tenantId: string;
+    activityId: string;
+    assignee: string;
     canceled: boolean;
     removalTime: DateAsString;
-    processInstanceId: string;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
-    processDefinitionId: string;
-    activityType: string;
-    activityId: string;
-    assignee: string;
-    tenantId: string;
     endTime: DateAsString;
     taskId: string;
     startTime: DateAsString;
     processDefinitionKey: string;
-    rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
+    rootProcessInstanceId: string;
     id: string;
 }
 

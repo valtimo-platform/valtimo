@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
-import {BuildingBlockManagementListComponent} from './components/building-block-management-list/building-block-management-list.component';
-import {BuildingBlockManagementRouting} from './building-block-management-routing';
+.valtimo-definition-create {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
 
-@NgModule({
-  declarations: [],
-  imports: [BuildingBlockManagementRouting, BuildingBlockManagementListComponent],
-  providers: [],
-})
-export class BuildingBlockManagementModule {}
+:host ::ng-deep .cds--label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

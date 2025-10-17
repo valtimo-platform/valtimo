@@ -2009,6 +2009,9 @@
     "noResults": {
       "title": "Er zijn geen bouwblokken",
       "description": "Voeg een bouwblok toe om te beginnen"
+    },
+    "createDefinition": {
+      "modalTitle": "Bouwblok aanmaken"
     }
   }
 }

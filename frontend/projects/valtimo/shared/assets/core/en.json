@@ -1976,6 +1976,9 @@
     "noResults": {
       "title": "There are no building blocks",
       "description": "Add a building block to get started"
+    },
+    "createDefinition": {
+      "modalTitle": "Create building block"
     }
   }
 }

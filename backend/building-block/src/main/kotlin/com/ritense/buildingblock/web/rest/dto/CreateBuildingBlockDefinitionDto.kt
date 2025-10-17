@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import {NgModule} from '@angular/core';
-import {BuildingBlockManagementListComponent} from './components/building-block-management-list/building-block-management-list.component';
-import {BuildingBlockManagementRouting} from './building-block-management-routing';
+package com.ritense.buildingblock.web.rest.dto
 
-@NgModule({
-  declarations: [],
-  imports: [BuildingBlockManagementRouting, BuildingBlockManagementListComponent],
-  providers: [],
-})
-export class BuildingBlockManagementModule {}
+data class CreateBuildingBlockDefinitionDto(
+    val key: String,
+    val versionTag: String,
+    val title: String,
+    val description: String?
+)

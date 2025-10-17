@@ -16,7 +16,13 @@
 
 import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, BuildingBlockDefinitionDto, ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {
+  BaseApiService,
+  BuildingBlockDefinitionDto,
+  ConfigService,
+  CreateBuildingBlockDefinitionDto,
+  InterceptorSkip,
+} from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
 
 @Injectable({
@@ -31,15 +37,24 @@ export class BuildingBlockManagementApiService extends BaseApiService {
   }
 
   public getBuildingBlockDefinitions(): Observable<BuildingBlockDefinitionDto[]> {
-    return this.httpClient.get<BuildingBlockDefinitionDto[]>(
-      this.getApiUrl('management/v1/building-block'), {
+    return this.httpClient
+      .get<BuildingBlockDefinitionDto[]>(this.getApiUrl('management/v1/building-block'), {
         headers: new HttpHeaders().set(InterceptorSkip, '404'),
-      }
-    ).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 404) return of([])
-        throw error;
       })
-    )
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404) return of([]);
+          throw error;
+        })
+      );
+  }
+
+  public createBuildingBlockDefinition(
+    dto: CreateBuildingBlockDefinitionDto
+  ): Observable<BuildingBlockDefinitionDto> {
+    return this.httpClient.post<BuildingBlockDefinitionDto>(
+      this.getApiUrl('management/v1/building-block'),
+      dto
+    );
   }
 }

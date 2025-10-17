@@ -16,13 +16,18 @@
 
 package com.ritense.buildingblock.web.rest
 
+import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
 import org.semver4j.Semver
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -65,5 +70,35 @@ class BuildingBlockManagementResource(
         } else {
             ResponseEntity.ok(dtoList)
         }
+    }
+
+    @PostMapping(consumes = [APPLICATION_JSON_UTF8_VALUE])
+    fun createBuildingBlockDefinition(
+        @RequestBody dto: CreateBuildingBlockDefinitionDto
+    ): ResponseEntity<BuildingBlockDefinitionDto> {
+        val entity = BuildingBlockDefinition(
+            id = BuildingBlockDefinitionId(dto.key, dto.versionTag),
+            title = dto.title,
+            description = dto.description,
+            createdBy = null,
+            createdDate = null,
+            basedOnVersionTag = null,
+            final = false
+        )
+
+        val saved = buildingBlockDefinitionRepository.save(entity)
+
+        val savedDto = BuildingBlockDefinitionDto(
+            key = saved.id.key,
+            versionTag = saved.id.versionTag.toString(),
+            title = saved.title,
+            description = saved.description,
+            createdBy = saved.createdBy,
+            createdDate = saved.createdDate,
+            basedOnVersionTag = saved.basedOnVersionTag?.toString(),
+            final = saved.final
+        )
+
+        return ResponseEntity.ok(savedDto)
     }
 }
