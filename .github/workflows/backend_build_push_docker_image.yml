@@ -14,7 +14,7 @@ on:
 
   push:
     branches:
-      - 'next-minor'
+      - "next-minor"
     paths:
       - backend/**
 
@@ -83,12 +83,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract branch name
-        id: vars
-        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-
       - name: Generate image tags
         id: generate_tags
+        env:
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
