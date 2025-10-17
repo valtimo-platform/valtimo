@@ -1,15 +1,15 @@
-name: 'Create test environment'
+name: "Create test environment"
 on:
   workflow_call:
     inputs:
       envName:
-        description: 'Environment name'
+        description: "Environment name"
         required: true
         type: string
   workflow_dispatch:
     inputs:
       envName:
-        description: 'Environment name'
+        description: "Environment name"
         required: true
         type: string
 
@@ -30,6 +30,7 @@ jobs:
   create_test_environment:
     needs: [build_backend_image, build_frontend_image]
     runs-on: ubuntu-latest
+    environment: pr-test-environment
     steps:
       - name: Create test environment
         run: |

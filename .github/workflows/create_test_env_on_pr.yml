@@ -12,13 +12,9 @@ permissions:
 
 jobs:
   create_test_environment:
-    runs-on: ubuntu-latest
-    environment:
-      name: pr-test-environment
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - uses: ./.github/workflows/create_test_env.yml
-        with:
-          envName: "pr-${{ github.event.number }}"
-        secrets: inherit
+    name: pr-test-environment
+    uses: ./.github/workflows/create_test_env.yml
+
+    with:
+      envName: "pr-${{ github.event.number }}"
+    secrets: inherit
