@@ -2000,6 +2000,11 @@
     "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
   },
   "buildingBlockManagement": {
-    "title": "Bouwblokken"
+    "title": "Bouwblokken",
+    "listColumns": {
+      "title": "Titel",
+      "key": "Sleutel",
+      "versionTag": "Versie"
+    }
   }
 }

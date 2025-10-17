@@ -15,5 +15,9 @@
   -->
 
 <ng-container *ngIf="{buildingBlockDefinitions: buildingBlockDefinitions$ | async} as obs">
-
+  <valtimo-carbon-list
+    [fields]="FIELDS"
+    [items]="obs.buildingBlockDefinitions"
+    [loading]="$loading()"
+  ></valtimo-carbon-list>
 </ng-container>
