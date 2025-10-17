@@ -1998,5 +1998,8 @@
     "rightClickTooltip": "Klik met de rechtermuisknop voor opties",
     "deleteHelperText": "Nadat je een snelzoekitem hebt gemaakt, kun je het verwijderen door er met de rechtermuisknop op te klikken",
     "duplicateError": "Er bestaat al een snelzoekitem met deze titel"
+  },
+  "buildingBlockManagement": {
+    "title": "Bouwblokken"
   }
 }
