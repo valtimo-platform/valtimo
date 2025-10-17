@@ -1253,6 +1253,164 @@ internal class ZakenApiPluginTest {
     }
 
     @Test
+    fun `should create zaaknotitie for current zaak`() {
+        // given
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock {
+            on { this.getZaakUrl(eq(documentId)) } doReturn zaakUrl
+        }
+        val executionMock: DelegateExecution = mock {
+            on { this.businessKey } doReturn documentId.toString()
+        }
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient
+        )
+
+        // when
+        plugin.createZaakNotitie(
+            execution = executionMock,
+            onderwerp = "Onderwerp",
+            tekst = "Tekst",
+            aangemaaktDoor = "jan",
+            notitieType = NotitieType.INTERN.key,
+            status = NotitieStatus.CONCEPT.key
+        )
+
+        // then
+        argumentCaptor<CreateZaakNotitieRequest> {
+            verify(zakenApiClient).createZaakNotitie(
+                authentication = any(),
+                baseUrl = eq(zakenApiUri()),
+                request = capture()
+            )
+
+            firstValue.let { request ->
+                assertThat(request.onderwerp).isEqualTo("Onderwerp")
+                assertThat(request.tekst).isEqualTo("Tekst")
+                assertThat(request.aangemaaktDoor).isEqualTo("jan")
+                assertThat(request.notitieType).isEqualTo(NotitieType.INTERN)
+                assertThat(request.status).isEqualTo(NotitieStatus.CONCEPT)
+                assertThat(request.gerelateerdAan).isEqualTo(zaakUrl)
+            }
+        }
+    }
+
+    @Test
+    fun `should patch zaaknotitie`() {
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock {
+            on { this.getZaakUrl(eq(documentId)) } doReturn zaakUrl
+        }
+        val executionMock: DelegateExecution = mock {
+            on { this.businessKey } doReturn documentId.toString()
+        }
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient
+        )
+
+        val notitieUrl = zaakNotitieUri()
+
+        // when
+        plugin.patchZaakNotitie(
+            execution = executionMock,
+            zaakNotitieUrl = notitieUrl,
+            onderwerp = "nieuw",
+            tekst = "Tekst",
+            aangemaaktDoor = "jan",
+            notitieType = NotitieType.EXTERN.key,
+            status = NotitieStatus.DEFINITIEF.key
+        )
+
+        // then
+        argumentCaptor<PatchZaakNotitieRequest> {
+            verify(zakenApiClient).patchZaakNotitie(
+                authentication = any(),
+                baseUrl = eq(zakenApiUri()),
+                notitieUrl = eq(notitieUrl),
+                request = capture()
+            )
+
+            firstValue.let { request ->
+                assertThat(request.onderwerp).isEqualTo("nieuw")
+                assertThat(request.tekst).isEqualTo("Tekst")
+                assertThat(request.aangemaaktDoor).isEqualTo("jan")
+                assertThat(request.notitieType).isEqualTo(NotitieType.EXTERN)
+                assertThat(request.status).isEqualTo(NotitieStatus.DEFINITIEF)
+            }
+        }
+    }
+
+    @Test
+    fun `should delete zaaknotitie`() {
+        // given
+        val notitieUrl = zaakNotitieUri()
+        val zakenApiClient: ZakenApiClient = mock()
+
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient
+        )
+
+        // when
+        plugin.deleteZaakNotitie(
+            zaakNotitieUrl = notitieUrl
+        )
+
+        // then
+        verify(zakenApiClient).deleteZaakNotitie(
+            authentication = any(),
+            baseUrl = eq(zakenApiUri()),
+            notitieUrl = eq(notitieUrl)
+        )
+    }
+
+    @Test
+    fun `should return zaaknotitie`() {
+        // given
+        val zaakUrl = zaakUri()
+        val zaakNotitieUrl = URI("https://example.com/zaaknotities/1")
+        val zaakNotitie: ZaakNotitie = mock {
+            on { this.url } doReturn zaakNotitieUrl
+            on { this.gerelateerdAan } doReturn zaakUrl
+        }
+
+        val authenticationMock: ZakenApiAuthentication = mock()
+        val zakenApiClient: ZakenApiClient = mock {
+            on {
+                this.getZaakNotitie(
+                    authentication = eq(authenticationMock),
+                    baseUrl = eq(zakenApiUri()),
+                    zaakNotitieUrl = eq(zaakNotitieUrl)
+                )
+            } doReturn zaakNotitie
+        }
+
+        val plugin = zakenApiPlugin(
+            zakenApiClient = zakenApiClient,
+            authenticationMock = authenticationMock
+        )
+
+        // when
+        plugin.getZaakNotitie(zaakNotitieUrl)
+
+        // then
+        verify(zakenApiClient, times(1)).getZaakNotitie(
+            authentication = any(),
+            baseUrl = eq(zakenApiUri()),
+            zaakNotitieUrl = eq(zaakNotitieUrl)
+        )
+    }
+
+    @Test
     fun `should return list of zaaknotities`() {
         // given
         val zaakUrl = zaakUri()
@@ -1299,139 +1457,6 @@ internal class ZakenApiPluginTest {
             zaakUrl = eq(zaakUrl),
             page = eq(1)
         )
-    }
-
-    @Test
-    fun `should return zaaknotitie`() {
-        // given
-        val zaakUrl = zaakUri()
-        val zaakNotitieUrl = URI("https://example.com/zaaknotities/1")
-        val zaakNotitie: ZaakNotitie = mock {
-            on { this.url } doReturn zaakNotitieUrl
-            on { this.gerelateerdAan } doReturn zaakUrl
-        }
-
-        val authenticationMock: ZakenApiAuthentication = mock()
-        val zakenApiClient: ZakenApiClient = mock {
-            on {
-                this.getZaakNotitie(
-                    authentication = eq(authenticationMock),
-                    zaakNotitieUrl = eq(zaakNotitieUrl)
-                )
-            } doReturn zaakNotitie
-        }
-
-        val plugin = zakenApiPlugin(
-            zakenApiClient = zakenApiClient,
-            authenticationMock = authenticationMock
-        )
-
-        // when
-        plugin.getZaakNotitie(zaakNotitieUrl)
-
-        // then
-        verify(zakenApiClient, times(1)).getZaakNotitie(
-            authentication = any(),
-            zaakNotitieUrl = eq(zaakNotitieUrl)
-        )
-    }
-
-    @Test
-    fun `should create zaaknotitie for current zaak`() {
-        // given
-        val documentId = UUID.randomUUID()
-        val zaakUrl = zaakUri()
-
-        val zakenApiClient: ZakenApiClient = mock()
-        val zaakUrlProvider: ZaakUrlProvider = mock {
-            on { this.getZaakUrl(eq(documentId)) } doReturn zaakUrl
-        }
-        val executionMock: DelegateExecution = mock {
-            on { this.businessKey } doReturn documentId.toString()
-        }
-
-        val plugin = zakenApiPlugin(
-            zaakUrlProvider = zaakUrlProvider,
-            zakenApiClient = zakenApiClient
-        )
-
-        // when
-        plugin.createZaakNotitie(
-            execution = executionMock,
-            onderwerp = "Onderwerp",
-            tekst = "Tekst",
-            aangemaaktDoor = "jan",
-            notitieType = NotitieType.INTERN.key,
-            status = NotitieStatus.CONCEPT.key
-        )
-
-        // then
-        argumentCaptor<CreateZaakNotitieRequest> {
-            verify(zakenApiClient).createZaakNotitie(
-                authentication = any(),
-                baseUrl = any(),
-                request = capture()
-            )
-
-            firstValue.let { request ->
-                assertThat(request.onderwerp).isEqualTo("Onderwerp")
-                assertThat(request.tekst).isEqualTo("Tekst")
-                assertThat(request.aangemaaktDoor).isEqualTo("jan")
-                assertThat(request.notitieType).isEqualTo(NotitieType.INTERN)
-                assertThat(request.status).isEqualTo(NotitieStatus.CONCEPT)
-                assertThat(request.gerelateerdAan).isEqualTo(zaakUrl)
-            }
-        }
-    }
-
-    @Test
-    fun `should patch zaaknotitie`() {
-        val documentId = UUID.randomUUID()
-        val zaakUrl = zaakUri()
-
-        val zakenApiClient: ZakenApiClient = mock()
-        val zaakUrlProvider: ZaakUrlProvider = mock {
-            on { this.getZaakUrl(eq(documentId)) } doReturn zaakUrl
-        }
-        val executionMock: DelegateExecution = mock {
-            on { this.businessKey } doReturn documentId.toString()
-        }
-
-        val plugin = zakenApiPlugin(
-            zaakUrlProvider = zaakUrlProvider,
-            zakenApiClient = zakenApiClient
-        )
-
-        val notitieUrl = zaakNotitieUri()
-
-        // when
-        plugin.patchZaakNotitie(
-            execution = executionMock,
-            notitieUrl = notitieUrl,
-            onderwerp = "nieuw",
-            tekst = "Tekst",
-            aangemaaktDoor = "jan",
-            notitieType = NotitieType.EXTERN.key,
-            status = NotitieStatus.DEFINITIEF.key
-        )
-
-        // then
-        argumentCaptor<PatchZaakNotitieRequest> {
-            verify(zakenApiClient).patchZaakNotitie(
-                authentication = any(),
-                baseUrl = any(),
-                notitieUrl = eq(notitieUrl),
-                request = capture()
-            )
-
-            firstValue.let { request ->
-                assertThat(request.onderwerp).isEqualTo("nieuw")
-                assertThat(request.tekst).isEqualTo("Tekst")
-                assertThat(request.aangemaaktDoor).isEqualTo("jan")
-                assertThat(request.notitieType).isEqualTo(NotitieType.EXTERN)
-                assertThat(request.status).isEqualTo(NotitieStatus.DEFINITIEF)
-            }
-        }
     }
 
     private fun zakenApiPlugin(

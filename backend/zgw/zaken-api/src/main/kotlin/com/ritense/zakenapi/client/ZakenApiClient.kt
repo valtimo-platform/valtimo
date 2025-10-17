@@ -71,6 +71,7 @@ import com.ritense.zakenapi.event.ZaakeigenschapDeleted
 import com.ritense.zakenapi.event.ZaakeigenschapListed
 import com.ritense.zakenapi.event.ZaakeigenschapUpdated
 import com.ritense.zakenapi.event.ZaakNotitieCreated
+import com.ritense.zakenapi.event.ZaakNotitieDeleted
 import com.ritense.zakenapi.event.ZaakNotitiePatched
 import com.ritense.zakenapi.event.ZaakNotitieViewed
 import com.ritense.zakenapi.event.ZaakNotitiesListed
@@ -85,6 +86,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
+import kotlin.toString
 
 class ZakenApiClient(
     private val restClientBuilder: RestClient.Builder,
@@ -686,49 +688,6 @@ class ZakenApiClient(
         return result
     }
 
-    fun getZaakNotities(
-        authentication: ZakenApiAuthentication,
-        baseUrl: URI,
-        zaakUrl: URI,
-        page: Int
-    ): Page<ZaakNotitie> =
-        buildRestClient(authentication)
-            .get()
-            .uri {
-                ClientTools.baseUrlToBuilder(it, baseUrl)
-                    .path("zaaknotities")
-                    .queryParam("page", page)
-                    .queryParam("zaak", zaakUrl)
-                    .build()
-            }
-            .retrieve()
-            .body<Page<ZaakNotitie>>()!!
-            .also {
-                outboxService.send {
-                    ZaakNotitiesListed(
-                        notities = objectMapper.valueToTree(it.results)
-                    )
-                }
-            }
-
-    fun getZaakNotitie(
-        authentication: ZakenApiAuthentication,
-        zaakNotitieUrl: URI
-    ): ZaakNotitie =
-        buildRestClient(authentication)
-            .get()
-            .uri(zaakNotitieUrl)
-            .retrieve()
-            .body<ZaakNotitie>()!!
-            .also { zaakNotitie ->
-                outboxService.send {
-                    ZaakNotitieViewed(
-                        notitieUrl = zaakNotitie.url.toString(),
-                        notitie = objectMapper.valueToTree(zaakNotitie)
-                    )
-                }
-            }
-
     fun createZaakNotitie(
         authentication: ZakenApiAuthentication,
         baseUrl: URI,
@@ -779,6 +738,75 @@ class ZakenApiClient(
                 ).let { event ->
                     applicationEventPublisher.publishEvent(event)
                     outboxService.send { event }
+                }
+            }
+    }
+
+    fun deleteZaakNotitie(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        notitieUrl: URI
+    ) {
+        validateUrlHost(baseUrl, notitieUrl)
+        buildRestClient(authentication)
+            .delete()
+            .uri(notitieUrl)
+            .retrieve()
+            .toBodilessEntity()
+            .also {
+                ZaakNotitieDeleted(
+                    notitieUrl = notitieUrl.toString()
+                ).let { event ->
+                    applicationEventPublisher.publishEvent(event)
+                    outboxService.send { event }
+                }
+            }
+    }
+
+    fun getZaakNotitie(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakNotitieUrl: URI
+    ): ZaakNotitie {
+        validateUrlHost(baseUrl, zaakNotitieUrl)
+        return buildRestClient(authentication)
+            .get()
+            .uri(zaakNotitieUrl)
+            .retrieve()
+            .body<ZaakNotitie>()!!
+            .also { zaakNotitie ->
+                outboxService.send {
+                    ZaakNotitieViewed(
+                        notitieUrl = zaakNotitie.url.toString(),
+                        notitie = objectMapper.valueToTree(zaakNotitie)
+                    )
+                }
+            }
+    }
+
+    fun getZaakNotities(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        zaakUrl: URI,
+        page: Int
+    ): Page<ZaakNotitie> {
+        validateUrlHost(baseUrl, zaakUrl)
+        return buildRestClient(authentication)
+            .get()
+            .uri {
+                ClientTools.baseUrlToBuilder(it, baseUrl)
+                    .path("zaaknotities")
+                    .queryParam("page", page)
+                    .queryParam("zaak", zaakUrl)
+                    .build()
+            }
+            .retrieve()
+            .body<Page<ZaakNotitie>>()!!
+            .also {
+                outboxService.send {
+                    ZaakNotitiesListed(
+                        notities = objectMapper.valueToTree(it.results)
+                    )
                 }
             }
     }

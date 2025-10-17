@@ -1206,26 +1206,6 @@ class ZakenApiPlugin(
         client.deleteZaak(authenticationPluginConfiguration, url, zaakUrl)
     }
 
-    fun getZaakNotities(zaakUrl: URI): List<ZaakNotitie> {
-        logger.debug { "Fetching zaak notities for Zaak with URL '$zaakUrl'" }
-        return Page.getAll(100) { page ->
-            client.getZaakNotities(
-                authentication = authenticationPluginConfiguration,
-                baseUrl = url,
-                zaakUrl = zaakUrl,
-                page = page
-            )
-        }
-    }
-
-    fun getZaakNotitie(zaakNotitieUrl: URI): ZaakNotitie {
-        logger.debug { "Fetching zaaknotitie with URL '$zaakNotitieUrl'" }
-        return client.getZaakNotitie(
-            authentication = authenticationPluginConfiguration,
-            zaakNotitieUrl = zaakNotitieUrl
-        )
-    }
-
     @PluginAction(
         key = "create-zaaknotitie",
         title = "Create zaaknotitie",
@@ -1270,7 +1250,7 @@ class ZakenApiPlugin(
     )
     fun patchZaakNotitie(
         execution: DelegateExecution,
-        @PluginActionProperty notitieUrl: URI,
+        @PluginActionProperty zaakNotitieUrl: URI,
         @PluginActionProperty onderwerp: String? = null,
         @PluginActionProperty tekst: String? = null,
         @PluginActionProperty aangemaaktDoor: String? = null,
@@ -1283,7 +1263,7 @@ class ZakenApiPlugin(
         client.patchZaakNotitie(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
-            notitieUrl = notitieUrl,
+            notitieUrl = zaakNotitieUrl,
             request = PatchZaakNotitieRequest(
                 onderwerp = onderwerp,
                 tekst = tekst,
@@ -1293,10 +1273,40 @@ class ZakenApiPlugin(
             )
         ).also {
             logger.info {
-                "Zaaknotitie with URL '$notitieUrl' patched for " +
+                "Zaaknotitie with URL '$zaakNotitieUrl' patched for " +
                     "Zaak with URL '$zaakUrl' and Document with ID '$documentId'"
             }
         }
+    }
+
+    fun deleteZaakNotitie(zaakNotitieUrl: URI) {
+        logger.debug { "Deleting zaaknotitie with URL '$zaakNotitieUrl'" }
+        return client.deleteZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            notitieUrl = zaakNotitieUrl
+        )
+    }
+
+    fun getZaakNotities(zaakUrl: URI): List<ZaakNotitie> {
+        logger.debug { "Fetching zaak notities for Zaak with URL '$zaakUrl'" }
+        return Page.getAll(100) { page ->
+            client.getZaakNotities(
+                authentication = authenticationPluginConfiguration,
+                baseUrl = url,
+                zaakUrl = zaakUrl,
+                page = page
+            )
+        }
+    }
+
+    fun getZaakNotitie(zaakNotitieUrl: URI): ZaakNotitie {
+        logger.debug { "Fetching zaaknotitie with URL '$zaakNotitieUrl'" }
+        return client.getZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            zaakNotitieUrl = zaakNotitieUrl
+        )
     }
 
     private fun notitieTypeFrom(value: String?): NotitieType? =

@@ -47,6 +47,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.http.HttpMethod
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestClient
 import org.springframework.web.reactive.function.client.ClientRequest
@@ -1280,7 +1281,323 @@ internal class ZakenApiClientTest {
     }
 
     @Test
-    fun `should send get zaaknotities request and parse response`() {
+    fun `should validate host when creating zaaknotitie`() {
+        val client = zakenApiClient()
+
+        assertThrows<IllegalArgumentException> {
+            client.createZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = URI("https://api.example.com"),
+                request = CreateZaakNotitieRequest(
+                    onderwerp = "Onderwerp",
+                    tekst = "Tekst",
+                    gerelateerdAan = zaakUri()
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should send create zaaknotitie request, parse response and send outbox message`() {
+        // given
+        val zaakUrl = zaakUri()
+        val zaakNotitieUrl = zaakNotitieUri()
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+              "url": "$zaakNotitieUrl",
+              "onderwerp": "Onderwerp",
+              "tekst": "Tekst",
+              "aangemaaktDoor": "jan",
+              "notitieType": "intern",
+              "status": "concept",
+              "aanmaakdatum": "2024-01-01T10:00:00",
+              "wijzigingsdatum": "2024-01-01T10:00:00",
+              "gerelateerdAan": "$zaakUrl"
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        // when
+        val result = client.createZaakNotitie(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            request = CreateZaakNotitieRequest(
+                onderwerp = "Onderwerp",
+                tekst = "Tekst",
+                gerelateerdAan = zaakUrl,
+                aangemaaktDoor = "jan",
+                notitieType = NotitieType.INTERN,
+                status = NotitieStatus.CONCEPT
+            )
+        )
+
+        // then
+        mockApi.takeRequest().let { recordedRequest ->
+            assertThat(recordedRequest.method).isEqualTo("POST")
+            recordedRequest.body.readUtf8().let { recordedRequestBody ->
+                objectMapper.readValue<Map<String, Any>>(recordedRequestBody).let { requestBodyMap ->
+                    assertThat(requestBodyMap).containsKeys(
+                        "onderwerp",
+                        "tekst",
+                        "aangemaaktDoor",
+                        "gerelateerdAan",
+                        "notitieType",
+                        "status"
+                    )
+                    assertThat(requestBodyMap["onderwerp"]).isEqualTo("Onderwerp")
+                    assertThat(requestBodyMap["tekst"]).isEqualTo("Tekst")
+                    assertThat(requestBodyMap["aangemaaktDoor"]).isEqualTo("jan")
+                    assertThat(requestBodyMap["gerelateerdAan"]).isEqualTo(zaakUrl.toASCIIString())
+                    assertThat(requestBodyMap["notitieType"]).isEqualTo("intern")
+                    assertThat(requestBodyMap["status"]).isEqualTo("concept")
+                }
+            }
+        }
+
+        assertThat(result.url).isEqualTo(zaakNotitieUrl)
+        assertThat(result.gerelateerdAan).isEqualTo(zaakUrl)
+        assertThat(result.aangemaaktDoor).isEqualTo("jan")
+        assertThat(result.onderwerp).isEqualTo("Onderwerp")
+        assertThat(result.tekst).isEqualTo("Tekst")
+        assertThat(result.notitieType).isEqualTo(NotitieType.INTERN)
+        assertThat(result.status).isEqualTo(NotitieStatus.CONCEPT)
+
+        verify(applicationEventPublisher).publishEvent(anyVararg(ZaakNotitieCreated::class))
+        argumentCaptor<Supplier<BaseEvent>> {
+            verify(outboxService).send(capture())
+
+            firstValue.get().let { event ->
+                assertThat(event).isInstanceOf(ZaakNotitieCreated::class.java)
+                assertThat(result.url.toString()).isEqualTo(event.resultId)
+                objectMapper.readValue<ZaakNotitie>(event.result.toString()).let { zaakNotitie ->
+                    assertThat(zaakNotitie.onderwerp).isEqualTo(result.onderwerp)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `should validate host when patching zaaknotitie`() {
+        val client = zakenApiClient()
+
+        assertThrows<IllegalArgumentException> {
+            client.patchZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = URI("https://api1.example.com"),
+                notitieUrl = URI("https://api2.example.com/zaaknotities/1"),
+                request = PatchZaakNotitieRequest(
+                    onderwerp = "x"
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should validate host when patching zaaknotitie gerelateerd aan`() {
+        val client = zakenApiClient()
+
+        assertThrows<IllegalArgumentException> {
+            client.patchZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                notitieUrl = zaakNotitieUri(),
+                request = PatchZaakNotitieRequest(
+                    gerelateerdAan = URI("https://api2.example.com/zaak/a82467dc-0090-48bc-a46d-c4f8923d6f15")
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should send patch zaaknotitie request, parse response and send outbox message`() {
+        // given
+        val zaakUrl = zaakUri()
+        val zaakNotitieUrl = zaakNotitieUri()
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+              "url": "$zaakNotitieUrl",
+              "onderwerp": "Onderwerp nieuw",
+              "tekst": "Tekst",
+              "aangemaaktDoor": "jan",
+              "notitieType": "intern",
+              "status": "concept",
+              "aanmaakdatum": "2024-01-01T10:00:00",
+              "wijzigingsdatum": "2024-01-01T12:00:00",
+              "gerelateerdAan": "$zaakUrl"
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        // when
+        val result = client.patchZaakNotitie(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            notitieUrl = zaakNotitieUrl,
+            request = PatchZaakNotitieRequest(
+                onderwerp = "Onderwerp nieuw"
+            )
+        )
+
+        // then
+        mockApi.takeRequest().let { recordedRequest ->
+            assertThat(recordedRequest.requestUrl.toString()).isEqualTo(zaakNotitieUrl.toASCIIString())
+            assertThat(recordedRequest.method).isEqualTo("PATCH")
+            recordedRequest.body.readUtf8().let { recordedRequestBody ->
+                objectMapper.readValue<Map<String, Any>>(recordedRequestBody).let { requestBodyMap ->
+                    assertThat(requestBodyMap).containsKey("onderwerp")
+                    assertThat(requestBodyMap).doesNotContainKeys(
+                        "tekst",
+                        "aangemaaktDoor",
+                        "gerelateerdAan",
+                        "notitieType",
+                        "status"
+                    )
+                    assertThat(requestBodyMap["onderwerp"]).isEqualTo("Onderwerp nieuw")
+                }
+            }
+        }
+
+        assertThat(result.url).isEqualTo(zaakNotitieUrl)
+        assertThat(result.gerelateerdAan).isEqualTo(zaakUrl)
+        assertThat(result.aangemaaktDoor).isEqualTo("jan")
+        assertThat(result.onderwerp).isEqualTo("Onderwerp nieuw")
+        assertThat(result.tekst).isEqualTo("Tekst")
+        assertThat(result.notitieType).isEqualTo(NotitieType.INTERN)
+        assertThat(result.status).isEqualTo(NotitieStatus.CONCEPT)
+
+        verify(applicationEventPublisher).publishEvent(anyVararg(ZaakNotitiePatched::class))
+        argumentCaptor<Supplier<BaseEvent>> {
+            verify(outboxService).send(capture())
+
+            firstValue.get().let { event ->
+                assertThat(event).isInstanceOf(ZaakNotitiePatched::class.java)
+
+                objectMapper.readValue<ZaakNotitie>(event.result.toString()).let { zaakNotitie ->
+                    assertThat(result.tekst).isEqualTo(zaakNotitie.tekst)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `should validate host when deleting zaaknotitie`() {
+        val client = zakenApiClient()
+
+        assertThrows<IllegalArgumentException> {
+            client.deleteZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = URI("https://api1.example.com"),
+                notitieUrl = URI("https://api2.example.com/zaaknotities/1")
+            )
+        }
+    }
+
+    @Test
+    fun `should request delete zaaknotitie and send outbox message`() {
+        // given
+        val zaakNotitieUrl = zaakNotitieUri()
+        val client = zakenApiClient()
+
+        mockApi.enqueue(mockResponse(""))
+
+        // when
+        client.deleteZaakNotitie(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            notitieUrl = zaakNotitieUrl
+        )
+
+        // then
+        mockApi.takeRequest().let { recordedRequest ->
+            assertThat(recordedRequest.requestUrl.toString()).isEqualTo(zaakNotitieUrl.toASCIIString())
+            assertThat(recordedRequest.method).isEqualTo("DELETE")
+        }
+
+        verify(applicationEventPublisher).publishEvent(anyVararg(ZaakNotitieDeleted::class))
+        argumentCaptor<Supplier<BaseEvent>> {
+            verify(outboxService).send(capture())
+
+            firstValue.get().let { event ->
+                assertThat(event).isInstanceOf(ZaakNotitieDeleted::class.java)
+                assertThat(event.resultId).isEqualTo(zaakNotitieUrl.toASCIIString())
+            }
+        }
+    }
+
+    @Test
+    fun `should send get zaaknotitie request, parse response and send outbox message`() {
+        val zaakUrl = zaakUri()
+        val zaakNotitieUrl = zaakNotitieUri()
+
+        val client = zakenApiClient()
+
+        val responseBody = """
+            {
+              "url": "$zaakNotitieUrl",
+              "onderwerp": "Onderwerp",
+              "tekst": "Tekst",
+              "aangemaaktDoor": "jan",
+              "notitieType": "intern",
+              "status": "concept",
+              "aanmaakdatum": "2024-01-01T10:00:00",
+              "wijzigingsdatum": "2024-01-01T10:00:00",
+              "gerelateerdAan": "$zaakUrl"
+            }
+        """.trimIndent()
+
+        mockApi.enqueue(mockResponse(responseBody))
+
+        val result = client.getZaakNotitie(
+            authentication = TestAuthentication(),
+            baseUrl = zakenApiBaseUri(),
+            zaakNotitieUrl = zaakNotitieUrl
+        )
+
+        mockApi.takeRequest()
+
+        assertThat(result.onderwerp).isEqualTo("Onderwerp")
+        assertThat(result.notitieType?.key).isEqualTo("intern")
+        assertThat(result.status?.key).isEqualTo("concept")
+
+        argumentCaptor<Supplier<BaseEvent>> {
+            verify(outboxService).send(capture())
+
+            firstValue.get().let { event ->
+                assertThat(event).isInstanceOf(ZaakNotitieViewed::class.java)
+                objectMapper.readValue<ZaakNotitie>(event.result.toString()).let { zaakNotitie ->
+                    assertThat(zaakNotitie.onderwerp).isEqualTo(result.onderwerp)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `should not send outbox message on failing to retrieve zaaknotitie`() {
+        val client = zakenApiClient()
+
+        mockApi.enqueue(mockResponse("").setResponseCode(400))
+
+        assertThrows<HttpClientErrorException> {
+            client.getZaakNotitie(
+                authentication = TestAuthentication(),
+                baseUrl = zakenApiBaseUri(),
+                zaakNotitieUrl = zaakNotitieUri()
+            )
+        }
+
+        mockApi.takeRequest()
+
+        verify(outboxService, times(0)).send(any())
+    }
+
+    @Test
+    fun `should send get zaaknotities request, parse response and send outbox message`() {
         val zaakUrl = zaakUri()
 
         val client = zakenApiClient()
@@ -1334,46 +1651,8 @@ internal class ZakenApiClientTest {
         assertThat(result.results[0].onderwerp).isEqualTo("Onderwerp 1")
         assertThat(result.results[1].notitieType?.key).isEqualTo("extern")
         assertThat(result.results[1].status?.key).isEqualTo("definitief")
-    }
-
-    @Test
-    fun `should send outbox message on retrieving zaaknotities`() {
-        val zaakUrl = zaakUri()
-        val client = zakenApiClient()
-
-        val responseBody = """
-            {
-              "count": 1,
-              "next": null,
-              "previous": null,
-              "results": [
-                {
-                  "url": "${zaakNotitieUri()}",
-                  "onderwerp": "Onderwerp",
-                  "tekst": "Tekst",
-                  "aangemaaktDoor": "jan",
-                  "notitieType": "intern",
-                  "status": "concept",
-                  "aanmaakdatum": "2024-01-01T10:00:00",
-                  "wijzigingsdatum": "2024-01-01T10:00:00",
-                  "gerelateerdAan": "$zaakUrl"
-                }
-              ]
-            }
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
 
         argumentCaptor<Supplier<BaseEvent>> {
-            val result = client.getZaakNotities(
-                authentication = TestAuthentication(),
-                baseUrl = zakenApiBaseUri(),
-                zaakUrl = zaakUrl,
-                page = 1
-            )
-
-            mockApi.takeRequest()
-
             verify(outboxService).send(capture())
 
             firstValue.get().let { event ->
@@ -1405,244 +1684,6 @@ internal class ZakenApiClientTest {
         verify(outboxService, times(0)).send(any())
     }
 
-    @Test
-    fun `should send get zaaknotitie request and parse response`() {
-        val zaakUrl = zaakUri()
-        val zaakNotitieUrl = zaakNotitieUri()
-
-        val client = zakenApiClient()
-
-        val responseBody = """
-            {
-              "url": "$zaakNotitieUrl",
-              "onderwerp": "Onderwerp",
-              "tekst": "Tekst",
-              "aangemaaktDoor": "jan",
-              "notitieType": "intern",
-              "status": "concept",
-              "aanmaakdatum": "2024-01-01T10:00:00",
-              "wijzigingsdatum": "2024-01-01T10:00:00",
-              "gerelateerdAan": "$zaakUrl"
-            }
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        val result = client.getZaakNotitie(
-            authentication = TestAuthentication(),
-            zaakNotitieUrl = zaakNotitieUrl
-        )
-
-        mockApi.takeRequest()
-
-        assertThat(result.onderwerp).isEqualTo("Onderwerp")
-        assertThat(result.notitieType?.key).isEqualTo("intern")
-        assertThat(result.status?.key).isEqualTo("concept")
-    }
-
-    @Test
-    fun `should send outbox message on retrieving zaaknotitie`() {
-        val zaakUrl = zaakUri()
-        val zaakNotitieUrl = zaakNotitieUri()
-
-        val client = zakenApiClient()
-
-        val responseBody = """
-            {
-              "url": "$zaakNotitieUrl",
-              "onderwerp": "Onderwerp",
-              "tekst": "Tekst",
-              "aangemaaktDoor": "jan",
-              "notitieType": "extern",
-              "status": "definitief",
-              "aanmaakdatum": "2024-01-02T11:00:00",
-              "wijzigingsdatum": "2024-01-02T11:00:00",
-              "gerelateerdAan": "$zaakUrl"
-            }
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        argumentCaptor<Supplier<BaseEvent>> {
-            val result = client.getZaakNotitie(
-                authentication = TestAuthentication(),
-                zaakNotitieUrl = zaakNotitieUrl
-            )
-
-            mockApi.takeRequest()
-
-            verify(outboxService).send(capture())
-
-            firstValue.get().let { event ->
-                assertThat(event).isInstanceOf(ZaakNotitieViewed::class.java)
-                objectMapper.readValue<ZaakNotitie>(event.result.toString()).let { zaakNotitie ->
-                    assertThat(zaakNotitie.onderwerp).isEqualTo(result.onderwerp)
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `should not send outbox message on failing to retrieve zaaknotitie`() {
-        val client = zakenApiClient()
-
-        mockApi.enqueue(mockResponse("").setResponseCode(400))
-
-        assertThrows<HttpClientErrorException> {
-            client.getZaakNotitie(
-                authentication = TestAuthentication(),
-                zaakNotitieUrl = zaakNotitieUri()
-            )
-        }
-
-        mockApi.takeRequest()
-
-        verify(outboxService, times(0)).send(any())
-    }
-
-    @Test
-    fun `should send outbox message on creating zaaknotitie`() {
-        val client = zakenApiClient()
-
-        val responseBody = """
-            {
-              "url": "${zaakNotitieUri()}",
-              "onderwerp": "Onderwerp",
-              "tekst": "Tekst",
-              "aangemaaktDoor": "jan",
-              "notitieType": "intern",
-              "status": "concept",
-              "aanmaakdatum": "2024-01-01T10:00:00",
-              "wijzigingsdatum": "2024-01-01T10:00:00",
-              "gerelateerdAan": "$HTTPS_EXAMPLE_COM/zaken/1"
-            }
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        argumentCaptor<Supplier<BaseEvent>> {
-            val result = client.createZaakNotitie(
-                authentication = TestAuthentication(),
-                baseUrl = zakenApiBaseUri(),
-                request = CreateZaakNotitieRequest(
-                    onderwerp = "Onderwerp",
-                    tekst = "Tekst",
-                    gerelateerdAan = zaakUri(),
-                    aangemaaktDoor = "jan",
-                    notitieType = NotitieType.INTERN,
-                    status = NotitieStatus.CONCEPT
-                )
-            )
-
-            mockApi.takeRequest()
-
-            verify(applicationEventPublisher).publishEvent(anyVararg(ZaakNotitieCreated::class))
-            verify(outboxService).send(capture())
-
-            firstValue.get().let { event ->
-                assertThat(event).isInstanceOf(ZaakNotitieCreated::class.java)
-                assertThat(result.url.toString()).isEqualTo(event.resultId)
-                objectMapper.readValue<ZaakNotitie>(event.result.toString()).let { zaakNotitie ->
-                    assertThat(zaakNotitie.onderwerp).isEqualTo(result.onderwerp)
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `should validate host when creating zaaknotitie`() {
-        val client = zakenApiClient()
-
-        assertThrows<IllegalArgumentException> {
-            client.createZaakNotitie(
-                authentication = TestAuthentication(),
-                baseUrl = URI("https://api.example.com"),
-                request = CreateZaakNotitieRequest(
-                    onderwerp = "Onderwerp",
-                    tekst = "Tekst",
-                    gerelateerdAan = zaakUri()
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `should send outbox message on patching zaaknotitie`() {
-        val zaakNotitieUrl = zaakNotitieUri()
-        val client = zakenApiClient()
-
-        val responseBody = """
-            {
-              "url": "$zaakNotitieUrl",
-              "onderwerp": "Onderwerp nieuw",
-              "tekst": "Tekst",
-              "aangemaaktDoor": "jan",
-              "notitieType": "intern",
-              "status": "concept",
-              "aanmaakdatum": "2024-01-01T10:00:00",
-              "wijzigingsdatum": "2024-01-01T12:00:00",
-              "gerelateerdAan": "${zaakUri()}"
-            }
-        """.trimIndent()
-
-        mockApi.enqueue(mockResponse(responseBody))
-
-        argumentCaptor<Supplier<BaseEvent>> {
-            val result = client.patchZaakNotitie(
-                authentication = TestAuthentication(),
-                baseUrl = zakenApiBaseUri(),
-                notitieUrl = zaakNotitieUrl,
-                request = PatchZaakNotitieRequest(
-                    onderwerp = "Onderwerp nieuw"
-                )
-            )
-            mockApi.takeRequest()
-
-            verify(applicationEventPublisher).publishEvent(anyVararg(ZaakNotitiePatched::class))
-            verify(outboxService).send(capture())
-
-            firstValue.get().let { event ->
-                assertThat(event).isInstanceOf(ZaakNotitiePatched::class.java)
-
-                objectMapper.readValue<ZaakNotitie>(event.result.toString()).let { zaakNotitie ->
-                    assertThat(result.tekst).isEqualTo(zaakNotitie.tekst)
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `should validate host when patching zaaknotitie`() {
-        val client = zakenApiClient()
-
-        assertThrows<IllegalArgumentException> {
-            client.patchZaakNotitie(
-                authentication = TestAuthentication(),
-                baseUrl = URI("https://api1.example.com"),
-                notitieUrl = URI("https://api2.example.com/zaaknotities/1"),
-                request = PatchZaakNotitieRequest(
-                    onderwerp = "x"
-                )
-            )
-        }
-    }
-
-    @Test
-    fun `should validate host when patching zaaknotitie gerelateerd aan`() {
-        val client = zakenApiClient()
-
-        assertThrows<IllegalArgumentException> {
-            client.patchZaakNotitie(
-                authentication = TestAuthentication(),
-                baseUrl = zakenApiBaseUri(),
-                notitieUrl = zaakNotitieUri(),
-                request = PatchZaakNotitieRequest(
-                    gerelateerdAan = URI("https://api2.example.com/zaak/a82467dc-0090-48bc-a46d-c4f8923d6f15")
-                )
-            )
-        }
-    }
-
     private fun zakenApiClient() = ZakenApiClient(
         restClientBuilder = restClientBuilder,
         outboxService = outboxService,
@@ -1661,10 +1702,12 @@ internal class ZakenApiClientTest {
 
     private fun exampleUri() = URI(HTTPS_EXAMPLE_COM)
 
-    private fun mockResponse(body: String): MockResponse {
+    private fun mockResponse(body: String? = null): MockResponse {
         return MockResponse()
             .addHeader("Content-Type", "application/json")
-            .setBody(body)
+            .apply {
+                if (body != null) setBody(body)
+            }
     }
 
     class TestAuthentication : ZakenApiAuthentication {
