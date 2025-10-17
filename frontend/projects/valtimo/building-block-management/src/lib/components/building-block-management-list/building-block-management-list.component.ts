@@ -20,20 +20,35 @@ import {BuildingBlockManagementApiService} from '../../services';
 import {tap} from 'rxjs';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
+import {BuildingBlockManagementCreateModalComponent} from '../building-block-management-create-modal/building-block-management-create-modal.component';
+import {BuildingBlockManagementService} from '../../services/building-block-management.service';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-list',
   templateUrl: './building-block-management-list.component.html',
   styleUrls: ['./building-block-management-list.component.scss'],
-  imports: [CommonModule, CarbonListModule, ButtonModule, IconModule, TranslatePipe],
+  imports: [
+    CommonModule,
+    CarbonListModule,
+    ButtonModule,
+    IconModule,
+    TranslatePipe,
+    BuildingBlockManagementCreateModalComponent,
+  ],
+  providers: [BuildingBlockManagementService],
 })
 export class BuildingBlockManagementListComponent {
   public readonly $loading = signal<boolean>(true);
 
   public readonly buildingBlockDefinitions$ = this.buildingBlockManagementApiService
     .getBuildingBlockDefinitions()
-    .pipe(tap(() => this.$loading.set(false)));
+    .pipe(
+      tap(res => {
+        this.buildingBlockManagementService.setUsedKeys(res.map(item => item.key));
+        this.$loading.set(false);
+      })
+    );
 
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'title', label: 'buildingBlockManagement.listColumns.title'},
@@ -42,6 +57,11 @@ export class BuildingBlockManagementListComponent {
   ];
 
   constructor(
-    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
+    private readonly buildingBlockManagementService: BuildingBlockManagementService
   ) {}
+
+  public showCreateModal(): void {
+    this.buildingBlockManagementService.showCreateModal();
+  }
 }

@@ -2003,6 +2003,9 @@
     "noResults": {
       "title": "Es gibt keine Baublöcke",
       "description": "Fügen Sie einen Baublock hinzu, um zu beginnen"
+    },
+    "createDefinition": {
+      "modalTitle": "Baublock erstellen"
     }
   }
 }
