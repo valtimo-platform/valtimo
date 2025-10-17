@@ -14,7 +14,7 @@ on:
 
   push:
     branches:
-      - 'next-minor'
+      - "next-minor"
     paths:
       - frontend/**
 
@@ -41,7 +41,8 @@ jobs:
   build_image:
     needs: [build_and_test]
     runs-on: ubuntu-latest
-
+    environment:
+      name: pr-test-environment
     permissions:
       contents: read
       packages: write
