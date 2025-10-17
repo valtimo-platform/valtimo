@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, BuildingBlockDefinitionDto, ConfigService} from '@valtimo/shared';
-import {Observable} from 'rxjs';
+import {BaseApiService, BuildingBlockDefinitionDto, ConfigService, InterceptorSkip} from '@valtimo/shared';
+import {catchError, Observable, of} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +32,14 @@ export class BuildingBlockManagementApiService extends BaseApiService {
 
   public getBuildingBlockDefinitions(): Observable<BuildingBlockDefinitionDto[]> {
     return this.httpClient.get<BuildingBlockDefinitionDto[]>(
-      this.getApiUrl('management/v1/building-block')
-    );
+      this.getApiUrl('management/v1/building-block'), {
+        headers: new HttpHeaders().set(InterceptorSkip, '404'),
+      }
+    ).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404) return of([])
+        throw error;
+      })
+    )
   }
 }
