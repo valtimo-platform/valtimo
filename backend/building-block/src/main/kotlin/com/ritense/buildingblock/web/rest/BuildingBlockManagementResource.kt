@@ -60,6 +60,10 @@ class BuildingBlockManagementResource(
             )
         }
 
-        return ResponseEntity.ok(dtoList)
+        return if (dtoList.isEmpty()) {
+            ResponseEntity.notFound().build()
+        } else {
+            ResponseEntity.ok(dtoList)
+        }
     }
 }
