@@ -17,7 +17,7 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
-import {CreateZaaknotitieConfig} from '../../models';
+import {CreateZaakNotitieConfig} from '../../models';
 import {ZAAKNOTIFICATIE_STATUSES} from '../../models/zaaknotificatie-statuses';
 import {ZAAKNOTIFICATIE_TYPES} from '../../models/zaaknotificatie-types';
 
@@ -31,17 +31,17 @@ export class CreateZaaknotitieConfigurationComponent
 {
   @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() prefillConfiguration$: Observable<CreateZaaknotitieConfig>;
+  @Input() prefillConfiguration$: Observable<CreateZaakNotitieConfig>;
   @Input() pluginId: string;
 
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<CreateZaaknotitieConfig> =
-    new EventEmitter<CreateZaaknotitieConfig>();
+  @Output() configuration: EventEmitter<CreateZaakNotitieConfig> =
+    new EventEmitter<CreateZaakNotitieConfig>();
 
   public readonly statusOptions: string[] = ZAAKNOTIFICATIE_STATUSES
   public readonly notitieTypeOptions: string[] = ZAAKNOTIFICATIE_TYPES
 
-  private readonly _formValue$ = new BehaviorSubject<CreateZaaknotitieConfig | null>(null);
+  private readonly _formValue$ = new BehaviorSubject<CreateZaakNotitieConfig | null>(null);
   private readonly _valid$ = new BehaviorSubject<boolean>(false);
   private _saveSubscription!: Subscription;
 
@@ -67,12 +67,12 @@ export class CreateZaaknotitieConfigurationComponent
     this._saveSubscription?.unsubscribe();
   }
 
-  public onFormValueChanged(value: CreateZaaknotitieConfig): void {
+  public onFormValueChanged(value: CreateZaakNotitieConfig): void {
     this._formValue$.next(value);
     this.handleValid(value);
   }
 
-  private handleValid(formValue: CreateZaaknotitieConfig): void {
+  private handleValid(formValue: CreateZaakNotitieConfig): void {
     const valid = !!formValue?.onderwerp && !!formValue?.tekst;
     this._valid$.next(valid);
     this.valid.emit(valid);

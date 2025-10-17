@@ -151,7 +151,7 @@ interface RelateerZakenConfig {
   aardRelatie: string;
 }
 
-interface CreateZaaknotitieConfig {
+interface CreateZaakNotitieConfig {
   onderwerp: string;
   tekst: string;
   aangemaaktDoor?: string;
@@ -159,11 +159,11 @@ interface CreateZaaknotitieConfig {
   status?: string;
 }
 
-interface PatchZaaknotitieConfig {
-  notitieUrl: string;
+interface PatchZaakNotitieConfig {
+//  notitieUrl?: string;
   onderwerp?: string;
   tekst?: string;
-  aangemaaktDoor?: string;
+//  aangemaaktDoor?: string;
   notitieType?: string;
   status?: string;
 }
@@ -186,6 +186,6 @@ export {
   DeleteZaakeigenschapConfig,
   PatchZaakConfig,
   RelateerZakenConfig,
-  CreateZaaknotitieConfig,
-  PatchZaaknotitieConfig,
+  CreateZaakNotitieConfig,
+  PatchZaakNotitieConfig,
 };

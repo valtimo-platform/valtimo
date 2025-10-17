@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,11 +14,21 @@
  * limitations under the License.
  */
 
-export const PatchZaakNotitiePropertyOptions = [
-  'onderwerp',
-  'tekst',
-  'notitieType',
-  'status'
-] as const;
+button.delete-button {
+  height: 46px;
+  width: 46px;
+  margin-top: 20px;
+}
 
-export type PatchZaakNotitieProperties = (typeof PatchZaakNotitiePropertyOptions)[number];
+button.delete-button:hover {
+  background-color: #e12717;
+}
+
+button.add-button {
+  margin-block-end: var(--v-input-margin);
+}
+
+::ng-deep .cds--overflow-menu-options {
+  z-index: 10000 !important;
+  width: 230px;
+}
