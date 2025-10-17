@@ -20,6 +20,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.semver4j.Semver
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -33,9 +34,20 @@ class BuildingBlockManagementResource(
 ) {
     @GetMapping
     fun getBuildingBlockDefinitions(): ResponseEntity<List<BuildingBlockDefinitionDto>> {
-        val definitions = buildingBlockDefinitionRepository.findAll()
+        val all = buildingBlockDefinitionRepository.findAll()
 
-        val dtoList = definitions.map {
+        val latestPerKey = all
+            .groupBy { it.id.key }
+            .values
+            .mapNotNull { defsForKey ->
+                defsForKey.maxWithOrNull { a, b ->
+                    val va = Semver(a.id.versionTag.toString())
+                    val vb = Semver(b.id.versionTag.toString())
+                    va.compareTo(vb)
+                }
+            }
+
+        val dtoList = latestPerKey.map {
             BuildingBlockDefinitionDto(
                 key = it.id.key,
                 versionTag = it.id.versionTag.toString(),
