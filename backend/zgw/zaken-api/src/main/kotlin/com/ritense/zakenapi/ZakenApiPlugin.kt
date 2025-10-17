@@ -1223,23 +1223,44 @@ class ZakenApiPlugin(
         val documentId = UUID.fromString(execution.businessKey)
         val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
-        client.createZaakNotitie(
-            authentication = authenticationPluginConfiguration,
-            baseUrl = url,
-            request = CreateZaakNotitieRequest(
-                onderwerp = onderwerp,
-                tekst = tekst,
-                aangemaaktDoor = aangemaaktDoor,
-                notitieType = notitieTypeFrom(notitieType),
-                status = notitieStatusFrom(status),
-                gerelateerdAan = zaakUrl
-            )
+        createZaakNotitie(
+            onderwerp = onderwerp,
+            tekst = tekst,
+            zaakUrl = zaakUrl,
+            aangemaaktDoor = aangemaaktDoor,
+            notitieType = notitieType,
+            status = status
         ).also {
             logger.info {
                 "Zaaknotitie with URL '${it.url}' created for " +
                     "Zaak with URL '$zaakUrl' and Document with ID '$documentId'"
             }
         }
+    }
+
+    fun createZaakNotitie(
+        onderwerp: String,
+        tekst: String,
+        zaakUrl: URI,
+        aangemaaktDoor: String? = null,
+        notitieType: String? = null,
+        status: String? = null
+    ): ZaakNotitie {
+        logger.info {
+            "Creating zaaknotitie for Zaak with URL '$zaakUrl'"
+        }
+        return client.createZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            request = CreateZaakNotitieRequest(
+                onderwerp = onderwerp,
+                tekst = tekst,
+                gerelateerdAan = zaakUrl,
+                aangemaaktDoor = aangemaaktDoor,
+                notitieType = notitieTypeFrom(notitieType),
+                status = notitieStatusFrom(status)
+            )
+        )
     }
 
     @PluginAction(
@@ -1260,7 +1281,33 @@ class ZakenApiPlugin(
         val documentId = UUID.fromString(execution.businessKey)
         val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
 
-        client.patchZaakNotitie(
+        patchZaakNotitie(
+            zaakNotitieUrl = zaakNotitieUrl,
+            onderwerp = onderwerp,
+            tekst = tekst,
+            aangemaaktDoor = aangemaaktDoor,
+            notitieType = notitieType,
+            status = status
+        ).also {
+            logger.info {
+                "Zaaknotitie with URL '$zaakNotitieUrl' patched for " +
+                    "Zaak with URL '$zaakUrl' and Document with ID '$documentId'"
+            }
+        }
+    }
+
+    fun patchZaakNotitie(
+        zaakNotitieUrl: URI,
+        onderwerp: String? = null,
+        tekst: String? = null,
+        aangemaaktDoor: String? = null,
+        notitieType: String? = null,
+        status: String? = null
+    ): ZaakNotitie {
+        logger.info {
+            "Patching zaaknotitie with URL '$zaakNotitieUrl'"
+        }
+        return client.patchZaakNotitie(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
             notitieUrl = zaakNotitieUrl,
@@ -1271,12 +1318,7 @@ class ZakenApiPlugin(
                 notitieType = notitieTypeFrom(notitieType),
                 status = notitieStatusFrom(status)
             )
-        ).also {
-            logger.info {
-                "Zaaknotitie with URL '$zaakNotitieUrl' patched for " +
-                    "Zaak with URL '$zaakUrl' and Document with ID '$documentId'"
-            }
-        }
+        )
     }
 
     fun deleteZaakNotitie(zaakNotitieUrl: URI) {
@@ -1288,8 +1330,17 @@ class ZakenApiPlugin(
         )
     }
 
+    fun getZaakNotitie(zaakNotitieUrl: URI): ZaakNotitie {
+        logger.debug { "Fetching zaaknotitie with URL '$zaakNotitieUrl'" }
+        return client.getZaakNotitie(
+            authentication = authenticationPluginConfiguration,
+            baseUrl = url,
+            zaakNotitieUrl = zaakNotitieUrl
+        )
+    }
+
     fun getZaakNotities(zaakUrl: URI): List<ZaakNotitie> {
-        logger.debug { "Fetching zaak notities for Zaak with URL '$zaakUrl'" }
+        logger.debug { "Fetching zaaknotities for Zaak with URL '$zaakUrl'" }
         return Page.getAll(100) { page ->
             client.getZaakNotities(
                 authentication = authenticationPluginConfiguration,
@@ -1298,15 +1349,6 @@ class ZakenApiPlugin(
                 page = page
             )
         }
-    }
-
-    fun getZaakNotitie(zaakNotitieUrl: URI): ZaakNotitie {
-        logger.debug { "Fetching zaaknotitie with URL '$zaakNotitieUrl'" }
-        return client.getZaakNotitie(
-            authentication = authenticationPluginConfiguration,
-            baseUrl = url,
-            zaakNotitieUrl = zaakNotitieUrl
-        )
     }
 
     private fun notitieTypeFrom(value: String?): NotitieType? =
