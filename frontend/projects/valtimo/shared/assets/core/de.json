@@ -1999,6 +1999,10 @@
       "title": "Titel",
       "key": "Schlüssel",
       "versionTag": "Version"
+    },
+    "noResults": {
+      "title": "Es gibt keine Baublöcke",
+      "description": "Fügen Sie einen Baublock hinzu, um zu beginnen"
     }
   }
 }
