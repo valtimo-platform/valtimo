@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CarbonListModule} from '@valtimo/components';
+import {BuildingBlockManagementApiService} from '../../services';
 
 @Component({
   standalone: true,
@@ -25,4 +26,10 @@ import {CarbonListModule} from '@valtimo/components';
   imports: [CommonModule, CarbonListModule]
 })
 export class BuildingBlockManagementListComponent {
+  public readonly $loading = signal<boolean>(true);
+
+  public readonly buildingBlockDefinitions$ = this.buildingBlockManagementApiService.getBuildingBlockDefinitions();
+
+  constructor(private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService) {
+  }
 }
