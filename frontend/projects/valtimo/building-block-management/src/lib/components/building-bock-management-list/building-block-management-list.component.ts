@@ -15,14 +15,14 @@
  */
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
-
+import {CarbonListModule} from '@valtimo/components';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-list',
   templateUrl: './building-block-management-list.component.html',
   styleUrls: ['./building-block-management-list.component.scss'],
-  imports: [CommonModule]
+  imports: [CommonModule, CarbonListModule]
 })
 export class BuildingBlockManagementListComponent {
 }

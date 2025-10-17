@@ -1,5 +1,10 @@
+import cz.habarta.typescript.generator.DateMapping
+import cz.habarta.typescript.generator.JsonLibrary
+import cz.habarta.typescript.generator.TypeScriptOutputKind
+
 plugins {
     id 'war'
+    id 'cz.habarta.typescript-generator' version '3.2.1263'
 }
 
 repositories {
@@ -79,3 +84,37 @@ tasks.register("bootRunWithDocker", tasks.named("bootRun").get().class) {
 }
 
 dockerCompose.isRequiredBy(bootRunWithDocker)
+
+// generate typescript types for frontend
+
+def generatedDir = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated")
+def outDtsFile = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.d.ts")
+def outTsFile = rootProject.file("../frontend/projects/valtimo/shared/src/lib/generated/generated-backend-types.ts")
+
+tasks.named("generateTypeScript").configure {
+    dependsOn tasks.named("classes")
+
+    jsonLibrary   = JsonLibrary.jackson2
+    outputKind    = TypeScriptOutputKind.module
+    mapDate       = DateMapping.asString
+    classPatterns = ["com.ritense.**.web.rest.dto.*"]
+
+    excludeClasses = ["com.ritense.search.domain.DisplayType"]
+    customTypeMappings = [
+        "com.ritense.search.domain.DisplayType:any"
+    ]
+
+    doFirst {
+        generatedDir.mkdirs()
+        println "Generating backend types..."
+    }
+
+    outputFile = outDtsFile
+
+    doLast {
+        if (!outDtsFile.exists()) throw new GradleException("Expected file not found: $outDtsFile")
+        outTsFile.text = outDtsFile.text
+        if (!outDtsFile.delete()) println "Could not delete $outDtsFile"
+        println "Wrote ${outTsFile.name} and removed ${outDtsFile.name}"
+    }
+}
