@@ -17,12 +17,7 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {Injector, NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {
-  HttpBackend,
-  HttpClient,
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from '@angular/common/http';
+import {HttpBackend, HttpClient, provideHttpClient, withInterceptorsFromDi} from '@angular/common/http';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {CUSTOM_WIDGET_TOKEN, LayoutModule, TranslationManagementModule} from '@valtimo/layout';
@@ -30,8 +25,10 @@ import {TaskModule} from '@valtimo/task';
 import {environment} from '../environments/environment';
 import {SecurityModule} from '@valtimo/security';
 import {
+  BpmnJsDiagramModule,
   enableCustomFormioComponents,
   FormIoModule,
+  MenuModule,
   registerFormioCurrencyComponent,
   registerFormioCurrentUserComponent,
   registerFormioFileSelectorComponent,
@@ -39,8 +36,6 @@ import {
   registerFormioUploadComponent,
   registerFormioValueResolverSelectorComponent,
   UploaderModule,
-  BpmnJsDiagramModule,
-  MenuModule,
   WidgetModule,
 } from '@valtimo/components';
 import {
@@ -74,11 +69,7 @@ import {ProcessManagementModule} from '@valtimo/process-management';
 import {DecisionModule} from '@valtimo/decision';
 import {MilestoneModule} from '@valtimo/milestone';
 import {LoggerModule} from 'ngx-logger';
-import {
-  FORM_CUSTOM_COMPONENT_TOKEN,
-  FORM_FLOW_COMPONENT_TOKEN,
-  ProcessLinkModule,
-} from '@valtimo/process-link';
+import {FORM_CUSTOM_COMPONENT_TOKEN, FORM_FLOW_COMPONENT_TOKEN, ProcessLinkModule} from '@valtimo/process-link';
 import {MigrationModule} from '@valtimo/migration';
 import {BootstrapModule} from '@valtimo/bootstrap';
 import {
@@ -130,16 +121,13 @@ import {AccessControlManagementModule} from '@valtimo/access-control-management'
 import {FormFlowManagementModule} from '@valtimo/form-flow-management';
 import {CustomFormFlowComponent} from '@src/app/custom-form-flow-component/custom-form-flow.component';
 import {CaseMigrationModule} from '@valtimo/case-migration';
-import {
-  CaseDetailTabZaakobjectenComponent,
-  registerDocumentenApiFormioUploadComponent,
-  ZgwModule,
-} from '@valtimo/zgw';
+import {CaseDetailTabZaakobjectenComponent, registerDocumentenApiFormioUploadComponent, ZgwModule} from '@valtimo/zgw';
 import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
 import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
 import {IkoModule} from '@valtimo/iko';
+import {BuildingBlockManagementModule} from '@valtimo/building-block-management';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -235,6 +223,7 @@ export function tabsFactory() {
     WidgetModule,
     IkoPluginModule,
     IkoModule,
+    BuildingBlockManagementModule
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

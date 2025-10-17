@@ -1992,5 +1992,8 @@
     "rightClickTooltip": "Rechtsklick für Optionen",
     "deleteHelperText": "Nachdem Sie ein Schnellsuchelement erstellt haben, können Sie es mit einem Rechtsklick darauf löschen",
     "duplicateError": "Ein Schnellsuchobjekt mit diesem Titel existiert bereits"
+  },
+  "buildingBlockManagement": {
+    "title": "Baublöcke"
   }
 }

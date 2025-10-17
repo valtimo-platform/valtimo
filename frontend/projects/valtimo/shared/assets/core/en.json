@@ -1965,5 +1965,8 @@
     "rightClickTooltip": "Right-click for options",
     "deleteHelperText": "After creating a quick search item, you can delete it by right-clicking on it",
     "duplicateError": "A quick search item with this title already exists"
+  },
+  "buildingBlockManagement": {
+    "title": "Building blocks"
   }
 }

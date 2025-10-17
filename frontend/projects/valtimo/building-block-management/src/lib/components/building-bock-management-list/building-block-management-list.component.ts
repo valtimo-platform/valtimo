@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {Component} from '@angular/core';
+import {CommonModule} from '@angular/common';
 
-/*
- * Public API Surface of building-block-management
- */
 
-export * from './lib/building-block-management.module'
+@Component({
+  standalone: true,
+  selector: 'valtimo-building-block-management-list',
+  templateUrl: './building-block-management-list.component.html',
+  styleUrls: ['./building-block-management-list.component.scss'],
+  imports: [CommonModule]
+})
+export class BuildingBlockManagementListComponent {
+}
