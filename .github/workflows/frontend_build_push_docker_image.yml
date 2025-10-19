@@ -4,27 +4,17 @@ permissions:
   contents: read
 
 on:
-  pull_request:
-    branches:
-      - "next-minor"
-    types:
-      - synchronize
-    paths:
-      - frontend/**
-
-  push:
-    branches:
-      - "next-minor"
-    paths:
-      - frontend/**
-
-  workflow_dispatch:
-
   workflow_call:
+    inputs:
+      frontend_build_artifact_name:
+        required: true
+        description: Name of the frontend build artifact to download with 'download-artifact'
+        type: "string"
+
     outputs:
-      imageTag:
+      image_tag:
         description: "The Docker image tag"
-        value: ${{ jobs.build_image.outputs.imageTag }}
+        value: ${{ jobs.build_image.outputs.image_tag }}
 
 defaults:
   run:
@@ -34,21 +24,14 @@ env:
   NODE_VERSION: "20.x"
 
 jobs:
-  build_and_test:
-    uses: ./.github/workflows/frontend_build_test.yml
-    secrets: inherit
-
   build_image:
-    needs: [build_and_test]
     runs-on: ubuntu-latest
-    environment:
-      name: pr-test-environment
     permissions:
       contents: read
       packages: write
 
     outputs:
-      imageTag: ${{ steps.generate_tags.outputs.tags }}
+      image_tag: ${{ steps.generate_tags.outputs.tags }}
 
     steps:
       - name: Checkout repository
@@ -59,10 +42,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Download dist artifact
+      - name: Download libraries dist artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: ${{ inputs.frontend_build_artifact_name }}
           path: frontend/dist/
 
       - name: Move local devDependencies to dependencies and install

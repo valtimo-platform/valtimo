@@ -1,11 +1,9 @@
-name: "Create test environment"
+name: "Delete test environment"
 on:
-  workflow_call:
-    inputs:
-      envName:
-        description: "Environment name"
-        required: true
-        type: string
+  pull_request:
+    branches: ["next-minor"]
+    types:
+      - closed
   workflow_dispatch:
     inputs:
       envName:
@@ -19,11 +17,14 @@ permissions:
   packages: write
 
 jobs:
+  determine_test_env:
+    uses: ./.github/workflows/determine_test_env.yml
+
   create_test_environment:
+    needs: determine_test_env
     runs-on: ubuntu-latest
-    environment: pr-test-environment
     steps:
-      - name: Create test environment
+      - name: Delete test environment
         run: |
           curl -L \
             -X POST \
@@ -31,4 +32,4 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DISPATCH_URL }} \
-            -d '{"ref":"main","inputs":{"envName":"${{ inputs.envName }}"}}'
+            -d '{"ref":"main","inputs":{"envName":"${{ needs.determine_test_env.outputs.name }}"}}'

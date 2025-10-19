@@ -1,9 +1,11 @@
 name: "Create test environment for each new PR"
 on:
   pull_request:
-    branches: ["next-minor"]
+    branches:
+      - feature/create-test-env-on-pr
     types:
       - opened
+      - reopened
 
 permissions:
   actions: read
@@ -11,10 +13,14 @@ permissions:
   packages: write
 
 jobs:
+  determine_test_env:
+    uses: ./.github/workflows/determine_test_env.yml
+
   create_test_environment:
     name: pr-test-environment
+    needs: determine_test_env
     uses: ./.github/workflows/create_test_env.yml
 
     with:
-      envName: "pr-${{ github.event.number }}"
+      envName: ${{ needs.determine_test_env.outputs.name }}
     secrets: inherit

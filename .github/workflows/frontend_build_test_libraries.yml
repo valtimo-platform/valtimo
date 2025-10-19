@@ -1,4 +1,4 @@
-name: Frontend - build, lint and test
+name: Frontend - build libraries, lint and test
 
 permissions:
   contents: read
@@ -10,6 +10,11 @@ on:
         description: "The determined project version. Required for release-candidate and releases, not for snapshot"
         required: false
         type: string
+        default: ""
+    outputs:
+      build_artifact_name:
+        description: Build artifact this workflow produces that can be retrieved with the 'download-artifact' action
+        value: frontend-build-output
 
 defaults:
   run:
@@ -82,7 +87,7 @@ jobs:
 
           SEMVER_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
           PROJECT_VERSION="${SEMVER_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
-          
+
           echo "Version is ${PROJECT_VERSION}"
           echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
 
@@ -94,10 +99,10 @@ jobs:
           npm run copy-frontend-version
           npx ng build @valtimo/shared
 
-      - name: 'Retain build artifact: dist'
+      - name: "Retain build artifact: dist"
         uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: frontend-build-output
           path: frontend/dist
           retention-days: 1
 
