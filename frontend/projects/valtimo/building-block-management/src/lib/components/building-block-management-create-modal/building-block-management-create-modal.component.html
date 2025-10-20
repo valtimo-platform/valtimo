@@ -123,7 +123,7 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onCloseModal(true)">
+    <button cdsButton="primary" [disabled]="formGroup.invalid" (click)="onSave()">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>

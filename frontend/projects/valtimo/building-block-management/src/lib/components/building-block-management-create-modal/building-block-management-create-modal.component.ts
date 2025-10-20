@@ -39,6 +39,7 @@ import {
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
 import {BuildingBlockManagementService} from '../../services/building-block-management.service';
+import {BuildingBlockManagementApiService} from '../../services';
 
 @Component({
   standalone: true,
@@ -85,13 +86,31 @@ export class BuildingBlockManagementCreateModalComponent {
   }
 
   constructor(
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly buildingBlockManagementService: BuildingBlockManagementService,
     private readonly fb: FormBuilder
   ) {}
 
-  public onCloseModal(save = false): void {
+  public onCloseModal(): void {
     this.buildingBlockManagementService.hideCreateModal();
+    this.resetForm();
+  }
 
-    if (!save) runAfterCarbonModalClosed(() => this.formGroup.reset());
+  public onSave(): void {
+    this.formGroup.disable();
+
+    this.buildingBlockManagementApiService
+      .createBuildingBlockDefinition(this.formGroup.value)
+      .subscribe(() => {
+        this.buildingBlockManagementService.hideCreateModal();
+        this.resetForm();
+      });
+  }
+
+  private resetForm(): void {
+    runAfterCarbonModalClosed(() => {
+      this.formGroup.reset();
+      this.formGroup.enable();
+    });
   }
 }
