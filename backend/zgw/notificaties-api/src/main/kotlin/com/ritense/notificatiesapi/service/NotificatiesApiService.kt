@@ -22,21 +22,18 @@ import com.ritense.notificatiesapi.exception.AuthorizationException
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 
 @Service
 @SkipComponentScan
 class NotificatiesApiService(
-    private val applicationEventPublisher: ApplicationEventPublisher,
-    private val notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository
+    private val notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
+    private val inboundEventIntakeService: NotificatiesApiInboundEventIntakeService
 ) {
 
-    fun handle(notification: NotificatiesApiNotificationReceivedEvent) {
+    fun registerNotification(notification: NotificatiesApiNotificationReceivedEvent): Boolean {
         logger.debug { "Notification received: $notification" }
-        applicationEventPublisher.publishEvent(
-            notification
-        )
+        return inboundEventIntakeService.registerInboundNotification(notification)
     }
 
     fun findAbonnementSubscription(authHeader: String): NotificatiesApiAbonnementLink {

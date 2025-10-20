@@ -25,7 +25,6 @@ import com.ritense.notificatiesapi.service.NotificatiesApiService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
@@ -53,11 +52,11 @@ class NotificatiesApiResourceTest {
     @Test
     fun `send notification with success`() {
         doReturn(getAbonnementSubscrition()).whenever(notificatiesApiService).findAbonnementSubscription(any())
-        doNothing().whenever(notificatiesApiService).handle(any())
+        doReturn(true).whenever(notificatiesApiService).registerNotification(any())
         val result = notificatiesApiResource.handleNotification(createNotication(), "sdafads")
         assertEquals(HttpStatus.NO_CONTENT, result.statusCode)
         verify(notificatiesApiService, times(1)).findAbonnementSubscription(any())
-        verify(notificatiesApiService, times(1)).handle(any())
+        verify(notificatiesApiService, times(1)).registerNotification(any())
     }
 
     @Test
