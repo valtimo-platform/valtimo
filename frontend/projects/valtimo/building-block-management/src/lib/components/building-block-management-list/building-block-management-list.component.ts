@@ -17,7 +17,7 @@ import {Component, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CarbonListModule, ColumnConfig} from '@valtimo/components';
 import {BuildingBlockManagementApiService} from '../../services';
-import {tap} from 'rxjs';
+import {switchMap, tap} from 'rxjs';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
 import {BuildingBlockManagementCreateModalComponent} from '../building-block-management-create-modal/building-block-management-create-modal.component';
@@ -41,14 +41,13 @@ import {BuildingBlockManagementService} from '../../services/building-block-mana
 export class BuildingBlockManagementListComponent {
   public readonly $loading = signal<boolean>(true);
 
-  public readonly buildingBlockDefinitions$ = this.buildingBlockManagementApiService
-    .getBuildingBlockDefinitions()
-    .pipe(
-      tap(res => {
-        this.buildingBlockManagementService.setUsedKeys(res.map(item => item.key));
-        this.$loading.set(false);
-      })
-    );
+  public readonly buildingBlockDefinitions$ = this.buildingBlockManagementService.reload$.pipe(
+    switchMap(() => this.buildingBlockManagementApiService.getBuildingBlockDefinitions()),
+    tap(res => {
+      this.buildingBlockManagementService.setUsedKeys(res.map(item => item.key));
+      this.$loading.set(false);
+    })
+  );
 
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'title', label: 'buildingBlockManagement.listColumns.title'},
