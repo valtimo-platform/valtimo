@@ -2005,7 +2005,18 @@
       "description": "Fügen Sie einen Baublock hinzu, um zu beginnen"
     },
     "createDefinition": {
-      "modalTitle": "Baublock erstellen"
+      "modalTitle": "Baublock erstellen",
+      "title": "Titel",
+      "titleTooltip": "Der in der Interface sichtbare Name.",
+      "titlePlaceholder": "Titel eingeben",
+      "keyTitle": "Schlüssel",
+      "keyPlaceHolder": "Der Schlüssel wird hier automatisch generiert",
+      "version": "Version",
+      "versionTooltip": "Die Versionsbezeichnung, die in der Interface angezeigt wird.",
+      "versionPlaceholder": "Version eingeben",
+      "description": "Beschreibung",
+      "descriptionTooltip": "Eine kurze Beschreibung der Funktionalität, die der Baublock bietet.",
+      "descriptionPlaceholder": "Beschreibung eingeben"
     }
   }
 }

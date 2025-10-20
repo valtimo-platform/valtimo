@@ -2011,7 +2011,18 @@
       "description": "Voeg een bouwblok toe om te beginnen"
     },
     "createDefinition": {
-      "modalTitle": "Bouwblok aanmaken"
+      "modalTitle": "Bouwblok aanmaken",
+      "title": "Titel",
+      "titleTooltip": "De naam die in de interface zichtbaar is.",
+      "titlePlaceholder": "Titel invoeren",
+      "keyTitle": "Sleutel",
+      "keyPlaceHolder": "De sleutel wordt hier automatisch gegenereerd",
+      "version": "Versie",
+      "versionTooltip": "De versielabel die in de interface zichtbaar is.",
+      "versionPlaceholder": "Versie invoeren",
+      "description": "Beschrijving",
+      "descriptionTooltip": "Een korte beschrijving van de functionaliteit die het bouwblok biedt.",
+      "descriptionPlaceholder": "Beschrijving invoeren"
     }
   }
 }
