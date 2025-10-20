@@ -24,7 +24,7 @@ export class BuildingBlockManagementService {
   private readonly _usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly usedKeys$ = this._usedKeys$.asObservable();
   private readonly _reload$ = new BehaviorSubject<null>(null);
-  public readonly reload$ = this._usedKeys$.asObservable();
+  public readonly reload$ = this._reload$.asObservable();
 
   public showCreateModal(): void {
     this._showCreateModal$.next(true);

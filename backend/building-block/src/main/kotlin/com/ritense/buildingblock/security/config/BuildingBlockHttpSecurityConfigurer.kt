@@ -31,6 +31,9 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
             http.authorizeHttpRequests { requests ->
                 requests.requestMatchers(antMatcher(GET, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
                 requests.requestMatchers(antMatcher(POST, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
+                requests.requestMatchers(
+                    antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
+                ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

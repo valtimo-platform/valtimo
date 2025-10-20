@@ -15,12 +15,16 @@
  */
 import {Component, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CarbonListModule, ColumnConfig} from '@valtimo/components';
+import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
 import {switchMap, tap} from 'rxjs';
-import {ButtonModule, IconModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
 import {BuildingBlockManagementCreateModalComponent} from '../building-block-management-create-modal/building-block-management-create-modal.component';
+import {BuildingBlockDefinitionDto} from '@valtimo/shared';
+import {Upload16} from '@carbon/icons';
+import {Router} from '@angular/router';
+import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 
 @Component({
   standalone: true,
@@ -51,15 +55,34 @@ export class BuildingBlockManagementListComponent {
   public readonly FIELDS: ColumnConfig[] = [
     {key: 'title', label: 'buildingBlockManagement.listColumns.title'},
     {key: 'key', label: 'buildingBlockManagement.listColumns.key'},
-    {key: 'versionTag', label: 'buildingBlockManagement.listColumns.versionTag'},
+    {
+      key: 'versionTag',
+      label: 'buildingBlockManagement.listColumns.versionTag',
+      viewType: ViewType.TAGS,
+    },
   ];
 
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
-    private readonly buildingBlockManagementService: BuildingBlockManagementService
-  ) {}
+    private readonly buildingBlockManagementService: BuildingBlockManagementService,
+    private readonly iconService: IconService,
+    private readonly router: Router
+  ) {
+    this.iconService.registerAll([Upload16]);
+  }
 
   public showCreateModal(): void {
     this.buildingBlockManagementService.showCreateModal();
+  }
+
+  public onRowClick(buildingBlockDefinition: BuildingBlockDefinitionDto): void {
+    this.router.navigate([
+      '/building-block-management',
+      'building-block',
+      buildingBlockDefinition.key,
+      'version',
+      buildingBlockDefinition.versionTag,
+      BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL,
+    ]);
   }
 }

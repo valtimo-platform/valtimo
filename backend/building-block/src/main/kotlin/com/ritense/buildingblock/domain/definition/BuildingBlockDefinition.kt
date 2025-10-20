@@ -18,6 +18,7 @@ package com.ritense.buildingblock.domain.definition
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.repository.SemverConverter
 import com.ritense.valtimo.contract.serializer.SemverSerializer
@@ -53,4 +54,17 @@ data class BuildingBlockDefinition(
     val basedOnVersionTag: Semver? = null,
     @Column(name = "is_final")
     val final: Boolean = false,
-)
+) {
+    fun toDto(): BuildingBlockDefinitionDto {
+        return BuildingBlockDefinitionDto(
+            key = this.id.key,
+            versionTag = this.id.versionTag.toString(),
+            title = this.title,
+            description = this.description,
+            createdBy = this.createdBy,
+            createdDate = this.createdDate,
+            basedOnVersionTag = this.basedOnVersionTag?.toString(),
+            final = this.final
+        )
+    }
+}

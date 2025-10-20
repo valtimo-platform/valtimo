@@ -14,7 +14,84 @@
  * limitations under the License.
  */
 
-import {Injectable} from '@angular/core';
+import {Injectable, OnDestroy} from '@angular/core';
+import {
+  BehaviorSubject,
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
+import {ActivatedRoute} from '@angular/router';
+import {BuildingBlockManagementApiService} from './building-block-management-api.service';
+import {BuildingBlockDefinitionDto} from '@valtimo/shared';
+import {PageTitleService} from '@valtimo/components';
 
 @Injectable()
-export class BuildingBlockManagementDetailService {}
+export class BuildingBlockManagementDetailService implements OnDestroy {
+  private readonly _loadingDefinition$ = new BehaviorSubject<boolean>(true);
+  public get loadingDefinition$(): Observable<boolean> {
+    return this._loadingDefinition$.asObservable();
+  }
+  private readonly _routeSubject$ = new BehaviorSubject<ActivatedRoute | null>(null);
+  private get _route$() {
+    return this._routeSubject$.pipe(filter(route => route !== null));
+  }
+  public get buildingBlockDefinitionKey$(): Observable<string> {
+    return this._route$.pipe(
+      switchMap(route =>
+        route.paramMap.pipe(
+          map(params => params.get('buildingBlockDefinitionKey')!),
+          filter(key => !!key)
+        )
+      )
+    );
+  }
+  public get buildingBlockVersionTag$(): Observable<string> {
+    return this._route$.pipe(
+      switchMap(route =>
+        route.paramMap.pipe(
+          map(params => params.get('buildingBlockVersionTag')!),
+          filter(version => !!version)
+        )
+      )
+    );
+  }
+  private readonly _buildingBlockDefinition$ =
+    new BehaviorSubject<BuildingBlockDefinitionDto | null>(null);
+  public get buildingBlockDefinition$(): Observable<BuildingBlockDefinitionDto> {
+    return this._buildingBlockDefinition$.pipe(filter(definition => definition !== null));
+  }
+
+  constructor(
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
+    private readonly pageTitleService: PageTitleService
+  ) {
+    this._subscriptions.add(
+      combineLatest([this.buildingBlockDefinitionKey$, this.buildingBlockVersionTag$])
+        .pipe(
+          tap(() => this._loadingDefinition$.next(true)),
+          switchMap(([key, version]) =>
+            this.buildingBlockManagementApiService.getBuildingBlockDefinition(key, version)
+          ),
+          tap(res => {
+            this._buildingBlockDefinition$.next(res);
+            this.pageTitleService.setCustomPageTitle(res.title);
+            this._loadingDefinition$.next(false);
+          })
+        )
+        .subscribe()
+    );
+  }
+
+  public setRoute(route: ActivatedRoute): void {
+    this._routeSubject$.next(route);
+  }
+
+  private readonly _subscriptions = new Subscription();
+
+  public ngOnDestroy(): void {}
+}

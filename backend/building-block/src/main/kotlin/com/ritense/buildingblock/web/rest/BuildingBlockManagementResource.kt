@@ -26,6 +26,7 @@ import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF
 import org.semver4j.Semver
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -100,5 +101,16 @@ class BuildingBlockManagementResource(
         )
 
         return ResponseEntity.ok(savedDto)
+    }
+
+    @GetMapping("/{key}/version/{versionTag}")
+    fun getBuildingBlockDefinition(
+        @PathVariable key: String,
+        @PathVariable versionTag: String
+    ): ResponseEntity<BuildingBlockDefinitionDto> {
+        val id = BuildingBlockDefinitionId(key, versionTag)
+        val entity = buildingBlockDefinitionRepository.findById(id).orElse(null)
+        return entity?.let { ResponseEntity.ok(it.toDto()) }
+            ?: ResponseEntity.notFound().build()
     }
 }

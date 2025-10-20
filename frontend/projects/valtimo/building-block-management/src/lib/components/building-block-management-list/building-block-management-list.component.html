@@ -19,6 +19,7 @@
     [fields]="FIELDS"
     [items]="obs.buildingBlockDefinitions"
     [loading]="$loading()"
+    (rowClicked)="onRowClick($event)"
   >
     <ng-container
       carbonToolbarContent
