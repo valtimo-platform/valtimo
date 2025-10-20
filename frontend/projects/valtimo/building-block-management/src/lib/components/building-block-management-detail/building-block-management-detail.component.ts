@@ -17,8 +17,8 @@ import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CarbonListModule} from '@valtimo/components';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {BuildingBlockManagementService} from '../../services/building-block-management.service';
 import {ActivatedRoute} from '@angular/router';
+import {BuildingBlockManagementDetailService} from '../../services';
 
 @Component({
   standalone: true,
@@ -26,8 +26,13 @@ import {ActivatedRoute} from '@angular/router';
   templateUrl: './building-block-management-detail.component.html',
   styleUrls: ['./building-block-management-detail.component.scss'],
   imports: [CommonModule, CarbonListModule, ButtonModule, IconModule],
-  providers: [BuildingBlockManagementService],
+  providers: [BuildingBlockManagementDetailService],
 })
 export class BuildingBlockManagementDetailComponent {
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService
+  ) {
+    this.buildingBlockManagementDetailService.setRoute(this.route);
+  }
 }

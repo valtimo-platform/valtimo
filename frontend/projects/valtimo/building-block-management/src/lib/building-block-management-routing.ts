@@ -33,7 +33,11 @@ const routes: Routes = [
     path: 'building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockVersionTag/:tabKey',
     component: BuildingBlockManagementDetailComponent,
     canActivate: [AuthGuardService],
-    data: {title: 'buildingBlockManagement.detail.title', roles: [ROLE_ADMIN]},
+    data: {
+      title: 'buildingBlockManagement.detail.title',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+    },
   },
 ];
 
