@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-export * from './building-block-management-api.service';
-export * from './building-block-management-detail.service';
-export * from './building-block-management.service';
+const BUILDING_BLOCK_MANAGEMENT_TABS = {
+  GENERAL: 'general',
+  PROCESSES: 'processes',
+  DOCUMENT: 'document',
+} as const;
+
+export {BUILDING_BLOCK_MANAGEMENT_TABS};

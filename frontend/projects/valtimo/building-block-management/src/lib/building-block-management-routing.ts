@@ -20,6 +20,7 @@ import {CommonModule} from '@angular/common';
 import {AuthGuardService} from '@valtimo/security';
 import {ROLE_ADMIN} from '@valtimo/shared';
 import {BuildingBlockManagementListComponent} from './components/building-block-management-list/building-block-management-list.component';
+import {BuildingBlockManagementDetailComponent} from './components/building-block-management-detail/building-block-management-detail.component';
 
 const routes: Routes = [
   {
@@ -27,6 +28,12 @@ const routes: Routes = [
     component: BuildingBlockManagementListComponent,
     canActivate: [AuthGuardService],
     data: {title: 'buildingBlockManagement.title', roles: [ROLE_ADMIN]},
+  },
+  {
+    path: 'building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockVersionTag/:tabKey',
+    component: BuildingBlockManagementDetailComponent,
+    canActivate: [AuthGuardService],
+    data: {title: 'buildingBlockManagement.detail.title', roles: [ROLE_ADMIN]},
   },
 ];
 

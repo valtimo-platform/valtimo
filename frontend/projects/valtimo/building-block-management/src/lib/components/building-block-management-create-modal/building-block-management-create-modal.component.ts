@@ -38,9 +38,10 @@ import {
   TooltipIconModule,
   ValtimoCdsModalDirective,
 } from '@valtimo/components';
-import {BuildingBlockManagementService} from '../../services/building-block-management.service';
-import {BuildingBlockManagementApiService} from '../../services';
+import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
 import {catchError, of} from 'rxjs';
+import {Router} from '@angular/router';
+import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
 
 @Component({
   standalone: true,
@@ -89,7 +90,8 @@ export class BuildingBlockManagementCreateModalComponent {
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly buildingBlockManagementService: BuildingBlockManagementService,
-    private readonly fb: FormBuilder
+    private readonly fb: FormBuilder,
+    private readonly router: Router
   ) {}
 
   public onCloseModal(): void {
@@ -108,10 +110,15 @@ export class BuildingBlockManagementCreateModalComponent {
           return of(null);
         })
       )
-      .subscribe(() => {
-        this.buildingBlockManagementService.hideCreateModal();
-        this.buildingBlockManagementService.reload();
-        this.resetForm();
+      .subscribe(createdBuildingBlock => {
+        this.router.navigate([
+          '/building-block-management',
+          'building-block',
+          createdBuildingBlock.key,
+          'version',
+          createdBuildingBlock.versionTag,
+          BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL,
+        ]);
       });
   }
 
