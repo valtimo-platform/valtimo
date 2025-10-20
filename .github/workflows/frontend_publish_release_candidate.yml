@@ -16,6 +16,9 @@ jobs:
     outputs:
       project_version: ${{ steps.version.outputs.version_rc }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Compute version from branch
         id: version
         shell: bash
