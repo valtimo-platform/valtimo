@@ -40,6 +40,7 @@ import {
 } from '@valtimo/components';
 import {BuildingBlockManagementService} from '../../services/building-block-management.service';
 import {BuildingBlockManagementApiService} from '../../services';
+import {catchError, of} from 'rxjs';
 
 @Component({
   standalone: true,
@@ -101,8 +102,15 @@ export class BuildingBlockManagementCreateModalComponent {
 
     this.buildingBlockManagementApiService
       .createBuildingBlockDefinition(this.formGroup.value)
+      .pipe(
+        catchError(() => {
+          this.formGroup.enable();
+          return of(null);
+        })
+      )
       .subscribe(() => {
         this.buildingBlockManagementService.hideCreateModal();
+        this.buildingBlockManagementService.reload();
         this.resetForm();
       });
   }
