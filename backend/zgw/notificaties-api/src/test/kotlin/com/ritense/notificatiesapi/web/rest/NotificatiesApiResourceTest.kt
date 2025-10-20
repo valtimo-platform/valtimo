@@ -85,6 +85,8 @@ class NotificatiesApiResourceTest {
             kanaal = "",
             resourceUrl = "",
             actie = "",
+            hoofdObject = "",
+            aanmaakdatum = null,
             kenmerken = mapOf()
         )
     }
