@@ -35,22 +35,26 @@
     class="valtimo-definition-create__content"
     [cdsLayer]="1"
   >
-    <cds-label [invalid]="title.touched && title.invalid">
-      {{ 'buildingBlockManagement.createDefinition.title' | translate }}
+    <div class="cds--text-input__field-wrapper">
+      <cds-label [disabled]="formGroup.disabled" [invalid]="title.touched && title.invalid">
+        <span class="label-with-tooltip select-label">
+          {{ 'buildingBlockManagement.createDefinition.title' | translate }}
 
-      <cds-tooltip
-        [caret]="true"
-        [description]="'buildingBlockManagement.createDefinition.titleTooltip' | translate"
-      >
-        <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
-      </cds-tooltip>
+          <v-tooltip-icon
+            [tooltip]="'buildingBlockManagement.createDefinition.titleTooltip' | translate"
+            [disabled]="obs.disabled"
+          ></v-tooltip-icon>
+        </span>
 
-      <input
-        formControlName="title"
-        cdsText
-        placeholder="{{ 'buildingBlockManagement.createDefinition.titlePlaceholder' | translate }}"
-      />
-    </cds-label>
+        <input
+          formControlName="title"
+          cdsText
+          placeholder="{{
+            'buildingBlockManagement.createDefinition.titlePlaceholder' | translate
+          }}"
+        />
+      </cds-label>
+    </div>
 
     <valtimo-auto-key-input
       [cdsLayer]="1"
@@ -63,45 +67,55 @@
     >
     </valtimo-auto-key-input>
 
-    <cds-label [invalid]="versionTag.touched && versionTag.invalid">
-      {{ 'buildingBlockManagement.createDefinition.version' | translate }}
-
-      <cds-tooltip
-        [caret]="true"
-        [description]="'buildingBlockManagement.createDefinition.versionTooltip' | translate"
+    <div class="cds--text-input__field-wrapper">
+      <cds-label
+        [disabled]="formGroup.disabled"
+        [invalid]="versionTag.touched && versionTag.invalid"
       >
-        <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
-      </cds-tooltip>
+        <span class="label-with-tooltip select-label">
+          {{ 'buildingBlockManagement.createDefinition.version' | translate }}
 
-      <input
-        formControlName="versionTag"
-        cdsText
-        placeholder="{{
-          'buildingBlockManagement.createDefinition.versionPlaceholder' | translate
-        }}"
-      />
-    </cds-label>
+          <v-tooltip-icon
+            [tooltip]="'buildingBlockManagement.createDefinition.versionTooltip' | translate"
+            [disabled]="obs.disabled"
+          ></v-tooltip-icon>
+        </span>
 
-    <cds-textarea-label [invalid]="description.touched && description.invalid">
-      {{ 'buildingBlockManagement.createDefinition.description' | translate }}
+        <input
+          formControlName="versionTag"
+          cdsText
+          placeholder="{{
+            'buildingBlockManagement.createDefinition.versionPlaceholder' | translate
+          }}"
+        />
+      </cds-label>
+    </div>
 
-      <cds-tooltip
-        [caret]="true"
-        [description]="'buildingBlockManagement.createDefinition.descriptionTooltip' | translate"
+    <div class="cds--text-input__field-wrapper">
+      <cds-label
+        [disabled]="formGroup.disabled"
+        [invalid]="description.touched && description.invalid"
       >
-        <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
-      </cds-tooltip>
+        <span class="label-with-tooltip select-label">
+          {{ 'buildingBlockManagement.createDefinition.description' | translate }}
 
-      <textarea
-        cdsTextArea
-        formControlName="description"
-        placeholder="{{
-          'buildingBlockManagement.createDefinition.descriptionPlaceholder' | translate
-        }}"
-        [rows]="3"
-        [cols]="150"
-      ></textarea>
-    </cds-textarea-label>
+          <v-tooltip-icon
+            [tooltip]="'buildingBlockManagement.createDefinition.descriptionTooltip' | translate"
+            [disabled]="obs.disabled"
+          ></v-tooltip-icon>
+        </span>
+
+        <textarea
+          cdsTextArea
+          formControlName="description"
+          placeholder="{{
+            'buildingBlockManagement.createDefinition.descriptionPlaceholder' | translate
+          }}"
+          [rows]="3"
+          [cols]="150"
+        ></textarea>
+      </cds-label>
+    </div>
   </form>
 
   <cds-modal-footer>

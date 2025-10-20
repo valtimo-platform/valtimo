@@ -1978,7 +1978,18 @@
       "description": "Add a building block to get started"
     },
     "createDefinition": {
-      "modalTitle": "Create building block"
+      "modalTitle": "Create building block",
+      "title": "Title",
+      "titleTooltip": "The name that is visible in the interface.",
+      "titlePlaceholder": "Enter title",
+      "keyTitle": "Key",
+      "keyPlaceHolder": "The key is generated here automatically",
+      "version": "Version",
+      "versionTooltip": "The version label that is shown in the interface.",
+      "versionPlaceholder": "Enter version",
+      "description": "Description",
+      "descriptionTooltip": "A short description of the functionality the building block offers.",
+      "descriptionPlaceholder": "Enter description"
     }
   }
 }

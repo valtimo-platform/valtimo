@@ -22,8 +22,25 @@
   }
 }
 
-:host ::ng-deep .cds--label {
+.cds--text-input__field-wrapper {
+  cds-label {
+    width: 100%;
+  }
+
+  ::ng-deep.cds--label {
+    width: 100%;
+  }
+
+  &:not(:last-child) {
+    margin-bottom: 16px;
+  }
+}
+
+.label-with-tooltip {
   display: flex;
   align-items: center;
-  gap: 12px;
+}
+
+.select-label {
+  padding-bottom: 8px;
 }

@@ -32,7 +32,12 @@ import {
   Validators,
 } from '@angular/forms';
 import {TranslatePipe} from '@ngx-translate/core';
-import {AutoKeyInputComponent, ValtimoCdsModalDirective} from '@valtimo/components';
+import {
+  AutoKeyInputComponent,
+  runAfterCarbonModalClosed,
+  TooltipIconModule,
+  ValtimoCdsModalDirective,
+} from '@valtimo/components';
 import {BuildingBlockManagementService} from '../../services/building-block-management.service';
 
 @Component({
@@ -53,6 +58,7 @@ import {BuildingBlockManagementService} from '../../services/building-block-mana
     ValtimoCdsModalDirective,
     AutoKeyInputComponent,
     LayerModule,
+    TooltipIconModule,
   ],
 })
 export class BuildingBlockManagementCreateModalComponent {
@@ -85,5 +91,7 @@ export class BuildingBlockManagementCreateModalComponent {
 
   public onCloseModal(save = false): void {
     this.buildingBlockManagementService.hideCreateModal();
+
+    if (!save) runAfterCarbonModalClosed(() => this.formGroup.reset());
   }
 }
