@@ -16,12 +16,11 @@
 import {Component, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CarbonListModule, ColumnConfig} from '@valtimo/components';
-import {BuildingBlockManagementApiService} from '../../services';
+import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
 import {switchMap, tap} from 'rxjs';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
 import {BuildingBlockManagementCreateModalComponent} from '../building-block-management-create-modal/building-block-management-create-modal.component';
-import {BuildingBlockManagementService} from '../../services/building-block-management.service';
 
 @Component({
   standalone: true,
