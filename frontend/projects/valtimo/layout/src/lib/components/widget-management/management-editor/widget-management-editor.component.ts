@@ -15,6 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Inject, Input, signal} from '@angular/core';
+import {toObservable} from '@angular/core/rxjs-interop';
 import {DragVertical16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -41,6 +42,7 @@ import {
   WidgetWidth,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
+  WidgetWizardStep,
 } from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {WidgetManagementDividerModalComponent} from '../management-divider-modal/widget-management-divider-modal.component';
@@ -64,6 +66,7 @@ import {WidgetManagementWizardComponent} from '../management-wizard/widget-manag
   ],
 })
 export class WidgetManagementEditorComponent {
+  @Input() public enableWidgetDivider = true;
   @Input() public set params(value: any) {
     if (!value) return;
     this.widgetManagementService.initParams(value);
@@ -71,11 +74,6 @@ export class WidgetManagementEditorComponent {
   @Input() public set availableWidgetTypes(value: WidgetType[]) {
     if (!value) return;
     this.widgetWizardService.$availableWidgetTypes.set(value);
-  }
-
-  public readonly disableWidthStep$ = new BehaviorSubject<boolean>(false);
-  @Input() public set disableWidthStep(value: boolean) {
-    this.disableWidthStep$.next(value);
   }
 
   public readonly disableDuplicate$ = new BehaviorSubject<boolean>(false);
@@ -92,17 +90,11 @@ export class WidgetManagementEditorComponent {
     this.widgetWizardService.setDefaultWidth(value);
   }
 
-  public readonly disableTitleInput$ = new BehaviorSubject<boolean>(false);
-  @Input() public set disableTitleInput(value: boolean) {
-    this.disableTitleInput$.next(value);
-  }
-
   public readonly fields$: Observable<ColumnConfig[]> = combineLatest([
     this.singleWidget$,
-    this.disableWidthStep$,
-    this.disableTitleInput$,
+    toObservable(this.widgetWizardService.$disableTitleInput),
   ]).pipe(
-    map(([singleWidget, disableWidthStep, disableTitleInput]) => [
+    map(([singleWidget, disableTitleInput]) => [
       ...(!disableTitleInput
         ? [
             {
@@ -126,7 +118,7 @@ export class WidgetManagementEditorComponent {
             },
           ]
         : []),
-      ...(!disableWidthStep
+      ...(this.widgetWizardService.$widgetWizardSteps().includes(WidgetWizardStep.WIDTH)
         ? [
             {
               key: 'widthTranslation',
@@ -187,7 +179,7 @@ export class WidgetManagementEditorComponent {
         widthTranslation: this.translateService.instant(this.getWidthTranslationKey(item.width)),
         tags: [
           {
-            content: this.translateService.instant(`widgetTabManagement.types.${item.type}.title`),
+            content: this.translateService.instant(`widgetTabManagement.type.${item.type}.title`),
             type: WidgetTypeTags[item.type],
           },
         ],

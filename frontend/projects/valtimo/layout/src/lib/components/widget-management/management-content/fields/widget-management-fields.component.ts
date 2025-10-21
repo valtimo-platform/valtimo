@@ -29,7 +29,6 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
   CARBON_THEME,
@@ -39,10 +38,10 @@ import {
 } from '@valtimo/components';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
 import {debounceTime, map, Subscription} from 'rxjs';
-import {WidgetManagementFieldsColumnComponent} from './column/widget-management-fields-column.component';
 import {IWidgetContentComponent} from '../../../../interfaces';
-import {WidgetWizardService} from '../../../../services';
 import {FieldsWidgetValue, WidgetFieldsContent} from '../../../../models';
+import {WidgetWizardService} from '../../../../services';
+import {WidgetManagementFieldsColumnComponent} from './column/widget-management-fields-column.component';
 
 @Component({
   templateUrl: './widget-management-fields.component.html',
@@ -101,7 +100,6 @@ export class WidgetManagementFieldsComponent
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
-    private readonly route: ActivatedRoute,
     private readonly widgetWizardService: WidgetWizardService
   ) {}
 
@@ -114,6 +112,9 @@ export class WidgetManagementFieldsComponent
     );
     const widgetContent = (this.widgetWizardService.$widgetContent() as WidgetFieldsContent)
       ?.columns;
+
+    if (this.widgetWizardService.$disableTitleInput()) this.hideTitleInput();
+
     if (!widgetContent) return;
 
     this.$columns.set(Object.keys(widgetContent).map(() => null));
@@ -190,17 +191,13 @@ export class WidgetManagementFieldsComponent
     this.changeValidEvent.emit(event.valid && this.form.valid);
   }
 
-  public setTitleInputVisible(visible: boolean): void {
-    this.$showTitleInput.set(visible);
+  private hideTitleInput(): void {
+    this.$showTitleInput.set(false);
 
     const ctrl: AbstractControl | null = this.form.get('widgetTitle');
     if (!ctrl) return;
 
-    if (visible) {
-      ctrl.addValidators(Validators.required);
-    } else {
-      ctrl.clearValidators();
-    }
+    ctrl.clearValidators();
 
     ctrl.updateValueAndValidity({emitEvent: false});
 
