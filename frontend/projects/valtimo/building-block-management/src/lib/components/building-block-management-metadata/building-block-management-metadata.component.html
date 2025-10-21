@@ -14,8 +14,73 @@
   ~ limitations under the License.
   -->
 
-<div class="building-block-management-metadata">
+<form class="building-block-management-metadata" [formGroup]="formGroup" [cdsLayer]="1">
   <h4 class="building-block-management-metadata__title">
     {{ 'buildingBlockManagement.metadata.title' | translate }}
   </h4>
-</div>
+
+  <div class="cds--text-input__field-wrapper">
+    <cds-label [disabled]="formGroup.disabled" [invalid]="title.touched && title.invalid">
+      <span class="label-with-tooltip select-label">
+        {{ 'buildingBlockManagement.createDefinition.title' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'buildingBlockManagement.createDefinition.titleTooltip' | translate"
+          [disabled]="formGroup.disabled"
+        ></v-tooltip-icon>
+      </span>
+
+      <input
+        formControlName="title"
+        cdsText
+        placeholder="{{ 'buildingBlockManagement.createDefinition.titlePlaceholder' | translate }}"
+      />
+    </cds-label>
+  </div>
+
+  <div class="cds--text-input__field-wrapper">
+    <cds-label [disabled]="formGroup.disabled">
+      <span class="label-with-tooltip select-label">
+        {{ 'buildingBlockManagement.createDefinition.keyTitle' | translate }}
+      </span>
+
+      <input formControlName="key" cdsText valtimoReadOnly [isReadOnly]="true" />
+    </cds-label>
+  </div>
+
+  <div class="cds--text-input__field-wrapper">
+    <cds-label
+      [disabled]="formGroup.disabled"
+      [invalid]="description.touched && description.invalid"
+    >
+      <span class="label-with-tooltip select-label">
+        {{ 'buildingBlockManagement.createDefinition.description' | translate }}
+
+        <v-tooltip-icon
+          [tooltip]="'buildingBlockManagement.createDefinition.descriptionTooltip' | translate"
+          [disabled]="formGroup.disabled"
+        ></v-tooltip-icon>
+      </span>
+
+      <textarea
+        cdsTextArea
+        formControlName="description"
+        placeholder="{{
+          'buildingBlockManagement.createDefinition.descriptionPlaceholder' | translate
+        }}"
+        [rows]="3"
+        [cols]="150"
+      ></textarea>
+    </cds-label>
+  </div>
+
+  <div class="building-block-management-metadata__buttons">
+    <button
+      cdsButton="primary"
+      [disabled]="formGroup.disabled || formGroup.invalid || formGroup.pristine"
+      (click)="onSave()"
+    >
+      {{ 'interface.save' | translate }}
+    </button>
+  </div>
+</form>

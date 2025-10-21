@@ -19,11 +19,41 @@
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background-color: var(--cds-layer);
+  background-color: var(--cds-layer-01);
+  max-width: 625px;
 
   &__title {
     font-size: 16px;
     line-height: 24px;
     font-weight: 600;
   }
+
+  &__buttons {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+  }
+}
+
+.cds--text-input__field-wrapper {
+  cds-label {
+    width: 100%;
+  }
+
+  ::ng-deep.cds--label {
+    width: 100%;
+  }
+
+  &:not(:last-child) {
+    margin-bottom: 16px;
+  }
+}
+
+.label-with-tooltip {
+  display: flex;
+  align-items: center;
+}
+
+.select-label {
+  padding-bottom: 8px;
 }

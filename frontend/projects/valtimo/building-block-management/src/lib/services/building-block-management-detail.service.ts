@@ -41,22 +41,34 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
   private get _route$() {
     return this._routeSubject$.pipe(filter(route => route !== null));
   }
+
+  private _buildingBlockDefinitionKey!: string;
+  public get buildingBlockDefinitionKey(): string {
+    return this._buildingBlockDefinitionKey;
+  }
   public get buildingBlockDefinitionKey$(): Observable<string> {
     return this._route$.pipe(
       switchMap(route =>
         route.paramMap.pipe(
           map(params => params.get('buildingBlockDefinitionKey')!),
-          filter(key => !!key)
+          filter(key => !!key),
+          tap(key => (this._buildingBlockDefinitionKey = key))
         )
       )
     );
+  }
+
+  private _buildingBlockVersionTag!: string;
+  public get buildingBlockVersionTag(): string {
+    return this._buildingBlockVersionTag;
   }
   public get buildingBlockVersionTag$(): Observable<string> {
     return this._route$.pipe(
       switchMap(route =>
         route.paramMap.pipe(
           map(params => params.get('buildingBlockVersionTag')!),
-          filter(version => !!version)
+          filter(version => !!version),
+          tap(version => (this._buildingBlockVersionTag = version))
         )
       )
     );
@@ -78,13 +90,19 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
     return this._buildingBlockDefinition$.pipe(filter(definition => definition !== null));
   }
 
+  private readonly _reload$ = new BehaviorSubject<null>(null);
+
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly pageTitleService: PageTitleService,
     private readonly router: Router
   ) {
     this._subscriptions.add(
-      combineLatest([this.buildingBlockDefinitionKey$, this.buildingBlockVersionTag$])
+      combineLatest([
+        this.buildingBlockDefinitionKey$,
+        this.buildingBlockVersionTag$,
+        this._reload$,
+      ])
         .pipe(
           tap(() => this._loadingDefinition$.next(true)),
           switchMap(([key, version]) =>
@@ -121,5 +139,9 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
         tabKey,
       ]);
     });
+  }
+
+  public reload(): void {
+    this._reload$.next(null);
   }
 }

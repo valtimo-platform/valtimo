@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-10-17 15:14:37.
+// Generated using typescript-generator version 3.2.1263 on 2025-10-21 16:03:51.
 
 export interface BuildingBlockDefinitionDto {
     key: string;
@@ -16,6 +16,11 @@ export interface BuildingBlockDefinitionDto {
 export interface CreateBuildingBlockDefinitionDto {
     key: string;
     versionTag: string;
+    title: string;
+    description: string | null;
+}
+
+export interface UpdateBuildingBlockDefinitionDto {
     title: string;
     description: string | null;
 }
@@ -617,9 +622,9 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
+    processDefinitionId: string;
     activityId: string;
 }
 
@@ -630,9 +635,9 @@ export interface ProcessLinkExportResponseDto {
 }
 
 export interface ProcessLinkResponseDto {
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
+    processDefinitionId: string;
     activityId: string;
     id: string;
 }
@@ -789,8 +794,8 @@ export interface TaskCompletionDTO {
 export interface WidgetDto {
     type: string;
     highContrast: boolean;
-    title: string;
     width: number;
+    title: string;
     key: string;
     actions: WidgetAction[];
 }
@@ -832,8 +837,8 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processDefinitionId: string;
     activityId: string;
 }
 
@@ -908,9 +913,9 @@ export interface OperatonTaskDto {
 }
 
 export interface FormField {
-    businessKey: boolean;
-    label: string;
     validationConstraints: FormFieldValidationConstraint[];
+    label: string;
+    businessKey: boolean;
     value: TypedValue;
     typeName: string;
     properties: { [index: string]: string };
@@ -940,26 +945,26 @@ export interface ProcessDefinitionDto {
 }
 
 export interface HistoricActivityInstance {
-    executionId: string;
-    processInstanceId: string;
-    processDefinitionId: string;
-    activityType: string;
-    tenantId: string;
-    activityId: string;
-    assignee: string;
-    canceled: boolean;
-    removalTime: DateAsString;
-    activityName: string;
-    durationInMillis: number;
-    completeScope: boolean;
-    endTime: DateAsString;
-    taskId: string;
-    startTime: DateAsString;
     processDefinitionKey: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
+    activityName: string;
+    durationInMillis: number;
+    completeScope: boolean;
+    processInstanceId: string;
     rootProcessInstanceId: string;
+    activityType: string;
+    processDefinitionId: string;
+    startTime: DateAsString;
+    endTime: DateAsString;
+    taskId: string;
+    assignee: string;
+    tenantId: string;
+    executionId: string;
+    activityId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
     id: string;
 }
 

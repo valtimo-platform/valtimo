@@ -13,19 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {BuildingBlockManagementDetailService} from '../../services';
 
-@Component({
-  standalone: true,
-  selector: 'valtimo-building-block-management-processes',
-  templateUrl: './building-block-management-processes.component.html',
-  styleUrls: ['./building-block-management-processes.component.scss'],
-  imports: [CommonModule],
-})
-export class BuildingBlockManagementProcessesComponent {
-  constructor(
-    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService
-  ) {}
-}
+package com.ritense.buildingblock.web.rest.dto
+
+data class UpdateBuildingBlockDefinitionDto(
+    val title: String,
+    val description: String?
+)

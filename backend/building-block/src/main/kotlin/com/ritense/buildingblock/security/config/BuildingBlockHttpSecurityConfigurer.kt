@@ -22,6 +22,7 @@ import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationE
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
+import org.springframework.http.HttpMethod.PUT
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
@@ -33,6 +34,9 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                 requests.requestMatchers(antMatcher(POST, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
                 requests.requestMatchers(
                     antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
+                ).hasAuthority(ADMIN)
+                requests.requestMatchers(
+                    antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
                 ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {

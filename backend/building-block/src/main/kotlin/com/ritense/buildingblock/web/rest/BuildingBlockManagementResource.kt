@@ -20,6 +20,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -27,6 +28,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -65,5 +67,15 @@ class BuildingBlockManagementResource(
         val entity = buildingBlockDefinitionRepository.findById(id).orElse(null)
         return entity?.let { ResponseEntity.ok(it.toDto()) }
             ?: ResponseEntity.notFound().build()
+    }
+
+    @PutMapping("/{key}/version/{versionTag}", consumes = [APPLICATION_JSON_UTF8_VALUE])
+    fun updateBuildingBlockDefinition(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @RequestBody dto: UpdateBuildingBlockDefinitionDto
+    ): ResponseEntity<BuildingBlockDefinitionDto> {
+        val updated = buildingBlockManagementService.update(key, versionTag, dto)
+        return updated?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 }

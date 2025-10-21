@@ -22,6 +22,7 @@ import {
   ConfigService,
   CreateBuildingBlockDefinitionDto,
   InterceptorSkip,
+  UpdateBuildingBlockDefinitionDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
 
@@ -64,6 +65,17 @@ export class BuildingBlockManagementApiService extends BaseApiService {
   ): Observable<BuildingBlockDefinitionDto> {
     return this.httpClient.get<BuildingBlockDefinitionDto>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}`)
+    );
+  }
+
+  public updateBuildingBlockDefinition(
+    key: string,
+    versionTag: string,
+    dto: UpdateBuildingBlockDefinitionDto
+  ): Observable<BuildingBlockDefinitionDto> {
+    return this.httpClient.put<BuildingBlockDefinitionDto>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}`),
+      dto
     );
   }
 }

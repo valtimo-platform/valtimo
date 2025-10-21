@@ -30,7 +30,6 @@ import {BuildingBlockManagementMetadataComponent} from '../building-block-manage
     MuuriItemComponent,
     BuildingBlockManagementMetadataComponent,
   ],
-  providers: [BuildingBlockManagementDetailService],
 })
 export class BuildingBlockManagementGeneralComponent {
   constructor(
