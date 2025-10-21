@@ -46,13 +46,14 @@
       labelTranslationKey="ikoManagement.keyTitle"
       placeholderTranslationKey="ikoManagement.tabKeyPlaceholder"
       [usedKeys]="usedKeys"
-      [sourceText]="title.value"
+      [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
       [mode]="modalMode"
     >
     </valtimo-auto-key-input>
 
     <v-select
       [invalid]="type.dirty && type.invalid"
+      [dropUp]="false"
       formControlName="type"
       [items]="tabTypeSelectItems"
       titleTranslationKey="ikoManagement.tabTypeTitle"

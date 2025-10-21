@@ -14,22 +14,14 @@
   ~ limitations under the License.
   -->
 
-<ng-container
-  *ngIf="{tabs: tabs$ | async, activeTabKey: activeTabKey$ | async} as obs"
-  renderInPageHeader
->
-  <ng-template>
-    <cds-tabs class="valtimo-iko-details">
-      @for (tab of obs.tabs; track tab.key) {
-        <cds-tab
-          [active]="obs.activeTabKey === tab.key"
-          [heading]="tab.title"
-          (selected)="onTabSelected(tab)"
-        >
-        </cds-tab>
-      }
-    </cds-tabs>
-  </ng-template>
-</ng-container>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 
-<ng-container #content></ng-container>
+    <changeSet author="Ritense" id="1">
+        <createIndex indexName="idx_json_schema_document_case_status_key" tableName="json_schema_document">
+            <column name="internal_case_status_key"/>
+            <column name="ics_case_definition_key"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

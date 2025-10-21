@@ -66,23 +66,26 @@ tasks.register("integrationTestingPostgresql", Test) {
 
 tasks.register("integrationTestingMysql", Test) {
     group = 'verification'
+    description = 'Runs MySQL-based integration tests.'
     systemProperty("spring.profiles.include", "inttest,mysql")
     useJUnitPlatform {
         includeTags "integration"
         excludeTags "security"
     }
+
     mustRunAfter check
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
 
     doFirst {
         def mockitoAgent = configurations.testRuntimeClasspath.find {
-          it.name.contains('mockito-core')
+            it.name.contains('mockito-core')
         }
         if (mockitoAgent) {
-          jvmArgs "-javaagent:${mockitoAgent.absolutePath}"
+            jvmArgs "-javaagent:${mockitoAgent.absolutePath}"
         }
     }
+
     doLast {
         composeDownForced
     }

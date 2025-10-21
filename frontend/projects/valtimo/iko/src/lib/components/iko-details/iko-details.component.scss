@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-::ng-deep.cds--tab-content {
-  display: none;
-}
-
 ::ng-deep.page-actions {
   margin-left: unset !important;
+}
+
+.valtimo-iko-details {
+  ::ng-deep.cds--tab-content {
+    display: none;
+  }
 }

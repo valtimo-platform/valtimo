@@ -76,7 +76,6 @@ class AuthorizationAutoConfiguration(
         mappers: List<AuthorizationEntityMapper<*, *>>,
         actionProviders: List<ResourceActionProvider<*>>,
         permissionRepository: PermissionRepository,
-        roleRepository: RoleRepository,
         userManagementService: UserManagementService
     ): AuthorizationService {
         val authorizationService = ValtimoAuthorizationService(

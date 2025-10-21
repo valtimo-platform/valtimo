@@ -126,21 +126,23 @@
             "notificatiesApiPluginConfiguration": "bb1c601b-b257-497e-bab0-c21d339335d7",
             "processToStart": "create-zaakdossier",
             "rsin": "051845623",
-            "verzoekProperties": [{
-                "type": "bezwaar",
-                "caseDefinitionKey": "bezwaar",
-                "processDefinitionKey": "bezwaar",
-                "objectManagementId": "29400564-d25f-491c-abb2-afc42894ac9d",
-                "initiatorRoltypeUrl": "${VALTIMO_CATALOGI_API_URL}roltypen/1c359a1b-c38d-47b8-bed5-994db88ead61",
-                "initiatorRolDescription": "Initiator",
-                "copyStrategy": "specified",
-                "mapping": [
-                    {
-                        "source": "zaakobjecten.0.objecttype",
-                        "target": "doc:zaakobjecten.0.objecttype"
-                    }
-                ]
-            }]
+            "verzoekProperties": [
+                {
+                    "type": "bezwaar",
+                    "caseDefinitionKey": "bezwaar",
+                    "processDefinitionKey": "bezwaar",
+                    "objectManagementId": "29400564-d25f-491c-abb2-afc42894ac9d",
+                    "initiatorRoltypeUrl": "${VALTIMO_CATALOGI_API_URL}roltypen/1c359a1b-c38d-47b8-bed5-994db88ead61",
+                    "initiatorRolDescription": "Initiator",
+                    "copyStrategy": "specified",
+                    "mapping": [
+                        {
+                            "source": "zaakobjecten.0.objecttype",
+                            "target": "doc:zaakobjecten.0.objecttype"
+                        }
+                    ]
+                }
+            ]
         }
     },
     {
