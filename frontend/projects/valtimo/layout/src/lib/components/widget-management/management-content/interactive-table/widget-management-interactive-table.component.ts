@@ -81,7 +81,10 @@ export class WidgetManagementInteractiveTableComponent
         value: action.navigateTo,
       })) as MultiInputValues) ?? []
     ),
-    rowClickAction: this.fb.control<string>(''),
+    rowClickAction: this.fb.control<string>(
+      (this.widgetWizardService.$widgetContent() as WidgetInteractiveTableContent)?.rowClickAction
+        ?.navigateTo ?? ''
+    ),
   });
 
   public get actionsControl(): FormArray {

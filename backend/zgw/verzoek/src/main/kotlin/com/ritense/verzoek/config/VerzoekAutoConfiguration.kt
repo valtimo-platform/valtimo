@@ -25,6 +25,7 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.ProcessDocumentService
+import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.VerzoekPluginEventListener
 import com.ritense.verzoek.VerzoekPluginFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -40,13 +41,15 @@ class VerzoekAutoConfiguration {
         pluginService: PluginService,
         caseDefinitionService: CaseDefinitionService,
         documentDefinitionService: JsonSchemaDocumentDefinitionService,
-        objectManagementService: ObjectManagementService
+        objectManagementService: ObjectManagementService,
+        applicationStateService: ApplicationStateService,
     ): VerzoekPluginFactory {
         return VerzoekPluginFactory(
             pluginService,
             caseDefinitionService,
             documentDefinitionService,
-            objectManagementService
+            objectManagementService,
+            applicationStateService,
         )
     }
 
