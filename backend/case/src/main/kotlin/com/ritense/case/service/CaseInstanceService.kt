@@ -54,8 +54,8 @@ class CaseInstanceService(
 
         return documentSearchService.search(caseDefinitionName, searchRequest, newPageable)
             .let {
-                val caseSettings = caseDefinitionService.getCaseSettings(caseDefinitionName)
-                it.map { document -> toCaseListRowDto(document, caseListColumns, caseSettings) }
+                val caseSettingsSupplier = lazySupplier { caseDefinitionService.getCaseSettings(caseDefinitionName) }
+                it.map { document -> toCaseListRowDto(document, caseListColumns, caseSettingsSupplier) }
             }
     }
 
@@ -72,7 +72,7 @@ class CaseInstanceService(
     private fun toCaseListRowDto(
         document: Document,
         caseListColumns: List<CaseListColumn>,
-        caseSettings: CaseDefinitionSettings
+        caseSettingsSupplier: () -> CaseDefinitionSettings
     ): CaseListRowDto {
         val paths = caseListColumns.map { it.path }
         val resolvedValuesMap = valueResolverService.resolveValues(document.id().id.toString(), paths)
@@ -81,11 +81,16 @@ class CaseInstanceService(
             CaseListRowDto.CaseListItemDto(caseListColumn.id.key, resolvedValuesMap[caseListColumn.path])
         }.toMutableList()
 
-        if (items.none { it.key == "assigneeFullName"} && caseSettings.canHaveAssignee) {
+        if (items.none { it.key == "assigneeFullName"} && caseSettingsSupplier().canHaveAssignee) {
             items.add(CaseListRowDto.CaseListItemDto("assigneeFullName", document.assigneeFullName()))
         }
 
         return CaseListRowDto(document.id().toString(), items)
     }
 
+    private fun <T> lazySupplier(delegate: () -> T) = object : () -> T {
+        private val value by lazy(delegate)
+
+        override fun invoke() = value
+    }
 }
