@@ -26,7 +26,7 @@
   (rowClicked)="editWidget($event)"
 >
   <ng-container carbonToolbarContent>
-    <button cdsButton="ghost" (click)="openAddDividerModal()">
+    <button *ngIf="enableWidgetDivider" cdsButton="ghost" (click)="openAddDividerModal()">
       {{ 'widgetTabManagement.list.addDivider' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="drag--vertical" size="16"></svg>
@@ -75,9 +75,7 @@
 <valtimo-widget-management-wizard
   [editMode]="$isEditMode()"
   [open]="$isWizardOpen()"
-  [disableWidthStep]="disableWidthStep$ | async"
   [disableDuplicate]="disableDuplicate$ | async"
-  [disableTitleInput]="disableTitleInput$ | async"
   (closeEvent)="onCloseEvent($event)"
 ></valtimo-widget-management-wizard>
 

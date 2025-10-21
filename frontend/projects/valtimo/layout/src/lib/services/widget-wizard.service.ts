@@ -13,16 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {computed, Injectable, Signal, signal, WritableSignal} from '@angular/core';
 
-import {
-  computed,
-  Injectable,
-  Injector,
-  runInInjectionContext,
-  Signal,
-  signal,
-  WritableSignal,
-} from '@angular/core';
 import {
   BasicWidget,
   WidgetAction,
@@ -32,14 +24,15 @@ import {
   WidgetType,
   WidgetTypeSelection,
   WidgetWidth,
+  WidgetWizardStep,
 } from '../models';
-import {Observable} from 'rxjs';
-import {toObservable} from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
 })
 export class WidgetWizardService {
+  public readonly $currentStepIndex: WritableSignal<number> = signal(0);
+
   public readonly $selectedWidget: WritableSignal<WidgetTypeSelection | null> = signal(null);
 
   public readonly $widgetWidth: WritableSignal<WidgetWidth | null> = signal(null);
@@ -55,6 +48,49 @@ export class WidgetWizardService {
   public readonly $widgetActions: WritableSignal<WidgetAction[] | undefined> = signal(undefined);
 
   public readonly $widgetContext: WritableSignal<WidgetContext | null> = signal(null);
+
+  public readonly $widgetContentValid: WritableSignal<boolean> = signal(false);
+
+  public readonly $disableTitleInput: WritableSignal<boolean> = signal(false);
+
+  public readonly $widgetWizardSteps: WritableSignal<WidgetWizardStep[]> = signal([
+    WidgetWizardStep.TYPE,
+    WidgetWizardStep.WIDTH,
+    WidgetWizardStep.STYLE,
+    WidgetWizardStep.CONTENT,
+  ]);
+
+  public readonly $editMode: WritableSignal<boolean> = signal(false);
+
+  private readonly _$stepCompleteCondition: Signal<Record<WidgetWizardStep, boolean>> = computed(
+    () => ({
+      [WidgetWizardStep.TYPE]: !!this.$selectedWidget()?.type,
+      [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
+      [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
+      [WidgetWizardStep.CONTENT]: !!this.$widgetContent(),
+    })
+  );
+
+  public readonly $widgetWizardStepProperties: Signal<
+    Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
+  > = computed(() =>
+    this.$widgetWizardSteps().reduce(
+      (acc, curr, index, steps) => ({
+        ...acc,
+        [curr]: {
+          disabled:
+            (this.$editMode() && index === 0) ||
+            (!this._$stepCompleteCondition()[steps[index - 1]] && index > 0),
+          complete: this._$stepCompleteCondition()[curr],
+        },
+      }),
+      {} as Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
+    )
+  );
+
+  public readonly $nextButtonDisabled = computed(
+    () => !this._$stepCompleteCondition()[this.$widgetWizardSteps()[this.$currentStepIndex()]]
+  );
 
   private _defaultWidth!: WidgetWidth;
 
@@ -72,19 +108,12 @@ export class WidgetWizardService {
     actions: this.$widgetActions() ?? [],
   }));
 
-  public readonly $editMode: WritableSignal<boolean> = signal(false);
-
-  public get editMode$(): Observable<boolean> {
-    return runInInjectionContext(this.injector, () => toObservable(this.$editMode));
-  }
-
   public readonly $usedWidgetKeys: WritableSignal<string[]> = signal([]);
 
   public readonly $availableWidgetTypes: WritableSignal<WidgetType[] | null> = signal(null);
 
-  constructor(private readonly injector: Injector) {}
-
   public resetWizard(): void {
+    this.$currentStepIndex.set(0);
     this.$selectedWidget.set(null);
     this.$widgetWidth.set(this._defaultWidth || null);
     this.$widgetStyle.set(null);
@@ -93,6 +122,12 @@ export class WidgetWizardService {
     this.$widgetKey.set(null);
     this.$widgetActions.set(undefined);
     this.$editMode.set(false);
+    this.$widgetWizardSteps.set([
+      WidgetWizardStep.TYPE,
+      WidgetWizardStep.WIDTH,
+      WidgetWizardStep.STYLE,
+      WidgetWizardStep.CONTENT,
+    ]);
   }
 
   public setDefaultWidth(width: number): void {

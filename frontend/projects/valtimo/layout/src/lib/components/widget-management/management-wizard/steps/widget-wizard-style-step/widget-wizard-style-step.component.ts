@@ -15,7 +15,7 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {TilesModule} from 'carbon-components-angular';
 import {WidgetWizardService} from '../../../../../services';
@@ -28,11 +28,15 @@ import {WidgetStyle} from '../../../../../models';
   standalone: true,
   imports: [CommonModule, TranslateModule, TilesModule],
 })
-export class WidgetWizardStyleStepComponent {
+export class WidgetWizardStyleStepComponent implements OnInit {
   public readonly WidgetStyle = WidgetStyle;
   public readonly $widgetStyle = this.widgetWizardService.$widgetStyle;
 
   constructor(private readonly widgetWizardService: WidgetWizardService) {}
+
+  public ngOnInit(): void {
+    console.log('init');
+  }
 
   public onSelectedEvent(event: {value: WidgetStyle}): void {
     this.widgetWizardService.$widgetStyle.set(event.value);

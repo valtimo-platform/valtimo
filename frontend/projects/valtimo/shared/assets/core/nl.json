@@ -859,7 +859,7 @@
       "success": "Widget-configuratie succesvol bijgewerkt",
       "error": "Widget-configuratie kan niet worden bijgewerkt"
     },
-    "types": {
+    "type": {
       "description": "Kies het widget-type dat je wilt configureren.",
       "fields": {"title": "Velden", "description": "Tekstgegevens met inhoud en een label"},
       "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},

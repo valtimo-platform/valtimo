@@ -145,7 +145,7 @@ export class CaseManagementWidgetsEditorComponent {
         tags: [
           {
             content: this.translateService.instant(
-              `widgetTabManagement.types.${item.type}.title`
+              `widgetTabManagement.type.${item.type}.title`
             ),
             type: WidgetTypeTags[item.type],
           },

@@ -76,7 +76,7 @@ export class CaseManagementWidgetWizardComponent {
 
     return {
       [WidgetWizardStep.TYPE]: selectedWidgetType
-        ? `widgetTabManagement.types.${selectedWidgetType}.title`
+        ? `widgetTabManagement.type.${selectedWidgetType}.title`
         : '',
       [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth] ?? '',
       [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[selectedStyle] ?? '',
