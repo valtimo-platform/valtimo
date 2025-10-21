@@ -18,6 +18,7 @@ package com.ritense.verzoek
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.case.service.CaseDefinitionService
+import com.ritense.case_.domain.definition.CaseDefinition
 import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.notificatiesapi.NotificatiesApiListener
 import com.ritense.notificatiesapi.NotificatiesApiPlugin
@@ -30,12 +31,14 @@ import com.ritense.plugin.annotation.PluginProperty
 import com.ritense.plugin.domain.EventType
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.plugin.service.PluginService
+import com.ritense.valtimo.service.ApplicationStateService
 import com.ritense.verzoek.domain.CopyStrategy
 import com.ritense.verzoek.domain.VerzoekProperties
 import com.ritense.zgw.Rsin
-import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import jakarta.validation.ValidationException
+import org.semver4j.Semver
+import kotlin.jvm.optionals.getOrNull
 import com.ritense.processdocument.resolver.DocumentJsonValueResolverFactory.Companion.PREFIX as DOC_PREFIX
 import com.ritense.valueresolver.ProcessVariableValueResolverFactory.Companion.PREFIX as PV_PREFIX
 
@@ -49,6 +52,7 @@ class VerzoekPlugin(
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
     private val objectManagementService: ObjectManagementService,
     private val pluginService: PluginService,
+    private val applicationStateService: ApplicationStateService,
 ) : NotificatiesApiListener {
 
     @PluginProperty(key = "notificatiesApiPluginConfiguration", secret = false)
@@ -66,6 +70,10 @@ class VerzoekPlugin(
 
     @PluginEvent(invokedOn = [EventType.CREATE, EventType.UPDATE])
     fun validateProperties() {
+        if (!applicationStateService.isApplicationReady()) {
+            return // Skip validation: Case Definition might not exist yet because the auto deployment of Case Definitions happens later.
+        }
+
         verzoekProperties
             .filter { it.copyStrategy == CopyStrategy.SPECIFIED }
             .forEach { property ->
@@ -74,31 +82,22 @@ class VerzoekPlugin(
                         throw ValidationException("Failed to set mapping. Unknown prefix '${it.target.substringBefore(":")}:'.")
                     }
 
-                    val documentDefinitions = runWithoutAuthorization {
-                        val caseDefinitions = caseDefinitionService.getCaseDefinitions(
-                            caseDefinitionKey = property.caseDefinitionKey,
-                            caseDefinitionVersionTag = property.caseDefinitionVersionTag,
-                        )
-                        if (caseDefinitions.isEmpty()) {
-                            // Case Definitions might not exist yet because the auto deployment of Case Definitions happens later.
-                            logger.warn { "No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'." }
-                        }
-                        caseDefinitions.map { caseDefinition ->
-                            documentDefinitionService.findByCaseDefinitionId(
-                                caseDefinition.id
-                            ).get()
-                        }
-                    }
-
                     if (it.target.startsWith(DOC_PREFIX)) {
+                        val documentDefinition = runWithoutAuthorization {
+                            val caseDefinition = getCaseDefinition(
+                                caseDefinitionKey = property.caseDefinitionKey,
+                                caseDefinitionVersionTag = property.caseDefinitionVersionTag,
+                            )
+                                ?: error("No case definition found for '${property.caseDefinitionKey}:${property.caseDefinitionVersionTag}'.")
+                            documentDefinitionService.findByCaseDefinitionId(caseDefinition.id).getOrNull()
+                                ?: error("No Document Definition found for Case Definition: ${caseDefinition.id}")
+                        }
                         val documentPath = it.target.substringAfter(delimiter = ":")
                         runWithoutAuthorization {
-                            documentDefinitions.forEach { documentDefinition ->
-                                documentDefinitionService.validateJsonPointer(
-                                    documentDefinition.id.name(),
-                                    documentPath
-                                )
-                            }
+                            documentDefinitionService.validateJsonPointer(
+                                documentDefinition.id.name(),
+                                documentPath
+                            )
                         }
                     }
                 }
@@ -129,7 +128,14 @@ class VerzoekPlugin(
         }
     }
 
-    companion object {
-        private val logger = KotlinLogging.logger {}
+    private fun getCaseDefinition(caseDefinitionKey: String, caseDefinitionVersionTag: Semver?): CaseDefinition? {
+        return if (caseDefinitionVersionTag == null) {
+            caseDefinitionService.getActiveCaseDefinition(caseDefinitionKey)
+        } else {
+            caseDefinitionService.getCaseDefinitions(
+                caseDefinitionKey = caseDefinitionKey,
+                caseDefinitionVersionTag = caseDefinitionVersionTag,
+            ).singleOrNull()
+        }
     }
 }
