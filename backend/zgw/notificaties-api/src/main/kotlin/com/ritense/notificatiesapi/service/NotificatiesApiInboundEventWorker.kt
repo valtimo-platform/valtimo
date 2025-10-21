@@ -17,14 +17,10 @@
 package com.ritense.notificatiesapi.service
 
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Service
 import java.util.concurrent.atomic.AtomicBoolean
 
-@Service
-@SkipComponentScan
 class NotificatiesApiInboundEventWorker(
     private val processingProperties: NotificatiesApiProcessingProperties,
     private val processingService: NotificatiesApiInboundEventProcessingService
@@ -32,7 +28,7 @@ class NotificatiesApiInboundEventWorker(
 
     private val running = AtomicBoolean(false)
 
-    @Scheduled(fixedDelayString = "#{@notificatiesApiProcessingProperties.pollInterval.toMillis()}")
+    @Scheduled(fixedDelayString = "\${valtimo.notificaties-api.processing.poll-interval:PT1M}")
     fun poll() {
         if (!processingProperties.enabled) {
             return

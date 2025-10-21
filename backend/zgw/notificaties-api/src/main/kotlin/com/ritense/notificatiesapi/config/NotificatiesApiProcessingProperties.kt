@@ -22,7 +22,6 @@ import java.time.Duration
 @ConfigurationProperties(prefix = "valtimo.notificaties-api.processing")
 class NotificatiesApiProcessingProperties {
     var enabled: Boolean = true
-    var pollInterval: Duration = Duration.ofMinutes(1)
     var batchSize: Int = 5
     var initialRetries: Int = 3
     var retryDelay: Duration = Duration.ofMinutes(5)

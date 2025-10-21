@@ -63,7 +63,6 @@ class NotificatiesApiInboundEventProcessingService(
         val event = inboundEventRepository.findByIdForUpdate(eventId) ?: return
         val now = LocalDateTime.now()
         processSingleEvent(event, now)
-        runMaintenance(now)
     }
 
     private fun isEligibleForProcessing(event: NotificatiesApiInboundEvent, now: LocalDateTime): Boolean {
@@ -115,6 +114,7 @@ class NotificatiesApiInboundEventProcessingService(
             markFailed(event, now, ex)
             logger.warn(ex) { "Failed to process inbound event ${event.id}" }
         }
+        inboundEventRepository.save(event)
     }
 
     private fun markProcessed(event: NotificatiesApiInboundEvent, now: LocalDateTime) {

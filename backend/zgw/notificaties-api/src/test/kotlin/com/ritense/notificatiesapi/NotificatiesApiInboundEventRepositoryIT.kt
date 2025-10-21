@@ -17,6 +17,7 @@
 package com.ritense.notificatiesapi
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEvent
@@ -49,7 +50,9 @@ class NotificatiesApiInboundEventRepositoryIT : BaseIntegrationTest() {
 
     @BeforeEach
     fun setUp() {
-        objectMapper = ObjectMapper().registerKotlinModule()
+        objectMapper = ObjectMapper()
+            .registerKotlinModule()
+            .registerModule(JavaTimeModule())
         processingProperties = NotificatiesApiProcessingProperties().apply {
             batchSize = 5
             initialRetries = 2

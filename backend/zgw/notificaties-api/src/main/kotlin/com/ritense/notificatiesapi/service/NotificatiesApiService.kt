@@ -24,6 +24,8 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
 import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 
 @Service
 @SkipComponentScan
@@ -38,8 +40,18 @@ class NotificatiesApiService(
         logger.debug { "Notification received: $notification" }
         val eventId = inboundEventIntakeService.registerInboundNotification(notification)
         if (eventId != null) {
-            taskExecutor.execute {
-                inboundEventProcessingService.processEvent(eventId)
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+                    override fun afterCommit() {
+                        taskExecutor.execute {
+                            inboundEventProcessingService.processEvent(eventId)
+                        }
+                    }
+                })
+            } else {
+                taskExecutor.execute {
+                    inboundEventProcessingService.processEvent(eventId)
+                }
             }
         }
         return eventId != null
