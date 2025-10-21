@@ -1,19 +1,3 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
@@ -28,13 +12,12 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class BuildingBlockManagementService(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-    private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService
+    private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
+    private val buildingBlockProcessService: BuildingBlockProcessService
 ) {
-
     @Transactional(readOnly = true)
     fun getLatestPerKey(): List<BuildingBlockDefinitionDto> {
         val all = buildingBlockDefinitionRepository.findAll()
-
         val latestPerKey = all
             .groupBy { it.id.key }
             .values
@@ -45,7 +28,6 @@ class BuildingBlockManagementService(
                     va.compareTo(vb)
                 }
             }
-
         return latestPerKey.map {
             BuildingBlockDefinitionDto(
                 key = it.id.key,
@@ -71,10 +53,10 @@ class BuildingBlockManagementService(
             basedOnVersionTag = null,
             final = false
         )
-
         val saved = buildingBlockDefinitionRepository.saveAndFlush(entity)
 
         buildingBlockDocumentDefinitionService.ensureEmptyFor(saved.id.key, saved.id.versionTag.toString())
+        buildingBlockProcessService.createEmptyProcessAndLink(saved.title, saved.id.key, saved.id.versionTag.toString())
 
         return BuildingBlockDefinitionDto(
             key = saved.id.key,

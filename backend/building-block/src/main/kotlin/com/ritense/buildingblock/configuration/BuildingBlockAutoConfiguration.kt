@@ -1,28 +1,15 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.ritense.buildingblock.configuration
 
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
+import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockManagementService
+import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
+import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -36,11 +23,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
         BuildingBlockJsonSchemaDocumentDefinitionRepository::class,
+        ProcessDefinitionBuildingBlockDefinitionRepository::class
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain"])
 class BuildingBlockAutoConfiguration {
-
     @Order(HIGHEST_PRECEDENCE + 27)
     @ConditionalOnMissingBean(name = ["buildingBlockLiquibaseMasterChangeLogLocation"])
     @Bean
@@ -64,19 +51,30 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessService::class)
+    fun buildingBlockProcessService(
+        repositoryService: RepositoryService,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+    ): BuildingBlockProcessService {
+        return BuildingBlockProcessService(repositoryService, processDefinitionBuildingBlockDefinitionRepository)
+    }
+
+    @Bean
     @ConditionalOnMissingBean(BuildingBlockManagementService::class)
     fun buildingBlockManagementService(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-        buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService
+        buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
+        buildingBlockProcessService: BuildingBlockProcessService
     ): BuildingBlockManagementService {
         return BuildingBlockManagementService(
             buildingBlockDefinitionRepository,
-            buildingBlockDocumentDefinitionService
+            buildingBlockDocumentDefinitionService,
+            buildingBlockProcessService
         )
     }
 
-    @ConditionalOnMissingBean(name = ["buildingBlockDefinitionResource"])
     @Bean
+    @ConditionalOnMissingBean(name = ["buildingBlockDefinitionResource"])
     fun buildingBlockManagementResource(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         buildingBlockManagementService: BuildingBlockManagementService
