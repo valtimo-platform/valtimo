@@ -13,21 +13,106 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BuildingBlockManagementDetailService} from '../../services';
+import {
+  BuildingBlockManagementApiService,
+  BuildingBlockManagementDetailService,
+} from '../../services';
 import {TranslatePipe} from '@ngx-translate/core';
+import {FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {ReadOnlyDirective, TooltipIconModule} from '@valtimo/components';
+import {ButtonModule, InputModule, LayerModule} from 'carbon-components-angular';
+import {Subscription} from 'rxjs';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-metadata',
   templateUrl: './building-block-management-metadata.component.html',
   styleUrls: ['./building-block-management-metadata.component.scss'],
-  imports: [CommonModule, TranslatePipe],
-  providers: [BuildingBlockManagementDetailService],
+  imports: [
+    CommonModule,
+    TranslatePipe,
+    ReactiveFormsModule,
+    InputModule,
+    TooltipIconModule,
+    LayerModule,
+    ReadOnlyDirective,
+    ButtonModule,
+  ],
 })
-export class BuildingBlockManagementMetadataComponent {
+export class BuildingBlockManagementMetadataComponent implements OnInit, OnDestroy {
+  public formGroup: FormGroup = this.fb.group({
+    title: this.fb.control('', Validators.required),
+    key: this.fb.control('', Validators.required),
+    description: this.fb.control(''),
+  });
+  public get title(): FormControl<string> {
+    return this.formGroup.get('title') as FormControl<string>;
+  }
+  public get key(): FormControl<string> {
+    return this.formGroup.get('key') as FormControl<string>;
+  }
+  public get description(): FormControl<string> {
+    return this.formGroup.get('description') as FormControl<string>;
+  }
+
+  private readonly _subscriptions = new Subscription();
+
   constructor(
-    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService
+    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
+    private readonly fb: FormBuilder
   ) {}
+
+  public ngOnInit(): void {
+    this.openBuildingBlockDefinitionSubscription();
+    this.openLoadingSubscription();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  public onSave(): void {
+    this.formGroup.disable();
+
+    this.buildingBlockManagementApiService
+      .updateBuildingBlockDefinition(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockVersionTag,
+        this.formGroup.value
+      )
+      .subscribe(() => {
+        this.buildingBlockManagementDetailService.reload();
+      });
+  }
+
+  private openBuildingBlockDefinitionSubscription(): void {
+    this._subscriptions.add(
+      this.buildingBlockManagementDetailService.buildingBlockDefinition$.subscribe(
+        buildingBlockDefinition => {
+          this.formGroup.setValue({
+            title: buildingBlockDefinition.title,
+            key: buildingBlockDefinition.key,
+            description: buildingBlockDefinition.description,
+          });
+        }
+      )
+    );
+  }
+
+  private openLoadingSubscription(): void {
+    this._subscriptions.add(
+      this.buildingBlockManagementDetailService.loadingDefinition$.subscribe(loadingDefinition => {
+        if (loadingDefinition) {
+          this.formGroup.disable();
+        } else {
+          this.title.enable();
+          this.description.enable();
+          this.formGroup.markAsPristine();
+        }
+      })
+    );
+  }
 }

@@ -23,7 +23,6 @@ import {BuildingBlockManagementDetailService} from '../../services';
   templateUrl: './building-block-management-document.component.html',
   styleUrls: ['./building-block-management-document.component.scss'],
   imports: [CommonModule],
-  providers: [BuildingBlockManagementDetailService],
 })
 export class BuildingBlockManagementDocumentComponent {
   constructor(

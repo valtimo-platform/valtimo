@@ -20,6 +20,7 @@ import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
 import org.springframework.stereotype.Service
@@ -73,6 +74,35 @@ class BuildingBlockManagementService(
 
         buildingBlockDocumentDefinitionService.ensureEmptyFor(saved.id.key, saved.id.versionTag.toString())
         buildingBlockProcessService.createEmptyProcessAndLink(saved.title, saved.id.key, saved.id.versionTag.toString())
+
+        return BuildingBlockDefinitionDto(
+            key = saved.id.key,
+            versionTag = saved.id.versionTag.toString(),
+            title = saved.title,
+            description = saved.description,
+            createdBy = saved.createdBy,
+            createdDate = saved.createdDate,
+            basedOnVersionTag = saved.basedOnVersionTag?.toString(),
+            final = saved.final
+        )
+    }
+
+    @Transactional
+    fun update(key: String, versionTag: String, dto: UpdateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto? {
+        val id = BuildingBlockDefinitionId(key, versionTag)
+        val existing = buildingBlockDefinitionRepository.findById(id).orElse(null) ?: return null
+
+        val updated = BuildingBlockDefinition(
+            id = existing.id,
+            title = dto.title,
+            description = dto.description,
+            createdBy = existing.createdBy,
+            createdDate = existing.createdDate,
+            basedOnVersionTag = existing.basedOnVersionTag,
+            final = existing.final
+        )
+
+        val saved = buildingBlockDefinitionRepository.save(updated)
 
         return BuildingBlockDefinitionDto(
             key = saved.id.key,
