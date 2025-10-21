@@ -1,0 +1,10 @@
+package com.ritense.buildingblock.repository
+
+import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
+import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Repository
+
+@Repository
+interface ProcessDefinitionBuildingBlockDefinitionRepository :
+    JpaRepository<ProcessDefinitionBuildingBlockDefinition, ProcessDefinitionBuildingBlockDefinitionId>

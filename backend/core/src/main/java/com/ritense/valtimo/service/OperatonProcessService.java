@@ -16,6 +16,7 @@
 
 package com.ritense.valtimo.service;
 
+import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX;
 import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX;
 import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byStartUserId;
 import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byUnfinished;
@@ -25,6 +26,7 @@ import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionS
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byKey;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersion;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byLatestVersionTag;
+import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToBuildingBlock;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byNotLinkedToCaseDefinition;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.byVersionTag;
 
@@ -381,7 +383,7 @@ public class OperatonProcessService {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() ->
             operatonRepositoryService.findProcessDefinitions(
-                    byActive().and(byNotLinkedToCaseDefinition()),
+                    byActive().and(byNotLinkedToCaseDefinition()).and(byNotLinkedToBuildingBlock()),
                     Sort.by(NAME)
                 ).stream()
                 .collect(Collectors.groupingBy(
@@ -402,7 +404,9 @@ public class OperatonProcessService {
                     byActive().and(byKey(processDefinitionKey)),
                     Sort.by(NAME)
                 ).stream()
-                .filter(def -> def.getVersionTag() == null || !def.getVersionTag().startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX))
+                .filter(def -> def.getVersionTag() == null || !def.getVersionTag()
+                    .startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX) || !def.getVersionTag()
+                    .startsWith(OPERATION_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX))
                 .collect(Collectors.toList())
         );
     }
@@ -532,7 +536,11 @@ public class OperatonProcessService {
             var deploymentBuilder = repositoryService.createDeployment()
                 .addModelInstance(fileName, bpmnModel);
 
-            OperatonDeploymentSource deploymentSource = new OperatonDeploymentSource(skipProcessLinksCopy, originalVersionTag, originalProcessDefinitionId);
+            OperatonDeploymentSource deploymentSource = new OperatonDeploymentSource(
+                skipProcessLinksCopy,
+                originalVersionTag,
+                originalProcessDefinitionId
+            );
 
             String deploymentSourceUuid = operatonDeploymentSourceHelper.store(deploymentSource);
 
@@ -688,10 +696,11 @@ public class OperatonProcessService {
                 var elementBinding = callActivity.getOperatonCalledElementBinding();
                 if (
                     elementBinding == null ||
-                    (
-                        callActivity.getOperatonCalledElementVersionTag() != null &&
-                        callActivity.getOperatonCalledElementVersionTag().startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
-                    )
+                        (
+                            callActivity.getOperatonCalledElementVersionTag() != null &&
+                                callActivity.getOperatonCalledElementVersionTag()
+                                    .startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
+                        )
 
                 ) {
                     callActivity.setOperatonCalledElementBinding("versionTag");
@@ -705,10 +714,11 @@ public class OperatonProcessService {
                 var elementBinding = businessRuleTask.getOperatonDecisionRefBinding();
                 if (
                     elementBinding == null ||
-                    (
-                        businessRuleTask.getOperatonDecisionRefVersionTag() != null &&
-                        businessRuleTask.getOperatonDecisionRefVersionTag().startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
-                    )
+                        (
+                            businessRuleTask.getOperatonDecisionRefVersionTag() != null &&
+                                businessRuleTask.getOperatonDecisionRefVersionTag()
+                                    .startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
+                        )
                 ) {
                     businessRuleTask.setOperatonDecisionRefBinding("versionTag");
                     businessRuleTask.setOperatonDecisionRefVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
