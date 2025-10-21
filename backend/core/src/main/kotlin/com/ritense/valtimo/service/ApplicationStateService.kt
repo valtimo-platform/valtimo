@@ -20,6 +20,8 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.event.EventListener
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 
 @SkipComponentScan
@@ -28,6 +30,7 @@ class ApplicationStateService(
     private var applicationReady: Boolean = false,
 ) {
 
+    @Order(Ordered.LOWEST_PRECEDENCE)
     @EventListener(ApplicationReadyEvent::class)
     fun setApplicationReady() {
         applicationReady = true
