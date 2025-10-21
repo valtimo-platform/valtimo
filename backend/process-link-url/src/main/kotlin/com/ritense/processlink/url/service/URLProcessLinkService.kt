@@ -18,7 +18,7 @@ package com.ritense.processlink.url.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationContext
-import com.ritense.authorization.ValtimoAuthorizationService
+import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.document.domain.Document
 import com.ritense.document.domain.impl.request.ModifyDocumentRequest
@@ -38,11 +38,11 @@ import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.url.domain.URLProcessLink
 import com.ritense.processlink.url.domain.URLVariables
 import com.ritense.processlink.url.web.rest.dto.URLSubmissionResult
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.authorization.OperatonTaskActionProvider
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.service.OperatonTaskService
 import java.util.UUID
 
@@ -55,7 +55,7 @@ class URLProcessLinkService(
     private val objectMapper: ObjectMapper,
     private val urlVariables: URLVariables,
     private val operatonTaskService: OperatonTaskService,
-    private val authorizationService: ValtimoAuthorizationService
+    private val authorizationService: AuthorizationService
 ) {
 
     fun submit(

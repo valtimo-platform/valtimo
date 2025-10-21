@@ -17,7 +17,7 @@
 package com.ritense.processlink.url.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.ritense.authorization.ValtimoAuthorizationService
+import com.ritense.authorization.AuthorizationService
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.document.domain.impl.JsonSchemaDocumentId
@@ -30,9 +30,9 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.url.domain.URLProcessLink
 import com.ritense.processlink.url.domain.URLVariables
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonProcessDefinition
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.service.OperatonTaskService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -73,7 +73,7 @@ class URLProcessLinkServiceTest {
     lateinit var operatonTaskService: OperatonTaskService
 
     @Mock
-    lateinit var authorizationService: ValtimoAuthorizationService
+    lateinit var authorizationService: AuthorizationService
 
     @InjectMocks
     lateinit var urlProcessLinkService: URLProcessLinkService

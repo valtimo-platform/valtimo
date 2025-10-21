@@ -413,9 +413,12 @@ export class CaseListComponent implements OnInit, OnDestroy {
         allStatuses,
       ]) => {
         const obsApi: Observable<boolean> = of(hasApiColumnConfig);
-        const statusKeys: (string | null)[] = selectedStatuses.map((statusKey: string) =>
-          statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
-        );
+        const statusKeys: (string | null)[] =
+          allStatuses.length === 1
+            ? []
+            : selectedStatuses.map((statusKey: string) =>
+              statusKey === CASES_WITHOUT_STATUS_KEY ? null : statusKey
+            );
         if ((Object.keys(searchValues) || []).length > 0) {
           return forkJoin({
             documents: !hasApiColumnConfig
