@@ -261,14 +261,23 @@ tasks.withType(PublishToMavenLocal) {
     enabled = false
 }
 
+
+tasks.register("cleanAll") {
+    group = "build"
+    description = "Runs all `clean` tasks across subprojects."
+
+    dependsOn subprojects.collect { subproject ->
+        subproject.tasks.matching { it.name == "clean" }
+    }
+}
+
 [
-    "clean",
     "test",
     "integrationTestingPostgresql",
     "integrationTestingMysql",
     "securityTesting"
 ].each { taskName ->
-    tasks.register("${taskName}All") {
+    tasks.register("${taskName}All", Test) {
         def matchingSubprojects = subprojects.findAll { subproject ->
             subproject.tasks.findByName(taskName)
         }
