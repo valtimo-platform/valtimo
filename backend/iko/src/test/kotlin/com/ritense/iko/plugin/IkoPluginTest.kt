@@ -63,7 +63,9 @@ internal class IkoPluginTest {
             )
 
         val result = plugin.search(
-            endpointPath = "personen",
+            connectorTag = "personen",
+            connectorInstanceTag = "personen",
+            endpointOperation = "personen",
             filters = mapOf(
                 "geslachtsnaam" to "Moulin",
                 "geboortedatum" to "1985-12-01",

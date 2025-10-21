@@ -95,7 +95,9 @@ class IkoClientTest {
 
         val person = client.getByEndpointId(
             baseUrl = URI(mockApi.url("/").toString()),
-            endpointPath = "personen",
+            connectorTag = "brp",
+            connectorInstanceTag = "brp",
+            endpointOperation = "personen",
             id = "999993653",
         )
 
@@ -139,7 +141,9 @@ class IkoClientTest {
 
         val response = client.search(
             baseUrl = URI(mockApi.url("/").toString()),
-            endpointPath = "personen",
+            connectorTag = "brp",
+            connectorInstanceTag = "brp",
+            endpointOperation = "personen",
             filters = mapOf(
                 "geslachtsnaam" to "Moulin",
                 "geboortedatum" to "1985-12-01",

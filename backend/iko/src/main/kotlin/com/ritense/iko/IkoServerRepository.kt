@@ -48,17 +48,29 @@ class IkoServerRepository(
 
     override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
         PropertyField(
-            ENDPOINT_PATH,
-            tooltip = "The last few path segments of the IKO API URL. i.e. 'bag/adressen'"
+            key = CONNECTOR_TAG,
+            title= "Connector Reference",
+            tooltip = "The connector-reference or the connector-tag as defined in IKO"
         ),
         PropertyField(
-            AGGREGATED_DATA_PROFILE_NAME,
+            key = CONNECTOR_INSTANCE_TAG,
+            title= "Connector Instance Reference",
+            tooltip = "The connector-instance-reference or the connector-instance tag as defined in IKO"
+        ),
+        PropertyField(
+            key = ENDPOINT_OPERATION,
+            title= "Endpoint Reference",
+            tooltip = "The endpoint-reference or the endpoint-operation as defined in IKO"
+        ),
+        PropertyField(
+            key = AGGREGATED_DATA_PROFILE_NAME,
+            title = "Aggregated Data Profile Name (Optional)",
             tooltip = "The name of the aggregated data profile. i.e. 'personen'",
             required = false,
         ),
         PropertyField(
-            ENDPOINT_QUERY_PARAMETERS,
-            PROPERTY_FIELD_TYPE_KEY_VALUE_LIST,
+            key = ENDPOINT_QUERY_PARAMETERS,
+            type = PROPERTY_FIELD_TYPE_KEY_VALUE_LIST,
             tooltip = "Additional query parameters for the IKO API URL. i.e. 'type=ZoekMetGeslachtsnaamEnGeboortedatum'",
             required = false,
         ),
@@ -87,7 +99,9 @@ class IkoServerRepository(
         }
 
         val data = getPlugin(config).search(
-            endpointPath = config[ENDPOINT_PATH].toString(),
+            connectorTag = config[CONNECTOR_TAG].toString(),
+            connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
+            endpointOperation = config[ENDPOINT_OPERATION].toString(),
             filters = filterMap,
         )
 
@@ -106,7 +120,9 @@ class IkoServerRepository(
             )
         } else {
             getPlugin(config).getByEndpointId(
-                endpointPath = config[ENDPOINT_PATH].toString(),
+                connectorTag = config[CONNECTOR_TAG].toString(),
+                connectorInstanceTag = config[CONNECTOR_INSTANCE_TAG].toString(),
+                endpointOperation = config[ENDPOINT_OPERATION].toString(),
                 id = id.toString()
             )
         }
@@ -138,7 +154,9 @@ class IkoServerRepository(
 
     companion object {
         const val PLUGIN_CONFIGURATION = "pluginConfiguration"
-        const val ENDPOINT_PATH = "endpointPath"
+        const val CONNECTOR_TAG = "connectorTag"
+        const val CONNECTOR_INSTANCE_TAG = "connectorInstanceTag"
+        const val ENDPOINT_OPERATION = "endpointOperation"
         const val AGGREGATED_DATA_PROFILE_NAME = "aggregatedDataProfileName"
         const val ENDPOINT_QUERY_PARAMETERS = "endpointQueryParameters"
     }
