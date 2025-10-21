@@ -2023,6 +2023,11 @@
       "description": "Beschrijving",
       "descriptionTooltip": "Een korte beschrijving van de functionaliteit die het bouwblok biedt.",
       "descriptionPlaceholder": "Beschrijving invoeren"
+    },
+    "tabs": {
+      "general": "Algemeen",
+      "document": "Document",
+      "processes": "Processen"
     }
   }
 }

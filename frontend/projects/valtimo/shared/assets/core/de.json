@@ -2017,6 +2017,11 @@
       "description": "Beschreibung",
       "descriptionTooltip": "Eine kurze Beschreibung der Funktionalität, die der Baublock bietet.",
       "descriptionPlaceholder": "Beschreibung eingeben"
+    },
+    "tabs": {
+      "general": "Allgemein",
+      "document": "Dokument",
+      "processes": "Prozesse"
     }
   }
 }
