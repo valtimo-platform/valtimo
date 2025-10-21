@@ -14,4 +14,37 @@
   ~ limitations under the License.
   -->
 
-management detail works
+<cds-tabs *ngIf="activeTabKey$ | async as activeTabKey" type="contained">
+  <cds-tab
+    *ngIf="{active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL} as obs"
+    [active]="obs.active"
+    [heading]="'buildingBlockManagement.tabs.general' | translate"
+    (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL)"
+  >
+    <valtimo-building-block-management-general
+      *ngIf="obs.active"
+    ></valtimo-building-block-management-general>
+  </cds-tab>
+
+  <cds-tab
+    *ngIf="{active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT} as obs"
+    [active]="obs.active"
+    [heading]="'buildingBlockManagement.tabs.document' | translate"
+    (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.DOCUMENT)"
+  >
+    <valtimo-building-block-management-document
+      *ngIf="obs.active"
+    ></valtimo-building-block-management-document>
+  </cds-tab>
+
+  <cds-tab
+    *ngIf="{active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES} as obs"
+    [active]="obs.active"
+    [heading]="'buildingBlockManagement.tabs.processes' | translate"
+    (selected)="switchTab(BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES)"
+  >
+    <valtimo-building-block-management-processes
+      *ngIf="obs.active"
+    ></valtimo-building-block-management-processes>
+  </cds-tab>
+</cds-tabs>

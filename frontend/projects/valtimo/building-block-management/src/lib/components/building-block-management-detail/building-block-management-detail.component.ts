@@ -13,26 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {CarbonListModule} from '@valtimo/components';
-import {ButtonModule, IconModule} from 'carbon-components-angular';
-import {ActivatedRoute} from '@angular/router';
+import {CarbonListModule, PageTitleService} from '@valtimo/components';
+import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
+import {ActivatedRoute, Router} from '@angular/router';
 import {BuildingBlockManagementDetailService} from '../../services';
+import {TranslatePipe} from '@ngx-translate/core';
+import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {BuildingBlockManagementGeneralComponent} from '../building-block-management-general/building-block-management-general.component';
+import {BuildingBlockManagementDocumentComponent} from '../building-block-management-document/building-block-management-document.component';
+import {BuildingBlockManagementTabKey} from '../../models';
+import {take} from 'rxjs';
+import {BuildingBlockManagementProcessesComponent} from '../building-block-management-processes/building-block-management-processes.component';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-detail',
   templateUrl: './building-block-management-detail.component.html',
   styleUrls: ['./building-block-management-detail.component.scss'],
-  imports: [CommonModule, CarbonListModule, ButtonModule, IconModule],
+  imports: [
+    CommonModule,
+    CarbonListModule,
+    ButtonModule,
+    IconModule,
+    TabsModule,
+    TranslatePipe,
+    BuildingBlockManagementGeneralComponent,
+    BuildingBlockManagementDocumentComponent,
+    BuildingBlockManagementProcessesComponent,
+  ],
   providers: [BuildingBlockManagementDetailService],
 })
-export class BuildingBlockManagementDetailComponent {
+export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy {
+  public readonly BUILDING_BLOCK_MANAGEMENT_TABS = BUILDING_BLOCK_MANAGEMENT_TABS;
+  public readonly activeTabKey$ = this.buildingBlockManagementDetailService.activeTabKey$;
+
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService
+    private readonly router: Router,
+    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
+    private readonly pageTitleService: PageTitleService
   ) {
     this.buildingBlockManagementDetailService.setRoute(this.route);
+  }
+
+  public ngOnInit() {
+    this.pageTitleService.disableReset();
+  }
+
+  public ngOnDestroy() {
+    this.pageTitleService.enableReset();
+  }
+
+  public switchTab(tabKey: BuildingBlockManagementTabKey): void {
+    this.activeTabKey$.pipe(take(1)).subscribe(activeTabKey => {
+      if (activeTabKey === tabKey) return;
+      this.buildingBlockManagementDetailService.navigateToTab(tabKey);
+    });
   }
 }

@@ -25,10 +25,11 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {BuildingBlockManagementApiService} from './building-block-management-api.service';
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {PageTitleService} from '@valtimo/components';
+import {BuildingBlockManagementTabKey} from '../models';
 
 @Injectable()
 export class BuildingBlockManagementDetailService implements OnDestroy {
@@ -60,6 +61,17 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
       )
     );
   }
+  public get activeTabKey$(): Observable<BuildingBlockManagementTabKey> {
+    return this._route$.pipe(
+      switchMap(route =>
+        route.paramMap.pipe(
+          map(params => params.get('tabKey') as BuildingBlockManagementTabKey),
+          filter(key => !!key)
+        )
+      )
+    );
+  }
+
   private readonly _buildingBlockDefinition$ =
     new BehaviorSubject<BuildingBlockDefinitionDto | null>(null);
   public get buildingBlockDefinition$(): Observable<BuildingBlockDefinitionDto> {
@@ -68,7 +80,8 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
 
   constructor(
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly router: Router
   ) {
     this._subscriptions.add(
       combineLatest([this.buildingBlockDefinitionKey$, this.buildingBlockVersionTag$])
@@ -93,5 +106,20 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
 
   private readonly _subscriptions = new Subscription();
 
-  public ngOnDestroy(): void {}
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  public navigateToTab(tabKey: BuildingBlockManagementTabKey): void {
+    this.buildingBlockDefinition$.subscribe(definition => {
+      this.router.navigate([
+        '/building-block-management',
+        'building-block',
+        definition.key,
+        'version',
+        definition.versionTag,
+        tabKey,
+      ]);
+    });
+  }
 }
