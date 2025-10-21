@@ -1995,6 +1995,9 @@
       "general": "General",
       "document": "Document",
       "processes": "Processes"
+    },
+    "metadata": {
+      "title": "General information"
     }
   }
 }

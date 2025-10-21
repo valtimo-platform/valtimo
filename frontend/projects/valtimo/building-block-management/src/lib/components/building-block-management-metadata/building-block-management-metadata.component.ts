@@ -16,23 +16,17 @@
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BuildingBlockManagementDetailService} from '../../services';
-import {MuuriDirective, MuuriItemComponent} from '@valtimo/components';
-import {BuildingBlockManagementMetadataComponent} from '../building-block-management-metadata/building-block-management-metadata.component';
+import {TranslatePipe} from '@ngx-translate/core';
 
 @Component({
   standalone: true,
-  selector: 'valtimo-building-block-management-general',
-  templateUrl: './building-block-management-general.component.html',
-  styleUrls: ['./building-block-management-general.component.scss'],
-  imports: [
-    CommonModule,
-    MuuriDirective,
-    MuuriItemComponent,
-    BuildingBlockManagementMetadataComponent,
-  ],
+  selector: 'valtimo-building-block-management-metadata',
+  templateUrl: './building-block-management-metadata.component.html',
+  styleUrls: ['./building-block-management-metadata.component.scss'],
+  imports: [CommonModule, TranslatePipe],
   providers: [BuildingBlockManagementDetailService],
 })
-export class BuildingBlockManagementGeneralComponent {
+export class BuildingBlockManagementMetadataComponent {
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService
   ) {}
