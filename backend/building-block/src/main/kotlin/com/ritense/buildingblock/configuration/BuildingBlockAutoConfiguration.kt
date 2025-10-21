@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.configuration
 
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
@@ -32,6 +33,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
+        BuildingBlockJsonSchemaDocumentDefinitionRepository::class,
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain"])
