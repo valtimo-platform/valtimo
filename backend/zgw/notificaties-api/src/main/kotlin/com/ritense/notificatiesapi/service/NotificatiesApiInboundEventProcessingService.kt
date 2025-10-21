@@ -23,16 +23,21 @@ import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEvent
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
 import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventRepository
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.UUID
 import kotlin.math.max
 import kotlin.math.pow
 
+@Service
+@SkipComponentScan
 class NotificatiesApiInboundEventProcessingService(
     private val inboundEventRepository: NotificatiesApiInboundEventRepository,
     private val applicationEventPublisher: ApplicationEventPublisher,
@@ -48,23 +53,16 @@ class NotificatiesApiInboundEventProcessingService(
             runMaintenance(now)
             return
         }
-        batch.forEach { event ->
-            if (!isEligibleForProcessing(event, now)) {
-                logger.trace { "Inbound event ${event.id} not yet eligible for retry" }
-                return@forEach
-            }
+        batch.forEach { processSingleEvent(it, now) }
 
-            try {
-                val notification: NotificatiesApiNotificationReceivedEvent = objectMapper.readValue(event.payload)
-                applicationEventPublisher.publishEvent(notification)
-                markProcessed(event, now)
-                logger.debug { "Processed inbound event ${event.id}" }
-            } catch (ex: Exception) {
-                markFailed(event, now, ex)
-                logger.warn(ex) { "Failed to process inbound event ${event.id}" }
-            }
-        }
+        runMaintenance(now)
+    }
 
+    @Transactional
+    fun processEvent(eventId: UUID) {
+        val event = inboundEventRepository.findByIdForUpdate(eventId) ?: return
+        val now = LocalDateTime.now()
+        processSingleEvent(event, now)
         runMaintenance(now)
     }
 
@@ -100,6 +98,23 @@ class NotificatiesApiInboundEventProcessingService(
         val calculated = (baseDelay.toMillis().toDouble() * factor).toLong()
         val millis = max(calculated, baseDelay.toMillis())
         return Duration.ofMillis(millis)
+    }
+
+    private fun processSingleEvent(event: NotificatiesApiInboundEvent, now: LocalDateTime) {
+        if (!isEligibleForProcessing(event, now)) {
+            logger.trace { "Inbound event ${event.id} not yet eligible for retry" }
+            return
+        }
+
+        try {
+            val notification: NotificatiesApiNotificationReceivedEvent = objectMapper.readValue(event.payload)
+            applicationEventPublisher.publishEvent(notification)
+            markProcessed(event, now)
+            logger.debug { "Processed inbound event ${event.id}" }
+        } catch (ex: Exception) {
+            markFailed(event, now, ex)
+            logger.warn(ex) { "Failed to process inbound event ${event.id}" }
+        }
     }
 
     private fun markProcessed(event: NotificatiesApiInboundEvent, now: LocalDateTime) {

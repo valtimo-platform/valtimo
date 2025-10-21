@@ -22,9 +22,12 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.jpa.repository.Lock
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 import java.util.UUID
+import jakarta.persistence.LockModeType
 
 @Repository
 interface NotificatiesApiInboundEventRepository :
@@ -38,6 +41,10 @@ interface NotificatiesApiInboundEventRepository :
     fun existsByStatusAndReceivedAtBefore(status: NotificatiesApiInboundEventStatus, receivedAt: LocalDateTime): Boolean
 
     fun findAllByStatus(status: NotificatiesApiInboundEventStatus, pageable: Pageable): Page<NotificatiesApiInboundEvent>
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select event from NotificatiesApiInboundEvent event where event.id = :id")
+    fun findByIdForUpdate(id: UUID): NotificatiesApiInboundEvent?
 
     @Modifying
     fun deleteByStatusAndReceivedAtBefore(

@@ -37,7 +37,8 @@ import org.mockito.kotlin.whenever
 import org.springframework.dao.DataIntegrityViolationException
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class NotificatiesApiInboundEventIntakeServiceTest {
@@ -62,12 +63,13 @@ class NotificatiesApiInboundEventIntakeServiceTest {
     fun `stores new inbound notification`() {
         val notification = sampleNotification()
         doReturn(null).whenever(repository).findByIdempotenceKey(any())
+        whenever(repository.save(any())).thenAnswer { invocation -> invocation.arguments[0] }
 
         val saved = argumentCaptor<NotificatiesApiInboundEvent>()
 
         val result = intakeService.registerInboundNotification(notification)
 
-        assertTrue(result)
+        assertNotNull(result)
         verify(repository).save(saved.capture())
         assertEquals(NotificatiesApiInboundEventStatus.RECEIVED, saved.firstValue.status)
         assertEquals(properties.initialRetries, saved.firstValue.pendingRetries)
@@ -86,7 +88,7 @@ class NotificatiesApiInboundEventIntakeServiceTest {
 
         val result = intakeService.registerInboundNotification(notification)
 
-        assertFalse(result)
+        assertNull(result)
         verify(repository, never()).save(any())
     }
 
@@ -98,7 +100,7 @@ class NotificatiesApiInboundEventIntakeServiceTest {
 
         val result = intakeService.registerInboundNotification(notification)
 
-        assertFalse(result)
+        assertNull(result)
     }
 
     @Test

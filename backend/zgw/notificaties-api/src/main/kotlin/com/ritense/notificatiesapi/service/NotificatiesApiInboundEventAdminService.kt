@@ -19,10 +19,14 @@ package com.ritense.notificatiesapi.service
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
 import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventRepository
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
+@Service
+@SkipComponentScan
 class NotificatiesApiInboundEventAdminService(
     private val inboundEventRepository: NotificatiesApiInboundEventRepository,
     private val processingProperties: NotificatiesApiProcessingProperties

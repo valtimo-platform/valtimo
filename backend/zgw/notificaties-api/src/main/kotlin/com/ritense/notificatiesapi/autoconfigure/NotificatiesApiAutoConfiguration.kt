@@ -34,17 +34,20 @@ import com.ritense.notificatiesapi.web.rest.NotificatiesApiResource
 import com.ritense.notificatiesapi.health.NotificatiesApiInboundEventHealthIndicator
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.core.annotation.Order
+import org.springframework.core.task.TaskExecutor
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.client.RestClient
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 
 @AutoConfiguration
 @EnableConfigurationProperties(NotificatiesApiProcessingProperties::class)
@@ -90,11 +93,15 @@ class NotificatiesApiAutoConfiguration {
     @Bean
     fun notificatiesApiService(
         notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
-        inboundEventIntakeService: NotificatiesApiInboundEventIntakeService
+        inboundEventIntakeService: NotificatiesApiInboundEventIntakeService,
+        inboundEventProcessingService: NotificatiesApiInboundEventProcessingService,
+        @Qualifier("notificatiesApiTaskExecutor") taskExecutor: TaskExecutor
     ): NotificatiesApiService {
         return NotificatiesApiService(
             notificatiesApiAbonnementLinkRepository,
-            inboundEventIntakeService
+            inboundEventIntakeService,
+            inboundEventProcessingService,
+            taskExecutor
         )
     }
 
@@ -122,6 +129,17 @@ class NotificatiesApiAutoConfiguration {
             processingProperties,
             processingService
         )
+    }
+
+    @Bean("notificatiesApiTaskExecutor")
+    fun notificatiesApiTaskExecutor(): TaskExecutor {
+        return ThreadPoolTaskExecutor().apply {
+            threadNamePrefix = "notificaties-api-intake-"
+            corePoolSize = 2
+            maxPoolSize = 4
+            setQueueCapacity(20)
+            initialize()
+        }
     }
 
     @Bean

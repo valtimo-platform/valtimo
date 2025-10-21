@@ -22,14 +22,19 @@ import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEvent
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
 import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventRepository
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import mu.KotlinLogging
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.time.LocalDateTime
 import java.util.HexFormat
+import java.util.UUID
 
+@Service
+@SkipComponentScan
 class NotificatiesApiInboundEventIntakeService(
     private val objectMapper: ObjectMapper,
     private val inboundEventRepository: NotificatiesApiInboundEventRepository,
@@ -37,11 +42,11 @@ class NotificatiesApiInboundEventIntakeService(
 ) {
 
     @Transactional
-    fun registerInboundNotification(notification: NotificatiesApiNotificationReceivedEvent): Boolean {
+    fun registerInboundNotification(notification: NotificatiesApiNotificationReceivedEvent): UUID? {
         val idempotenceKey = generateIdempotenceKey(notification)
         inboundEventRepository.findByIdempotenceKey(idempotenceKey)?.let {
             logger.debug { "Skipping duplicate inbound notification for key $idempotenceKey" }
-            return false
+            return null
         }
 
         val payload = objectMapper.writeValueAsString(notification)
@@ -54,12 +59,12 @@ class NotificatiesApiInboundEventIntakeService(
         )
 
         return try {
-            inboundEventRepository.save(event)
+            val saved = inboundEventRepository.save(event)
             logger.debug { "Stored inbound notification with key $idempotenceKey" }
-            true
+            saved.id
         } catch (ex: DataIntegrityViolationException) {
             logger.debug { "Detected concurrent duplicate inbound notification for key $idempotenceKey" }
-            false
+            null
         }
     }
 

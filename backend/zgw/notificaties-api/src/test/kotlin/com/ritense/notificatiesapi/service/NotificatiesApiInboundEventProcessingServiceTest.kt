@@ -84,6 +84,19 @@ class NotificatiesApiInboundEventProcessingServiceTest {
     }
 
     @Test
+    fun `process event locks and processes single record`() {
+        val event = inboundEvent(NotificatiesApiInboundEventStatus.RECEIVED)
+        whenever(repository.findByIdForUpdate(event.id)).thenReturn(event)
+        whenever(repository.deleteByStatusAndReceivedAtBefore(any(), any())).thenReturn(0)
+        whenever(repository.existsByStatusAndReceivedAtBefore(any(), any())).thenReturn(false)
+
+        service.processEvent(event.id)
+
+        verify(publisher).publishEvent(any<NotificatiesApiNotificationReceivedEvent>())
+        assertEquals(NotificatiesApiInboundEventStatus.PROCESSED, event.status)
+    }
+
+    @Test
     fun `marks failed event and decrements retries`() {
         val event = inboundEvent(NotificatiesApiInboundEventStatus.RECEIVED, payload = "not-json")
         whenever(repository.fetchNextBatchForProcessing(properties.batchSize)).thenReturn(listOf(event))

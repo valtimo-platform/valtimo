@@ -19,9 +19,13 @@ package com.ritense.notificatiesapi.service
 import com.ritense.notificatiesapi.domain.NotificatiesApiInboundEventStatus
 import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventRepository
 import com.ritense.notificatiesapi.web.dto.NotificatiesApiInboundEventResponse
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.stereotype.Service
 
+@Service
+@SkipComponentScan
 class NotificatiesApiInboundEventQueryService(
     private val inboundEventRepository: NotificatiesApiInboundEventRepository
 ) {
