@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -19,6 +19,8 @@ package com.ritense.buildingblock.configuration
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -37,7 +39,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
     ]
 )
 @EntityScan(basePackages = ["com.ritense.buildingblock.domain"])
- class BuildingBlockAutoConfiguration {
+class BuildingBlockAutoConfiguration {
+
     @Order(HIGHEST_PRECEDENCE + 27)
     @ConditionalOnMissingBean(name = ["buildingBlockLiquibaseMasterChangeLogLocation"])
     @Bean
@@ -52,13 +55,35 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
         return BuildingBlockHttpSecurityConfigurer()
     }
 
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionService::class)
+    fun buildingBlockDocumentDefinitionService(
+        repository: BuildingBlockJsonSchemaDocumentDefinitionRepository
+    ): BuildingBlockDocumentDefinitionService {
+        return BuildingBlockDocumentDefinitionService(repository)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockManagementService::class)
+    fun buildingBlockManagementService(
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService
+    ): BuildingBlockManagementService {
+        return BuildingBlockManagementService(
+            buildingBlockDefinitionRepository,
+            buildingBlockDocumentDefinitionService
+        )
+    }
+
     @ConditionalOnMissingBean(name = ["buildingBlockDefinitionResource"])
     @Bean
     fun buildingBlockManagementResource(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        buildingBlockManagementService: BuildingBlockManagementService
     ): BuildingBlockManagementResource {
         return BuildingBlockManagementResource(
-            buildingBlockDefinitionRepository
+            buildingBlockDefinitionRepository,
+            buildingBlockManagementService
         )
     }
 }
