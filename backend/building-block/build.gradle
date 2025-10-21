@@ -50,6 +50,7 @@ dependencies {
     implementation project(":web")
     implementation project(":widget")
     implementation project(":process-document")
+    implementation project(":case")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"
