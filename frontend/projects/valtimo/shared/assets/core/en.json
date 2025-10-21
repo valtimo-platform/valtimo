@@ -1888,6 +1888,7 @@
     "widgets": {"title": "Widgets"},
     "views": {
       "title": "Views",
+      "upload": "Upload",
       "add": "Add view",
       "deleteContent": "Are you sure you want to delete this view? This change cannot be reverted",
       "noResultsTitle": "There are no configured views",

@@ -1921,6 +1921,7 @@
     "widgets": {"title": "Widgets"},
     "views": {
       "title": "Beelden",
+      "upload": "Uploaden",
       "add": "Beeld toevoegen",
       "deleteContent": "Weet u zeker dat u dit beeld wilt verwijderen? Deze wijziging kan niet ongedaan worden gemaakt.",
       "noResultsTitle": "Er zijn geen geconfigureerde beelden",

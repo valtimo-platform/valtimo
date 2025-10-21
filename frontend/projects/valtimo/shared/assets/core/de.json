@@ -1915,6 +1915,7 @@
     "widgets": {"title": "Widgets"},
     "views": {
       "title": "Bilder",
+      "upload":"Upload",
       "add": "Bild hinzufügen",
       "deleteContent": "Sind Sie sicher, dass Sie dieses Bild löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
       "noResultsTitle": "Es sind keine konfigurierten Bilder vorhanden",

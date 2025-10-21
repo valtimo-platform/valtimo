@@ -21,6 +21,7 @@
   [loading]="$loading()"
   (rowClicked)="onRowClicked($event)"
 >
+  <ng-container carbonToolbarContent [ngTemplateOutlet]="uploadButton"></ng-container>
   <ng-container carbonToolbarContent [ngTemplateOutlet]="addViewButton"></ng-container>
 
   <valtimo-no-results
@@ -29,6 +30,16 @@
     [title]="'ikoManagement.views.noResultsTitle' | translate"
   ></valtimo-no-results>
 </valtimo-carbon-list>
+
+<ng-template #uploadButton>
+  <button
+    [iconOnly]="true"
+    cdsButton="ghost"
+    (click)="openUploadModal()"
+  >
+    <svg cdsIcon="upload" size="16"></svg>
+  </button>
+</ng-template>
 
 <ng-template #addViewButton>
   <button cdsButton="primary" (click)="openAddModal()">
@@ -41,10 +52,15 @@
 <valtimo-iko-management-view-modal
   *ngIf="apiKey$ | async as apiKey"
   [apiKey]="apiKey"
-  [open]="$modalOpen()"
+  [open]="$viewModalOpen()"
   [prefillData]="$prefillData()"
-  (modalClose)="onModalClose($event, apiKey)"
+  (modalClose)="onViewModalClose($event, apiKey)"
 ></valtimo-iko-management-view-modal>
+
+<valtimo-iko-management-upload-modal
+  [open]="$uploadModalOpen()"
+  (modalClose)="onUploadModalClose($event)"
+></valtimo-iko-management-upload-modal>
 
 <valtimo-confirmation-modal
   confirmButtonTextTranslationKey="interface.delete"

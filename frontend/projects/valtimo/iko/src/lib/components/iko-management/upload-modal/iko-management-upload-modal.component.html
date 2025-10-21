@@ -1,0 +1,87 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<cds-modal
+  *ngIf="{
+    activeStep: activeStep$ | async,
+    uploadStatus: uploadStatus$ | async,
+  } as obs"
+  valtimoCdsModal
+  [open]="open$ | async"
+  size="sm"
+  showFooter="true"
+  (close)="onCancel()"
+>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
+    <h3 cdsModalHeaderHeading>Import IKO definition</h3>
+  </cds-modal-header>
+
+<!--  <section [ngSwitch]="obs.activeStep" cdsModalContent>-->
+<!--    <cds-progress-bar-->
+<!--      class="valtimo-definition-uploader__progress-bar"-->
+<!--      [label]="'caseManagement.importDefinition.progressBar.label' | translate"-->
+<!--      [status]="obs.uploadStatus"-->
+<!--      [helperText]="'caseManagement.importDefinition.progressBar.' + obs.uploadStatus | translate"-->
+<!--    ></cds-progress-bar>-->
+<!--  </section>-->
+
+<!--  <cds-modal-footer-->
+<!--    class="valtimo-definition-uploader__footer"-->
+<!--    [class.valtimo-definition-uploader__footer&#45;&#45;double]="obs.activeStep === UPLOAD_STEP.FILE_SELECT"-->
+<!--  >-->
+<!--    <button-->
+<!--      *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR"-->
+<!--      class="valtimo-definition-uploader__cancel"-->
+<!--      cdsButton="ghost"-->
+<!--      (click)="onCloseModal(obs.isStepAfterUpload)"-->
+<!--    >-->
+<!--      {{ (obs.isStepAfterUpload ? 'interface.skip' : 'interface.cancel') | translate }}-->
+<!--    </button>-->
+
+<!--    <div class="valtimo-definition-uploader__actions">-->
+<!--      <button-->
+<!--        *ngIf="obs.backButtonEnabled"-->
+<!--        cdsButton="secondary"-->
+<!--        (click)="onBackClick(obs.activeStep)"-->
+<!--      >-->
+<!--        {{ 'interface.back' | translate }}-->
+<!--      </button>-->
+
+<!--      <button-->
+<!--        *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR"-->
+<!--        cdsButton="primary"-->
+<!--        [disabled]="obs.nextButtonDisabled"-->
+<!--        (click)="onNextClick(obs.activeStep)"-->
+<!--      >-->
+<!--        {{-->
+<!--          (obs.activeStep === UPLOAD_STEP.FILE_SELECT-->
+<!--          ? 'caseManagement.importDefinition.startUpload'-->
+<!--          : 'interface.next'-->
+<!--          ) | translate-->
+<!--        }}-->
+<!--      </button>-->
+
+<!--      <button-->
+<!--        *ngIf="obs.uploadStatus === UPLOAD_STATUS.ERROR"-->
+<!--        class="valtimo-definition-uploader__cancel"-->
+<!--        cdsButton="primary"-->
+<!--        (click)="onCloseModal(true)"-->
+<!--      >-->
+<!--        {{ 'interface.finish' | translate }}-->
+<!--      </button>-->
+<!--    </div>-->
+<!--  </cds-modal-footer>-->
+</cds-modal>

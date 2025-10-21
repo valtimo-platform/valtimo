@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
+import {BaseApiService, ConfigService, Page, InterceptorSkipHeader} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   IkoDataAggregateCreateRequest,
@@ -94,6 +94,24 @@ export class IkoManagementApiService extends BaseApiService {
 
   public deleteIkoDataAggregate(key: string): Observable<void> {
     return this.httpClient.delete<void>(this.getApiUrl(`management/v1/iko-data-aggregate/${key}`));
+  }
+
+  public exportIKOConfiguration(
+    key: string,
+  ): Observable<HttpResponse<Blob>> {
+    return this.httpClient.get<Blob>(
+      this.getApiUrl(
+        `management/v1/iko-data-aggregate/${key}/export`
+      ),
+      {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
+    );
+  }
+
+  public importConfigurationZip(file: FormData): Observable<HttpResponse<Blob>> {
+    return this.httpClient.post<HttpResponse<Blob>>(
+      this.getApiUrl(`management/v1/case/import`),
+      file
+    );
   }
 
   public getIkoRepositoryPropertyFields(type: string): Observable<PropertyField[]> {

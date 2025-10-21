@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import {CommonModule} from '@angular/common';
-import {Component} from '@angular/core';
+import {CommonModule, DOCUMENT} from '@angular/common';
+import {Component, Inject, TemplateRef, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
   CarbonListModule,
@@ -25,12 +25,14 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, LoadingModule, Notification, TabsModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, Observable, switchMap, tap} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {IkoDataRequestResponse} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchActionModalComponent} from './search-action-modal/search-action-modal.component';
+import {GlobalNotificationService} from '@valtimo/shared';
+import {HttpResponse} from '@angular/common/http';
 
 @Component({
   standalone: true,
@@ -44,9 +46,13 @@ import {IkoManagementSearchActionModalComponent} from './search-action-modal/sea
     IkoManagementSearchActionModalComponent,
     TabsModule,
     TranslateModule,
+    LoadingModule,
   ],
 })
 export class IkoManagementSearchActionsComponent {
+  @ViewChild('exportingMessage')
+  private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
+
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly FIELDS: ColumnConfig[] = [
     {
@@ -76,6 +82,7 @@ export class IkoManagementSearchActionsComponent {
   public readonly prefillData$ = new BehaviorSubject<IkoDataRequestResponse | null>(null);
   public readonly actionModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
+  public readonly exporting$ = new BehaviorSubject<boolean>(false);
   public readonly repositoryKey$ = this.route.params.pipe(
     map((params: Params) => params.apiKey),
     filter(repositoryKey => !!repositoryKey)
@@ -84,6 +91,8 @@ export class IkoManagementSearchActionsComponent {
     map((params: Params) => params.key),
     filter(key => !!key)
   );
+
+  public readonly aggregateKey = this.route.snapshot.params['key'];
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly searchActions$: Observable<IkoDataRequestResponse[]> = combineLatest([
@@ -94,10 +103,15 @@ export class IkoManagementSearchActionsComponent {
     tap(() => this.loading$.next(false))
   );
 
+  private _currentNotification!: Notification;
+
   constructor(
+    @Inject(DOCUMENT) private document: Document,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly ikoManagementApiService: IkoManagementApiService
+    private readonly ikoManagementApiService: IkoManagementApiService,
+    private readonly notificationService: GlobalNotificationService,
+    private readonly translateService: TranslateService
   ) {}
 
   public onSearchActionClick(action: IkoDataRequestResponse): void {
@@ -150,7 +164,79 @@ export class IkoManagementSearchActionsComponent {
       });
   }
 
+  public exportConfiguration(): void {
+    this.closeCurrentNotification();
+
+    this._currentNotification = this.notificationService.showNotification({
+      type: 'info',
+      title: '',
+      showClose: false,
+      template: this._exportMessageTemplateRef,
+    });
+
+    this.startExporting();
+
+    combineLatest([this.aggregateKey$])
+      .pipe(
+        take(1),
+        switchMap(([aggregateKey]) =>
+          this.ikoManagementApiService.exportIKOConfiguration(
+            aggregateKey,
+          )
+        )
+      )
+      .subscribe({
+        next: response => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'success',
+            title: this.translateService.instant('caseManagement.exportSuccessTitle'),
+            duration: 5000,
+          });
+          this.downloadZip(response);
+          this.stopExporting();
+        },
+        error: () => {
+          this.closeCurrentNotification();
+          this._currentNotification = this.notificationService.showNotification({
+            type: 'error',
+            title: this.translateService.instant('caseManagement.exportErrorTitle'),
+            message: this.translateService.instant('caseManagement.exportErrorMessage'),
+            duration: 5000,
+          });
+          this.stopExporting();
+        },
+      });
+  }
+
   public openAddModal(): void {
     this.actionModalOpen$.next(true);
+  }
+
+  private startExporting(): void {
+    this.exporting$.next(true);
+  }
+
+  private downloadZip(response: HttpResponse<Blob>): void {
+    const link = document.createElement('a');
+    const contentDisposition = response.headers.get('content-disposition');
+    const splitContentDisposition = contentDisposition?.split('filename=') ?? [];
+    const fileName = splitContentDisposition.length > 1 && splitContentDisposition[1];
+
+    link.href = this.document.defaultView?.URL.createObjectURL(response.body) ?? '';
+    link.download = fileName || `${this.aggregateKey}.valtimo.zip`;
+    link.target = '_blank';
+    link.click();
+    link.remove();
+  }
+
+  private closeCurrentNotification(): void {
+    if (this._currentNotification) {
+      this.notificationService.close(this._currentNotification);
+    }
+  }
+
+  private stopExporting(): void {
+    this.exporting$.next(false);
   }
 }
