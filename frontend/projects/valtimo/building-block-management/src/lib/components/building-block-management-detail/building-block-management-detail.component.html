@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<cds-tabs *ngIf="activeTabKey$ | async as activeTabKey" type="contained">
+<cds-tabs *ngIf="activeTabKey$ | async as activeTabKey" type="line">
   <cds-tab
     *ngIf="{active: activeTabKey === BUILDING_BLOCK_MANAGEMENT_TABS.GENERAL} as obs"
     [active]="obs.active"

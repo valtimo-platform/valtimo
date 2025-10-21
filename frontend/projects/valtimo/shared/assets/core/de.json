@@ -2022,6 +2022,9 @@
       "general": "Allgemein",
       "document": "Dokument",
       "processes": "Prozesse"
+    },
+    "metadata": {
+      "title": "Allgemeine Informationen"
     }
   }
 }

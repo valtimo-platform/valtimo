@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-.valtimo-building-block-management-list__actions {
+.building-block-management-metadata {
   display: flex;
-}
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--cds-layer);
 
-:host ::ng-deep .cds--tab-content {
-  margin: 0 !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  outline: none !important;
+  &__title {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
 }

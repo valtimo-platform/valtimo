@@ -2028,6 +2028,9 @@
       "general": "Algemeen",
       "document": "Document",
       "processes": "Processen"
+    },
+    "metadata": {
+      "title": "Algemene informatie"
     }
   }
 }
