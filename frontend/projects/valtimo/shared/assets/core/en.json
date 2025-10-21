@@ -1990,6 +1990,11 @@
       "description": "Description",
       "descriptionTooltip": "A short description of the functionality the building block offers.",
       "descriptionPlaceholder": "Enter description"
+    },
+    "tabs": {
+      "general": "General",
+      "document": "Document",
+      "processes": "Processes"
     }
   }
 }
