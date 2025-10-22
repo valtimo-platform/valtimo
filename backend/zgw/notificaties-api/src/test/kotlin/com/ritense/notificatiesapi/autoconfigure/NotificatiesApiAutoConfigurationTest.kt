@@ -37,7 +37,8 @@ class NotificatiesApiAutoConfigurationTest {
 
         assertEquals(3, executor.corePoolSize)
         assertEquals(6, executor.maxPoolSize)
-        assertEquals(11, executor.threadPoolExecutor.queue.remainingCapacity() + executor.threadPoolExecutor.queue.size())
+        val queue = executor.threadPoolExecutor.queue
+        assertEquals(11, queue.remainingCapacity() + queue.size)
         executor.shutdown()
     }
 }

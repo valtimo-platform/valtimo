@@ -21,6 +21,7 @@ import jakarta.persistence.EntityManager
 import jakarta.persistence.PersistenceContext
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import java.time.LocalDateTime
 
 class NotificatiesApiInboundEventRepositoryImpl(
     @PersistenceContext private val entityManager: EntityManager,
@@ -29,9 +30,7 @@ class NotificatiesApiInboundEventRepositoryImpl(
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    private val isMySql: Boolean by lazy {
-        databaseType.equals("mysql", ignoreCase = true)
-    }
+    private val isMySql = databaseType.equals("mysql", ignoreCase = true)
 
     override fun fetchNextBatchForProcessing(limit: Int): List<NotificatiesApiInboundEvent> {
         if (limit <= 0) {
@@ -42,20 +41,20 @@ class NotificatiesApiInboundEventRepositoryImpl(
         val baseQuery = """
             SELECT *
             FROM notificaties_api_inbound_event
-            WHERE status = 'RECEIVED'
-               OR (status = 'FAILED' AND pending_retries > 0)
-            ORDER BY received_at
+            WHERE next_due_at IS NOT NULL
+              AND next_due_at <= :now
+            ORDER BY next_due_at
         """.trimIndent()
 
-        val forUpdateClause =  "FOR UPDATE SKIP LOCKED"
         val sql = if (isMySql) {
-            "$baseQuery LIMIT :limit $forUpdateClause"
+            "$baseQuery FOR UPDATE SKIP LOCKED LIMIT :limit"
         } else {
-            "$baseQuery $forUpdateClause LIMIT :limit"
+            "$baseQuery LIMIT :limit FOR UPDATE SKIP LOCKED"
         }
 
         val query = entityManager.createNativeQuery(sql, NotificatiesApiInboundEvent::class.java)
         query.setParameter("limit", limit)
+        query.setParameter("now", LocalDateTime.now())
 
         @Suppress("UNCHECKED_CAST")
         return query.resultList as List<NotificatiesApiInboundEvent>

@@ -23,6 +23,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -43,5 +44,8 @@ class NotificatiesApiInboundEventAdminService(
         }
         event.status = NotificatiesApiInboundEventStatus.RECEIVED
         event.pendingRetries = processingProperties.initialRetries
+        val now = LocalDateTime.now()
+        event.receivedAt = now
+        event.nextDueAt = now
     }
 }

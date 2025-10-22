@@ -73,6 +73,7 @@ class NotificatiesApiInboundEventIntakeServiceTest {
         verify(repository).save(saved.capture())
         assertEquals(NotificatiesApiInboundEventStatus.RECEIVED, saved.firstValue.status)
         assertEquals(properties.initialRetries, saved.firstValue.pendingRetries)
+        assertEquals(saved.firstValue.receivedAt, saved.firstValue.nextDueAt)
     }
 
     @Test

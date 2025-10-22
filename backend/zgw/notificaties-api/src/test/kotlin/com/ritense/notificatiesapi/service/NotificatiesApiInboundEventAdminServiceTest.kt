@@ -54,6 +54,7 @@ class NotificatiesApiInboundEventAdminServiceTest {
 
         assertEquals(NotificatiesApiInboundEventStatus.RECEIVED, event.status)
         assertEquals(properties.initialRetries, event.pendingRetries)
+        assertEquals(event.receivedAt, event.nextDueAt)
     }
 
     @Test

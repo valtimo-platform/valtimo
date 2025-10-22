@@ -55,5 +55,8 @@ class NotificatiesApiInboundEvent(
     var lastErrorMessage: String? = null,
 
     @Column(name = "received_at", nullable = false)
-    var receivedAt: LocalDateTime = LocalDateTime.now()
+    var receivedAt: LocalDateTime = LocalDateTime.now(),
+
+    @Column(name = "next_due_at")
+    var nextDueAt: LocalDateTime? = receivedAt
 )

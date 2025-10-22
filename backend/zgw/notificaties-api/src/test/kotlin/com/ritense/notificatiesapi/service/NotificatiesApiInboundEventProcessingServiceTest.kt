@@ -81,6 +81,7 @@ class NotificatiesApiInboundEventProcessingServiceTest {
         assertEquals(0, event.pendingRetries)
         assertNotNull(event.lastProcessedAt)
         assertNull(event.lastErrorMessage)
+        assertNull(event.nextDueAt)
     }
 
     @Test
@@ -94,6 +95,7 @@ class NotificatiesApiInboundEventProcessingServiceTest {
 
         verify(publisher).publishEvent(any<NotificatiesApiNotificationReceivedEvent>())
         assertEquals(NotificatiesApiInboundEventStatus.PROCESSED, event.status)
+        assertNull(event.nextDueAt)
     }
 
     @Test
@@ -109,6 +111,8 @@ class NotificatiesApiInboundEventProcessingServiceTest {
         assertEquals(properties.initialRetries - 1, event.pendingRetries)
         assertNotNull(event.lastProcessedAt)
         assertNotNull(event.lastErrorMessage)
+        val expectedNextDue = event.lastProcessedAt!!.plus(properties.retryDelay)
+        assertEquals(expectedNextDue, event.nextDueAt)
     }
 
     @Test

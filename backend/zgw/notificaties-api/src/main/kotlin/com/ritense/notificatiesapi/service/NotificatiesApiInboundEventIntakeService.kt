@@ -50,12 +50,14 @@ class NotificatiesApiInboundEventIntakeService(
         }
 
         val payload = objectMapper.writeValueAsString(notification)
+        val now = LocalDateTime.now()
         val event = NotificatiesApiInboundEvent(
             idempotenceKey = idempotenceKey,
             payload = payload,
             status = NotificatiesApiInboundEventStatus.RECEIVED,
             pendingRetries = processingProperties.initialRetries,
-            receivedAt = LocalDateTime.now()
+            receivedAt = now,
+            nextDueAt = now
         )
 
         return try {

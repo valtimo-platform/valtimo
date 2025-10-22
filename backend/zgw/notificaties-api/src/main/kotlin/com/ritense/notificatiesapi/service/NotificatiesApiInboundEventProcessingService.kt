@@ -47,15 +47,15 @@ class NotificatiesApiInboundEventProcessingService(
 
     @Transactional
     fun processBatch() {
-        val batch = inboundEventRepository.fetchNextBatchForProcessing(processingProperties.batchSize)
-        val now = LocalDateTime.now()
-        if (batch.isEmpty()) {
-            runMaintenance(now)
-            return
+        while (true) {
+            val batch = inboundEventRepository.fetchNextBatchForProcessing(processingProperties.batchSize)
+            if (batch.isEmpty()) {
+                break
+            }
+            val now = LocalDateTime.now()
+            batch.forEach { processSingleEvent(it, now) }
         }
-        batch.forEach { processSingleEvent(it, now) }
-
-        runMaintenance(now)
+        runMaintenance(LocalDateTime.now())
     }
 
     @Transactional
@@ -99,10 +99,10 @@ class NotificatiesApiInboundEventProcessingService(
         return Duration.ofMillis(millis)
     }
 
-    private fun processSingleEvent(event: NotificatiesApiInboundEvent, now: LocalDateTime) {
+    private fun processSingleEvent(event: NotificatiesApiInboundEvent, now: LocalDateTime): Boolean {
         if (!isEligibleForProcessing(event, now)) {
             logger.trace { "Inbound event ${event.id} not yet eligible for retry" }
-            return
+            return false
         }
 
         try {
@@ -115,6 +115,7 @@ class NotificatiesApiInboundEventProcessingService(
             logger.warn(ex) { "Failed to process inbound event ${event.id}" }
         }
         inboundEventRepository.save(event)
+        return true
     }
 
     private fun markProcessed(event: NotificatiesApiInboundEvent, now: LocalDateTime) {
@@ -122,6 +123,7 @@ class NotificatiesApiInboundEventProcessingService(
         event.lastProcessedAt = now
         event.pendingRetries = 0
         event.lastErrorMessage = null
+        event.nextDueAt = null
     }
 
     private fun markFailed(event: NotificatiesApiInboundEvent, now: LocalDateTime, exception: Exception) {
@@ -130,6 +132,13 @@ class NotificatiesApiInboundEventProcessingService(
         event.lastErrorMessage = stackTrace(exception)
         val remaining = event.pendingRetries ?: processingProperties.initialRetries
         event.pendingRetries = max(remaining - 1, 0)
+        if (event.pendingRetries == 0) {
+            event.nextDueAt = null
+        } else {
+            val attemptsUsed = max(processingProperties.initialRetries - event.pendingRetries!!, 1)
+            val delay = nextRetryDelay(attemptsUsed)
+            event.nextDueAt = now.plus(delay)
+        }
     }
 
     private fun stackTrace(exception: Exception): String {
