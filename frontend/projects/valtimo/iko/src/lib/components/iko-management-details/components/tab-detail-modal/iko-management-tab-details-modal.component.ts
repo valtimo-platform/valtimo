@@ -80,8 +80,10 @@ export class IkoManagementTabDetailsModalComponent {
 
   @Input() public readonly usedKeys: string[] = [];
 
+  public readonly $selectedKey = signal<string>('');
   @Input() public set selectedTab(value: TabDto) {
     if (!value) return;
+    this.$selectedKey.set(value.key);
     this.form.setValue({...value, title: value.title || ''});
     this.form.markAsPristine();
   }
