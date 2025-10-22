@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.configuration
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
@@ -23,6 +24,7 @@ import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfig
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockProcessService
+import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import org.operaton.bpm.engine.RepositoryService
@@ -90,7 +92,7 @@ class BuildingBlockAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = ["buildingBlockDefinitionResource"])
+    @ConditionalOnMissingBean(BuildingBlockManagementResource::class)
     fun buildingBlockManagementResource(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         buildingBlockManagementService: BuildingBlockManagementService
@@ -98,6 +100,18 @@ class BuildingBlockAutoConfiguration {
         return BuildingBlockManagementResource(
             buildingBlockDefinitionRepository,
             buildingBlockManagementService
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionResource::class)
+    fun buildingBlockDocumentDefinitionResource(
+        buildingBlockJsonSchemaDocumentDefinitionRepository: BuildingBlockJsonSchemaDocumentDefinitionRepository,
+        objectMapper: ObjectMapper
+    ): BuildingBlockDocumentDefinitionResource {
+        return BuildingBlockDocumentDefinitionResource(
+            buildingBlockJsonSchemaDocumentDefinitionRepository,
+            objectMapper
         )
     }
 }

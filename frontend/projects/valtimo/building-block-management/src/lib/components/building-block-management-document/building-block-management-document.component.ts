@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BuildingBlockManagementDetailService} from '../../services';
+import {
+  BuildingBlockManagementApiService,
+  BuildingBlockManagementDetailService,
+} from '../../services';
+import {Subscription, switchMap} from 'rxjs';
 
 @Component({
   standalone: true,
@@ -24,8 +28,45 @@ import {BuildingBlockManagementDetailService} from '../../services';
   styleUrls: ['./building-block-management-document.component.scss'],
   imports: [CommonModule],
 })
-export class BuildingBlockManagementDocumentComponent {
+export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestroy {
+  private readonly _subscriptions = new Subscription();
+
   constructor(
-    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService
+    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService
   ) {}
+
+  public ngOnInit(): void {
+    this.openBuildingBlockDefinitionSubscription();
+    this.openLoadingSubscription();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  private openBuildingBlockDefinitionSubscription(): void {
+    this._subscriptions.add(
+      this.buildingBlockManagementDetailService.buildingBlockDefinition$
+        .pipe(
+          switchMap(definition =>
+            this.buildingBlockManagementApiService.getBuildingBlockDocumentDefinition(
+              definition.key,
+              definition.versionTag
+            )
+          )
+        )
+        .subscribe(buildingBlockDefinition => {
+          console.log(buildingBlockDefinition);
+        })
+    );
+  }
+
+  private openLoadingSubscription(): void {
+    this._subscriptions.add(
+      this.buildingBlockManagementDetailService.loadingDefinition$.subscribe(loadingDefinition => {
+        console.log(loadingDefinition);
+      })
+    );
+  }
 }
