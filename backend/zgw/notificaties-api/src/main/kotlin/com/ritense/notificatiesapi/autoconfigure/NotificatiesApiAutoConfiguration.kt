@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.notificatiesapi.NotificatiesApiPluginFactory
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
+import com.ritense.notificatiesapi.health.NotificatiesApiInboundEventHealthIndicator
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventRepository
 import com.ritense.notificatiesapi.security.config.NotificatiesApiHttpSecurityConfigurer
@@ -31,24 +32,21 @@ import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventWorker
 import com.ritense.notificatiesapi.service.NotificatiesApiService
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiManagementResource
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiResource
-import com.ritense.notificatiesapi.health.NotificatiesApiInboundEventHealthIndicator
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
 import org.springframework.core.task.TaskExecutor
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.client.RestClient
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.context.ApplicationEventPublisher
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 
 @AutoConfiguration
 @EnableConfigurationProperties(NotificatiesApiProcessingProperties::class)
