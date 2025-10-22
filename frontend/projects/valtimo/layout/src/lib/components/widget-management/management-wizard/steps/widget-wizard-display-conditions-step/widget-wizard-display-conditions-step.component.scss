@@ -14,39 +14,13 @@
  * limitations under the License.
  */
 
-.cds--tab-content {
-  padding: 0 !important;
-}
-
-.valtimo-widget-management-fields {
+:host {
   display: flex;
   flex-direction: column;
-
   gap: 16px;
 
-  &__title-form {
-    padding: 8px 0 16px 16px;
-    background: var(--cds-layer);
-  }
-
-  &__input {
-    max-width: 288px;
-
-    input {
-      background: var(--cds-layer-02);
-    }
-  }
-
-  &__heading {
-    display: flex;
-    align-items: center;
-  }
-
-  #addColumn-header {
-    padding: 0 !important;
-  }
-
-  .cds--tabs__nav-item {
-    padding-right: 0 !important;
+  ::ng-deep.v-multi-input__row {
+    padding: 12px 16px 16px 16px;
+    background-color: var(--cds-layer-01);
   }
 }

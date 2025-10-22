@@ -26,6 +26,7 @@ import {
   WidgetWidth,
   WidgetWizardStep,
 } from '../models';
+import {Condition} from '@valtimo/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -40,6 +41,8 @@ export class WidgetWizardService {
   public readonly $widgetStyle: WritableSignal<WidgetStyle | null> = signal(null);
 
   public readonly $widgetContent: WritableSignal<WidgetContentProperties | null> = signal(null);
+
+  public readonly $widgetDisplayConditions: WritableSignal<Array<Condition> | null> = signal(null);
 
   public readonly $widgetTitle: WritableSignal<string | null> = signal(null);
 
@@ -67,7 +70,8 @@ export class WidgetWizardService {
       [WidgetWizardStep.TYPE]: !!this.$selectedWidget()?.type,
       [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
       [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
-      [WidgetWizardStep.CONTENT]: !!this.$widgetContent(),
+      [WidgetWizardStep.CONTENT]: !!this.$widgetContent() && this.$widgetContentValid(),
+      [WidgetWizardStep.DISPLAY_CONDITIONS]: !!this.$widgetContent() && this.$widgetContentValid(),
     })
   );
 
@@ -106,6 +110,7 @@ export class WidgetWizardService {
     highContrast: (this.$widgetStyle() ?? WidgetStyle.DEFAULT) === WidgetStyle.HIGH_CONTRAST,
     properties: this.$widgetContent() ?? ({} as any),
     actions: this.$widgetActions() ?? [],
+    displayConditions: this.$widgetDisplayConditions() ?? [],
   }));
 
   public readonly $usedWidgetKeys: WritableSignal<string[]> = signal([]);

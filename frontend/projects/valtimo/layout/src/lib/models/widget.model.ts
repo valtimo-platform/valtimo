@@ -23,6 +23,7 @@ import {
   WidgetInteractiveTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
+import {Condition} from '@valtimo/shared';
 
 enum WidgetType {
   FIELDS = 'fields',
@@ -52,6 +53,7 @@ interface BasicWidget {
   key: string;
   properties?: WidgetContentProperties;
   actions?: WidgetAction[];
+  displayConditions: Array<Condition>;
 }
 
 interface FieldsWidgetValue {

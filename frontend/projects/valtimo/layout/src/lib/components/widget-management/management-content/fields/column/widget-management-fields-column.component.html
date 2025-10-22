@@ -44,6 +44,7 @@
 
               <input
                 cdsText
+                cdsLayer="2"
                 [attr.data-carbon-theme]="obs.inputTheme"
                 [placeholder]="'widgetTabManagement.content.fields.titlePlaceholder' | translate"
                 type="text"
@@ -66,7 +67,7 @@
               *ngTemplateOutlet="fieldWidthDropdown; context: {index: $index}"
             ></ng-container>
 
-            <cds-text-label>
+            <cds-text-label class="valtimo-widget-management-field-column__value-field">
               <v-input-label
                 [title]="'widgetTabManagement.content.fields.value' | translate"
                 [tooltip]="

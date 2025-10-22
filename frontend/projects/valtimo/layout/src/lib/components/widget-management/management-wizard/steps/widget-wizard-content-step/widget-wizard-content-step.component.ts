@@ -27,7 +27,6 @@ import {
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
-  selector: 'valtimo-widget-wizard-content-step',
   templateUrl: './widget-wizard-content-step.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

@@ -29,12 +29,15 @@ import {WidgetWizardTypeStepComponent} from '../components/widget-management/man
 import {WidgetWizardWidthStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-width-step/widget-wizard-width-step.component';
 import {WidgetWizardStyleStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-style-step/widget-wizard-style-step.component';
 import {WidgetWizardContentStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-content-step/widget-wizard-content-step.component';
+import {WidgetWizardDisplayConditionsStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
+import {WidgetManagementWidgetFormioComponent} from '../components/widget-management/management-content/formio/widget-management-widget-formio.component';
 
 enum WidgetWizardStep {
   TYPE = 'type',
   WIDTH = 'width',
   STYLE = 'style',
   CONTENT = 'content',
+  DISPLAY_CONDITIONS = 'displayConditions',
 }
 
 enum WidgetWizardCloseEventType {
@@ -66,6 +69,7 @@ const WIZARD_STEP_COMPONENTS: Record<WidgetWizardStep, any> = {
   [WidgetWizardStep.WIDTH]: WidgetWizardWidthStepComponent,
   [WidgetWizardStep.STYLE]: WidgetWizardStyleStepComponent,
   [WidgetWizardStep.CONTENT]: WidgetWizardContentStepComponent,
+  [WidgetWizardStep.DISPLAY_CONDITIONS]: WidgetWizardDisplayConditionsStepComponent,
 };
 
 const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
@@ -82,6 +86,13 @@ const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
     illustrationUrl: 'valtimo-layout/img/widget-management/types/angular.svg',
     type: WidgetType.CUSTOM,
     component: WidgetManagementCustomComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.formio.title',
+    descriptionKey: 'widgetTabManagement.type.formio.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/formio.svg',
+    type: WidgetType.FORMIO,
+    component: WidgetManagementWidgetFormioComponent,
   },
   {
     titleKey: 'widgetTabManagement.type.table.title',

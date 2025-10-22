@@ -129,8 +129,7 @@ export class WidgetManagementDividerModalComponent {
     width: 4,
     highContrast: false,
     key: '',
-    // TODO: displayConditions
-    // displayConditions: [],
+    displayConditions: [],
   };
 
   constructor(
