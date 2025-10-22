@@ -18,6 +18,7 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {
   BehaviorSubject,
   combineLatest,
+  distinctUntilChanged,
   filter,
   map,
   Observable,
@@ -30,6 +31,7 @@ import {BuildingBlockManagementApiService} from './building-block-management-api
 import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {PageTitleService} from '@valtimo/components';
 import {BuildingBlockManagementTabKey} from '../models';
+import {isEqual} from 'lodash';
 
 @Injectable()
 export class BuildingBlockManagementDetailService implements OnDestroy {
@@ -87,7 +89,10 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
   private readonly _buildingBlockDefinition$ =
     new BehaviorSubject<BuildingBlockDefinitionDto | null>(null);
   public get buildingBlockDefinition$(): Observable<BuildingBlockDefinitionDto> {
-    return this._buildingBlockDefinition$.pipe(filter(definition => definition !== null));
+    return this._buildingBlockDefinition$.pipe(
+      filter(definition => definition !== null),
+      distinctUntilChanged((a, b) => isEqual(a, b))
+    );
   }
 
   private readonly _reload$ = new BehaviorSubject<null>(null);

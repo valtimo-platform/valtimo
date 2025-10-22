@@ -8,7 +8,7 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -76,6 +76,23 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     return this.httpClient.put<BuildingBlockDefinitionDto>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}`),
       dto
+    );
+  }
+
+  public getBuildingBlockDocumentDefinition(key: string, versionTag: string): Observable<object> {
+    return this.httpClient.get<object>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/document`)
+    );
+  }
+
+  public updateBuildingBlockDocumentDefinition(
+    key: string,
+    versionTag: string,
+    schema: any
+  ): Observable<object> {
+    return this.httpClient.put<object>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/document`),
+      schema
     );
   }
 }
