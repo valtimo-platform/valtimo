@@ -76,6 +76,7 @@ class OutboxAutoConfiguration {
         outboxMessageRepository: OutboxMessageRepository,
         objectMapper: ObjectMapper,
         userProvider: UserProvider,
+        platformTransactionManager: PlatformTransactionManager,
         @Value("\${valtimo.outbox.publisher.cloudevent-source:\${spring.application.name:application}}") cloudEventSource: String,
     ): OutboxService {
         return ValtimoOutboxService(
@@ -83,6 +84,7 @@ class OutboxAutoConfiguration {
             objectMapper,
             userProvider,
             cloudEventSource,
+            platformTransactionManager,
         )
     }
 
