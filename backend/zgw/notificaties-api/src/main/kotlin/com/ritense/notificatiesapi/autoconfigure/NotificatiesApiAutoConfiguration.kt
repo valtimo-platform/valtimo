@@ -45,6 +45,7 @@ import org.springframework.core.task.TaskExecutor
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.web.client.RestClient
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
@@ -132,12 +133,13 @@ class NotificatiesApiAutoConfiguration {
     }
 
     @Bean("notificatiesApiTaskExecutor")
-    fun notificatiesApiTaskExecutor(): TaskExecutor {
+    fun notificatiesApiTaskExecutor(processingProperties: NotificatiesApiProcessingProperties): TaskExecutor {
         return ThreadPoolTaskExecutor().apply {
-            threadNamePrefix = "notificaties-api-intake-"
-            corePoolSize = 2
-            maxPoolSize = 4
-            setQueueCapacity(20)
+            threadNamePrefix = "notificaties-api-task-"
+            corePoolSize = processingProperties.executorCorePoolSize
+            maxPoolSize = processingProperties.executorMaxPoolSize
+            setQueueCapacity(processingProperties.executorQueueCapacity)
+            setWaitForTasksToCompleteOnShutdown(true)
             initialize()
         }
     }

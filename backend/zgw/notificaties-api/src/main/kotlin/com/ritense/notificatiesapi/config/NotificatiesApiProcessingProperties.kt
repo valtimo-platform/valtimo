@@ -29,4 +29,7 @@ class NotificatiesApiProcessingProperties {
     var retentionPeriod: Duration = Duration.ofDays(30)
     var receivedWarningThreshold: Duration = Duration.ofHours(2)
     var failedCountHealthThreshold: Long = 0
+    var executorCorePoolSize: Int = 2
+    var executorMaxPoolSize: Int = 4
+    var executorQueueCapacity: Int = 20
 }
