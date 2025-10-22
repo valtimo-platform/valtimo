@@ -70,7 +70,7 @@ class NotificatiesApiInboundEventProcessingServiceTest {
     @Test
     fun `processes received event successfully`() {
         val event = inboundEvent(NotificatiesApiInboundEventStatus.RECEIVED)
-        whenever(repository.fetchNextBatchForProcessing(properties.batchSize)).thenReturn(listOf(event))
+        whenever(repository.fetchNextBatchForProcessing(properties.batchSize)).thenReturn(listOf(event), emptyList())
         whenever(repository.deleteByStatusAndReceivedAtBefore(any(), any())).thenReturn(0)
         whenever(repository.existsByStatusAndReceivedAtBefore(any(), any())).thenReturn(false)
 
@@ -101,7 +101,7 @@ class NotificatiesApiInboundEventProcessingServiceTest {
     @Test
     fun `marks failed event and decrements retries`() {
         val event = inboundEvent(NotificatiesApiInboundEventStatus.RECEIVED, payload = "not-json")
-        whenever(repository.fetchNextBatchForProcessing(properties.batchSize)).thenReturn(listOf(event))
+        whenever(repository.fetchNextBatchForProcessing(properties.batchSize)).thenReturn(listOf(event), emptyList())
         whenever(repository.deleteByStatusAndReceivedAtBefore(any(), any())).thenReturn(0)
         whenever(repository.existsByStatusAndReceivedAtBefore(any(), any())).thenReturn(false)
 
