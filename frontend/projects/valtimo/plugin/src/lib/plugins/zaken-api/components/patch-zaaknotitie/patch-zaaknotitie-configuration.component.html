@@ -47,8 +47,8 @@
           <v-input
             [type]="property.type"
             [name]="property.name"
-            [title]="property.titleTranslationKey | pluginTranslate: pluginId | async"
-            [required]="property.required"
+            [title]="property.translationKey | pluginTranslate: pluginId | async"
+            [required]="true"
             [defaultValue]="prefillValueFor(property.name, obs.prefill)"
             [margin]="true"
             [trim]="true"
@@ -57,7 +57,7 @@
           />
         </div>
         <div class="col-1">
-            <button class="btn btn-space delete-button" (click)="removeProperty(property)">
+            <button class="btn btn-space delete-button" (click)="removeProperty(property.name)">
               <svg class="cds--btn__icon" cdsIcon="trash-can" size="16"></svg>
             </button>
         </div>

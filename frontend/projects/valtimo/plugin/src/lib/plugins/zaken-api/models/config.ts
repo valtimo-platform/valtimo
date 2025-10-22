@@ -169,10 +169,9 @@ interface PatchZaakNotitieConfig {
 }
 
 export interface PropertyFormField {
-  type: string;
+  type?: string;
   name: string;
-  titleTranslationKey: string;
-  required: boolean;
+  translationKey: string;
   tooltipTranslationKey?: string;
   presetOptions?: string[];
 }

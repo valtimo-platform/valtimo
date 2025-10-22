@@ -114,8 +114,7 @@ export class PatchZaakNotitieConfigurationComponent
     return {
       type: this.inputTypeForProperty(property),
       name: property,
-      titleTranslationKey: this.translationKeyFor(property),
-      required: true,
+      translationKey: this.translationKeyFor(property),
       presetOptions: this.presetOptionsForProperty(property)
     }
   }
