@@ -30,34 +30,35 @@ import {ZAAKNOTIFICATIE_STATUSES} from '../../models/zaaknotificatie-statuses';
   templateUrl: './patch-zaaknotitie-configuration.component.html',
   styleUrls: ['./patch-zaaknotitie-configuration.component.scss'],
 })
-export class PatchZaaknotitieConfigurationComponent
+export class PatchZaakNotitieConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
-  @Input() save$: Observable<void>;
   @Input() disabled$: Observable<boolean>;
-  @Input() prefillConfiguration$: Observable<PatchZaakNotitieConfig>;
   @Input() pluginId: string;
-
+  @Input() save$: Observable<void>;
+  @Input() prefillConfiguration$: Observable<PatchZaakNotitieConfig>;
   @Output() valid: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() configuration: EventEmitter<PatchZaakNotitieConfig> =
-    new EventEmitter<PatchZaakNotitieConfig>();
+  @Output() configuration: EventEmitter<PatchZaakNotitieConfig> = new EventEmitter<PatchZaakNotitieConfig>();
 
   public readonly propertyOptions: string[] = Object.values(PatchZaakNotitiePropertyOptions);
   public readonly propertyList: Array<PatchZaakNotitieProperties> = [];
-  public readonly statusOptions: string[] = ZAAKNOTIFICATIE_STATUSES
-  public readonly notitieTypeOptions: string[] = ZAAKNOTIFICATIE_TYPES
+  public readonly statusOptions: string[] = ZAAKNOTIFICATIE_STATUSES;
+  public readonly notitieTypeOptions: string[] = ZAAKNOTIFICATIE_TYPES;
 
-  private readonly _formValue$ = new BehaviorSubject<PatchZaakNotitieConfig | null>(null);
+  private readonly _formValue$ = new BehaviorSubject<PatchZaakNotitieConfig>({});
   private readonly _properties = new Map<PatchZaakNotitieProperties, string>();
-  private readonly _valid$ = new BehaviorSubject<boolean>(false);
   private _saveSubscription!: Subscription;
+  private readonly _valid$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private readonly iconService: IconService) {
+  constructor(
+    private readonly iconService: IconService
+  ) {
     this.iconService.registerAll([Add16, TrashCan16]);
   }
 
   public ngOnInit(): void {
     this.openSaveSubscription();
+
     this.prefillConfiguration$.pipe(take(1)).subscribe(prefill => {
       if (prefill) {
         PatchZaakNotitiePropertyOptions.filter(property => !!prefill[property]).forEach(property =>
@@ -71,17 +72,22 @@ export class PatchZaaknotitieConfigurationComponent
     this._saveSubscription?.unsubscribe();
   }
 
-  public onFormValueChanged(value: PatchZaakNotitieConfig): void {
-    this._formValue$.next(value);
-    this.handleValid(value);
+  public onFormValueChanged(formValue: PatchZaakNotitieConfig): void {
+    this._formValue$.next(formValue);
+    this.handleValid(formValue);
   }
 
   public onPropertyChanged(property: PatchZaakNotitieProperties, value: any): void {
+    console.log('onPropertyChanged', property, value)
     this._properties.set(property, value);
+    console.log('_properties', this._properties)
     const formValue = this._formValue$.value;
+    console.log('formValue [1]', formValue)
     this._properties.forEach((value, key) => {
+      console.log('formValue[key] = value', key, value, formValue[key])
       formValue[key] = value;
     });
+    console.log('formValue [2]', formValue)
     this.onFormValueChanged(formValue);
   }
 
@@ -98,16 +104,20 @@ export class PatchZaaknotitieConfigurationComponent
   }
 
   public addProperty(property: PatchZaakNotitieProperties): void {
+    console.log('addProperty', property);
+    console.log('- propertyList', this.propertyList);
+    console.log('- hasPropertyBeenAdded', this.hasPropertyBeenAdded(property));
     // only add the property to the list if it is not in the list
-    if (this.propertyList.indexOf(property) == -1) {
+    if (!this.hasPropertyBeenAdded(property)) {
       this.propertyList.push(property);
+      console.log('- propertyList', this.propertyList);
       this.onPropertyChanged(property, undefined);
     }
   }
 
   public removeProperty(property: PatchZaakNotitieProperties): void {
     // only remove the property from the list if it is in the list
-    if (this.propertyList.indexOf(property) != -1) {
+    if (this.hasPropertyBeenAdded(property)) {
       this.propertyList.splice(this.propertyList.indexOf(property), 1);
       this.onPropertyChanged(property, undefined);
     }
@@ -117,7 +127,7 @@ export class PatchZaaknotitieConfigurationComponent
     return this.propertyList.indexOf(property) !== -1;
   }
 
-  public inputTypeForProperty(property): string {
+  public inputTypeForProperty(property: string): string {
     switch (property) {
       case 'tekst':
         return 'textarea';
@@ -149,9 +159,10 @@ export class PatchZaaknotitieConfigurationComponent
       combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
+          console.log('saveSubscription', formValue, valid)
           if (valid) {
-            const payload: PatchZaakNotitieConfig = {};
-            this.propertyList.forEach(property => (payload[property] = formValue[property]));
+            //const payload: PatchZaakNotitieConfig = {};
+            //this.propertyList.forEach(property => (payload[property] = formValue[property]));
             this.configuration.emit(formValue);
           }
         });

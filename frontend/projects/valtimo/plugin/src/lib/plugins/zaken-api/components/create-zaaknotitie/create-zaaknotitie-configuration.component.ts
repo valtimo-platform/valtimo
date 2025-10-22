@@ -26,7 +26,7 @@ import {ZAAKNOTIFICATIE_TYPES} from '../../models/zaaknotificatie-types';
   selector: 'valtimo-create-zaaknotitie-configuration',
   templateUrl: './create-zaaknotitie-configuration.component.html',
 })
-export class CreateZaaknotitieConfigurationComponent
+export class CreateZaakNotitieConfigurationComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
 {
   @Input() save$: Observable<void>;

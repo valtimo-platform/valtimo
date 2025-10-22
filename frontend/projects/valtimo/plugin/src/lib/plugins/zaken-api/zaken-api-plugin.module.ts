@@ -45,6 +45,7 @@ import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-n
 import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
@@ -53,9 +54,8 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
-import {CreateZaaknotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
-import {PatchZaaknotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
+import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
+import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
 
 @NgModule({
   declarations: [
@@ -70,6 +70,7 @@ import {PatchZaaknotitieConfigurationComponent} from './components/patch-zaaknot
     CreateOrganisatorischeEenheidZaakRolComponent,
     CreateVestigingZaakRolComponent,
     CreateZaakConfigurationComponent,
+    PatchZaakConfigurationComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
     EndHersteltermijnComponent,
@@ -78,9 +79,8 @@ import {PatchZaaknotitieConfigurationComponent} from './components/patch-zaaknot
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
     RelateerZakenComponent,
-    PatchZaakConfigurationComponent,
-    CreateZaaknotitieConfigurationComponent,
-    PatchZaaknotitieConfigurationComponent,
+    CreateZaakNotitieConfigurationComponent,
+    PatchZaakNotitieConfigurationComponent,
   ],
   imports: [
     CommonModule,
@@ -106,6 +106,7 @@ import {PatchZaaknotitieConfigurationComponent} from './components/patch-zaaknot
     SetZaakStatusConfigurationComponent,
     CreateZaakResultaatConfigurationComponent,
     CreateZaakConfigurationComponent,
+    PatchZaakConfigurationComponent,
     CreateMedewerkerZaakRolComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
@@ -118,7 +119,9 @@ import {PatchZaaknotitieConfigurationComponent} from './components/patch-zaaknot
     UpdateZaakeigenschapComponent,
     DeleteZaakeigenschapComponent,
     CreateZaakObjectConfigurationComponent,
-    RelateerZakenComponent
+    RelateerZakenComponent,
+    CreateZaakNotitieConfigurationComponent,
+    PatchZaakNotitieConfigurationComponent,
   ],
 })
 export class ZakenApiPluginModule {}
