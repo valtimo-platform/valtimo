@@ -30,4 +30,5 @@ export const PatchZaakPropertyOptions = [
   'archiveActionDate',
   'startDateRetentionPeriod',
 ] as const;
+
 export type PatchZaakProperties = (typeof PatchZaakPropertyOptions)[number];
