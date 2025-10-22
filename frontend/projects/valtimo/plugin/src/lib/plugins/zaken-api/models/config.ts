@@ -168,6 +168,15 @@ interface PatchZaakNotitieConfig {
   status?: string;
 }
 
+export interface PropertyFormField {
+  type: string;
+  name: string;
+  titleTranslationKey: string;
+  required: boolean;
+  tooltipTranslationKey?: string;
+  presetOptions?: string[];
+}
+
 export {
   ZakenApiConfig,
   LinkDocumentToZaakConfig,

@@ -19,7 +19,7 @@ import {FunctionConfigurationComponent} from '../../../../models';
 import {BehaviorSubject, combineLatest, Observable, Subscription, take} from 'rxjs';
 import {IconService} from 'carbon-components-angular';
 import {Add16, TrashCan16} from '@carbon/icons';
-import {PatchZaakNotitieConfig} from '../../models';
+import {PatchZaakNotitieConfig, PropertyFormField} from '../../models';
 import {PatchZaakNotitieProperties, PatchZaakNotitiePropertyOptions} from '../../models/patch-zaaknotitie-properties';
 import {ZAAKNOTIFICATIE_TYPES} from '../../models/zaaknotificatie-types';
 import {ZAAKNOTIFICATIE_STATUSES} from '../../models/zaaknotificatie-statuses';
@@ -41,7 +41,7 @@ export class PatchZaakNotitieConfigurationComponent
   @Output() configuration: EventEmitter<PatchZaakNotitieConfig> = new EventEmitter<PatchZaakNotitieConfig>();
 
   public readonly propertyOptions: string[] = Object.values(PatchZaakNotitiePropertyOptions);
-  public readonly propertyList: Array<PatchZaakNotitieProperties> = [];
+  public readonly propertyList: Array<PropertyFormField> = [];
   public readonly statusOptions: string[] = ZAAKNOTIFICATIE_STATUSES;
   public readonly notitieTypeOptions: string[] = ZAAKNOTIFICATIE_TYPES;
 
@@ -78,39 +78,18 @@ export class PatchZaakNotitieConfigurationComponent
   }
 
   public onPropertyChanged(property: PatchZaakNotitieProperties, value: any): void {
-    console.log('onPropertyChanged', property, value)
     this._properties.set(property, value);
-    console.log('_properties', this._properties)
     const formValue = this._formValue$.value;
-    console.log('formValue [1]', formValue)
     this._properties.forEach((value, key) => {
-      console.log('formValue[key] = value', key, value, formValue[key])
       formValue[key] = value;
     });
-    console.log('formValue [2]', formValue)
     this.onFormValueChanged(formValue);
   }
 
-  public prefillValueFor(property: string, prefill: PatchZaakNotitieConfig): string | null {
-    return prefill != null ? prefill[property] : null;
-  }
-
-  public translationKeyFor(property: string): string {
-    return property;
-  }
-
-  public translationKeyForPropertyList(property: string): string {
-    return this.translationKeyFor(property);
-  }
-
   public addProperty(property: PatchZaakNotitieProperties): void {
-    console.log('addProperty', property);
-    console.log('- propertyList', this.propertyList);
-    console.log('- hasPropertyBeenAdded', this.hasPropertyBeenAdded(property));
     // only add the property to the list if it is not in the list
     if (!this.hasPropertyBeenAdded(property)) {
-      this.propertyList.push(property);
-      console.log('- propertyList', this.propertyList);
+      this.propertyList.push(this.propertyFormFieldFor(property));
       this.onPropertyChanged(property, undefined);
     }
   }
@@ -118,16 +97,30 @@ export class PatchZaakNotitieConfigurationComponent
   public removeProperty(property: PatchZaakNotitieProperties): void {
     // only remove the property from the list if it is in the list
     if (this.hasPropertyBeenAdded(property)) {
-      this.propertyList.splice(this.propertyList.indexOf(property), 1);
+      this.propertyList.splice(this.propertyList.findIndex(item => item.name === property), 1);
       this.onPropertyChanged(property, undefined);
     }
   }
 
   public hasPropertyBeenAdded(property: PatchZaakNotitieProperties): boolean {
-    return this.propertyList.indexOf(property) !== -1;
+    return this.propertyList.findIndex(item => item.name === property) !== -1;
   }
 
-  public inputTypeForProperty(property: string): string {
+  public prefillValueFor(property: PatchZaakNotitieProperties, prefill: PatchZaakNotitieConfig): string | null {
+    return prefill != null ? prefill[property] : null;
+  }
+
+  private propertyFormFieldFor(property: PatchZaakNotitieProperties): PropertyFormField {
+    return {
+      type: this.inputTypeForProperty(property),
+      name: property,
+      titleTranslationKey: this.translationKeyFor(property),
+      required: true,
+      presetOptions: this.presetOptionsForProperty(property)
+    }
+  }
+
+  private inputTypeForProperty(property: PatchZaakNotitieProperties): string {
     switch (property) {
       case 'tekst':
         return 'textarea';
@@ -136,7 +129,15 @@ export class PatchZaakNotitieConfigurationComponent
     }
   }
 
-  public presetOptionsForProperty(property: string): string[] {
+  private translationKeyFor(property: string): string {
+    return property;
+  }
+
+  private translationKeyForPropertyList(property: PatchZaakNotitieProperties): string {
+    return this.translationKeyFor(property);
+  }
+
+  private presetOptionsForProperty(property: PatchZaakNotitieProperties): string[] {
     switch (property) {
       case 'notitieType':
         return this.notitieTypeOptions;
@@ -148,7 +149,7 @@ export class PatchZaakNotitieConfigurationComponent
   }
 
   private handleValid(formValue: PatchZaakNotitieConfig): void {
-    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property]);
+    const isPropertyInvalid = this.propertyList.some(property => !!!formValue[property.name]);
     const valid = !isPropertyInvalid;
     this._valid$.next(valid);
     this.valid.emit(valid);
@@ -159,10 +160,7 @@ export class PatchZaakNotitieConfigurationComponent
       combineLatest([this._formValue$, this._valid$])
         .pipe(take(1))
         .subscribe(([formValue, valid]) => {
-          console.log('saveSubscription', formValue, valid)
           if (valid) {
-            //const payload: PatchZaakNotitieConfig = {};
-            //this.propertyList.forEach(property => (payload[property] = formValue[property]));
             this.configuration.emit(formValue);
           }
         });

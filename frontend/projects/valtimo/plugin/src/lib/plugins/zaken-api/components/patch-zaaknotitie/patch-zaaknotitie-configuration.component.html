@@ -45,15 +45,15 @@
       <div class="row">
         <div class="col-11">
           <v-input
-            [type]="inputTypeForProperty(property)"
-            [name]="property"
-            [title]="translationKeyFor(property) | pluginTranslate: pluginId | async"
-            [required]="true"
-            [defaultValue]="prefillValueFor(property, obs.prefill)"
+            [type]="property.type"
+            [name]="property.name"
+            [title]="property.titleTranslationKey | pluginTranslate: pluginId | async"
+            [required]="property.required"
+            [defaultValue]="prefillValueFor(property.name, obs.prefill)"
             [margin]="true"
             [trim]="true"
-            [presetOptions]="presetOptionsForProperty(property)"
-            (valueChange)="onPropertyChanged(property, $event)"
+            [presetOptions]="property.presetOptions"
+            (valueChange)="onPropertyChanged(property.name, $event)"
           />
         </div>
         <div class="col-1">
