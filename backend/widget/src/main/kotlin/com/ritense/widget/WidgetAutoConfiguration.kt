@@ -22,6 +22,7 @@ import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.collection.CollectionWidget
 import com.ritense.widget.collection.CollectionWidgetDataProvider
 import com.ritense.widget.custom.CustomWidget
+import com.ritense.widget.divider.DividerWidget
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.fields.FieldsWidget
 import com.ritense.widget.fields.FieldsWidgetDataProvider
@@ -51,6 +52,7 @@ import javax.sql.DataSource
     basePackageClasses = [
         CollectionWidget::class,
         CustomWidget::class,
+        DividerWidget::class,
         FieldsWidget::class,
         InteractiveTableWidget::class,
         TableWidget::class,
