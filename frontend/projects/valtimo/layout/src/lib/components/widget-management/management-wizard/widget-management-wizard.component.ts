@@ -74,6 +74,12 @@ export class WidgetManagementWizardComponent implements OnDestroy {
   }
   @Input() public set editMode(value: boolean) {
     this.widgetWizardService.$editMode.set(value);
+    if (!value) return;
+    this.$currentStepIndex.set(
+      this.widgetWizardService
+        .$widgetWizardSteps()
+        .findIndex((step: WidgetWizardStep) => step === WidgetWizardStep.CONTENT)
+    );
   }
   public get editMode(): boolean {
     return this._editMode;

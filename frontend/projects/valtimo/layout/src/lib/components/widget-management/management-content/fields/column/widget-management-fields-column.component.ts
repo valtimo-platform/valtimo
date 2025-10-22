@@ -57,6 +57,7 @@ import {
   IconModule,
   IconService,
   InputModule,
+  LayerModule,
   ListItem,
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
@@ -95,6 +96,7 @@ import {IWidgetManagementService} from '../../../../../interfaces';
     InputLabelModule,
     ValuePathSelectorComponent,
     CheckboxModule,
+    LayerModule
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {

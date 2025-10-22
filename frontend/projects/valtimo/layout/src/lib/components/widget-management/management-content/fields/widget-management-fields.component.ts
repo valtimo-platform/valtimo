@@ -30,14 +30,9 @@ import {
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {
-  CARBON_THEME,
-  CdsThemeService,
-  CurrentCarbonTheme,
-  InputLabelModule,
-} from '@valtimo/components';
+import {CdsThemeService, InputLabelModule} from '@valtimo/components';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
-import {debounceTime, map, Subscription} from 'rxjs';
+import {debounceTime, Subscription} from 'rxjs';
 import {IWidgetContentComponent} from '../../../../interfaces';
 import {FieldsWidgetValue, WidgetFieldsContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
@@ -58,6 +53,7 @@ import {WidgetManagementFieldsColumnComponent} from './column/widget-management-
     ReactiveFormsModule,
     ButtonModule,
     WidgetManagementFieldsColumnComponent,
+    //TODO: DON'T FORGET THE PROCESS SELECTOR
     // CaseManagementWidgetProcessSelectorComponent,
     InputLabelModule,
   ],
@@ -78,11 +74,6 @@ export class WidgetManagementFieldsComponent
   public readonly $columns = signal<null[]>([null]);
   public readonly $widgetWidth = this.widgetWizardService.$widgetWidth();
   public readonly selectedTabIndex = -1;
-  public readonly theme$ = this.cdsThemeService.currentTheme$.pipe(
-    map((theme: CurrentCarbonTheme) =>
-      theme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
-    )
-  );
   public readonly $selectedWidgetContent = computed(() =>
     (this.widgetWizardService.$widgetContent() as WidgetFieldsContent)?.columns.reduce(
       (acc, curr, index) => ({
