@@ -14,4 +14,34 @@
   ~ limitations under the License.
   -->
 
-document works
+<ng-container
+  *ngIf="{
+    loading: loading$ | async,
+    documentDefinitionModel: documentDefinitionModel$ | async,
+  } as obs"
+>
+  @if (!obs.loading) {
+    <valtimo-json-editor
+      [model]="obs.documentDefinitionModel"
+      [fitPage]="true"
+      [fitPageExtraSpace]="103"
+      (saveEvent)="onSaveEvent($event)"
+    >
+      <button
+        cdsButton="ghost"
+        [disabled]="obs.loading || !obs.documentDefinitionModel"
+        (click)="downloadDefinition()"
+      >
+        {{ 'interface.download' | translate }}
+
+        <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
+      </button>
+    </valtimo-json-editor>
+  } @else {
+    <div class="loading-container">
+      <cds-loading></cds-loading>
+    </div>
+  }
+</ng-container>
+
+<a id="downloadAnchorElement" style="display: none"></a>

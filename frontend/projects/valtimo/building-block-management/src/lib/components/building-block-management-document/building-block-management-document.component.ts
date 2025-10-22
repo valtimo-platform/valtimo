@@ -19,17 +19,45 @@ import {
   BuildingBlockManagementApiService,
   BuildingBlockManagementDetailService,
 } from '../../services';
-import {Subscription, switchMap} from 'rxjs';
+import {BehaviorSubject, combineLatest, filter, map, Subscription, switchMap, tap} from 'rxjs';
+import {EditorModel, JsonEditorComponent} from '@valtimo/components';
+import {ButtonModule, IconModule, LoadingModule} from 'carbon-components-angular';
+import {TranslatePipe} from '@ngx-translate/core';
+import {take} from 'rxjs/operators';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-document',
   templateUrl: './building-block-management-document.component.html',
   styleUrls: ['./building-block-management-document.component.scss'],
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    JsonEditorComponent,
+    ButtonModule,
+    IconModule,
+    TranslatePipe,
+    LoadingModule,
+  ],
 })
 export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestroy {
   private readonly _subscriptions = new Subscription();
+
+  private readonly _loadingDocumentDefinition$ = new BehaviorSubject<boolean>(true);
+
+  public readonly loading$ = combineLatest([
+    this.buildingBlockManagementDetailService.loadingDefinition$,
+    this._loadingDocumentDefinition$,
+  ]).pipe(
+    map(
+      ([loadingDefinition, loadingDocumentDefinition]) =>
+        loadingDefinition || loadingDocumentDefinition
+    )
+  );
+
+  private readonly _documentDefinitionModel$ = new BehaviorSubject<EditorModel | null>(null);
+  public readonly documentDefinitionModel$ = this._documentDefinitionModel$.pipe(
+    filter(model => model !== null)
+  );
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
@@ -45,20 +73,53 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
     this._subscriptions.unsubscribe();
   }
 
+  public downloadDefinition(): void {
+    this._documentDefinitionModel$.pipe(take(1)).subscribe(model => {
+      const dataString = 'data:text/json;charset=utf-8,' + encodeURIComponent(model.value);
+      const downloadAnchorElement = document.getElementById('downloadAnchorElement');
+
+      if (!downloadAnchorElement) return;
+
+      downloadAnchorElement.setAttribute('href', dataString);
+      downloadAnchorElement.setAttribute(
+        'download',
+        `${this.buildingBlockManagementDetailService.buildingBlockDefinitionKey}-v${this.buildingBlockManagementDetailService.buildingBlockVersionTag}.json`
+      );
+      downloadAnchorElement.click();
+    });
+  }
+
+  public onSaveEvent(event: object): void {
+    this._loadingDocumentDefinition$.next(true);
+
+    this.buildingBlockManagementApiService
+      .updateBuildingBlockDocumentDefinition(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockVersionTag,
+        event
+      )
+      .subscribe(res => {
+        this.setDocumentDefinitionModel(res);
+        this._loadingDocumentDefinition$.next(false);
+      });
+  }
+
   private openBuildingBlockDefinitionSubscription(): void {
     this._subscriptions.add(
       this.buildingBlockManagementDetailService.buildingBlockDefinition$
         .pipe(
+          tap(() => this._loadingDocumentDefinition$.next(true)),
           switchMap(definition =>
             this.buildingBlockManagementApiService.getBuildingBlockDocumentDefinition(
               definition.key,
               definition.versionTag
             )
-          )
+          ),
+          tap(() => this._loadingDocumentDefinition$.next(false))
         )
-        .subscribe(buildingBlockDefinition => {
-          console.log(buildingBlockDefinition);
-        })
+        .subscribe(buildingBlockDocumentDefinition =>
+          this.setDocumentDefinitionModel(buildingBlockDocumentDefinition)
+        )
     );
   }
 
@@ -68,5 +129,12 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
         console.log(loadingDefinition);
       })
     );
+  }
+
+  private setDocumentDefinitionModel(definition: object): void {
+    this._documentDefinitionModel$.next({
+      value: JSON.stringify(definition, null, 2),
+      language: 'json',
+    });
   }
 }
