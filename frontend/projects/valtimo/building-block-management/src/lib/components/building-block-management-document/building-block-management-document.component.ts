@@ -24,6 +24,7 @@ import {EditorModel, JsonEditorComponent} from '@valtimo/components';
 import {ButtonModule, IconModule, LoadingModule} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
 import {take} from 'rxjs/operators';
+import documentJsonSchema from './document-json-schema.json';
 
 @Component({
   standalone: true,
@@ -40,6 +41,8 @@ import {take} from 'rxjs/operators';
   ],
 })
 export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestroy {
+  public readonly documentJsonSchema = documentJsonSchema;
+
   private readonly _subscriptions = new Subscription();
 
   private readonly _loadingDocumentDefinition$ = new BehaviorSubject<boolean>(true);
@@ -59,6 +62,8 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
     filter(model => model !== null)
   );
 
+  private _modifiedDefinition: string | null = null;
+
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService
@@ -66,7 +71,6 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
 
   public ngOnInit(): void {
     this.openBuildingBlockDefinitionSubscription();
-    this.openLoadingSubscription();
   }
 
   public ngOnDestroy(): void {
@@ -90,6 +94,8 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
   }
 
   public onSaveEvent(event: object): void {
+    if (!this._modifiedDefinition) return;
+
     this._loadingDocumentDefinition$.next(true);
 
     this.buildingBlockManagementApiService
@@ -100,8 +106,13 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
       )
       .subscribe(res => {
         this.setDocumentDefinitionModel(res);
+        this._modifiedDefinition = null;
         this._loadingDocumentDefinition$.next(false);
       });
+  }
+
+  public onChangeEvent(event: string): void {
+    this._modifiedDefinition = event;
   }
 
   private openBuildingBlockDefinitionSubscription(): void {
@@ -120,14 +131,6 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
         .subscribe(buildingBlockDocumentDefinition =>
           this.setDocumentDefinitionModel(buildingBlockDocumentDefinition)
         )
-    );
-  }
-
-  private openLoadingSubscription(): void {
-    this._subscriptions.add(
-      this.buildingBlockManagementDetailService.loadingDefinition$.subscribe(loadingDefinition => {
-        console.log(loadingDefinition);
-      })
     );
   }
 

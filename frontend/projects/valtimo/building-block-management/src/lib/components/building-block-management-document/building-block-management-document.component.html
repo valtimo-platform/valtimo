@@ -22,10 +22,12 @@
 >
   @if (!obs.loading) {
     <valtimo-json-editor
+      [jsonSchema]="documentJsonSchema"
       [model]="obs.documentDefinitionModel"
       [fitPage]="true"
       [fitPageExtraSpace]="103"
       (saveEvent)="onSaveEvent($event)"
+      (changeEvent)="onChangeEvent($event)"
     >
       <button
         cdsButton="ghost"
