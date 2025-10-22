@@ -26,6 +26,8 @@ import org.springframework.core.task.TaskExecutor
 import org.springframework.stereotype.Service
 import org.springframework.transaction.support.TransactionSynchronization
 import org.springframework.transaction.support.TransactionSynchronizationManager
+import java.util.UUID
+import java.util.concurrent.RejectedExecutionException
 
 @Service
 @SkipComponentScan
@@ -43,18 +45,24 @@ class NotificatiesApiService(
             if (TransactionSynchronizationManager.isSynchronizationActive()) {
                 TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
                     override fun afterCommit() {
-                        taskExecutor.execute {
-                            inboundEventProcessingService.processEvent(eventId)
-                        }
+                        submitForProcessing(eventId)
                     }
                 })
             } else {
-                taskExecutor.execute {
-                    inboundEventProcessingService.processEvent(eventId)
-                }
+                submitForProcessing(eventId)
             }
         }
         return eventId != null
+    }
+
+    private fun submitForProcessing(eventId: UUID) {
+        try {
+            taskExecutor.execute {
+                inboundEventProcessingService.processEvent(eventId)
+            }
+        } catch (ex: RejectedExecutionException) {
+            logger.warn(ex) { "Processing queue full, deferring inbound event $eventId to scheduled worker" }
+        }
     }
 
     fun findAbonnementSubscription(authHeader: String): NotificatiesApiAbonnementLink {
