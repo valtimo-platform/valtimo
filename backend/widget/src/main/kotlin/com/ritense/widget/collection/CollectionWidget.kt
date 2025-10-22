@@ -38,7 +38,7 @@ class CollectionWidget(
     width: Int,
     highContrast: Boolean,
     actions: List<WidgetAction> = emptyList(),
-    displayConditions: List<Condition<*>>,
+    displayConditions: List<Condition<*>> = emptyList(),
 
     @Type(value = JsonType::class)
     @Column(name = "properties", nullable = false)

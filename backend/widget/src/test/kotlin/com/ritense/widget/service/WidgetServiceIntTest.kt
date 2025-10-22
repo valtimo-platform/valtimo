@@ -17,10 +17,14 @@
 package com.ritense.widget.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.valtimo.contract.conditions.Condition
+import com.ritense.valtimo.contract.repository.ExpressionOperator
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.DOCUMENT_ID
 import com.ritense.widget.BaseIntegrationTest
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.fields.FieldsWidget
 import com.ritense.widget.fields.FieldsWidgetProperties
+import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,6 +49,13 @@ class WidgetServiceIntTest @Autowired constructor(
                         order = 1,
                         width = 1,
                         highContrast = false,
+                        displayConditions = listOf(
+                            Condition(
+                                path = "static",
+                                operator = ExpressionOperator.EQUAL_TO,
+                                value = "static"
+                            )
+                        ),
                         properties = FieldsWidgetProperties(emptyList())
                     )
                 ),
@@ -55,7 +66,13 @@ class WidgetServiceIntTest @Autowired constructor(
                         order = 2,
                         width = 2,
                         highContrast = true,
-                        displayConditions = ,
+                        displayConditions = listOf(
+                            Condition(
+                                path = "static",
+                                operator = ExpressionOperator.EQUAL_TO,
+                                value = "dynamic"
+                            )
+                        ),
                         properties = FieldsWidgetProperties(emptyList())
                     )
                 )
@@ -65,10 +82,12 @@ class WidgetServiceIntTest @Autowired constructor(
 
     @Test
     fun `should filter widgets`(): Unit = runWithoutAuthorization {
-        val tab = widgetService.filterWidgetsOnDisplayConditions(widgets, mapOf())
+        val widgets = widgetService.filterWidgetsOnDisplayConditions(
+            widgets, mapOf(DOCUMENT_ID to UUID.randomUUID())
+        )
 
-        assertEquals("test", tab?.widgets?.get(0)?.key)
-        assertEquals("other-widget", tab?.widgets?.get(1)?.key)
+        assertEquals(1, widgets.size)
+        assertEquals("firstName", widgets[0].key)
     }
 
 }

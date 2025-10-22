@@ -227,7 +227,7 @@ class CaseWidgetService(
         )
     }
 
-    private fun widge§§§§tHiddenCheck(widget: CaseWidgetTabWidget, document: JsonSchemaDocument): Boolean {
+    private fun widgetHiddenCheck(widget: CaseWidgetTabWidget, document: JsonSchemaDocument): Boolean {
         return widget.displayConditions.all {
             it.isValid { valuePath: String ->
                 valueResolverService.resolveValues(
