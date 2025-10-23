@@ -9,6 +9,7 @@ on:
     branches:
       - feature/create-test-env-on-pr
     paths:
+      - .github/workflows/frontend_*.yml
       - frontend/**
 
 permissions:
