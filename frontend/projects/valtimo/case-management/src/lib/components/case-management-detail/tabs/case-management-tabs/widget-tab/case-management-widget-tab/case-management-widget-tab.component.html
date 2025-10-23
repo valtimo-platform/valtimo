@@ -14,7 +14,10 @@
   ~ limitations under the License.
   -->
 
-<valtimo-widget-management [params]="params$ | async"></valtimo-widget-management>
+<valtimo-widget-management
+  [availableWidgetTypes]="AVAILABLE_WIDGET_TYPES"
+  [params]="params$ | async"
+></valtimo-widget-management>
 
 <valtimo-case-management-widget-tab-edit-modal
   [tabItem]="currentWidgetTabItem$ | async"

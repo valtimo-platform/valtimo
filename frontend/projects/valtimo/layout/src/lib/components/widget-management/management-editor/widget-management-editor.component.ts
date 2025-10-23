@@ -222,7 +222,8 @@ export class WidgetManagementEditorComponent {
     this.widgetWizardService.$selectedWidget.set(
       AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
     );
-    this.widgetWizardService.$widgetContent.set(tabWidget.properties);
+    this.widgetWizardService.$widgetContent.set(tabWidget.properties ?? null);
+    this.widgetWizardService.$widgetDisplayConditions.set(tabWidget.displayConditions);
     this.widgetWizardService.$editMode.set(true);
     this.widgetWizardService.$widgetKey.set(tabWidget.key);
     this.widgetWizardService.$widgetActions.set(tabWidget.actions);
