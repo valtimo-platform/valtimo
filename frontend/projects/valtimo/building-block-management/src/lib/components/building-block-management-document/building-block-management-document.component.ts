@@ -20,11 +20,10 @@ import {
   BuildingBlockManagementDetailService,
 } from '../../services';
 import {BehaviorSubject, combineLatest, filter, map, Subscription, switchMap, tap} from 'rxjs';
-import {EditorModel, JsonEditorComponent} from '@valtimo/components';
+import {FitPageDirective, JsonEditorComponent, SchemaEditorComponent} from '@valtimo/components';
 import {ButtonModule, IconModule, LoadingModule} from 'carbon-components-angular';
-import {TranslatePipe} from '@ngx-translate/core';
 import {take} from 'rxjs/operators';
-import documentJsonSchema from './document-json-schema.json';
+import {TranslatePipe} from '@ngx-translate/core';
 
 @Component({
   standalone: true,
@@ -36,13 +35,13 @@ import documentJsonSchema from './document-json-schema.json';
     JsonEditorComponent,
     ButtonModule,
     IconModule,
-    TranslatePipe,
     LoadingModule,
+    SchemaEditorComponent,
+    FitPageDirective,
+    TranslatePipe,
   ],
 })
 export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestroy {
-  public readonly documentJsonSchema = documentJsonSchema;
-
   private readonly _subscriptions = new Subscription();
 
   private readonly _loadingDocumentDefinition$ = new BehaviorSubject<boolean>(true);
@@ -57,8 +56,8 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
     )
   );
 
-  private readonly _documentDefinitionModel$ = new BehaviorSubject<EditorModel | null>(null);
-  public readonly documentDefinitionModel$ = this._documentDefinitionModel$.pipe(
+  private readonly _documentDefinition$ = new BehaviorSubject<string>('');
+  public readonly documentDefinition$ = this._documentDefinition$.pipe(
     filter(model => model !== null)
   );
 
@@ -78,8 +77,8 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
   }
 
   public downloadDefinition(): void {
-    this._documentDefinitionModel$.pipe(take(1)).subscribe(model => {
-      const dataString = 'data:text/json;charset=utf-8,' + encodeURIComponent(model.value);
+    this.documentDefinition$.pipe(take(1)).subscribe(definition => {
+      const dataString = 'data:text/json;charset=utf-8,' + encodeURIComponent(definition);
       const downloadAnchorElement = document.getElementById('downloadAnchorElement');
 
       if (!downloadAnchorElement) return;
@@ -93,7 +92,7 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
     });
   }
 
-  public onSaveEvent(event: object): void {
+  public onSaveEvent(): void {
     if (!this._modifiedDefinition) return;
 
     this._loadingDocumentDefinition$.next(true);
@@ -102,7 +101,7 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
       .updateBuildingBlockDocumentDefinition(
         this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
         this.buildingBlockManagementDetailService.buildingBlockVersionTag,
-        event
+        JSON.parse(this._modifiedDefinition)
       )
       .subscribe(res => {
         this.setDocumentDefinitionModel(res);
@@ -135,9 +134,6 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
   }
 
   private setDocumentDefinitionModel(definition: object): void {
-    this._documentDefinitionModel$.next({
-      value: JSON.stringify(definition, null, 2),
-      language: 'json',
-    });
+    this._documentDefinition$.next(JSON.stringify(definition, null, 2));
   }
 }
