@@ -19,7 +19,11 @@
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background: var(--cds-layer-02);
+
+  ::ng-deep > * {
+    padding: 16px;
+    background: var(--cds-layer-02);
+  }
 
   ::ng-deep.dropdown-label {
     label {

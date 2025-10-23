@@ -59,6 +59,8 @@ export class WidgetWizardService {
 
   public readonly $disableTitleInput: WritableSignal<boolean> = signal(false);
 
+  public readonly $disableProcessSelector: WritableSignal<boolean> = signal(false);
+
   public readonly $widgetWizardSteps: WritableSignal<WidgetWizardStep[]> = signal([
     WidgetWizardStep.TYPE,
     WidgetWizardStep.WIDTH,

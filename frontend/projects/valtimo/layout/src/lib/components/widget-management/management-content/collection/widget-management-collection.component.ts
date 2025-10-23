@@ -55,7 +55,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
-import {IWidgetContentComponent, IWidgetManagementService} from '../../../../interfaces';
+import {IWidgetManagementService} from '../../../../interfaces';
 import {
   CollectionFieldWidth,
   FieldsWidgetValue,
@@ -89,11 +89,8 @@ import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-man
     ValuePathSelectorComponent,
   ],
 })
-export class WidgetManagementCollectionComponent
-  implements IWidgetContentComponent, OnInit, OnDestroy
-{
+export class WidgetManagementCollectionComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-collection';
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
 
   public readonly widgetForm = this.fb.group({
     title: this.fb.control(this.widgetWizardService.$widgetTitle() ?? '', Validators.required),
@@ -221,7 +218,7 @@ export class WidgetManagementCollectionComponent
       } as WidgetCollectionContent;
     });
     this._$contentValid.set(valid);
-    this.changeValidEvent.emit(valid && this.widgetForm.valid);
+    this.widgetWizardService.$widgetContentValid.set(valid && this.widgetForm.valid);
   }
 
   public onDeleteRowClick(formArray: FormArray, index: number): void {
@@ -303,7 +300,7 @@ export class WidgetManagementCollectionComponent
             }) as WidgetCollectionContent
         );
 
-        this.changeValidEvent.emit(
+        this.widgetWizardService.$widgetContentValid.set(
           this.widgetForm.valid && this.cardForm.valid && this._$contentValid()
         );
       })
@@ -340,7 +337,7 @@ export class WidgetManagementCollectionComponent
             }) as any
         );
 
-        this.changeValidEvent.emit(
+        this.widgetWizardService.$widgetContentValid.set(
           this.widgetForm.valid && this.cardForm.valid && this._$contentValid()
         );
       })

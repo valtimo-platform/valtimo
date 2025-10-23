@@ -15,50 +15,44 @@
  */
 import {CommonModule} from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
-  Input,
   OnInit,
+  TemplateRef,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
+  effect,
 } from '@angular/core';
-import {WidgetWizardService} from '../../../../../services';
+import {WidgetWizardService} from '../../../../../services/widget-wizard.service';
+import {WidgetManagementProcessSelectorComponent} from '../../../management-process-selector/widget-management-process-selector.component';
 
 @Component({
   templateUrl: './widget-wizard-content-step.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, WidgetManagementProcessSelectorComponent],
 })
-export class WidgetWizardContentStepComponent implements OnInit {
-  @ViewChild('contentRenderer', {static: true, read: ViewContainerRef})
-  private readonly _vcr: ViewContainerRef;
+export class WidgetWizardContentStepComponent implements AfterViewInit {
+  @ViewChild('processSelector', {read: TemplateRef}) processSelector!: TemplateRef<any>;
+  @ViewChild('contentRenderer', {read: ViewContainerRef})
+  public projectedNodes: Node[][];
 
+  public readonly $selectedWidget = this.widgetWizardService.$selectedWidget;
+  public readonly $disableProcessSelector = this.widgetWizardService.$disableProcessSelector;
+  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
 
   constructor(
-    private readonly cdr: ChangeDetectorRef,
+    private vcr: ViewContainerRef,
     private readonly widgetWizardService: WidgetWizardService
   ) {}
 
-  public ngOnInit(): void {
-    this.renderComponent();
-  }
+  public ngAfterViewInit(): void {
+    if (!this.processSelector) return;
+    const processSelectorNodes = this.vcr.createEmbeddedView(this.processSelector).rootNodes;
 
-  private renderComponent(): void {
-    this._vcr.clear();
-    const widget = this.widgetWizardService.$selectedWidget();
-    if (!widget) return;
-
-    const componentInstance = this._vcr.createComponent(widget.component).instance;
-    if (!componentInstance) return;
-
-    componentInstance.changeValidEvent.subscribe((valid: boolean) =>
-      this.widgetWizardService.$widgetContentValid.set(valid)
-    );
-
-    this.cdr.detectChanges();
+    this.projectedNodes = [processSelectorNodes];
   }
 }

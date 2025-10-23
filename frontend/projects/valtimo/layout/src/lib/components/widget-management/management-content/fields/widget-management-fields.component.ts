@@ -30,10 +30,9 @@ import {
 } from '@angular/core';
 import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CdsThemeService, InputLabelModule} from '@valtimo/components';
+import {InputLabelModule} from '@valtimo/components';
 import {ButtonModule, IconModule, InputModule, Tab, TabsModule} from 'carbon-components-angular';
 import {debounceTime, Subscription} from 'rxjs';
-import {IWidgetContentComponent} from '../../../../interfaces';
 import {FieldsWidgetValue, WidgetFieldsContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from './column/widget-management-fields-column.component';
@@ -53,16 +52,13 @@ import {WidgetManagementFieldsColumnComponent} from './column/widget-management-
     ReactiveFormsModule,
     ButtonModule,
     WidgetManagementFieldsColumnComponent,
-    //TODO: DON'T FORGET THE PROCESS SELECTOR
-    // CaseManagementWidgetProcessSelectorComponent,
     InputLabelModule,
   ],
 })
 export class WidgetManagementFieldsComponent
-  implements IWidgetContentComponent, OnDestroy, OnInit, AfterViewInit
+  implements OnDestroy, OnInit, AfterViewInit
 {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-fields';
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
   @ViewChild(Tab) private readonly _tab: Tab;
 
   public readonly $showTitleInput = signal<boolean>(true);
@@ -72,6 +68,7 @@ export class WidgetManagementFieldsComponent
   });
 
   public readonly $columns = signal<null[]>([null]);
+  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
   public readonly $widgetWidth = this.widgetWizardService.$widgetWidth();
   public readonly selectedTabIndex = -1;
   public readonly $selectedWidgetContent = computed(() =>
@@ -89,7 +86,6 @@ export class WidgetManagementFieldsComponent
   private readonly _contentValid = signal<boolean>(false);
 
   constructor(
-    private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
     private readonly widgetWizardService: WidgetWizardService
   ) {}
@@ -98,7 +94,7 @@ export class WidgetManagementFieldsComponent
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(100)).subscribe(formValue => {
         this.widgetWizardService.$widgetTitle.set(formValue.widgetTitle ?? '');
-        this.changeValidEvent.emit(this.form.valid && this._contentValid());
+        this.widgetWizardService.$widgetContentValid.set(this.form.valid && this._contentValid());
       })
     );
     const widgetContent = (this.widgetWizardService.$widgetContent() as WidgetFieldsContent)
@@ -117,7 +113,7 @@ export class WidgetManagementFieldsComponent
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-    this.changeValidEvent.emit(false);
+    this.widgetWizardService.$widgetContentValid.set(false);
     this.form.reset();
     this._contentValid.set(false);
   }
@@ -125,7 +121,7 @@ export class WidgetManagementFieldsComponent
   public onAddColumnClick(): void {
     this.$columns.update(value => [...value, null]);
     this.activeTab.set(this.$columns().length - 1);
-    this.changeValidEvent.emit(false);
+    this.widgetWizardService.$widgetContentValid.set(false);
   }
 
   public onTabSelected(index: number): void {
@@ -179,7 +175,7 @@ export class WidgetManagementFieldsComponent
       };
     });
     this._contentValid.set(event.valid);
-    this.changeValidEvent.emit(event.valid && this.form.valid);
+    this.widgetWizardService.$widgetContentValid.set(event.valid && this.form.valid);
   }
 
   private hideTitleInput(): void {
@@ -192,6 +188,6 @@ export class WidgetManagementFieldsComponent
 
     ctrl.updateValueAndValidity({emitEvent: false});
 
-    this.changeValidEvent.emit(this.form.valid && this._contentValid());
+    this.widgetWizardService.$widgetContentValid.set(this.form.valid && this._contentValid());
   }
 }

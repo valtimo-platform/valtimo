@@ -88,7 +88,6 @@ import {CaseManagementAddTabModalComponent} from './components/case-management-d
 import {CaseManagementEditTabModalComponent} from './components/case-management-detail/tabs/case-management-tabs/case-management-edit-tab-modal/case-management-edit-tab-modal.component';
 import {CaseManagementTabsComponent} from './components/case-management-detail/tabs/case-management-tabs/case-management-tabs.component';
 import {TabFormComponent} from './components/case-management-detail/tabs/case-management-tabs/tab-form/tab-form.component';
-// import {CaseManagementWidgetsEditorComponent} from './components/case-management-detail/tabs/case-management-tabs/widget-tab/case-management-widget-tab/editor/case-management-widgets-editor.component';
 import {CaseManagementTagsModalComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags-modal/case-management-tags-modal.component';
 import {CaseManagementTagsComponent} from './components/case-management-detail/tabs/case-management-tags/case-management-tags.component';
 import {CaseManagementListComponent} from './components/case-management-list/case-management-list.component';
@@ -175,7 +174,6 @@ import {CaseManagementHeaderComponent} from './components/case-management-detail
     ConfirmationModalModule,
     ToggleModule,
     TooltipModule,
-    // CaseManagementWidgetsEditorComponent,
     ValuePathSelectorComponent,
     LayerModule,
     FormManagementComponent,
