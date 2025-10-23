@@ -238,6 +238,10 @@ export * from './lib/components/list-column-view/list-column-view.component';
 // Quick search
 export * from './lib/components/quick-search/quick-search.component';
 
+// Schema editor
+
+export * from './lib/components/schema-editor/schema-editor.component';
+
 /*
 directives
  */

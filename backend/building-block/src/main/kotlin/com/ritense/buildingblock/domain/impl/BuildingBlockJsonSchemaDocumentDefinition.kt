@@ -24,7 +24,6 @@ import com.ritense.document.domain.DocumentDefinition
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition.DocumentContentValidationErrorImpl
 import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition.DocumentContentValidationResultImpl
 import com.ritense.document.domain.validation.DocumentContentValidationResult
-import com.ritense.document.exception.DocumentDefinitionNameMismatchException
 import jakarta.annotation.Nonnull
 import jakarta.persistence.Column
 import jakarta.persistence.Embedded
@@ -58,13 +57,11 @@ class BuildingBlockJsonSchemaDocumentDefinition() :
     ) : this() {
         this.id = requireNotNull(id) { "id is required" }
         this.schema = requireNotNull(schema) { "schema is required" }
-        assertMatchingSchemaIds(id, schema)
     }
 
     constructor(id: BuildingBlockJsonSchemaDocumentDefinitionId) : this() {
         this.id = requireNotNull(id) { "id is required" }
         this.schema = emptySchemaForName(id.name())
-        assertMatchingSchemaIds(this.id, this.schema)
     }
 
     override fun id(): BuildingBlockJsonSchemaDocumentDefinitionId = id
@@ -81,17 +78,6 @@ class BuildingBlockJsonSchemaDocumentDefinition() :
             e.allMessages.map { DocumentContentValidationErrorImpl(it) }
         }
         return DocumentContentValidationResultImpl(errors, content)
-    }
-
-    private fun assertMatchingSchemaIds(
-        id: BuildingBlockJsonSchemaDocumentDefinitionId,
-        schema: JsonSchema
-    ) {
-        val expected = id.name() + ".schema"
-        val actual = schema.getSchema().id
-        if (expected != actual) {
-            throw DocumentDefinitionNameMismatchException(id, schema)
-        }
     }
 
     private fun emptySchemaForName(name: String): JsonSchema {

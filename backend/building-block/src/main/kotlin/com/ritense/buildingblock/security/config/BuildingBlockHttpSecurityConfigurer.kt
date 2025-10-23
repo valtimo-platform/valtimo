@@ -16,7 +16,6 @@
 
 package com.ritense.buildingblock.security.config
 
-
 import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
@@ -30,14 +29,21 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(GET, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
-                requests.requestMatchers(antMatcher(POST, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
-                requests.requestMatchers(
-                    antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
-                ).hasAuthority(ADMIN)
-                requests.requestMatchers(
-                    antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
-                ).hasAuthority(ADMIN)
+                requests
+                    .requestMatchers(antMatcher(GET, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
+                    ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
+                    ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")
+                    ).hasAuthority(ADMIN)
+                    .requestMatchers(
+                        antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")
+                    ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)

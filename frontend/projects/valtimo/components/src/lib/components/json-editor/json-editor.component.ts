@@ -69,7 +69,7 @@ export class JsonEditorComponent {
   @Input() showEditButton = true;
   @Input() widthPx!: number;
 
-  @Output() public readonly changeEvent = new EventEmitter();
+  @Output() public readonly changeEvent = new EventEmitter<string>();
   @Output() public readonly discardEvent = new EventEmitter();
   @Output() public readonly keepEditingEvent = new EventEmitter();
   @Output() public readonly saveEvent = new EventEmitter<object>();
@@ -124,10 +124,8 @@ export class JsonEditorComponent {
   }
 
   public onValueChangeEvent(value: string): void {
-    if (!this.isValidJson()) return;
-
     this._changesToSave = value;
-    this.changeEvent.emit();
+    this.changeEvent.emit(value);
   }
 
   private resetEditor(): void {

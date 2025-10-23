@@ -17,7 +17,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CarbonListModule, PageTitleService} from '@valtimo/components';
 import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {BuildingBlockManagementDetailService} from '../../services';
 import {TranslatePipe} from '@ngx-translate/core';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
@@ -51,7 +51,6 @@ export class BuildingBlockManagementDetailComponent implements OnInit, OnDestroy
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly pageTitleService: PageTitleService
   ) {
