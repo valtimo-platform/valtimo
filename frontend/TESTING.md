@@ -31,3 +31,4 @@ the intention of the code clear to other developers.
 
 Unit tests for elements with less complexity and obvious functionality (i.e. display components) are
 optional. Moreover, unit tests for third-party dependencies are not required.
+
