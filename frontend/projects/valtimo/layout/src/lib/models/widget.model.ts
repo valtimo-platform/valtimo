@@ -44,7 +44,7 @@ interface WidgetAction {
   caseDefinitionKey?: string;
   navigateTo?: string;
 }
-
+ 
 interface BasicWidget {
   type: WidgetType;
   title: string;
@@ -101,13 +101,18 @@ interface FormioWidget extends BasicWidget {
   };
 }
 
+interface DividerWidget extends BasicWidget {
+  type: WidgetType.DIVIDER;
+}
+
 type Widget =
   | FieldsWidget
   | CollectionWidget
   | CustomWidget
   | TableWidget
   | InteractiveTableWidget
-  | FormioWidget;
+  | FormioWidget
+  | DividerWidget
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -170,6 +175,11 @@ interface CustomWidgetConfig {
   [componentKey: string]: Type<any>;
 }
 
+interface WidgetGroup {
+  divider: DividerWidget | null;
+  widgets: Widget[];
+}
+
 type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
 
 type WidgetContext = 'case' | 'iko';
@@ -188,6 +198,7 @@ export {
   WidgetWithUuid,
   WidgetXY,
   CollectionFieldWidth,
+  DividerWidget,
   FieldsWidget,
   FieldsWidgetValue,
   CollectionWidget,
@@ -201,4 +212,5 @@ export {
   MaxRectsResult,
   WidgetComponentMap,
   WidgetContext,
+  WidgetGroup
 };

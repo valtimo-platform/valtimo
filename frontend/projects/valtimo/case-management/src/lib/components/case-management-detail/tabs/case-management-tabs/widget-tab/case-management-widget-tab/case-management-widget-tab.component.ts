@@ -47,6 +47,7 @@ import {
 import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
 import {CaseManagementWidgetsEditorComponent} from './editor/case-management-widgets-editor.component';
 import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-management-widgets-json-editor.component';
+import {WidgetManagementComponent} from '@valtimo/layout';
 
 @Component({
   templateUrl: './case-management-widget-tab.component.html',
@@ -63,6 +64,7 @@ import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-manag
     ButtonModule,
     IconModule,
     TabsModule,
+    WidgetManagementComponent,
   ],
 })
 export class CaseManagementWidgetTabComponent
@@ -79,6 +81,16 @@ export class CaseManagementWidgetTabComponent
   public readonly tabWidgetKey$: Observable<string> = this.route.params.pipe(
     map(params => params.key || ''),
     filter(tabWidgetKey => !!tabWidgetKey)
+  );
+
+  public readonly params$ = combineLatest([
+    this.caseManagementRouteParams$,
+    this.tabWidgetKey$,
+  ]).pipe(
+    filter(
+      ([caseManagementRouteParams, tabWidgetKey]) => !!caseManagementRouteParams && !!tabWidgetKey
+    ),
+    tap(params => console.log({params}))
   );
 
   private readonly _refreshWidgetTabSubject$ = new BehaviorSubject<null>(null);
@@ -105,14 +117,21 @@ export class CaseManagementWidgetTabComponent
       );
     })
   );
+  // public readonly currentWidgetTab$ = combineLatest([
+  //   this.caseManagementRouteParams$,
+  //   this.tabWidgetKey$,
+  //   this._refreshWidgetTabSubject$,
+  // ]).pipe(
+  //   switchMap(([params, tabWidgetKey]) =>
+  //     this.widgetTabManagementService.getWidgetTabConfiguration(params, tabWidgetKey)
+  //   )
+  // );
   public readonly currentWidgetTab$ = combineLatest([
-    this.caseManagementRouteParams$,
-    this.tabWidgetKey$,
+    this.widgetTabManagementService.params$,
     this._refreshWidgetTabSubject$,
   ]).pipe(
-    switchMap(([params, tabWidgetKey]) =>
-      this.widgetTabManagementService.getWidgetTabConfiguration(params, tabWidgetKey)
-    )
+    filter(([params]) => !!params),
+    switchMap(() => this.widgetTabManagementService.getWidgetConfiguration())
   );
 
   public readonly WidgetEditorTab = WidgetEditorTab;

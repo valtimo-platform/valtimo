@@ -29,16 +29,18 @@ import {
 import {toObservable} from '@angular/core/rxjs-interop';
 import {Edit16, Save16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {BasicCaseWidget, CaseWidgetsRes} from '@valtimo/case';
+import {CaseWidgetsRes} from '@valtimo/case';
 import {
   ConfirmationModalComponent,
   ConfirmationModalModule,
   EditorModel,
   EditorModule,
 } from '@valtimo/components';
+import {BasicWidget} from '@valtimo/layout';
 import {GlobalNotificationService} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, Observable, take} from 'rxjs';
+
 import {WidgetJsonEditorService, WidgetTabManagementService} from '../../../../../../../services';
 
 @Component({
@@ -202,7 +204,7 @@ export class CaseManagementWidgetsJsonEditorComponent implements AfterViewInit {
 
     const widgetConfig: CaseWidgetsRes = JSON.parse(value);
     const editedWidgetKeys: string[] = widgetConfig.widgets.map(
-      (widget: BasicCaseWidget) => widget.key
+      (widget: BasicWidget) => widget.key
     );
 
     this._$jsonSchemaInvalid.set(

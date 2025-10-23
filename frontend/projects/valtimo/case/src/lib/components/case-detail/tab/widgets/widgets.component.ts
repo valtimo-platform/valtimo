@@ -21,7 +21,7 @@ import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, shareReplay, startWith, switchMap} from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
-import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
+import {BasicWidget, WidgetComponentMap, WidgetContainerComponent, WidgetType, DividerWidget, Widget, WidgetGroup} from '@valtimo/layout';
 import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
 import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.component';
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
@@ -89,7 +89,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     shareReplay({bufferSize: 1, refCount: true})
   );
 
-  public readonly widgetGroups$: Observable<CaseWidgetGroup[]> = this._widgetConfiguration$.pipe(
+  public readonly widgetGroups$: Observable<WidgetGroup[]> = this._widgetConfiguration$.pipe(
     map(res => this.toCaseWidgetGroups(res.widgets))
   );
 
@@ -118,13 +118,13 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     this.caseTabService.enableTabHorizontalOverflow();
   }
 
-  private toCaseWidgetGroups(widgets: BasicCaseWidget[]): CaseWidgetGroup[] {
-    const groups = widgets.reduce<CaseWidgetGroup[]>((acc, widget) => {
-      if (widget.type === CaseWidgetType.DIVIDER) {
-        acc.push({divider: widget as DividerCaseWidget, widgets: []});
+  private toCaseWidgetGroups(widgets: BasicWidget[]): WidgetGroup[] {
+    const groups = widgets.reduce<WidgetGroup[]>((acc, widget) => {
+      if (widget.type === WidgetType.DIVIDER) {
+        acc.push({divider: widget as DividerWidget, widgets: []});
       } else {
         if (acc.length === 0) acc.push({divider: null, widgets: []});
-        acc[acc.length - 1].widgets.push(widget as CaseWidget);
+        acc[acc.length - 1].widgets.push(widget as Widget);
       }
       return acc;
     }, []);

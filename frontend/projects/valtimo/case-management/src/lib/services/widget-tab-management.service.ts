@@ -18,13 +18,15 @@ import {HttpClient} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {ConfigService, CaseManagementParams} from '@valtimo/shared';
 import {CaseWidgetsRes} from '@valtimo/case';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, map, switchMap} from 'rxjs';
 import {BasicWidget, IWidgetManagementService} from '@valtimo/layout';
 
 @Injectable({
   providedIn: 'root',
 })
-export class WidgetTabManagementService implements IWidgetManagementService<any> {
+export class WidgetTabManagementService
+  implements IWidgetManagementService<CaseManagementParams & {widgetTabKey: string}>
+{
   private readonly valtimoEndpointBase: string;
 
   constructor(
@@ -36,9 +38,14 @@ export class WidgetTabManagementService implements IWidgetManagementService<any>
   valueResolverApi$: BehaviorSubject<string | null> = new BehaviorSubject<string | null>('');
   //TODO: Update when IKO widget management is done
 
-  params$: BehaviorSubject<any>;
-  initParams(...params: any[]): void {
-    throw new Error('Method not implemented.');
+  public readonly params$: BehaviorSubject<CaseManagementParams & {widgetTabKey: string}> =
+    new BehaviorSubject<CaseManagementParams & {widgetTabKey: string}>({
+      caseDefinitionKey: '',
+      caseDefinitionVersionTag: '',
+      widgetTabKey: '',
+    });
+  public initParams(params: CaseManagementParams & {widgetTabKey: string}): void {
+    this.params$.next(params);
   }
   deleteWidget(widget: BasicWidget): Observable<void> {
     throw new Error('Method not implemented.');
@@ -50,8 +57,15 @@ export class WidgetTabManagementService implements IWidgetManagementService<any>
     throw new Error('Method not implemented.');
   }
 
-  public getWidgetConfiguration(...params: any[]): Observable<BasicWidget[]> {
-    throw new Error('Method not implemented.');
+  public getWidgetConfiguration(): Observable<BasicWidget[]> {
+    return this.params$.pipe(
+      switchMap((params: CaseManagementParams & {widgetTabKey: string}) =>
+        this.http.get<CaseWidgetsRes>(
+          `${this.valtimoEndpointBase}/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}/widget-tab/${params.widgetTabKey}`
+        )
+      ),
+      map((res: CaseWidgetsRes) => res.widgets)
+    );
   }
 
   public updateWidgetConfiguration(...params: any[]): Observable<BasicWidget[]> {
