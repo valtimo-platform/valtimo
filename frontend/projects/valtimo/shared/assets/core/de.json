@@ -1930,7 +1930,7 @@
       },
       "upload": {
         "title": "Datei hochladen",
-        "description": "Maximale Dateigröße beträgt 500 KB. Unterstützte Dateitypen sind ZIP und JSON.",
+        "description": "Maximale Dateigröße beträgt 500 KB. De unterstützte Dateityp is ZIP.",
         "buttonText": "Datei auswählen"
       },
       "steps": {

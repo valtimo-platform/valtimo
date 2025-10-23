@@ -1903,7 +1903,7 @@
       },
       "upload": {
         "title": "Upload file",
-        "description": "Max file size is 500kb. Supported file types are ZIP and JSON.",
+        "description": "Max file size is 500kb. The supported file type is ZIP.",
         "buttonText": "Select file"
       },
       "steps": {

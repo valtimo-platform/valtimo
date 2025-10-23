@@ -1936,7 +1936,7 @@
       },
       "upload": {
         "title": "Bestand uploaden",
-        "description": "Maximale bestandsgrootte is 500kb. Ondersteunde bestandstypen zijn ZIP en JSON.",
+        "description": "Maximale bestandsgrootte is 500kb. Het ondersteunde bestandstype is ZIP.",
         "buttonText": "Bestand selecteren"
       },
       "steps": {
