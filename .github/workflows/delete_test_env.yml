@@ -26,7 +26,7 @@ jobs:
   determine_test_env:
     uses: ./.github/workflows/determine_test_env.yml
 
-  create_test_environment:
+  delete_test_environment:
     needs: determine_test_env
     runs-on: ubuntu-latest
     steps:
