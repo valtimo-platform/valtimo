@@ -39,3 +39,4 @@ Keycloak comes preconfigured with the following users.
 #### Code guidelines
 <!--- TODO: write the coding guidelines--->
 For contributing code, please refer to the [backend coding](CODING-GUIDELINES.md).
+
