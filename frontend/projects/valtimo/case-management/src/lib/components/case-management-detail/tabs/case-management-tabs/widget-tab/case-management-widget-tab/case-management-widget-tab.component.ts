@@ -37,6 +37,7 @@ import {
   ManagementWidgetDetailsComponent,
   WIDGET_MANAGEMENT_SERVICE,
   WidgetManagementComponent,
+  WidgetType,
   WidgetWizardService,
 } from '@valtimo/layout';
 import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
@@ -132,6 +133,13 @@ export class CaseManagementWidgetTabComponent
   );
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
+  public readonly AVAILABLE_WIDGET_TYPES = [
+    WidgetType.FIELDS,
+    WidgetType.COLLECTION,
+    WidgetType.CUSTOM,
+    WidgetType.FORMIO,
+    WidgetType.TABLE,
+  ];
 
   constructor(
     protected readonly widgetWizardService: WidgetWizardService,

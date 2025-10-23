@@ -34,8 +34,8 @@ import {
 import {getCaseManagementRouteParams} from '@valtimo/shared';
 import {ActivatedRoute} from '@angular/router';
 import {toObservable} from '@angular/core/rxjs-interop';
-import {take} from 'rxjs/operators';
-import { WidgetWizardService } from '../../../../../services';
+import {take, tap} from 'rxjs/operators';
+import {WidgetWizardService} from '../../../../../services';
 
 @Component({
   templateUrl: './widget-wizard-display-conditions-step.component.html',
@@ -56,8 +56,6 @@ import { WidgetWizardService } from '../../../../../services';
 })
 export class WidgetWizardDisplayConditionsStepComponent {
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
-
-  public readonly allConditionsValid$ = new BehaviorSubject<boolean>(true);
 
   public readonly params$ = getCaseManagementRouteParams(this.route);
 
@@ -112,7 +110,7 @@ export class WidgetWizardDisplayConditionsStepComponent {
   ) {}
 
   public onAllConditionsValid(allConditionsValid: boolean): void {
-    this.allConditionsValid$.next(allConditionsValid);
+    this.widgetWizardService.$widgetConditionsValid.set(allConditionsValid);
   }
 
   public conditionsValueChange(values: Array<MultiInputKeyValue>): void {

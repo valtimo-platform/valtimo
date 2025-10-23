@@ -27,6 +27,7 @@ import {
   WidgetWizardStep,
 } from '../models';
 import {Condition} from '@valtimo/shared';
+import {CARBON_CONSTANTS} from '@valtimo/components';
 
 @Injectable({
   providedIn: 'root',
@@ -54,6 +55,8 @@ export class WidgetWizardService {
 
   public readonly $widgetContentValid: WritableSignal<boolean> = signal(false);
 
+  public readonly $widgetConditionsValid: WritableSignal<boolean> = signal(false);
+
   public readonly $disableTitleInput: WritableSignal<boolean> = signal(false);
 
   public readonly $widgetWizardSteps: WritableSignal<WidgetWizardStep[]> = signal([
@@ -72,7 +75,7 @@ export class WidgetWizardService {
       [WidgetWizardStep.WIDTH]: !!this.$widgetWidth(),
       [WidgetWizardStep.STYLE]: !!this.$widgetStyle(),
       [WidgetWizardStep.CONTENT]: !!this.$widgetContent() && this.$widgetContentValid(),
-      [WidgetWizardStep.DISPLAY_CONDITIONS]: !!this.$widgetContent() && this.$widgetContentValid(),
+      [WidgetWizardStep.DISPLAY_CONDITIONS]: this.$widgetConditionsValid(),
     })
   );
 
@@ -119,21 +122,24 @@ export class WidgetWizardService {
   public readonly $availableWidgetTypes: WritableSignal<WidgetType[] | null> = signal(null);
 
   public resetWizard(): void {
-    this.$currentStepIndex.set(0);
-    this.$selectedWidget.set(null);
-    this.$widgetWidth.set(this._defaultWidth || null);
-    this.$widgetStyle.set(null);
-    this.$widgetContent.set(null);
-    this.$widgetTitle.set(null);
-    this.$widgetKey.set(null);
-    this.$widgetActions.set(undefined);
-    this.$editMode.set(false);
-    this.$widgetWizardSteps.set([
-      WidgetWizardStep.TYPE,
-      WidgetWizardStep.WIDTH,
-      WidgetWizardStep.STYLE,
-      WidgetWizardStep.CONTENT,
-    ]);
+    setTimeout(() => {
+      this.$currentStepIndex.set(0);
+      this.$selectedWidget.set(null);
+      this.$widgetWidth.set(this._defaultWidth || null);
+      this.$widgetStyle.set(null);
+      this.$widgetContent.set(null);
+      this.$widgetTitle.set(null);
+      this.$widgetKey.set(null);
+      this.$widgetActions.set(undefined);
+      this.$editMode.set(false);
+      this.$widgetWizardSteps.set([
+        WidgetWizardStep.TYPE,
+        WidgetWizardStep.WIDTH,
+        WidgetWizardStep.STYLE,
+        WidgetWizardStep.CONTENT,
+        WidgetWizardStep.DISPLAY_CONDITIONS,
+      ]);
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
   public setDefaultWidth(width: number): void {
