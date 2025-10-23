@@ -20,16 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.outbox.OutboxService;
 import com.ritense.resource.service.ResourceService;
-import com.ritense.valtimo.operaton.ProcessApplicationStartedEventListener;
-import com.ritense.valtimo.operaton.ProcessDefinitionPropertyListener;
-import com.ritense.valtimo.operaton.TaskCompletedListener;
-import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
-import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
-import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
-import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
-import com.ritense.valtimo.operaton.service.OperatonHistoryService;
-import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
-import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
 import com.ritense.valtimo.config.CustomDateTimeProvider;
 import com.ritense.valtimo.config.ValtimoApplicationReadyEventListener;
 import com.ritense.valtimo.contract.authentication.AuthorizedUserRepository;
@@ -39,18 +29,29 @@ import com.ritense.valtimo.contract.authentication.CurrentUserService;
 import com.ritense.valtimo.contract.authentication.UserManagementService;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.helper.ActivityHelper;
-import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
 import com.ritense.valtimo.helper.DelegateTaskHelper;
+import com.ritense.valtimo.helper.OperatonDeploymentSourceHelper;
+import com.ritense.valtimo.operaton.ProcessApplicationStartedEventListener;
+import com.ritense.valtimo.operaton.ProcessDefinitionPropertyListener;
+import com.ritense.valtimo.operaton.TaskCompletedListener;
+import com.ritense.valtimo.operaton.repository.CustomRepositoryServiceImpl;
+import com.ritense.valtimo.operaton.repository.OperatonExecutionRepository;
+import com.ritense.valtimo.operaton.repository.OperatonIdentityLinkRepository;
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository;
+import com.ritense.valtimo.operaton.service.OperatonHistoryService;
+import com.ritense.valtimo.operaton.service.OperatonRepositoryService;
+import com.ritense.valtimo.operaton.service.OperatonRuntimeService;
 import com.ritense.valtimo.processdefinition.repository.ProcessDefinitionPropertiesRepository;
 import com.ritense.valtimo.repository.OperatonReportingRepository;
 import com.ritense.valtimo.repository.OperatonSearchProcessInstanceRepository;
 import com.ritense.valtimo.repository.UserSettingsRepository;
+import com.ritense.valtimo.service.ApplicationStateService;
 import com.ritense.valtimo.service.AuthorizedUsersServiceImpl;
 import com.ritense.valtimo.service.BpmnModelService;
+import com.ritense.valtimo.service.CurrentUserServiceImpl;
 import com.ritense.valtimo.service.OperatonByteArrayService;
 import com.ritense.valtimo.service.OperatonProcessService;
 import com.ritense.valtimo.service.OperatonTaskService;
-import com.ritense.valtimo.service.CurrentUserServiceImpl;
 import com.ritense.valtimo.service.ProcessDefinitionCaseDefinitionLinker;
 import com.ritense.valtimo.service.ProcessPropertyService;
 import com.ritense.valtimo.service.ProcessShortTimerService;
@@ -68,12 +69,12 @@ import java.util.Collection;
 import java.util.Optional;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.operaton.bpm.engine.FormService;
 import org.operaton.bpm.engine.HistoryService;
 import org.operaton.bpm.engine.RepositoryService;
 import org.operaton.bpm.engine.RuntimeService;
 import org.operaton.bpm.engine.TaskService;
-import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -81,8 +82,11 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+import static org.springframework.core.Ordered.LOWEST_PRECEDENCE;
 
 @AutoConfiguration
 @EnableConfigurationProperties(ValtimoProperties.class)
@@ -90,6 +94,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackageClasses = {ProcessDefinitionPropertiesRepository.class, UserSettingsRepository.class})
 @EntityScan("com.ritense.valtimo.domain.*")
 public class ValtimoAutoConfiguration {
+
+    @Order(LOWEST_PRECEDENCE)
+    @Bean
+    @ConditionalOnMissingBean(ApplicationStateService.class)
+    public ApplicationStateService applicationStateService() {
+        return new ApplicationStateService();
+    }
 
     @Bean
     @ConditionalOnMissingBean(BpmnModelService.class)
