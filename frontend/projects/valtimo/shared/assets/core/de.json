@@ -2025,6 +2025,11 @@
     },
     "metadata": {
       "title": "Allgemeine Informationen"
+    },
+    "processDefinition": {
+      "name": "Name",
+      "key": "Schlüssel",
+      "mainText": "Hauptprozess"
     }
   }
 }

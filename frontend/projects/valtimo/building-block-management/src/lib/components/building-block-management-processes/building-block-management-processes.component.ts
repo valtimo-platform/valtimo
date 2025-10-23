@@ -13,19 +13,101 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BuildingBlockManagementDetailService} from '../../services';
+import {
+  BuildingBlockManagementApiService,
+  BuildingBlockManagementDetailService,
+} from '../../services';
+import {
+  BehaviorSubject,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+  tap,
+} from 'rxjs';
+import {isEqual} from 'lodash';
+import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
+import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
+import {BuildingBlockProcessDefinitionItem} from '../../models';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-processes',
   templateUrl: './building-block-management-processes.component.html',
   styleUrls: ['./building-block-management-processes.component.scss'],
-  imports: [CommonModule],
+  imports: [CommonModule, CarbonListModule, TranslateModule],
 })
-export class BuildingBlockManagementProcessesComponent {
+export class BuildingBlockManagementProcessesComponent implements OnInit, OnDestroy {
+  public readonly $loading = signal<boolean>(true);
+
+  private readonly _buildingBlockProcessDefinitions$ = new BehaviorSubject<
+    BuildingBlockProcessDefinitionDto[]
+  >([]);
+
+  public readonly buildingBlockProcessDefinitionItems$: Observable<
+    BuildingBlockProcessDefinitionItem[]
+  > = combineLatest([
+    this._buildingBlockProcessDefinitions$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([processDefinitions]) =>
+      processDefinitions.map(definition => ({
+        ...definition,
+        mainText: this.translateService.instant(
+          'buildingBlockManagement.processDefinition.mainText'
+        ),
+      }))
+    )
+  );
+
+  public readonly FIELDS: ColumnConfig[] = [
+    {key: 'name', label: 'buildingBlockManagement.processDefinition.name'},
+    {key: 'key', label: 'buildingBlockManagement.processDefinition.key'},
+    {
+      key: 'mainText',
+      label: '',
+      viewType: ViewType.TAGS,
+    },
+  ];
+
+  private readonly _subscriptions = new Subscription();
+
   constructor(
-    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService
+    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
+    private readonly translateService: TranslateService
   ) {}
+
+  public ngOnInit(): void {
+    this._subscriptions.add(
+      combineLatest([
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey$,
+        this.buildingBlockManagementDetailService.buildingBlockVersionTag$,
+      ])
+        .pipe(
+          distinctUntilChanged((a, b) => isEqual(a, b)),
+          tap(() => this.$loading.set(true)),
+          switchMap(([key, versionTag]) =>
+            this.buildingBlockManagementApiService.getBuildingBlockProcessDefinitions(
+              key,
+              versionTag
+            )
+          ),
+          tap(processDefinitions => {
+            this._buildingBlockProcessDefinitions$.next(processDefinitions);
+            this.$loading.set(false);
+          })
+        )
+        .subscribe()
+    );
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
 }

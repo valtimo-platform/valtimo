@@ -1998,6 +1998,11 @@
     },
     "metadata": {
       "title": "General information"
+    },
+    "processDefinition": {
+      "name": "Name",
+      "key": "Key",
+      "mainText": "Main process"
     }
   }
 }

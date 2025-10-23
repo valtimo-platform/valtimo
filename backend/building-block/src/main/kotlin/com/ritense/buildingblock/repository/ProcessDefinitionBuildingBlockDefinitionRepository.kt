@@ -18,9 +18,12 @@ package com.ritense.buildingblock.repository
 
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
 interface ProcessDefinitionBuildingBlockDefinitionRepository :
-    JpaRepository<ProcessDefinitionBuildingBlockDefinition, ProcessDefinitionBuildingBlockDefinitionId>
+    JpaRepository<ProcessDefinitionBuildingBlockDefinition, ProcessDefinitionBuildingBlockDefinitionId> {
+    fun findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId: BuildingBlockDefinitionId): List<ProcessDefinitionBuildingBlockDefinition>
+}

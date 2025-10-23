@@ -26,6 +26,7 @@ import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
+import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -112,6 +113,16 @@ class BuildingBlockAutoConfiguration {
         return BuildingBlockDocumentDefinitionResource(
             buildingBlockJsonSchemaDocumentDefinitionRepository,
             objectMapper
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessResource::class)
+    fun buildingBlockProcessResource(
+        buildingBlockProcessService: BuildingBlockProcessService,
+    ): BuildingBlockProcessResource {
+        return BuildingBlockProcessResource(
+            buildingBlockProcessService
         )
     }
 }

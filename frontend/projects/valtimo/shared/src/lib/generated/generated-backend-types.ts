@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-10-21 16:03:51.
+// Generated using typescript-generator version 3.2.1263 on 2025-10-23 16:21:15.
 
 export interface BuildingBlockDefinitionDto {
     key: string;
@@ -11,6 +11,14 @@ export interface BuildingBlockDefinitionDto {
     createdDate: DateAsString | null;
     basedOnVersionTag: string | null;
     final: boolean;
+}
+
+export interface BuildingBlockProcessDefinitionDto {
+    id: string;
+    key: string;
+    name: string | null;
+    versionTag: string | null;
+    main: boolean;
 }
 
 export interface CreateBuildingBlockDefinitionDto {
@@ -35,8 +43,8 @@ export interface CaseDefinitionDraftCreateRequest {
     name: string | null;
     description: string | null;
     basedOnCaseDefinitionVersion: string | null;
-    caseDefinitionId: CaseDefinitionId;
     basedOnCaseDefinitionId: CaseDefinitionId | null;
+    caseDefinitionId: CaseDefinitionId;
 }
 
 export interface CaseDefinitionQuickSearchDto {
@@ -622,23 +630,23 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-    activityType: ActivityTypeWithEventName;
-    processLinkType: string;
     processDefinitionId: string;
+    processLinkType: string;
     activityId: string;
+    activityType: ActivityTypeWithEventName;
 }
 
 export interface ProcessLinkExportResponseDto {
-    activityType: ActivityTypeWithEventName;
     processLinkType: string;
     activityId: string;
+    activityType: ActivityTypeWithEventName;
 }
 
 export interface ProcessLinkResponseDto {
-    activityType: ActivityTypeWithEventName;
-    processLinkType: string;
     processDefinitionId: string;
+    processLinkType: string;
     activityId: string;
+    activityType: ActivityTypeWithEventName;
     id: string;
 }
 
@@ -793,9 +801,9 @@ export interface TaskCompletionDTO {
 
 export interface WidgetDto {
     type: string;
-    highContrast: boolean;
     width: number;
     title: string;
+    highContrast: boolean;
     key: string;
     actions: WidgetAction[];
 }
@@ -817,10 +825,10 @@ export interface URI extends Comparable<URI>, Serializable {
 }
 
 export interface RelatedFile {
-    createdBy: string;
-    createdOn: DateAsString;
     fileId: string;
     sizeInBytes: number;
+    createdBy: string;
+    createdOn: DateAsString;
     fileName: string;
 }
 
@@ -837,9 +845,9 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    activityType: ActivityTypeWithEventName;
     processDefinitionId: string;
     activityId: string;
+    activityType: ActivityTypeWithEventName;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -946,25 +954,25 @@ export interface ProcessDefinitionDto {
 
 export interface HistoricActivityInstance {
     processDefinitionKey: string;
+    rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
-    activityName: string;
-    durationInMillis: number;
-    completeScope: boolean;
-    processInstanceId: string;
-    rootProcessInstanceId: string;
-    activityType: string;
-    processDefinitionId: string;
     startTime: DateAsString;
     endTime: DateAsString;
     taskId: string;
+    processDefinitionId: string;
+    activityId: string;
     assignee: string;
     tenantId: string;
     executionId: string;
-    activityId: string;
     canceled: boolean;
     removalTime: DateAsString;
+    processInstanceId: string;
+    activityName: string;
+    durationInMillis: number;
+    completeScope: boolean;
+    activityType: string;
     id: string;
 }
 
