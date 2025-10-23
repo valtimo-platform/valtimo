@@ -37,7 +37,7 @@ jobs:
 
   # For pull requests
   determine_test_env:
-    if: ${{ github.event_name == 'pull_request '}}
+    if: ${{ github.event_name == 'pull_request' }}
     uses: ./.github/workflows/determine_test_env.yml
 
   update_test_env:
