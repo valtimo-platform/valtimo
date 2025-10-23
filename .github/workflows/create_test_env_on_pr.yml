@@ -50,7 +50,6 @@ jobs:
   neither_changed:
     needs:
       - detect_changes
-      - get_valtimo_github_app_token
     if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' && needs.detect_changes.outputs.backend_changed != 'true' }}
     runs-on: ubuntu-latest
     steps:
