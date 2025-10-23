@@ -23,6 +23,10 @@
   line-height: 24px;
 }
 
+.log-text {
+  white-space: pre-wrap;
+}
+
 .property-key {
   color: var(--cds-text-primary);
 }
