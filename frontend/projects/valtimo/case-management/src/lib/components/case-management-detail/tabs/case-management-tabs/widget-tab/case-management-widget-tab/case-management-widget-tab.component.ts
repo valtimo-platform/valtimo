@@ -47,20 +47,14 @@ import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap}
 import {TabManagementService, WidgetTabManagementService} from '../../../../../../services';
 import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
 
-// import {WidgetEditorTab} from '../../../../../../models';
-// import {CaseManagementWidgetsEditorComponent} from './editor/case-management-widgets-editor.component';
-// import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-management-widgets-json-editor.component';
 @Component({
   templateUrl: './case-management-widget-tab.component.html',
-  styleUrl: './case-management-widget-tab.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     TranslateModule,
-    // CaseManagementWidgetsEditorComponent,
     CaseManagementWidgetTabEditModalComponent,
-    // CaseManagementWidgetsJsonEditorComponent,
     RenderInPageHeaderDirective,
     ButtonModule,
     IconModule,
@@ -128,15 +122,7 @@ export class CaseManagementWidgetTabComponent
       );
     })
   );
-  // public readonly currentWidgetTab$ = combineLatest([
-  //   this.caseManagementRouteParams$,
-  //   this.tabWidgetKey$,
-  //   this._refreshWidgetTabSubject$,
-  // ]).pipe(
-  //   switchMap(([params, tabWidgetKey]) =>
-  //     this.widgetTabManagementService.getWidgetTabConfiguration(params, tabWidgetKey)
-  //   )
-  // );
+
   public readonly currentWidgetTab$ = combineLatest([
     this.widgetTabManagementService.params$,
     this._refreshWidgetTabSubject$,
@@ -145,12 +131,7 @@ export class CaseManagementWidgetTabComponent
     switchMap(() => this.widgetTabManagementService.getWidgetConfiguration())
   );
 
-  // public readonly WidgetEditorTab = WidgetEditorTab;
-  // public readonly activeTab = signal<WidgetEditorTab | null>(WidgetEditorTab.VISUAL);
-  // public readonly activeContent = signal<WidgetEditorTab | null>(WidgetEditorTab.VISUAL);
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
-
-  // private _pendingTab: WidgetEditorTab | null = null;
 
   constructor(
     protected readonly widgetWizardService: WidgetWizardService,
@@ -185,60 +166,17 @@ export class CaseManagementWidgetTabComponent
     this.pageTitleService.disableReset();
   }
 
-  // public displayBodyComponent(tab: WidgetEditorTab): void {
-  //   if (this.pendingChanges && tab !== this.activeTab()) {
-  //     this._pendingTab = this.activeTab();
-  //     this.activeTab.set(tab);
-  //     this.onCanDeactivate();
-  //     return;
-  //   }
-  //   this.activeTab.set(tab);
-  //   this.activeContent.set(tab);
-  // }
-
   public editWidgetTab(): void {
     this.showEditWidgetTabModal();
   }
-
-  // public onPendingChangesUpdate(changeActive: boolean): void {
-  //   this.pendingChanges = changeActive;
-  // }
 
   private showEditWidgetTabModal(): void {
     this.showEditWidgetTabModal$.next(true);
   }
 
   public refreshWidgetTab(): void {
-    // if (this.pendingChanges) this.onCustomConfirm();
     this._refreshWidgetTabSubject$.next(null);
   }
-
-  // public onCustomModalLoaded(modal: ConfirmationModalComponent): void {
-  //   if (!!this.customModal) return;
-
-  //   this.customModal = modal;
-  // }
-
-  // public onJsonCanDeactivate(canDeactivate: boolean): void {
-  //   if (canDeactivate) {
-  //     this.onCustomConfirm();
-  //     return;
-  //   }
-
-  //   this.onCustomCancel();
-  // }
-
-  // protected onCancelRedirect(): void {
-  //   this.activeTab.set(this._pendingTab);
-  // }
-
-  // protected onConfirmRedirect(): void {
-  //   this.activeContent.set(this.activeTab());
-  // }
-
-  // protected onCanDeactivate(): void {
-  //   this.widgetJsonEditorService.showPendingModal.set(true);
-  // }
 
   private initBreadcrumbs(): void {
     this.caseManagementRouteParams$.subscribe(params => {
