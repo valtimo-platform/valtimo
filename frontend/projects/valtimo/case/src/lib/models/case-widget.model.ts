@@ -24,6 +24,7 @@ import {
 } from './case-widget-content.model';
 import {CaseWidgetDisplayType} from './case-widget-display.model';
 import {Condition} from '@valtimo/shared';
+import { BasicWidget } from '@valtimo/layout';
 
 enum CaseWidgetType {
   FIELDS = 'fields',
@@ -104,7 +105,7 @@ interface CaseWidgetsRes {
   caseDefinitionKey: string;
   caseDefinitionVersionTag: string;
   key: string;
-  widgets: BasicCaseWidget[];
+  widgets: BasicWidget[];
 }
 
 interface CustomCaseWidgetConfig {

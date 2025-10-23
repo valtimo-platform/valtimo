@@ -40,12 +40,11 @@ import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rx
 import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../../../../../models';
 import {WidgetTabManagementService, WidgetWizardService} from '../../../../../../../services';
 import {CaseManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
-import { IconService } from 'carbon-components-angular';
+import {IconService} from 'carbon-components-angular';
 import {ModalMode} from '@valtimo/shared';
 import {DragVertical16} from '@carbon/icons';
-import {
-  CaseManagementDividerModalComponent,
-} from '../../case-management-divider-modal/case-management-divider-modal.component';
+import {CaseManagementDividerModalComponent} from '../../case-management-divider-modal/case-management-divider-modal.component';
+import {BasicWidget, Widget} from '@valtimo/layout';
 
 @Component({
   selector: 'valtimo-case-management-widgets-editor',
@@ -61,7 +60,7 @@ import {
     TabsModule,
     CaseManagementWidgetWizardComponent,
     ConfirmationModalModule,
-    CaseManagementDividerModalComponent
+    CaseManagementDividerModalComponent,
   ],
 })
 export class CaseManagementWidgetsEditorComponent {
@@ -137,16 +136,11 @@ export class CaseManagementWidgetsEditorComponent {
         widthTranslation:
           item.type === 'divider'
             ? '-'
-            : this.translateService.instant(
-              this.getWidthTranslationKey(item.width)
-            ),
-        highContrast:
-          item.type === 'divider' ? null : item.highContrast,
+            : this.translateService.instant(this.getWidthTranslationKey(item.width)),
+        highContrast: item.type === 'divider' ? null : item.highContrast,
         tags: [
           {
-            content: this.translateService.instant(
-              `widgetTabManagement.type.${item.type}.title`
-            ),
+            content: this.translateService.instant(`widgetTabManagement.type.${item.type}.title`),
             type: WidgetTypeTags[item.type],
           },
         ],
@@ -171,13 +165,13 @@ export class CaseManagementWidgetsEditorComponent {
     private readonly translateService: TranslateService,
     private readonly widgetTabManagementService: WidgetTabManagementService,
     private readonly widgetWizardService: WidgetWizardService,
-    private readonly iconService: IconService,
+    private readonly iconService: IconService
   ) {
     this.iconService.registerAll([DragVertical16]);
   }
 
   public editWidget(tabWidget: CaseWidget): void {
-    if(tabWidget.type === CaseWidgetType.DIVIDER) {
+    if (tabWidget.type === CaseWidgetType.DIVIDER) {
       this.$dividerModalMode.set('edit');
       this.dividerDefinition$.next(tabWidget);
       this.openAddDividerModal();
@@ -203,7 +197,7 @@ export class CaseManagementWidgetsEditorComponent {
     const tabWidgetClone = cloneDeep(tabWidget);
     tabWidgetClone.key = '';
 
-    if(tabWidget.type === CaseWidgetType.DIVIDER) {
+    if (tabWidget.type === CaseWidgetType.DIVIDER) {
       this.$dividerModalMode.set('duplicate');
       this.dividerDefinition$.next(tabWidget);
       this.openAddDividerModal();
@@ -232,7 +226,10 @@ export class CaseManagementWidgetsEditorComponent {
     this.isDividerModalOpen$.next(true);
   }
 
-  public onCloseAddDividerModalEvent(dividerDefinition: BasicCaseWidget, existingWidgets: CaseWidget[]): void {
+  public onCloseAddDividerModalEvent(
+    dividerDefinition: BasicWidget,
+    existingWidgets: Widget[]
+  ): void {
     this.isDividerModalOpen$.next(false);
     this.widgetWizardService.resetWizard();
     this.dividerDefinition$.next(null);
@@ -242,8 +239,8 @@ export class CaseManagementWidgetsEditorComponent {
 
     const widgets = existingWidgets.some(w => w.key === dividerDefinition.key)
       ? existingWidgets.map(widget =>
-        widget.key === dividerDefinition.key ? dividerDefinition : widget
-      )
+          widget.key === dividerDefinition.key ? dividerDefinition : widget
+        )
       : [...existingWidgets, dividerDefinition];
 
     this.widgetTabManagementService
@@ -251,7 +248,7 @@ export class CaseManagementWidgetsEditorComponent {
         caseDefinitionKey: this.params.caseDefinitionKey,
         caseDefinitionVersionTag: this.params.caseDefinitionVersionTag,
         key: this.tabWidgetKey,
-        widgets: widgets
+        widgets: widgets,
       })
       .pipe(take(1))
       .subscribe(() => {
@@ -259,7 +256,7 @@ export class CaseManagementWidgetsEditorComponent {
       });
   }
 
-  public onCloseEvent(widgetResult: BasicCaseWidget, existingWidgets: CaseWidget[]): void {
+  public onCloseEvent(widgetResult: BasicWidget, existingWidgets: Widget[]): void {
     this.isWizardOpen$.next(false);
     this.widgetWizardService.resetWizard();
 
@@ -271,7 +268,7 @@ export class CaseManagementWidgetsEditorComponent {
         caseDefinitionVersionTag: this.params.caseDefinitionVersionTag,
         key: this.tabWidgetKey,
         widgets: !!widgetResult.key
-          ? existingWidgets.map((widget: BasicCaseWidget) =>
+          ? existingWidgets.map((widget: BasicWidget) =>
               widget.key === widgetResult.key ? widgetResult : widget
             )
           : [
@@ -288,7 +285,7 @@ export class CaseManagementWidgetsEditorComponent {
       });
   }
 
-  public onItemsReordered(widgets: CaseWidget[]): void {
+  public onItemsReordered(widgets: Widget[]): void {
     this.$dragAndDropDisabled.set(true);
 
     this.widgetTabManagementService
