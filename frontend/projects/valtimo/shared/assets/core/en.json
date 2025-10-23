@@ -1880,6 +1880,7 @@
     "searchFieldsNoResults": "No search fields found for this entity"
   },
   "ikoManagement": {
+    "preparingDownload": "Preparing download",
     "ikoServer": "IKO Server",
     "dataUrl": "Data URL",
     "title": "Configuration",

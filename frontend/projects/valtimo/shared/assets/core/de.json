@@ -1907,6 +1907,7 @@
     "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
   },
   "ikoManagement": {
+    "preparingDownload": "Download wird vorbereitet",
     "ikoServer": "IKO Server",
     "dataUrl": "Daten-URL",
     "title": "Konfiguration",

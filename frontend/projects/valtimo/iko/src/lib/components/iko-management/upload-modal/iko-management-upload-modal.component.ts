@@ -152,35 +152,28 @@ export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const control: AbstractControl | null = this.form.get('file');
-    if (!control) return;
+    if (!control) {
+      return;
+    }
 
     this._subscriptions.add(
-      control.valueChanges.subscribe((fileSet: Set<FileItem>) => {
-        const [fileItem] = fileSet;
-        if (!fileItem) {
-          this._disabled$.next(true);
-          this.showCheckboxError$.next(false);
-          this._checked = false;
-          return;
-        }
+        this.form.get('file').valueChanges.subscribe((fileSet: Set<FileItem>) => {
+          const [fileItem] = fileSet;
+          if (!fileItem) {
+            this._disabled$.next(true);
+            this.showCheckboxError$.next(false);
+            this._checked = false;
+            return;
+          }
 
-        this.setZipFile(fileItem);
-      })
+          this.setZipFile(fileItem);
+        })
     );
   }
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
     this.resetModal();
-  }
-
-  public onBackClick(activeStep: UPLOAD_STEP): void {
-    const prevIndex: number = STEPS.findIndex((step: UPLOAD_STEP) => step === activeStep) - 1;
-    if (prevIndex === -1) {
-      return;
-    }
-
-    this.activeStep$.next(STEPS[prevIndex]);
   }
 
   public onCloseModal(definitionUploaded?: boolean): void {
@@ -206,6 +199,16 @@ export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
       this.uploadDefinition();
     }
   }
+
+  public onBackClick(activeStep: UPLOAD_STEP): void {
+    const prevIndex: number = STEPS.findIndex((step: UPLOAD_STEP) => step === activeStep) - 1;
+    if (prevIndex === -1) {
+      return;
+    }
+
+    this.activeStep$.next(STEPS[prevIndex]);
+  }
+
 
   public onCheckedChange(checked: boolean): void {
     this._checked = checked;
@@ -241,6 +244,13 @@ export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
   }
 
   private setZipFile(fileItem: FileItem): void {
+    const file = fileItem?.file;
+
+    if (!file) {
+      this._importFile$.next('');
+      return;
+    }
+
     const blob = new Blob([fileItem.file], {type: fileItem.file.type});
     const fd = new FormData();
     fd.append('file', blob, fileItem.file.name);
@@ -249,7 +259,7 @@ export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
   }
 
   private resetForm(): void {
-    this.form.reset();
+    this.form.get('file')?.setValue(new Set<any>());
   }
 
   private resetModal(): void {

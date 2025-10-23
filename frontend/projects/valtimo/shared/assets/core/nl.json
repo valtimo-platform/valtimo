@@ -1913,6 +1913,7 @@
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
   },
   "ikoManagement": {
+    "preparingDownload": "Download aan het voorbereiden",
     "title": "Configuratie",
     "ikoServer": "IKO Server",
     "dataUrl": "Gegevens-URL",
