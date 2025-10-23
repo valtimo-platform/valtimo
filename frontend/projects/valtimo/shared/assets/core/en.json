@@ -1889,6 +1889,7 @@
     "widgets": {"title": "Widgets"},
     "importDefinition": {
       "title": "Import IKO definition",
+      "overwriteWarning": "If your IKO definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
       "startUpload": "Start upload",
       "progressBar": {
         "active": "This may take a while",
@@ -1907,7 +1908,7 @@
       },
       "steps": {
         "accessControl": {
-          "message": "Don't forget to set the rights in Access Control. Without the proper rights your new case definition won't be accessible.",
+          "message": "Don't forget to set the rights in Access Control. Without the proper rights your new IKO-definition won't be accessible.",
           "title": "Access control"
         }
       }

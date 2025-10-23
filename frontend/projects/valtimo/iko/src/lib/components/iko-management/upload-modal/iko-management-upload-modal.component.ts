@@ -113,7 +113,7 @@ export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
 
   public readonly notificationObj$: Observable<NotificationContent> = combineLatest([
     this.translateService.stream('interface.warning'),
-    this.translateService.stream('caseManagement.importDefinition.overwriteWarning'),
+    this.translateService.stream('ikoManagement.importDefinition.overwriteWarning'),
   ]).pipe(
     map(([title, message]) => ({
       type: 'warning',
@@ -157,17 +157,17 @@ export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
     }
 
     this._subscriptions.add(
-        this.form.get('file').valueChanges.subscribe((fileSet: Set<FileItem>) => {
-          const [fileItem] = fileSet;
-          if (!fileItem) {
-            this._disabled$.next(true);
-            this.showCheckboxError$.next(false);
-            this._checked = false;
-            return;
-          }
+      this.form.get('file').valueChanges.subscribe((fileSet: Set<FileItem>) => {
+        const [fileItem] = fileSet;
+        if (!fileItem) {
+          this._disabled$.next(true);
+          this.showCheckboxError$.next(false);
+          this._checked = false;
+          return;
+        }
 
-          this.setZipFile(fileItem);
-        })
+        this.setZipFile(fileItem);
+      })
     );
   }
 
@@ -208,7 +208,6 @@ export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
 
     this.activeStep$.next(STEPS[prevIndex]);
   }
-
 
   public onCheckedChange(checked: boolean): void {
     this._checked = checked;

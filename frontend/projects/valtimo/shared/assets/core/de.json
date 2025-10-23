@@ -1916,6 +1916,7 @@
     "widgets": {"title": "Widgets"},
     "importDefinition": {
       "title": "IKO-Definition importieren",
+      "overwriteWarning": "Wenn Ihre IKO-Definition Konfigurationen, Modelle und/oder Definitionen mit demselben Namen oder derselben Kennung enthält wie bereits auf Ihrem System, werden diese überschrieben.",
       "startUpload": "Upload starten",
       "progressBar": {
         "active": "Dies kann eine Weile dauern",
@@ -1934,7 +1935,7 @@
       },
       "steps": {
         "accessControl": {
-          "message": "Vergessen Sie nicht, die Rechte in der Zugriffskontrolle festzulegen. Ohne die entsprechenden Rechte ist Ihre neue Falldefinition nicht zugänglich.",
+          "message": "Vergessen Sie nicht, die Rechte in der Access Control festzulegen. Ohne die entsprechenden Rechte ist Ihre neue IKO-definition nicht zugänglich.",
           "title": "Zugriffskontrolle"
         }
       }
