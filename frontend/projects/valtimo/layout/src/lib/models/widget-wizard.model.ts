@@ -23,7 +23,6 @@ import {
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
 import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
-import {IWidgetContentComponent} from '../interfaces';
 import {BasicWidget, WidgetType} from './widget.model';
 import {WidgetWizardTypeStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-type-step/widget-wizard-type-step.component';
 import {WidgetWizardWidthStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-width-step/widget-wizard-width-step.component';
@@ -61,7 +60,7 @@ interface WidgetTypeSelection {
   descriptionKey: string;
   illustrationUrl: string;
   type: WidgetType;
-  component: Type<IWidgetContentComponent>;
+  component: Type<any>;
 }
 
 const WIZARD_STEP_COMPONENTS: Record<WidgetWizardStep, any> = {

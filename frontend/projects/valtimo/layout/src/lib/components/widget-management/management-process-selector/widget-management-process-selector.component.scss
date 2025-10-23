@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -14,8 +14,22 @@
  * limitations under the License.
  */
 
-import {EventEmitter} from '@angular/core';
+:host {
+  padding: 12px 0 16px 16px;
+  background: var(--cds-layer);
+}
 
-export interface WidgetContentComponent {
-  changeValidEvent: EventEmitter<boolean>;
+.valtimo-widget-management-process-selector {
+  display: flex;
+  gap: 16px;
+
+  > * {
+    max-width: 288px;
+    width: 100%;
+  }
+
+  .cds--text-input,
+  .cds--list-box {
+    background: var(--cds-layer-01);
+  }
 }

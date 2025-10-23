@@ -30,11 +30,9 @@ import {FormDefinitionOption, FormService} from '@valtimo/form';
 import {DropdownModule, InputModule, ListItem, SelectModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, map, Observable, Subscription} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
-import {IWidgetContentComponent, IWidgetManagementService} from '../../../../interfaces';
+import {IWidgetManagementService} from '../../../../interfaces';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetFormioContent} from '../../../../models';
-
-// import {CaseManagementWidgetProcessSelectorComponent} from '../process-selector/case-management-widget-process-selector.component';
 
 @Component({
   templateUrl: './widget-management-widget-formio.component.html',
@@ -48,14 +46,9 @@ import {WidgetFormioContent} from '../../../../models';
     ReactiveFormsModule,
     SelectModule,
     DropdownModule,
-    // CaseManagementWidgetProcessSelectorComponent,
   ],
 })
-export class WidgetManagementWidgetFormioComponent
-  implements IWidgetContentComponent, OnDestroy, OnInit
-{
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
-
+export class WidgetManagementWidgetFormioComponent implements OnDestroy, OnInit {
   public readonly form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
   });
@@ -110,7 +103,7 @@ export class WidgetManagementWidgetFormioComponent
 
     this._selectedFormDefinitionId$.next(formDefinitionId);
     this.widgetWizardService.$widgetContent.set({formDefinitionName: formDefinitionId});
-    this.changeValidEvent.emit(true);
+    this.widgetWizardService.$widgetContentValid.set(true);
   }
 
   public ngOnInit(): void {
@@ -153,6 +146,6 @@ export class WidgetManagementWidgetFormioComponent
     if (!formDefinitionId) return;
 
     this._selectedFormDefinitionId$.next(formDefinitionId);
-    this.changeValidEvent.emit(true);
+    this.widgetWizardService.$widgetContentValid.set(true);
   }
 }

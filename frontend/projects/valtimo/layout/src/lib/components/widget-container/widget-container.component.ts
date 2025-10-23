@@ -99,6 +99,7 @@ export class WidgetContainerComponent implements AfterViewInit, OnDestroy {
   }
 
   public initLayout(): void {
+    if (!this._widgetsContainerRef) return;
     this._observer = new ResizeObserver(event => {
       this.observerMutation(event);
     });
