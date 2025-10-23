@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE: ${{ inputs.image }}
-      SRC_IMAGE_TAG: ${{ inputs.image_tag }}
+      SRC_IMAGE: ${{ inputs.image_tag }}
       SOURCE_SHA: ${{ inputs.source_sha }}
       TEST_ENVIRONMENT_NAME: ${{ inputs.test_environment_name }}
     steps:
@@ -42,6 +42,6 @@ jobs:
       - name: Tag image for test environment
         run: |
           TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${SOURCE_SHA}-${{ github.run_number }}"
-          docker pull "${IMAGE}:${SRC_IMAGE_TAG}"
-          docker tag "${IMAGE}:${SRC_IMAGE_TAG}" "${IMAGE}:${TARGET_TAG}"
-          docker push "${IMAGE}:${TARGET_TAG}"
+          docker pull "${SRC_IMAGE}"
+          docker tag "${SRC_IMAGE}" "${IMAGE}:${TARGET_TAG}"
+          docker push "${SRC_IMAGE}:${TARGET_TAG}"
