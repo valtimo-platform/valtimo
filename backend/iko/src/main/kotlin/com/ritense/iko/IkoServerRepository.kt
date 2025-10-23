@@ -49,17 +49,17 @@ class IkoServerRepository(
     override fun getDataAggregatePropertyFields(): List<PropertyField> = listOf(
         PropertyField(
             key = CONNECTOR_TAG,
-            title= "Connector Reference",
+            title = "Connector Reference",
             tooltip = "The connector-reference or the connector-tag as defined in IKO"
         ),
         PropertyField(
             key = CONNECTOR_INSTANCE_TAG,
-            title= "Connector Instance Reference",
+            title = "Connector Instance Reference",
             tooltip = "The connector-instance-reference or the connector-instance tag as defined in IKO"
         ),
         PropertyField(
             key = ENDPOINT_OPERATION,
-            title= "Endpoint Reference",
+            title = "Endpoint Reference",
             tooltip = "The endpoint-reference or the endpoint-operation as defined in IKO"
         ),
         PropertyField(

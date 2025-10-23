@@ -36,7 +36,7 @@ internal class IkoPluginTest {
             ikoClient,
         )
         plugin.url = URI("https://zaken.plugin.url")
-        whenever(ikoClient.search(any(), any(), any()))
+        whenever(ikoClient.search(any(), any(), any(), any(), any()))
             .thenReturn(
                 MapperSingleton.get().readTree(
                     """
@@ -75,7 +75,9 @@ internal class IkoPluginTest {
         verify(ikoClient).search(
             any(),
             eq("personen"),
-            eq(mapOf("geslachtsnaam" to "Moulin", "geboortedatum" to "1985-12-01"))
+            eq("personen"),
+            eq("personen"),
+            eq(mapOf("geslachtsnaam" to "Moulin", "geboortedatum" to "1985-12-01")),
         )
         assertEquals("ZoekMetGeslachtsnaamEnGeboortedatum", result["type"].asText())
         assertEquals("999993653", result["personen"][0]["burgerservicenummer"].asText())

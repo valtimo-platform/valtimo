@@ -76,14 +76,17 @@ internal class IkoDataAggregateManagementResourceTest {
             listOf(
                 PropertyField(
                     key = CONNECTOR_TAG,
+                    title = "Connector Reference",
                     type = PROPERTY_FIELD_TYPE_TEXT
                 ),
                 PropertyField(
                     key = CONNECTOR_INSTANCE_TAG,
+                    title = "Connector Instance Reference",
                     type = PROPERTY_FIELD_TYPE_TEXT
                 ),
                 PropertyField(
                     key = ENDPOINT_OPERATION,
+                    title = "Endpoint Reference",
                     type = PROPERTY_FIELD_TYPE_TEXT
                 ),
             )
@@ -92,12 +95,16 @@ internal class IkoDataAggregateManagementResourceTest {
         mockMvc.perform(get("/api/management/v1/iko-property-fields/{type}/data-aggregate", "iko"))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.*", hasSize<Int>(1)))
-            .andExpect(jsonPath("$[0].title").value("Endpoint Path"))
+            .andExpect(jsonPath("$.*", hasSize<Int>(3)))
+            .andExpect(jsonPath("$[0].title").value("Connector Reference"))
             .andExpect(jsonPath("$[0].key").value("connectorTag"))
-            .andExpect(jsonPath("$[0].key").value("connectorInstanceTag"))
-            .andExpect(jsonPath("$[0].key").value("endpointOperation"))
             .andExpect(jsonPath("$[0].type").value("text"))
+            .andExpect(jsonPath("$[1].title").value("Connector Instance Reference"))
+            .andExpect(jsonPath("$[1].key").value("connectorInstanceTag"))
+            .andExpect(jsonPath("$[1].type").value("text"))
+            .andExpect(jsonPath("$[2].title").value("Endpoint Reference"))
+            .andExpect(jsonPath("$[2].key").value("endpointOperation"))
+            .andExpect(jsonPath("$[2].type").value("text"))
     }
 
     @Test
