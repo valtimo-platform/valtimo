@@ -1913,9 +1913,34 @@
     "list": "Liste",
     "tabs": {"title": "Tabs"},
     "widgets": {"title": "Widgets"},
+    "importDefinition": {
+      "title": "IKO-Definition importieren",
+      "startUpload": "Upload starten",
+      "progressBar": {
+        "active": "Dies kann eine Weile dauern",
+        "error": "IKO-Definition konnte nicht importiert werden. Aufgrund eines Fehlers auf unserer Seite wurde nichts importiert. Bitte versuchen Sie es später erneut. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.",
+        "finished": "IKO-Definition erfolgreich importiert",
+        "label": "IKO-Definition wird importiert"
+      },
+      "checkbox": {
+        "message": "Ich verstehe, dass Konfigurationen überschrieben werden können",
+        "error": "Dieses Feld ist erforderlich"
+      },
+      "upload": {
+        "title": "Datei hochladen",
+        "description": "Maximale Dateigröße beträgt 500 KB. Unterstützte Dateitypen sind ZIP und JSON.",
+        "buttonText": "Datei auswählen"
+      },
+      "steps": {
+        "accessControl": {
+          "message": "Vergessen Sie nicht, die Rechte in der Zugriffskontrolle festzulegen. Ohne die entsprechenden Rechte ist Ihre neue Falldefinition nicht zugänglich.",
+          "title": "Zugriffskontrolle"
+        }
+      }
+    },
     "views": {
       "title": "Bilder",
-      "upload":"Upload",
+      "upload": "Upload",
       "add": "Bild hinzufügen",
       "deleteContent": "Sind Sie sicher, dass Sie dieses Bild löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
       "noResultsTitle": "Es sind keine konfigurierten Bilder vorhanden",

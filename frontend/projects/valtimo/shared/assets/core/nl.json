@@ -1919,6 +1919,31 @@
     "list": "Lijst",
     "tabs": {"title": "Tabbladen"},
     "widgets": {"title": "Widgets"},
+    "importDefinition": {
+      "title": "Importeer IKO-definitie",
+      "startUpload": "Upload starten",
+      "progressBar": {
+        "active": "Dit kan even duren",
+        "error": "Kan de IKO-definitie niet importeren. Er is niets geïmporteerd vanwege een fout aan onze kant. Probeer het later opnieuw. Neem contact op met de ondersteuning als het probleem zich blijft voordoen.",
+        "finished": "IKO-definitie succesvol geïmporteerd",
+        "label": "IKO-definitie importeren"
+      },
+      "checkbox": {
+        "message": "Ik begrijp dat configuraties kunnen worden overschreven",
+        "error": "Dit veld is verplicht"
+      },
+      "upload": {
+        "title": "Bestand uploaden",
+        "description": "Maximale bestandsgrootte is 500kb. Ondersteunde bestandstypen zijn ZIP en JSON.",
+        "buttonText": "Bestand selecteren"
+      },
+      "steps": {
+        "accessControl": {
+          "message": "Vergeet niet om de rechten in Toegangsbeheer in te stellen. Zonder de juiste rechten is je nieuwe casusdefinitie niet toegankelijk.",
+          "title": "Toegangsbeheer"
+        }
+      }
+    },
     "views": {
       "title": "Beelden",
       "upload": "Uploaden",

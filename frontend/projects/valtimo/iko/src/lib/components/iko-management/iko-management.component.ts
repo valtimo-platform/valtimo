@@ -96,7 +96,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
-    private readonly iconService: IconService,
+    private readonly iconService: IconService
   ) {
     this.iconService.registerAll([Upload16]);
   }
@@ -165,6 +165,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
 
   public onUploadModalClose(item: any) {
     this.$uploadModalOpen.set(false);
+    this._refresh$.next(null);
   }
 
   private setPageTitle(): void {

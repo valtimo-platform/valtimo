@@ -18,70 +18,126 @@
   *ngIf="{
     activeStep: activeStep$ | async,
     uploadStatus: uploadStatus$ | async,
+    backButtonEnabled: backButtonEnabled$ | async,
+    nextButtonDisabled: nextButtonDisabled$ | async,
+    notificationObj: notificationObj$ | async,
+    showCheckboxError: showCheckboxError$ | async,
+    isStepAfterUpload: isStepAfterUpload$ | async,
+    showCloseButton: showCloseButton$ | async,
   } as obs"
   valtimoCdsModal
   [open]="open$ | async"
-  size="sm"
   showFooter="true"
+  class="valtimo-definition-uploader"
   (close)="onCancel()"
 >
-  <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 cdsModalHeaderHeading>Import IKO definition</h3>
+  <cds-modal-header
+    [showCloseButton]="obs.showCloseButton"
+    (closeSelect)="onCloseModal(obs.isStepAfterUpload && obs.uploadStatus !== UPLOAD_STATUS.ERROR)"
+  >
+    <h3 cdsModalHeaderHeading>
+      {{ 'ikoManagement.importDefinition.title' | translate }}
+    </h3>
   </cds-modal-header>
 
-<!--  <section [ngSwitch]="obs.activeStep" cdsModalContent>-->
-<!--    <cds-progress-bar-->
-<!--      class="valtimo-definition-uploader__progress-bar"-->
-<!--      [label]="'caseManagement.importDefinition.progressBar.label' | translate"-->
-<!--      [status]="obs.uploadStatus"-->
-<!--      [helperText]="'caseManagement.importDefinition.progressBar.' + obs.uploadStatus | translate"-->
-<!--    ></cds-progress-bar>-->
-<!--  </section>-->
+  <section [ngSwitch]="obs.activeStep" cdsModalContent class="valtimo-definition-uploader__content">
+    <ng-template ngSwitchDefault>
+      <valtimo-case-management-upload-step
+        [message]="
+          'ikoManagement.importDefinition.steps.' + obs.activeStep + '.message' | translate
+        "
+        [title]="'ikoManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate"
+        [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
+      >
+      </valtimo-case-management-upload-step>
+    </ng-template>
 
-<!--  <cds-modal-footer-->
-<!--    class="valtimo-definition-uploader__footer"-->
-<!--    [class.valtimo-definition-uploader__footer&#45;&#45;double]="obs.activeStep === UPLOAD_STEP.FILE_SELECT"-->
-<!--  >-->
-<!--    <button-->
-<!--      *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR"-->
-<!--      class="valtimo-definition-uploader__cancel"-->
-<!--      cdsButton="ghost"-->
-<!--      (click)="onCloseModal(obs.isStepAfterUpload)"-->
-<!--    >-->
-<!--      {{ (obs.isStepAfterUpload ? 'interface.skip' : 'interface.cancel') | translate }}-->
-<!--    </button>-->
+    <form *ngSwitchCase="UPLOAD_STEP.FILE_SELECT" [formGroup]="form">
+      <cds-file-uploader
+        [accept]="acceptedFiles"
+        [buttonText]="'ikoManagement.importDefinition.upload.buttonText' | translate"
+        [description]="'ikoManagement.importDefinition.upload.description' | translate"
+        [multiple]="false"
+        [title]="'ikoManagement.importDefinition.upload.title' | translate"
+        buttonType="primary"
+        formControlName="file"
+        class="valtimo-definition-uploader__file-uploader"
+      >
+      </cds-file-uploader>
 
-<!--    <div class="valtimo-definition-uploader__actions">-->
-<!--      <button-->
-<!--        *ngIf="obs.backButtonEnabled"-->
-<!--        cdsButton="secondary"-->
-<!--        (click)="onBackClick(obs.activeStep)"-->
-<!--      >-->
-<!--        {{ 'interface.back' | translate }}-->
-<!--      </button>-->
+      <ng-container *ngIf="!obs.nextButtonDisabled">
+        <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
 
-<!--      <button-->
-<!--        *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR"-->
-<!--        cdsButton="primary"-->
-<!--        [disabled]="obs.nextButtonDisabled"-->
-<!--        (click)="onNextClick(obs.activeStep)"-->
-<!--      >-->
-<!--        {{-->
-<!--          (obs.activeStep === UPLOAD_STEP.FILE_SELECT-->
-<!--          ? 'caseManagement.importDefinition.startUpload'-->
-<!--          : 'interface.next'-->
-<!--          ) | translate-->
-<!--        }}-->
-<!--      </button>-->
+        <div class="valtimo-definition-uploader__checkbox">
+          <cds-checkbox
+            [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
+            (checkedChange)="onCheckedChange($event)"
+          >
+            {{ 'ikoManagement.importDefinition.checkbox.message' | translate }}
+          </cds-checkbox>
 
-<!--      <button-->
-<!--        *ngIf="obs.uploadStatus === UPLOAD_STATUS.ERROR"-->
-<!--        class="valtimo-definition-uploader__cancel"-->
-<!--        cdsButton="primary"-->
-<!--        (click)="onCloseModal(true)"-->
-<!--      >-->
-<!--        {{ 'interface.finish' | translate }}-->
-<!--      </button>-->
-<!--    </div>-->
-<!--  </cds-modal-footer>-->
+          <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
+            <svg cdsIcon="warning--filled" size="16"></svg>
+            {{ 'ikoManagement.importDefinition.checkbox.error' | translate }}
+          </div>
+        </div>
+      </ng-container>
+    </form>
+
+    <cds-progress-bar
+      *ngSwitchCase="UPLOAD_STEP.FILE_UPLOAD"
+      class="valtimo-definition-uploader__progress-bar"
+      [label]="'ikoManagement.importDefinition.progressBar.label' | translate"
+      [status]="obs.uploadStatus"
+      [helperText]="'ikoManagement.importDefinition.progressBar.' + obs.uploadStatus | translate"
+    ></cds-progress-bar>
+  </section>
+
+  <cds-modal-footer class="valtimo-definition-uploader__footer">
+    <button
+      *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR"
+      class="valtimo-definition-uploader__cancel"
+      cdsButton="ghost"
+      (click)="onCloseModal(obs.isStepAfterUpload)"
+    >
+      {{ (obs.isStepAfterUpload ? 'interface.skip' : 'interface.cancel') | translate }}
+    </button>
+
+    <div class="valtimo-definition-uploader__actions">
+      <button
+        *ngIf="obs.backButtonEnabled"
+        cdsButton="secondary"
+        (click)="onBackClick(obs.activeStep)"
+      >
+        {{ 'interface.back' | translate }}
+      </button>
+
+      <button
+        *ngIf="
+          obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.ACCESS_CONTROL
+        "
+        cdsButton="primary"
+        [disabled]="obs.nextButtonDisabled"
+        (click)="onNextClick(obs.activeStep)"
+      >
+        {{
+          (obs.activeStep === UPLOAD_STEP.FILE_SELECT
+            ? 'ikoManagement.importDefinition.startUpload'
+            : 'interface.next'
+          ) | translate
+        }}
+      </button>
+
+      <button
+        *ngIf="
+          obs.uploadStatus === UPLOAD_STATUS.ERROR || obs.activeStep === UPLOAD_STEP.ACCESS_CONTROL
+        "
+        class="valtimo-definition-uploader__cancel"
+        cdsButton="primary"
+        (click)="onCloseModal(true)"
+      >
+        {{ 'interface.finish' | translate }}
+      </button>
+    </div>
+  </cds-modal-footer>
 </cds-modal>

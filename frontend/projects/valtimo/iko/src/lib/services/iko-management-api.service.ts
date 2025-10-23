@@ -96,20 +96,16 @@ export class IkoManagementApiService extends BaseApiService {
     return this.httpClient.delete<void>(this.getApiUrl(`management/v1/iko-data-aggregate/${key}`));
   }
 
-  public exportIKOConfiguration(
-    key: string,
-  ): Observable<HttpResponse<Blob>> {
+  public exportIKOConfiguration(key: string): Observable<HttpResponse<Blob>> {
     return this.httpClient.get<Blob>(
-      this.getApiUrl(
-        `management/v1/iko-data-aggregate/${key}/export`
-      ),
+      this.getApiUrl(`management/v1/iko-data-aggregate/${key}/export`),
       {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
     );
   }
 
-  public importConfigurationZip(file: FormData): Observable<HttpResponse<Blob>> {
+  public importConfigurationZip(file: any): Observable<HttpResponse<Blob>> {
     return this.httpClient.post<HttpResponse<Blob>>(
-      this.getApiUrl(`management/v1/case/import`),
+      this.getApiUrl(`management/v1/iko-data-aggregate/import`),
       file
     );
   }

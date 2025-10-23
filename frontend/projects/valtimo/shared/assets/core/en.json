@@ -1886,6 +1886,31 @@
     "list": "List",
     "tabs": {"title": "Tabs"},
     "widgets": {"title": "Widgets"},
+    "importDefinition": {
+      "title": "Import IKO definition",
+      "startUpload": "Start upload",
+      "progressBar": {
+        "active": "This may take a while",
+        "error": "Unable to import IKO definition. Nothing was imported due to an error at our end. Please try again later.If the issue keeps happening, contact support.",
+        "finished": "IKO definition successfully imported",
+        "label": "Importing IKO definition"
+      },
+      "checkbox": {
+        "message": "I understand that configurations may be overwritten",
+        "error": "This field is mandatory"
+      },
+      "upload": {
+        "title": "Upload file",
+        "description": "Max file size is 500kb. Supported file types are ZIP and JSON.",
+        "buttonText": "Select file"
+      },
+      "steps": {
+        "accessControl": {
+          "message": "Don't forget to set the rights in Access Control. Without the proper rights your new case definition won't be accessible.",
+          "title": "Access control"
+        }
+      }
+    },
     "views": {
       "title": "Views",
       "upload": "Upload",

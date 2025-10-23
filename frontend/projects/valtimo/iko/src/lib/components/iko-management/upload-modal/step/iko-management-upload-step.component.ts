@@ -17,7 +17,7 @@
 import {Component, Input} from '@angular/core';
 
 @Component({
-  standalone: false,
+  standalone: true,
   selector: 'valtimo-case-management-upload-step',
   templateUrl: './iko-management-upload-step.component.html',
   styleUrls: ['./iko-management-upload-step.component.scss'],

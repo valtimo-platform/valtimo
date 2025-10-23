@@ -30,11 +30,6 @@
       grid-template-columns: 1fr 1fr 2fr !important;
       grid-template-areas: 'cancel . actions' !important;
     }
-
-    &--double ::ng-deep.cds--modal-footer {
-      grid-template-columns: 1fr 1fr !important;
-      grid-template-areas: 'cancel actions' !important;
-    }
   }
 
   &__progress-bar {
@@ -91,5 +86,3 @@
     color: colors.$black-100;
   }
 }
-
-
