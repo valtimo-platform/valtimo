@@ -48,7 +48,7 @@ class TestNotificationResource(
             ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "No Notificaties API plugin configuration available")
 
         logger.info {
-            "Received test notification '${request.message}' for configuration ${plugin.notificatiesApiConfigurationId}"
+            "Sending test notification '${request.message}' for configuration ${plugin.notificatiesApiConfigurationId}"
         }
 
         val restClient = restClientBuilder
@@ -59,12 +59,14 @@ class TestNotificationResource(
             .baseUrl(plugin.url.toASCIIString())
             .build()
 
-        restClient
-            .put()
+        val response = restClient
+            .post()
             .uri { it.pathSegment("notificaties").build() }
             .contentType(MediaType.APPLICATION_JSON)
             .body(request.message)
             .retrieve()
+            .toEntity(String::class.java)
+            .body
 
         return ResponseEntity.accepted().build()
     }

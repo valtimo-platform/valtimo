@@ -51,7 +51,7 @@ export class NotificationTestComponent {
   "kenmerken": {
     "bronorganisatie": "224557609",
     "zaaktype": "https://catalogi-api.vng.cloud/api/v1/zaaktypen/53c5c164",
-    "vertrouwelijkheidaanduiding": "openbaar"
+    "vertrouwelijkheidaanduiding": "openbaar",
     "test-success": "false"
   }
 }`;

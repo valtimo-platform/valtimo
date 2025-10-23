@@ -73,10 +73,7 @@ class NotificatiesApiInboundEventProcessingService(
                 if (remainingRetries <= 0) {
                     return false
                 }
-                val attemptsUsed = max(processingProperties.initialRetries - remainingRetries, 0)
-                val delay = nextRetryDelay(attemptsUsed)
-                val lastAttemptAt = event.lastProcessedAt ?: event.receivedAt
-                lastAttemptAt.plus(delay) <= now
+                event.nextDueAt!! <= now
             }
             NotificatiesApiInboundEventStatus.PROCESSED -> false
         }
