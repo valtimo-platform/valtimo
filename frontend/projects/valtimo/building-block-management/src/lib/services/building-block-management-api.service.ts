@@ -78,4 +78,21 @@ export class BuildingBlockManagementApiService extends BaseApiService {
       dto
     );
   }
+
+  public getBuildingBlockDocumentDefinition(key: string, versionTag: string): Observable<object> {
+    return this.httpClient.get<object>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/document`)
+    );
+  }
+
+  public updateBuildingBlockDocumentDefinition(
+    key: string,
+    versionTag: string,
+    schema: any
+  ): Observable<object> {
+    return this.httpClient.put<object>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/document`),
+      schema
+    );
+  }
 }

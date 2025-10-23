@@ -13,19 +13,127 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {BuildingBlockManagementDetailService} from '../../services';
+import {
+  BuildingBlockManagementApiService,
+  BuildingBlockManagementDetailService,
+} from '../../services';
+import {BehaviorSubject, combineLatest, filter, map, Subscription, switchMap, tap} from 'rxjs';
+import {FitPageDirective, JsonEditorComponent, SchemaEditorComponent} from '@valtimo/components';
+import {ButtonModule, IconModule, LoadingModule} from 'carbon-components-angular';
+import {take} from 'rxjs/operators';
+import {TranslatePipe} from '@ngx-translate/core';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-document',
   templateUrl: './building-block-management-document.component.html',
   styleUrls: ['./building-block-management-document.component.scss'],
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    JsonEditorComponent,
+    ButtonModule,
+    IconModule,
+    LoadingModule,
+    SchemaEditorComponent,
+    FitPageDirective,
+    TranslatePipe,
+  ],
 })
-export class BuildingBlockManagementDocumentComponent {
+export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestroy {
+  private readonly _subscriptions = new Subscription();
+
+  private readonly _loadingDocumentDefinition$ = new BehaviorSubject<boolean>(true);
+
+  public readonly loading$ = combineLatest([
+    this.buildingBlockManagementDetailService.loadingDefinition$,
+    this._loadingDocumentDefinition$,
+  ]).pipe(
+    map(
+      ([loadingDefinition, loadingDocumentDefinition]) =>
+        loadingDefinition || loadingDocumentDefinition
+    )
+  );
+
+  private readonly _documentDefinition$ = new BehaviorSubject<string>('');
+  public readonly documentDefinition$ = this._documentDefinition$.pipe(
+    filter(model => model !== null)
+  );
+
+  private _modifiedDefinition: string | null = null;
+
   constructor(
-    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService
+    private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService
   ) {}
+
+  public ngOnInit(): void {
+    this.openBuildingBlockDefinitionSubscription();
+  }
+
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  public downloadDefinition(): void {
+    this.documentDefinition$.pipe(take(1)).subscribe(definition => {
+      const dataString = 'data:text/json;charset=utf-8,' + encodeURIComponent(definition);
+      const downloadAnchorElement = document.getElementById('downloadAnchorElement');
+
+      if (!downloadAnchorElement) return;
+
+      downloadAnchorElement.setAttribute('href', dataString);
+      downloadAnchorElement.setAttribute(
+        'download',
+        `${this.buildingBlockManagementDetailService.buildingBlockDefinitionKey}-v${this.buildingBlockManagementDetailService.buildingBlockVersionTag}.json`
+      );
+      downloadAnchorElement.click();
+    });
+  }
+
+  public onSaveEvent(): void {
+    if (!this._modifiedDefinition) return;
+
+    this._loadingDocumentDefinition$.next(true);
+
+    this.buildingBlockManagementApiService
+      .updateBuildingBlockDocumentDefinition(
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+        this.buildingBlockManagementDetailService.buildingBlockVersionTag,
+        JSON.parse(this._modifiedDefinition)
+      )
+      .subscribe(res => {
+        this.setDocumentDefinitionModel(res);
+        this._modifiedDefinition = null;
+        this._loadingDocumentDefinition$.next(false);
+      });
+  }
+
+  public onChangeEvent(event: string): void {
+    this._modifiedDefinition = event;
+  }
+
+  private openBuildingBlockDefinitionSubscription(): void {
+    this._subscriptions.add(
+      this.buildingBlockManagementDetailService.buildingBlockDefinition$
+        .pipe(
+          tap(() => this._loadingDocumentDefinition$.next(true)),
+          switchMap(definition =>
+            this.buildingBlockManagementApiService.getBuildingBlockDocumentDefinition(
+              definition.key,
+              definition.versionTag
+            )
+          ),
+          tap(() => this._loadingDocumentDefinition$.next(false))
+        )
+        .subscribe(buildingBlockDocumentDefinition =>
+          this.setDocumentDefinitionModel(buildingBlockDocumentDefinition)
+        )
+    );
+  }
+
+  private setDocumentDefinitionModel(definition: object): void {
+    this._documentDefinition$.next(JSON.stringify(definition, null, 2));
+  }
 }
