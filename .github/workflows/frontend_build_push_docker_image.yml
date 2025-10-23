@@ -112,7 +112,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}/gzac-frontend
           tags: |
-            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
+            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
             type=raw,value=commit-${{ github.sha }}
             type=raw,value=contents-${{ steps.frontend_tree.outputs.tree }}
           flavor: |

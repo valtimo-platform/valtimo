@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - feature/create-test-env-on-pr
+      - .github/workflows/backend_*.yml
     paths:
       - backend/**
 
