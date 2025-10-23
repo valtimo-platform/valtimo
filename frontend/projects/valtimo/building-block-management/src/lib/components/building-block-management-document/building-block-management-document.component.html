@@ -17,28 +17,27 @@
 <ng-container
   *ngIf="{
     loading: loading$ | async,
-    documentDefinitionModel: documentDefinitionModel$ | async,
+    documentDefinition: documentDefinition$ | async,
   } as obs"
 >
   @if (!obs.loading) {
-    <valtimo-json-editor
-      [jsonSchema]="documentJsonSchema"
-      [model]="obs.documentDefinitionModel"
+    <valtimo-schema-editor
       [fitPage]="true"
-      [fitPageExtraSpace]="103"
-      (saveEvent)="onSaveEvent($event)"
+      [extraSpace]="104"
+      [schemaJson]="obs.documentDefinition"
       (changeEvent)="onChangeEvent($event)"
+      (saveEvent)="onSaveEvent()"
     >
       <button
         cdsButton="ghost"
-        [disabled]="obs.loading || !obs.documentDefinitionModel"
+        [disabled]="obs.loading || !obs.documentDefinition"
         (click)="downloadDefinition()"
       >
         {{ 'interface.download' | translate }}
 
         <svg cdsIcon="download" size="16" class="cds--btn__icon"></svg>
       </button>
-    </valtimo-json-editor>
+    </valtimo-schema-editor>
   } @else {
     <div class="loading-container">
       <cds-loading></cds-loading>
