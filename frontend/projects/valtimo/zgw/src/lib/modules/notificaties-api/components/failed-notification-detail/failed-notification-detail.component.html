@@ -1,0 +1,76 @@
+<cds-modal [open]="open" size="lg" valtimoCdsModal>
+  <cds-modal-header [showCloseButton]="true" (closeSelect)="onClose()">
+    {{ 'zgw.notifications.failed.detail.title' | translate }}
+  </cds-modal-header>
+
+  <section cdsModalContent class="failed-notification-detail__content">
+    <h4 class="detail-heading">
+      {{ 'zgw.notifications.failed.detail.metadataTitle' | translate }}
+    </h4>
+
+    <dl class="detail-metadata">
+      <div>
+        <dt>{{ 'zgw.notifications.failed.detail.id' | translate }}</dt>
+        <dd>{{ notification?.id || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'zgw.notifications.failed.detail.idempotenceKey' | translate }}</dt>
+        <dd>{{ notification?.idempotenceKey || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'zgw.notifications.failed.detail.status' | translate }}</dt>
+        <dd>{{ notification?.status || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'zgw.notifications.failed.detail.pendingRetries' | translate }}</dt>
+        <dd>{{ notification?.pendingRetries ?? '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'zgw.notifications.failed.detail.receivedAt' | translate }}</dt>
+        <dd>{{ notification?.receivedAt || '-' }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'zgw.notifications.failed.detail.lastProcessedAt' | translate }}</dt>
+        <dd>{{ notification?.lastProcessedAt || '-' }}</dd>
+      </div>
+    </dl>
+
+    <h4 class="detail-heading">
+      {{ 'zgw.notifications.failed.detail.payloadTitle' | translate }}
+    </h4>
+    <div class="detail-block" *ngIf="formattedPayload; else noPayload">
+      <pre class="detail-pre">{{ formattedPayload }}</pre>
+    </div>
+    <ng-template #noPayload>
+      <div class="detail-block detail-block--empty">
+        {{ 'zgw.notifications.failed.detail.noPayload' | translate }}
+      </div>
+    </ng-template>
+
+    <h4 class="detail-heading">
+      {{ 'zgw.notifications.failed.detail.errorTitle' | translate }}
+    </h4>
+    <div class="detail-block" *ngIf="notification?.lastErrorMessage; else noError">
+      <pre class="detail-pre">{{ notification?.lastErrorMessage }}</pre>
+    </div>
+    <ng-template #noError>
+      <div class="detail-block detail-block--empty">
+        {{ 'zgw.notifications.failed.detail.noError' | translate }}
+      </div>
+    </ng-template>
+  </section>
+
+  <cds-modal-footer>
+    <button cdsButton="ghost" type="button" (click)="onClose()">
+      {{ 'interface.close' | translate }}
+    </button>
+    <button
+      cdsButton="primary"
+      type="button"
+      (click)="onRetry()"
+      [disabled]="retryInProgress || !notification"
+    >
+      {{ 'zgw.notifications.failed.detail.retry' | translate }}
+    </button>
+  </cds-modal-footer>
+</cds-modal>

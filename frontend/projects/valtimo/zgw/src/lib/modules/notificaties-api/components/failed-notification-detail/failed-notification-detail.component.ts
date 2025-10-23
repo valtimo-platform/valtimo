@@ -1,0 +1,65 @@
+/*
+ * Copyright 2015-2024 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {CommonModule} from '@angular/common';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {TranslateModule} from '@ngx-translate/core';
+import {ModalModule} from 'carbon-components-angular';
+import {ValtimoCdsModalDirectiveModule} from '@valtimo/components';
+import {FailedNotification} from '../../models';
+
+@Component({
+  selector: 'valtimo-notificaties-api-failed-notification-detail',
+  templateUrl: './failed-notification-detail.component.html',
+  styleUrls: ['./failed-notification-detail.component.scss'],
+  standalone: true,
+  imports: [CommonModule, TranslateModule, ModalModule, ValtimoCdsModalDirectiveModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class FailedNotificationDetailComponent {
+  @Input() open = false;
+  @Input() notification: FailedNotification | null = null;
+  @Input() retryInProgress = false;
+
+  @Output() readonly closeModal = new EventEmitter<void>();
+  @Output() readonly retry = new EventEmitter<void>();
+
+  public onClose(): void {
+    this.closeModal.emit();
+  }
+
+  public onRetry(): void {
+    if (!this.retryInProgress) {
+      this.retry.emit();
+    }
+  }
+
+  public get formattedPayload(): string {
+    if (!this.notification?.payload) {
+      return '';
+    }
+
+    try {
+      return JSON.stringify(JSON.parse(this.notification.payload), null, 2);
+    } catch (error) {
+      return this.notification.payload;
+    }
+  }
+
+  public trackByMetadata(_: number, item: {label: string; value: string | number | null}) {
+    return item.label;
+  }
+}

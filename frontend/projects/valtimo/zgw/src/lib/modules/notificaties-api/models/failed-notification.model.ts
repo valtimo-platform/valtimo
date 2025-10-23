@@ -14,10 +14,31 @@
  * limitations under the License.
  */
 
-export * from './documenten-api';
-export * from './objecten-api';
-export * from './contactmomenten';
-export * from './haalcentraal-brp';
-export * from './zaakdetails';
-export * from './zaken-api';
-export * from './notificaties-api';
+enum NotificatiesApiInboundEventStatus {
+  RECEIVED = 'RECEIVED',
+  PROCESSED = 'PROCESSED',
+  FAILED = 'FAILED',
+}
+
+interface FailedNotification {
+  id: string;
+  idempotenceKey: string;
+  status: NotificatiesApiInboundEventStatus;
+  pendingRetries: number | null;
+  receivedAt: string;
+  lastProcessedAt: string | null;
+  lastErrorMessage: string | null;
+  payload: string;
+}
+
+interface FailedNotificationPageRequest {
+  page: number;
+  size: number;
+  sort?: string;
+}
+
+export {
+  FailedNotification,
+  FailedNotificationPageRequest,
+  NotificatiesApiInboundEventStatus,
+};

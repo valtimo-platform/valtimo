@@ -30,6 +30,7 @@ import {ResourceModule} from '@valtimo/resource';
 import {DossierManagementZgwComponent} from './components';
 import {
   CustomerModule,
+  NotificatiesApiRoutingModule,
   DocumentenApiMetadataModalComponent,
   DocumentenApiUploaderComponent,
   DocumentenApiVersionComponent,
@@ -52,6 +53,7 @@ import {
     RouterModule,
     DocumentenApiMetadataModalComponent,
     CustomerModule,
+    NotificatiesApiRoutingModule,
   ],
   declarations: [DocumentenApiUploaderComponent],
   exports: [DocumentenApiUploaderComponent],

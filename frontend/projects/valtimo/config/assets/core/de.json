@@ -956,6 +956,39 @@
         "title": "Keine konfigurierten Spalten"
       }
     },
+    "notifications": {
+      "failed": {
+        "pageTitle": "Fehlgeschlagene Benachrichtigungen",
+        "retrySuccess": "Benachrichtigung zur erneuten Verarbeitung eingeplant",
+        "retryError": "Erneuter Versuch fehlgeschlagen. Bitte später erneut versuchen.",
+        "noResults": {
+          "title": "Keine fehlgeschlagenen Benachrichtigungen",
+          "description": "Es liegen derzeit keine fehlgeschlagenen Benachrichtigungen vor."
+        },
+        "columns": {
+          "receivedAt": "Empfangen am",
+          "idempotenceKey": "Idempotenzschlüssel",
+          "pendingRetries": "Verbleibende Versuche",
+          "lastProcessedAt": "Zuletzt verarbeitet am",
+          "lastErrorMessage": "Letzte Fehlermeldung"
+        },
+        "detail": {
+          "title": "Details zur fehlgeschlagenen Benachrichtigung",
+          "metadataTitle": "Metadaten",
+          "id": "ID",
+          "idempotenceKey": "Idempotenzschlüssel",
+          "status": "Status",
+          "pendingRetries": "Verbleibende Versuche",
+          "receivedAt": "Empfangen am",
+          "lastProcessedAt": "Zuletzt verarbeitet am",
+          "payloadTitle": "Payload",
+          "noPayload": "Keine Payload verfügbar.",
+          "errorTitle": "Fehlerdetails",
+          "noError": "Keine Fehlerdetails verfügbar.",
+          "retry": "Benachrichtigung erneut versuchen"
+        }
+      }
+    },
     "tags": {
       "tag": "Schlüsselwört",
       "add": "Schlüsselwört hinzufügen",
