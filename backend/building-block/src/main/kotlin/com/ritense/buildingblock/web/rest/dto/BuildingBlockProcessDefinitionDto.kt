@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../constants';
-import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
+package com.ritense.buildingblock.web.rest.dto
 
-type BuildingBlockManagementTabKey =
-  (typeof BUILDING_BLOCK_MANAGEMENT_TABS)[keyof typeof BUILDING_BLOCK_MANAGEMENT_TABS];
-
-interface BuildingBlockProcessDefinitionItem extends BuildingBlockProcessDefinitionDto {
-  mainText: string;
-}
-
-export {BuildingBlockManagementTabKey, BuildingBlockProcessDefinitionItem};
+data class BuildingBlockProcessDefinitionDto(
+    val id: String,
+    val key: String,
+    val name: String?,
+    val versionTag: String?,
+    val main: Boolean
+)

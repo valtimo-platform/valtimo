@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
+
 package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
@@ -54,6 +56,36 @@ class BuildingBlockProcessService(
             processDefinitionBuildingBlockDefinitionRepository.save(ProcessDefinitionBuildingBlockDefinition(linkId, true))
         }
         return processDefinitionId
+    }
+
+
+    @Transactional(readOnly = true)
+    fun getProcessDefinitionsForBuildingBlock(
+        key: String,
+        versionTag: String
+    ): List<BuildingBlockProcessDefinitionDto> {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(key, versionTag)
+        val links = processDefinitionBuildingBlockDefinitionRepository.findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+        if (links.isEmpty()) return emptyList()
+
+        val ids = links.map { it.id.processDefinitionId.id }.toSet()
+        val definitions = repositoryService
+            .createProcessDefinitionQuery()
+            .processDefinitionIdIn(*ids.toTypedArray())
+            .list()
+        val definitionsById = definitions.associateBy { it.id }
+
+        return links.mapNotNull { link ->
+            definitionsById[link.id.processDefinitionId.id]?.let { processDefinition ->
+                BuildingBlockProcessDefinitionDto(
+                    id = processDefinition.id,
+                    key = processDefinition.key,
+                    name = processDefinition.name,
+                    versionTag = processDefinition.versionTag,
+                    main = link.main
+                )
+            }
+        }
     }
 
     private fun createMinimalModel(processKey: String, processName: String, versionTag: String): BpmnModelInstance {
