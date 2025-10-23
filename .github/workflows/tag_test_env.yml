@@ -6,7 +6,7 @@ on:
         description: "Fully qualified Docker image name"
         required: true
         type: string
-      image_tag:
+      tagged_src_image:
         description: "Tag produced in the build job"
         required: true
         type: string
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       IMAGE: ${{ inputs.image }}
-      SRC_IMAGE: ${{ inputs.image_tag }}
+      SRC_IMAGE: ${{ inputs.tagged_src_image }}
       SOURCE_SHA: ${{ inputs.source_sha }}
       TEST_ENVIRONMENT_NAME: ${{ inputs.test_environment_name }}
     steps:
