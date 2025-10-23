@@ -61,6 +61,7 @@ export class WidgetWizardService {
     WidgetWizardStep.WIDTH,
     WidgetWizardStep.STYLE,
     WidgetWizardStep.CONTENT,
+    WidgetWizardStep.DISPLAY_CONDITIONS,
   ]);
 
   public readonly $editMode: WritableSignal<boolean> = signal(false);
