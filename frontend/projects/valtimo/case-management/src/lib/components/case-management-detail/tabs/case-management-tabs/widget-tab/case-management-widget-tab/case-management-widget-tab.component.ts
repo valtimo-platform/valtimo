@@ -18,9 +18,9 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  Inject,
   OnDestroy,
   OnInit,
-  signal,
 } from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {Edit16} from '@carbon/icons';
@@ -28,27 +28,28 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {ApiTabItem} from '@valtimo/case';
 import {
   BreadcrumbService,
-  ConfirmationModalComponent,
   PageHeaderService,
   PageTitleService,
-  PendingChangesComponent,
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
+import {
+  IWidgetManagementService,
+  ManagementWidgetDetailsComponent,
+  WIDGET_MANAGEMENT_SERVICE,
+  WidgetManagementComponent,
+  WidgetWizardService,
+} from '@valtimo/layout';
+import {CaseManagementParams, getCaseManagementRouteParams} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import moment from 'moment/moment';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
-import {WidgetEditorTab} from '../../../../../../models';
-import {
-  TabManagementService,
-  WidgetJsonEditorService,
-  WidgetTabManagementService,
-} from '../../../../../../services';
-import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
-import {CaseManagementWidgetsEditorComponent} from './editor/case-management-widgets-editor.component';
-import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-management-widgets-json-editor.component';
-import {WidgetManagementComponent} from '@valtimo/layout';
 
+import {TabManagementService, WidgetTabManagementService} from '../../../../../../services';
+import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
+
+// import {WidgetEditorTab} from '../../../../../../models';
+// import {CaseManagementWidgetsEditorComponent} from './editor/case-management-widgets-editor.component';
+// import {CaseManagementWidgetsJsonEditorComponent} from './json-editor/case-management-widgets-json-editor.component';
 @Component({
   templateUrl: './case-management-widget-tab.component.html',
   styleUrl: './case-management-widget-tab.component.scss',
@@ -57,50 +58,60 @@ import {WidgetManagementComponent} from '@valtimo/layout';
   imports: [
     CommonModule,
     TranslateModule,
-    CaseManagementWidgetsEditorComponent,
+    // CaseManagementWidgetsEditorComponent,
     CaseManagementWidgetTabEditModalComponent,
-    CaseManagementWidgetsJsonEditorComponent,
+    // CaseManagementWidgetsJsonEditorComponent,
     RenderInPageHeaderDirective,
     ButtonModule,
     IconModule,
     TabsModule,
     WidgetManagementComponent,
   ],
+  providers: [
+    {
+      provide: WIDGET_MANAGEMENT_SERVICE,
+      useClass: WidgetTabManagementService,
+    },
+  ],
 })
 export class CaseManagementWidgetTabComponent
-  extends PendingChangesComponent
+  extends ManagementWidgetDetailsComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   public readonly caseManagementRouteParams$ = getCaseManagementRouteParams(this.route).pipe(
     tap(params => {
       this.tabManagementService.setParams(params);
       this.tabManagementService.loadTabs();
-    })
+    }),
+    map(
+      (params: CaseManagementParams | undefined) =>
+        params ?? {caseDefinitionKey: '', caseDefinitionVersionTag: ''}
+    )
   );
 
   public readonly tabWidgetKey$: Observable<string> = this.route.params.pipe(
-    map(params => params.key || ''),
-    filter(tabWidgetKey => !!tabWidgetKey)
+    map(params => params.key || '')
   );
 
   public readonly params$ = combineLatest([
     this.caseManagementRouteParams$,
     this.tabWidgetKey$,
   ]).pipe(
-    filter(
-      ([caseManagementRouteParams, tabWidgetKey]) => !!caseManagementRouteParams && !!tabWidgetKey
-    ),
-    tap(params => console.log({params}))
+    filter(([caseManagementRouteParams, key]) => !!caseManagementRouteParams && !!key),
+    map(([caseManagementRouteParams, key]) => ({
+      ...caseManagementRouteParams,
+      key,
+    }))
   );
 
   private readonly _refreshWidgetTabSubject$ = new BehaviorSubject<null>(null);
   public readonly showEditWidgetTabModal$ = new BehaviorSubject<boolean>(false);
   public readonly currentWidgetTabItem$: Observable<ApiTabItem> = combineLatest([
-    this.tabWidgetKey$,
+    this.params$,
     this.translateService.stream('key'),
     this._refreshWidgetTabSubject$,
   ]).pipe(
-    switchMap(([tabKey]) => this.tabManagementService.getTab(tabKey)),
+    switchMap(([params]) => this.tabManagementService.getTab(params.key)),
     tap(tabItem => {
       const title =
         tabItem.name ||
@@ -134,28 +145,32 @@ export class CaseManagementWidgetTabComponent
     switchMap(() => this.widgetTabManagementService.getWidgetConfiguration())
   );
 
-  public readonly WidgetEditorTab = WidgetEditorTab;
-  public readonly activeTab = signal<WidgetEditorTab | null>(WidgetEditorTab.VISUAL);
-  public readonly activeContent = signal<WidgetEditorTab | null>(WidgetEditorTab.VISUAL);
+  // public readonly WidgetEditorTab = WidgetEditorTab;
+  // public readonly activeTab = signal<WidgetEditorTab | null>(WidgetEditorTab.VISUAL);
+  // public readonly activeContent = signal<WidgetEditorTab | null>(WidgetEditorTab.VISUAL);
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
-  private _pendingTab: WidgetEditorTab | null = null;
+  // private _pendingTab: WidgetEditorTab | null = null;
 
   constructor(
+    protected readonly widgetWizardService: WidgetWizardService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly iconService: IconService,
     private readonly pageTitleService: PageTitleService,
     private readonly route: ActivatedRoute,
     private readonly tabManagementService: TabManagementService,
-    private readonly widgetTabManagementService: WidgetTabManagementService,
+    @Inject(WIDGET_MANAGEMENT_SERVICE)
+    private readonly widgetTabManagementService: IWidgetManagementService<
+      CaseManagementParams & {key: string}
+    >,
     private readonly translateService: TranslateService,
-    private readonly pageHeaderService: PageHeaderService,
-    private readonly widgetJsonEditorService: WidgetJsonEditorService
+    private readonly pageHeaderService: PageHeaderService
   ) {
-    super();
+    super(widgetWizardService);
   }
 
   public ngOnInit(): void {
+    this.setContext('case');
     this.pageTitleService.enableReset();
   }
 
@@ -170,60 +185,60 @@ export class CaseManagementWidgetTabComponent
     this.pageTitleService.disableReset();
   }
 
-  public displayBodyComponent(tab: WidgetEditorTab): void {
-    if (this.pendingChanges && tab !== this.activeTab()) {
-      this._pendingTab = this.activeTab();
-      this.activeTab.set(tab);
-      this.onCanDeactivate();
-      return;
-    }
-    this.activeTab.set(tab);
-    this.activeContent.set(tab);
-  }
+  // public displayBodyComponent(tab: WidgetEditorTab): void {
+  //   if (this.pendingChanges && tab !== this.activeTab()) {
+  //     this._pendingTab = this.activeTab();
+  //     this.activeTab.set(tab);
+  //     this.onCanDeactivate();
+  //     return;
+  //   }
+  //   this.activeTab.set(tab);
+  //   this.activeContent.set(tab);
+  // }
 
   public editWidgetTab(): void {
     this.showEditWidgetTabModal();
   }
 
-  public onPendingChangesUpdate(changeActive: boolean): void {
-    this.pendingChanges = changeActive;
-  }
+  // public onPendingChangesUpdate(changeActive: boolean): void {
+  //   this.pendingChanges = changeActive;
+  // }
 
   private showEditWidgetTabModal(): void {
     this.showEditWidgetTabModal$.next(true);
   }
 
   public refreshWidgetTab(): void {
-    if (this.pendingChanges) this.onCustomConfirm();
+    // if (this.pendingChanges) this.onCustomConfirm();
     this._refreshWidgetTabSubject$.next(null);
   }
 
-  public onCustomModalLoaded(modal: ConfirmationModalComponent): void {
-    if (!!this.customModal) return;
+  // public onCustomModalLoaded(modal: ConfirmationModalComponent): void {
+  //   if (!!this.customModal) return;
 
-    this.customModal = modal;
-  }
+  //   this.customModal = modal;
+  // }
 
-  public onJsonCanDeactivate(canDeactivate: boolean): void {
-    if (canDeactivate) {
-      this.onCustomConfirm();
-      return;
-    }
+  // public onJsonCanDeactivate(canDeactivate: boolean): void {
+  //   if (canDeactivate) {
+  //     this.onCustomConfirm();
+  //     return;
+  //   }
 
-    this.onCustomCancel();
-  }
+  //   this.onCustomCancel();
+  // }
 
-  protected onCancelRedirect(): void {
-    this.activeTab.set(this._pendingTab);
-  }
+  // protected onCancelRedirect(): void {
+  //   this.activeTab.set(this._pendingTab);
+  // }
 
-  protected onConfirmRedirect(): void {
-    this.activeContent.set(this.activeTab());
-  }
+  // protected onConfirmRedirect(): void {
+  //   this.activeContent.set(this.activeTab());
+  // }
 
-  protected onCanDeactivate(): void {
-    this.widgetJsonEditorService.showPendingModal.set(true);
-  }
+  // protected onCanDeactivate(): void {
+  //   this.widgetJsonEditorService.showPendingModal.set(true);
+  // }
 
   private initBreadcrumbs(): void {
     this.caseManagementRouteParams$.subscribe(params => {
