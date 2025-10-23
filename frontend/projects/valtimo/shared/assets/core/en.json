@@ -1973,6 +1973,9 @@
       "key": "Key",
       "versionTag": "Version"
     },
+    "detail": {
+      "title": "Building block details"
+    },
     "noResults": {
       "title": "There are no building blocks",
       "description": "Add a building block to get started"

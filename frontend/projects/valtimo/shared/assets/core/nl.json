@@ -2006,6 +2006,9 @@
       "key": "Sleutel",
       "versionTag": "Versie"
     },
+    "detail": {
+      "title": "Bouwblokdetails"
+    },
     "noResults": {
       "title": "Er zijn geen bouwblokken",
       "description": "Voeg een bouwblok toe om te beginnen"
