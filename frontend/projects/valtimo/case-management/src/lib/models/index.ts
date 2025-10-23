@@ -18,6 +18,6 @@ export * from './list-column.model';
 export * from './status.model';
 export * from './tab.model';
 export * from './widget-content.model';
-export * from './widget-editor.model';
-export * from './widget-wizard.model';
+// export * from './widget-editor.model';
+// export * from './widget-wizard.model';
 export * from './case-list.model';

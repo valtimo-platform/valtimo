@@ -1,321 +1,320 @@
-/*
- * Copyright 2015-2025 Ritense BV, the Netherlands.
- *
- * Licensed under EUPL, Version 1.2 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" basis,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-import {CommonModule} from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  signal,
-} from '@angular/core';
-import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {BasicCaseWidget, CaseWidget, CaseWidgetsRes, CaseWidgetType} from '@valtimo/case';
-import {
-  ActionItem,
-  CarbonListItem,
-  CarbonListModule,
-  ColumnConfig,
-  ConfirmationModalModule,
-  KeyGeneratorService,
-  ViewType,
-} from '@valtimo/components';
-import {CaseManagementParams} from '@valtimo/shared';
-import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
-import {cloneDeep} from 'lodash';
-import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rxjs';
-import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../../../../../models';
-import {WidgetTabManagementService, WidgetWizardService} from '../../../../../../../services';
-import {CaseManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
-import {IconService} from 'carbon-components-angular';
-import {ModalMode} from '@valtimo/shared';
-import {DragVertical16} from '@carbon/icons';
-import {CaseManagementDividerModalComponent} from '../../case-management-divider-modal/case-management-divider-modal.component';
-import {BasicWidget, Widget} from '@valtimo/layout';
+// /*
+//  * Copyright 2015-2025 Ritense BV, the Netherlands.
+//  *
+//  * Licensed under EUPL, Version 1.2 (the "License");
+//  * you may not use this file except in compliance with the License.
+//  * You may obtain a copy of the License at
+//  *
+//  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+//  *
+//  * Unless required by applicable law or agreed to in writing, software
+//  * distributed under the License is distributed on an "AS IS" basis,
+//  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  * See the License for the specific language governing permissions and
+//  * limitations under the License.
+//  */
+// import {CommonModule} from '@angular/common';
+// import {
+//   ChangeDetectionStrategy,
+//   Component,
+//   EventEmitter,
+//   Input,
+//   Output,
+//   signal,
+// } from '@angular/core';
+// import {TranslateModule, TranslateService} from '@ngx-translate/core';
+// import {
+//   ActionItem,
+//   CarbonListItem,
+//   CarbonListModule,
+//   ColumnConfig,
+//   ConfirmationModalModule,
+//   KeyGeneratorService,
+//   ViewType,
+// } from '@valtimo/components';
+// import {CaseManagementParams} from '@valtimo/shared';
+// import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
+// import {cloneDeep} from 'lodash';
+// import {BehaviorSubject, combineLatest, map, Observable, Subject, take} from 'rxjs';
+// import {AVAILABLE_WIDGETS, WidgetStyle, WidgetTypeTags} from '../../../../../../../models';
+// import {WidgetTabManagementService, WidgetWizardService} from '../../../../../../../services';
+// import {CaseManagementWidgetWizardComponent} from '../../case-management-widget-wizard/case-management-widget-wizard.component';
+// import {IconService} from 'carbon-components-angular';
+// import {ModalMode} from '@valtimo/shared';
+// import {DragVertical16} from '@carbon/icons';
+// import {CaseManagementDividerModalComponent} from '../../case-management-divider-modal/case-management-divider-modal.component';
+// import {BasicWidget, Widget} from '@valtimo/layout';
 
-@Component({
-  selector: 'valtimo-case-management-widgets-editor',
-  templateUrl: './case-management-widgets-editor.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: true,
-  imports: [
-    CommonModule,
-    TranslateModule,
-    CarbonListModule,
-    ButtonModule,
-    IconModule,
-    TabsModule,
-    CaseManagementWidgetWizardComponent,
-    ConfirmationModalModule,
-    CaseManagementDividerModalComponent,
-  ],
-})
-export class CaseManagementWidgetsEditorComponent {
-  @Input() public params: CaseManagementParams;
-  @Input() public tabWidgetKey: string;
-  private _currentWidgetTab: CaseWidgetsRes;
-  @Input() public set currentWidgetTab(value: CaseWidgetsRes) {
-    if (!value) return;
+// @Component({
+//   selector: 'valtimo-case-management-widgets-editor',
+//   templateUrl: './case-management-widgets-editor.component.html',
+//   changeDetection: ChangeDetectionStrategy.OnPush,
+//   standalone: true,
+//   imports: [
+//     CommonModule,
+//     TranslateModule,
+//     CarbonListModule,
+//     ButtonModule,
+//     IconModule,
+//     TabsModule,
+//     CaseManagementWidgetWizardComponent,
+//     ConfirmationModalModule,
+//     CaseManagementDividerModalComponent,
+//   ],
+// })
+// export class CaseManagementWidgetsEditorComponent {
+//   @Input() public params: CaseManagementParams;
+//   @Input() public tabWidgetKey: string;
+//   private _currentWidgetTab: CaseWidgetsRes;
+//   @Input() public set currentWidgetTab(value: CaseWidgetsRes) {
+//     if (!value) return;
 
-    this._currentWidgetTab = value;
-    this._items$.next(value?.widgets);
-    this._usedKeys = value?.widgets.map(widget => widget.key);
-    this.$dragAndDropDisabled.set(false);
-  }
-  public get currentWidgetTab(): CaseWidgetsRes {
-    return this._currentWidgetTab;
-  }
+//     this._currentWidgetTab = value;
+//     this._items$.next(value?.widgets);
+//     this._usedKeys = value?.widgets.map(widget => widget.key);
+//     this.$dragAndDropDisabled.set(false);
+//   }
+//   public get currentWidgetTab(): CaseWidgetsRes {
+//     return this._currentWidgetTab;
+//   }
 
-  @Output() public readonly changeSaved = new EventEmitter();
+//   @Output() public readonly changeSaved = new EventEmitter();
 
-  public readonly FIELDS: ColumnConfig[] = [
-    {
-      key: 'title',
-      label: 'interface.title',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'tags',
-      label: 'widgetTabManagement.columns.type',
-      viewType: ViewType.TAGS,
-    },
-    {
-      key: 'key',
-      label: 'interface.key',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'widthTranslation',
-      label: 'widgetTabManagement.columns.width',
-      viewType: ViewType.TEXT,
-    },
-    {
-      key: 'highContrast',
-      label: 'widgetTabManagement.columns.highContrast',
-      viewType: ViewType.BOOLEAN,
-    },
-  ];
+//   public readonly FIELDS: ColumnConfig[] = [
+//     {
+//       key: 'title',
+//       label: 'interface.title',
+//       viewType: ViewType.TEXT,
+//     },
+//     {
+//       key: 'tags',
+//       label: 'widgetTabManagement.columns.type',
+//       viewType: ViewType.TAGS,
+//     },
+//     {
+//       key: 'key',
+//       label: 'interface.key',
+//       viewType: ViewType.TEXT,
+//     },
+//     {
+//       key: 'widthTranslation',
+//       label: 'widgetTabManagement.columns.width',
+//       viewType: ViewType.TEXT,
+//     },
+//     {
+//       key: 'highContrast',
+//       label: 'widgetTabManagement.columns.highContrast',
+//       viewType: ViewType.BOOLEAN,
+//     },
+//   ];
 
-  public readonly ACTION_ITEMS: ActionItem[] = [
-    {
-      label: 'interface.edit',
-      callback: this.editWidget.bind(this),
-    },
-    {
-      label: 'interface.duplicate',
-      callback: this.duplicateWidget.bind(this),
-    },
-    {
-      label: 'interface.delete',
-      callback: this.deleteWidget.bind(this),
-      type: 'danger',
-    },
-  ];
+//   public readonly ACTION_ITEMS: ActionItem[] = [
+//     {
+//       label: 'interface.edit',
+//       callback: this.editWidget.bind(this),
+//     },
+//     {
+//       label: 'interface.duplicate',
+//       callback: this.duplicateWidget.bind(this),
+//     },
+//     {
+//       label: 'interface.delete',
+//       callback: this.deleteWidget.bind(this),
+//       type: 'danger',
+//     },
+//   ];
 
-  private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
-  public readonly items$: Observable<CarbonListItem[]> = combineLatest([
-    this._items$,
-    this.translateService.stream('key'),
-  ]).pipe(
-    map(([items]) =>
-      items.map(item => ({
-        ...item,
-        widthTranslation:
-          item.type === 'divider'
-            ? '-'
-            : this.translateService.instant(this.getWidthTranslationKey(item.width)),
-        highContrast: item.type === 'divider' ? null : item.highContrast,
-        tags: [
-          {
-            content: this.translateService.instant(`widgetTabManagement.type.${item.type}.title`),
-            type: WidgetTypeTags[item.type],
-          },
-        ],
-      }))
-    )
-  );
+//   private readonly _items$ = new BehaviorSubject<CarbonListItem[]>([]);
+//   public readonly items$: Observable<CarbonListItem[]> = combineLatest([
+//     this._items$,
+//     this.translateService.stream('key'),
+//   ]).pipe(
+//     map(([items]) =>
+//       items.map(item => ({
+//         ...item,
+//         widthTranslation:
+//           item.type === 'divider'
+//             ? '-'
+//             : this.translateService.instant(this.getWidthTranslationKey(item.width)),
+//         highContrast: item.type === 'divider' ? null : item.highContrast,
+//         tags: [
+//           {
+//             content: this.translateService.instant(`widgetTabManagement.type.${item.type}.title`),
+//             type: WidgetTypeTags[item.type],
+//           },
+//         ],
+//       }))
+//     )
+//   );
 
-  public readonly isWizardOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly $isEditMode = this.widgetWizardService.$editMode;
-  public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly deleteRowKey$ = new Subject<number>();
-  public readonly dividerDefinition$ = new BehaviorSubject<CaseWidget | null>(null);
-  public readonly isDividerModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly $dividerModalMode = signal<ModalMode>('add');
+//   public readonly isWizardOpen$ = new BehaviorSubject<boolean>(false);
+//   public readonly $isEditMode = this.widgetWizardService.$editMode;
+//   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
+//   public readonly deleteRowKey$ = new Subject<number>();
+//   public readonly dividerDefinition$ = new BehaviorSubject<CaseWidget | null>(null);
+//   public readonly isDividerModalOpen$ = new BehaviorSubject<boolean>(false);
+//   public readonly $dividerModalMode = signal<ModalMode>('add');
 
-  public readonly $dragAndDropDisabled = signal(false);
+//   public readonly $dragAndDropDisabled = signal(false);
 
-  private _usedKeys: string[];
+//   private _usedKeys: string[];
 
-  constructor(
-    private readonly keyGeneratorService: KeyGeneratorService,
-    private readonly translateService: TranslateService,
-    private readonly widgetTabManagementService: WidgetTabManagementService,
-    private readonly widgetWizardService: WidgetWizardService,
-    private readonly iconService: IconService
-  ) {
-    this.iconService.registerAll([DragVertical16]);
-  }
+//   constructor(
+//     private readonly keyGeneratorService: KeyGeneratorService,
+//     private readonly translateService: TranslateService,
+//     private readonly widgetTabManagementService: WidgetTabManagementService,
+//     private readonly widgetWizardService: WidgetWizardService,
+//     private readonly iconService: IconService
+//   ) {
+//     this.iconService.registerAll([DragVertical16]);
+//   }
 
-  public editWidget(tabWidget: CaseWidget): void {
-    if (tabWidget.type === CaseWidgetType.DIVIDER) {
-      this.$dividerModalMode.set('edit');
-      this.dividerDefinition$.next(tabWidget);
-      this.openAddDividerModal();
-    } else {
-      this.widgetWizardService.$widgetTitle.set(tabWidget.title);
-      this.widgetWizardService.$widgetStyle.set(
-        tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
-      );
-      this.widgetWizardService.$widgetWidth.set(tabWidget.width);
-      this.widgetWizardService.$selectedWidget.set(
-        AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
-      );
-      this.widgetWizardService.$widgetContent.set(tabWidget.properties ?? null);
-      this.widgetWizardService.$editMode.set(true);
-      this.widgetWizardService.$widgetKey.set(tabWidget.key);
-      this.widgetWizardService.$widgetActions.set(tabWidget.actions);
-      this.widgetWizardService.$widgetDisplayConditions.set(tabWidget.displayConditions ?? null);
-      this.isWizardOpen$.next(true);
-    }
-  }
+//   public editWidget(tabWidget: CaseWidget): void {
+//     if (tabWidget.type === CaseWidgetType.DIVIDER) {
+//       this.$dividerModalMode.set('edit');
+//       this.dividerDefinition$.next(tabWidget);
+//       this.openAddDividerModal();
+//     } else {
+//       this.widgetWizardService.$widgetTitle.set(tabWidget.title);
+//       this.widgetWizardService.$widgetStyle.set(
+//         tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
+//       );
+//       this.widgetWizardService.$widgetWidth.set(tabWidget.width);
+//       this.widgetWizardService.$selectedWidget.set(
+//         AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
+//       );
+//       this.widgetWizardService.$widgetContent.set(tabWidget.properties ?? null);
+//       this.widgetWizardService.$editMode.set(true);
+//       this.widgetWizardService.$widgetKey.set(tabWidget.key);
+//       this.widgetWizardService.$widgetActions.set(tabWidget.actions);
+//       this.widgetWizardService.$widgetDisplayConditions.set(tabWidget.displayConditions ?? null);
+//       this.isWizardOpen$.next(true);
+//     }
+//   }
 
-  public duplicateWidget(tabWidget: CaseWidget): void {
-    const tabWidgetClone = cloneDeep(tabWidget);
-    tabWidgetClone.key = '';
+//   public duplicateWidget(tabWidget: CaseWidget): void {
+//     const tabWidgetClone = cloneDeep(tabWidget);
+//     tabWidgetClone.key = '';
 
-    if (tabWidget.type === CaseWidgetType.DIVIDER) {
-      this.$dividerModalMode.set('duplicate');
-      this.dividerDefinition$.next(tabWidget);
-      this.openAddDividerModal();
-    } else {
-      this.editWidget(tabWidgetClone);
-    }
-  }
+//     if (tabWidget.type === CaseWidgetType.DIVIDER) {
+//       this.$dividerModalMode.set('duplicate');
+//       this.dividerDefinition$.next(tabWidget);
+//       this.openAddDividerModal();
+//     } else {
+//       this.editWidget(tabWidgetClone);
+//     }
+//   }
 
-  public openAddModal(): void {
-    this.isWizardOpen$.next(true);
-  }
+//   public openAddModal(): void {
+//     this.isWizardOpen$.next(true);
+//   }
 
-  public onDeleteConfirm(widgetKey: string): void {
-    this.widgetTabManagementService
-      .updateWidgets({
-        ...this.currentWidgetTab,
-        widgets: this.currentWidgetTab.widgets.filter(widget => widget.key !== widgetKey),
-      })
-      .pipe(take(1))
-      .subscribe(() => {
-        this.changeSaved.emit();
-      });
-  }
+//   public onDeleteConfirm(widgetKey: string): void {
+//     this.widgetTabManagementService
+//       .updateWidgets({
+//         ...this.currentWidgetTab,
+//         widgets: this.currentWidgetTab.widgets.filter(widget => widget.key !== widgetKey),
+//       })
+//       .pipe(take(1))
+//       .subscribe(() => {
+//         this.changeSaved.emit();
+//       });
+//   }
 
-  public openAddDividerModal(): void {
-    this.isDividerModalOpen$.next(true);
-  }
+//   public openAddDividerModal(): void {
+//     this.isDividerModalOpen$.next(true);
+//   }
 
-  public onCloseAddDividerModalEvent(
-    dividerDefinition: BasicWidget,
-    existingWidgets: Widget[]
-  ): void {
-    this.isDividerModalOpen$.next(false);
-    this.widgetWizardService.resetWizard();
-    this.dividerDefinition$.next(null);
-    this.$dividerModalMode.set('add');
+//   public onCloseAddDividerModalEvent(
+//     dividerDefinition: BasicWidget,
+//     existingWidgets: Widget[]
+//   ): void {
+//     this.isDividerModalOpen$.next(false);
+//     this.widgetWizardService.resetWizard();
+//     this.dividerDefinition$.next(null);
+//     this.$dividerModalMode.set('add');
 
-    if (!dividerDefinition) return;
+//     if (!dividerDefinition) return;
 
-    const widgets = existingWidgets.some(w => w.key === dividerDefinition.key)
-      ? existingWidgets.map(widget =>
-          widget.key === dividerDefinition.key ? dividerDefinition : widget
-        )
-      : [...existingWidgets, dividerDefinition];
+//     const widgets = existingWidgets.some(w => w.key === dividerDefinition.key)
+//       ? existingWidgets.map(widget =>
+//           widget.key === dividerDefinition.key ? dividerDefinition : widget
+//         )
+//       : [...existingWidgets, dividerDefinition];
 
-    this.widgetTabManagementService
-      .updateWidgets({
-        caseDefinitionKey: this.params.caseDefinitionKey,
-        caseDefinitionVersionTag: this.params.caseDefinitionVersionTag,
-        key: this.tabWidgetKey,
-        widgets: widgets,
-      })
-      .pipe(take(1))
-      .subscribe(() => {
-        this.changeSaved.emit();
-      });
-  }
+//     this.widgetTabManagementService
+//       .updateWidgets({
+//         caseDefinitionKey: this.params.caseDefinitionKey,
+//         caseDefinitionVersionTag: this.params.caseDefinitionVersionTag,
+//         key: this.tabWidgetKey,
+//         widgets: widgets,
+//       })
+//       .pipe(take(1))
+//       .subscribe(() => {
+//         this.changeSaved.emit();
+//       });
+//   }
 
-  public onCloseEvent(widgetResult: BasicWidget, existingWidgets: Widget[]): void {
-    this.isWizardOpen$.next(false);
-    this.widgetWizardService.resetWizard();
+//   public onCloseEvent(widgetResult: BasicWidget, existingWidgets: Widget[]): void {
+//     this.isWizardOpen$.next(false);
+//     this.widgetWizardService.resetWizard();
 
-    if (!widgetResult) return;
+//     if (!widgetResult) return;
 
-    this.widgetTabManagementService
-      .updateWidgets({
-        caseDefinitionKey: this.params.caseDefinitionKey,
-        caseDefinitionVersionTag: this.params.caseDefinitionVersionTag,
-        key: this.tabWidgetKey,
-        widgets: !!widgetResult.key
-          ? existingWidgets.map((widget: BasicWidget) =>
-              widget.key === widgetResult.key ? widgetResult : widget
-            )
-          : [
-              ...existingWidgets,
-              {
-                ...widgetResult,
-                key: this.keyGeneratorService.getUniqueKey(widgetResult.title, this._usedKeys),
-              },
-            ],
-      })
-      .pipe(take(1))
-      .subscribe(() => {
-        this.changeSaved.emit();
-      });
-  }
+//     this.widgetTabManagementService
+//       .updateWidgets({
+//         caseDefinitionKey: this.params.caseDefinitionKey,
+//         caseDefinitionVersionTag: this.params.caseDefinitionVersionTag,
+//         key: this.tabWidgetKey,
+//         widgets: !!widgetResult.key
+//           ? existingWidgets.map((widget: BasicWidget) =>
+//               widget.key === widgetResult.key ? widgetResult : widget
+//             )
+//           : [
+//               ...existingWidgets,
+//               {
+//                 ...widgetResult,
+//                 key: this.keyGeneratorService.getUniqueKey(widgetResult.title, this._usedKeys),
+//               },
+//             ],
+//       })
+//       .pipe(take(1))
+//       .subscribe(() => {
+//         this.changeSaved.emit();
+//       });
+//   }
 
-  public onItemsReordered(widgets: Widget[]): void {
-    this.$dragAndDropDisabled.set(true);
+//   public onItemsReordered(widgets: Widget[]): void {
+//     this.$dragAndDropDisabled.set(true);
 
-    this.widgetTabManagementService
-      .updateWidgets({
-        ...this.currentWidgetTab,
-        widgets,
-      })
-      .pipe(take(1))
-      .subscribe(() => {
-        this.changeSaved.emit();
-      });
-  }
+//     this.widgetTabManagementService
+//       .updateWidgets({
+//         ...this.currentWidgetTab,
+//         widgets,
+//       })
+//       .pipe(take(1))
+//       .subscribe(() => {
+//         this.changeSaved.emit();
+//       });
+//   }
 
-  private deleteWidget(tabWidget: any): void {
-    this.deleteRowKey$.next(tabWidget.key);
-    this.deleteModalOpen$.next(true);
-  }
+//   private deleteWidget(tabWidget: any): void {
+//     this.deleteRowKey$.next(tabWidget.key);
+//     this.deleteModalOpen$.next(true);
+//   }
 
-  private getWidthTranslationKey(width: number): string {
-    switch (width) {
-      case 1:
-        return 'widgetTabManagement.width.small.title';
-      case 2:
-        return 'widgetTabManagement.width.medium.title';
-      case 3:
-        return 'widgetTabManagement.width.large.title';
-      case 4:
-        return 'widgetTabManagement.width.xtraLarge.title';
-      default:
-        return '-';
-    }
-  }
-}
+//   private getWidthTranslationKey(width: number): string {
+//     switch (width) {
+//       case 1:
+//         return 'widgetTabManagement.width.small.title';
+//       case 2:
+//         return 'widgetTabManagement.width.medium.title';
+//       case 3:
+//         return 'widgetTabManagement.width.large.title';
+//       case 4:
+//         return 'widgetTabManagement.width.xtraLarge.title';
+//       default:
+//         return '-';
+//     }
+//   }
+// }

@@ -23,7 +23,6 @@ import {
   PaginationModule,
   TilesModule,
 } from 'carbon-components-angular';
-import {CaseWidgetAction, WidgetCollectionContent} from '../../../../../../models';
 import {
   BehaviorSubject,
   catchError,
@@ -47,7 +46,9 @@ import {WidgetsService} from '../../widgets.service';
 import {
   CollectionWidget,
   CollectionWidgetCardData,
+  WidgetAction,
   WidgetCollectionComponent,
+  WidgetCollectionContent,
   WidgetLayoutService,
   WidgetWithUuid,
 } from '@valtimo/layout';
@@ -149,8 +150,8 @@ export class CaseWidgetCollectionComponent extends WidgetProcess {
     this._queryParams$.next(`page=${event.currentPage - 1}&size=${event.pageLength}`);
   }
 
-  public onProcessStartClick(process: CaseWidgetAction): void {
-    this.widgetsService.startProcess(process.processDefinitionKey);
+  public onProcessStartClick(process: WidgetAction): void {
+    this.widgetsService.startProcess(process.processDefinitionKey ?? '');
   }
 
   private getPageSizeParam(widgetConfiguration: WidgetWithUuid): string {

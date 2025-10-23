@@ -16,9 +16,10 @@
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {BaseApiService, ConfigService, InterceptorSkip, Page} from '@valtimo/shared';
-import {Observable} from 'rxjs';
-import {CaseWidgetsRes} from '../models';
+import {Observable, map} from 'rxjs';
 import {CarbonListItem} from '@valtimo/components';
+import {BasicWidget} from '@valtimo/layout';
+import { CaseWidgetsRes } from '../models';
 
 @Injectable({
   providedIn: 'root',
@@ -31,10 +32,10 @@ export class CaseWidgetsApiService extends BaseApiService {
     super(httpClient, configService);
   }
 
-  public getWidgetTabConfiguration(documentId: string, tabKey: string): Observable<CaseWidgetsRes> {
-    return this.httpClient.get<CaseWidgetsRes>(
-      this.getApiUrl(`v1/document/${documentId}/widget-tab/${tabKey}`)
-    );
+  public getWidgetTabConfiguration(documentId: string, tabKey: string): Observable<BasicWidget[]> {
+    return this.httpClient
+      .get<CaseWidgetsRes>(this.getApiUrl(`v1/document/${documentId}/widget-tab/${tabKey}`))
+      .pipe(map((res: CaseWidgetsRes) => res.widgets));
   }
 
   public getWidgetData(

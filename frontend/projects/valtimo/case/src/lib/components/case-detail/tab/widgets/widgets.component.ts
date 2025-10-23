@@ -21,23 +21,24 @@ import {CarbonListModule} from '@valtimo/components';
 import {LoadingModule} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, shareReplay, startWith, switchMap} from 'rxjs';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../services';
-import {BasicWidget, WidgetComponentMap, WidgetContainerComponent, WidgetType, DividerWidget, Widget, WidgetGroup} from '@valtimo/layout';
+import {
+  BasicWidget,
+  WidgetComponentMap,
+  WidgetContainerComponent,
+  WidgetType,
+  DividerWidget,
+  Widget,
+  WidgetGroup,
+} from '@valtimo/layout';
 import {CaseWidgetFieldComponent} from './components/field/case-widget-field.component';
 import {CaseWidgetCustomComponent} from './components/custom/case-widget-custom.component';
 import {CaseWidgetFormioComponent} from './components/formio/case-widget-formio.component';
 import {CaseWidgetTableComponent} from './components/table/case-widget-table.component';
 import {CaseWidgetCollectionComponent} from './components/collection/case-widget-collection.component';
-import {CaseWidgetsRes, DocumentUpdatedSseEvent} from '../../../../models';
+import {DocumentUpdatedSseEvent} from '../../../../models';
 import {SseService} from '@valtimo/sse';
 import {WidgetsService} from './widgets.service';
 import {isEqual} from 'lodash-es';
-import {
-  BasicCaseWidget,
-  CaseWidget,
-  CaseWidgetGroup,
-  CaseWidgetType,
-  DividerCaseWidget,
-} from '../../../../models';
 
 @Component({
   templateUrl: './widgets.component.html',
@@ -73,7 +74,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
     startWith<DocumentUpdatedSseEvent | null>(null)
   );
 
-  private _previousWidgetConfiguration: CaseWidgetsRes | null = null;
+  private _previousWidgetConfiguration: BasicWidget[] | null = null;
 
   private readonly _widgetConfiguration$ = combineLatest([
     this._documentId$,
@@ -90,7 +91,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   );
 
   public readonly widgetGroups$: Observable<WidgetGroup[]> = this._widgetConfiguration$.pipe(
-    map(res => this.toCaseWidgetGroups(res.widgets))
+    map(widgets => this.toCaseWidgetGroups(widgets))
   );
 
   public readonly widgetComponentMap: WidgetComponentMap = {
@@ -142,9 +143,9 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
   }
 
   private filterDuplicateConfigurations(
-    widgetConfiguration: Observable<CaseWidgetsRes>,
+    widgetConfiguration: Observable<BasicWidget[]>,
     documentUpdatedEvent: DocumentUpdatedSseEvent | null
-  ): Observable<CaseWidgetsRes> {
+  ): Observable<BasicWidget[]> {
     return widgetConfiguration.pipe(
       map(configuration => {
         const configurationChanged =
@@ -163,7 +164,7 @@ export class CaseDetailWidgetsComponent implements OnInit, OnDestroy {
 
         return null;
       }),
-      filter((configuration): configuration is CaseWidgetsRes => configuration !== null)
+      filter((configuration): configuration is BasicWidget[] => configuration !== null)
     );
   }
 }

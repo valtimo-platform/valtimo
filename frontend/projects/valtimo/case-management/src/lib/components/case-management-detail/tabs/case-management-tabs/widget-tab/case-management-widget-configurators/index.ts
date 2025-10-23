@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-export * from './collection/case-management-widget-collection.component';
-export * from './custom/case-management-widget-custom.component';
-export * from './fields/case-management-widget-fields.component';
-export * from './formio/case-management-widget-formio.component';
-export * from './process-selector/case-management-widget-process-selector.component';
-export * from './table/case-management-widget-table.component';
+// export * from './collection/case-management-widget-collection.component';
+// export * from './custom/case-management-widget-custom.component';
+// export * from './fields/case-management-widget-fields.component';
+// export * from './formio/case-management-widget-formio.component';
+// export * from './process-selector/case-management-widget-process-selector.component';
+// export * from './table/case-management-widget-table.component';

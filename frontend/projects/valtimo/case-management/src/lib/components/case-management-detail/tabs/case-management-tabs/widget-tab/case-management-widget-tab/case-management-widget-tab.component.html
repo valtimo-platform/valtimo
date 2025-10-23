@@ -16,13 +16,14 @@
 
 <valtimo-widget-management [params]="params$ | async"></valtimo-widget-management>
 
-<!-- 
 <valtimo-case-management-widget-tab-edit-modal
   [tabItem]="currentWidgetTabItem$ | async"
   [showModal$]="showEditWidgetTabModal$"
   (saveEvent)="refreshWidgetTab()"
 >
 </valtimo-case-management-widget-tab-edit-modal>
+
+<!-- 
 
 <cds-tabs type="contained">
   <cds-tab
@@ -59,7 +60,7 @@
     ></valtimo-case-management-widgets-json-editor>
   }
 }
-
+-->
 <ng-container renderInPageHeader>
   <ng-template>
     <button
@@ -72,4 +73,4 @@
       <svg class="cds--btn__icon" cdsIcon="edit" size="16"></svg>
     </button>
   </ng-template>
-</ng-container> -->
+</ng-container>

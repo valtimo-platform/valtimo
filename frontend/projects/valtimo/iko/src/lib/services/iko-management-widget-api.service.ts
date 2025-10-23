@@ -33,7 +33,6 @@ export class IkoWidgetManagementApiService
   public get params$(): Observable<IkoManagementParams> {
     return this._params$.pipe(filter(params => !!params));
   }
-  public readonly valueResolverApi$ = new BehaviorSubject<string | null>('');
 
   constructor(
     protected override httpClient: HttpClient,
