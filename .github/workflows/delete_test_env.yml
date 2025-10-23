@@ -1,7 +1,7 @@
 name: "Delete test environment"
 on:
   pull_request:
-    branches: ["next-minor"]
+    branches: ["feature/create-test-env-on-pr"]
     types:
       - closed
   workflow_dispatch:
@@ -10,6 +10,12 @@ on:
         description: "Environment name"
         required: true
         type: string
+
+# Assigns the same concurrency group to `delete_test_env` and `create_test_env`.
+# This prevents creating and deleting from running simultaneously, which could cause race conditions.
+concurrency:
+  group: setup-test-env-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 permissions:
   actions: read

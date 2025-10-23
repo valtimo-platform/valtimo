@@ -6,7 +6,7 @@ permissions:
 on:
   workflow_call:
     inputs:
-      backend_build_artifact_name:
+      backend_libraries_build_artifact_name:
         required: true
         description: Name of the backend build artifact to download with 'download-artifact'
         type: "string"
@@ -35,7 +35,7 @@ jobs:
       - name: Download built libraries
         uses: actions/download-artifact@v4
         with:
-          name: backend-build-output
+          name: ${{ inputs.backend_libraries_build_artifact_name }}
           path: .
 
       - run: ./gradlew app:gzac:assemble
@@ -73,6 +73,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Resolve backend tree hash
+        id: backend_tree
+        run: echo "tree=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
+
       - name: Generate image tags
         id: generate_tags
         env:
@@ -80,7 +84,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
-          tags: type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
+          tags: |
+            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
+            type=raw,value=commit-${{ github.sha }}
+            type=raw,value=contents-${{ steps.backend_tree.outputs.tree }}
           flavor: |
             latest=false
 

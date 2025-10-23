@@ -26,12 +26,8 @@ jobs:
         shell: bash
         run: |
           EVENT="${{ github.event_name }}"
-
-          if [[ "$EVENT" == 'workflow_dispatch' ]]; then
-            echo "name=${{ inputs.envName }}" >> "$GITHUB_OUTPUT"
-            echo "source_sha=$(echo '${{ github.sha }}' | cut -c 1-7)" >> "$GITHUB_OUTPUT"
-          elif [[ "$EVENT" == 'pull_request' ]]; then
-            echo "name=pr:${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          if [[ "$EVENT" == 'pull_request' ]]; then
+            echo "name=pr${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
             echo "source_sha=$(echo '${{ github.event.pull_request.head.sha }}' | cut -c 1-7)" >> "$GITHUB_OUTPUT"
           elif [[ "$EVENT" == 'push' ]]; then
             echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"

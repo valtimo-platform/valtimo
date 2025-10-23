@@ -6,7 +6,7 @@ permissions:
 on:
   workflow_call:
     inputs:
-      frontend_build_artifact_name:
+      frontend_libraries_build_artifact_name:
         required: true
         description: Name of the frontend build artifact to download with 'download-artifact'
         type: "string"
@@ -45,7 +45,7 @@ jobs:
       - name: Download libraries dist artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.frontend_build_artifact_name }}
+          name: ${{ inputs.frontend_libraries_build_artifact_name }}
           path: frontend/dist/
 
       - name: Move local devDependencies to dependencies and install
@@ -100,6 +100,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Resolve frontend tree hash
+        id: frontend_tree
+        run: echo "tree=$(git rev-parse HEAD:frontend)" >> "$GITHUB_OUTPUT"
+
       - name: Generate image tags
         id: generate_tags
         uses: docker/metadata-action@v5
@@ -107,7 +111,10 @@ jobs:
           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         with:
           images: ghcr.io/${{ github.repository }}/gzac-frontend
-          tags: type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
+          tags: |
+            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }},enable=true
+            type=raw,value=commit-${{ github.sha }}
+            type=raw,value=contents-${{ steps.frontend_tree.outputs.tree }}
           flavor: |
             latest=false
 

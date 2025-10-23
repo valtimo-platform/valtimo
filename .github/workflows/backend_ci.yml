@@ -3,17 +3,13 @@ on:
   push:
     branches:
       - feature/create-test-env-on-pr
-  pull_request:
     paths:
       - backend/**
-
-  # For testing this workflow
-  workflow_dispatch:
-    inputs:
-      envName:
-        description: "Test environment name"
-        required: true
-        type: string
+  pull_request:
+    branches:
+      - feature/create-test-env-on-pr
+    paths:
+      - backend/**
 
 permissions:
   actions: write
@@ -32,12 +28,19 @@ jobs:
     uses: "./.github/workflows/backend_build_push_docker_image.yml"
     secrets: inherit
     with:
-      backend_build_artifact_name: ${{ needs.build_and_test_libraries.outputs.build_artifact_name }}
+      backend_libraries_build_artifact_name: ${{ needs.build_and_test_libraries.outputs.build_artifact_name }}
 
+  # For pushes
+  # publish_snapshot:
+  # TODO, make separate workflow for publishing snapshots with JReleaser
+
+  # For pull requests
   determine_test_env:
+    if: ${{ github.event_name == 'pull_request '}}
     uses: ./.github/workflows/determine_test_env.yml
 
   update_test_env:
+    if: ${{ github.event_name == 'pull_request'}}
     needs:
       - build_and_push_image
       - determine_test_env
