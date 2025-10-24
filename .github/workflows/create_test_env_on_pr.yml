@@ -238,4 +238,5 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           token: ${{ steps.generate_token.outputs.token }}
           body: |
-            Will create a test environment at https://${{ needs.determine_test_env.outputs.name }}.product-development.test.k8s.ritense.com
+            Will create a test environment at https://${{ needs.determine_test_env.outputs.name }}.product-development.test.k8s.ritense.com. It will be available after images for this PR have been built and deployed.
+            Closing or merging this PR will automatically delete the test environment.
