@@ -55,6 +55,6 @@ jobs:
     secrets: inherit
     with:
       image: ghcr.io/${{ github.repository }}/gzac-frontend
-      image_tag: ${{ needs.build_and_push_image.outputs.image_tag }}
+      tagged_src_image: ${{ needs.build_and_push_image.outputs.tagged_image }}
       source_sha: ${{ needs.determine_test_env_name.outputs.source_sha }}
       test_environment_name: ${{ needs.determine_test_env_name.outputs.name }}

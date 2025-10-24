@@ -12,7 +12,7 @@ on:
         type: "string"
 
     outputs:
-      image_tag:
+      tagged_image:
         description: "The Docker image tag"
         value: ${{ jobs.build_image.outputs.image_tag }}
 

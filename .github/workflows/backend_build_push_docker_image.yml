@@ -11,7 +11,7 @@ on:
         description: Name of the backend build artifact to download with 'download-artifact'
         type: "string"
     outputs:
-      image_tag:
+      tagged_image:
         description: "Tag of the Docker image that was built"
         value: ${{ jobs.build_image.outputs.image_tag }}
 
