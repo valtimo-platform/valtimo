@@ -45,7 +45,7 @@ import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-componen
 import moment from 'moment/moment';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
 
-import {TabManagementService, WidgetTabManagementService} from '../../../../../../services';
+import {TabManagementService, CaseWidgetManagementApiService} from '../../../../../../services';
 import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widget-tab-edit-modal/case-management-widget-tab-edit-modal.component';
 
 @Component({
@@ -65,7 +65,7 @@ import {CaseManagementWidgetTabEditModalComponent} from '../case-management-widg
   providers: [
     {
       provide: WIDGET_MANAGEMENT_SERVICE,
-      useClass: WidgetTabManagementService,
+      useClass: CaseWidgetManagementApiService,
     },
   ],
 })
@@ -125,11 +125,11 @@ export class CaseManagementWidgetTabComponent
   );
 
   public readonly currentWidgetTab$ = combineLatest([
-    this.widgetTabManagementService.params$,
+    this.caseWidgetManagementApiService.params$,
     this._refreshWidgetTabSubject$,
   ]).pipe(
     filter(([params]) => !!params),
-    switchMap(() => this.widgetTabManagementService.getWidgetConfiguration())
+    switchMap(() => this.caseWidgetManagementApiService.getWidgetConfiguration())
   );
 
   public readonly compactMode$ = this.pageHeaderService.compactMode$;
@@ -149,7 +149,7 @@ export class CaseManagementWidgetTabComponent
     private readonly route: ActivatedRoute,
     private readonly tabManagementService: TabManagementService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
-    private readonly widgetTabManagementService: IWidgetManagementService<
+    private readonly caseWidgetManagementApiService: IWidgetManagementService<
       CaseManagementParams & {key: string}
     >,
     private readonly translateService: TranslateService,

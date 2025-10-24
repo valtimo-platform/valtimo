@@ -102,9 +102,9 @@ export class WidgetWizardService {
     () => !this._$stepCompleteCondition()[this.$widgetWizardSteps()[this.$currentStepIndex()]]
   );
 
-  private _defaultWidth!: WidgetWidth;
+  private _defaultWidth!: WidgetWidth | null;
 
-  public get defaultWidth(): WidgetWidth {
+  public get defaultWidth(): WidgetWidth | null {
     return this._defaultWidth;
   }
 
@@ -144,13 +144,13 @@ export class WidgetWizardService {
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
-  public setDefaultWidth(width: number): void {
+  public setDefaultWidth(width: number | null): void {
     if (!this.isWidgetWidth(width)) return;
     this._defaultWidth = width;
     this.$widgetWidth.set(this._defaultWidth);
   }
 
-  private isWidgetWidth(value: unknown): value is WidgetWidth {
-    return [1, 2, 3, 4].includes(value as number);
+  private isWidgetWidth(value: number | null): value is WidgetWidth | null {
+    return [1, 2, 3, 4, null].includes(value as number);
   }
 }
