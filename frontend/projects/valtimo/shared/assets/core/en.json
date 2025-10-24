@@ -2003,6 +2003,7 @@
       "title": "General information"
     },
     "processDefinition": {
+      "title": "Building block process definition",
       "name": "Name",
       "key": "Key",
       "mainText": "Main process"

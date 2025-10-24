@@ -21,6 +21,8 @@ import {AuthGuardService} from '@valtimo/security';
 import {ROLE_ADMIN} from '@valtimo/shared';
 import {BuildingBlockManagementListComponent} from './components/building-block-management-list/building-block-management-list.component';
 import {BuildingBlockManagementDetailComponent} from './components/building-block-management-detail/building-block-management-detail.component';
+import {BUILDING_BLOCK_MANAGEMENT_TABS} from './constants';
+import {ProcessManagementBuilderComponent} from '@valtimo/process-management';
 
 const routes: Routes = [
   {
@@ -37,6 +39,17 @@ const routes: Routes = [
       title: 'buildingBlockManagement.detail.title',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
+    },
+  },
+  {
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}/:processDefinitionId`,
+    component: ProcessManagementBuilderComponent,
+    canActivate: [AuthGuardService],
+    data: {
+      title: 'Process details',
+      roles: [ROLE_ADMIN],
+      customPageTitle: true,
+      context: 'independent',
     },
   },
 ];

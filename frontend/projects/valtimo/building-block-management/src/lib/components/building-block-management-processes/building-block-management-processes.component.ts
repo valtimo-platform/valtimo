@@ -36,6 +36,8 @@ import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {BuildingBlockProcessDefinitionItem} from '../../models';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {Upload16} from '@carbon/icons';
+import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
+import {Router} from '@angular/router';
 
 @Component({
   standalone: true,
@@ -83,7 +85,8 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly translateService: TranslateService,
-    private readonly iconService: IconService
+    private readonly iconService: IconService,
+    private readonly router: Router
   ) {
     this.iconService.registerAll([Upload16]);
   }
@@ -114,6 +117,18 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
+  }
+
+  public onRowClick(processDefinition: BuildingBlockProcessDefinitionItem): void {
+    this.router.navigate([
+      '/building-block-management',
+      'building-block',
+      this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
+      'version',
+      this.buildingBlockManagementDetailService.buildingBlockVersionTag,
+      BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES,
+      processDefinition.id,
+    ]);
   }
 
   public showUploadModal(): void {}

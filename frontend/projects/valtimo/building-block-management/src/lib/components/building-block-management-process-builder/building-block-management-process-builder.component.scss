@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
@@ -13,11 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-const BUILDING_BLOCK_MANAGEMENT_TABS = {
-  GENERAL: 'general',
-  PROCESSES: 'process-definition',
-  DOCUMENT: 'document',
-} as const;
-
-export {BUILDING_BLOCK_MANAGEMENT_TABS};

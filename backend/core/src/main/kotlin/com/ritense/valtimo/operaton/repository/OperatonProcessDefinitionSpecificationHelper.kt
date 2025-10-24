@@ -115,7 +115,7 @@ class OperatonProcessDefinitionSpecificationHelper {
                             root.get<String>(VERSION_TAG),
                             cb.literal(3)
                         ),
-                        ProcessConstants.OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX
+                        ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
                     )
                 )
             )
@@ -133,7 +133,7 @@ class OperatonProcessDefinitionSpecificationHelper {
                             root.get<String>(VERSION_TAG),
                             cb.literal(3)
                         ),
-                        ProcessConstants.OPERATION_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+                        ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
                     )
                 )
             )
