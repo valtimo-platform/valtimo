@@ -36,7 +36,7 @@ jobs:
 
       - name: Tag image for test environment
         env:
-          IMAGE: "ghcr.io/valtimo-platform/valtimo/${{ inputs.target }}"
+          IMAGE: "ghcr.io/${{ github.repository }}/${{ inputs.target }}"
           IMAGE_TO_TAG: "${{ inputs.image_to_tag }}"
           TEST_ENV_TAG: "testEnv-${{ needs.determine_test_env.outputs.name }}-${{ needs.determine_test_env.outputs.source_sha}}-${{ github.run_number }}"
         run: |
