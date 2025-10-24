@@ -23,7 +23,7 @@ import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefini
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import org.operaton.bpm.engine.RepositoryService
 import org.operaton.bpm.engine.repository.DeploymentWithDefinitions
 import org.operaton.bpm.model.bpmn.Bpmn
@@ -40,7 +40,7 @@ class BuildingBlockProcessService(
     @Transactional
     fun createEmptyProcessAndLink(title: String, key: String, versionTag: String): String {
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(key, versionTag)
-        val buildingBlockVersionProcessVersionTag = OPERATION_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()
+        val buildingBlockVersionProcessVersionTag = OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()
         val model = createMinimalModel(key, title, buildingBlockVersionProcessVersionTag)
         val fileName = "$key-$versionTag.bpmn"
         val deployment: DeploymentWithDefinitions = repositoryService

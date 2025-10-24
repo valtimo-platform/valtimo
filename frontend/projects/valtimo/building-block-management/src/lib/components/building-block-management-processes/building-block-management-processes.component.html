@@ -18,6 +18,7 @@
   [fields]="FIELDS"
   [items]="buildingBlockProcessDefinitionItems$ | async"
   [loading]="$loading()"
+  (rowClicked)="onRowClick($event)"
 >
   <ng-container
     carbonToolbarContent

@@ -2036,6 +2036,7 @@
       "title": "Algemene informatie"
     },
     "processDefinition": {
+      "title": "Bouwsteen-procesdefinitie",
       "name": "Naam",
       "key": "Sleutel",
       "mainText": "Hoofdproces"

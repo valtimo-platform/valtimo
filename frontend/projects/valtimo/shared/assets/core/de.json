@@ -2030,6 +2030,7 @@
       "title": "Allgemeine Informationen"
     },
     "processDefinition": {
+      "title": "Baustein-Prozessdefinition",
       "name": "Name",
       "key": "Schlüssel",
       "mainText": "Hauptprozess"
