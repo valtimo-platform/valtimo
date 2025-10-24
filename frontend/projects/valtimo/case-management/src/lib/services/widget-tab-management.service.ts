@@ -24,7 +24,7 @@ import {CaseWidgetsRes} from '@valtimo/case';
 @Injectable({
   providedIn: 'root',
 })
-export class WidgetTabManagementService
+export class CaseWidgetManagementApiService
   implements IWidgetManagementService<CaseManagementParams & {key: string}>
 {
   private readonly valtimoEndpointBase: string;
@@ -72,10 +72,10 @@ export class WidgetTabManagementService
           `${this.valtimoEndpointBase}/${params.caseDefinitionKey}/version/${params.caseDefinitionVersionTag}/widget-tab/${params.key}`
         )
       ),
-      tap(res => {
+      map((res: CaseWidgetsRes) => {
         this._widgetConfigurationCache = res.widgets;
-      }),
-      map((res: any) => res.widgets)
+        return res.widgets;
+      })
     );
   }
 

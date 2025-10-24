@@ -33,7 +33,7 @@ import {
 import {toObservable} from '@angular/core/rxjs-interop';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, KeyGeneratorService} from '@valtimo/components';
-import {ButtonModule, ModalModule, ProgressIndicatorModule, Step} from 'carbon-components-angular';
+import {ButtonModule, ModalModule, ProgressIndicatorModule, Step, TilesModule} from 'carbon-components-angular';
 import {combineLatest, map, Observable, Subscription, switchMap} from 'rxjs';
 import {
   WIDGET_STYLE_LABELS,

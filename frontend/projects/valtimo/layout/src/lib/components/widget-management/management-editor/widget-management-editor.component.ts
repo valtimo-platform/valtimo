@@ -86,8 +86,8 @@ export class WidgetManagementEditorComponent {
     this.singleWidget$.next(value);
   }
 
-  @Input() public set defaultWidth(value: WidgetWidth) {
-    this.widgetWizardService.setDefaultWidth(value);
+  @Input() public set defaultWidth(value: WidgetWidth | undefined) {
+    this.widgetWizardService.setDefaultWidth(value ?? null);
   }
 
   public readonly fields$: Observable<ColumnConfig[]> = combineLatest([
