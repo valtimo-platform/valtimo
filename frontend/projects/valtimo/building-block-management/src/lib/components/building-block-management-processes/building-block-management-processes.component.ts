@@ -34,13 +34,15 @@ import {CarbonListModule, ColumnConfig, ViewType} from '@valtimo/components';
 import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {BuildingBlockProcessDefinitionItem} from '../../models';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
+import {Upload16} from '@carbon/icons';
 
 @Component({
   standalone: true,
   selector: 'valtimo-building-block-management-processes',
   templateUrl: './building-block-management-processes.component.html',
   styleUrls: ['./building-block-management-processes.component.scss'],
-  imports: [CommonModule, CarbonListModule, TranslateModule],
+  imports: [CommonModule, CarbonListModule, TranslateModule, ButtonModule, IconModule],
 })
 export class BuildingBlockManagementProcessesComponent implements OnInit, OnDestroy {
   public readonly $loading = signal<boolean>(true);
@@ -80,8 +82,11 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
-    private readonly translateService: TranslateService
-  ) {}
+    private readonly translateService: TranslateService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([Upload16]);
+  }
 
   public ngOnInit(): void {
     this._subscriptions.add(
@@ -110,4 +115,8 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
   }
+
+  public showUploadModal(): void {}
+
+  public showCreateModal(): void {}
 }
