@@ -33,22 +33,16 @@ jobs:
 
   # For pushes
   # publish_snapshot:
+  # if ${{ github.event_name == 'push' }}
   # TODO, make separate workflow for publishing snapshots with JReleaser
 
   # For pull requests
-  determine_test_env:
-    if: ${{ github.event_name == 'pull_request' }}
-    uses: ./.github/workflows/determine_test_env.yml
-
   update_test_env:
     if: ${{ github.event_name == 'pull_request'}}
     needs:
       - build_and_push_image
-      - determine_test_env
     uses: ./.github/workflows/tag_test_env.yml
     secrets: inherit
     with:
-      image: ghcr.io/${{ github.repository }}/gzac-backend
-      tagged_src_image: ${{ needs.build_and_push_image.outputs.tagged_image }}
-      source_sha: ${{ needs.determine_test_env.outputs.source_sha }}
-      test_environment_name: ${{ needs.determine_test_env.outputs.name }}
+      target: "gzac-backend"
+      image_to_tag: ${{ needs.build_and_push_image.outputs.tagged_image }}

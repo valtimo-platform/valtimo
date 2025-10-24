@@ -42,19 +42,12 @@ jobs:
     secrets: inherit
 
   # For pull requests
-  determine_test_env_name:
-    if: ${{ github.event_name == 'pull_request' }}
-    uses: ./.github/workflows/determine_test_env.yml
-
   update_test_env:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request'}}
     needs:
       - build_and_push_image
-      - determine_test_env_name
     uses: ./.github/workflows/tag_test_env.yml
     secrets: inherit
     with:
-      image: ghcr.io/${{ github.repository }}/gzac-frontend
-      tagged_src_image: ${{ needs.build_and_push_image.outputs.tagged_image }}
-      source_sha: ${{ needs.determine_test_env_name.outputs.source_sha }}
-      test_environment_name: ${{ needs.determine_test_env_name.outputs.name }}
+      target: "gzac-frontend"
+      image_to_tag: ${{ needs.build_and_push_image.outputs.tagged_image }}

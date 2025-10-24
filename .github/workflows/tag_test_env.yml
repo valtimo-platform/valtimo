@@ -2,20 +2,12 @@ name: Tag test environment image
 on:
   workflow_call:
     inputs:
-      image:
-        description: "Fully qualified Docker image name"
+      target:
+        description: "Can be one of 'gzac-frontend', 'gzac-backend', (TODO:) 'valtimo-frontend' or 'valtimo-backend'"
         required: true
         type: string
-      tagged_src_image:
-        description: "Tag produced in the build job"
-        required: true
-        type: string
-      test_environment_name:
-        description: "Explicit test environment name"
-        required: true
-        type: string
-      source_sha:
-        description: "Commit SHA to embed in the derived tag"
+      image_to_tag:
+        description: "Existing image tag that will receive an additional tag for the test environment. E.g. next-minor.15"
         required: true
         type: string
 
@@ -24,13 +16,13 @@ permissions:
   packages: write
 
 jobs:
+  determine_test_env:
+    uses: ./.github/workflows/determine_test_env.yml
+
   tag_test_env:
     runs-on: ubuntu-latest
-    env:
-      IMAGE: ${{ inputs.image }}
-      SRC_IMAGE: ${{ inputs.tagged_src_image }}
-      SOURCE_SHA: ${{ inputs.source_sha }}
-      TEST_ENVIRONMENT_NAME: ${{ inputs.test_environment_name }}
+    needs:
+      - determine_test_env
     steps:
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -43,8 +35,11 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Tag image for test environment
+        env:
+          IMAGE: "ghcr.io/valtimo-platform/${{ inputs.target }}"
+          IMAGE_TO_TAG: ${{ inputs.image_to_tag }}
+          TEST_ENV_TAG: "testEnv-${{ needs.determine_test_env.outputs.name }}-${{ needs.determine_test_env.outputs.source_sha}}-${{ github.run_number }}"
         run: |
-          TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${SOURCE_SHA}-${{ github.run_number }}"
           docker buildx imagetools create \
-            --tag "${IMAGE}:${TARGET_TAG}" \
-            "${SRC_IMAGE}"
+            --tag "${IMAGE}:${TEST_ENV_TAG}" \
+            "${IMAGE_TO_TAG}"

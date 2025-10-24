@@ -58,9 +58,11 @@ jobs:
     permissions:
       contents: read
       packages: write
-
     outputs:
-      image_tag: ${{ steps.generate_tags.outputs.tags }}
+      image_tag: "${{ env.BRANCH_NAME }}.${{ github.run_number }}"
+
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
     steps:
       - name: Checkout repository
@@ -79,8 +81,6 @@ jobs:
 
       - name: Generate image tags
         id: generate_tags
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
