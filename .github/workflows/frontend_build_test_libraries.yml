@@ -35,7 +35,7 @@ jobs:
           echo "contents_hash=$(git rev-parse HEAD:frontend)" >> $GITHUB_OUTPUT
       - name: Restore frontend libraries from build cache
         id: restore_cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: frontend/dist
           key: frontend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
