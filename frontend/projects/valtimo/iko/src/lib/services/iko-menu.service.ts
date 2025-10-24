@@ -31,43 +31,50 @@ export class IkoMenuService {
       map(ikoItems => {
         this.ikoApiService.setCachedMenuItems(ikoItems.content);
 
-        const ikoSubMenu: MenuItem[] = ikoItems.content.map((item, index) => ({
-          link: ['/iko', item.key],
-          title: item.title,
-          sequence: index,
-          show: true,
-        }));
+        let updatedMenuItems = [...menuItems];
 
-        const ikoMenu: MenuItem = {
-          title: 'IKO',
-          iconClass: 'icon mdi mdi-account',
-          show: true,
-          sequence: this.getIkoSequenceAfterCases(menuItems),
-          children: ikoSubMenu,
-        };
+        if (ikoItems.content?.length) {
+          const ikoSubMenu: MenuItem[] = ikoItems.content.map((item, index) => ({
+            link: ['/iko', item.key],
+            title: item.title,
+            sequence: index,
+            show: true,
+          }));
 
-        const adminMenuItem = menuItems.find(item => item.title.toUpperCase().includes('ADMIN'));
+          const ikoMenu: MenuItem = {
+            title: 'IKO',
+            iconClass: 'icon mdi mdi-account',
+            show: true,
+            sequence: this.getIkoSequenceAfterCases(menuItems),
+            children: ikoSubMenu,
+          };
+
+          updatedMenuItems = [...menuItems, ikoMenu].sort((a, b) => a.sequence - b.sequence);
+        }
+
+        const adminMenuItem = updatedMenuItems.find(item =>
+          item.title.toUpperCase().includes('ADMIN')
+        );
 
         if (adminMenuItem) {
           adminMenuItem.children = [
             ...adminMenuItem.children,
             {
-              title: ikoMenu.title,
+              title: 'IKO',
               show: true,
-              sequence: adminMenuItem.children[adminMenuItem.children.length - 1].sequence + 1,
+              sequence: this.getIkoSequenceAfterCases(adminMenuItem.children ?? []),
               link: ['/iko-management'],
             },
-          ];
+          ].sort((a, b) => a.sequence - b.sequence);
         }
 
-        return [...menuItems, ikoMenu].sort((a, b) => a.sequence - b.sequence);
+        return updatedMenuItems;
       })
     );
   };
 
   private getIkoSequenceAfterCases(menuItems: MenuItem[]): number {
     const casesItem = menuItems.find(item => item.title === 'Cases' || item.title === 'Dossiers');
-    const casesSequence = Number(casesItem?.sequence ?? 0);
-    return casesSequence + 0.5;
+    return Number(casesItem?.sequence ?? 0) + 0.5;
   }
 }
