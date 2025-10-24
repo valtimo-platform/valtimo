@@ -22,6 +22,8 @@ jobs:
     outputs:
       cache_hit: ${{ steps.restore_cache.outputs.cache-hit  }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Compute backend contents hash
         id: compute_contents_hash
         run: |
