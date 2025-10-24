@@ -42,4 +42,4 @@ jobs:
         run: |
           docker buildx imagetools create \
             --tag "${IMAGE}:${TEST_ENV_TAG}" \
-            "${IMAGE}:${IMAGE_TO_TAG}"
+            "${IMAGE_TO_TAG}"
