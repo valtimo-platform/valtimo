@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       cache-hit: ${{ steps.restore_cache.outputs.cache-hit  }}
+      cache-key: frontend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,6 +39,7 @@ jobs:
         with:
           path: frontend/dist
           key: frontend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
+
       # Even in case of a cache hit, artifact must be pulled from cache and uploaded to
       # the artifact registry to be available to subsequent jobs
       - name: "Retain build artifact: dist"
@@ -130,6 +132,12 @@ jobs:
           npm run libs-increment-all -- ${PROJECT_VERSION}
           npm run copy-frontend-version
           npx ng build @valtimo/shared
+
+      - name: Cache built frontend libraries
+        uses: actions/cache/save@v4
+        with:
+          path: frontend/dist
+          key: ${{ needs.check_cache.outputs.cache-key }}
 
       - name: "Retain build artifact: dist"
         uses: actions/upload-artifact@v4

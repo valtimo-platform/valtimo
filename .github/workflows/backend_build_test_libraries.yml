@@ -20,7 +20,8 @@ jobs:
   check_cache:
     runs-on: ubuntu-latest
     outputs:
-      cache_hit: ${{ steps.restore_cache.outputs.cache-hit  }}
+      cache-hit: ${{ steps.restore_cache.outputs.cache-hit }}
+      cache-key: backend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,7 +49,7 @@ jobs:
             backend/**/build
 
   build_libraries:
-    if: ${{ needs.check_cache.outputs.cache_hit != 'true' }}
+    if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
     needs:
       - check_cache
     runs-on: ubuntu-latest
@@ -67,6 +68,14 @@ jobs:
       - name: Build libraries
         run: ./gradlew assemble
 
+      - name: Cache built backend libraries
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            backend/.gradle
+            backend/**/build
+          key: ${{ needs.check_cache.outputs.cache-key }}
+
       - name: Upload built libraries
         uses: actions/upload-artifact@v4
         with:
@@ -76,7 +85,7 @@ jobs:
             backend/.gradle
             backend/**/build
   determine-tests:
-    if: ${{ needs.check_cache.outputs.cache_hit != 'true' }}
+    if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
     runs-on: ubuntu-latest
     needs:
       - check_cache
@@ -134,7 +143,7 @@ jobs:
   # Run the following test suites in parallel
   unit-testing:
     needs: [determine-tests, build_libraries, check_cache]
-    if: ${{ needs.check_cache.outputs.cache_hit != 'true' }}
+    if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -158,7 +167,7 @@ jobs:
   integration-testing:
     runs-on: ubuntu-latest
     needs: [determine-tests, build_libraries, check_cache]
-    if: ${{ needs.check_cache.outputs.cache_hit != 'true' }}
+    if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
     strategy:
       matrix:
         integration_test_suite: ${{ fromJson(needs.determine-tests.outputs.integration_test_matrix) }}
@@ -184,7 +193,7 @@ jobs:
       matrix:
         security_test_suite: ${{ fromJson(needs.determine-tests.outputs.security_test_matrix) }}
     if: |
-      needs.check_cache.outputs.cache_hit != 'true' &&
+      needs.check_cache.outputs.cache-hit != 'true' &&
       github.ref_type == 'branch' && 
       (
         startsWith(github.ref_name, 'development/') ||
