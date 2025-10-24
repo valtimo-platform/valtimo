@@ -45,7 +45,7 @@ export class WidgetWizardContentStepComponent implements AfterViewInit {
   public readonly $widgetContext = this.widgetWizardService.$widgetContext;
 
   constructor(
-    private vcr: ViewContainerRef,
+    private readonly vcr: ViewContainerRef,
     private readonly widgetWizardService: WidgetWizardService
   ) {}
 

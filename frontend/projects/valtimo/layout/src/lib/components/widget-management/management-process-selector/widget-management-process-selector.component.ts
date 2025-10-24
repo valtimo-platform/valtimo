@@ -125,15 +125,13 @@ export class WidgetManagementProcessSelectorComponent implements OnInit {
                         },
                       ]
                     : [];
-                else {
-                  return !existingAction
-                    ? [...actions, newAction]
-                    : actions.map(action =>
-                        action.processDefinitionKey === newAction.processDefinitionKey
-                          ? newAction
-                          : action
-                      );
-                }
+                return !existingAction
+                  ? [...actions, newAction]
+                  : actions.map(action =>
+                      action.processDefinitionKey === newAction.processDefinitionKey
+                        ? newAction
+                        : action
+                    );
               }
             );
           }

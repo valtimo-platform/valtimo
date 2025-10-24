@@ -59,7 +59,7 @@ export class CaseManagementHeaderComponent
   constructor(
     protected readonly widgetWizardService: WidgetWizardService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
-    private widgetManagementService: IWidgetManagementService<CaseManagementParams>,
+    private readonly widgetManagementService: IWidgetManagementService<CaseManagementParams>,
     private readonly route: ActivatedRoute
   ) {
     super(widgetWizardService);
