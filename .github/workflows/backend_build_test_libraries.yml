@@ -17,11 +17,46 @@ defaults:
     working-directory: backend
 
 jobs:
+  check_cache:
+    runs-on: ubuntu-latest
+    outputs:
+      cache_hit: ${{ steps.restore_cache.outputs.cache-hit  }}
+    steps:
+      - name: Compute backend contents hash
+        id: compute_contents_hash
+        run: |
+          echo "contents_hash=$(git rev-parse HEAD:backend)" >> $GITHUB_OUTPUT
+      - name: Restore backend libraries from build cache
+        id: restore_cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            backend/.gradle
+            backend/**/build
+          key: backend-libraries-contents-${{ steps.compute_contents_hash.outputs.contents_hash }}
+      # Even in case of a cache hit, artifact must be pulled from cache and uploaded to
+      # the artifact registry to be available to subsequent jobs
+      - name: Upload built libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build-output
+          retention-days: 1
+          path: |
+            backend/.gradle
+            backend/**/build
+
   build_libraries:
+    if: ${{ needs.check_cache.outputs.cache_hit != 'true' }}
+    needs:
+      - check_cache
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Compute backend contents hash
+        run: |
+          echo "contents_hash=$(git rev-parse HEAD:backend)" >> $GITHUB_ENV
+
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
@@ -29,6 +64,7 @@ jobs:
           cache: gradle
       - name: Build libraries
         run: ./gradlew assemble
+
       - name: Upload built libraries
         uses: actions/upload-artifact@v4
         with:
@@ -38,7 +74,10 @@ jobs:
             backend/.gradle
             backend/**/build
   determine-tests:
+    if: ${{ needs.check_cache.outputs.cache_hit != 'true' }}
     runs-on: ubuntu-latest
+    needs:
+      - check_cache
     outputs:
       unit_test_matrix: ${{ steps.set_test_matrices.outputs.unit_test_matrix }}
       integration_test_matrix: ${{ steps.set_test_matrices.outputs.integration_test_matrix }}
@@ -92,7 +131,8 @@ jobs:
           echo "security_test_matrix=$(cat $SECURITY_TESTS_MATRIX)" >> $GITHUB_OUTPUT
   # Run the following test suites in parallel
   unit-testing:
-    needs: [determine-tests, build_libraries]
+    needs: [determine-tests, build_libraries, check_cache]
+    if: ${{ needs.check_cache.outputs.cache_hit != 'true' }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -115,7 +155,8 @@ jobs:
 
   integration-testing:
     runs-on: ubuntu-latest
-    needs: [determine-tests, build_libraries]
+    needs: [determine-tests, build_libraries, check_cache]
+    if: ${{ needs.check_cache.outputs.cache_hit != 'true' }}
     strategy:
       matrix:
         integration_test_suite: ${{ fromJson(needs.determine-tests.outputs.integration_test_matrix) }}
@@ -136,11 +177,12 @@ jobs:
         run: ./gradlew ${{ matrix.integration_test_suite }}
 
   security-testing:
-    needs: [determine-tests, build_libraries]
+    needs: [determine-tests, build_libraries, check_cache]
     strategy:
       matrix:
         security_test_suite: ${{ fromJson(needs.determine-tests.outputs.security_test_matrix) }}
     if: |
+      needs.check_cache.outputs.cache_hit != 'true' &&
       github.ref_type == 'branch' && 
       (
         startsWith(github.ref_name, 'development/') ||
