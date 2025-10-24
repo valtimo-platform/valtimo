@@ -20,10 +20,11 @@ import {
   BuildingBlockManagementDetailService,
 } from '../../services';
 import {BehaviorSubject, combineLatest, filter, map, Subscription, switchMap, tap} from 'rxjs';
-import {FitPageDirective, JsonEditorComponent, SchemaEditorComponent} from '@valtimo/components';
-import {ButtonModule, IconModule, LoadingModule} from 'carbon-components-angular';
+import {FitPageDirective, SchemaEditorComponent} from '@valtimo/components';
+import {ButtonModule, IconModule, IconService, LoadingModule} from 'carbon-components-angular';
 import {take} from 'rxjs/operators';
 import {TranslatePipe} from '@ngx-translate/core';
+import {Download16} from '@carbon/icons';
 
 @Component({
   standalone: true,
@@ -32,7 +33,6 @@ import {TranslatePipe} from '@ngx-translate/core';
   styleUrls: ['./building-block-management-document.component.scss'],
   imports: [
     CommonModule,
-    JsonEditorComponent,
     ButtonModule,
     IconModule,
     LoadingModule,
@@ -65,8 +65,11 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
 
   constructor(
     private readonly buildingBlockManagementDetailService: BuildingBlockManagementDetailService,
-    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService
-  ) {}
+    private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([Download16]);
+  }
 
   public ngOnInit(): void {
     this.openBuildingBlockDefinitionSubscription();

@@ -23,18 +23,18 @@
   >
     <ng-container
       carbonToolbarContent
-      [ngTemplateOutlet]="importBuildingBlockDefinitionButton"
+      [ngTemplateOutlet]="buildingBlockDefinitionActions"
     ></ng-container>
 
     <valtimo-no-results
-      [action]="importBuildingBlockDefinitionButton"
+      [action]="buildingBlockDefinitionActions"
       [description]="'buildingBlockManagement.noResults.description' | translate"
       [title]="'buildingBlockManagement.noResults.title' | translate"
     ></valtimo-no-results>
   </valtimo-carbon-list>
 </ng-container>
 
-<ng-template #importBuildingBlockDefinitionButton>
+<ng-template #buildingBlockDefinitionActions>
   <div class="valtimo-building-block-management-list__actions">
     <button cdsButton="ghost" (click)="showUploadModal()">
       {{ 'Upload' | translate }}
