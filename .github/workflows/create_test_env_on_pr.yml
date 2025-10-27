@@ -1,24 +1,252 @@
 name: "Create test environment for each new PR"
 on:
   pull_request:
-    branches: ["next-minor"]
+    branches:
+      - feature/create-test-env-on-pr
     types:
       - opened
+      - reopened
 
 permissions:
   actions: read
   contents: read
   packages: write
 
+# Assigns the same concurrency group to `delete_test_env` and `create_test_env`.
+# This prevents creating and deleting from running simultaneously, which could cause race conditions.
+concurrency:
+  group: setup-test-env-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
-  create_test_environment:
+  determine_test_env:
+    uses: ./.github/workflows/determine_test_env.yml
+
+  detect_changes:
     runs-on: ubuntu-latest
-    environment:
-      name: pr-test-environment
+    outputs:
+      frontend_changed: ${{ steps.frontend.outputs.any_changed }}
+      backend_changed: ${{ steps.backend.outputs.any_changed }}
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - uses: ./.github/workflows/create_test_env.yml
+      - uses: actions/checkout@v4
         with:
-          envName: "pr-${{ github.event.number }}"
-        secrets: inherit
+          fetch-depth: 0 # lets the action diff against the merge-base
+
+      - name: Detect changes in frontend
+        id: frontend
+        uses: tj-actions/changed-files@v47
+        with:
+          files: |
+            frontend/**
+
+      - name: Detect changes in backend
+        id: backend
+        uses: tj-actions/changed-files@v47
+        with:
+          files: |
+            backend/**
+
+  neither_changed:
+    needs:
+      - detect_changes
+    if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' && needs.detect_changes.outputs.backend_changed != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No frontend or backend changes detected; skipping test environment setup."
+
+  only_frontend_changed:
+    needs:
+      - detect_changes
+      - determine_test_env
+    if: ${{ needs.detect_changes.outputs.frontend_changed == 'true' && needs.detect_changes.outputs.backend_changed != 'true' }}
+    runs-on: ubuntu-latest
+    environment: pr-test-environment
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create test environment
+        env:
+          ENV_NAME: ${{ needs.determine_test_env.outputs.name }}
+          TOKEN: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}
+          DISPATCH_URL: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DISPATCH_URL }}
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${DISPATCH_URL}" \
+            -d "{\"ref\":\"main\",\"inputs\":{\"envName\":\"${ENV_NAME}\"}}"
+
+      - name: Compute backend contents hash
+        id: backend_hash
+        run: |
+          HASH=$(git rev-parse HEAD:backend)
+          echo "hash=${HASH}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=contents-${HASH}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Re-tag a backend image to re-use it in the test environment
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}/gzac-backend
+          IMAGE_TAG: ${{ steps.backend_hash.outputs.image_tag }}
+          CONTENTS_HASH: ${{ steps.backend_hash.outputs.hash }}
+          BASE_COMMIT_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_BRANCH_NAME: ${{ github.event.pull_request.base.ref }}
+        run: |
+          if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
+            echo "Found ${IMAGE}:${IMAGE_TAG}"
+          else
+            echo "Backend was unchanged in this PR, so an attempt was made to re-use a backend image tagged with its Git contents-hash (${CONTENTS_HASH})." >&2
+            echo "But no image tagged with ${IMAGE_TAG} was found in ${IMAGE}." >&2
+            echo "The test environment will not work until an image with tag ${IMAGE}:${IMAGE_TAG} exists" >&2
+            echo "To fix this:" >&2
+            echo "  1. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} already has a built backend image, manually tag it with ${IMAGE_TAG}." >&2
+            echo "  2. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} does not have a backend image yet, build and push the image" >&2
+            echo "Then close and re-open this PR to retrigger the workflow."
+            exit 1
+          fi
+
+      - name: Tag backend image for test environment
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}/gzac-backend
+          IMAGE_TAG: ${{ steps.backend_hash.outputs.image_tag }}
+          TEST_ENVIRONMENT_NAME: ${{ needs.determine_test_env.outputs.name }}
+          SOURCE_SHA: ${{ needs.determine_test_env.outputs.source_sha }}
+        run: |
+          TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${SOURCE_SHA}-${{ github.run_number }}"
+          docker pull "${IMAGE}:${IMAGE_TAG}"
+          docker tag "${IMAGE}:${IMAGE_TAG}" "${IMAGE}:${TARGET_TAG}"
+          docker push "${IMAGE}:${TARGET_TAG}"
+
+  only_backend_changed:
+    needs:
+      - detect_changes
+      - determine_test_env
+    environment: pr-test-environment
+    if: ${{ needs.detect_changes.outputs.frontend_changed != 'true' && needs.detect_changes.outputs.backend_changed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create test environment
+        env:
+          ENV_NAME: ${{ needs.determine_test_env.outputs.name }}
+          TOKEN: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}
+          DISPATCH_URL: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DISPATCH_URL }}
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${DISPATCH_URL}" \
+            -d "{\"ref\":\"main\",\"inputs\":{\"envName\":\"${ENV_NAME}\"}}"
+
+      - name: Compute frontend contents hash
+        id: frontend_hash
+        run: |
+          HASH=$(git rev-parse HEAD:frontend)
+          echo "hash=${HASH}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=contents-${HASH}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Re-tag a frontend image for use in the test environment
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}/gzac-frontend
+          IMAGE_TAG: ${{ steps.frontend_hash.outputs.image_tag }}
+          CONTENTS_HASH: ${{ steps.frontend_hash.outputs.hash }}
+          BASE_COMMIT_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_BRANCH_NAME: ${{ github.event.pull_request.base.ref }}
+        run: |
+          if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
+            echo "Found ${IMAGE}:${IMAGE_TAG}"
+          else
+            echo "Frontend was unchanged in this PR, so an attempt was made to re-use a frontend image tagged with its Git contents-hash (${CONTENTS_HASH})." >&2
+            echo "But no image tagged with ${IMAGE_TAG} was found in ${IMAGE}." >&2
+            echo "The test environment will not work until an image with tag ${IMAGE}:${IMAGE_TAG} exists" >&2
+            echo "To fix this:" >&2
+            echo "  1. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} already has a built frontend image, manually tag it with ${IMAGE_TAG}." >&2
+            echo "  2. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} does not have a frontend image yet, build and push the image. " >&2
+            echo "Then close and re-open this PR to retrigger the workflow."
+            exit 1
+          fi
+
+      - name: Tag frontend image for test environment
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}/gzac-frontend
+          IMAGE_TAG: ${{ steps.frontend_hash.outputs.image_tag }}
+          TEST_ENVIRONMENT_NAME: ${{ needs.determine_test_env.outputs.name }}
+          SOURCE_SHA: ${{ needs.determine_test_env.outputs.source_sha }}
+        run: |
+          TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${SOURCE_SHA}-${{ github.run_number }}"
+          docker pull "${IMAGE}:${IMAGE_TAG}"
+          docker tag "${IMAGE}:${IMAGE_TAG}" "${IMAGE}:${TARGET_TAG}"
+          docker push "${IMAGE}:${TARGET_TAG}"
+
+  both_frontend_and_backend_changed:
+    needs:
+      - detect_changes
+      - determine_test_env
+    environment: pr-test-environment
+    if: ${{ needs.detect_changes.outputs.frontend_changed == 'true' && needs.detect_changes.outputs.backend_changed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create or update test environment
+        env:
+          ENV_NAME: ${{ needs.determine_test_env.outputs.name }}
+          TOKEN: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}
+          DISPATCH_URL: ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_WORKFLOW_DISPATCH_URL }}
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${DISPATCH_URL}" \
+            -d "{\"ref\":\"main\",\"inputs\":{\"envName\":\"${ENV_NAME}\"}}"
+
+  comment_on_pr:
+    if: ${{ needs.detect_changes.outputs.backend_changed || needs.detect_changes.outputs.frontend_changed }}
+    runs-on: ubuntu-latest
+    needs:
+      - detect_changes
+      - determine_test_env
+    steps:
+      - name: Generate token as GitHub App
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.VALTIMO_PLATFORM_APP_APPID }}
+          private_key: ${{ secrets.VALTIMO_PLATFORM_APP_PRIVATE_KEY }}
+      - name: Comment on PR
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          token: ${{ steps.generate_token.outputs.token }}
+          body: |
+            Will create a test environment at https://${{ needs.determine_test_env.outputs.name }}.product-development.test.k8s.ritense.com

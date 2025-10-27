@@ -21,6 +21,7 @@ import org.operaton.bpm.engine.spring.SpringProcessEngineConfiguration;
 import org.operaton.bpm.spring.boot.starter.configuration.OperatonDatasourceConfiguration;
 import org.operaton.bpm.spring.boot.starter.configuration.impl.AbstractOperatonConfiguration;
 import org.operaton.bpm.spring.boot.starter.property.DatabaseProperty;
+import org.operaton.bpm.spring.boot.starter.property.OperatonBpmProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.StringUtils;
@@ -31,7 +32,8 @@ public class ValtimoDatabaseConfiguration extends AbstractOperatonConfiguration 
     protected final PlatformTransactionManager transactionManager;
     protected final DataSource dataSource;
 
-    public ValtimoDatabaseConfiguration(PlatformTransactionManager transactionManager, DataSource dataSource) {
+    public ValtimoDatabaseConfiguration(PlatformTransactionManager transactionManager, DataSource dataSource, OperatonBpmProperties operatonBpmProperties) {
+        super(operatonBpmProperties);
         this.transactionManager = transactionManager;
         this.dataSource = dataSource;
     }
