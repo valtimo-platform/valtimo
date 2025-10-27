@@ -150,11 +150,9 @@ export class IkoManagementUploadModalComponent implements OnInit, OnDestroy {
     private readonly ikoManagementApiService: IkoManagementApiService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     const control: AbstractControl | null = this.form.get('file');
-    if (!control) {
-      return;
-    }
+    if (!control) return;
 
     this._subscriptions.add(
       this.form.get('file').valueChanges.subscribe((fileSet: Set<FileItem>) => {

@@ -40,57 +40,68 @@
     </h3>
   </cds-modal-header>
 
-  <section [ngSwitch]="obs.activeStep" cdsModalContent class="valtimo-definition-uploader__content">
-    <ng-template ngSwitchDefault>
-      <valtimo-case-management-upload-step
-        [message]="
-          'ikoManagement.importDefinition.steps.' + obs.activeStep + '.message' | translate
-        "
-        [title]="'ikoManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate"
-        [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
-      >
-      </valtimo-case-management-upload-step>
-    </ng-template>
-
-    <form *ngSwitchCase="UPLOAD_STEP.FILE_SELECT" [formGroup]="form">
-      <cds-file-uploader
-        [accept]="acceptedFiles"
-        [buttonText]="'ikoManagement.importDefinition.upload.buttonText' | translate"
-        [description]="'ikoManagement.importDefinition.upload.description' | translate"
-        [multiple]="false"
-        [title]="'ikoManagement.importDefinition.upload.title' | translate"
-        buttonType="primary"
-        formControlName="file"
-        class="valtimo-definition-uploader__file-uploader"
-      >
-      </cds-file-uploader>
-
-      <ng-container *ngIf="!obs.nextButtonDisabled">
-        <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
-
-        <div class="valtimo-definition-uploader__checkbox">
-          <cds-checkbox
-            [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
-            (checkedChange)="onCheckedChange($event)"
+  <section cdsModalContent class="valtimo-definition-uploader__content">
+    @switch (obs.activeStep) {
+      @case (UPLOAD_STEP.FILE_SELECT) {
+        <form [formGroup]="form">
+          <cds-file-uploader
+            [accept]="acceptedFiles"
+            [buttonText]="'ikoManagement.importDefinition.upload.buttonText' | translate"
+            [description]="'ikoManagement.importDefinition.upload.description' | translate"
+            [multiple]="false"
+            [title]="'ikoManagement.importDefinition.upload.title' | translate"
+            buttonType="primary"
+            formControlName="file"
+            class="valtimo-definition-uploader__file-uploader"
           >
-            {{ 'ikoManagement.importDefinition.checkbox.message' | translate }}
-          </cds-checkbox>
+          </cds-file-uploader>
 
-          <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
-            <svg cdsIcon="warning--filled" size="16"></svg>
-            {{ 'ikoManagement.importDefinition.checkbox.error' | translate }}
-          </div>
-        </div>
-      </ng-container>
-    </form>
+          @if (!obs.nextButtonDisabled) {
+            <cds-inline-notification
+              [notificationObj]="obs.notificationObj"
+            ></cds-inline-notification>
 
-    <cds-progress-bar
-      *ngSwitchCase="UPLOAD_STEP.FILE_UPLOAD"
-      class="valtimo-definition-uploader__progress-bar"
-      [label]="'ikoManagement.importDefinition.progressBar.label' | translate"
-      [status]="obs.uploadStatus"
-      [helperText]="'ikoManagement.importDefinition.progressBar.' + obs.uploadStatus | translate"
-    ></cds-progress-bar>
+            <div class="valtimo-definition-uploader__checkbox">
+              <cds-checkbox
+                [class.valtimo-definition-uploader__checkbox--invalid]="obs.showCheckboxError"
+                (checkedChange)="onCheckedChange($event)"
+              >
+                {{ 'ikoManagement.importDefinition.checkbox.message' | translate }}
+              </cds-checkbox>
+
+              @if (obs.showCheckboxError) {
+                <div class="valtimo-definition-uploader__error">
+                  <svg cdsIcon="warning--filled" size="16"></svg>
+                  {{ 'ikoManagement.importDefinition.checkbox.error' | translate }}
+                </div>
+              }
+            </div>
+          }
+        </form>
+      }
+
+      @case (UPLOAD_STEP.FILE_UPLOAD) {
+        <cds-progress-bar
+          class="valtimo-definition-uploader__progress-bar"
+          [label]="'ikoManagement.importDefinition.progressBar.label' | translate"
+          [status]="obs.uploadStatus"
+          [helperText]="
+            'ikoManagement.importDefinition.progressBar.' + obs.uploadStatus | translate
+          "
+        ></cds-progress-bar>
+      }
+
+      @default {
+        <valtimo-case-management-upload-step
+          [message]="
+            'ikoManagement.importDefinition.steps.' + obs.activeStep + '.message' | translate
+          "
+          [title]="'ikoManagement.importDefinition.steps.' + obs.activeStep + '.title' | translate"
+          [illustration]="'valtimo-layout/img/' + obs.activeStep + '.svg'"
+        >
+        </valtimo-case-management-upload-step>
+      }
+    }
   </section>
 
   <cds-modal-footer class="valtimo-definition-uploader__footer">

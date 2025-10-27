@@ -25,7 +25,13 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {ButtonModule, IconModule, LoadingModule, Notification, TabsModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  IconModule,
+  LoadingModule,
+  Notification,
+  TabsModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, Observable, switchMap, tap} from 'rxjs';
 import {map, take} from 'rxjs/operators';
 import {IkoDataRequestResponse} from '../../../../models';
@@ -91,8 +97,6 @@ export class IkoManagementSearchActionsComponent {
     map((params: Params) => params.key),
     filter(key => !!key)
   );
-
-  public readonly aggregateKey = this.route.snapshot.params['key'];
 
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly searchActions$: Observable<IkoDataRequestResponse[]> = combineLatest([
@@ -180,9 +184,7 @@ export class IkoManagementSearchActionsComponent {
       .pipe(
         take(1),
         switchMap(([aggregateKey]) =>
-          this.ikoManagementApiService.exportIKOConfiguration(
-            aggregateKey,
-          )
+          this.ikoManagementApiService.exportIKOConfiguration(aggregateKey)
         )
       )
       .subscribe({
@@ -218,16 +220,18 @@ export class IkoManagementSearchActionsComponent {
   }
 
   private downloadZip(response: HttpResponse<Blob>): void {
-    const link = document.createElement('a');
-    const contentDisposition = response.headers.get('content-disposition');
-    const splitContentDisposition = contentDisposition?.split('filename=') ?? [];
-    const fileName = splitContentDisposition.length > 1 && splitContentDisposition[1];
+    this.aggregateKey$.pipe(take(1)).subscribe(key => {
+      const link = document.createElement('a');
+      const contentDisposition = response.headers.get('content-disposition');
+      const splitContentDisposition = contentDisposition?.split('filename=') ?? [];
+      const fileName = splitContentDisposition.length > 1 && splitContentDisposition[1];
 
-    link.href = this.document.defaultView?.URL.createObjectURL(response.body) ?? '';
-    link.download = fileName || `${this.aggregateKey}.valtimo.zip`;
-    link.target = '_blank';
-    link.click();
-    link.remove();
+      link.href = this.document.defaultView?.URL.createObjectURL(response.body) ?? '';
+      link.download = fileName || `${key}.valtimo.zip`;
+      link.target = '_blank';
+      link.click();
+      link.remove();
+    });
   }
 
   private closeCurrentNotification(): void {
