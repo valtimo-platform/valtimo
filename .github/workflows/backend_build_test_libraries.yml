@@ -68,14 +68,6 @@ jobs:
       - name: Build libraries
         run: ./gradlew assemble
 
-      - name: Cache built backend libraries
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            backend/.gradle
-            backend/**/build
-          key: ${{ needs.check_cache.outputs.cache-key }}
-
       - name: Upload built libraries
         uses: actions/upload-artifact@v4
         with:
@@ -151,20 +143,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # `build_libraries` runs in parallel with the tests `unit-testing`, `integration-testing`, and `security-testing`
-      # There are two scenarios here:
-      # 1. `build_libraries` has finished and cached the build. We get a cache-hit, download the build, and save compilation time.
-      # 2. `build_libraries` has not finished yet. We get a cache miss, and in the next step, the tests will build the libraries they need themselves.
-      # So there is no need to check for cache hits
-      - name: Restore backend libraries from build cache
-        id: restore_cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            backend/.gradle
-            backend/**/build
-          key: ${{ needs.check_cache.outputs.cache-key }}
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
@@ -183,14 +161,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Restore backend libraries from build cache
-        id: restore_cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            backend/.gradle
-            backend/**/build
-          key: ${{ needs.check_cache.outputs.cache-key }}
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
@@ -218,14 +188,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Restore backend libraries from build cache
-        id: restore_cache
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            backend/.gradle
-            backend/**/build
-          key: ${{ needs.check_cache.outputs.cache-key }}
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
@@ -233,3 +195,25 @@ jobs:
           cache: gradle
       - name: Run Security Tests
         run: ./gradlew ${{ matrix.security_test_suite }}
+
+  cache-libraries-build:
+    runs-on: ubuntu-latest
+    needs:
+      - check_cache
+      - unit-testing
+      - integration-testing
+      - security-testing
+      - build_libraries
+    steps:
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build-output
+          path: .
+      - name: Cache built backend libraries
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            backend/.gradle
+            backend/**/build
+          key: ${{ needs.check_cache.outputs.cache-key }}
