@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
-type ManagementContext = 'case' | 'independent' | 'buildingBlock';
+interface BuildingBlockManagementParams {
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
+}
 
-export {ManagementContext};
+export {BuildingBlockManagementParams};

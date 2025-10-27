@@ -19,6 +19,7 @@ import {Injectable, Signal, signal} from '@angular/core';
 import {BaseApiService, ConfigService, ManagementContext} from '@valtimo/shared';
 import {BehaviorSubject, combineLatest, Observable, of, switchMap} from 'rxjs';
 import {toObservable} from '@angular/core/rxjs-interop';
+import {ProcessDefinition} from '@valtimo/process';
 
 import {
   PROCESS_MANAGEMENT_ENDPOINTS,
@@ -113,6 +114,18 @@ export class ProcessManagementService extends BaseApiService {
     return this.httpClient.get<ProcessDefinitionResult>(
       this.getApiUrl(
         `${PROCESS_MANAGEMENT_ENDPOINTS[this._$context()]}/${caseDefinitionKey}/version/${caseDefinitionVersionTag}/process-definition/key/${processDefinitionKey}`
+      )
+    );
+  }
+
+  public getBuildingBlockProcessDefinition(
+    key: string,
+    versionTag: string,
+    processDefinitionKey: string
+  ): Observable<ProcessDefinition> {
+    return this.httpClient.get<ProcessDefinition>(
+      this.getApiUrl(
+        `management/v1/building-block/${key}/version/${versionTag}/process-definition/${processDefinitionKey}`
       )
     );
   }

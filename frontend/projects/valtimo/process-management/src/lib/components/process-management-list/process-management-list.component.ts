@@ -81,11 +81,7 @@ export class ProcessManagementListComponent {
     this.context$,
   ]).pipe(
     switchMap(([params, context]) => {
-      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      );
+      return this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context);
     })
   );
 

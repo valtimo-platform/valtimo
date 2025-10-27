@@ -28,6 +28,7 @@ import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResourc
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
+import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -120,9 +121,11 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockProcessResource::class)
     fun buildingBlockProcessResource(
         buildingBlockProcessService: BuildingBlockProcessService,
+        operatonProcessService: OperatonProcessService
     ): BuildingBlockProcessResource {
         return BuildingBlockProcessResource(
-            buildingBlockProcessService
+            buildingBlockProcessService,
+            operatonProcessService
         )
     }
 }

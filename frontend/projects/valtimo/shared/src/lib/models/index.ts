@@ -37,4 +37,5 @@ export * from './global-configuration.model';
 export * from './case-management.model';
 export * from './modal.model';
 export * from './condition.model';
-export * from './display-type.model'
+export * from './display-type.model';
+export * from './building-block-management.model';

@@ -36,8 +36,10 @@ import {
   RenderInPageHeaderDirective,
 } from '@valtimo/components';
 import {
+  BuildingBlockManagementParams,
   CaseManagementParams,
   EditPermissionsService,
+  getBuildingBlockManagementRouteParams,
   getCaseManagementRouteParams,
   getCaseManagementRouteParamsAndContext,
   GlobalNotificationService,
@@ -165,7 +167,7 @@ export class ProcessManagementBuilderComponent
       distinctUntilChanged((previous, current) => isEqual(previous, current)),
       tap(selectedProcessDefinition => {
         this.loading$.next(true);
-        this.pageTitleService.setCustomPageTitle(selectedProcessDefinition.name);
+        this.pageTitleService.setCustomPageTitle(selectedProcessDefinition?.name || '-');
       }),
       switchMap(selectedProcessDefinition =>
         this.processService.getProcessDefinitionXml(selectedProcessDefinition.id)
@@ -197,22 +199,20 @@ export class ProcessManagementBuilderComponent
   public readonly context$ = getContextObservable(this.route);
 
   public readonly managementParams$ = this.context$.pipe(
-    filter(context => context === 'case'),
-    switchMap(() => getCaseManagementRouteParams(this.route))
+    filter(context => context === 'case' || context === 'buildingBlock'),
+    switchMap(context =>
+      context === 'case'
+        ? getCaseManagementRouteParams(this.route)
+        : getBuildingBlockManagementRouteParams(this.route)
+    )
   );
 
-  public readonly params$: Observable<any> | undefined = getCaseManagementRouteParams(this.route);
-
   public readonly hasEditPermissions$: Observable<boolean> = combineLatest([
-    this.params$,
+    this.managementParams$,
     this.context$,
   ]).pipe(
     switchMap(([params, context]) =>
-      this.editPermissionsService.hasPermissionsToEditBasedOnContext(
-        params?.caseDefinitionKey,
-        params?.caseDefinitionVersionTag,
-        context
-      )
+      this.editPermissionsService.hasPermissionsToEditBasedOnContext(params, context)
     )
   );
 
@@ -337,12 +337,14 @@ export class ProcessManagementBuilderComponent
         take(1),
         switchMap(([result, processLinks, selectedProcessDefinition, context, params]) => {
           if (context === 'case') {
+            const caseManagementParams = params as CaseManagementParams;
+
             return this.processLinkService.deployProcessWithProcessLinksForCase(
               processLinks as ProcessLinkCreateEvent[],
               selectedProcessDefinition.id,
               !isReadOnlyProcess ? (result?.xml ?? '') : null,
-              params?.caseDefinitionKey ?? '',
-              params?.caseDefinitionVersionTag ?? '',
+              caseManagementParams?.caseDefinitionKey ?? '',
+              caseManagementParams?.caseDefinitionVersionTag ?? '',
               this.canInitializeDocument$.getValue(),
               this.startableByUser$.getValue()
             );
@@ -388,21 +390,26 @@ export class ProcessManagementBuilderComponent
             processDefinitionId: '-',
           })) as ProcessLinkCreateEvent[];
 
-          return context === 'independent'
-            ? this.processLinkService.deployProcessWithProcessLinks(
+          switch (context) {
+            case 'independent':
+            case 'buildingBlock':
+              return this.processLinkService.deployProcessWithProcessLinks(
                 mappedProcessLinks,
                 null,
                 result.xml ?? ''
-              )
-            : this.processLinkService.deployProcessWithProcessLinksForCase(
+              );
+            case 'case':
+              const caseManagementParams = params as CaseManagementParams;
+              return this.processLinkService.deployProcessWithProcessLinksForCase(
                 mappedProcessLinks,
                 null,
                 result.xml ?? '',
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag,
+                caseManagementParams.caseDefinitionKey,
+                caseManagementParams.caseDefinitionVersionTag,
                 this.canInitializeDocument$.getValue(),
                 this.startableByUser$.getValue()
               );
+          }
         })
       )
       .subscribe({
@@ -767,24 +774,39 @@ export class ProcessManagementBuilderComponent
             return of(null);
           }
 
-          return context === 'case'
-            ? this.processManagementService.getProcessDefinitionForCase(
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag,
+          console.log('hi', context);
+
+          switch (context) {
+            case 'case':
+              const caseManagementParams = params as CaseManagementParams;
+              return this.processManagementService.getProcessDefinitionForCase(
+                caseManagementParams.caseDefinitionKey,
+                caseManagementParams.caseDefinitionVersionTag,
                 editParam
-              )
-            : this.processManagementService
+              );
+            case 'independent':
+              return this.processManagementService
                 .getUnlinkedProcessDefinitionsByKey(editParam)
                 .pipe(map(processDefinitionResults => processDefinitionResults[0]));
+            case 'buildingBlock':
+              const buildingBlockParams = params as BuildingBlockManagementParams;
+              return this.processManagementService
+                .getBuildingBlockProcessDefinition(
+                  buildingBlockParams.buildingBlockDefinitionKey,
+                  buildingBlockParams.buildingBlockDefinitionVersionTag,
+                  editParam
+                )
+                .pipe(map(res => ({processDefinition: res, processLinks: []})));
+          }
         }),
         tap(res => {
           if (res) {
-            this._selectedProcess$.next(res);
+            this._selectedProcess$.next(res.processDefinition);
             this.processManagementEditorService.setSelectedProcessDefinition(res.processDefinition);
             this.processManagementEditorService.setProcessLinksForSelectedDefinition(
               res.processLinks
             );
-            this.pageTitleService.setCustomPageTitle(res.processDefinition.name || '-');
+            this.pageTitleService.setCustomPageTitle(res.processDefinition?.name || '-');
           }
 
           this.initProcessDefinition();

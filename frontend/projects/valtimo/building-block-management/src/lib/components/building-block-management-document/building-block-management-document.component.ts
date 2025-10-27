@@ -89,7 +89,7 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
       downloadAnchorElement.setAttribute('href', dataString);
       downloadAnchorElement.setAttribute(
         'download',
-        `${this.buildingBlockManagementDetailService.buildingBlockDefinitionKey}-v${this.buildingBlockManagementDetailService.buildingBlockVersionTag}.json`
+        `${this.buildingBlockManagementDetailService.buildingBlockDefinitionKey}-v${this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag}.json`
       );
       downloadAnchorElement.click();
     });
@@ -103,7 +103,7 @@ export class BuildingBlockManagementDocumentComponent implements OnInit, OnDestr
     this.buildingBlockManagementApiService
       .updateBuildingBlockDocumentDefinition(
         this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
-        this.buildingBlockManagementDetailService.buildingBlockVersionTag,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
         JSON.parse(this._modifiedDefinition)
       )
       .subscribe(res => {

@@ -217,17 +217,24 @@ export class ProcessManagementEditorService implements OnDestroy {
           filter((params): params is [ManagementContext, CaseManagementParams] => params !== null)
         )
         .subscribe(([context, params]) => {
-          if (context === 'independent') {
-            this.formService
-              .getAllUnlinkedFormDefinitions()
-              .subscribe(options => this._formDefinitionOptions$.next(options));
-          } else {
-            this.formService
-              .getAllFormDefinitionsForCaseDefinition(
-                params.caseDefinitionKey,
-                params.caseDefinitionVersionTag
-              )
-              .subscribe(options => this._formDefinitionOptions$.next(options));
+          switch (context) {
+            case 'independent':
+              this.formService
+                .getAllUnlinkedFormDefinitions()
+                .subscribe(options => this._formDefinitionOptions$.next(options));
+              break;
+            case 'case':
+              this.formService
+                .getAllFormDefinitionsForCaseDefinition(
+                  params.caseDefinitionKey,
+                  params.caseDefinitionVersionTag
+                )
+                .subscribe(options => this._formDefinitionOptions$.next(options));
+              break;
+            case 'buildingBlock':
+              // to do
+              this._formDefinitionOptions$.next([]);
+              break;
           }
         })
     );

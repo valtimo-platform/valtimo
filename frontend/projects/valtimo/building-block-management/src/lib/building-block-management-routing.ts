@@ -32,7 +32,7 @@ const routes: Routes = [
     data: {title: 'buildingBlockManagement.title', roles: [ROLE_ADMIN]},
   },
   {
-    path: 'building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockVersionTag/:tabKey',
+    path: 'building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/:tabKey',
     component: BuildingBlockManagementDetailComponent,
     canActivate: [AuthGuardService],
     data: {
@@ -42,14 +42,14 @@ const routes: Routes = [
     },
   },
   {
-    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}/:processDefinitionId`,
+    path: `building-block-management/building-block/:buildingBlockDefinitionKey/version/:buildingBlockDefinitionVersionTag/${BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES}/:processDefinitionKey`,
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
     data: {
       title: 'Process details',
       roles: [ROLE_ADMIN],
       customPageTitle: true,
-      context: 'independent',
+      context: 'buildingBlock',
     },
   },
 ];
