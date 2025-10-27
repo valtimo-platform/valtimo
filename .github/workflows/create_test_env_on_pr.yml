@@ -102,6 +102,7 @@ jobs:
       - name: Re-tag a backend image to re-use it in the test environment
         env:
           IMAGE: ghcr.io/${{ github.repository }}/gzac-backend
+          TEST_ENVIRONMENT_NAME: ${{ needs.determine_test_env.outputs.name  }}
           IMAGE_TAG: ${{ steps.backend_hash.outputs.image_tag }}
           CONTENTS_HASH: ${{ steps.backend_hash.outputs.hash }}
           BASE_COMMIT_SHA: ${{ github.event.pull_request.base.sha }}
@@ -109,7 +110,7 @@ jobs:
         run: |
           if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
             echo "Found ${IMAGE}:${IMAGE_TAG}"
-            TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${SOURCE_SHA}-${{ github.run_number }}"
+            TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${BASE_COMMIT_SHA}-${{ github.run_number }}"
             docker buildx imagetools create \
               --tag "${IMAGE}:${TARGET_TAG}" \
               "${IMAGE}:${IMAGE_TAG}"
@@ -171,6 +172,7 @@ jobs:
       - name: Re-tag a frontend image to re-use it in the test environment
         env:
           IMAGE: ghcr.io/${{ github.repository }}/gzac-frontend
+          TEST_ENVIRONMENT_NAME: ${{ needs.determine_test_env.outputs.name  }}
           IMAGE_TAG: ${{ steps.frontend_hash.outputs.image_tag }}
           CONTENTS_HASH: ${{ steps.frontend_hash.outputs.hash }}
           BASE_COMMIT_SHA: ${{ github.event.pull_request.base.sha }}
@@ -178,7 +180,7 @@ jobs:
         run: |
           if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
             echo "Found ${IMAGE}:${IMAGE_TAG}"
-            TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${SOURCE_SHA}-${{ github.run_number }}"
+            TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${BASE_COMMIT_SHA}-${{ github.run_number }}"
             docker buildx imagetools create \
               --tag "${IMAGE}:${TARGET_TAG}" \
               "${IMAGE}:${IMAGE_TAG}"
