@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-import {ProcessDocumentDefinition} from '@valtimo/document';
-import {ProcessLink} from '@valtimo/process-link';
-import {ProcessDefinitionWithPropertiesDto} from '@valtimo/shared';
+package com.ritense.buildingblock.web.rest.dto
 
-interface ProcessDefinitionResult {
-  bpmn20Xml: string;
-  processCaseLink?: ProcessDocumentDefinition;
-  processDefinition: ProcessDefinitionWithPropertiesDto;
-  processLinks: ProcessLink[];
-}
+import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
+import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 
-export {ProcessDefinitionResult};
+data class BuildingBlockProcessDefinitionWithLinksDto(
+    val processDefinition: ProcessDefinitionWithPropertiesDto,
+    val processLinks: List<ProcessLinkResponseDto>,
+    val bpmn20Xml: String
+)

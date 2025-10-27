@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-10-23 16:21:15.
+// Generated using typescript-generator version 3.2.1263 on 2025-10-27 12:16:07.
 
 export interface BuildingBlockDefinitionDto {
     key: string;
@@ -19,6 +19,12 @@ export interface BuildingBlockProcessDefinitionDto {
     name: string | null;
     versionTag: string | null;
     main: boolean;
+}
+
+export interface BuildingBlockProcessDefinitionWithLinksDto {
+    processDefinition: ProcessDefinitionWithPropertiesDto;
+    processLinks: ProcessLinkResponseDto[];
+    bpmn20Xml: string;
 }
 
 export interface CreateBuildingBlockDefinitionDto {
@@ -630,23 +636,23 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
-    processDefinitionId: string;
-    processLinkType: string;
     activityId: string;
+    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processLinkType: string;
 }
 
 export interface ProcessLinkExportResponseDto {
-    processLinkType: string;
     activityId: string;
     activityType: ActivityTypeWithEventName;
+    processLinkType: string;
 }
 
 export interface ProcessLinkResponseDto {
-    processDefinitionId: string;
-    processLinkType: string;
     activityId: string;
+    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
+    processLinkType: string;
     id: string;
 }
 
@@ -825,10 +831,10 @@ export interface URI extends Comparable<URI>, Serializable {
 }
 
 export interface RelatedFile {
-    fileId: string;
-    sizeInBytes: number;
     createdBy: string;
     createdOn: DateAsString;
+    fileId: string;
+    sizeInBytes: number;
     fileName: string;
 }
 
@@ -845,8 +851,8 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    processDefinitionId: string;
     activityId: string;
+    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
 }
 
@@ -930,7 +936,7 @@ export interface FormField {
     id: string;
     type: FormType;
     /**
-     * @deprecated
+     * @deprecated since 1.0
      */
     defaultValue: any;
 }
@@ -958,21 +964,21 @@ export interface HistoricActivityInstance {
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
-    startTime: DateAsString;
     endTime: DateAsString;
     taskId: string;
-    processDefinitionId: string;
+    startTime: DateAsString;
     activityId: string;
+    processDefinitionId: string;
+    activityType: string;
     assignee: string;
     tenantId: string;
-    executionId: string;
-    canceled: boolean;
-    removalTime: DateAsString;
     processInstanceId: string;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
-    activityType: string;
+    executionId: string;
+    canceled: boolean;
+    removalTime: DateAsString;
     id: string;
 }
 

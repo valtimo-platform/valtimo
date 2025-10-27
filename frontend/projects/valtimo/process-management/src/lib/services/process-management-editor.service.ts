@@ -15,7 +15,6 @@
  */
 
 import {Injectable, OnDestroy} from '@angular/core';
-import {ProcessDefinition} from '@valtimo/process';
 import {BehaviorSubject, filter, Observable, Subject, Subscription} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';
 import {isEqual} from 'lodash';
@@ -27,22 +26,27 @@ import {
   ProcessLinkUpdateEvent,
 } from '@valtimo/process-link';
 import {OpenProcessLinkModalEvent} from '../models';
-import {CaseManagementParams, ManagementContext} from '@valtimo/shared';
+import {
+  BuildingBlockManagementParams,
+  CaseManagementParams,
+  ManagementContext,
+  ProcessDefinitionWithPropertiesDto,
+} from '@valtimo/shared';
 import {FormDefinitionOption, FormService} from '@valtimo/form';
 
 @Injectable()
 export class ProcessManagementEditorService implements OnDestroy {
   private readonly _selectionProcessDefinitionSubject$ =
-    new BehaviorSubject<ProcessDefinition | null>(null);
+    new BehaviorSubject<ProcessDefinitionWithPropertiesDto | null>(null);
 
-  public get selectionProcessDefinition$(): Observable<ProcessDefinition> {
+  public get selectionProcessDefinition$(): Observable<ProcessDefinitionWithPropertiesDto> {
     return this._selectionProcessDefinitionSubject$.pipe(
       filter(selectedProcessDefinition => !!selectedProcessDefinition?.id),
       distinctUntilChanged((previous, current) => isEqual(previous, current))
     );
   }
 
-  public get selectionProcessDefinition(): ProcessDefinition {
+  public get selectionProcessDefinition(): ProcessDefinitionWithPropertiesDto {
     return this._selectionProcessDefinitionSubject$.getValue();
   }
 
@@ -66,12 +70,12 @@ export class ProcessManagementEditorService implements OnDestroy {
     return this._openProcessLinkModalEvents$.asObservable();
   }
 
-  public setSelectedProcessDefinition(definition: ProcessDefinition): void {
+  public setSelectedProcessDefinition(definition: ProcessDefinitionWithPropertiesDto): void {
     this._selectionProcessDefinitionSubject$.next(definition);
   }
 
-  private readonly _caseManagementRouteParams$ = new BehaviorSubject<
-    [ManagementContext, CaseManagementParams] | null
+  private readonly _managementRouteParams$ = new BehaviorSubject<
+    [ManagementContext, CaseManagementParams | BuildingBlockManagementParams] | null
   >(null);
 
   private readonly _formDefinitionOptions$ = new BehaviorSubject<FormDefinitionOption[]>([]);
@@ -98,11 +102,11 @@ export class ProcessManagementEditorService implements OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  public setCaseManagementRouteParams(
+  public setManagementRouteParams(
     context: ManagementContext,
-    params: CaseManagementParams
+    params: CaseManagementParams | BuildingBlockManagementParams
   ): void {
-    this._caseManagementRouteParams$.next([context, params]);
+    this._managementRouteParams$.next([context, params]);
   }
 
   public sendOpenProcessLinkModalEvent(
@@ -212,7 +216,7 @@ export class ProcessManagementEditorService implements OnDestroy {
 
   private openFormDefinitionOptionsSubscription(): void {
     this._subscriptions.add(
-      this._caseManagementRouteParams$
+      this._managementRouteParams$
         .pipe(
           filter((params): params is [ManagementContext, CaseManagementParams] => params !== null)
         )

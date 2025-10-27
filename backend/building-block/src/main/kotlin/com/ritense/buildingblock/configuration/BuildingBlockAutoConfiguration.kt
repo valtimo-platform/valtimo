@@ -27,6 +27,8 @@ import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.RepositoryService
@@ -74,9 +76,18 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockProcessService::class)
     fun buildingBlockProcessService(
         repositoryService: RepositoryService,
-        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        operatonProcessService: OperatonProcessService,
+        processLinkService: ProcessLinkService,
+        processLinkMappers: List<ProcessLinkMapper>
     ): BuildingBlockProcessService {
-        return BuildingBlockProcessService(repositoryService, processDefinitionBuildingBlockDefinitionRepository)
+        return BuildingBlockProcessService(
+            repositoryService,
+            processDefinitionBuildingBlockDefinitionRepository,
+            operatonProcessService,
+            processLinkService,
+            processLinkMappers
+        )
     }
 
     @Bean
@@ -121,11 +132,9 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockProcessResource::class)
     fun buildingBlockProcessResource(
         buildingBlockProcessService: BuildingBlockProcessService,
-        operatonProcessService: OperatonProcessService
     ): BuildingBlockProcessResource {
         return BuildingBlockProcessResource(
             buildingBlockProcessService,
-            operatonProcessService
         )
     }
 }
