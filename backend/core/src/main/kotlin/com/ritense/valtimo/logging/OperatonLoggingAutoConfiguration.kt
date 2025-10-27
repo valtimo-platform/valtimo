@@ -44,22 +44,22 @@ class OperatonLoggingAutoConfiguration {
         matchIfMissing = true
     )
     fun jobExecutor(
-        @Qualifier(JobConfiguration.CAMUNDA_TASK_EXECUTOR_QUALIFIER) taskExecutor: TaskExecutor?,
+        @Qualifier(JobConfiguration.OPERATON_TASK_EXECUTOR_QUALIFIER) taskExecutor: TaskExecutor?,
         properties: OperatonBpmProperties
     ): JobExecutor {
         val springJobExecutor = LoggingSpringJobExecutor()
         springJobExecutor.taskExecutor = taskExecutor
         springJobExecutor.rejectedJobsHandler = NotifyAcquisitionRejectedJobsHandler()
 
-        val jobExecution = properties.getJobExecution();
-        Optional.ofNullable(jobExecution.lockTimeInMillis).ifPresent(springJobExecutor::setLockTimeInMillis);
-        Optional.ofNullable(jobExecution.maxJobsPerAcquisition).ifPresent(springJobExecutor::setMaxJobsPerAcquisition);
-        Optional.ofNullable(jobExecution.waitTimeInMillis).ifPresent(springJobExecutor::setWaitTimeInMillis);
-        Optional.ofNullable(jobExecution.maxWait).ifPresent(springJobExecutor::setMaxWait);
-        Optional.ofNullable(jobExecution.backoffTimeInMillis).ifPresent(springJobExecutor::setBackoffTimeInMillis);
-        Optional.ofNullable(jobExecution.maxBackoff).ifPresent(springJobExecutor::setMaxBackoff);
-        Optional.ofNullable(jobExecution.backoffDecreaseThreshold).ifPresent(springJobExecutor::setBackoffDecreaseThreshold);
-        Optional.ofNullable(jobExecution.waitIncreaseFactor).ifPresent(springJobExecutor::setWaitIncreaseFactor);
+        val jobExecution = properties.getJobExecution()
+        Optional.ofNullable(jobExecution.lockTimeInMillis).ifPresent(springJobExecutor::setLockTimeInMillis)
+        Optional.ofNullable(jobExecution.maxJobsPerAcquisition).ifPresent(springJobExecutor::setMaxJobsPerAcquisition)
+        Optional.ofNullable(jobExecution.waitTimeInMillis).ifPresent(springJobExecutor::setWaitTimeInMillis)
+        Optional.ofNullable(jobExecution.maxWait).ifPresent(springJobExecutor::setMaxWait)
+        Optional.ofNullable(jobExecution.backoffTimeInMillis).ifPresent(springJobExecutor::setBackoffTimeInMillis)
+        Optional.ofNullable(jobExecution.maxBackoff).ifPresent(springJobExecutor::setMaxBackoff)
+        Optional.ofNullable(jobExecution.backoffDecreaseThreshold).ifPresent(springJobExecutor::setBackoffDecreaseThreshold)
+        Optional.ofNullable(jobExecution.waitIncreaseFactor).ifPresent(springJobExecutor::setWaitIncreaseFactor)
 
         return springJobExecutor
     }
