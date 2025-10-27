@@ -18,10 +18,9 @@ package com.ritense.buildingblock.web.rest
 
 import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
+import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
-import com.ritense.valtimo.operaton.dto.OperatonProcessDefinitionDto
-import com.ritense.valtimo.service.OperatonProcessService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -33,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/management/v1/building-block", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockProcessResource(
     private val buildingBlockProcessService: BuildingBlockProcessService,
-    private val operatonProcessService: OperatonProcessService
 ) {
     @GetMapping("/{key}/version/{versionTag}/process-definition")
     fun getProcessDefinitionsForBuildingBlock(
@@ -45,23 +43,17 @@ class BuildingBlockProcessResource(
     }
 
     @GetMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionKey}")
-    fun getProcessDefinitionForBuildingBlock(
+    fun getProcessDefinitionWithLinksForBuildingBlock(
         @PathVariable key: String,
         @PathVariable versionTag: String,
         @PathVariable processDefinitionKey: String
-    ): ResponseEntity<OperatonProcessDefinitionDto> {
-        val processDefinition = operatonProcessService.getDefinitionByKeyAndBuildingBlockDefinition(
+    ): ResponseEntity<BuildingBlockProcessDefinitionWithLinksDto> {
+        val dto = buildingBlockProcessService.getProcessDefinitionWithLinks(
             key,
             versionTag,
             processDefinitionKey
         )
 
-        return if (processDefinition != null) {
-            ResponseEntity.ok(
-                OperatonProcessDefinitionDto.of(processDefinition)
-            )
-        } else {
-            ResponseEntity.notFound().build()
-        }
+        return dto?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 }
