@@ -41,23 +41,19 @@ export class FailedNotificationDetailComponent {
   @Input() notification: FailedNotification | null = null;
   @Input() retryInProgress = false;
 
-  @Output() readonly closeModal = new EventEmitter<void>();
-  @Output() readonly retry = new EventEmitter<void>();
+  @Output() readonly closeModalEvent = new EventEmitter<void>();
+  @Output() readonly retryEvent = new EventEmitter<void>();
 
   public onClose(): void {
-    this.closeModal.emit();
+    this.closeModalEvent.emit();
   }
 
   public onRetry(): void {
-    if (!this.retryInProgress) {
-      this.retry.emit();
-    }
+    if (!this.retryInProgress) this.retryEvent.emit();
   }
 
   public get formattedPayload(): string {
-    if (!this.notification?.payload) {
-      return '';
-    }
+    if (!this.notification?.payload) return '';
 
     try {
       return JSON.stringify(JSON.parse(this.notification.payload), null, 2);
@@ -67,9 +63,7 @@ export class FailedNotificationDetailComponent {
   }
 
   public formatDateValue(value?: string | null): string {
-    if (!value) {
-      return '-';
-    }
+    if (!value) return '-';
 
     try {
       return `${moment(value, 'DD-MM-YYYY, HH:mm:ss').locale(localStorage.getItem('langKey') ?? 'nl')}`;

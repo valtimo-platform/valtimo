@@ -40,20 +40,20 @@ import {ToastrService} from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationsPageComponent {
-  private readonly defaultSort = 'receivedAt,desc';
+  private readonly _defaultSort = 'receivedAt,desc';
 
   public readonly loading$ = new BehaviorSubject<boolean>(false);
   public readonly pagination$ = new BehaviorSubject<Pagination>({...DEFAULT_PAGINATION});
   public readonly retryInProgress$ = new BehaviorSubject<boolean>(false);
   public readonly selectedNotification$ = new BehaviorSubject<FailedNotification | null>(null);
 
-  private readonly pageRequest$ = new BehaviorSubject<FailedNotificationPageRequest>({
+  private readonly _pageRequest$ = new BehaviorSubject<FailedNotificationPageRequest>({
     page: 0,
     size: DEFAULT_PAGINATION.size,
-    sort: this.defaultSort,
+    sort: this._defaultSort,
   });
 
-  public readonly notifications$: Observable<FailedNotification[]> = this.pageRequest$.pipe(
+  public readonly notifications$: Observable<FailedNotification[]> = this._pageRequest$.pipe(
     tap(() => this.loading$.next(true)),
     switchMap(request =>
       this.failedNotificationsService.getFailedNotifications(request).pipe(
@@ -102,18 +102,18 @@ export class FailedNotificationsPageComponent {
   ) {}
 
   public onPaginationClicked(page: number): void {
-    const current = this.pageRequest$.getValue();
-    this.pageRequest$.next({...current, page: Math.max(0, page - 1)});
+    const current = this._pageRequest$.getValue();
+    this._pageRequest$.next({...current, page: Math.max(0, page - 1)});
   }
 
   public onPaginationSet(size: number): void {
-    const current = this.pageRequest$.getValue();
+    const current = this._pageRequest$.getValue();
     const updated: FailedNotificationPageRequest = {
       ...current,
       size,
       page: 0,
     };
-    this.pageRequest$.next(updated);
+    this._pageRequest$.next(updated);
   }
 
   public onRowClicked(row: FailedNotification & {ctrlClick: boolean; tags: CarbonTag[]}): void {
@@ -127,10 +127,7 @@ export class FailedNotificationsPageComponent {
 
   public onRetry(): void {
     const notification = this.selectedNotification$.getValue();
-
-    if (!notification) {
-      return;
-    }
+    if (!notification) return;
 
     this.retryInProgress$.next(true);
 
@@ -142,7 +139,7 @@ export class FailedNotificationsPageComponent {
           const message = this.translateService.instant('zgw.notifications.failed.retrySuccess');
           this.toastrService.success(message);
           this.selectedNotification$.next(null);
-          this.pageRequest$.next({...this.pageRequest$.getValue()});
+          this._pageRequest$.next({...this._pageRequest$.getValue()});
         },
         error: () => {
           const message = this.translateService.instant('zgw.notifications.failed.retryError');

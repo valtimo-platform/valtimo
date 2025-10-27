@@ -20,7 +20,7 @@
     [open]="(selectedNotification$ | async) !== null"
     [notification]="selectedNotification$ | async"
     [retryInProgress]="retryInProgress$ | async"
-    (closeModal)="onCloseModal()"
-    (retry)="onRetry()"
+    (closeModalEvent)="onCloseModal()"
+    (retryEvent)="onRetry()"
   ></valtimo-notificaties-api-failed-notification-detail>
 </div>
