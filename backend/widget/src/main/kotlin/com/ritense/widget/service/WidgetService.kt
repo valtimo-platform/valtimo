@@ -18,16 +18,14 @@ package com.ritense.widget.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_DATA_AGGREGATE_KEY
-import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.widget.WidgetDataProvider
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.repository.WidgetRepository
+import java.util.UUID
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
 
 @SkipComponentScan
@@ -58,14 +56,22 @@ class WidgetService(
 
     fun filterWidgetsOnDisplayConditions(widgets: List<Widget>, properties: Map<String, Any>): List<Widget> {
         return widgets.filter { widget ->
+            val widgetConditionValuePaths = mutableSetOf<String>()
+            widgets.forEach { widget ->
+                widget.displayConditions.forEach {
+                    it.isValid { valuePath -> widgetConditionValuePaths.add(valuePath) }
+                }
+            }
+            val resolvedValuePaths = valueResolverService.resolveValues(
+                properties + mapOf(
+                    WIDGET_KEY to widget.key,
+                ),
+                widgetConditionValuePaths
+            )
+
             widget.displayConditions.all {
                 it.isValid { valuePath: String ->
-                    valueResolverService.resolveValues(
-                        properties + mapOf(
-                            WIDGET_KEY to widget.key,
-                        ),
-                        listOf(valuePath)
-                    )[valuePath]
+                    resolvedValuePaths[valuePath]
                 }
             }
         }
