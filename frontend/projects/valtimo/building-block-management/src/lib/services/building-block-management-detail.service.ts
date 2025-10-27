@@ -60,17 +60,17 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
     );
   }
 
-  private _buildingBlockVersionTag!: string;
-  public get buildingBlockVersionTag(): string {
-    return this._buildingBlockVersionTag;
+  private _buildingBlockDefinitionVersionTag!: string;
+  public get buildingBlockDefinitionVersionTag(): string {
+    return this._buildingBlockDefinitionVersionTag;
   }
-  public get buildingBlockVersionTag$(): Observable<string> {
+  public get buildingBlockDefinitionVersionTag$(): Observable<string> {
     return this._route$.pipe(
       switchMap(route =>
         route.paramMap.pipe(
-          map(params => params.get('buildingBlockVersionTag')!),
+          map(params => params.get('buildingBlockDefinitionVersionTag')!),
           filter(version => !!version),
-          tap(version => (this._buildingBlockVersionTag = version))
+          tap(version => (this._buildingBlockDefinitionVersionTag = version))
         )
       )
     );
@@ -105,7 +105,7 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
     this._subscriptions.add(
       combineLatest([
         this.buildingBlockDefinitionKey$,
-        this.buildingBlockVersionTag$,
+        this.buildingBlockDefinitionVersionTag$,
         this._reload$,
       ])
         .pipe(

@@ -35,6 +35,7 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.event.ProcessDefinitionDeleted;
@@ -682,6 +683,22 @@ public class OperatonProcessService {
         } else {
             return null;
         }
+    }
+
+    public OperatonProcessDefinition getDefinitionByKeyAndBuildingBlockDefinition(
+        String buildingBlockDefinitionKey,
+        String buildingBlockDefinitionVersionTag,
+        String processDefinitionKey
+    ) {
+        BuildingBlockDefinitionId buildingBlockDefinitionId = new BuildingBlockDefinitionId(buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag);
+        String versionTag = OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId;
+
+        return AuthorizationContext.runWithoutAuthorization(() ->
+            operatonRepositoryService.findProcessDefinition(
+                byVersionTag(versionTag)
+                    .and(byKey(processDefinitionKey))
+            )
+        );
     }
 
     private void setProcessesVersionTag(BpmnModelInstance bpmnModel, CaseDefinitionId caseDefinitionId) {

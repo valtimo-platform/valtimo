@@ -95,7 +95,7 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
     this._subscriptions.add(
       combineLatest([
         this.buildingBlockManagementDetailService.buildingBlockDefinitionKey$,
-        this.buildingBlockManagementDetailService.buildingBlockVersionTag$,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag$,
       ])
         .pipe(
           distinctUntilChanged((a, b) => isEqual(a, b)),
@@ -125,9 +125,9 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
       'building-block',
       this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
       'version',
-      this.buildingBlockManagementDetailService.buildingBlockVersionTag,
+      this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
       BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES,
-      processDefinition.id,
+      processDefinition.key,
     ]);
   }
 
