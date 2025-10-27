@@ -1893,7 +1893,7 @@
       "startUpload": "Start upload",
       "progressBar": {
         "active": "This may take a while",
-        "error": "Unable to import IKO definition. Nothing was imported due to an error at our end. Please try again later.If the issue keeps happening, contact support.",
+        "error": "Unable to import IKO definition. Nothing was imported due to an error at our end. Please try again later. If the issue keeps happening, contact support.",
         "finished": "IKO definition successfully imported",
         "label": "Importing IKO definition"
       },

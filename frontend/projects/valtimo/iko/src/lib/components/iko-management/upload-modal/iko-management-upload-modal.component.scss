@@ -15,6 +15,10 @@
  */
 @use '@carbon/colors';
 
+.valtimo-definition-uploader__content form {
+  width: 100%;
+}
+
 .valtimo-definition-uploader {
   &__content,
   &__content form {
@@ -84,5 +88,11 @@
 
   ::ng-deep .cds--checkbox-label-text {
     color: colors.$black-100;
+  }
+
+  ::ng-deep cds-inline-notification,
+  ::ng-deep .cds--inline-notification {
+    width: 100% !important;
+    max-width: none !important;
   }
 }
