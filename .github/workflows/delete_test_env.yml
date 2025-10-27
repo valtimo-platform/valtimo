@@ -1,7 +1,7 @@
 name: "Delete test environment"
 on:
   pull_request:
-    branches: ["feature/create-test-env-on-pr"]
+    branches: ["next-minor"]
     types:
       - closed
   workflow_dispatch:

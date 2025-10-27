@@ -2,14 +2,15 @@ name: "Run backend CI"
 on:
   push:
     branches:
-      - feature/create-test-env-on-pr
+      - next-minor
     paths:
+      - .github/workflows/backend_*.yml
       - backend/**
   pull_request:
     branches:
-      - feature/create-test-env-on-pr
-      - .github/workflows/backend_*.yml
+      - next-minor
     paths:
+      - .github/workflows/backend_*.yml
       - backend/**
 
 permissions:

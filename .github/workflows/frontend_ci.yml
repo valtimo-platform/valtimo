@@ -2,12 +2,13 @@ name: "Run frontend CI"
 on:
   push:
     branches:
-      - feature/create-test-env-on-pr
+      - next-minor
     paths:
       - frontend/**
+      - .github/workflows/frontend_*.yml
   pull_request:
     branches:
-      - feature/create-test-env-on-pr
+      - next-minor
     paths:
       - .github/workflows/frontend_*.yml
       - frontend/**

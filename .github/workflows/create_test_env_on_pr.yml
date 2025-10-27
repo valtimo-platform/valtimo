@@ -2,7 +2,7 @@ name: "Create test environment for each new PR"
 on:
   pull_request:
     branches:
-      - feature/create-test-env-on-pr
+      - next-minor
     types:
       - opened
       - reopened
@@ -241,4 +241,5 @@ jobs:
           token: ${{ steps.generate_token.outputs.token }}
           body: |
             Will create a test environment at https://${{ needs.determine_test_env.outputs.name }}.product-development.test.k8s.ritense.com. It will be available a few minutes after images for this PR have been built and deployed.
+            If you make additional commits in this PR, you must approve deploying the test environment here again before the changes are reflected.
             Closing or merging this PR will automatically delete the test environment.
