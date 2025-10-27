@@ -21,19 +21,22 @@ import com.ritense.document.service.impl.JsonSchemaDocumentDefinitionService
 import com.ritense.objectmanagement.service.ObjectManagementService
 import com.ritense.plugin.PluginFactory
 import com.ritense.plugin.service.PluginService
+import com.ritense.valtimo.service.ApplicationStateService
 
 class VerzoekPluginFactory(
     pluginService: PluginService,
     private val caseDefinitionService: CaseDefinitionService,
     private val documentDefinitionService: JsonSchemaDocumentDefinitionService,
-    private val objectManagementService: ObjectManagementService
+    private val objectManagementService: ObjectManagementService,
+    private val applicationStateService: ApplicationStateService,
 ) : PluginFactory<VerzoekPlugin>(pluginService) {
 
     override fun create(): VerzoekPlugin {
         return VerzoekPlugin(
             caseDefinitionService, documentDefinitionService,
             objectManagementService = objectManagementService,
-            pluginService
+            pluginService,
+            applicationStateService,
         )
     }
 }

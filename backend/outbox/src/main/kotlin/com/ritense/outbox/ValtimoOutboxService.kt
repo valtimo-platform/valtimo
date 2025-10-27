@@ -17,22 +17,30 @@
 package com.ritense.outbox
 
 import com.ritense.outbox.domain.BaseEvent
-import com.ritense.outbox.exception.OutboxTransactionReadOnlyException
 import com.ritense.outbox.repository.OutboxMessageRepository
 import io.cloudevents.core.provider.EventFormatProvider
 import io.cloudevents.jackson.JsonFormat
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
 import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.springframework.transaction.support.TransactionTemplate
 import java.util.UUID
 import java.util.function.Supplier
 import kotlin.text.Charsets.UTF_8
 
 open class ValtimoOutboxService(
     private val outboxMessageRepository: OutboxMessageRepository,
-    private val cloudEventFactory: CloudEventFactory
+    private val cloudEventFactory: CloudEventFactory,
+    transactionManager: PlatformTransactionManager,
 ) : OutboxService {
+
+    private val requiresNewTransactionTemplate = TransactionTemplate(transactionManager).apply {
+        propagationBehavior = TransactionDefinition.PROPAGATION_REQUIRES_NEW
+    }
 
     @Transactional(propagation = Propagation.MANDATORY)
     override fun send(eventSupplier: Supplier<BaseEvent>) {
@@ -61,12 +69,25 @@ open class ValtimoOutboxService(
     @Transactional(propagation = Propagation.MANDATORY)
     open fun send(message: String) {
         if (TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
-            throw OutboxTransactionReadOnlyException()
+            deferMessage(message)
+            return
         }
 
-        val outboxMessage = OutboxMessage(
-            message = message
-        )
+        persistMessage(message)
+    }
+
+    private fun deferMessage(message: String) {
+        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+            override fun beforeCommit(readOnly: Boolean) {
+                requiresNewTransactionTemplate.executeWithoutResult {
+                    persistMessage(message)
+                }
+            }
+        })
+    }
+
+    private fun persistMessage(message: String) {
+        val outboxMessage = OutboxMessage(message = message)
         logger.debug { "Saving OutboxMessage '${outboxMessage.id}'" }
         outboxMessageRepository.save(outboxMessage)
     }
