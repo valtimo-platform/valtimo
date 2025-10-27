@@ -20,6 +20,7 @@ import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.web.client.RestClientCustomizer
 import org.springframework.http.HttpRequest
+import org.springframework.http.MediaType
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.ClientHttpResponse
@@ -66,22 +67,80 @@ class LoggingRestClientCustomizer : RestClientCustomizer, ClientHttpRequestInter
         responseBody: ByteArray
     ): String {
         return """
-            Request:
-            HTTP Method = ${request.method}
-            Request URI = ${request.uri}
-            Headernames = ${request.headers.keys}
-            Body = ${String(requestBody)}
-            ---------------------------------------
-            Response:
-            Status = ${response.statusCode}
-            Headers = ${response.headers}
-            Content type = ${response.headers.contentType}
-            Body = ${String(responseBody)}
-        """.trimIndent()
+            |Request:
+            |HTTP Method = ${request.method}
+            |Request URI = ${request.uri}
+            |Header names = ${request.headers.keys}
+            |Body = ${getFormattedBody(requestBody, request.headers.contentType)}
+            |---------------------------------------
+            |Response:
+            |Status = ${response.statusCode}
+            |Headers = ${response.headers}
+            |Content type = ${response.headers.contentType}
+            |Body = ${getFormattedBody(responseBody, response.headers.contentType)}
+        |""".trimMargin()
+    }
+
+    private fun getFormattedBody(body: ByteArray, contentType: MediaType?): String {
+        val bodyString = String(body)
+        return if (isJsonContentType(contentType)) {
+            formatJson(bodyString)
+        } else {
+            bodyString
+        }
+    }
+
+    private fun isJsonContentType(contentType: MediaType?): Boolean {
+        return contentType?.includes(MediaType.APPLICATION_JSON) == true ||
+                contentType?.subtype?.contains("json", ignoreCase = true) == true
+    }
+
+    /**
+     * Formats a JSON string, into a human-readable, indented structure.
+     *
+     * @param json the raw JSON string to format (possibly incomplete or malformed)
+     * @return a best-effort pretty-printed version of the JSON string
+     */
+    private fun formatJson(json: String): String {
+        val sb = StringBuilder()
+        var indent = 0
+        var inQuotes = false
+
+        for (char in json) {
+            when (char) {
+                '"' -> {
+                    sb.append(char)
+                    inQuotes = !inQuotes
+                }
+                '{', '[' -> {
+                    sb.append(char)
+                    if (!inQuotes) {
+                        sb.append('\n')
+                        sb.append("  ".repeat(++indent))
+                    }
+                }
+                '}', ']' -> {
+                    if (!inQuotes) {
+                        sb.append('\n')
+                        sb.append("  ".repeat(--indent))
+                    }
+                    sb.append(char)
+                }
+                ',' -> {
+                    sb.append(char)
+                    if (!inQuotes) {
+                        sb.append('\n')
+                        sb.append("  ".repeat(indent))
+                    }
+                }
+                else -> sb.append(char)
+            }
+        }
+
+        return sb.toString()
     }
 
     companion object {
         val logger = KotlinLogging.logger {}
     }
-
 }
