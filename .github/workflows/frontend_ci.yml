@@ -1,0 +1,54 @@
+name: "Run frontend CI"
+on:
+  push:
+    branches:
+      - next-minor
+    paths:
+      - frontend/**
+      - .github/workflows/frontend_*.yml
+  pull_request:
+    branches:
+      - next-minor
+    paths:
+      - .github/workflows/frontend_*.yml
+      - frontend/**
+
+permissions:
+  actions: write
+  contents: read
+  packages: write
+
+jobs:
+  build_and_test_libraries:
+    name: Build and test libraries
+    uses: ./.github/workflows/frontend_build_test_libraries.yml
+    secrets: inherit
+
+  build_and_push_image:
+    name: Build and push image
+    needs: build_and_test_libraries
+    uses: "./.github/workflows/frontend_build_push_docker_image.yml"
+    secrets: inherit
+    with:
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libraries.outputs.build_artifact_name }}
+
+  # For pushes
+  publish_snapshot_to_s3:
+    if: ${{ github.event_name == 'push' }}
+    needs: [build_and_test_libraries]
+    uses: ./.github/workflows/frontend_publish_to_s3.yml
+    with:
+      publish_type: "snapshot"
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libraries.outputs.build_artifact_name }}
+    secrets: inherit
+
+  # For pull requests
+  update_test_env:
+    if: ${{ github.event_name == 'pull_request'}}
+    needs:
+      - build_and_push_image
+    uses: ./.github/workflows/tag_test_env.yml
+    secrets: inherit
+    with:
+      target: "gzac-frontend"
+      image_to_tag: ${{ needs.build_and_push_image.outputs.tagged_image }}
