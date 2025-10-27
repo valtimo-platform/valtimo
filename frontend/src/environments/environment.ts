@@ -142,15 +142,17 @@ export const environment: ValtimoConfig = {
             title: 'Notifications',
             sequence: 15,
           },
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 16},
+          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 17},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 18},
+          {link: ['/choice-fields'], title: 'Choice fields', sequence: 19},
+
+          {title: 'Valtimo test tools', textClass: 'text-dark font-weight-bold c-default', sequence: 100},
           {
             link: ['/notification-test'],
             title: 'Send notification',
-            sequence: 16,
+            sequence: 101,
           },
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 17},
-          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 18},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 19},
-          {link: ['/choice-fields'], title: 'Choice fields', sequence: 20},
         ],
       },
       {
