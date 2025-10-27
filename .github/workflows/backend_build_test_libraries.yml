@@ -198,6 +198,12 @@ jobs:
 
   cache-libraries-build:
     runs-on: ubuntu-latest
+    # Run if security-testing was either successful or skipped
+    if: >
+      always() &&
+      needs.unit-testing.result == 'success' &&
+      needs.integration-testing.result == 'success' &&
+      (needs.security-testing.result == 'success' || needs.security-testing.result == 'skipped')
     needs:
       - check_cache
       - unit-testing
