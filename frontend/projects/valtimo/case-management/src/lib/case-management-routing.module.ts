@@ -121,7 +121,8 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.PROCESSES}/create`,
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Create new Process',
       customPageTitle: false,
@@ -133,7 +134,8 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.PROCESSES}/:processDefinitionKey`,
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Process details',
       roles: [ROLE_ADMIN],
@@ -145,7 +147,8 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.DECISIONS}/:id`,
     component: DecisionModelerComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Process details',
       roles: [ROLE_ADMIN],

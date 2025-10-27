@@ -35,7 +35,8 @@ const routes: Routes = [
     path: 'cases/:caseDefinitionKey/document/:documentId/:tab',
     component: CaseDetailComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Case details',
       parentPath: 'cases/:caseDefinitionKey',
