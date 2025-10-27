@@ -72,7 +72,7 @@ export class FailedNotificationDetailComponent {
     }
 
     try {
-      return moment(value, 'DD-MM-YYYY, HH:mm:ss').locale(localStorage.getItem('langKey') ?? 'nl');
+      return `${moment(value, 'DD-MM-YYYY, HH:mm:ss').locale(localStorage.getItem('langKey') ?? 'nl')}`;
     } catch (error) {
       return value;
     }
