@@ -7,6 +7,10 @@ on:
         description: "The determined project version. Required for release-candidate, not for snapshot"
         required: false
         type: string
+      frontend_libraries_build_artifact_name:
+        required: true
+        description: Name of the frontend build artifact to download with 'download-artifact'
+        type: "string"
 
 defaults:
   run:
@@ -16,19 +20,18 @@ permissions:
   contents: read
 
 jobs:
-
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: 'Restore build artifact: dist'
+      - name: "Restore build artifact: dist"
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: ${{ inputs.frontend_libraries_build_artifact_name }}
           path: frontend/dist
 
-      - name: 'Publish all libs to NPM'
+      - name: "Publish all libs to NPM"
         env:
           NPM_JS_REPOSITORY_AUTH_TOKEN: ${{ secrets.NPM_JS_REPOSITORY_AUTH_TOKEN }}
           PROJECT_VERSION: ${{ inputs.project_version }}
