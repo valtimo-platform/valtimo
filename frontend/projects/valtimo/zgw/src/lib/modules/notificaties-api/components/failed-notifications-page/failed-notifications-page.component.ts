@@ -25,7 +25,7 @@ import {
   Pagination,
   ViewType,
 } from '@valtimo/components';
-import {BehaviorSubject, Observable, tap, switchMap, finalize, map} from 'rxjs';
+import {BehaviorSubject, finalize, map, Observable, switchMap, tap} from 'rxjs';
 import {FailedNotification, FailedNotificationPageRequest} from '../../models';
 import {FailedNotificationsService} from '../../services';
 import {FailedNotificationDetailComponent} from '../failed-notification-detail/failed-notification-detail.component';
@@ -36,12 +36,7 @@ import {ToastrService} from 'ngx-toastr';
   templateUrl: './failed-notifications-page.component.html',
   styleUrls: ['./failed-notifications-page.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    TranslateModule,
-    CarbonListModule,
-    FailedNotificationDetailComponent,
-  ],
+  imports: [CommonModule, TranslateModule, CarbonListModule, FailedNotificationDetailComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationsPageComponent {
@@ -83,11 +78,6 @@ export class FailedNotificationsPageComponent {
       viewType: ViewType.DATE_TIME,
     },
     {
-      key: 'idempotenceKey',
-      label: 'zgw.notifications.failed.columns.idempotenceKey',
-      viewType: ViewType.TEXT,
-    },
-    {
       key: 'pendingRetries',
       label: 'zgw.notifications.failed.columns.pendingRetries',
       viewType: ViewType.NUMBER,
@@ -126,9 +116,7 @@ export class FailedNotificationsPageComponent {
     this.pageRequest$.next(updated);
   }
 
-  public onRowClicked(
-    row: FailedNotification & {ctrlClick: boolean; tags: CarbonTag[]}
-  ): void {
+  public onRowClicked(row: FailedNotification & {ctrlClick: boolean; tags: CarbonTag[]}): void {
     const {ctrlClick: _ctrl, tags: _tags, ...notification} = row;
     this.selectedNotification$.next(notification);
   }
@@ -150,18 +138,16 @@ export class FailedNotificationsPageComponent {
       .retryFailedNotification(notification.id)
       .pipe(finalize(() => this.retryInProgress$.next(false)))
       .subscribe({
-      next: () => {
-        const message = this.translateService.instant(
-          'zgw.notifications.failed.retrySuccess'
-        );
-        this.toastrService.success(message);
-        this.selectedNotification$.next(null);
-        this.pageRequest$.next({...this.pageRequest$.getValue()});
-      },
-      error: () => {
-        const message = this.translateService.instant('zgw.notifications.failed.retryError');
-        this.toastrService.error(message);
-      },
+        next: () => {
+          const message = this.translateService.instant('zgw.notifications.failed.retrySuccess');
+          this.toastrService.success(message);
+          this.selectedNotification$.next(null);
+          this.pageRequest$.next({...this.pageRequest$.getValue()});
+        },
+        error: () => {
+          const message = this.translateService.instant('zgw.notifications.failed.retryError');
+          this.toastrService.error(message);
+        },
       });
   }
 }

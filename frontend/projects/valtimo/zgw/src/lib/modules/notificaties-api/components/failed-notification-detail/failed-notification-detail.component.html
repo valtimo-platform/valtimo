@@ -10,14 +10,6 @@
 
     <dl class="detail-metadata">
       <div>
-        <dt>{{ 'zgw.notifications.failed.detail.id' | translate }}</dt>
-        <dd>{{ notification?.id || '-' }}</dd>
-      </div>
-      <div>
-        <dt>{{ 'zgw.notifications.failed.detail.idempotenceKey' | translate }}</dt>
-        <dd>{{ notification?.idempotenceKey || '-' }}</dd>
-      </div>
-      <div>
         <dt>{{ 'zgw.notifications.failed.detail.status' | translate }}</dt>
         <dd>{{ notification?.status || '-' }}</dd>
       </div>
@@ -27,11 +19,11 @@
       </div>
       <div>
         <dt>{{ 'zgw.notifications.failed.detail.receivedAt' | translate }}</dt>
-        <dd>{{ notification?.receivedAt || '-' }}</dd>
+        <dd>{{ formatDateValue(notification?.receivedAt) }}</dd>
       </div>
       <div>
         <dt>{{ 'zgw.notifications.failed.detail.lastProcessedAt' | translate }}</dt>
-        <dd>{{ notification?.lastProcessedAt || '-' }}</dd>
+        <dd>{{ formatDateValue(notification?.lastProcessedAt) }}</dd>
       </div>
     </dl>
 

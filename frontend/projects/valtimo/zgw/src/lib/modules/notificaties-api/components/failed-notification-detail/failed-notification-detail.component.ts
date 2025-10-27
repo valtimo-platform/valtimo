@@ -17,16 +17,23 @@
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
-import {ModalModule} from 'carbon-components-angular';
+import {ButtonModule, ModalModule} from 'carbon-components-angular';
 import {ValtimoCdsModalDirectiveModule} from '@valtimo/components';
 import {FailedNotification} from '../../models';
+import moment from 'moment';
 
 @Component({
   selector: 'valtimo-notificaties-api-failed-notification-detail',
   templateUrl: './failed-notification-detail.component.html',
   styleUrls: ['./failed-notification-detail.component.scss'],
   standalone: true,
-  imports: [CommonModule, TranslateModule, ModalModule, ValtimoCdsModalDirectiveModule],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    ModalModule,
+    ButtonModule,
+    ValtimoCdsModalDirectiveModule,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationDetailComponent {
@@ -59,7 +66,15 @@ export class FailedNotificationDetailComponent {
     }
   }
 
-  public trackByMetadata(_: number, item: {label: string; value: string | number | null}) {
-    return item.label;
+  public formatDateValue(value?: string | null): string {
+    if (!value) {
+      return '-';
+    }
+
+    try {
+      return moment(value, 'DD-MM-YYYY, HH:mm:ss').locale(localStorage.getItem('langKey') ?? 'nl');
+    } catch (error) {
+      return value;
+    }
   }
 }

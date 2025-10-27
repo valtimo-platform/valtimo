@@ -24,15 +24,10 @@
   }
 
   dt {
-    margin: 0 0 4px;
     color: var(--cds-text-secondary);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
   }
 
   dd {
-    margin: 0;
     color: var(--cds-text-primary);
     word-break: break-word;
   }
@@ -43,18 +38,11 @@
   border-radius: 4px;
   padding: 16px;
   color: var(--cds-text-primary);
-  max-height: 300px;
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
 
   &--empty {
     color: var(--cds-text-disabled);
     font-style: italic;
   }
-}
-
-.detail-pre {
-  margin: 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: var(--cds-code-01-font-family, 'IBM Plex Mono', monospace);
 }
