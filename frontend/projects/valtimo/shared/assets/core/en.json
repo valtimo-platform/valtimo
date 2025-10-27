@@ -850,7 +850,8 @@
         "title": "Interactive table",
         "description": "Create an interactive table"
       },
-      "collection": {"title": "Collection", "description": "Create a collection"}
+      "collection": {"title": "Collection", "description": "Create a collection"},
+      "divider": {"title": "Divider"}
     },
     "width": {
       "description": "Select the desired width for the widget.",

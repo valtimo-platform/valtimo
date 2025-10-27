@@ -18,13 +18,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  EventEmitter,
   HostBinding,
   Inject,
   Input,
   OnDestroy,
   OnInit,
-  Output,
   signal,
   ViewEncapsulation,
   WritableSignal,
@@ -44,10 +42,10 @@ import {
 import {ButtonModule, InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
 import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
+import {IWidgetManagementService} from '../../../../interfaces';
 import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
-import {IWidgetManagementService} from '../../../../interfaces';
 
 @Component({
   selector: 'valtimo-widget-management-table',

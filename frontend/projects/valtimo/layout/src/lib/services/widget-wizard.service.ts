@@ -91,7 +91,7 @@ export class WidgetWizardService {
           disabled:
             (this.$editMode() && index === 0) ||
             (!this._$stepCompleteCondition()[steps[index - 1]] && index > 0),
-          complete: this._$stepCompleteCondition()[curr],
+          complete: this._$stepCompleteCondition()[curr] || this.$editMode(),
         },
       }),
       {} as Record<Partial<WidgetWizardStep>, {disabled: boolean; complete: boolean}>
@@ -134,14 +134,17 @@ export class WidgetWizardService {
       this.$widgetKey.set(null);
       this.$widgetActions.set(undefined);
       this.$editMode.set(false);
-      this.$widgetWizardSteps.set([
-        WidgetWizardStep.TYPE,
-        WidgetWizardStep.WIDTH,
-        WidgetWizardStep.STYLE,
-        WidgetWizardStep.CONTENT,
-        WidgetWizardStep.DISPLAY_CONDITIONS,
-      ]);
     }, CARBON_CONSTANTS.modalAnimationMs);
+  }
+
+  public resetWizardSteps(): void {
+    this.$widgetWizardSteps.set([
+      WidgetWizardStep.TYPE,
+      WidgetWizardStep.WIDTH,
+      WidgetWizardStep.STYLE,
+      WidgetWizardStep.CONTENT,
+      WidgetWizardStep.DISPLAY_CONDITIONS,
+    ]);
   }
 
   public setDefaultWidth(width: number | null): void {
