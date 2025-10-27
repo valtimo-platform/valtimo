@@ -16,6 +16,7 @@
 
 package com.ritense.case.service
 
+import com.ritense.case.domain.CaseDefinitionSettings
 import com.ritense.case.domain.CaseListColumn
 import com.ritense.case.repository.CaseDefinitionListColumnRepository
 import com.ritense.case.web.rest.dto.CaseListRowDto
@@ -52,7 +53,10 @@ class CaseInstanceService(
         val newPageable = mutatePageable(caseListColumns, pageable)
 
         return documentSearchService.search(caseDefinitionName, searchRequest, newPageable)
-            .map { document -> toCaseListRowDto(document, caseListColumns) }
+            .let {
+                val caseSettingsSupplier = lazySupplier { caseDefinitionService.getCaseSettings(caseDefinitionName) }
+                it.map { document -> toCaseListRowDto(document, caseListColumns, caseSettingsSupplier) }
+            }
     }
 
     private fun mutatePageable(caseListColumns: Collection<CaseListColumn>, pageable: Pageable): PageRequest {
@@ -65,7 +69,11 @@ class CaseInstanceService(
         return PageRequest.of(pageable.pageNumber, pageable.pageSize, newSort)
     }
 
-    private fun toCaseListRowDto(document: Document, caseListColumns: List<CaseListColumn>): CaseListRowDto {
+    private fun toCaseListRowDto(
+        document: Document,
+        caseListColumns: List<CaseListColumn>,
+        caseSettingsSupplier: () -> CaseDefinitionSettings
+    ): CaseListRowDto {
         val paths = caseListColumns.map { it.path }
         val resolvedValuesMap = valueResolverService.resolveValues(document.id().id.toString(), paths)
 
@@ -73,14 +81,16 @@ class CaseInstanceService(
             CaseListRowDto.CaseListItemDto(caseListColumn.id.key, resolvedValuesMap[caseListColumn.path])
         }.toMutableList()
 
-        if (items.none { it.key == "assigneeFullName" }) {
-            val caseSettings = caseDefinitionService.getCaseSettings(document.definitionId().name())
-            if (caseSettings.canHaveAssignee) {
-                items.add(CaseListRowDto.CaseListItemDto("assigneeFullName", document.assigneeFullName()))
-            }
+        if (items.none { it.key == "assigneeFullName"} && caseSettingsSupplier().canHaveAssignee) {
+            items.add(CaseListRowDto.CaseListItemDto("assigneeFullName", document.assigneeFullName()))
         }
 
         return CaseListRowDto(document.id().toString(), items)
     }
 
+    private fun <T> lazySupplier(delegate: () -> T) = object : () -> T {
+        private val value by lazy(delegate)
+
+        override fun invoke() = value
+    }
 }

@@ -94,10 +94,12 @@ class PluginService(
         return objectMapper
     }
 
+    @Transactional(readOnly = true)
     fun getPluginDefinitions(): List<PluginDefinition> {
         return pluginDefinitionRepository.findAllByOrderByTitleAsc()
     }
 
+    @Transactional(readOnly = true)
     fun getPluginConfigurations(
         pluginConfigurationSearchParameters: PluginConfigurationSearchParameters
     ): List<PluginConfiguration> {
@@ -278,6 +280,7 @@ class PluginService(
             ?: logger.warn { "Plugin configuration with Id: [$pluginConfigurationId] was not found." }
     }
 
+    @Transactional(readOnly = true)
     fun getPluginDefinitionActions(
         @LoggableResource(resourceType = PluginDefinition::class) pluginDefinitionKey: String,
         activityType: ActivityTypeWithEventName?
@@ -300,6 +303,7 @@ class PluginService(
     }
 
     @Deprecated("Marked for removal since 10.6.0", ReplaceWith("processLinkService.processLinkExists(i,j,k)"))
+    @Transactional(readOnly = true)
     fun processLinkExists(
         @LoggableResource(resourceType = PluginConfiguration::class) pluginConfigurationId: PluginConfigurationId,
         activityId: String,
@@ -314,6 +318,7 @@ class PluginService(
     }
 
     @Deprecated("Marked for removal since 10.6.0", ReplaceWith("processLinkService.getProcessLinks(i,j)"))
+    @Transactional(readOnly = true)
     fun getProcessLinks(
         @LoggableResource("com.ritense.valtimo.camunda.domain.CamundaProcessDefinition") processDefinitionId: String,
         activityId: String
@@ -656,6 +661,7 @@ class PluginService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun getPluginConfiguration(
         @LoggableResource(resourceType = PluginConfiguration::class) id: PluginConfigurationId
     ): PluginConfiguration {
@@ -683,11 +689,13 @@ class PluginService(
         }
     }
 
+    @Transactional(readOnly = true)
     fun <T> findPluginConfiguration(clazz: Class<T>, configurationFilter: (JsonNode) -> Boolean): PluginConfiguration? {
         return findPluginConfigurations(clazz, configurationFilter)
             .firstOrNull()
     }
 
+    @Transactional(readOnly = true)
     fun findPluginConfiguration(
         @LoggableResource(resourceType = PluginDefinition::class) pluginDefinitionKey: String,
         filter: (JsonNode) -> Boolean
@@ -696,6 +704,7 @@ class PluginService(
             .firstOrNull()
     }
 
+    @Transactional(readOnly = true)
     fun <T> findPluginConfigurations(clazz: Class<T>, filter: (JsonNode) -> Boolean = { true }): List<PluginConfiguration> {
         val annotation = clazz.getAnnotation(Plugin::class.java)
             ?: throw IllegalArgumentException("Requested plugin for class ${clazz.name}, but class is not annotated as plugin")
@@ -734,6 +743,7 @@ class PluginService(
         return this
     }
 
+    @Transactional(readOnly = true)
     fun getPluginDefinitionActionsByActivityType(activityType: String): List<PluginActionDefinition> {
         return pluginActionDefinitionRepository.findByActivityTypes(ActivityTypeWithEventName.fromValue(activityType))
     }

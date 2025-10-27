@@ -145,6 +145,7 @@ public class JsonSchemaDocumentService implements DocumentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<JsonSchemaDocument> findBy(
         @LoggableResource(resourceType = JsonSchemaDocument.class) Document.Id documentId
     ) {
@@ -171,6 +172,7 @@ public class JsonSchemaDocumentService implements DocumentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public JsonSchemaDocument get(
         @LoggableResource(resourceType = JsonSchemaDocument.class) String documentId
     ) {
@@ -193,6 +195,7 @@ public class JsonSchemaDocumentService implements DocumentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<JsonSchemaDocument> getAllByDocumentDefinitionName(
         Pageable pageable,
         @LoggableResource("documentDefinitionName") String definitionName
@@ -220,6 +223,7 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     // TODO: Can this be removed?
     @Override
+    @Transactional(readOnly = true)
     public Page<JsonSchemaDocument> getAll(Pageable pageable) {
         var spec = authorizationService.getAuthorizationSpecification(
             new EntityAuthorizationRequest<>(
@@ -473,6 +477,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         documentRepository.save(document);
     }
 
+    @Transactional(readOnly = true)
     public JsonSchemaDocument getDocumentBy(
         @LoggableResource(resourceType = JsonSchemaDocument.class) Document.Id documentId
     ) {
@@ -823,6 +828,7 @@ public class JsonSchemaDocumentService implements DocumentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<NamedUser> getCandidateUsers(
         @LoggableResource(resourceType = JsonSchemaDocument.class) Document.Id documentId
     ) {
@@ -848,6 +854,7 @@ public class JsonSchemaDocumentService implements DocumentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<NamedUser> getCandidateUsers(List<Document.Id> documentIds) {
         List<JsonSchemaDocument> documents = runWithoutAuthorization(() ->
             documentRepository.findAllById(documentIds)

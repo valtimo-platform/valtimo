@@ -94,6 +94,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<JsonSchemaDocumentDefinition> findAll(Pageable pageable) {
         final var spec = authorizationService
             .getAuthorizationSpecification(
@@ -109,6 +110,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<JsonSchemaDocumentDefinition> findAllForManagement(Pageable pageable) {
         authorizationService.requirePermission(
             new EntityAuthorizationRequest<>(
@@ -121,6 +123,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
+    @Transactional(readOnly = true)
     public JsonSchemaDocumentDefinitionId findIdByName(
         @LoggableResource("documentDefinitionName") String name
     ) {
@@ -130,6 +133,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<JsonSchemaDocumentDefinition> findBy(
         @LoggableResource(resourceType = JsonSchemaDocumentDefinition.class) DocumentDefinition.Id id
     ) {
@@ -149,6 +153,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<JsonSchemaDocumentDefinition> findLatestByName(
         @LoggableResource("documentDefinitionName") String documentDefinitionName
     ) {
@@ -185,6 +190,7 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<JsonSchemaDocumentDefinition> findByNameAndVersion(
         @LoggableResource("documentDefinitionName") String documentDefinitionName,
         long version

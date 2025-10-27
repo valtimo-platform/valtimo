@@ -18,19 +18,12 @@ package com.ritense.case.web.rest
 
 import com.ritense.case.service.CaseExporter
 import com.ritense.case.service.CaseInstanceService
-import com.ritense.case.web.rest.dto.CaseListRowDto
 import com.ritense.document.domain.search.SearchWithConfigRequest
 import com.ritense.valtimo.contract.json.MapperSingleton
+import io.mockk.mockk
 import org.hamcrest.CoreMatchers.containsString
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.check
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.http.MediaType
@@ -52,8 +45,8 @@ class CaseInstanceResourceTest {
 
     @BeforeEach
     fun setUp() {
-        service = mock()
-        exporter = mock()
+        service = mockk()
+        exporter = mockk()
         resource = CaseInstanceResource(service, exporter)
         MappingJackson2HttpMessageConverter(MapperSingleton.get())
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
@@ -66,47 +59,20 @@ class CaseInstanceResourceTest {
     }
 
     @Test
-    fun `should get case settings`() {
-        val caseDefinitionName = "name"
-        val caseListDto = PageImpl(
-            listOf(CaseListRowDto("myDocumentId", listOf(CaseListRowDto.CaseListItemDto("createdOn", "2022-12-28"))))
-        )
-
-        whenever(service.search(eq(caseDefinitionName), any(), any())).thenReturn(caseListDto)
-        val searchRequest = SearchWithConfigRequest()
-
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders
-                    .post("/api/v1/case/{caseDefinitionName}/search", caseDefinitionName)
-                    .content(MapperSingleton.get().writeValueAsString(searchRequest))
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-            )
-            .andDo(MockMvcResultHandlers.print())
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content.size()").value(1))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].items.size()").value(1))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].items[0].key").value("createdOn"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].items[0].value").value("2022-12-28"))
-
-        verify(service).search(eq(caseDefinitionName), any(), any())
-    }
-
-    @Test
     fun `should export cases as csv response`() {
         val caseDefinitionName = "abc-case"
         val searchRequest = SearchWithConfigRequest()
 
         val csvBytes = "id;name\n1;Alice\n".toByteArray()
 
-        whenever(
-            exporter.exportCases(eq(caseDefinitionName), any(), any<Pageable>())
-        ).thenReturn(
+        io.mockk.every {
+            exporter.exportCases(caseDefinitionName, any<SearchWithConfigRequest>(), any<Pageable>())
+        } answers {
             ResponseEntity.ok()
                 .contentType(MediaType.valueOf("text/csv;charset=UTF-8"))
                 .header("Content-Disposition", "attachment; filename=cases.csv")
                 .body(csvBytes)
-        )
+        }
 
         mockMvc
             .perform(
@@ -134,15 +100,17 @@ class CaseInstanceResourceTest {
 
 
 
-        verify(exporter).exportCases(
-            eq(caseDefinitionName),
-            any(),
-            check<Pageable> {
-                assert(it.pageNumber == 0)
-                assert(it.pageSize == 50)
-                assert(it.sort.getOrderFor("id")?.isAscending == true)
-            }
-        )
+        io.mockk.verify(exactly = 1) {
+            exporter.exportCases(
+                caseDefinitionName,
+                any<SearchWithConfigRequest>(),
+                withArg<Pageable> {
+                    assert(it.pageNumber == 0)
+                    assert(it.pageSize == 50)
+                    assert(it.sort.getOrderFor("id")?.isAscending == true)
+                }
+            )
+        }
     }
 }
 

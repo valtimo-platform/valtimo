@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 class ZgwDocumentTrefwoordService(
     private val zgwDocumentTrefwoordRepository: ZgwDocumentTrefwoordRepository
 ) {
+    @Transactional(readOnly = true)
     fun getTrefwoorden(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String
     ): List<ZgwDocumentTrefwoord> {
@@ -39,6 +40,7 @@ class ZgwDocumentTrefwoordService(
         return zgwDocumentTrefwoordRepository.findAllByCaseDefinitionName(caseDefinitionName)
     }
 
+    @Transactional(readOnly = true)
     fun getTrefwoorden(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String,
         pageable: Pageable
@@ -47,6 +49,7 @@ class ZgwDocumentTrefwoordService(
         return zgwDocumentTrefwoordRepository.findAllByCaseDefinitionName(caseDefinitionName, pageable)
     }
 
+    @Transactional(readOnly = true)
     fun getTrefwoorden(
         @LoggableResource("documentDefinitionName") caseDefinitionName: String,
         search: String?,

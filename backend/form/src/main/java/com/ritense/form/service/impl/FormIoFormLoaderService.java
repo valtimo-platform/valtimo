@@ -28,6 +28,7 @@ import com.ritense.form.service.FormLoaderService;
 import com.ritense.form.service.PrefillFormService;
 import com.ritense.logging.LoggableResource;
 import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public class FormIoFormLoaderService implements FormLoaderService {
     private final FormDefinitionRepository formDefinitionRepository;
@@ -43,6 +44,7 @@ public class FormIoFormLoaderService implements FormLoaderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<JsonNode> getFormDefinitionByName(
         @LoggableResource("formDefinitionName")final String formDefinitionName
     ) {
@@ -51,6 +53,7 @@ public class FormIoFormLoaderService implements FormLoaderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<JsonNode> getFormDefinitionByNamePreFilled(
         @LoggableResource("formDefinitionName") final String formDefinitionName,
         @LoggableResource(resourceType = JsonSchemaDocument.class) final Document.Id documentId

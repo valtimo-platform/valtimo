@@ -59,6 +59,7 @@ public class JsonSchemaDocumentSnapshotService implements DocumentSnapshotServic
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<JsonSchemaDocumentSnapshot> findById(DocumentSnapshot.Id id) {
         final var snapshot = documentSnapshotRepository.findById(id).orElse(null);
         if (snapshot != null) {
@@ -75,6 +76,7 @@ public class JsonSchemaDocumentSnapshotService implements DocumentSnapshotServic
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<JsonSchemaDocumentSnapshot> getDocumentSnapshots(
         @LoggableResource("documentDefinitionName") @Nullable String definitionName,
         @LoggableResource(resourceType = JsonSchemaDocument.class) @Nullable JsonSchemaDocumentId documentId,

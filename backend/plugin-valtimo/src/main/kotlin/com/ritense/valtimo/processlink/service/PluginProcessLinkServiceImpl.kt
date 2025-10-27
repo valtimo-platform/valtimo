@@ -29,9 +29,11 @@ import com.ritense.valtimo.processlink.web.rest.result.CompatiblePluginProcessLi
 import com.ritense.valtimo.processlink.web.rest.result.CompatibleProcessVersion
 import com.ritense.valtimo.service.CamundaProcessService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 @SkipComponentScan
+@Transactional(readOnly = true)
 class PluginProcessLinkServiceImpl(
     private val processLinkService: ProcessLinkService,
     private val pluginProcessLinkMapper: PluginProcessLinkMapper,
