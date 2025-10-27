@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Inject, Input, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Inject, Input, OnDestroy, signal} from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {DragVertical16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
@@ -65,7 +65,7 @@ import {WidgetManagementWizardComponent} from '../management-wizard/widget-manag
     WidgetManagementDividerModalComponent,
   ],
 })
-export class WidgetManagementEditorComponent {
+export class WidgetManagementEditorComponent implements OnDestroy {
   @Input() public enableWidgetDivider = true;
   @Input() public set params(value: any) {
     if (!value) return;
@@ -209,6 +209,10 @@ export class WidgetManagementEditorComponent {
     private widgetManagementService: IWidgetManagementService<any>
   ) {
     this.iconService.registerAll([DragVertical16]);
+  }
+
+  public ngOnDestroy(): void {
+    this.widgetWizardService.resetWizardSteps();
   }
 
   public editWidget(tabWidget: Widget): void {

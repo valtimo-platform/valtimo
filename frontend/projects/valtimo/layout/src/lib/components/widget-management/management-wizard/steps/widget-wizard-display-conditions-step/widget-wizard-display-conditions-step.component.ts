@@ -15,26 +15,24 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {toObservable} from '@angular/core/rxjs-interop';
+import {AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
+import {TranslatePipe, TranslateService} from '@ngx-translate/core';
 import {
   CarbonMultiInputModule,
   ListItemWithId,
   MultiInputKeyValue,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
-import {BehaviorSubject, filter, map, Observable} from 'rxjs';
-import {AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {TranslatePipe, TranslateService} from '@ngx-translate/core';
-import {Condition, Operator} from '@valtimo/shared';
+import {Condition, getCaseManagementRouteParams, Operator} from '@valtimo/shared';
 import {
   DropdownModule,
   InputModule,
   StructuredListModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {getCaseManagementRouteParams} from '@valtimo/shared';
-import {ActivatedRoute} from '@angular/router';
-import {toObservable} from '@angular/core/rxjs-interop';
-import {take, tap} from 'rxjs/operators';
+import {filter, map, Observable} from 'rxjs';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
@@ -83,14 +81,15 @@ export class WidgetWizardDisplayConditionsStepComponent {
   public readonly defaultConditionValues$ = toObservable(
     this.widgetWizardService.$widgetDisplayConditions
   ).pipe(
-    filter(conditions => conditions !== null),
-    take(1),
-    map((conditions: Array<Condition>) =>
-      conditions.map(condition => ({
-        key: condition.path,
-        dropdown: condition.operator,
-        value: condition.value,
-      }))
+    filter(conditions => !!conditions),
+    map((conditions: Array<Condition> | null) =>
+      !conditions
+        ? []
+        : conditions.map(condition => ({
+            key: condition.path,
+            dropdown: condition.operator,
+            value: condition.value,
+          }))
     )
   );
 

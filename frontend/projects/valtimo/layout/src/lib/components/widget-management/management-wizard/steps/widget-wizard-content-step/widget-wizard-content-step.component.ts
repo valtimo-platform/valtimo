@@ -47,7 +47,12 @@ export class WidgetWizardContentStepComponent implements AfterViewInit {
   constructor(
     private readonly vcr: ViewContainerRef,
     private readonly widgetWizardService: WidgetWizardService
-  ) {}
+  ) {
+    effect(() => {
+      if (this.widgetWizardService.$editMode())
+        this.widgetWizardService.$widgetContentValid.set(true);
+    });
+  }
 
   public ngAfterViewInit(): void {
     if (!this.processSelector) return;

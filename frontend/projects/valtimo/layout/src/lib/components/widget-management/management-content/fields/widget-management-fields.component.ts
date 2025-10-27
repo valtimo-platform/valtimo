@@ -55,9 +55,7 @@ import {WidgetManagementFieldsColumnComponent} from './column/widget-management-
     InputLabelModule,
   ],
 })
-export class WidgetManagementFieldsComponent
-  implements OnDestroy, OnInit, AfterViewInit
-{
+export class WidgetManagementFieldsComponent implements OnDestroy, OnInit, AfterViewInit {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-fields';
   @ViewChild(Tab) private readonly _tab: Tab;
 
@@ -91,6 +89,9 @@ export class WidgetManagementFieldsComponent
   ) {}
 
   public ngOnInit(): void {
+    this.widgetWizardService.$widgetContentValid.set(false);
+    this._contentValid.set(false);
+
     this._subscriptions.add(
       this.form.valueChanges.pipe(debounceTime(100)).subscribe(formValue => {
         this.widgetWizardService.$widgetTitle.set(formValue.widgetTitle ?? '');
@@ -113,9 +114,7 @@ export class WidgetManagementFieldsComponent
 
   public ngOnDestroy(): void {
     this._subscriptions.unsubscribe();
-    this.widgetWizardService.$widgetContentValid.set(false);
     this.form.reset();
-    this._contentValid.set(false);
   }
 
   public onAddColumnClick(): void {
