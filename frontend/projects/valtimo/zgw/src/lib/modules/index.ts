@@ -20,3 +20,4 @@ export * from './contactmomenten';
 export * from './haalcentraal-brp';
 export * from './zaakdetails';
 export * from './zaken-api';
+export * from './notificaties-api';

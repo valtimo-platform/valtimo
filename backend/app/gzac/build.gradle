@@ -8,6 +8,8 @@ dependencies {
     implementation(project(":zgw:portaaltaak"))
 
     implementation("io.github.microutils:kotlin-logging")
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-security"
 
     compileOnly(project(":besluit"))
     compileOnly(project(":openzaak"))

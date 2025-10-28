@@ -63,6 +63,7 @@ import {ResourceModule} from '@valtimo/resource';
 import {FormioComponent} from './form-io/form-io.component';
 import {FormModule} from '@valtimo/form';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
+import {NotificationTestComponent} from './notification-test/notification-test.component';
 import {CustomDossierTabComponent} from './custom-dossier-tab/custom-dossier-tab.component';
 import {CustomMapsTabComponent} from './custom-maps-tab/custom-maps-tab.component';
 import {SwaggerModule} from '@valtimo/swagger';
@@ -71,11 +72,7 @@ import {ProcessManagementModule} from '@valtimo/process-management';
 import {DecisionModule} from '@valtimo/decision';
 import {MilestoneModule} from '@valtimo/milestone';
 import {LoggerModule} from 'ngx-logger';
-import {
-  FORM_CUSTOM_COMPONENT_TOKEN,
-  FORM_FLOW_COMPONENT_TOKEN,
-  ProcessLinkModule,
-} from '@valtimo/process-link';
+import {FORM_FLOW_COMPONENT_TOKEN, ProcessLinkModule} from '@valtimo/process-link';
 import {MigrationModule} from '@valtimo/migration';
 import {BootstrapModule} from '@valtimo/bootstrap';
 import {
@@ -154,6 +151,7 @@ export function tabsFactory() {
     UploadShowcaseComponent,
     CustomDossierTabComponent,
     CustomMapsTabComponent,
+    NotificationTestComponent,
   ],
   imports: [
     HttpClientModule,
