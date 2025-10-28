@@ -1965,6 +1965,7 @@
     "editTab": "Tab bearbeiten",
     "rowAction": "Zeilenaktion",
     "canStartCase": "Kann Case starten",
+    "collectionPathTooltip": "Ein Pfad, der zu der Sammlung von Werten führt, die du anzeigen möchtest. Um Eigenschaften in IKO's anzuzeigen, folge diesem Beispiel: 'iko:/pfad/zu/eigenschaft'.",
     "tabTypes": {
       "widgets": "Widgets"
     }
