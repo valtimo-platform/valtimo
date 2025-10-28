@@ -16,9 +16,6 @@
 
 package com.ritense.iko.importer
 
-import com.fasterxml.jackson.annotation.JsonInclude
-
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class IkoSearchFieldsDto(
     val ikoDataAggregateKey: String,
     val ikoDataRequestKey: String,
