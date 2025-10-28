@@ -52,11 +52,12 @@ export class IkoMenuService {
           updatedMenuItems = [...menuItems, ikoMenu].sort((a, b) => a.sequence - b.sequence);
         }
 
-        const adminMenuItem = updatedMenuItems.find(item =>
-          item.title.toUpperCase().includes('ADMIN')
+        const adminMenuItem = updatedMenuItems.find(
+          item =>
+            item.title.toUpperCase().includes('ADMIN') && !item.title.toUpperCase().includes('IKO')
         );
 
-        if (adminMenuItem) {
+        if (adminMenuItem && !adminMenuItem.children.some(item => item.title === 'IKO')) {
           adminMenuItem.children = [
             ...adminMenuItem.children,
             {
