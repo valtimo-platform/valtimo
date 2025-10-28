@@ -17,7 +17,7 @@
 package com.ritense.iko.event
 
 import com.ritense.authorization.annotation.RunWithoutAuthorization
-import com.ritense.iko.service.IkoSearchFieldService
+import com.ritense.iko.service.IkoDataAggregateService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -26,16 +26,17 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 @Component
 @SkipComponentScan
-class IkoDataRequestEventListener(
-    private val ikoSearchFieldService: IkoSearchFieldService,
+class IkoRepositoryConfigEventListener(
+    private val ikoDataAggregateService: IkoDataAggregateService,
 ) {
 
     @RunWithoutAuthorization
-    @EventListener(IkoDataRequestPreDeleteEvent::class)
-    fun deleteIkoSearchFields(event: IkoDataRequestPreDeleteEvent) {
-        ikoSearchFieldService.deleteByIkoDataRequestKey(
-            ikoDataAggregateKey = event.ikoDataAggregateKey,
-            ikoDataRequestKey = event.ikoDataRequestKey,
-        )
+    @EventListener(IkoRepositoryConfigPreDeleteEvent::class)
+    fun deleteIkoDataAggregates(event: IkoRepositoryConfigPreDeleteEvent) {
+        ikoDataAggregateService.findAll(
+            ikoRepositoryConfigKey = event.ikoRepositoryConfigKey,
+        ).forEach { ikoDataAggregate ->
+            ikoDataAggregateService.deleteIkoDataAggregate(ikoDataAggregate.key)
+        }
     }
 }
