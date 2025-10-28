@@ -45,6 +45,7 @@ import com.ritense.document.service.findByOrNull
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.WIDGET_KEY
 import com.ritense.valueresolver.ValueResolverService
 import jakarta.validation.Valid
 import org.springframework.context.event.EventListener
@@ -228,12 +229,18 @@ class CaseWidgetService(
     }
 
     private fun widgetHiddenCheck(widget: CaseWidgetTabWidget, document: JsonSchemaDocument): Boolean {
+        val widgetConditionValuePaths = mutableSetOf<String>()
+        widget.displayConditions.forEach {
+            it.isValid { valuePath -> widgetConditionValuePaths.add(valuePath) }
+        }
+        val resolvedValuePaths = valueResolverService.resolveValues(
+            document.id().id.toString(),
+            widgetConditionValuePaths
+        )
+
         return widget.displayConditions.all {
             it.isValid { valuePath: String ->
-                valueResolverService.resolveValues(
-                    document.id().id.toString(),
-                    listOf(valuePath)
-                )[valuePath]
+                resolvedValuePaths[valuePath]
             }
         }
     }

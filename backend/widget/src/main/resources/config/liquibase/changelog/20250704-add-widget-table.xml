@@ -90,18 +90,15 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="3" author="Ritense">
-        <preConditions onFail="MARK_RAN">
-            <dbms type="mysql"/>
-        </preConditions>
-        <update tableName="case_widget_tab_widget">
+    <changeSet id="5" author="Ritense">
+        <update tableName="widget">
             <column name="actions" value="[]"/>
         </update>
     </changeSet>
 
-    <changeSet id="4" author="Ritense">
+    <changeSet id="6" author="Ritense">
         <addNotNullConstraint
-                tableName="case_widget_tab_widget"
+                tableName="widget"
                 columnName="actions"
                 columnDataType="${jsonType}"
         />

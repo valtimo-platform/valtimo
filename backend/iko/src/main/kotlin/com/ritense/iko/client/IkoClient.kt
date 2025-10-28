@@ -56,7 +56,7 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error { e }
+            logger.error(e) { "Failed to get data for endpoint='$endpointPath', and id='$id'" }
             return jacksonObjectMapper().createObjectNode()
         }
     }
@@ -93,7 +93,7 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error { e }
+            logger.error(e) { "Failed to search data for endpoint='$endpointPath'" }
             return jacksonObjectMapper().createArrayNode()
         }
     }
@@ -125,7 +125,7 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error { e }
+            logger.error(e) { "Failed to get data for aggregatedDataProfile='$aggregatedDataProfileName', id='$id'" }
             return jacksonObjectMapper().createObjectNode()
         }
     }
