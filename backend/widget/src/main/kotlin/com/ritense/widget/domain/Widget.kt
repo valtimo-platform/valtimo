@@ -18,6 +18,7 @@ package com.ritense.widget.domain
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.web.rest.dto.WidgetDto
 import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
@@ -63,6 +64,10 @@ abstract class Widget(
     @Type(value = JsonType::class)
     @Column(name = "actions", nullable = false)
     val actions: List<WidgetAction> = emptyList(),
+
+    @Type(value = JsonType::class)
+    @Column(name = "display_conditions", nullable = false)
+    val displayConditions: List<Condition<*>> = listOf(),
 ) {
 
     init {
@@ -78,6 +83,7 @@ abstract class Widget(
         width: Int = this.width,
         highContrast: Boolean = this.highContrast,
         actions: List<WidgetAction> = this.actions,
+        displayConditions: List<Condition<*>> = this.displayConditions,
     ): Widget
 
     abstract fun toDto(): WidgetDto
@@ -103,6 +109,7 @@ abstract class Widget(
         if (width != other.width) return false
         if (highContrast != other.highContrast) return false
         if (actions != other.actions) return false
+        if (displayConditions != other.displayConditions) return false
 
         return true
     }
@@ -116,6 +123,7 @@ abstract class Widget(
             width,
             highContrast,
             actions,
+            displayConditions,
         )
     }
 
