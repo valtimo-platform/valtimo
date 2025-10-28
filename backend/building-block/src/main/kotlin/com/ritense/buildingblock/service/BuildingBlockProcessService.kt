@@ -1,5 +1,6 @@
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
@@ -94,16 +95,25 @@ class BuildingBlockProcessService(
     }
 
     @Transactional(readOnly = true)
-    fun getProcessDefinitionWithLinks(
+    fun getProcessDefinitionWithProcessLinks(
         buildingBlockDefinitionKey: String,
         buildingBlockDefinitionVersionTag: String,
-        processDefinitionKey: String
+        processDefinitionId: String
     ): BuildingBlockProcessDefinitionWithLinksDto? {
-        val processDefinition = operatonProcessService.getDefinitionByKeyAndBuildingBlockDefinition(
-            buildingBlockDefinitionKey,
-            buildingBlockDefinitionVersionTag,
-            processDefinitionKey
-        )
+        val buildingBlockDefinitionId =
+            BuildingBlockDefinitionId.of(buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag)
+        val processDefinitionBuildingBlockDefinitionLink = processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndIdProcessDefinitionId(
+                buildingBlockDefinitionId,
+                ProcessDefinitionId.of(processDefinitionId)
+            ) ?: return null
+
+        val processDefinition = runWithoutAuthorization {
+            operatonProcessService.getProcessDefinitionById(
+                processDefinitionBuildingBlockDefinitionLink.id.toString()
+            )
+        }
+
         val processDefinitionId = processDefinition.id
 
         val bpmnXml = String(

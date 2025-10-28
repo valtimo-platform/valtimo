@@ -192,7 +192,8 @@ export class ProcessManagementBuilderComponent
         return 'create';
       }
       const param = this.route.snapshot.paramMap.get('processDefinitionKey');
-      return param ? param : null;
+      const idParam = this.route.snapshot.paramMap.get('processDefinitionId');
+      return param || idParam || null;
     }),
     filter(editParam => !!editParam)
   );
