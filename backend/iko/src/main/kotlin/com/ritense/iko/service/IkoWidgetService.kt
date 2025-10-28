@@ -58,7 +58,6 @@ class IkoWidgetService(
         ikoDataAggregateService.denyAuthorization()
         val tab = ikoTabService.getByKey(ikoDataAggregateKey, tabKey)
         ikoTabWidgetRepository.deleteByIdTabIdAndWidgetKey(tab.id, widgetKey)
-        ikoTabWidgetRepository.flush()
     }
 
     fun create(ikoDataAggregateKey: String, tabKey: String, widget: Widget): Widget {

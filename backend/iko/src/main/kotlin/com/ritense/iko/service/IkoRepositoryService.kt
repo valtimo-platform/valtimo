@@ -21,6 +21,8 @@ import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.iko.domain.IkoRepositoryConfig
 import com.ritense.iko.domain.IkoDataAggregate
+import com.ritense.iko.event.IkoDataRequestPreDeleteEvent
+import com.ritense.iko.event.IkoRepositoryConfigPreDeleteEvent
 import com.ritense.iko.repository.IkoRepositoryConfigRepository
 import com.ritense.iko.repository.IkoRepositoryConfigSpecificationHelper.Companion.byKey
 import com.ritense.iko.repository.IkoRepositoryConfigSpecificationHelper.Companion.byTitleContains
@@ -28,6 +30,7 @@ import com.ritense.iko.repository.IkoRepositoryConfigSpecificationHelper.Compani
 import com.ritense.iko.repository.IkoRepositoryConfigSpecificationHelper.Companion.query
 import com.ritense.valtimo.contract.iko.IkoRepository
 import com.ritense.valtimo.contract.iko.PropertyField
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
@@ -37,7 +40,8 @@ import org.springframework.transaction.annotation.Transactional
 class IkoRepositoryService(
     private val ikoRepositoryConfigRepository: IkoRepositoryConfigRepository,
     private val authorizationService: AuthorizationService,
-    private val ikoRepositories: List<IkoRepository>
+    private val ikoRepositories: List<IkoRepository>,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     fun getIkoRepositoryTypes(): Map<String, String> {
         denyAuthorization()
@@ -111,6 +115,9 @@ class IkoRepositoryService(
 
     fun deleteIkoRepositoryConfig(key: String) {
         denyAuthorization()
+        applicationEventPublisher.publishEvent(
+            IkoRepositoryConfigPreDeleteEvent(key)
+        )
         ikoRepositoryConfigRepository.deleteById(key)
     }
 
