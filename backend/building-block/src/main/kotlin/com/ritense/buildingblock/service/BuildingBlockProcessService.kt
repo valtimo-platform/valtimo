@@ -110,7 +110,7 @@ class BuildingBlockProcessService(
 
         val processDefinition = runWithoutAuthorization {
             operatonProcessService.getProcessDefinitionById(
-                processDefinitionBuildingBlockDefinitionLink.id.toString()
+                processDefinitionBuildingBlockDefinitionLink.id.processDefinitionId.id
             )
         }
 
