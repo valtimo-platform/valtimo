@@ -21,8 +21,8 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.asRuntimeExcepti
 import java.util.ArrayList;
 import java.util.List;
 import org.operaton.bpm.engine.impl.Direction;
-import org.operaton.bpm.engine.impl.HistoricProcessInstanceQueryProperty;
 import org.operaton.bpm.engine.impl.QueryOrderingProperty;
+import org.operaton.bpm.engine.impl.QueryPropertyImpl;
 import org.operaton.bpm.engine.query.QueryProperty;
 import org.springframework.data.domain.Sort;
 
@@ -103,34 +103,34 @@ public class OperatonOrderByHelper {
         QueryProperty queryProperty;
         switch (queryPropertyName.toUpperCase()) {
             case "PROC_INST_ID_":
-                queryProperty = HistoricProcessInstanceQueryProperty.PROCESS_INSTANCE_ID_;
+                queryProperty = new QueryPropertyImpl("PROC_INST_ID_");
                 break;
             case "PROC_DEF_ID_":
-                queryProperty = HistoricProcessInstanceQueryProperty.PROCESS_DEFINITION_ID;
+                queryProperty = new QueryPropertyImpl("PROC_DEF_ID_");
                 break;
             case "PROC_DEF_KEY_":
-                queryProperty = HistoricProcessInstanceQueryProperty.PROCESS_DEFINITION_KEY;
+                queryProperty = new QueryPropertyImpl("PROC_DEF_KEY_");
                 break;
             case "NAME_":
-                queryProperty = HistoricProcessInstanceQueryProperty.PROCESS_DEFINITION_NAME;
+                queryProperty = new QueryPropertyImpl("NAME_");
                 break;
             case "VERSION_":
-                queryProperty = HistoricProcessInstanceQueryProperty.PROCESS_DEFINITION_VERSION;
+                queryProperty = new QueryPropertyImpl("VERSION_");
                 break;
             case "BUSINESS_KEY_":
-                queryProperty = HistoricProcessInstanceQueryProperty.BUSINESS_KEY;
+                queryProperty = new QueryPropertyImpl("BUSINESS_KEY_");
                 break;
             case "START_TIME_":
-                queryProperty = HistoricProcessInstanceQueryProperty.START_TIME;
+                queryProperty = new QueryPropertyImpl("START_TIME_");
                 break;
             case "END_TIME_":
-                queryProperty = HistoricProcessInstanceQueryProperty.END_TIME;
+                queryProperty = new QueryPropertyImpl("END_TIME_");
                 break;
             case "DURATION_":
-                queryProperty = HistoricProcessInstanceQueryProperty.DURATION;
+                queryProperty = new QueryPropertyImpl("DURATION_");
                 break;
             case "TENANT_ID_":
-                queryProperty = HistoricProcessInstanceQueryProperty.TENANT_ID;
+                queryProperty = new QueryPropertyImpl("TENANT_ID_");
                 break;
             default:
                 throw (new IllegalArgumentException("Invalid query property name: " + queryPropertyName));
