@@ -37,12 +37,12 @@ import moment from 'moment';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationDetailComponent {
-  @Input() open = false;
-  @Input() notification: FailedNotification | null = null;
-  @Input() retryInProgress = false;
+  @Input() public open = false;
+  @Input() public notification: FailedNotification | null = null;
+  @Input() public retryInProgress = false;
 
-  @Output() readonly closeModalEvent = new EventEmitter<void>();
-  @Output() readonly retryEvent = new EventEmitter<void>();
+  @Output() public readonly closeModalEvent = new EventEmitter<void>();
+  @Output() public readonly retryEvent = new EventEmitter<void>();
 
   public onClose(): void {
     this.closeModalEvent.emit();

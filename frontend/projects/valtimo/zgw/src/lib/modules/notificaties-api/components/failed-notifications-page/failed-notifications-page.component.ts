@@ -40,7 +40,7 @@ import {ToastrService} from 'ngx-toastr';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationsPageComponent {
-  private readonly _defaultSort = 'receivedAt,desc';
+  private readonly _DEFAULT_SORT = 'receivedAt,desc';
 
   public readonly loading$ = new BehaviorSubject<boolean>(false);
   public readonly pagination$ = new BehaviorSubject<Pagination>({...DEFAULT_PAGINATION});
@@ -50,7 +50,7 @@ export class FailedNotificationsPageComponent {
   private readonly _pageRequest$ = new BehaviorSubject<FailedNotificationPageRequest>({
     page: 0,
     size: DEFAULT_PAGINATION.size,
-    sort: this._defaultSort,
+    sort: this._DEFAULT_SORT,
   });
 
   public readonly notifications$: Observable<FailedNotification[]> = this._pageRequest$.pipe(
