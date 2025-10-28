@@ -125,11 +125,11 @@ export class ProcessManagementService extends BaseApiService {
   public getBuildingBlockProcessDefinition(
     key: string,
     versionTag: string,
-    processDefinitionKey: string
+    processDefinitionId: string
   ): Observable<BuildingBlockProcessDefinitionWithLinksDto> {
     return this.httpClient.get<BuildingBlockProcessDefinitionWithLinksDto>(
       this.getApiUrl(
-        `management/v1/building-block/${key}/version/${versionTag}/process-definition/${processDefinitionKey}`
+        `management/v1/building-block/${key}/version/${versionTag}/process-definition/${processDefinitionId}`
       )
     );
   }

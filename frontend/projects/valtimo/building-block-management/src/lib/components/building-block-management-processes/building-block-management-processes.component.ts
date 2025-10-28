@@ -127,7 +127,7 @@ export class BuildingBlockManagementProcessesComponent implements OnInit, OnDest
       'version',
       this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
       BUILDING_BLOCK_MANAGEMENT_TABS.PROCESSES,
-      processDefinition.key,
+      processDefinition.id,
     ]);
   }
 

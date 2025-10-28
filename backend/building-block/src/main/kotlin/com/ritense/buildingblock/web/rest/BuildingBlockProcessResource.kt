@@ -42,16 +42,16 @@ class BuildingBlockProcessResource(
         return ResponseEntity.ok(items)
     }
 
-    @GetMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionKey}")
+    @GetMapping("/{key}/version/{versionTag}/process-definition/{processDefinitionId}")
     fun getProcessDefinitionWithLinksForBuildingBlock(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-        @PathVariable processDefinitionKey: String
-    ): ResponseEntity<BuildingBlockProcessDefinitionWithLinksDto> {
-        val dto = buildingBlockProcessService.getProcessDefinitionWithLinks(
+        @PathVariable processDefinitionId: String,
+        ): ResponseEntity<BuildingBlockProcessDefinitionWithLinksDto> {
+        val dto = buildingBlockProcessService.getProcessDefinitionWithProcessLinks(
             key,
             versionTag,
-            processDefinitionKey
+            processDefinitionId
         )
 
         return dto?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()

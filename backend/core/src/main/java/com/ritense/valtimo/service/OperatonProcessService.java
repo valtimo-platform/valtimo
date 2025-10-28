@@ -685,22 +685,6 @@ public class OperatonProcessService {
         }
     }
 
-    public OperatonProcessDefinition getDefinitionByKeyAndBuildingBlockDefinition(
-        String buildingBlockDefinitionKey,
-        String buildingBlockDefinitionVersionTag,
-        String processDefinitionKey
-    ) {
-        BuildingBlockDefinitionId buildingBlockDefinitionId = new BuildingBlockDefinitionId(buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag);
-        String versionTag = OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId;
-
-        return AuthorizationContext.runWithoutAuthorization(() ->
-            operatonRepositoryService.findProcessDefinition(
-                byVersionTag(versionTag)
-                    .and(byKey(processDefinitionKey))
-            )
-        );
-    }
-
     private void setProcessesVersionTag(BpmnModelInstance bpmnModel, CaseDefinitionId caseDefinitionId) {
         bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
