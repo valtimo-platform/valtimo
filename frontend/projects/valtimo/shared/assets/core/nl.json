@@ -1972,6 +1972,7 @@
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",
     "canStartCase": "Kan zaak starten",
+    "collectionPathTooltip": "Een pad dat leidt naar de verzameling van waarden die je wilt weergeven. Voor het tonen van eigenschappen in IKO's, volg dit voorbeeld: 'iko:/pad/naar/eigenschap'.",
     "tabTypes": {
       "widgets": "Widgets"
     }

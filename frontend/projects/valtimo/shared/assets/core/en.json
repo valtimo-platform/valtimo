@@ -1939,6 +1939,7 @@
     "editTab": "Edit tab",
     "rowAction": "Row action",
     "canStartCase": "Can start case",
+    "collectionPathTooltip": "A path which leads to the collection of values which you want to display. For showing properties in IKO's, follow this example: 'iko:/path/to/property'.",
     "tabTypes": {
       "widgets": "Widgets"
     }

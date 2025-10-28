@@ -28,7 +28,7 @@ import {
   WritableSignal,
 } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CARBON_THEME,
   CdsThemeService,
@@ -40,12 +40,21 @@ import {
   ValuePathType,
 } from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
-import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
 import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'valtimo-widget-management-table',
@@ -106,12 +115,25 @@ export class WidgetManagementTableComponent implements OnInit, OnDestroy {
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
   public readonly ValuePathType = ValuePathType;
 
+  public readonly collectionDataTooltip$ = toObservable(
+    this.widgetWizardService.$widgetContext
+  ).pipe(
+    switchMap((context: 'case' | 'iko' | null) =>
+      this.translateService.stream(
+        context === 'iko'
+          ? 'ikoManagement.collectionPathTooltip'
+          : 'widgetTabManagement.content.table.collectionTooltip'
+      )
+    )
+  );
+
   private readonly _$contentValid = signal<boolean>(this.widgetWizardService.$editMode());
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
+    private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
     private widgetManagementService: IWidgetManagementService<any>

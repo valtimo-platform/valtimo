@@ -53,7 +53,7 @@ import {
   InputModule,
   ListItem,
 } from 'carbon-components-angular';
-import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
+import {BehaviorSubject, debounceTime, map, Observable, Subscription, switchMap} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
 import {IWidgetManagementService} from '../../../../interfaces';
 import {
@@ -69,6 +69,7 @@ import {
 } from '../../../../models';
 import {WidgetFieldsService, WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   templateUrl: './widget-management-collection.component.html',
@@ -131,6 +132,18 @@ export class WidgetManagementCollectionComponent implements OnInit, OnDestroy {
     )
   );
   public readonly params$ = this.widgetManagementService.params$;
+
+  public readonly collectionDataTooltip$ = toObservable(
+    this.widgetWizardService.$widgetContext
+  ).pipe(
+    switchMap((context: 'case' | 'iko' | null) =>
+      this.translateService.stream(
+        context === 'iko'
+          ? 'ikoManagement.collectionPathTooltip'
+          : 'widgetTabManagement.content.table.collectionTooltip'
+      )
+    )
+  );
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
   public readonly ValuePathType = ValuePathType;
