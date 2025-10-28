@@ -128,20 +128,32 @@ export const environment: ValtimoConfig = {
           },
           {link: ['/object-management'], title: 'Objects', sequence: 9},
           {link: ['/form-management'], title: 'Forms', sequence: 10},
+          {
+            link: ['/notifications-api/notifications/failed'],
+            title: 'Notifications',
+            sequence: 11,
+          },
 
           {
             title: 'System processes',
             textClass: 'text-dark font-weight-bold c-default',
-            sequence: 11,
+            sequence: 12,
           },
-          {link: ['/processes'], title: 'Processes', sequence: 12},
-          {link: ['/decision-tables'], title: 'Decision tables', sequence: 13},
+          {link: ['/processes'], title: 'Processes', sequence: 13},
+          {link: ['/decision-tables'], title: 'Decision tables', sequence: 14},
 
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 14},
-          {link: ['/logging'], title: 'Logs', sequence: 15},
-          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 16},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 17},
-          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 18},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 15},
+          {link: ['/logging'], title: 'Logs', sequence: 16},
+          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 17},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 18},
+          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 19},
+
+          {title: 'Valtimo test tools', textClass: 'text-dark font-weight-bold c-default', sequence: 100},
+          {
+            link: ['/notification-test'],
+            title: 'Send notification',
+            sequence: 101,
+          },
         ],
       },
       {
