@@ -215,7 +215,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: backend-build-output
-          path: .
+          path: backend
       - name: Cache built backend libraries
         uses: actions/cache/save@v4
         with:
