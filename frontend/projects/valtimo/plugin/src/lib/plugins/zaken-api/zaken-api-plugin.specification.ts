@@ -36,6 +36,7 @@ import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create
 import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -44,6 +45,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
   functionConfigurationComponents: {
     'link-document-to-zaak': LinkDocumentToZaakConfigurationComponent,
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
+    'get-zaak-informatieobjecten': GetZaakInformatieobjectenComponent,
     'set-zaakstatus': SetZaakStatusConfigurationComponent,
     'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
     'create-zaak': CreateZaakConfigurationComponent,
@@ -263,6 +265,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
       objectIdentificatie: 'Object identificatie',
+      'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
+      resultProcessVariable: 'Resultaat process variable',
+      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.'
     },
     en: {
       title: 'Zaken API',
@@ -464,6 +469,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.',
       objectIdentificatie: 'Object identification',
+      'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
+      resultProcessVariable: 'Result process variable',
+      resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.'
     },
     de: {
       title: 'Zaken API',
@@ -666,6 +674,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.',
       objectIdentificatie: 'Objektidentifikation',
+      'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
+      resultProcessVariable: 'Ergebnis Prozessvariable',
+      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.'
     },
   },
 };
