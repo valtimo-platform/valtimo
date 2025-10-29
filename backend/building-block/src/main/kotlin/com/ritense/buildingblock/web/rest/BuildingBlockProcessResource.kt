@@ -19,13 +19,20 @@ package com.ritense.buildingblock.web.rest
 import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
+import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
+import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @SkipComponentScan
@@ -55,5 +62,31 @@ class BuildingBlockProcessResource(
         )
 
         return dto?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
+    }
+
+    @PostMapping(
+        value = ["/{key}/version/{versionTag}/process-definition/{processDefinitionId}"],
+        consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE]
+    )
+    @Transactional
+    fun deployProcessDefinitionAndProcessLinksForBuildingBlock(
+        @PathVariable key: String,
+        @PathVariable versionTag: String,
+        @RequestPart(name = "file") bpmn: MultipartFile?,
+        @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
+        @RequestPart(name = "processDefinitionId") processDefinitionId: String,
+        @RequestPart(name = "main", required = false) main: Boolean? = false
+    ): ResponseEntity<Any> {
+        buildingBlockProcessService.deployProcessDefinitionAndProcessLinks(
+            key,
+            versionTag,
+            bpmn,
+            processLinks,
+            processDefinitionId,
+            main ?: false
+        )
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
 }

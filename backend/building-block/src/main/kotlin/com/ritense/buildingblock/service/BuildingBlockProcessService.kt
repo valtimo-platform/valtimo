@@ -8,7 +8,9 @@ import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
@@ -22,6 +24,7 @@ import org.operaton.bpm.model.bpmn.BpmnModelInstance
 import org.operaton.bpm.model.bpmn.instance.Process
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.nio.charset.StandardCharsets
 
 @Service
@@ -30,7 +33,8 @@ class BuildingBlockProcessService(
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
     private val operatonProcessService: OperatonProcessService,
     private val processLinkService: ProcessLinkService,
-    private val processLinkMappers: List<ProcessLinkMapper>
+    private val processLinkMappers: List<ProcessLinkMapper>,
+    private val processDeploymentService: ProcessDeploymentService
 ) {
 
     @Transactional
@@ -137,6 +141,97 @@ class BuildingBlockProcessService(
             processLinks = processLinks,
             bpmn20Xml = bpmnXml
         )
+    }
+
+    @Transactional
+    fun deployProcessDefinitionAndProcessLinks(
+        buildingBlockDefinitionKey: String,
+        buildingBlockDefinitionVersionTag: String,
+        bpmn: MultipartFile?,
+        processLinks: List<ProcessLinkCreateRequestDto>,
+        currentProcessDefinitionId: String,
+        main: Boolean
+    ): ProcessDefinitionId? {
+        val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
+            buildingBlockDefinitionKey,
+            buildingBlockDefinitionVersionTag
+        )
+
+        val deployedProcessDefinitionId = processDeploymentService.deployProcessDefinitionAndProcessLinks(
+            null,
+            bpmn,
+            processLinks,
+            currentProcessDefinitionId
+        ) ?: return null
+
+        val existingLink = findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
+        val mainFlag = existingLink?.main ?: main
+
+        val newLink = createOrReplaceLink(
+            buildingBlockDefinitionId,
+            deployedProcessDefinitionId,
+            existingLink,
+            mainFlag
+        )
+
+        if (newLink.main) {
+            ensureOnlyOneMainLink(buildingBlockDefinitionId, deployedProcessDefinitionId)
+        }
+
+        return deployedProcessDefinitionId
+    }
+
+    private fun findExistingLink(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        currentProcessDefinitionId: String
+    ): ProcessDefinitionBuildingBlockDefinition? {
+        return processDefinitionBuildingBlockDefinitionRepository
+            .findByIdBuildingBlockDefinitionIdAndIdProcessDefinitionId(
+                buildingBlockDefinitionId,
+                ProcessDefinitionId.of(currentProcessDefinitionId)
+            )
+    }
+
+    private fun createOrReplaceLink(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        newProcessDefinitionId: ProcessDefinitionId,
+        existingLink: ProcessDefinitionBuildingBlockDefinition?,
+        main: Boolean
+    ): ProcessDefinitionBuildingBlockDefinition {
+        existingLink?.let {
+            processDefinitionBuildingBlockDefinitionRepository.delete(it)
+        }
+
+        val newLink = ProcessDefinitionBuildingBlockDefinition(
+            ProcessDefinitionBuildingBlockDefinitionId(
+                newProcessDefinitionId,
+                buildingBlockDefinitionId
+            ),
+            main
+        )
+
+        return processDefinitionBuildingBlockDefinitionRepository.save(newLink)
+    }
+
+    private fun ensureOnlyOneMainLink(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        mainProcessDefinitionId: ProcessDefinitionId
+    ) {
+        val allLinks = processDefinitionBuildingBlockDefinitionRepository
+            .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
+
+        allLinks
+            .filter { it.id.processDefinitionId != mainProcessDefinitionId && it.main }
+            .forEach { link ->
+                val nonMainLink = ProcessDefinitionBuildingBlockDefinition(
+                    ProcessDefinitionBuildingBlockDefinitionId(
+                        link.id.processDefinitionId,
+                        link.id.buildingBlockDefinitionId
+                    ),
+                    false
+                )
+                processDefinitionBuildingBlockDefinitionRepository.save(nonMainLink)
+            }
     }
 
     private fun createMinimalModel(
