@@ -16,6 +16,7 @@
     </cds-label>
 
     <valtimo-auto-key-input
+      *ngIf="showAutoKey"
       formControlName="key"
       placeholderTranslationKey="ikoManagement.keyPlaceholder"
       [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"

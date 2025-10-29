@@ -20,7 +20,8 @@ import {
   SelectItem,
   SelectModule,
   ValtimoCdsModalDirective,
-  AutoKeyInputComponent
+  AutoKeyInputComponent,
+  runAfterCarbonModalClosed
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -61,7 +62,7 @@ export class IkoManagementRepositoryModalComponent {
   @Input() public set open(value: boolean) {
     this._open$.next(value);
 
-    if (!value) this.resetForm();
+    value ?  this.showAutoKey = true : this.resetForm();
   }
   public get open$(): Observable<boolean> {
     return this._open$.asObservable();
@@ -83,6 +84,7 @@ export class IkoManagementRepositoryModalComponent {
     return this.formGroup.get('title') as AbstractControl<string>;
   }
 
+  public showAutoKey = true;
   public enableIkoType = false;
   public readonly submitDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly disabled$ = new BehaviorSubject(true);
@@ -131,11 +133,17 @@ export class IkoManagementRepositoryModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
-    this.modalMode = 'add';
+    runAfterCarbonModalClosed(() => {
+      this.showAutoKey = false;
+      this.modalMode = 'add';
+    });
   }
 
   public onSave(): void {
     this.modalClose.emit(this.formGroup.getRawValue());
+    runAfterCarbonModalClosed(() => {
+      this.showAutoKey = false;
+    });
   }
 
   public getControlInvalid(controlKey: string): boolean {
