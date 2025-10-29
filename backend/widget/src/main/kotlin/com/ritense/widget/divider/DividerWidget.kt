@@ -17,6 +17,7 @@
 package com.ritense.widget.divider
 
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
 import jakarta.persistence.DiscriminatorValue
@@ -44,6 +45,7 @@ class DividerWidget(
         width: Int,
         highContrast: Boolean,
         actions: List<WidgetAction>,
+        displayConditions: List<Condition<*>>,
     ) = DividerWidget(
         id = id,
         key = key,

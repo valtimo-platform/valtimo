@@ -28,10 +28,12 @@ jobs:
           EVENT="${{ github.event_name }}"
           if [[ "$EVENT" == 'pull_request' ]]; then
             echo "name=pr${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-            echo "source_sha=$(echo '${{ github.event.pull_request.head.sha }}' | cut -c 1-7)" >> "$GITHUB_OUTPUT"
+            echo "source_sha=$(echo '${{ github.event.pull_request.head.sha }}')" >> "$GITHUB_OUTPUT"
           elif [[ "$EVENT" == 'push' ]]; then
-            echo "name=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-            echo "source_sha=$(echo '${{ github.sha }}' | cut -c 1-7)" >> "$GITHUB_OUTPUT"
+            # Turn / into - and make all lowercase
+            safe_branch_name=$(echo "${{ github.ref_name }}" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
+            echo "name=$safe_branch_name" >> "$GITHUB_OUTPUT"
+            echo "source_sha=$(echo '${{ github.sha }}')" >> "$GITHUB_OUTPUT"
           else
             echo "Unsupported event ${EVENT}" >&2
             exit 1

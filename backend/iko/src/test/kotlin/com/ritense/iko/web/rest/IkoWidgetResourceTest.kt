@@ -63,7 +63,7 @@ internal class IkoWidgetResourceTest {
 
     @Test
     fun `should get iko widgets`() {
-        whenever(service.findAllByTabKey("klant", "general")).thenReturn(
+        whenever(service.findAllByTabKeyFilteredByDisplayConditions("klant", "general")).thenReturn(
             listOf(widget())
         )
 
