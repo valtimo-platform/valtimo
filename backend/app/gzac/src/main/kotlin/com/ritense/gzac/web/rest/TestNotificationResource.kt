@@ -18,9 +18,9 @@ package com.ritense.gzac.web.rest
 
 import com.ritense.notificatiesapi.NotificatiesApiPlugin
 import com.ritense.plugin.service.PluginService
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
-import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity

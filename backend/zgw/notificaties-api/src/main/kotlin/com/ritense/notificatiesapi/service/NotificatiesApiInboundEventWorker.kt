@@ -17,7 +17,7 @@
 package com.ritense.notificatiesapi.service
 
 import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.scheduling.annotation.Scheduled
 import java.util.concurrent.atomic.AtomicBoolean
 

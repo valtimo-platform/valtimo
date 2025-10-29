@@ -18,7 +18,6 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, ModalModule} from 'carbon-components-angular';
-import {ValtimoCdsModalDirectiveModule} from '@valtimo/components';
 import {FailedNotification} from '../../models';
 import moment from 'moment';
 
@@ -27,13 +26,7 @@ import moment from 'moment';
   templateUrl: './failed-notification-detail.component.html',
   styleUrls: ['./failed-notification-detail.component.scss'],
   standalone: true,
-  imports: [
-    CommonModule,
-    TranslateModule,
-    ModalModule,
-    ButtonModule,
-    ValtimoCdsModalDirectiveModule,
-  ],
+  imports: [CommonModule, TranslateModule, ModalModule, ButtonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FailedNotificationDetailComponent {
@@ -66,7 +59,9 @@ export class FailedNotificationDetailComponent {
     if (!value) return '-';
 
     try {
-      return moment(value).locale(localStorage.getItem('langKey') ?? 'nl').format('DD-MM-YYYY, HH:mm:ss');
+      return moment(value)
+        .locale(localStorage.getItem('langKey') ?? 'nl')
+        .format('DD-MM-YYYY, HH:mm:ss');
     } catch (error) {
       return value;
     }

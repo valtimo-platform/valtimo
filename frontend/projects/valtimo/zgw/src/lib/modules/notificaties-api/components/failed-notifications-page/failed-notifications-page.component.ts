@@ -29,7 +29,7 @@ import {BehaviorSubject, finalize, map, Observable, switchMap, tap} from 'rxjs';
 import {FailedNotification, FailedNotificationPageRequest} from '../../models';
 import {FailedNotificationsService} from '../../services';
 import {FailedNotificationDetailComponent} from '../failed-notification-detail/failed-notification-detail.component';
-import {ToastrService} from 'ngx-toastr';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-notificaties-api-failed-notifications-page',
@@ -97,7 +97,7 @@ export class FailedNotificationsPageComponent {
 
   constructor(
     private readonly failedNotificationsService: FailedNotificationsService,
-    private readonly toastrService: ToastrService,
+    private readonly globalNotificationService: GlobalNotificationService,
     private readonly translateService: TranslateService
   ) {}
 
@@ -137,13 +137,19 @@ export class FailedNotificationsPageComponent {
       .subscribe({
         next: () => {
           const message = this.translateService.instant('zgw.notifications.failed.retrySuccess');
-          this.toastrService.success(message);
+          this.globalNotificationService.showToast({
+            title: message,
+            type: 'success',
+          });
           this.selectedNotification$.next(null);
           this._pageRequest$.next({...this._pageRequest$.getValue()});
         },
         error: () => {
           const message = this.translateService.instant('zgw.notifications.failed.retryError');
-          this.toastrService.error(message);
+          this.globalNotificationService.showToast({
+            title: message,
+            type: 'error',
+          });
         },
       });
   }

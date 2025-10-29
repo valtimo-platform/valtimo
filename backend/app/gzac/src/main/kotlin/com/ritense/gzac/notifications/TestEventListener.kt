@@ -1,6 +1,7 @@
 package com.ritense.gzac.notifications
 
 import com.ritense.notificatiesapi.event.NotificatiesApiNotificationReceivedEvent
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
@@ -25,6 +26,6 @@ class TestEventListener {
     }
 
     companion object {
-        private val logger = mu.KotlinLogging.logger {}
+        private val logger = KotlinLogging.logger {}
     }
 }

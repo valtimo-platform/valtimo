@@ -16,8 +16,8 @@
 
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, Page} from '@valtimo/config';
-import {Observable, map} from 'rxjs';
+import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
+import {map, Observable} from 'rxjs';
 import {FailedNotification, FailedNotificationPageRequest} from '../models';
 
 @Injectable({
@@ -57,9 +57,9 @@ export class FailedNotificationsService extends BaseApiService {
 
   public getFailedNotificationCount(): Observable<number> {
     return this.httpClient
-      .get<{count: number}>(
-        this.getApiUrl('management/v1/notificatiesapi/inbound-events/failed/count')
-      )
+      .get<{
+        count: number;
+      }>(this.getApiUrl('management/v1/notificatiesapi/inbound-events/failed/count'))
       .pipe(map(response => response.count ?? 0));
   }
 }

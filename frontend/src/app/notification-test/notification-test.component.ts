@@ -18,13 +18,14 @@ import {Component} from '@angular/core';
 import {FormBuilder, Validators} from '@angular/forms';
 import {BehaviorSubject} from 'rxjs';
 import {finalize} from 'rxjs/operators';
-import {ToastrService} from 'ngx-toastr';
 import {NotificationTestService} from './notification-test.service';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
   selector: 'app-notification-test',
   templateUrl: './notification-test.component.html',
   styleUrls: ['./notification-test.component.scss'],
+  standalone: false,
 })
 export class NotificationTestComponent {
   private readonly successTemplate = `{
@@ -65,7 +66,7 @@ export class NotificationTestComponent {
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly notificationTestService: NotificationTestService,
-    private readonly toastrService: ToastrService
+    private readonly globalNotificationService: GlobalNotificationService
   ) {}
 
   applySuccessTemplate(): void {
@@ -90,10 +91,16 @@ export class NotificationTestComponent {
       .pipe(finalize(() => this.sending$.next(false)))
       .subscribe({
         next: () => {
-          this.toastrService.success('Notification was sent.');
+          this.globalNotificationService.showToast({
+            title: 'Notification was sent.',
+            type: 'success',
+          });
         },
         error: () => {
-          this.toastrService.error('Unable to send notification.');
+          this.globalNotificationService.showToast({
+            title: 'Unable to send notification.',
+            type: 'error',
+          });
         },
       });
   }
