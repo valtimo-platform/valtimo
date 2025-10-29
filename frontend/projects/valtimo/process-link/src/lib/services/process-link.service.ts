@@ -162,7 +162,10 @@ export class ProcessLinkService {
     );
 
     if (processXml) {
-      formData.append('file', new File([processXml], 'process.bpmn'));
+      formData.append(
+        'file',
+        new File([processXml], `${buildingBlockKey}-${buildingBlockVersionTag}.bpmn`)
+      );
     }
 
     if (processDefinitionId) {

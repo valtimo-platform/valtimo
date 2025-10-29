@@ -1,6 +1,25 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.Action
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
+import com.ritense.authorization.AuthorizationService
+import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinition
 import com.ritense.buildingblock.domain.ProcessDefinitionBuildingBlockDefinitionId
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
@@ -34,11 +53,14 @@ class BuildingBlockProcessService(
     private val operatonProcessService: OperatonProcessService,
     private val processLinkService: ProcessLinkService,
     private val processLinkMappers: List<ProcessLinkMapper>,
-    private val processDeploymentService: ProcessDeploymentService
+    private val processDeploymentService: ProcessDeploymentService,
+    private val authorizationService: AuthorizationService
 ) {
 
     @Transactional
     fun createEmptyProcessAndLink(title: String, key: String, versionTag: String): String {
+        denyAuthorization()
+
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(key, versionTag)
         val buildingBlockVersionProcessVersionTag =
             OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()
@@ -71,6 +93,8 @@ class BuildingBlockProcessService(
         key: String,
         versionTag: String
     ): List<BuildingBlockProcessDefinitionDto> {
+        denyAuthorization()
+
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(key, versionTag)
         val links = processDefinitionBuildingBlockDefinitionRepository
             .findAllByIdBuildingBlockDefinitionId(buildingBlockDefinitionId)
@@ -104,6 +128,8 @@ class BuildingBlockProcessService(
         buildingBlockDefinitionVersionTag: String,
         processDefinitionId: String
     ): BuildingBlockProcessDefinitionWithLinksDto? {
+        denyAuthorization()
+
         val buildingBlockDefinitionId =
             BuildingBlockDefinitionId.of(buildingBlockDefinitionKey, buildingBlockDefinitionVersionTag)
         val processDefinitionBuildingBlockDefinitionLink = processDefinitionBuildingBlockDefinitionRepository
@@ -152,6 +178,8 @@ class BuildingBlockProcessService(
         currentProcessDefinitionId: String,
         main: Boolean
     ): ProcessDefinitionId? {
+        denyAuthorization()
+
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(
             buildingBlockDefinitionKey,
             buildingBlockDefinitionVersionTag
@@ -177,6 +205,8 @@ class BuildingBlockProcessService(
         if (newLink.main) {
             ensureOnlyOneMainLink(buildingBlockDefinitionId, deployedProcessDefinitionId)
         }
+
+        setProcessVersionTag(deployedProcessDefinitionId.id, buildingBlockDefinitionId)
 
         return deployedProcessDefinitionId
     }
@@ -254,5 +284,28 @@ class BuildingBlockProcessService(
     private fun getProcessLinkMapper(processLinkType: String): ProcessLinkMapper {
         return processLinkMappers.singleOrNull { it.supportsProcessLinkType(processLinkType) }
             ?: throw IllegalStateException("No ProcessLinkMapper found for processLinkType $processLinkType")
+    }
+
+    private fun setProcessVersionTag(
+        deployedProcessDefinitionId: String,
+        buildingBlockDefinitionId: BuildingBlockDefinitionId
+    ) {
+        val bpmnModelInstance =
+            operatonProcessService.getBpmnModelInstanceByProcessDefinitionId(deployedProcessDefinitionId)
+
+        operatonProcessService.setProcessesVersionTag(
+            bpmnModelInstance,
+            OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId,
+            OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.key
+        )
+    }
+
+    private fun denyAuthorization() {
+        authorizationService.requirePermission(
+            EntityAuthorizationRequest(
+                ProcessDefinitionBuildingBlockDefinition::class.java,
+                Action.deny()
+            )
+        )
     }
 }

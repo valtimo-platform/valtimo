@@ -35,7 +35,6 @@ import com.ritense.authorization.Action;
 import com.ritense.authorization.AuthorizationContext;
 import com.ritense.authorization.AuthorizationService;
 import com.ritense.authorization.request.EntityAuthorizationRequest;
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId;
 import com.ritense.valtimo.contract.case_.CaseDefinitionId;
 import com.ritense.valtimo.contract.config.ValtimoProperties;
 import com.ritense.valtimo.event.ProcessDefinitionDeleted;
@@ -511,7 +510,11 @@ public class OperatonProcessService {
             }
 
             if (caseDefinitionId != null) {
-                setProcessesVersionTag(bpmnModel, caseDefinitionId);
+                setProcessesVersionTag(
+                    bpmnModel,
+                    OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId,
+                    OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey()
+                );
             }
             setProcessesExecutable(bpmnModel);
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
@@ -685,10 +688,16 @@ public class OperatonProcessService {
         }
     }
 
-    private void setProcessesVersionTag(BpmnModelInstance bpmnModel, CaseDefinitionId caseDefinitionId) {
+    public void setProcessesVersionTag(
+        BpmnModelInstance bpmnModel,
+        String versionTagWithKeyAndVersion,
+        String versionTagWithKeyOnly
+    ) {
+        denyAuthorization();
+
         bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
-                process.setOperatonVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString());
+                process.setOperatonVersionTag(versionTagWithKeyAndVersion);
             }
         );
 
@@ -700,12 +709,12 @@ public class OperatonProcessService {
                         (
                             callActivity.getOperatonCalledElementVersionTag() != null &&
                                 callActivity.getOperatonCalledElementVersionTag()
-                                    .startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
+                                    .startsWith(versionTagWithKeyOnly)
                         )
 
                 ) {
                     callActivity.setOperatonCalledElementBinding("versionTag");
-                    callActivity.setOperatonCalledElementVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
+                    callActivity.setOperatonCalledElementVersionTag(versionTagWithKeyAndVersion);
                 }
             }
         );
@@ -718,20 +727,23 @@ public class OperatonProcessService {
                         (
                             businessRuleTask.getOperatonDecisionRefVersionTag() != null &&
                                 businessRuleTask.getOperatonDecisionRefVersionTag()
-                                    .startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
+                                    .startsWith(versionTagWithKeyOnly)
                         )
                 ) {
                     businessRuleTask.setOperatonDecisionRefBinding("versionTag");
-                    businessRuleTask.setOperatonDecisionRefVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
+                    businessRuleTask.setOperatonDecisionRefVersionTag(versionTagWithKeyAndVersion);
                 }
             }
         );
     }
 
-    private void setDecisionsVersionTag(DmnModelInstance dmnModel, CaseDefinitionId caseDefinitionId) {
-        dmnModel.getDefinitions().getChildElementsByType(Decision.class).forEach(
-            dmn -> dmn.setVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
-        );
+    public BpmnModelInstance getBpmnModelInstanceByProcessDefinitionId(String processDefinitionId) {
+        denyAuthorization();
+
+        OperatonProcessDefinition definition = getProcessDefinitionById(processDefinitionId);
+        byte[] bytes = getBpmnModel(definition);
+
+        return Bpmn.readModelFromStream(new ByteArrayInputStream(bytes));
     }
 
     @Transactional
@@ -777,7 +789,12 @@ public class OperatonProcessService {
             logger.error("Error reading resource stream for file: {}", fileName, e);
             throw new ProcessNotDeployableException("Error reading resource stream for file: " + fileName);
         }
+    }
 
+    private void setDecisionsVersionTag(DmnModelInstance dmnModel, CaseDefinitionId caseDefinitionId) {
+        dmnModel.getDefinitions().getChildElementsByType(Decision.class).forEach(
+            dmn -> dmn.setVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
+        );
     }
 
     private void setProcessesExecutable(BpmnModelInstance bpmnModel) {
