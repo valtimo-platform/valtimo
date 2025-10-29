@@ -140,7 +140,7 @@ class IkoDataAggregateManagementResource(
     ): ResponseEntity<ByteArray> {
         val baos = exportService.export(IkoDataAggregateExportRequest(key))
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))
-        val fileName = "${key}_$timestamp.valtimo.zip"
+        val fileName = "${key}_$timestamp.iko.zip"
         return ResponseEntity
             .ok()
             .header("Content-Disposition", "attachment;filename=$fileName")

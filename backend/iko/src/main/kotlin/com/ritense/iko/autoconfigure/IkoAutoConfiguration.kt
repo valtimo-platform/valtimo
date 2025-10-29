@@ -24,7 +24,9 @@ import com.ritense.iko.IkoValueResolverFactory
 import com.ritense.iko.authorization.IkoDataAggregateSpecificationFactory
 import com.ritense.iko.client.IkoClient
 import com.ritense.iko.event.IkoDataAggregateEventListener
+import com.ritense.iko.event.IkoDataAggregateTabEventListener
 import com.ritense.iko.event.IkoDataRequestEventListener
+import com.ritense.iko.event.IkoRepositoryConfigEventListener
 import com.ritense.iko.exporter.IkoDataAggregateExporter
 import com.ritense.iko.exporter.IkoDataRequestsExporter
 import com.ritense.iko.exporter.IkoListColumnsExporter
@@ -95,10 +97,12 @@ class IkoAutoConfiguration {
         ikoRepositoryConfigRepository: IkoRepositoryConfigRepository,
         authorizationService: AuthorizationService,
         ikoRepositories: List<IkoRepository>,
+        applicationEventPublisher: ApplicationEventPublisher,
     ) = IkoRepositoryService(
         ikoRepositoryConfigRepository,
         authorizationService,
         ikoRepositories,
+        applicationEventPublisher,
     )
 
     @Bean
@@ -122,13 +126,11 @@ class IkoAutoConfiguration {
     fun ikoDataRequestService(
         ikoDataRequestRepository: IkoDataRequestRepository,
         ikoDataAggregateService: IkoDataAggregateService,
-        authorizationService: AuthorizationService,
         ikoRepositories: List<IkoRepository>,
         applicationEventPublisher: ApplicationEventPublisher,
     ) = IkoDataRequestService(
         ikoDataRequestRepository,
         ikoDataAggregateService,
-        authorizationService,
         ikoRepositories,
         applicationEventPublisher,
     )
@@ -495,11 +497,13 @@ class IkoAutoConfiguration {
         tabService: TabService,
         ikoDataAggregateTabRepository: IkoDataAggregateTabRepository,
         ikoDataAggregateService: IkoDataAggregateService,
+        applicationEventPublisher: ApplicationEventPublisher,
     ): IkoTabService {
         return IkoTabService(
             tabService,
             ikoDataAggregateTabRepository,
             ikoDataAggregateService,
+            applicationEventPublisher,
         )
     }
 
@@ -544,6 +548,16 @@ class IkoAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(IkoRepositoryConfigEventListener::class)
+    fun ikoRepositoryConfigEventListener(
+        ikoDataAggregateService: IkoDataAggregateService,
+    ): IkoRepositoryConfigEventListener {
+        return IkoRepositoryConfigEventListener(
+            ikoDataAggregateService,
+        )
+    }
+
+    @Bean
     @ConditionalOnMissingBean(IkoDataAggregateEventListener::class)
     fun ikoDataAggregateEventListener(
         ikoDataRequestService: IkoDataRequestService,
@@ -564,6 +578,16 @@ class IkoAutoConfiguration {
     ): IkoDataRequestEventListener {
         return IkoDataRequestEventListener(
             ikoSearchFieldService,
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(IkoDataAggregateTabEventListener::class)
+    fun ikoDataAggregateTabEventListener(
+        ikoWidgetService: IkoWidgetService,
+    ): IkoDataAggregateTabEventListener {
+        return IkoDataAggregateTabEventListener(
+            ikoWidgetService,
         )
     }
 

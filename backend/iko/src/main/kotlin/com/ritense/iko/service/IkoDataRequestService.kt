@@ -18,7 +18,6 @@ package com.ritense.iko.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.authorization.AuthorizationService
 import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
 import com.ritense.iko.domain.IkoDataRequest
 import com.ritense.iko.domain.IkoDataRequestId
@@ -43,7 +42,6 @@ import org.springframework.transaction.annotation.Transactional
 class IkoDataRequestService(
     private val ikoDataRequestRepository: IkoDataRequestRepository,
     private val ikoDataAggregateService: IkoDataAggregateService,
-    private val authorizationService: AuthorizationService,
     private val ikoRepositories: List<IkoRepository>,
     private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
