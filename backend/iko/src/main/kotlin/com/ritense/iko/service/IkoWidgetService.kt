@@ -21,6 +21,8 @@ import com.ritense.iko.domain.IkoTabWidget
 import com.ritense.iko.domain.IkoTabWidgetId
 import com.ritense.iko.repository.IkoTabWidgetRepository
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.IKO_DATA_AGGREGATE_KEY
+import com.ritense.valueresolver.ValueResolverPropertyKey.Companion.TAB_KEY
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.service.WidgetService
 import org.springframework.stereotype.Service
@@ -52,6 +54,16 @@ class IkoWidgetService(
         ikoDataAggregateService.requirePermission(ikoDataAggregateKey, VIEW)
         val tab = ikoTabService.getByKey(ikoDataAggregateKey, tabKey)
         return ikoTabWidgetRepository.findAllByIdTabIdOrderByWidgetOrder(tab.id).map { it.widget }
+    }
+
+    fun findAllByTabKeyFilteredByDisplayConditions(ikoDataAggregateKey: String, tabKey: String): List<Widget> {
+        return widgetService.filterWidgetsOnDisplayConditions(
+            widgets = findAllByTabKey(ikoDataAggregateKey, tabKey),
+            properties = mapOf(
+                IKO_DATA_AGGREGATE_KEY to ikoDataAggregateKey,
+                TAB_KEY to tabKey,
+            )
+        )
     }
 
     fun deleteByKey(ikoDataAggregateKey: String, tabKey: String, widgetKey: String) {

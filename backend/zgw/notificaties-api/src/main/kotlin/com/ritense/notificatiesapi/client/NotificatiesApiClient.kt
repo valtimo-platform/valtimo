@@ -16,11 +16,14 @@
 
 package com.ritense.notificatiesapi.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.notificatiesapi.NotificatiesApiAuthentication
 import com.ritense.notificatiesapi.domain.Abonnement
 import com.ritense.notificatiesapi.domain.Kanaal
+import com.ritense.notificatiesapi.domain.NotificatiesApiException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.springframework.http.MediaType
+import org.springframework.http.client.ClientHttpResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
@@ -29,7 +32,8 @@ import java.net.URI
 @SkipComponentScan
 @Component
 class NotificatiesApiClient(
-    private val restClientBuilder: RestClient.Builder
+    private val restClientBuilder: RestClient.Builder,
+    private val objectMapper: ObjectMapper,
 ) {
 
     fun getAbonnementen(
@@ -67,6 +71,9 @@ class NotificatiesApiClient(
             .contentType(MediaType.APPLICATION_JSON)
             .body(abonnement)
             .retrieve()
+            .onStatus({ status -> status.is4xxClientError }) { _, response: ClientHttpResponse ->
+                throw objectMapper.readValue(response.body, NotificatiesApiException::class.java)
+            }
             .body<Abonnement>()!!
     }
 
@@ -81,6 +88,9 @@ class NotificatiesApiClient(
             .contentType(MediaType.APPLICATION_JSON)
             .body(abonnement)
             .retrieve()
+            .onStatus({ status -> status.is4xxClientError }) { _, response: ClientHttpResponse ->
+                throw objectMapper.readValue(response.body, NotificatiesApiException::class.java)
+            }
             .body<Abonnement>()!!
     }
 

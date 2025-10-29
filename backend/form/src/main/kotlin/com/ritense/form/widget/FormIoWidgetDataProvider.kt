@@ -35,14 +35,17 @@ class FormIoWidgetDataProvider(
 
     override fun getData(widget: FormIoWidget, properties: Map<String, Any>): JsonNode? {
         val documentId = properties[DOCUMENT_ID]?.toString()
-        require(documentId != null) { "Missing documentId" }
-
-        val caseDefinitionId = documentService[documentId].definitionId().caseDefinitionId()
-
-        val formDefinition = formDefinitionService.getFormDefinitionByName(
-            widget.properties.formDefinitionName,
-            caseDefinitionId
-        ).getOrNull()
+        val formDefinition = if (documentId != null) {
+            val caseDefinitionId = documentService[documentId].definitionId().caseDefinitionId()
+            formDefinitionService.getFormDefinitionByName(
+                widget.properties.formDefinitionName,
+                caseDefinitionId
+            ).getOrNull()
+        } else {
+            formDefinitionService.getFormDefinitionByName(
+                widget.properties.formDefinitionName
+            ).getOrNull()
+        }
 
         return formDefinition?.let {
             formService.getPrefilledFormDefinition(formDefinition.id, UUID.fromString(documentId)).asJson()
