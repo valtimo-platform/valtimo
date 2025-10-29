@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
-package com.ritense.outbox
+package com.ritense.inbox
 
-import com.ritense.outbox.domain.BaseEvent
-import java.util.function.Supplier
+import io.cloudevents.CloudEvent
+import org.springframework.context.event.EventListener
 
-class NoopOutboxService : OutboxService {
-    override fun send(eventSupplier: Supplier<BaseEvent>) {
-        // Nothing to do
+class LocalCloudEventListener(
+    private val eventHandlers: List<ValtimoEventHandler>,
+    private val cloudEventMapper: ValtimoCloudEventMapper
+) {
+
+    @EventListener
+    fun handle(cloudEvent: CloudEvent) {
+        cloudEventMapper
+            .toValtimoEvent(cloudEvent)
+            ?.let { event ->
+                eventHandlers.forEach { handler -> handler.handle(event) }
+            }
     }
 }

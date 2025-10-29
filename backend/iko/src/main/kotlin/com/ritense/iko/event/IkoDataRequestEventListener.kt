@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,15 +33,9 @@ class IkoDataRequestEventListener(
     @RunWithoutAuthorization
     @EventListener(IkoDataRequestPreDeleteEvent::class)
     fun deleteIkoSearchFields(event: IkoDataRequestPreDeleteEvent) {
-        ikoSearchFieldService.findAllSearchFieldsByIkoDataRequest(
+        ikoSearchFieldService.deleteByIkoDataRequestKey(
             ikoDataAggregateKey = event.ikoDataAggregateKey,
-            ikoDataRequestKey = event.ikoDataRequestKey
-        ).forEach { searchField ->
-            ikoSearchFieldService.deleteByKey(
-                ikoDataAggregateKey = event.ikoDataAggregateKey,
-                ikoDataRequestKey = event.ikoDataRequestKey,
-                searchFieldKey = searchField.key
-            )
-        }
+            ikoDataRequestKey = event.ikoDataRequestKey,
+        )
     }
 }

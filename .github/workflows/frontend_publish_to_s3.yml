@@ -7,13 +7,17 @@ on:
   workflow_call:
     inputs:
       publish_type:
-        description: 'Type of publishing: snapshot, or release-candidate'
+        description: "Type of publishing: snapshot, or release-candidate"
         required: true
         type: string
       project_version:
         description: "The determined project version. Required for release-candidate, not for snapshot"
         required: false
         type: string
+      frontend_libraries_build_artifact_name:
+        required: true
+        description: Name of the frontend build artifact to download with 'download-artifact'
+        type: "string"
 
 defaults:
   run:
@@ -25,13 +29,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: 'Restore build artifact: dist'
+      - name: "Restore build artifact: dist"
         uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: ${{ inputs.frontend_libraries_build_artifact_name }}
           path: frontend/dist
 
-      - name: 'Publish all libs to S3'
+      - name: "Publish all libs to S3"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -39,7 +43,7 @@ jobs:
         run: |
           npm run libs-publish-all -- ${{ inputs.publish_type }} $AWS_ACCESS_KEY_ID $AWS_SECRET_ACCESS_KEY $PROJECT_VERSION
 
-      - name: 'Publish to SNS topic for snapshots'
+      - name: "Publish to SNS topic for snapshots"
         if: inputs.publish_type == 'snapshot'
         env:
           AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC: ${{ secrets.AWS_SNAPSHOT_PUBLISHED_SNS_TOPIC }}

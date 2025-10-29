@@ -28,4 +28,5 @@ interface IkoDataAggregateListColumnRepository : JpaRepository<IkoDataAggregateL
     fun findAllByIdIkoDataAggregateKeyOrderByColumnOrder(ikoDataAggregateKey: String): List<IkoDataAggregateListColumn>
     fun findByIdIkoDataAggregateKeyAndColumnKey(ikoDataAggregateKey: String, columnKey: String): IkoDataAggregateListColumn?
     fun deleteByIdIkoDataAggregateKeyAndColumnKey(ikoDataAggregateKey: String, columnKey: String)
+    fun deleteByIdIkoDataAggregateKey(ikoDataAggregateKey: String)
 }

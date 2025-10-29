@@ -42,4 +42,6 @@ interface IkoDataRequestSearchFieldRepository :
         ikoDataRequestKey: String,
         searchFieldKey: String
     )
+
+    fun deleteByIdIkoDataAggregateKeyAndIdIkoDataRequestKey(ikoDataAggregateKey: String, ikoDataRequestKey: String)
 }
