@@ -19,9 +19,15 @@
     listConfig: listConfig$ | async,
     loading: loading$ | async,
   } as obs"
-  [fields]="obs.listConfig?.fields"
-  [items]="obs.listConfig?.items"
-  [loading]="obs.loading"
-  [hideToolbar]="true"
-  (rowClicked)="onRowClicked($event)"
-></valtimo-carbon-list>
+    [fields]="obs.listConfig?.fields"
+    [items]="obs.listConfig?.items"
+    [loading]="obs.loading"
+    [hideToolbar]="true"
+    (rowClicked)="onRowClicked($event)"
+>
+  <valtimo-no-results
+    title="{{ 'ikoManagement.search.noResultsTitle' | translate }}"
+    illustration="valtimo-layout/img/emptystate-no-result.svg"
+    description="{{ 'ikoManagement.search.noResultsDescription' | translate }}"
+  ></valtimo-no-results>
+</valtimo-carbon-list>

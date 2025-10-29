@@ -1882,6 +1882,7 @@
   "ikoManagement": {
     "preparingDownload": "Preparing download",
     "ikoServer": "IKO Server",
+    "configureIkoServer": "Configure IKO Server",
     "dataUrl": "Data URL",
     "title": "Configuration",
     "list": "List",
@@ -1920,6 +1921,10 @@
       "deleteContent": "Are you sure you want to delete this view? This change cannot be reverted",
       "noResultsTitle": "There are no configured views",
       "noResultsDescription": "Click here to configure a view."
+    },
+    "search": {
+      "noResultsTitle": "No results",
+      "noResultsDescription": "Try adjusting your search or filter options to find what you're looking for."
     },
     "searchActions": {
       "addActionTitle": "Add search action",

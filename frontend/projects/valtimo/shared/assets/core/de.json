@@ -1909,6 +1909,7 @@
   "ikoManagement": {
     "preparingDownload": "Download wird vorbereitet",
     "ikoServer": "IKO Server",
+    "configureIkoServer": "IKO-Server konfigurieren",
     "dataUrl": "Daten-URL",
     "title": "Konfiguration",
     "list": "Liste",
@@ -1947,6 +1948,10 @@
       "deleteContent": "Sind Sie sicher, dass Sie dieses Bild löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
       "noResultsTitle": "Es sind keine konfigurierten Bilder vorhanden",
       "noResultsDescription": "Klicken Sie hier, um ein Bild zu konfigurieren."
+    },
+    "search": {
+      "noResultsTitle": "Keine Ergebnisse",
+      "noResultsDescription": "Versuche, deine Such- oder Filteroptionen anzupassen, um zu finden, wonach du suchst."
     },
     "searchActions": {
       "addActionTitle": "Suchaktion hinzufügen",

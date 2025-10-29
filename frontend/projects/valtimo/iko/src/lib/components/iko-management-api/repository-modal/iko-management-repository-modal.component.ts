@@ -20,6 +20,7 @@ import {
   SelectItem,
   SelectModule,
   ValtimoCdsModalDirective,
+  AutoKeyInputComponent
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -32,7 +33,7 @@ import {BehaviorSubject, filter, map, Observable, startWith, switchMap, tap} fro
 import {PropertyField, IkoRepositoryConfigResponse} from '../../../models';
 import {IkoManagementApiService} from '../../../services';
 import {PropertiesFormComponent} from '../../iko-management-properties/iko-management-properties.component';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-repository-modal',
@@ -52,6 +53,7 @@ import {ConfigService} from '@valtimo/shared';
     PropertiesFormComponent,
     SelectModule,
     LayerModule,
+    AutoKeyInputComponent
   ],
 })
 export class IkoManagementRepositoryModalComponent {
@@ -64,19 +66,33 @@ export class IkoManagementRepositoryModalComponent {
   public get open$(): Observable<boolean> {
     return this._open$.asObservable();
   }
+
+  public modalMode: ModalMode = 'add';
+  public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoRepositoryConfigResponse | null>(null);
   @Input() public set prefillData(value: IkoRepositoryConfigResponse | null) {
     this.$prefillData.set(value);
     if (!value) return;
-
+    this.modalMode = 'edit';
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
   @Output() public readonly modalClose = new EventEmitter<any | null>();
 
+  public get title(): AbstractControl<string> {
+    return this.formGroup.get('title') as AbstractControl<string>;
+  }
+
   public enableIkoType = false;
+  public readonly submitDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly disabled$ = new BehaviorSubject(true);
   private readonly _ikoRepositoryTypes$ = this.ikoManagementApiService.getIkoRepositoryTypes();
+
+  public readonly usedKeys$ = this.ikoManagementApiService.getIkoRepositoryConfigs()
+    .pipe(
+      map(response => response.content.map(c => c.key))
+    );
+
   public readonly ikoRepositoryTypeSelectItems$: Observable<SelectItem[]> =
     this._ikoRepositoryTypes$.pipe(
       map(types => Object.keys(types).map(typeKey => ({id: typeKey, text: types[typeKey]}))),
@@ -115,6 +131,7 @@ export class IkoManagementRepositoryModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
+    this.modalMode = 'add';
   }
 
   public onSave(): void {
@@ -133,6 +150,10 @@ export class IkoManagementRepositoryModalComponent {
     }
 
     return !control.valid && !control.pristine;
+  }
+
+  public setSubmitDisabled(value: boolean): void {
+    this.submitDisabled$.next(value);
   }
 
   private resetForm(): void {

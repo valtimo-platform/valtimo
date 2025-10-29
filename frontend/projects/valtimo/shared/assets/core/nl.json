@@ -1916,6 +1916,7 @@
     "preparingDownload": "Download aan het voorbereiden",
     "title": "Configuratie",
     "ikoServer": "IKO Server",
+    "configureIkoServer": "IKO-server configureren",
     "dataUrl": "Gegevens-URL",
     "list": "Lijst",
     "tabs": {"title": "Tabbladen"},
@@ -1953,6 +1954,10 @@
       "deleteContent": "Weet u zeker dat u dit beeld wilt verwijderen? Deze wijziging kan niet ongedaan worden gemaakt.",
       "noResultsTitle": "Er zijn geen geconfigureerde beelden",
       "noResultsDescription": "Klik hier om een beeld te configureren."
+    },
+    "search": {
+      "noResultsTitle": "Geen resultaten",
+      "noResultsDescription": "Probeer je zoek- of filteropties aan te passen om te vinden wat je zoekt."
     },
     "searchActions": {
       "addActionTitle": "Zoekactie toevoegen",
