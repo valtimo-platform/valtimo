@@ -40,7 +40,13 @@ import {
   runAfterCarbonModalClosed,
 } from '@valtimo/components';
 import {BehaviorSubject} from 'rxjs';
-import {BasicWidget, Widget, WidgetType} from '../../../models';
+import {
+  BasicWidget,
+  Widget,
+  WidgetType,
+  WidgetWizardCloseEvent,
+  WidgetWizardCloseEventType,
+} from '../../../models';
 
 @Component({
   selector: 'valtimo-widget-management-divider-modal',
@@ -102,7 +108,7 @@ export class WidgetManagementDividerModalComponent {
     });
   }
 
-  @Output() public closeEvent = new EventEmitter<BasicWidget | null>();
+  @Output() public closeEvent = new EventEmitter<WidgetWizardCloseEvent | null>();
 
   public get title(): AbstractControl<string> {
     return this.dividerForm.get('title') as AbstractControl<string>;
@@ -154,7 +160,13 @@ export class WidgetManagementDividerModalComponent {
     this.divider.title = title.value ?? '';
     this.divider.key = key.value ?? '';
 
-    this.closeEvent.emit(this.divider);
+    this.closeEvent.emit({
+      type:
+        this.modalMode === 'add'
+          ? WidgetWizardCloseEventType.CREATE
+          : WidgetWizardCloseEventType.EDIT,
+      widget: this.divider,
+    });
     runAfterCarbonModalClosed(() => {
       this.submitDisabled$.next(false);
       this.showAutoKey = false;
