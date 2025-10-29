@@ -16,7 +16,7 @@
 
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {FunctionConfigurationComponent} from '../../../../models';
-import {BehaviorSubject, combineLatest, map, Observable, Subscription, take} from 'rxjs';
+import {BehaviorSubject, combineLatest, map, Observable, Subscription, take, tap, withLatestFrom} from 'rxjs';
 import {PluginManagementService, PluginTranslationService} from '../../../../services';
 import {TranslateService} from '@ngx-translate/core';
 import {GetZaakInformatieobjectenConfig} from '../../models';
@@ -85,14 +85,14 @@ export class GetZaakInformatieobjectenComponent
   }
 
   private openSaveSubscription(): void {
-    this.saveSubscription = this.save$?.subscribe(save => {
-      combineLatest([this.formValue$, this.valid$])
-        .pipe(take(1))
-        .subscribe(([formValue, valid]) => {
-          if (valid) {
-            this.configuration.emit(formValue);
-          }
-        });
-    });
+    this.saveSubscription = this.save$
+      .pipe(
+        withLatestFrom(this.formValue$, this.valid$),
+        map(([_, formValue, valid]) => valid ? formValue : null),
+        tap(formValue => {
+          if (formValue) this.configuration.emit(formValue);
+        })
+      )
+      .subscribe();
   }
 }
