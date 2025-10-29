@@ -167,35 +167,6 @@
                     }
                 ]
             }
-        },
-        {
-            "type": "table",
-            "key": "bomen",
-            "title": "Bomen",
-            "width": 4,
-            "highContrast": false,
-            "properties": {
-                "collection": "iko:?ikoDataAggregateKey=boom&boombeeld=Aanvaard boombeeld&id=",
-                "defaultPageSize": 4,
-                "columns": [
-                    {
-                        "key": "boombeeld",
-                        "title": "Boombeeld",
-                        "value": "/record/data/boombeeld"
-                    },
-                    {
-                        "key": "groeifase",
-                        "title": "Groeifase",
-                        "value": "/record/data/groeifase"
-                    },
-                    {
-                        "key": "boomveiligheidsklasse",
-                        "title": "Boomveiligheidsklasse",
-                        "value": "/record/data/boomveiligheidsklasse"
-                    }
-                ],
-                "firstColumnAsTitle": false
-            }
         }
     ]
 }
