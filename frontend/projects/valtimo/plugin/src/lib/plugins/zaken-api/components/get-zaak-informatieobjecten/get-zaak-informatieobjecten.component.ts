@@ -23,9 +23,8 @@ import {GetZaakInformatieobjectenConfig} from '../../models';
 
 @Component({
   standalone: false,
-  selector: 'valtimo-get-zaak-document-configuration',
+  selector: 'valtimo-get-zaak-informatieobjecten-configuration',
   templateUrl: './get-zaak-informatieobjecten.component.html',
-  styleUrls: ['./get-zaak-informatieobjecten.component.scss'],
 })
 export class GetZaakInformatieobjectenComponent
   implements FunctionConfigurationComponent, OnInit, OnDestroy
@@ -45,7 +44,7 @@ export class GetZaakInformatieobjectenComponent
 
   readonly authenticationPluginSelectItems$: Observable<Array<{id: string; text: string}>> =
     combineLatest([
-      this.pluginManagementService.getPluginConfigurationsByCategory('get-zaak-documents'),
+      this.pluginManagementService.getPluginConfigurationsByCategory('get-zaak-informatieobjecten'),
       this.translateService.stream('key'),
     ]).pipe(
       map(([configurations]) =>
@@ -65,15 +64,15 @@ export class GetZaakInformatieobjectenComponent
     private readonly pluginTranslationService: PluginTranslationService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.openSaveSubscription();
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy() {
     this.saveSubscription?.unsubscribe();
   }
 
-  formValueChange(formValue: GetZaakInformatieobjectenConfig): void {
+  public formValueChange(formValue: GetZaakInformatieobjectenConfig): void {
     this.formValue$.next(formValue);
     this.handleValid(formValue);
   }
