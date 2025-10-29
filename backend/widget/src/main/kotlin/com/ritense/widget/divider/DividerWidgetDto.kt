@@ -17,6 +17,7 @@
 package com.ritense.widget.divider
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.web.rest.dto.WidgetDto
@@ -30,6 +31,8 @@ data class DividerWidgetDto(
     override val highContrast: Boolean,
 ) : WidgetDto {
     override val actions: List<WidgetAction>
+        get() = emptyList()
+    override val displayConditions: List<Condition<*>>
         get() = emptyList()
 
     override fun toEntity(id: UUID, order: Int): Widget = DividerWidget(
