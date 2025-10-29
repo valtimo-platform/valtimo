@@ -18,7 +18,6 @@ dependencies {
     implementation(project(":mail:local-mail"))
     implementation(project(":document-generation:smartdocuments"))
     implementation(project(":iko"))
-    implementation(project(":logging"))
     implementation(project(":zgw:portaaltaak"))
     implementation(project(":outbox:outbox-rabbitmq"))
     implementation(project(":process-link-url"))

@@ -24,10 +24,18 @@ import {
   AbstractControl,
 } from '@angular/forms';
 import {SelectItem, SelectModule} from '@valtimo/components';
-import {ButtonModule, IconModule, InputModule, LayerModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  IconModule,
+  IconService,
+  InputModule,
+  LayerModule,
+  TooltipModule,
+} from 'carbon-components-angular';
 import {TranslatePipe} from '@ngx-translate/core';
 import {PropertyField} from '../../models';
 import {computed, effect} from '@angular/core';
+import {Information16} from '@carbon/icons';
 
 @Component({
   selector: 'valtimo-iko-management-properties',
@@ -43,6 +51,7 @@ import {computed, effect} from '@angular/core';
     IconModule,
     LayerModule,
     SelectModule,
+    TooltipModule,
   ],
 })
 export class PropertiesFormComponent {
@@ -83,7 +92,12 @@ export class PropertiesFormComponent {
     this.mapPrefillDataToForm(prefill, fields);
   });
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([Information16]);
+  }
 
   public getFa(key: string): FormArray {
     return this.propertiesFormGroup.get(key) as FormArray;

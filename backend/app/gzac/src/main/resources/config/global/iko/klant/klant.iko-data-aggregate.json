@@ -3,6 +3,8 @@
     "ikoRepositoryConfigKey": "iko-server",
     "title": "Klant",
     "properties": {
-        "endpointPath": "personen"
+        "connectorTag": "",
+        "connectorInstanceTag": "",
+        "endpointOperation": "personen"
     }
 }
