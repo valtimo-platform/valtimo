@@ -11,11 +11,11 @@ defaults:
     working-directory: backend
 
 jobs:
-  run_tests:
-    uses: ./.github/workflows/backend_run_tests.yml
+  build_run_tests:
+    uses: ./.github/workflows/backend_build_test_libraries.yml
 
-  build_publish:
-    needs: [run_tests]
+  publish:
+    needs: [build_run_tests]
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref_name, 'release/') }}
     env:
@@ -32,8 +32,14 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: gradle
+
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build_run_tests.outputs.build_artifact_name }}
+          path: .
 
       - name: Compute version from branch
         id: version

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       project_version:
-        description: 'Project version'
+        description: "Project version"
         required: true
 
 defaults:
@@ -30,17 +30,20 @@ jobs:
           SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
           echo "version_release=$SEMVER_VERSION" >> "$GITHUB_OUTPUT"
 
-  build_and_test:
+  build_and_test_libs:
     needs: ["determine_version"]
-    uses: ./.github/workflows/frontend_build_test.yml
+    uses: ./.github/workflows/frontend_build_test_libraries.yml
     with:
       project_version: ${{ needs.determine_version.outputs.project_version }}
     secrets: inherit
 
   publish:
     if: ${{ startsWith(github.ref_name, 'release/') }}
-    needs: ["determine_version", "build_and_test"]
+    needs:
+      - build_and_test_libs
+      - determine_version
     uses: ./.github/workflows/frontend_publish_to_npm.yml
     with:
       project_version: ${{ needs.determine_version.outputs.project_version }}
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libs.outputs.build_artifact_name }}
     secrets: inherit
