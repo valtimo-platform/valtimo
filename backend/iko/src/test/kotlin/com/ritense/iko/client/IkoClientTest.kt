@@ -95,12 +95,14 @@ class IkoClientTest {
 
         val person = client.getByEndpointId(
             baseUrl = URI(mockApi.url("/").toString()),
-            endpointPath = "personen",
+            connectorTag = "brp",
+            connectorInstanceTag = "brp",
+            endpointOperation = "personen",
             id = "999993653",
         )
 
         //validate request
-        assertEquals("GET /endpoints/personen/999993653 HTTP/1.1", mockApi.takeRequest().requestLine)
+        assertEquals("GET /endpoints/brp/brp/personen/999993653 HTTP/1.1", mockApi.takeRequest().requestLine)
 
         //validate response
         assertEquals("999993653", person["burgerservicenummer"].asText())
@@ -139,7 +141,9 @@ class IkoClientTest {
 
         val response = client.search(
             baseUrl = URI(mockApi.url("/").toString()),
-            endpointPath = "personen",
+            connectorTag = "brp",
+            connectorInstanceTag = "brp",
+            endpointOperation = "personen",
             filters = mapOf(
                 "geslachtsnaam" to "Moulin",
                 "geboortedatum" to "1985-12-01",
@@ -148,7 +152,7 @@ class IkoClientTest {
 
         //validate request
         assertEquals(
-            "GET /endpoints/personen?geslachtsnaam=Moulin&geboortedatum=1985-12-01 HTTP/1.1",
+            "GET /endpoints/brp/brp/personen?geslachtsnaam=Moulin&geboortedatum=1985-12-01 HTTP/1.1",
             mockApi.takeRequest().requestLine
         )
 
