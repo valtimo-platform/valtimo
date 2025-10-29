@@ -30,6 +30,7 @@ import {ModalMode} from '@valtimo/shared';
 import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
+
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
 import {
@@ -215,22 +216,28 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     this.widgetWizardService.resetWizardSteps();
   }
 
-  public editWidget(tabWidget: Widget): void {
-    this.widgetWizardService.$widgetTitle.set(tabWidget.title);
+  public editWidget(widget: Widget): void {
+    if (widget.type === WidgetType.DIVIDER) {
+      this.dividerDefinition$.next(widget);
+      this.$dividerModalMode.set('edit');
+      this.$isDividerModalOpen.set(true);
+      return;
+    }
+    this.widgetWizardService.$widgetTitle.set(widget.title);
     this.widgetWizardService.$widgetStyle.set(
-      tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
+      widget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
     );
     this.widgetWizardService.$widgetWidth.set(
-      tabWidget.width || this.widgetWizardService.defaultWidth
+      widget.width || this.widgetWizardService.defaultWidth
     );
     this.widgetWizardService.$selectedWidget.set(
-      AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
+      AVAILABLE_WIDGETS.find(available => available.type === widget.type) ?? null
     );
-    this.widgetWizardService.$widgetContent.set(tabWidget.properties ?? null);
-    this.widgetWizardService.$widgetDisplayConditions.set(tabWidget.displayConditions);
+    this.widgetWizardService.$widgetContent.set(widget.properties ?? null);
+    this.widgetWizardService.$widgetDisplayConditions.set(widget.displayConditions);
     this.widgetWizardService.$editMode.set(true);
-    this.widgetWizardService.$widgetKey.set(tabWidget.key);
-    this.widgetWizardService.$widgetActions.set(tabWidget.actions);
+    this.widgetWizardService.$widgetKey.set(widget.key);
+    this.widgetWizardService.$widgetActions.set(widget.actions);
     this.$isWizardOpen.set(true);
   }
 
@@ -251,9 +258,16 @@ export class WidgetManagementEditorComponent implements OnDestroy {
       .subscribe(() => this._refresh$.next(null));
   }
 
-  public onCloseEvent(event: WidgetWizardCloseEvent): void {
+  public onCloseEvent(event: WidgetWizardCloseEvent | null): void {
+    console.log({event});
     this.$isWizardOpen.set(false);
+    this.dividerDefinition$.next(null);
+    this.$dividerModalMode.set('add');
+    this.$isDividerModalOpen.set(false);
     this.widgetWizardService.resetWizard();
+
+    if (!event) return;
+
     const {type, widget} = event;
 
     if (!widget || type === WidgetWizardCloseEventType.CANCEL) return;
@@ -292,11 +306,6 @@ export class WidgetManagementEditorComponent implements OnDestroy {
     )
       .pipe(take(1))
       .subscribe(() => this._refresh$.next(null));
-
-    this.$isDividerModalOpen.set(false);
-    this.widgetWizardService.resetWizard();
-    this.dividerDefinition$.next(null);
-    this.$dividerModalMode.set('add');
   }
 
   private deleteWidget(tabWidget: BasicWidget): void {
