@@ -28,6 +28,7 @@ import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResourc
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.service.OperatonProcessService
@@ -79,14 +80,16 @@ class BuildingBlockAutoConfiguration {
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
         operatonProcessService: OperatonProcessService,
         processLinkService: ProcessLinkService,
-        processLinkMappers: List<ProcessLinkMapper>
+        processLinkMappers: List<ProcessLinkMapper>,
+        processDeploymentService: ProcessDeploymentService
     ): BuildingBlockProcessService {
         return BuildingBlockProcessService(
             repositoryService,
             processDefinitionBuildingBlockDefinitionRepository,
             operatonProcessService,
             processLinkService,
-            processLinkMappers
+            processLinkMappers,
+            processDeploymentService
         )
     }
 

@@ -349,6 +349,18 @@ export class ProcessManagementBuilderComponent
             );
           }
 
+          if (context === 'buildingBlock') {
+            const buildingBlockManagementParams = params as BuildingBlockManagementParams;
+
+            return this.processLinkService.deployProcessWithProcessLinksForBuildingBlock(
+              processLinks as ProcessLinkCreateEvent[],
+              selectedProcessDefinition.id,
+              result?.xml,
+              buildingBlockManagementParams.buildingBlockDefinitionKey,
+              buildingBlockManagementParams.buildingBlockDefinitionVersionTag
+            );
+          }
+
           return this.processLinkService.deployProcessWithProcessLinks(
             processLinks as ProcessLinkCreateEvent[],
             selectedProcessDefinition.id,
@@ -746,7 +758,7 @@ export class ProcessManagementBuilderComponent
         if (buildingBlockManagementParams) {
           this.processManagementService.setParams(
             buildingBlockManagementParams.buildingBlockDefinitionKey,
-            caseManagementParams.caseDefinitionVersionTag
+            buildingBlockManagementParams.buildingBlockDefinitionVersionTag
           );
         }
 
@@ -787,20 +799,22 @@ export class ProcessManagementBuilderComponent
   }
 
   private initBuildingBlockBreadcrumbs(params: BuildingBlockManagementParams): void {
-    const route = `/building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}/process-definition`;
+    const route = `/building-block-management/building-block/${params.buildingBlockDefinitionKey}/version/${params.buildingBlockDefinitionVersionTag}`;
+
+    const generalRoute = `${route}/general`;
 
     this.breadcrumbService.setThirdBreadcrumb({
-      route: [route],
+      route: [generalRoute],
       content: `${params.buildingBlockDefinitionKey} (${params.buildingBlockDefinitionVersionTag})`,
-      href: route,
+      href: generalRoute,
     });
 
-    const routeWithProcesses = `${route}/process-definition`;
+    const processRoute = `${route}/process-definition`;
 
     this.breadcrumbService.setFourthBreadcrumb({
-      route: [routeWithProcesses],
+      route: [processRoute],
       content: this.translateService.instant('buildingBlockManagement.tabs.processes'),
-      href: routeWithProcesses,
+      href: processRoute,
     });
   }
 
