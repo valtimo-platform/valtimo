@@ -1,5 +1,6 @@
 package com.ritense.zakenapi.service
 
+import com.ritense.plugin.service.PluginService
 import com.ritense.valtimo.contract.event.NoteCreatedEvent
 import com.ritense.valtimo.contract.event.NoteDeletedEvent
 import com.ritense.valtimo.contract.event.NoteUpdatedEvent
@@ -9,11 +10,12 @@ import com.ritense.zakenapi.domain.ZaakNotitieLink
 import com.ritense.zakenapi.domain.ZaakNotitieLinkId
 import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.net.URI
 import java.util.UUID
 
 class ZaakNotitieService(
     private val zaakUrlProvider: ZaakUrlProvider,
-    private val zakenApiPlugin: ZakenApiPlugin,
+    private val pluginService: PluginService,
     private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository
 ) {
 
@@ -22,21 +24,24 @@ class ZaakNotitieService(
         logger.trace { "Event: $event" }
         zaakUrlProvider.getZaakUrl(event.noteDocumentId).let { zaakUrl ->
             if (!zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
-                zakenApiPlugin.createZaakNotitie(
-                    onderwerp = "",
-                    tekst = event.noteContent,
-                    zaakUrl = zaakUrl,
-                    aangemaaktDoor = event.noteCreatedByUserFullName
-                ).let { zaakNotitie ->
-                    zaakNotitieLinkRepository.save(ZaakNotitieLink(
-                        zaakNotitieLinkId = ZaakNotitieLinkId.newId(UUID.randomUUID()),
-                        zaakNotitieUrl = zaakNotitie.url,
-                        noteId = event.noteId,
-                        documentId = event.documentId
-                    )).also {
-                        logger.debug { "Created ZaakNotitieLink: $it" }
+                zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
+                    zakenApiPlugin.createZaakNotitie(
+                        onderwerp = ZAAK_NOTITIE_ONDERWERP,
+                        tekst = event.noteContent,
+                        zaakUrl = zaakUrl,
+                        aangemaaktDoor = event.noteCreatedByUserFullName
+                    ).let { zaakNotitie ->
+                        zaakNotitieLinkRepository.save(ZaakNotitieLink(
+                            zaakNotitieLinkId = ZaakNotitieLinkId.newId(UUID.randomUUID()),
+                            zaakNotitieUrl = zaakNotitie.url,
+                            noteId = event.noteId,
+                            documentId = event.documentId
+                        )).also {
+                            logger.debug { "Created ZaakNotitieLink: $it" }
+                        }
                     }
                 }
+
             }
         }
     }
@@ -46,11 +51,15 @@ class ZaakNotitieService(
         logger.trace { "Event: $event" }
         if (zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
             zaakNotitieLinkRepository.getByNoteId(event.noteId).let { zaakNotitieLink ->
-                zakenApiPlugin.patchZaakNotitie(
-                    zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl,
-                    tekst = event.noteContent
-                ).also {
-                    logger.debug { "Patched ZaakNotitie: $it" }
+                zaakUrlProvider.getZaakUrl(event.noteDocumentId).let { zaakUrl ->
+                    zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
+                        zakenApiPlugin.patchZaakNotitie(
+                            zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl,
+                            tekst = event.noteContent
+                        ).also {
+                            logger.debug { "Patched ZaakNotitie: $it" }
+                        }
+                    }
                 }
             }
         }
@@ -61,17 +70,34 @@ class ZaakNotitieService(
         logger.trace { "Event: $event" }
         if (zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
             zaakNotitieLinkRepository.getByNoteId(event.noteId).let { zaakNotitieLink ->
-                zakenApiPlugin.deleteZaakNotitie(zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl).also {
-                    logger.debug { "Deleted ZaakNotitie: $zaakNotitieLink" }
+                zaakUrlProvider.getZaakUrl(event.noteDocumentId).let { zaakUrl ->
+                    zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
+                        zakenApiPlugin.deleteZaakNotitie(zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl).also {
+                            logger.debug { "Deleted ZaakNotitie: $zaakNotitieLink" }
+                        }
+                        zaakNotitieLinkRepository.deleteById(zaakNotitieLink.id).also {
+                            logger.debug { "Deleted ZaakNotitieLink: $zaakNotitieLink" }
+                        }
+                    }
                 }
-                zaakNotitieLinkRepository.deleteById(zaakNotitieLink.id).also {
-                    logger.debug { "Deleted ZaakNotitieLink: $zaakNotitieLink" }
-                }
+            }
+        }
+    }
+
+    private fun zakenApiPluginInstanceFor(zaakUrl: URI): ZakenApiPlugin? = pluginService.createInstance(
+        clazz = ZakenApiPlugin::class.java,
+        configurationFilter = ZakenApiPlugin.findConfigurationByUrl(zaakUrl)
+    ).also {
+        if (it == null) {
+            logger.warn {
+                "Zaken API plugin has not been configured: unable to fulfill requested action!"
             }
         }
     }
 
     companion object {
         private val logger = KotlinLogging.logger {}
+
+        private const val ZAAK_NOTITIE_ONDERWERP = "Note synced from Valtimo GZAC"
     }
 }

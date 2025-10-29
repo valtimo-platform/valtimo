@@ -341,11 +341,11 @@ class ZakenApiAutoConfiguration {
     @ConditionalOnMissingBean(ZaakNotitieService::class)
     fun zaakNotitieService(
         zaakUrlProvider: ZaakUrlProvider,
-        zakenApiPlugin: ZakenApiPlugin,
+        pluginService: PluginService,
         zaakNotitieLinkRepository: ZaakNotitieLinkRepository
     ) = ZaakNotitieService(
         zaakUrlProvider,
-        zakenApiPlugin,
+        pluginService,
         zaakNotitieLinkRepository
     )
 
