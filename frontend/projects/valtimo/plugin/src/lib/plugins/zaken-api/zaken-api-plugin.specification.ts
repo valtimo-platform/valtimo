@@ -13,32 +13,73 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {PluginSpecification} from '../../models';
-import {ZAKEN_API_PLUGIN_LOGO_BASE64} from './assets';
-import {LinkDocumentToZaakConfigurationComponent} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
-import {ZakenApiConfigurationComponent} from './components/zaken-api-configuration/zaken-api-configuration.component';
-import {LinkUploadedDocumentToZaakConfigurationComponent} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
-import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/set-zaak-status-configuration.component';
-import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
-import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
-import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
-import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
-import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
-import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
-import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
-import {CreateZaakeigenschapComponent} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
-import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
-import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
-import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
-import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
-import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
-import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
-import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
-import {GetZaakInformatieobjectenComponent} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
-import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
-import {GetZaakbesluitenConfigurationComponent} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
+import { PluginSpecification, PluginSpecification } from '../../models';
+import { ZAKEN_API_PLUGIN_LOGO_BASE64, ZAKEN_API_PLUGIN_LOGO_BASE64 } from './assets';
+import {
+  CreateMedewerkerZaakRolComponent,
+} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
+import {
+  CreateNatuurlijkPersoonZaakRolComponent,
+} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
+import {
+  CreateNietNatuurlijkPersoonZaakRolComponent,
+} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
+import {
+  CreateOrganisatorischeEenheidZaakRolComponent,
+} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
+import {
+  CreateVestigingZaakRolComponent,
+} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
+import {
+  CreateZaakObjectConfigurationComponent,
+} from './components/create-zaak-object/create-zaak-object-configuration.component';
+import {
+  CreateZaakResultaatConfigurationComponent,
+} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
+import {
+  CreateZaakConfigurationComponent,
+} from './components/create-zaak/create-zaak-configuration.component';
+import {
+  CreateZaakeigenschapComponent,
+} from './components/create-zaakeigenschap/create-zaakeigenschap.component';
+import { DeleteZaakRolComponent } from './components/delete-zaak-rol/delete-zaak-rol.component';
+import {
+  DeleteZaakeigenschapComponent,
+} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
+import {
+  EndHersteltermijnComponent,
+} from './components/end-hersteltermijn/end-hersteltermijn.component';
+import {
+  GetZaakInformatieobjectenComponent,
+} from './components/get-zaak-informatieobjecten/get-zaak-informatieobjecten.component';
+import {
+  GetZaakbesluitenConfigurationComponent,
+} from './components/get-zaakbesluiten/get-zaakbesluiten-configuration.component';
+import {
+  LinkDocumentToZaakConfigurationComponent,
+} from './components/link-document-to-zaak/link-document-to-zaak-configuration.component';
+import {
+  LinkUploadedDocumentToZaakConfigurationComponent,
+} from './components/link-uploaded-document-to-zaak/link-uploaded-document-to-zaak-configuration.component';
+import {
+  PatchZaakConfigurationComponent,
+} from './components/patch-zaak/patch-zaak-configuration.component';
+import { RelateerZakenComponent } from './components/relateer-zaken/relateer-zaken.component';
+import {
+  SetZaakStatusConfigurationComponent,
+} from './components/set-zaak-status/set-zaak-status-configuration.component';
+import {
+  SetZaakopschortingComponent,
+} from './components/set-zaakopschorting/set-zaakopschorting.component';
+import {
+  StartHersteltermijnConfigurationComponent,
+} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
+import {
+  UpdateZaakeigenschapComponent,
+} from './components/update-zaakeigenschap/update-zaakeigenschap.component';
+import {
+  ZakenApiConfigurationComponent,
+} from './components/zaken-api-configuration/zaken-api-configuration.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -276,13 +317,13 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
       objectIdentificatie: 'Object identificatie',
-      'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
-      resultProcessVariable: 'Resultaat process variable',
-      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'De UUID van de rol',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
         'Minimaal &eacute;&eacute;n van de volgende velden moet worden ingevuld als identificatie voor de niet natuurlijke persoon:<br/>- Niet natuurlijk persoonsnummer<br/>- Ander niet natuurlijk persoon identificatie<br/>- KVK-nummer<br/>- Vestigingsnummer',
+      'get-zaak-informatieobjecten': 'Zaakinformatieobjecten ophalen',
+      resultProcessVariable: 'Resultaat process variable',
+      resultProcessVariableTooltip: 'De naam van de procesvariabele waarin het resultaat wordt opgeslagen.'
     },
     en: {
       title: 'Zaken API',
@@ -491,10 +532,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.',
       objectIdentificatie: 'Object identification',
-      resultProcessVariable: 'Result process variable',
       rolUuid: 'Rol UUID',
       rolUuidTooltip: 'The UUID of the rol',
+      createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
+        'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
       'get-zaak-informatieobjecten': 'Get zaak informatieobjecten',
+      resultProcessVariable: 'Result process variable',
       resultProcessVariableTooltip: 'The name of the process variable in which the result is stored.'
     },
     de: {
@@ -704,13 +747,13 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.',
       objectIdentificatie: 'Objektidentifikation',
-      'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
-      resultProcessVariable: 'Ergebnis Prozessvariable',
-      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.',
       rolUuid: 'Rolle UUID',
       rolUuidTooltip: 'Die UUID der Rolle',
       createZaakrolNietNatuurlijkPersoonIdentifierFieldsInformation:
-        'At least one of the following fields must be completed to identify the non-natural person:<br/>- Not a natural person identification<br/>- Other not natural person number<br/>- Chamber of Commerce number<br/>- Branch number',
+        'Mindestens eines der folgenden Felder muss ausgefüllt werden, um die juristische Person zu identifizieren:<br/>- Keine natürliche Personennummer<br/>- Andere Identifizierung keine natürlicher Personen<br/>- Handelskammernummer<br/>- Niederlassungsnummer',
+      'get-zaak-informatieobjecten': 'Informatieobjecten zum Fall abrufen',
+      resultProcessVariable: 'Ergebnis Prozessvariable',
+      resultProcessVariableTooltip: 'Der Name der Prozessvariable, in der das Ergebnis gespeichert wird.'
     },
   },
 };
