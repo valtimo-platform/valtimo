@@ -2,7 +2,7 @@ name: "Create test environment for each new PR"
 on:
   pull_request:
     branches:
-      - feature/create-test-env-on-pr
+      - next-minor
     types:
       - opened
       - reopened
@@ -96,9 +96,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Re-tag a backend image to re-use it in the test environment
         env:
           IMAGE: ghcr.io/${{ github.repository }}/gzac-backend
+          TEST_ENVIRONMENT_NAME: ${{ needs.determine_test_env.outputs.name }}
           IMAGE_TAG: ${{ steps.backend_hash.outputs.image_tag }}
           CONTENTS_HASH: ${{ steps.backend_hash.outputs.hash }}
           BASE_COMMIT_SHA: ${{ github.event.pull_request.base.sha }}
@@ -106,28 +110,20 @@ jobs:
         run: |
           if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
             echo "Found ${IMAGE}:${IMAGE_TAG}"
+            TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${BASE_COMMIT_SHA}-${{ github.run_number }}"
+            docker buildx imagetools create \
+              --tag "${IMAGE}:${TARGET_TAG}" \
+              "${IMAGE}:${IMAGE_TAG}"
           else
             echo "Backend was unchanged in this PR, so an attempt was made to re-use a backend image tagged with its Git contents-hash (${CONTENTS_HASH})." >&2
             echo "But no image tagged with ${IMAGE_TAG} was found in ${IMAGE}." >&2
             echo "The test environment will not work until an image with tag ${IMAGE}:${IMAGE_TAG} exists" >&2
             echo "To fix this:" >&2
-            echo "  1. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} already has a built backend image, manually tag it with ${IMAGE_TAG}." >&2
+            echo "  1. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} already has a built backend image, manually tag it with ${TARGET_TAG}." >&2
             echo "  2. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} does not have a backend image yet, build and push the image" >&2
             echo "Then close and re-open this PR to retrigger the workflow."
             exit 1
           fi
-
-      - name: Tag backend image for test environment
-        env:
-          IMAGE: ghcr.io/${{ github.repository }}/gzac-backend
-          IMAGE_TAG: ${{ steps.backend_hash.outputs.image_tag }}
-          TEST_ENVIRONMENT_NAME: ${{ needs.determine_test_env.outputs.name }}
-          SOURCE_SHA: ${{ needs.determine_test_env.outputs.source_sha }}
-        run: |
-          TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${SOURCE_SHA}-${{ github.run_number }}"
-          docker pull "${IMAGE}:${IMAGE_TAG}"
-          docker tag "${IMAGE}:${IMAGE_TAG}" "${IMAGE}:${TARGET_TAG}"
-          docker push "${IMAGE}:${TARGET_TAG}"
 
   only_backend_changed:
     needs:
@@ -170,9 +166,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Re-tag a frontend image for use in the test environment
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Re-tag a frontend image to re-use it in the test environment
         env:
           IMAGE: ghcr.io/${{ github.repository }}/gzac-frontend
+          TEST_ENVIRONMENT_NAME: ${{ needs.determine_test_env.outputs.name  }}
           IMAGE_TAG: ${{ steps.frontend_hash.outputs.image_tag }}
           CONTENTS_HASH: ${{ steps.frontend_hash.outputs.hash }}
           BASE_COMMIT_SHA: ${{ github.event.pull_request.base.sha }}
@@ -180,29 +180,20 @@ jobs:
         run: |
           if docker manifest inspect "${IMAGE}:${IMAGE_TAG}" > /dev/null 2>&1; then
             echo "Found ${IMAGE}:${IMAGE_TAG}"
+            TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${BASE_COMMIT_SHA}-${{ github.run_number }}"
+            docker buildx imagetools create \
+              --tag "${IMAGE}:${TARGET_TAG}" \
+              "${IMAGE}:${IMAGE_TAG}"
           else
             echo "Frontend was unchanged in this PR, so an attempt was made to re-use a frontend image tagged with its Git contents-hash (${CONTENTS_HASH})." >&2
             echo "But no image tagged with ${IMAGE_TAG} was found in ${IMAGE}." >&2
             echo "The test environment will not work until an image with tag ${IMAGE}:${IMAGE_TAG} exists" >&2
             echo "To fix this:" >&2
-            echo "  1. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} already has a built frontend image, manually tag it with ${IMAGE_TAG}." >&2
-            echo "  2. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} does not have a frontend image yet, build and push the image. " >&2
+            echo "  1. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} already has a built frontend image, manually tag it with ${TARGET_TAG}." >&2
+            echo "  2. If commit ${BASE_COMMIT_SHA} of branch ${BASE_BRANCH_NAME} does not have a frontend image yet, build and push the image" >&2
             echo "Then close and re-open this PR to retrigger the workflow."
             exit 1
           fi
-
-      - name: Tag frontend image for test environment
-        env:
-          IMAGE: ghcr.io/${{ github.repository }}/gzac-frontend
-          IMAGE_TAG: ${{ steps.frontend_hash.outputs.image_tag }}
-          TEST_ENVIRONMENT_NAME: ${{ needs.determine_test_env.outputs.name }}
-          SOURCE_SHA: ${{ needs.determine_test_env.outputs.source_sha }}
-        run: |
-          TARGET_TAG="testEnv-${TEST_ENVIRONMENT_NAME}-${SOURCE_SHA}-${{ github.run_number }}"
-          docker pull "${IMAGE}:${IMAGE_TAG}"
-          docker tag "${IMAGE}:${IMAGE_TAG}" "${IMAGE}:${TARGET_TAG}"
-          docker push "${IMAGE}:${TARGET_TAG}"
-
   both_frontend_and_backend_changed:
     needs:
       - detect_changes
@@ -231,7 +222,7 @@ jobs:
             -d "{\"ref\":\"main\",\"inputs\":{\"envName\":\"${ENV_NAME}\"}}"
 
   comment_on_pr:
-    if: ${{ needs.detect_changes.outputs.backend_changed || needs.detect_changes.outputs.frontend_changed }}
+    if: ${{ needs.detect_changes.outputs.backend_changed == 'true' || needs.detect_changes.outputs.frontend_changed == 'true' }}
     runs-on: ubuntu-latest
     needs:
       - detect_changes
@@ -249,4 +240,6 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           token: ${{ steps.generate_token.outputs.token }}
           body: |
-            Will create a test environment at https://${{ needs.determine_test_env.outputs.name }}.product-development.test.k8s.ritense.com
+            Will create a test environment at https://${{ needs.determine_test_env.outputs.name }}.product-development.test.k8s.ritense.com. It will be available a few minutes after images for this PR have been built and deployed.
+            If you make additional commits in this PR, you must approve deploying the test environment here again before the changes are reflected.
+            Closing or merging this PR will automatically delete the test environment.

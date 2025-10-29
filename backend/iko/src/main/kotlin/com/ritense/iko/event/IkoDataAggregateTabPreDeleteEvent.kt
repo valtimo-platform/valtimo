@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package com.ritense.widget
+package com.ritense.iko.event
 
-import com.ritense.valtimo.contract.authentication.UserManagementService
-import org.junit.jupiter.api.Tag
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.test.context.junit.jupiter.SpringExtension
-
-@SpringBootTest
-@ExtendWith(SpringExtension::class)
-@Tag("integration")
-abstract class BaseIntegrationTest {
-
-    @MockitoBean
-    protected var userManagementService: UserManagementService? = null
-}
+data class IkoDataAggregateTabPreDeleteEvent(
+    val ikoDataAggregateKey: String,
+    val tabKey: String,
+)

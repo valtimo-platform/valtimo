@@ -20,10 +20,12 @@ import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthor
 import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VIEW
 import com.ritense.iko.domain.IkoDataAggregateTab
 import com.ritense.iko.domain.IkoDataAggregateTabId
+import com.ritense.iko.event.IkoDataAggregateTabPreDeleteEvent
 import com.ritense.iko.repository.IkoDataAggregateTabRepository
 import com.ritense.tab.domain.Tab
 import com.ritense.tab.service.TabService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -34,6 +36,7 @@ class IkoTabService(
     private val tabService: TabService,
     private val ikoDataAggregateTabRepository: IkoDataAggregateTabRepository,
     private val ikoDataAggregateService: IkoDataAggregateService,
+    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
 
     fun findByKey(ikoDataAggregateKey: String, tabKey: String): Tab? {
@@ -55,8 +58,10 @@ class IkoTabService(
 
     fun deleteByKey(ikoDataAggregateKey: String, tabKey: String) {
         ikoDataAggregateService.denyAuthorization()
+        applicationEventPublisher.publishEvent(
+            IkoDataAggregateTabPreDeleteEvent(ikoDataAggregateKey, tabKey)
+        )
         ikoDataAggregateTabRepository.deleteByIdIkoDataAggregateKeyAndTabKey(ikoDataAggregateKey, tabKey)
-        ikoDataAggregateTabRepository.flush()
     }
 
     fun create(ikoDataAggregateKey: String, tab: Tab): Tab {

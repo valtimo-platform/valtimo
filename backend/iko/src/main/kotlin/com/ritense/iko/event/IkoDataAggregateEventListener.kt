@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,14 +50,7 @@ class IkoDataAggregateEventListener(
     @RunWithoutAuthorization
     @EventListener(IkoDataAggregatePreDeleteEvent::class)
     fun deleteIkoListColumns(event: IkoDataAggregatePreDeleteEvent) {
-        ikoListColumnService.findAllColumnsByIkoDataAggregateKey(
-            ikoDataAggregateKey = event.ikoDataAggregateKey,
-        ).forEach { listColumn ->
-            ikoListColumnService.deleteByKey(
-                ikoDataAggregateKey = event.ikoDataAggregateKey,
-                columnKey = listColumn.key
-            )
-        }
+        ikoListColumnService.deleteByIkoDataAggregateKey(event.ikoDataAggregateKey)
     }
 
     @RunWithoutAuthorization
