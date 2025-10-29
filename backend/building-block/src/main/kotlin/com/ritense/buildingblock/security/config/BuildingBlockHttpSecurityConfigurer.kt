@@ -32,17 +32,22 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                 requests
                     .requestMatchers(antMatcher(GET, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, MANAGEMENT_BASE_PATH)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition")).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
+                        antMatcher(
+                            GET,
+                            "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/{processDefinitionId}"
+                        )
                     ).hasAuthority(ADMIN)
                     .requestMatchers(
-                        antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")
-                    ).hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")
-                    ).hasAuthority(ADMIN)
-                    .requestMatchers(
-                        antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")
+                        antMatcher(
+                            POST,
+                            "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition/{processDefinitionId}"
+                        )
                     ).hasAuthority(ADMIN)
             }
         } catch (e: Exception) {

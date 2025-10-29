@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
@@ -26,7 +27,12 @@ import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
+import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.service.ProcessDeploymentService
+import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
+import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.RepositoryService
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -72,9 +78,22 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockProcessService::class)
     fun buildingBlockProcessService(
         repositoryService: RepositoryService,
-        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
+        operatonProcessService: OperatonProcessService,
+        processLinkService: ProcessLinkService,
+        processLinkMappers: List<ProcessLinkMapper>,
+        processDeploymentService: ProcessDeploymentService,
+        authorizationService: AuthorizationService
     ): BuildingBlockProcessService {
-        return BuildingBlockProcessService(repositoryService, processDefinitionBuildingBlockDefinitionRepository)
+        return BuildingBlockProcessService(
+            repositoryService,
+            processDefinitionBuildingBlockDefinitionRepository,
+            operatonProcessService,
+            processLinkService,
+            processLinkMappers,
+            processDeploymentService,
+            authorizationService
+        )
     }
 
     @Bean
@@ -112,6 +131,16 @@ class BuildingBlockAutoConfiguration {
         return BuildingBlockDocumentDefinitionResource(
             buildingBlockJsonSchemaDocumentDefinitionRepository,
             objectMapper
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockProcessResource::class)
+    fun buildingBlockProcessResource(
+        buildingBlockProcessService: BuildingBlockProcessService,
+    ): BuildingBlockProcessResource {
+        return BuildingBlockProcessResource(
+            buildingBlockProcessService,
         )
     }
 }

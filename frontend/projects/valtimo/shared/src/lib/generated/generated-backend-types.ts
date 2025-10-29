@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-// Generated using typescript-generator version 3.2.1263 on 2025-10-21 16:03:51.
+// Generated using typescript-generator version 3.2.1263 on 2025-10-27 12:16:07.
 
 export interface BuildingBlockDefinitionDto {
     key: string;
@@ -11,6 +11,20 @@ export interface BuildingBlockDefinitionDto {
     createdDate: DateAsString | null;
     basedOnVersionTag: string | null;
     final: boolean;
+}
+
+export interface BuildingBlockProcessDefinitionDto {
+    id: string;
+    key: string;
+    name: string | null;
+    versionTag: string | null;
+    main: boolean;
+}
+
+export interface BuildingBlockProcessDefinitionWithLinksDto {
+    processDefinition: ProcessDefinitionWithPropertiesDto;
+    processLinks: ProcessLinkResponseDto[];
+    bpmn20Xml: string;
 }
 
 export interface CreateBuildingBlockDefinitionDto {
@@ -35,8 +49,8 @@ export interface CaseDefinitionDraftCreateRequest {
     name: string | null;
     description: string | null;
     basedOnCaseDefinitionVersion: string | null;
-    caseDefinitionId: CaseDefinitionId;
     basedOnCaseDefinitionId: CaseDefinitionId | null;
+    caseDefinitionId: CaseDefinitionId;
 }
 
 export interface CaseDefinitionQuickSearchDto {
@@ -622,23 +636,23 @@ export interface ProcessLinkActivityResultWithTask {
 }
 
 export interface ProcessLinkCreateRequestDto {
+    activityId: string;
+    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
-    processDefinitionId: string;
-    activityId: string;
 }
 
 export interface ProcessLinkExportResponseDto {
+    activityId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
-    activityId: string;
 }
 
 export interface ProcessLinkResponseDto {
+    activityId: string;
+    processDefinitionId: string;
     activityType: ActivityTypeWithEventName;
     processLinkType: string;
-    processDefinitionId: string;
-    activityId: string;
     id: string;
 }
 
@@ -793,9 +807,9 @@ export interface TaskCompletionDTO {
 
 export interface WidgetDto {
     type: string;
-    highContrast: boolean;
     width: number;
     title: string;
+    highContrast: boolean;
     key: string;
     actions: WidgetAction[];
 }
@@ -837,9 +851,9 @@ export interface ComponentError {
 
 export interface ProcessLinkDeployDto {
     processLinkType: "url";
-    activityType: ActivityTypeWithEventName;
-    processDefinitionId: string;
     activityId: string;
+    processDefinitionId: string;
+    activityType: ActivityTypeWithEventName;
 }
 
 export interface ProcessDefinitionCaseDefinition {
@@ -922,7 +936,7 @@ export interface FormField {
     id: string;
     type: FormType;
     /**
-     * @deprecated
+     * @deprecated since 1.0
      */
     defaultValue: any;
 }
@@ -946,23 +960,23 @@ export interface ProcessDefinitionDto {
 
 export interface HistoricActivityInstance {
     processDefinitionKey: string;
+    rootProcessInstanceId: string;
     parentActivityInstanceId: string;
     calledProcessInstanceId: string;
     calledCaseInstanceId: string;
+    endTime: DateAsString;
+    taskId: string;
+    startTime: DateAsString;
+    activityId: string;
+    processDefinitionId: string;
+    activityType: string;
+    assignee: string;
+    tenantId: string;
+    processInstanceId: string;
     activityName: string;
     durationInMillis: number;
     completeScope: boolean;
-    processInstanceId: string;
-    rootProcessInstanceId: string;
-    activityType: string;
-    processDefinitionId: string;
-    startTime: DateAsString;
-    endTime: DateAsString;
-    taskId: string;
-    assignee: string;
-    tenantId: string;
     executionId: string;
-    activityId: string;
     canceled: boolean;
     removalTime: DateAsString;
     id: string;

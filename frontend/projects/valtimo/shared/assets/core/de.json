@@ -2000,6 +2000,9 @@
       "key": "Schlüssel",
       "versionTag": "Version"
     },
+    "detail": {
+      "title": "Baublockdetails"
+    },
     "noResults": {
       "title": "Es gibt keine Baublöcke",
       "description": "Fügen Sie einen Baublock hinzu, um zu beginnen"
@@ -2025,6 +2028,12 @@
     },
     "metadata": {
       "title": "Allgemeine Informationen"
+    },
+    "processDefinition": {
+      "title": "Baustein-Prozessdefinition",
+      "name": "Name",
+      "key": "Schlüssel",
+      "mainText": "Hauptprozess"
     }
   }
 }

@@ -14,4 +14,30 @@
   ~ limitations under the License.
   -->
 
-processes works
+<valtimo-carbon-list
+  [fields]="FIELDS"
+  [items]="buildingBlockProcessDefinitionItems$ | async"
+  [loading]="$loading()"
+  (rowClicked)="onRowClick($event)"
+>
+  <ng-container
+    carbonToolbarContent
+    [ngTemplateOutlet]="buildingBlockProcessDefinitionActions"
+  ></ng-container>
+</valtimo-carbon-list>
+
+<ng-template #buildingBlockProcessDefinitionActions>
+  <div class="valtimo-building-block-management-list__actions">
+    <button cdsButton="ghost" (click)="showUploadModal()">
+      {{ 'Upload' | translate }}
+
+      <svg cdsIcon="upload" size="16" class="cds--btn__icon"></svg>
+    </button>
+
+    <button cdsButton="primary" (click)="showCreateModal()">
+      {{ 'interface.create' | translate }}
+
+      <svg cdsIcon="add" size="16" class="cds--btn__icon"></svg>
+    </button>
+  </div>
+</ng-template>

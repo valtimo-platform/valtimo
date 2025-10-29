@@ -16,7 +16,7 @@
 
 const BUILDING_BLOCK_MANAGEMENT_TABS = {
   GENERAL: 'general',
-  PROCESSES: 'processes',
+  PROCESSES: 'process-definition',
   DOCUMENT: 'document',
 } as const;
 

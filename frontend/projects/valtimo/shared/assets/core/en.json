@@ -1973,6 +1973,9 @@
       "key": "Key",
       "versionTag": "Version"
     },
+    "detail": {
+      "title": "Building block details"
+    },
     "noResults": {
       "title": "There are no building blocks",
       "description": "Add a building block to get started"
@@ -1998,6 +2001,12 @@
     },
     "metadata": {
       "title": "General information"
+    },
+    "processDefinition": {
+      "title": "Building block process definition",
+      "name": "Name",
+      "key": "Key",
+      "mainText": "Main process"
     }
   }
 }
