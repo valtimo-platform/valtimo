@@ -19,6 +19,7 @@ import {Injectable} from '@angular/core';
 import {
   BaseApiService,
   BuildingBlockDefinitionDto,
+  BuildingBlockProcessDefinitionDto,
   ConfigService,
   CreateBuildingBlockDefinitionDto,
   InterceptorSkip,
@@ -93,6 +94,15 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     return this.httpClient.put<object>(
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/document`),
       schema
+    );
+  }
+
+  public getBuildingBlockProcessDefinitions(
+    key: string,
+    versionTag: string
+  ): Observable<BuildingBlockProcessDefinitionDto[]> {
+    return this.httpClient.get<BuildingBlockProcessDefinitionDto[]>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/process-definition`)
     );
   }
 }

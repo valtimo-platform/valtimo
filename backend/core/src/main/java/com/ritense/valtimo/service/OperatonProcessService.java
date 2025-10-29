@@ -16,8 +16,8 @@
 
 package com.ritense.valtimo.service;
 
-import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX;
-import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX;
+import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX;
+import static com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX;
 import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byStartUserId;
 import static com.ritense.valtimo.operaton.repository.OperatonHistoricProcessInstanceSpecificationHelper.byUnfinished;
 import static com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper.NAME;
@@ -257,7 +257,7 @@ public class OperatonProcessService {
                 } else {
                     // TODO: What to do if we're working on a global process definition? Currently taking latest
                     OperatonProcessDefinition procDef = operatonRepositoryService.findProcessDefinition(
-                        byKey(processDefinitionKey).and(byLatestVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId))
+                        byKey(processDefinitionKey).and(byLatestVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId))
                     );
                     if (procDef == null) {
                         procDef = operatonRepositoryService.findLatestProcessDefinition(processDefinitionKey);
@@ -371,7 +371,7 @@ public class OperatonProcessService {
 
     public List<OperatonProcessDefinition> getDeployedDefinitions(CaseDefinitionId caseDefinitionId) {
         denyAuthorization();
-        String versionTag = OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString();
+        String versionTag = OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString();
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
             byActive()
                 .and(byLatestVersionTag(versionTag)),
@@ -405,8 +405,8 @@ public class OperatonProcessService {
                     Sort.by(NAME)
                 ).stream()
                 .filter(def -> def.getVersionTag() == null || !def.getVersionTag()
-                    .startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX) || !def.getVersionTag()
-                    .startsWith(OPERATION_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX))
+                    .startsWith(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX) || !def.getVersionTag()
+                    .startsWith(OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX))
                 .collect(Collectors.toList())
         );
     }
@@ -417,7 +417,7 @@ public class OperatonProcessService {
     ) {
         denyAuthorization();
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinitions(
-            byVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
+            byVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
                 .and(byKey(processDefinitionKey))
         ));
     }
@@ -427,7 +427,7 @@ public class OperatonProcessService {
         String processDefinitionKey
     ) {
         denyAuthorization();
-        String versionTag = OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString();
+        String versionTag = OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString();
         return AuthorizationContext.runWithoutAuthorization(() -> operatonRepositoryService.findProcessDefinition(
             byVersionTag(versionTag)
                 .and(byKey(processDefinitionKey))
@@ -510,7 +510,11 @@ public class OperatonProcessService {
             }
 
             if (caseDefinitionId != null) {
-                setProcessesVersionTag(bpmnModel, caseDefinitionId);
+                setProcessesVersionTag(
+                    bpmnModel,
+                    OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId,
+                    OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey()
+                );
             }
             setProcessesExecutable(bpmnModel);
             setToNullWhenServiceTaskExpressionIsEmpty(bpmnModel);
@@ -573,7 +577,7 @@ public class OperatonProcessService {
                     .decisionDefinitionKey(decisionDefinitionKey);
 
                 if (caseDefinitionId != null) {
-                    decisionDefinitionQuery.versionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
+                    decisionDefinitionQuery.versionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
                 }
 
                 DecisionDefinition decisionDefinition = decisionDefinitionQuery.singleResult();
@@ -667,7 +671,7 @@ public class OperatonProcessService {
             byKey(processDefinitionKey)
                 .and(byActive())
                 .and(caseDefinitionId == null ? byNotLinkedToCaseDefinition() : byVersionTag(
-                    OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId))
+                    OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId))
             ,
             Sort.by(Sort.Order.desc(VERSION))
         );
@@ -684,10 +688,16 @@ public class OperatonProcessService {
         }
     }
 
-    private void setProcessesVersionTag(BpmnModelInstance bpmnModel, CaseDefinitionId caseDefinitionId) {
+    public void setProcessesVersionTag(
+        BpmnModelInstance bpmnModel,
+        String versionTagWithKeyAndVersion,
+        String versionTagWithKeyOnly
+    ) {
+        denyAuthorization();
+
         bpmnModel.getDefinitions().getChildElementsByType(Process.class).forEach(
             process -> {
-                process.setOperatonVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString());
+                process.setOperatonVersionTag(versionTagWithKeyAndVersion);
             }
         );
 
@@ -699,12 +709,12 @@ public class OperatonProcessService {
                         (
                             callActivity.getOperatonCalledElementVersionTag() != null &&
                                 callActivity.getOperatonCalledElementVersionTag()
-                                    .startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
+                                    .startsWith(versionTagWithKeyOnly)
                         )
 
                 ) {
                     callActivity.setOperatonCalledElementBinding("versionTag");
-                    callActivity.setOperatonCalledElementVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
+                    callActivity.setOperatonCalledElementVersionTag(versionTagWithKeyAndVersion);
                 }
             }
         );
@@ -717,20 +727,23 @@ public class OperatonProcessService {
                         (
                             businessRuleTask.getOperatonDecisionRefVersionTag() != null &&
                                 businessRuleTask.getOperatonDecisionRefVersionTag()
-                                    .startsWith(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.getKey())
+                                    .startsWith(versionTagWithKeyOnly)
                         )
                 ) {
                     businessRuleTask.setOperatonDecisionRefBinding("versionTag");
-                    businessRuleTask.setOperatonDecisionRefVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId);
+                    businessRuleTask.setOperatonDecisionRefVersionTag(versionTagWithKeyAndVersion);
                 }
             }
         );
     }
 
-    private void setDecisionsVersionTag(DmnModelInstance dmnModel, CaseDefinitionId caseDefinitionId) {
-        dmnModel.getDefinitions().getChildElementsByType(Decision.class).forEach(
-            dmn -> dmn.setVersionTag(OPERATION_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
-        );
+    public BpmnModelInstance getBpmnModelInstanceByProcessDefinitionId(String processDefinitionId) {
+        denyAuthorization();
+
+        OperatonProcessDefinition definition = getProcessDefinitionById(processDefinitionId);
+        byte[] bytes = getBpmnModel(definition);
+
+        return Bpmn.readModelFromStream(new ByteArrayInputStream(bytes));
     }
 
     @Transactional
@@ -776,7 +789,12 @@ public class OperatonProcessService {
             logger.error("Error reading resource stream for file: {}", fileName, e);
             throw new ProcessNotDeployableException("Error reading resource stream for file: " + fileName);
         }
+    }
 
+    private void setDecisionsVersionTag(DmnModelInstance dmnModel, CaseDefinitionId caseDefinitionId) {
+        dmnModel.getDefinitions().getChildElementsByType(Decision.class).forEach(
+            dmn -> dmn.setVersionTag(OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX + caseDefinitionId.toString())
+        );
     }
 
     private void setProcessesExecutable(BpmnModelInstance bpmnModel) {

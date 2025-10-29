@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../constants';
-import {BuildingBlockProcessDefinitionDto} from '@valtimo/shared';
-
-type BuildingBlockManagementTabKey =
-  (typeof BUILDING_BLOCK_MANAGEMENT_TABS)[keyof typeof BUILDING_BLOCK_MANAGEMENT_TABS];
-
-interface BuildingBlockProcessDefinitionItem extends BuildingBlockProcessDefinitionDto {
-  mainText: string;
+interface BuildingBlockManagementParams {
+  buildingBlockDefinitionKey: string;
+  buildingBlockDefinitionVersionTag: string;
 }
 
-export {BuildingBlockManagementTabKey, BuildingBlockProcessDefinitionItem};
+export {BuildingBlockManagementParams};

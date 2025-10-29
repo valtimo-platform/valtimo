@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.service
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
@@ -73,7 +74,14 @@ class BuildingBlockManagementService(
         val saved = buildingBlockDefinitionRepository.saveAndFlush(entity)
 
         buildingBlockDocumentDefinitionService.ensureEmptyFor(saved.id.key, saved.id.versionTag.toString())
-        buildingBlockProcessService.createEmptyProcessAndLink(saved.title, saved.id.key, saved.id.versionTag.toString())
+
+        runWithoutAuthorization {
+            buildingBlockProcessService.createEmptyProcessAndLink(
+                saved.title,
+                saved.id.key,
+                saved.id.versionTag.toString()
+            )
+        }
 
         return BuildingBlockDefinitionDto(
             key = saved.id.key,

@@ -80,7 +80,7 @@ export class BuildingBlockManagementMetadataComponent implements OnInit, OnDestr
     this.buildingBlockManagementApiService
       .updateBuildingBlockDefinition(
         this.buildingBlockManagementDetailService.buildingBlockDefinitionKey,
-        this.buildingBlockManagementDetailService.buildingBlockVersionTag,
+        this.buildingBlockManagementDetailService.buildingBlockDefinitionVersionTag,
         this.formGroup.value
       )
       .subscribe(() => {
