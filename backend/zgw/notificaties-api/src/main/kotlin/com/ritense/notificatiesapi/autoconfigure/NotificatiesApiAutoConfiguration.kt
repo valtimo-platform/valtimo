@@ -16,6 +16,7 @@
 
 package com.ritense.notificatiesapi.autoconfigure
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.notificatiesapi.NotificatiesApiPluginFactory
 import com.ritense.notificatiesapi.PluginsDeployedEventListener
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
@@ -42,8 +43,8 @@ class NotificatiesApiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(NotificatiesApiClient::class)
-    fun notificatiesApiClient(restClientBuilder: RestClient.Builder): NotificatiesApiClient {
-        return NotificatiesApiClient(restClientBuilder)
+    fun notificatiesApiClient(restClientBuilder: RestClient.Builder, objectMapper: ObjectMapper): NotificatiesApiClient {
+        return NotificatiesApiClient(restClientBuilder, objectMapper)
     }
 
     @Bean
