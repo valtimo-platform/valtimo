@@ -101,7 +101,7 @@ class CaseInstanceServiceTest : BaseTest() {
         val pageable = Pageable.ofSize(10)
         whenever(documentSearchService.search(CASE_DEFINITION_NAME, searchRequest, pageable))
             .thenReturn(PageImpl(listOf(DOCUMENT)))
-        whenever(caseDefinitionService.findCaseDefinition(any()))
+        whenever(caseDefinitionService.getCaseDefinition(any()))
             .thenReturn(
                 caseDefinition(
                     CaseDefinitionId.of(CASE_DEFINITION_NAME, "1.0.0"),
@@ -122,7 +122,7 @@ class CaseInstanceServiceTest : BaseTest() {
         val pageable = PageRequest.of(0, 1, Sort.by("\$.some.jsonPath"))
         whenever(documentSearchService.search(CASE_DEFINITION_NAME, searchRequest, pageable))
             .thenReturn(PageImpl(listOf(DOCUMENT)))
-        whenever(caseDefinitionService.findCaseDefinition(any()))
+        whenever(caseDefinitionService.getCaseDefinition(any()))
             .thenReturn(
                 caseDefinition(
                     CaseDefinitionId.of(CASE_DEFINITION_NAME, "1.0.0"),
