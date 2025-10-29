@@ -830,8 +830,6 @@ export class ProcessManagementBuilderComponent
             return of(null);
           }
 
-          console.log('hi', context);
-
           switch (context) {
             case 'case':
               const caseManagementParams = params as CaseManagementParams;

@@ -17,6 +17,7 @@
 package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
@@ -81,7 +82,8 @@ class BuildingBlockAutoConfiguration {
         operatonProcessService: OperatonProcessService,
         processLinkService: ProcessLinkService,
         processLinkMappers: List<ProcessLinkMapper>,
-        processDeploymentService: ProcessDeploymentService
+        processDeploymentService: ProcessDeploymentService,
+        authorizationService: AuthorizationService
     ): BuildingBlockProcessService {
         return BuildingBlockProcessService(
             repositoryService,
@@ -89,7 +91,8 @@ class BuildingBlockAutoConfiguration {
             operatonProcessService,
             processLinkService,
             processLinkMappers,
-            processDeploymentService
+            processDeploymentService,
+            authorizationService
         )
     }
 
