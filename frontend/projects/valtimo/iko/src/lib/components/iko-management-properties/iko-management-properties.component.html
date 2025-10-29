@@ -22,11 +22,18 @@
       propertyField.type === 'integer') {
         <cds-label>
           {{ propertyField.title }}
+          @if (propertyField.tooltip) {
+            <cds-tooltip
+              [caret]="true"
+              [description]="propertyField.tooltip"
+            >
+              <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
+            </cds-tooltip>
+          }
           <input
             [formControlName]="propertyField.key"
             cdsText
             cdsLayer
-            [placeholder]="propertyField.title"
             [attr.modal-primary-focus]="true"
           />
         </cds-label>
@@ -38,6 +45,7 @@
             [formControlName]="propertyField.key"
             [items]="$selectItems()[propertyField.key]"
             [title]="propertyField.title"
+            [tooltip]="propertyField.tooltip"
             [appendInline]="false"
             [dropUp]="false"
           ></v-select>
@@ -48,6 +56,14 @@
           @for (keyValueControl of getFa(propertyField.key)?.controls; track keyValueControl) {
             <cds-text-label>
               {{ propertyField.title }}
+              @if (propertyField.tooltip) {
+                <cds-tooltip
+                  [caret]="true"
+                  [description]="propertyField.tooltip"
+                >
+                  <svg class="tooltip-trigger" cdsIcon="information" size="16"></svg>
+                </cds-tooltip>
+              }
 
               <fieldset [formGroupName]="$index">
                 <input

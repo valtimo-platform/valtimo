@@ -36,12 +36,16 @@ class IkoPlugin(
     lateinit var url: URI
 
     fun getByEndpointId(
-        endpointPath: String,
+        connectorTag: String,
+        connectorInstanceTag: String,
+        endpointOperation: String,
         id: String,
     ): JsonNode {
         return ikoClient.getByEndpointId(
             baseUrl = url,
-            endpointPath = endpointPath,
+            connectorTag = connectorTag,
+            connectorInstanceTag = connectorInstanceTag,
+            endpointOperation = endpointOperation,
             id = id,
         )
     }
@@ -58,12 +62,16 @@ class IkoPlugin(
     }
 
     fun search(
-        endpointPath: String,
+        connectorTag: String,
+        connectorInstanceTag: String,
+        endpointOperation: String,
         filters: Map<String, String>,
     ): JsonNode {
         return ikoClient.search(
             baseUrl = url,
-            endpointPath = endpointPath,
+            connectorTag = connectorTag,
+            connectorInstanceTag = connectorInstanceTag,
+            endpointOperation = endpointOperation,
             filters = filters,
         )
     }

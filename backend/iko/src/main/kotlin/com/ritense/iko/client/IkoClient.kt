@@ -31,7 +31,9 @@ class IkoClient(
 ) {
     fun getByEndpointId(
         baseUrl: URI,
-        endpointPath: String,
+        connectorTag: String,
+        connectorInstanceTag: String,
+        endpointOperation: String,
         id: String,
     ): JsonNode {
         try {
@@ -45,9 +47,7 @@ class IkoClient(
                         .host(baseUrl.host)
                         .path(baseUrl.path)
                         .port(baseUrl.port)
-                        .pathSegment("endpoints")
-                        .path(endpointPath)
-                        .pathSegment(id)
+                        .pathSegment("endpoints", connectorTag, connectorInstanceTag, endpointOperation, id)
                         .build()
                 }
                 .header(AUTHORIZATION, "Bearer ${SecurityUtils.getCurrentJwtTokenValue()}")
@@ -56,14 +56,16 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error(e) { "Failed to get data for endpoint='$endpointPath', and id='$id'" }
+            logger.error(e) { "Failed to get data for connectorTag='$connectorTag', connectorInstanceTag='$connectorInstanceTag', endpointOperation='$endpointOperation'" }
             return jacksonObjectMapper().createObjectNode()
         }
     }
 
     fun search(
         baseUrl: URI,
-        endpointPath: String,
+        connectorTag: String,
+        connectorInstanceTag: String,
+        endpointOperation: String,
         filters: Map<String, String>,
     ): JsonNode {
         try {
@@ -77,8 +79,7 @@ class IkoClient(
                         .host(baseUrl.host)
                         .path(baseUrl.path)
                         .port(baseUrl.port)
-                        .pathSegment("endpoints")
-                        .path(endpointPath)
+                        .pathSegment("endpoints", connectorTag, connectorInstanceTag, endpointOperation)
                         .queryParams(
                             LinkedMultiValueMap(
                                 filters
@@ -93,7 +94,7 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error(e) { "Failed to search data for endpoint='$endpointPath'" }
+            logger.error(e) { "Failed to search data for connectorTag='$connectorTag', connectorInstanceTag='$connectorInstanceTag', endpointOperation='$endpointOperation'" }
             return jacksonObjectMapper().createArrayNode()
         }
     }
