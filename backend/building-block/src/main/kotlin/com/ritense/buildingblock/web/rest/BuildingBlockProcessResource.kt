@@ -16,6 +16,7 @@
 
 package com.ritense.buildingblock.web.rest
 
+import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
@@ -45,7 +46,12 @@ class BuildingBlockProcessResource(
         @PathVariable key: String,
         @PathVariable versionTag: String
     ): ResponseEntity<List<BuildingBlockProcessDefinitionDto>> {
-        val items = buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(key, versionTag)
+        val items = runWithoutAuthorization {
+            buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(
+                key,
+                versionTag
+            )
+        }
         return ResponseEntity.ok(items)
     }
 
@@ -54,12 +60,14 @@ class BuildingBlockProcessResource(
         @PathVariable key: String,
         @PathVariable versionTag: String,
         @PathVariable processDefinitionId: String,
-        ): ResponseEntity<BuildingBlockProcessDefinitionWithLinksDto> {
-        val dto = buildingBlockProcessService.getProcessDefinitionWithProcessLinks(
-            key,
-            versionTag,
-            processDefinitionId
-        )
+    ): ResponseEntity<BuildingBlockProcessDefinitionWithLinksDto> {
+        val dto = runWithoutAuthorization {
+            buildingBlockProcessService.getProcessDefinitionWithProcessLinks(
+                key,
+                versionTag,
+                processDefinitionId
+            )
+        }
 
         return dto?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
@@ -78,14 +86,16 @@ class BuildingBlockProcessResource(
         @RequestPart(name = "processDefinitionId") processDefinitionId: String,
         @RequestPart(name = "main", required = false) main: Boolean? = false
     ): ResponseEntity<Any> {
-        buildingBlockProcessService.deployProcessDefinitionAndProcessLinks(
-            key,
-            versionTag,
-            bpmn,
-            processLinks,
-            processDefinitionId,
-            main ?: false
-        )
+        runWithoutAuthorization {
+            buildingBlockProcessService.deployProcessDefinitionAndProcessLinks(
+                key,
+                versionTag,
+                bpmn,
+                processLinks,
+                processDefinitionId,
+                main ?: false
+            )
+        }
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
     }
