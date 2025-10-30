@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import {WidgetWizardContentStepComponent} from './widget-wizard-content-step/widget-wizard-content-step.component';
+import {WidgetWizardDisplayConditionsStepComponent} from './widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
 import {WidgetWizardStyleStepComponent} from './widget-wizard-style-step/widget-wizard-style-step.component';
 import {WidgetWizardTypeStepComponent} from './widget-wizard-type-step/widget-wizard-type-step.component';
 import {WidgetWizardWidthStepComponent} from './widget-wizard-width-step/widget-wizard-width-step.component';
@@ -23,4 +24,5 @@ export const WIDGET_STEPS = [
   WidgetWizardStyleStepComponent,
   WidgetWizardTypeStepComponent,
   WidgetWizardWidthStepComponent,
+  WidgetWizardDisplayConditionsStepComponent,
 ];

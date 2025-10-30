@@ -859,7 +859,7 @@
       "success": "Widget-configuratie succesvol bijgewerkt",
       "error": "Widget-configuratie kan niet worden bijgewerkt"
     },
-    "types": {
+    "type": {
       "description": "Kies het widget-type dat je wilt configureren.",
       "fields": {"title": "Velden", "description": "Tekstgegevens met inhoud en een label"},
       "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},
@@ -869,7 +869,8 @@
         "title": "Interactieve tabel",
         "description": "Maak een interactieve tabel"
       },
-      "collection": {"title": "Collectie", "description": "Maak een collectie aan"}
+      "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
+      "divider": {"title": "Scheidingslijn"}
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
@@ -2004,6 +2005,7 @@
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",
     "canStartCase": "Kan zaak starten",
+    "collectionPathTooltip": "Een pad dat leidt naar de verzameling van waarden die je wilt weergeven. Voor het tonen van eigenschappen in IKO's, volg dit voorbeeld: 'iko:/pad/naar/eigenschap'.",
     "tabTypes": {
       "widgets": "Widgets"
     }

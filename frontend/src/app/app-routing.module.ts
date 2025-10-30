@@ -45,6 +45,7 @@ const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       errorHandler: error => {
+        console.error({error});
         window.location.href = '/';
       },
     }),

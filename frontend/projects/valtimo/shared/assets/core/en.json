@@ -840,7 +840,7 @@
       "success": "Widget configuration updated successfully",
       "error": "Widget configuration failed to update"
     },
-    "types": {
+    "type": {
       "description": "Choose the widget type you want to configure.",
       "fields": {"title": "Fields", "description": "Text data with content and a label"},
       "custom": {"title": "Custom component", "description": "For complex content"},
@@ -850,7 +850,8 @@
         "title": "Interactive table",
         "description": "Create an interactive table"
       },
-      "collection": {"title": "Collection", "description": "Create a collection"}
+      "collection": {"title": "Collection", "description": "Create a collection"},
+      "divider": {"title": "Divider"}
     },
     "width": {
       "description": "Select the desired width for the widget.",
@@ -1971,6 +1972,7 @@
     "editTab": "Edit tab",
     "rowAction": "Row action",
     "canStartCase": "Can start case",
+    "collectionPathTooltip": "A path which leads to the collection of values which you want to display. For showing properties in IKO's, follow this example: 'iko:/path/to/property'.",
     "tabTypes": {
       "widgets": "Widgets"
     }
