@@ -117,7 +117,7 @@ class ZakenApiPlugin(
 
     @PluginProperty(
         key = "noteEventListenerEnabled",
-        title = "When enabled acts on Note events resulting in create, update and delete of ZaakNotitie",
+        title = "When enabled acts on Note events resulting in create, update or delete of ZaakNotitie",
         required = false,
         secret = false
     )
@@ -1236,8 +1236,8 @@ class ZakenApiPlugin(
             tekst = tekst,
             zaakUrl = zaakUrl,
             aangemaaktDoor = aangemaaktDoor,
-            notitieType = notitieType,
-            status = status
+            notitieType = notitieTypeFrom(notitieType),
+            status = notitieStatusFrom(status)
         ).also {
             logger.info {
                 "Zaaknotitie with URL '${it.url}' created for " +
@@ -1251,8 +1251,8 @@ class ZakenApiPlugin(
         tekst: String,
         zaakUrl: URI,
         aangemaaktDoor: String? = null,
-        notitieType: String? = null,
-        status: String? = null
+        notitieType: NotitieType? = null,
+        status: NotitieStatus? = null
     ): ZaakNotitie {
         logger.info {
             "Creating zaaknotitie for Zaak with URL '$zaakUrl'"
@@ -1265,8 +1265,8 @@ class ZakenApiPlugin(
                 tekst = tekst,
                 gerelateerdAan = zaakUrl,
                 aangemaaktDoor = aangemaaktDoor,
-                notitieType = notitieTypeFrom(notitieType),
-                status = notitieStatusFrom(status)
+                notitieType = notitieType,
+                status = status
             )
         )
     }
@@ -1294,8 +1294,8 @@ class ZakenApiPlugin(
             onderwerp = onderwerp,
             tekst = tekst,
             aangemaaktDoor = aangemaaktDoor,
-            notitieType = notitieType,
-            status = status
+            notitieType = notitieTypeFrom(notitieType),
+            status = notitieStatusFrom(status)
         ).also {
             logger.info {
                 "Zaaknotitie with URL '$zaakNotitieUrl' patched for " +
@@ -1309,8 +1309,8 @@ class ZakenApiPlugin(
         onderwerp: String? = null,
         tekst: String? = null,
         aangemaaktDoor: String? = null,
-        notitieType: String? = null,
-        status: String? = null
+        notitieType: NotitieType? = null,
+        status: NotitieStatus? = null
     ): ZaakNotitie {
         logger.info {
             "Patching zaaknotitie with URL '$zaakNotitieUrl'"
@@ -1323,8 +1323,8 @@ class ZakenApiPlugin(
                 onderwerp = onderwerp,
                 tekst = tekst,
                 aangemaaktDoor = aangemaaktDoor,
-                notitieType = notitieTypeFrom(notitieType),
-                status = notitieStatusFrom(status)
+                notitieType = notitieType,
+                status = status
             )
         )
     }
