@@ -1537,7 +1537,8 @@
     "dateRange": "Datumsbereich",
     "datetimeRange": "Datums- und Zeit-bereich",
     "booleanPositive": "Ja",
-    "booleanNegative": "Nein"
+    "booleanNegative": "Nein",
+    "bsn": "BSN"
   },
   "searchFieldsTooltips": {
     "text": "Ein Textfeld",

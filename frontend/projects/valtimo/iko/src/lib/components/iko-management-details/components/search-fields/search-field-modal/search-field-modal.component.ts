@@ -234,6 +234,10 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
           content: this.translateService.instant('searchFields.time'),
           id: SearchFieldDataType.TIME,
         },
+        {
+          content: this.translateService.instant('searchFields.bsn'),
+          id: SearchFieldDataType.BSN,
+        },
       ].map(item => ({...item, selected: item.id === dataTypeValue?.id}))
     )
   );

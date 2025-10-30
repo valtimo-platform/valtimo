@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {CommonModule} from '@angular/common';
+import {AsyncPipe, CommonModule, NgTemplateOutlet} from '@angular/common';
 import {Component, OnDestroy} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, PageTitleService} from '@valtimo/components';
-import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
+import {CarbonListModule, PageTitleService, InputModule, DatePickerModule, SelectModule} from '@valtimo/components';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
 import {IkoApiService} from '../../services';
@@ -41,6 +41,11 @@ import {IkoListComponent} from '../iko-list/iko-list.component';
     TranslateModule,
     IkoListComponent,
     CarbonListModule,
+    NgTemplateOutlet,
+    AsyncPipe,
+    InputModule,
+    SelectModule,
+    DatePickerModule,
   ],
 })
 export class IkoSearchComponent implements OnDestroy {

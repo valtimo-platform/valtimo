@@ -25,12 +25,10 @@
         <div class="query-group__row">
           @for (field of param.searchFields; track field.key) {
             <div class="query-group__field">
-              <input
-                cdsText
-                [id]="field.key"
-                [placeholder]="field.title"
-                [(ngModel)]="formValues[field.key]"
-              />
+              <ng-container
+                  class="query-group__field"
+                  *ngTemplateOutlet="searchFieldTemplate; context: {searchField: field}"
+              ></ng-container>
             </div>
           }
           <button
@@ -47,3 +45,193 @@
     }
   }
 }
+
+<ng-template #searchFieldTemplate let-searchField="searchField">
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateText;
+      context: {
+        searchField: searchField,
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateNumber;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateDate;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateBoolean;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateDateTime;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateNumberRange;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateTextRange;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateDateRange;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateDateTimeRange;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateSingleSelectDropdown;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateMultiSelectDropdown;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateBsn;
+      context: {
+        searchField: searchField
+      }
+    "
+  ></ng-container>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateText
+  let-searchField="searchField"
+>
+  <v-input
+    *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
+    [dataTestId]="'iko-search-field-' + searchField.key"
+    [name]="searchField.key"
+    [title]="searchField.title"
+    [fullWidth]="true"
+    [disabled]="inputDisabled"
+    [(ngModel)]="formValues[searchField.key]"
+  >
+  </v-input>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateNumber
+  let-searchField="searchField"
+>
+  <v-input
+      *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'single'"
+      type="number"
+      [dataTestId]="'iko-search-field-' + searchField.key"
+      [name]="searchField.key"
+      [title]="searchField.title"
+      [hideNumberSpinBox]="true"
+      [(ngModel)]="formValues[searchField.key]"
+  >
+  </v-input>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateDate
+  let-searchField="searchField"
+>
+  <v-date-picker
+    *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'single'"
+    [title]="searchField.title"
+    [(ngModel)]="formValues[searchField.key]"
+  ></v-date-picker>
+</ng-template>
+
+<ng-template
+  #searchFieldTemplateDateTime
+  let-searchField="searchField"
+>
+  <v-date-picker
+    *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'single'"
+    [title]="searchField.title"
+    [(ngModel)]="formValues[searchField.key]"
+  ></v-date-picker>
+</ng-template>
+
+
+<ng-template
+    #searchFieldTemplateBoolean
+    let-searchField="searchField"
+>
+  <ng-container *ngIf="searchField.dataType === 'boolean'">
+    <v-input-label
+      [title]="searchField.title"
+      [(ngModel)]="formValues[searchField.key]"
+    ></v-input-label>
+    <v-select
+      [items]="searchField.dropdownList"
+      [name]="searchField.key"
+      [(ngModel)]="formValues[searchField.key]"
+    ></v-select>
+  </ng-container>
+</ng-template>
+
+<ng-template
+    #searchFieldTemplateText
+    let-searchField="searchField"
+>
+  <v-input
+    *ngIf="searchField.dataType === 'bsn'"
+    type="text"
+    [dataTestId]="'iko-search-field-' + searchField.key"
+    [name]="searchField.key"
+    [title]="searchField.title"
+    [(ngModel)]="formValues[searchField.key]"
+  >
+  </v-input>
+</ng-template>
+
+
+

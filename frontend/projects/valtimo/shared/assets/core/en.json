@@ -1513,7 +1513,8 @@
     "dateRange": "Date range",
     "datetimeRange": "Date and time range",
     "booleanPositive": "Yes",
-    "booleanNegative": "No"
+    "booleanNegative": "No",
+    "bsn": "BSN"
   },
   "searchFieldsTooltips": {
     "text": "A text field",

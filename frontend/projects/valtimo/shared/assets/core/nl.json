@@ -1540,7 +1540,8 @@
     "dateRange": "Datumreeks",
     "datetimeRange": "Datum en tijd-reeks",
     "booleanPositive": "Ja",
-    "booleanNegative": "Nee"
+    "booleanNegative": "Nee",
+    "bsn": "BSN"
   },
   "searchFieldsTooltips": {
     "text": "Een tekstveld",

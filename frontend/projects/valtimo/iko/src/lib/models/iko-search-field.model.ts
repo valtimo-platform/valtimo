@@ -21,6 +21,7 @@ enum SearchFieldDataType {
   DATETIME = 'datetime',
   TIME = 'time',
   BOOLEAN = 'boolean',
+  BSN = 'bsn',
 }
 
 enum SearchFieldFieldType {
