@@ -60,4 +60,19 @@
       [tooltip]="'authenticationPluginConfigurationTooltip' | pluginTranslate: pluginId | async"
     ></v-select>
   </ng-container>
+
+  <v-input-label
+    [title]="'noteEventListenerEnabled' | pluginTranslate: pluginId | async"
+    [tooltip]="'noteEventListenerEnabledTooltip' | pluginTranslate: pluginId | async"
+  >
+  </v-input-label>
+
+  <cds-toggle
+    [checked]="obs.prefill?.noteEventListenerEnabled"
+    [disabled]="obs.disabled"
+    [onText]="'noteEventListenerEnabled.toggleOn' | pluginTranslate: pluginId | async"
+    [offText]="'noteEventListenerEnabled.toggleOff' | pluginTranslate: pluginId | async"
+    (checkedChange)="onNoteEventListenerEnabledChange($event)"
+  ></cds-toggle>
+
 </v-form>

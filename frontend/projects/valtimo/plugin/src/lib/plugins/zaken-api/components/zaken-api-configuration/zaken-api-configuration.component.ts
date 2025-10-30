@@ -77,13 +77,21 @@ export class ZakenApiConfigurationComponent
     this.handleValid(formValue);
   }
 
+  onNoteEventListenerEnabledChange(event: any): void {
+    let formValue = this.formValue$.getValue();
+    this.formValueChange({
+      noteEventListenerEnabled: event,
+      ...formValue
+    })
+  }
+
   private handleValid(formValue: ZakenApiConfig): void {
     const valid = !!(
       formValue.configurationTitle &&
       formValue.url &&
-      formValue.authenticationPluginConfiguration
+      formValue.authenticationPluginConfiguration &&
+      formValue.noteEventListenerEnabled != null
     );
-
     this.valid$.next(valid);
     this.valid.emit(valid);
   }

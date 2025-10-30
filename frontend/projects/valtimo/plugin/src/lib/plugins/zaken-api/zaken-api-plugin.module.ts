@@ -22,7 +22,7 @@ import {
   InputLabelModule,
   InputModule,
   ParagraphModule,
-  RadioModule,
+  RadioModule, ReadOnlyDirective,
   SelectModule,
 } from '@valtimo/components';
 import {
@@ -56,6 +56,7 @@ import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-o
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
 import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
 import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
+import {ReactiveFormsModule} from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -98,6 +99,10 @@ import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknot
     IconModule,
     TranslateModule,
     DatePickerInputModule,
+    InputModule,
+    ReactiveFormsModule,
+    ReadOnlyDirective,
+    InputLabelModule,
   ],
   exports: [
     ZakenApiConfigurationComponent,
