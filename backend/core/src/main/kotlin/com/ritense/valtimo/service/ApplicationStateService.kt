@@ -17,8 +17,10 @@
 package com.ritense.valtimo.service
 
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.event.ApplicationFullyReadyEvent
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service
 @SkipComponentScan
 @Service
 class ApplicationStateService(
+    private val publisher: ApplicationEventPublisher,
     private var applicationReady: Boolean = false,
 ) {
 
@@ -34,6 +37,7 @@ class ApplicationStateService(
     @EventListener(ApplicationReadyEvent::class)
     fun setApplicationReady() {
         applicationReady = true
+        publisher.publishEvent(ApplicationFullyReadyEvent())
         logger.debug { "Application is ready" }
     }
 
