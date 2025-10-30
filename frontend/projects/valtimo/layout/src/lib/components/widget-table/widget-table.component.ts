@@ -35,6 +35,7 @@ import {
 } from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
 import {FieldsWidgetValue, TableWidget} from '../../models';
+import {WidgetActionButton} from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-table',
@@ -50,6 +51,7 @@ import {FieldsWidgetValue, TableWidget} from '../../models';
     TilesModule,
     TranslateModule,
     ButtonModule,
+    WidgetActionButton,
   ],
 })
 export class WidgetTableComponent {

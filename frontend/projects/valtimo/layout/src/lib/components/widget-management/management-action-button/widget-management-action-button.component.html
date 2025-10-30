@@ -14,38 +14,39 @@
   ~ limitations under the License.
   -->
 
-<ng-container
-  *ngIf="{
-    dropdownItems: dropdownItems$ | async,
-    buttonType: buttonType$ | async,
-  } as obs"
->
-  @if ($widgetContext() === 'case') {
-    <cds-dropdown
-      class="valtimo-widget-management-action-button__type"
-      [label]="'Button action type'"
-      [dropUp]="false"
-      (selected)="onTypeSelected($event)"
-    >
-      <cds-dropdown-list [items]="obs.dropdownItems"></cds-dropdown-list>
-    </cds-dropdown>
-  }
+@if ($widgetContext() === 'case') {
+  <cds-dropdown
+    class="valtimo-widget-management-action-button__type"
+    [label]="'widgetTabManagement.actionButtonLabel' | translate"
+    [dropUp]="false"
+    (selected)="onTypeSelected($event)"
+  >
+    <cds-dropdown-list [items]="dropdownItems$ | async"></cds-dropdown-list>
+  </cds-dropdown>
+}
 
-  @if (obs.buttonType === 'process') {
-    <valtimo-widget-management-process-selector></valtimo-widget-management-process-selector>
-  } @else {
-    <form class="valtimo-widget-management-action-button__form" [formGroup]="formGroup">
-      <cds-text-label>
-        External link
+@if ((buttonType$ | async) === 'process') {
+  <valtimo-widget-management-process-selector></valtimo-widget-management-process-selector>
+} @else {
+  <form class="valtimo-widget-management-action-button__form" [formGroup]="formGroup">
+    <cds-text-label>
+      {{ 'widgetTabManagement.externalLink.linkLabel' | translate }}
 
-        <input cdsText formControlName="navigateTo" [placeholder]="'External link'" />
-      </cds-text-label>
+      <input
+        cdsText
+        formControlName="navigateTo"
+        [placeholder]="'widgetTabManagement.externalLink.linkPlaceholder' | translate"
+      />
+    </cds-text-label>
 
-      <cds-text-label>
-        Name
+    <cds-text-label>
+      {{ 'widgetTabManagement.externalLink.buttonTextLabel' | translate }}
 
-        <input cdsText formControlName="name" [placeholder]="'Name'" />
-      </cds-text-label>
-    </form>
-  }
-</ng-container>
+      <input
+        cdsText
+        formControlName="name"
+        [placeholder]="'widgetTabManagement.processes.buttonTextPlaceholder' | translate"
+      />
+    </cds-text-label>
+  </form>
+}

@@ -14,9 +14,19 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
+import {HttpErrorResponse} from '@angular/common/http';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
+import {PermissionService} from '@valtimo/access-control';
 import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
+import {DocumentService} from '@valtimo/document';
+import {
+  FieldsWidget,
+  WidgetAction,
+  WidgetActionButton,
+  WidgetFieldComponent,
+  WidgetLayoutService,
+} from '@valtimo/layout';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
 import {
   BehaviorSubject,
@@ -28,19 +38,10 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {WidgetsService} from '../../widgets.service';
-import {PermissionService} from '@valtimo/access-control';
-import {WidgetProcess} from '../widget-process/widget-process';
-import {DocumentService} from '@valtimo/document';
-import {
-  FieldsWidget,
-  WidgetAction,
-  WidgetFieldComponent,
-  WidgetLayoutService,
-} from '@valtimo/layout';
+
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
-import {HttpErrorResponse} from '@angular/common/http';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {WidgetsService} from '../../widgets.service';
+import {WidgetProcess} from '../widget-process/widget-process';
 
 @Component({
   selector: 'valtimo-case-widget-field',
@@ -55,6 +56,7 @@ import {GlobalNotificationService} from '@valtimo/shared';
     EllipsisPipe,
     ButtonModule,
     WidgetFieldComponent,
+    WidgetActionButton,
   ],
 })
 export class CaseWidgetFieldComponent extends WidgetProcess {
@@ -102,7 +104,6 @@ export class CaseWidgetFieldComponent extends WidgetProcess {
     private readonly widgetsService: WidgetsService,
     private readonly caseTabService: CaseTabService,
     private readonly caseWidgetApiService: CaseWidgetsApiService,
-    private readonly globalNotificationService: GlobalNotificationService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {
     super(documentService, permissionService);
@@ -111,20 +112,5 @@ export class CaseWidgetFieldComponent extends WidgetProcess {
   public onProcessStartClick(process: WidgetAction): void {
     if (!process.processDefinitionKey) return;
     this.widgetsService.startProcess(process.processDefinitionKey);
-  }
-
-  public onNavigateButtonClick(buttonAction: WidgetAction): void {
-    const {navigateTo} = buttonAction;
-    if (navigateTo?.startsWith(window.location.origin) || navigateTo?.startsWith('/')) {
-      window.open(navigateTo, '_self');
-    } else if (navigateTo?.startsWith('http')) {
-      window.open(navigateTo, '_blank');
-    } else {
-      this.globalNotificationService.showToast({
-        title: 'An unexpected error occurred',
-        caption: `Unable to navigate to ${navigateTo}`,
-        type: 'error',
-      });
-    }
   }
 }

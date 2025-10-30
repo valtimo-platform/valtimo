@@ -35,12 +35,13 @@ import {ButtonModule} from 'carbon-components-angular';
 import {FormioWidgetWidgetWithUuid} from '../../models';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {WidgetActionButton} from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-formio',
   templateUrl: './widget-formio.component.html',
   standalone: true,
-  imports: [CommonModule, TranslateModule, FormIoModule, ButtonModule],
+  imports: [CommonModule, TranslateModule, FormIoModule, ButtonModule, WidgetActionButton],
   styleUrls: ['./widget-formio.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

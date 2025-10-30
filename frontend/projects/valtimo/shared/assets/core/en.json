@@ -969,6 +969,12 @@
       "selectorLabel": "New process button (Optional)",
       "selectorPlaceholder": "Choose a process"
     },
+    "actionButtonLabel": "Action button type",
+    "externalLink": {
+      "linkLabel": "External link button",
+      "linkPlaceholder": "External link",
+      "buttonTextLabel": "External link button text"
+    },
     "saveModalContent": "Are you sure you want to save the widget configuration?"
   },
   "zgw": {

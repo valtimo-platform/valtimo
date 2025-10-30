@@ -19,8 +19,8 @@
   gap: 16px;
   grid-template-columns: 1fr 1fr;
 
-  .cds--text-input,
-  .cds--list-box {
-    background: var(--cds-layer-01);
+  ::ng-deep.cds--text-input,
+  ::ng-deep.cds--list-box {
+    background: var(--cds-layer-01) !important;
   }
 }

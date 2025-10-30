@@ -25,6 +25,10 @@
     <span class="valtimo-widget-collection__title">{{ widgetTitle() }}</span>
 
     <ng-content></ng-content>
+
+    <valtimo-widget-action-button
+      [widgetConfiguration]="obs.widgetConfiguration"
+    ></valtimo-widget-action-button>
   </section>
 
   <div
