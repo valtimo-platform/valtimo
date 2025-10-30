@@ -32,7 +32,6 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.context.ApplicationContext
 import java.net.URI
 import java.util.UUID
 
@@ -40,7 +39,6 @@ class PluginsDeployedEventListenerTest {
     lateinit var client: NotificatiesApiClient
     lateinit var notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository
     lateinit var pluginService: PluginService
-    lateinit var context: ApplicationContext
     lateinit var pluginsDeployedEventListener: PluginsDeployedEventListener
 
     @BeforeEach
@@ -48,7 +46,6 @@ class PluginsDeployedEventListenerTest {
         client = mock()
         notificatiesApiAbonnementLinkRepository = mock()
         pluginService = mock()
-        context = mock()
 
         pluginsDeployedEventListener = PluginsDeployedEventListener(
             client,
@@ -56,7 +53,6 @@ class PluginsDeployedEventListenerTest {
             pluginService,
             true
         )
-        pluginsDeployedEventListener.setApplicationContext(context)
     }
 
     @Test

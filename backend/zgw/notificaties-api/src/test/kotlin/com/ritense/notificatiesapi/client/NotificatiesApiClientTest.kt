@@ -48,7 +48,7 @@ class NotificatiesApiClientTest {
         mockNotificatiesApi = MockWebServer()
         mockNotificatiesApi.start()
         restClientBuilder = RestClient.builder()
-        client = NotificatiesApiClient(restClientBuilder)
+        client = NotificatiesApiClient(restClientBuilder, MapperSingleton.get())
     }
 
     @AfterEach
