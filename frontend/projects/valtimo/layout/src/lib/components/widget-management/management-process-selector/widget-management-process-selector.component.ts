@@ -105,6 +105,11 @@ export class WidgetManagementProcessSelectorComponent implements OnInit {
         .subscribe(
           (changes: Partial<{name: string | null; processDefinition: ListItem | null}>) => {
             const {name, processDefinition} = changes;
+            if (!processDefinition?.key) {
+              this.widgetWizardService.$widgetActions.set([]);
+              return;
+            }
+
             this.widgetWizardService.$widgetActions.set([
               {
                 name: !name ? processDefinition?.content : name,
