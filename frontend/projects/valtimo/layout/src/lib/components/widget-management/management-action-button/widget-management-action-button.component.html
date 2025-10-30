@@ -1,0 +1,51 @@
+<!--
+  ~ Copyright 2015-2025 Ritense BV, the Netherlands.
+  ~
+  ~ Licensed under EUPL, Version 1.2 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~ https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" basis,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<ng-container
+  *ngIf="{
+    dropdownItems: dropdownItems$ | async,
+    buttonType: buttonType$ | async,
+  } as obs"
+>
+  @if ($widgetContext() === 'case') {
+    <cds-dropdown
+      class="valtimo-widget-management-action-button__type"
+      [label]="'Button action type'"
+      [dropUp]="false"
+      (selected)="onTypeSelected($event)"
+    >
+      <cds-dropdown-list [items]="obs.dropdownItems"></cds-dropdown-list>
+    </cds-dropdown>
+  }
+
+  @if (obs.buttonType === 'process') {
+    <valtimo-widget-management-process-selector></valtimo-widget-management-process-selector>
+  } @else {
+    <form class="valtimo-widget-management-action-button__form" [formGroup]="formGroup">
+      <cds-text-label>
+        External link
+
+        <input cdsText formControlName="navigateTo" [placeholder]="'External link'" />
+      </cds-text-label>
+
+      <cds-text-label>
+        Name
+
+        <input cdsText formControlName="name" [placeholder]="'Name'" />
+      </cds-text-label>
+    </form>
+  }
+</ng-container>

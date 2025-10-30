@@ -21,10 +21,9 @@ import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/compon
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
 import {CaseManagementParams} from '@valtimo/shared';
 import {ComboBoxModule, InputModule, LayerModule, ListItem} from 'carbon-components-angular';
-import {debounceTime, map, Observable, startWith, Subscription, switchMap, tap} from 'rxjs';
+import {debounceTime, map, Observable, Subscription, switchMap} from 'rxjs';
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
-import {WidgetAction} from '../../../models';
 import {WidgetWizardService} from '../../../services';
 
 @Component({
@@ -99,7 +98,6 @@ export class WidgetManagementProcessSelectorComponent implements OnInit {
     @Inject(WIDGET_MANAGEMENT_SERVICE)
     private widgetManagementService: IWidgetManagementService<any>
   ) {}
-
   public ngOnInit(): void {
     this._subscriptions.add(
       this.formGroup.valueChanges
@@ -107,33 +105,12 @@ export class WidgetManagementProcessSelectorComponent implements OnInit {
         .subscribe(
           (changes: Partial<{name: string | null; processDefinition: ListItem | null}>) => {
             const {name, processDefinition} = changes;
-            this.widgetWizardService.$widgetActions.update(
-              (actions: WidgetAction[] | undefined) => {
-                const existingAction = actions?.find(
-                  (action: WidgetAction) => action.processDefinitionKey === processDefinition?.key
-                );
-                const newAction = {
-                  name: !name ? processDefinition?.content : name,
-                  processDefinitionKey: processDefinition?.key,
-                };
-                if (!actions)
-                  return !Array.isArray(processDefinition)
-                    ? [
-                        {
-                          name: !name ? processDefinition?.content : name,
-                          processDefinitionKey: processDefinition?.key,
-                        },
-                      ]
-                    : [];
-                return !existingAction
-                  ? [...actions, newAction]
-                  : actions.map(action =>
-                      action.processDefinitionKey === newAction.processDefinitionKey
-                        ? newAction
-                        : action
-                    );
-              }
-            );
+            this.widgetWizardService.$widgetActions.set([
+              {
+                name: !name ? processDefinition?.content : name,
+                processDefinitionKey: processDefinition?.key,
+              },
+            ]);
           }
         )
     );

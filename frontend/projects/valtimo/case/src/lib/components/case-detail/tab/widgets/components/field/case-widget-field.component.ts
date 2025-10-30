@@ -18,7 +18,16 @@ import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import {TranslateModule} from '@ngx-translate/core';
 import {CarbonListModule, EllipsisPipe} from '@valtimo/components';
 import {ButtonModule, InputModule} from 'carbon-components-angular';
-import {BehaviorSubject, catchError, combineLatest, Observable, of, startWith, switchMap, tap} from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  Observable,
+  of,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {WidgetsService} from '../../widgets.service';
 import {PermissionService} from '@valtimo/access-control';
 import {WidgetProcess} from '../widget-process/widget-process';
@@ -31,6 +40,7 @@ import {
 } from '@valtimo/layout';
 import {CaseTabService, CaseWidgetsApiService} from '../../../../../../services';
 import {HttpErrorResponse} from '@angular/common/http';
+import {GlobalNotificationService} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-case-widget-field',
@@ -92,12 +102,29 @@ export class CaseWidgetFieldComponent extends WidgetProcess {
     private readonly widgetsService: WidgetsService,
     private readonly caseTabService: CaseTabService,
     private readonly caseWidgetApiService: CaseWidgetsApiService,
+    private readonly globalNotificationService: GlobalNotificationService,
     private readonly widgetLayoutService: WidgetLayoutService
   ) {
     super(documentService, permissionService);
   }
 
   public onProcessStartClick(process: WidgetAction): void {
+    if (!process.processDefinitionKey) return;
     this.widgetsService.startProcess(process.processDefinitionKey);
+  }
+
+  public onNavigateButtonClick(buttonAction: WidgetAction): void {
+    const {navigateTo} = buttonAction;
+    if (navigateTo?.startsWith(window.location.origin) || navigateTo?.startsWith('/')) {
+      window.open(navigateTo, '_self');
+    } else if (navigateTo?.startsWith('http')) {
+      window.open(navigateTo, '_blank');
+    } else {
+      this.globalNotificationService.showToast({
+        title: 'An unexpected error occurred',
+        caption: `Unable to navigate to ${navigateTo}`,
+        type: 'error',
+      });
+    }
   }
 }

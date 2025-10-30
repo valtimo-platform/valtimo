@@ -59,7 +59,7 @@ export class WidgetWizardService {
 
   public readonly $disableTitleInput: WritableSignal<boolean> = signal(false);
 
-  public readonly $disableProcessSelector: WritableSignal<boolean> = signal(false);
+  public readonly $disableActionButton: WritableSignal<boolean> = signal(false);
 
   public readonly $widgetWizardSteps: WritableSignal<WidgetWizardStep[]> = signal([
     WidgetWizardStep.TYPE,
@@ -135,6 +135,7 @@ export class WidgetWizardService {
       this.$widgetActions.set(undefined);
       this.$widgetDisplayConditions.set(null);
       this.$editMode.set(false);
+      this.$disableActionButton.set(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
