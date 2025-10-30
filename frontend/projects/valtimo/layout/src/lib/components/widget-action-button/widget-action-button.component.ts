@@ -26,7 +26,7 @@ import {GlobalNotificationService} from '@valtimo/shared';
   standalone: true,
   imports: [CommonModule, ButtonModule],
 })
-export class WidgetActionButton {
+export class WidgetActionButtonComponent {
   @Input() public widgetConfiguration: BasicWidget;
 
   constructor(private readonly globalNotificationService: GlobalNotificationService) {}

@@ -37,14 +37,14 @@ import {ButtonModule} from 'carbon-components-angular';
 import {CustomWidget, CustomWidgetConfig} from '../../models';
 import {CUSTOM_WIDGET_TOKEN} from '../../constants';
 import {WidgetLayoutService} from '../../services/widget-layout.service';
-import {WidgetActionButton} from '../widget-action-button/widget-action-button.component';
+import {WidgetActionButtonComponent} from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-custom',
   templateUrl: './widget-custom.component.html',
   styleUrls: ['./widget-custom.component.scss'],
   standalone: true,
-  imports: [CommonModule, CarbonListModule, TranslateModule, ButtonModule, WidgetActionButton],
+  imports: [CommonModule, CarbonListModule, TranslateModule, ButtonModule, WidgetActionButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WidgetCustomComponent implements AfterViewInit, OnDestroy {

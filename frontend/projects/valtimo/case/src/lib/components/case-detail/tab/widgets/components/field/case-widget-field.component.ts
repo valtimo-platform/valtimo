@@ -23,7 +23,7 @@ import {DocumentService} from '@valtimo/document';
 import {
   FieldsWidget,
   WidgetAction,
-  WidgetActionButton,
+  WidgetActionButtonComponent,
   WidgetFieldComponent,
   WidgetLayoutService,
 } from '@valtimo/layout';
@@ -56,7 +56,7 @@ import {WidgetProcess} from '../widget-process/widget-process';
     EllipsisPipe,
     ButtonModule,
     WidgetFieldComponent,
-    WidgetActionButton,
+    WidgetActionButtonComponent,
   ],
 })
 export class CaseWidgetFieldComponent extends WidgetProcess {

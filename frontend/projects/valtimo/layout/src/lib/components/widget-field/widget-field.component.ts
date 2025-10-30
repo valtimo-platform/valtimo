@@ -34,7 +34,7 @@ import {ButtonModule, InputModule} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, map, Observable, tap} from 'rxjs';
 import {FieldsWidget} from '../../models';
 import {WidgetTextDisplayType} from '../../models/widget-display.model';
-import { WidgetActionButton } from '../widget-action-button/widget-action-button.component';
+import { WidgetActionButtonComponent } from '../widget-action-button/widget-action-button.component';
 
 @Component({
   selector: 'valtimo-widget-field',
@@ -50,7 +50,7 @@ import { WidgetActionButton } from '../widget-action-button/widget-action-button
     CarbonListModule,
     EllipsisPipe,
     ButtonModule,
-    WidgetActionButton
+    WidgetActionButtonComponent
   ],
 })
 export class WidgetFieldComponent implements AfterViewInit, OnDestroy {
