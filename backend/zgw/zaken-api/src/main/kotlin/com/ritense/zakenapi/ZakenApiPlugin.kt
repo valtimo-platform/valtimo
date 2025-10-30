@@ -270,6 +270,7 @@ class ZakenApiPlugin(
         @PluginActionProperty inpA_nummer: String?,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
         @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty resultProcessVariable: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
@@ -297,6 +298,10 @@ class ZakenApiPlugin(
                 )
             )
 
+            resultProcessVariable?.let {
+                execution.setVariable(it, rol.uuid)
+            }
+
             logger.info { "Natuurlijk persoon zaakrol with URL '${rol.url}' created for document with id '$documentId' and zaak with URL '$zaakUrl'." }
         }
     }
@@ -315,6 +320,7 @@ class ZakenApiPlugin(
         @PluginActionProperty annIdentificatie: String?,
         @PluginActionProperty beginGeldigheid: LocalDate? = null,
         @PluginActionProperty eindeGeldigheid: LocalDate? = null,
+        @PluginActionProperty resultProcessVariable: String? = null,
     ) {
         withLoggingContext(
             CATALOGI_API.ROLTYPE to roltypeUrl,
@@ -341,8 +347,30 @@ class ZakenApiPlugin(
                 )
             )
 
+            resultProcessVariable?.let {
+                execution.setVariable(it, rol.uuid)
+            }
+
             logger.info { "Niet-natuurlijk persoon zaakrol with URL '${rol.url}' created for document with id '$documentId' and zaak with URL '$zaakUrl'." }
         }
+    }
+
+    @PluginAction(
+        key = "delete-zaak-rol",
+        title = "Delete vestiging zaakrol",
+        description = "Delete a zaakrol from the zaak in the Zaken API",
+        activityTypes = [SERVICE_TASK_START]
+    )
+    fun deleteZaakRol(
+        execution: DelegateExecution,
+        @PluginActionProperty rolUuid: String,
+    ) {
+        logger.debug { "Deleting zaakrol with uuid '${rolUuid}' for document with id '${execution.businessKey}'" }
+        val documentId = UUID.fromString(execution.businessKey)
+        val zaakUrl = zaakUrlProvider.getZaakUrl(documentId)
+        client.deleteZaakRol(authenticationPluginConfiguration, url, UUID.fromString(rolUuid))
+        logger.info { "Zaakrol with uuid '${rolUuid}' deleted for zaak with URL '$zaakUrl' and document with id '${documentId}'" }
+
     }
 
     @PluginAction(

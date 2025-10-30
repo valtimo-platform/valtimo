@@ -80,4 +80,16 @@
     [fullWidth]="true"
   >
   </v-input>
+  <v-input
+    name="resultProcessVariable"
+    [title]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+    [margin]="true"
+    [defaultValue]="obs.prefill?.resultProcessVariable"
+    [disabled]="obs.disabled"
+    [required]="false"
+    [trim]="true"
+    [tooltip]="'resultProcessVariable' | pluginTranslate: pluginId | async"
+    [fullWidth]="true"
+  >
+  </v-input>
 </v-form>

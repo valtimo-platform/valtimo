@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
+import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -42,6 +43,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
     'set-zaakstatus': SetZaakStatusConfigurationComponent,
     'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
+    'delete-zaak-rol': DeleteZaakRolComponent,
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
@@ -102,6 +104,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       selection: 'Selectie',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - natuurlijk persoon',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol aanmaken - niet natuurlijk persoon',
+      'delete-zaak-rol': 'Verwijderen Zaakrol',
       'set-zaakopschorting': 'Schort een zaak op',
       'start-hersteltermijn': 'Start hersteltermijn',
       startRecoveryPeriodInformation:
@@ -129,17 +132,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       anpIdentificatie: 'Ander natuurlijk persoon identificatie',
       annIdentificatie: 'Ander niet natuurlijk persoon identificatie',
       annIdentificatieTooltip:
-        'Het door de gemeente uitgegeven unieke nummer voor een ander niet-natuurlijk persoon (annIdentificatie).',
+        'Het door de gemeente uitgegeven unieke nummer voor een ander niet-natuurlijk persoon (annIdentificatie). (Max. 17 tekens)',
       inpA_nummer: 'Administratienummer persoon',
       innNnpId: 'Niet natuurlijk persoonsnummer',
       innNnpIdTooltip:
-        'Het door een kamer toegekend uniek nummer voor de ingeschreven niet-natuurlijk persoon (innNnpId).',
+        'Het door een kamer toegekend uniek nummer voor de ingeschreven niet-natuurlijk persoon (innNnpId). (Max. 9 tekens)',
       roltypeUrlTooltip: 'URL naar een roltype binnen het Zaaktype van een Zaak',
       rolToelichtingTooltip: 'Omschrijving van de aard van de rol',
-      inpBsnTooltip: 'Het burgerservicenummer van de initiator',
+      inpBsnTooltip: 'Het burgerservicenummer van de initiator (Numeriek, max 9 tekens)',
       anpIdentificatieTooltip:
-        'Het door de gemeente uitgegeven unieke nummer voor een ander natuurlijk persoon',
-      inpA_nummerTooltip: 'Het administratienummer van de persoon, bedoeld in de Wet BRP',
+        'Het door de gemeente uitgegeven unieke nummer voor een ander natuurlijk persoon. (Max. 17 tekens)',
+      inpA_nummerTooltip:
+        'Het administratienummer van de persoon, bedoeld in de Wet BRP. (Numeriek, max. 10 tekens)',
       'set-zaakstatus': 'Zaakstatus aanmaken',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL-referentie naar het statustype.',
@@ -163,20 +167,19 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
       addZaakProperty: 'Voeg nieuwe parameter toe',
-      plannedEndDate: 'Geplande eind datum',
-      finalDeliveryDate: 'Laatste opleverings datum',
-      dateformatTooltip:
-        'Een datum in formaat van yyyy-mm-dd. Kan ook een verwijzing zijn naar het document of process, bijvoorbeeld doc:customer/startDatum of pv:startDatum',
       'relateer-zaken': 'Relateer zaken',
       teRelaterenZaakUri: 'URL naar de te relateren zaak',
       aardRelatie: 'Aard van de relatie',
       'option-vervolg': 'De andere zaak gaf aanleiding tot het starten van de onderhanden zaak.',
-      'option-onderwerp': 'De andere zaak is relevant voor cq. is onderwerp van de onderhanden zaak.',
-      'option-bijdrage': 'Aan het bereiken van de uitkomst van de andere zaak levert de onderhanden zaak een bijdrage.',
+      'option-onderwerp':
+        'De andere zaak is relevant voor cq. is onderwerp van de onderhanden zaak.',
+      'option-bijdrage':
+        'Aan het bereiken van de uitkomst van de andere zaak levert de onderhanden zaak een bijdrage.',
       zaakObjectObjectUrl: 'Object URL',
       zaakObjectObjectUrlTooltip: 'URL-referentie naar de resource die het OBJECT beschrijft.',
       objectType: 'Object Type',
-      objectTypeTooltip: 'Beschrijft het type OBJECT gerelateerd aan de ZAAK. Als er geen passend type is, dan moet het type worden opgegeven onder objectTypeOverige.',
+      objectTypeTooltip:
+        'Beschrijft het type OBJECT gerelateerd aan de ZAAK. Als er geen passend type is, dan moet het type worden opgegeven onder objectTypeOverige.',
       relatieomschrijving: 'Relatieomschrijving',
       relatieomschrijvingTooltip: 'Omschrijving van de betrekking tussen de ZAAK en het OBJECT.',
       zakelijkRechtIdentificatie: 'Zakelijk recht identificatie',
@@ -184,15 +187,22 @@ const zakenApiPluginSpecification: PluginSpecification = {
       zakelijkRechtAvgAard: 'Zakelijk recht AVG aard',
       zakelijkRechtAvgAardTooltip: 'Aanduiding voor de aard van het recht',
       objectTypeOverige: 'Object type overige',
-      objectTypeOverigeTooltip: 'Beschrijft het type OBJECT als objectType de waarde "overige" heeft.',
+      objectTypeOverigeTooltip:
+        'Beschrijft het type OBJECT als objectType de waarde "overige" heeft.',
       objectTypeOverigeDefinitie: 'Object type overige definitie',
       objectTypeOverigeDefinitieUrl: 'URL',
-      objectTypeOverigeDefinitieUrlTooltip: 'URL-referentie naar de objecttype resource in een API. Deze resource moet de JSON-schema-definitie van het objecttype bevatten.',
+      objectTypeOverigeDefinitieUrlTooltip:
+        'URL-referentie naar de objecttype resource in een API. Deze resource moet de JSON-schema-definitie van het objecttype bevatten.',
       objectTypeOverigeDefinitieSchema: 'Schema',
-      objectTypeOverigeDefinitieSchemaTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de resource uit het url-attribuut om het schema van het objecttype uit te lezen. Bijvoorbeeld: .jsonSchema.',
+      objectTypeOverigeDefinitieSchemaTooltip:
+        'Een geldige jq expressie. Dit wordt gecombineerd met de resource uit het url-attribuut om het schema van het objecttype uit te lezen. Bijvoorbeeld: .jsonSchema.',
       objectTypeOverigeDefinitieObjectData: 'Object data',
-      objectTypeOverigeDefinitieObjectDataTooltip: 'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
-      objectIdentificatie: 'Object identificatie'
+      objectTypeOverigeDefinitieObjectDataTooltip:
+        'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
+      objectIdentificatie: 'Object identificatie',
+      resultProcessVariable: 'Resultaat process variable',
+      rolUuid: 'Rol UUID',
+      rolUuidTooltip: 'De UUID van de rol',
     },
     en: {
       title: 'Zaken API',
@@ -241,6 +251,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       selection: 'Selection',
       'create-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - natural person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Create Zaakrol - not a natural person',
+      'delete-zaak-rol': 'Removing Zaakrol',
       'set-zaakopschorting': 'Suspend case',
       'start-hersteltermijn': 'Start recovery period',
       startHersteltermijnInformation:
@@ -268,17 +279,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       anpIdentificatie: 'Other natural person identification',
       annIdentificatie: 'Other not natural person identification',
       annIdentificatieTooltip:
-        'The unique number issued by the municipality for another non-natural person (annIdentificatie).',
+        'The unique number issued by the municipality for another non-natural person (annIdentificatie). (Max. 17 characters)',
       inpA_nummer: 'Administration number person',
       innNnpId: 'Not a natural personal number',
       innNnpIdTooltip:
-        'The unique number assigned by the government for the registered non-natural person (innNnpId).',
+        'The unique number assigned by the government for the registered non-natural person (innNnpId). (Max. 9 characters)',
       roltypeUrlTooltip: 'URL to a role type within the Zaaktype of a Zaak',
       rolToelichtingTooltip: 'Description of the nature of the role',
       inpBsnTooltip: "The initiator's social security number",
       anpIdentificatieTooltip:
-        'The unique number issued by the municipality for another natural person',
-      inpA_nummerTooltip: 'The administration number of the person, as referred to in the Wet BRP',
+        'The unique number issued by the municipality for another natural person. (Max. 17 characters)',
+      inpA_nummerTooltip:
+        'The administration number of the person, as referred to in the Wet BRP. (Numeric, max. 10 characters)',
       'set-zaakstatus': 'Create zaakstatus',
       statustypeUrl: 'Zaakstatus type URL',
       statustypeUrlTooltip: 'URL reference to the status type.',
@@ -312,26 +324,35 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'option-vervolg': 'The other Zaak prompted the start of the current Zaak.',
       'option-onderwerp': 'The other Zaak is relevant to or the subject of the current Zaak.',
       'option-bijdrage': 'The current Zaak contributes to the outcome of the other Zaak.',
-      zaakObjectObjectUrl: "Object URL",
-      zaakObjectObjectUrlTooltip: "URL reference to the resource that describes the OBJECT.",
-      objectType: "Object Type",
-      objectTypeTooltip: "Describes the type of OBJECT related to the ZAAK. If there is no suitable type, then the type must be specified under objectTypeOverige.",
-      relatieomschrijving: "Relationship description",
-      relatieomschrijvingTooltip: "Description of the relationship between the ZAAK and the OBJECT.",
-      zakelijkRechtIdentificatie: "Property right identification",
-      zakelijkRechtIdentificatieTooltip: "The unique identification of the OBJECT",
-      zakelijkRechtAvgAard: "Property right AVG nature",
-      zakelijkRechtAvgAardTooltip: "Indication of the nature of the right",
-      objectTypeOverige: "Object type other",
-      objectTypeOverigeTooltip: "Describes the type of OBJECT when objectType has the value 'overige'.",
+      zaakObjectObjectUrl: 'Object URL',
+      zaakObjectObjectUrlTooltip: 'URL reference to the resource that describes the OBJECT.',
+      objectType: 'Object Type',
+      objectTypeTooltip:
+        'Describes the type of OBJECT related to the ZAAK. If there is no suitable type, then the type must be specified under objectTypeOverige.',
+      relatieomschrijving: 'Relationship description',
+      relatieomschrijvingTooltip:
+        'Description of the relationship between the ZAAK and the OBJECT.',
+      zakelijkRechtIdentificatie: 'Property right identification',
+      zakelijkRechtIdentificatieTooltip: 'The unique identification of the OBJECT',
+      zakelijkRechtAvgAard: 'Property right AVG nature',
+      zakelijkRechtAvgAardTooltip: 'Indication of the nature of the right',
+      objectTypeOverige: 'Object type other',
+      objectTypeOverigeTooltip:
+        "Describes the type of OBJECT when objectType has the value 'overige'.",
       objectTypeOverigeDefinitie: 'Object type other definition',
-      objectTypeOverigeDefinitieUrl: "URL",
-      objectTypeOverigeDefinitieUrlTooltip: "URL reference to the object type resource in an API. This resource must contain the JSON schema definition of the object type.",
-      objectTypeOverigeDefinitieSchema: "Schema",
-      objectTypeOverigeDefinitieSchemaTooltip: "A valid jq expression. This is combined with the resource from the url attribute to read the schema of the object type. Example: .jsonSchema.",
-      objectTypeOverigeDefinitieObjectData: "Object data",
-      objectTypeOverigeDefinitieObjectDataTooltip: "A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.",
-      objectIdentificatie: 'Object identification'
+      objectTypeOverigeDefinitieUrl: 'URL',
+      objectTypeOverigeDefinitieUrlTooltip:
+        'URL reference to the object type resource in an API. This resource must contain the JSON schema definition of the object type.',
+      objectTypeOverigeDefinitieSchema: 'Schema',
+      objectTypeOverigeDefinitieSchemaTooltip:
+        'A valid jq expression. This is combined with the resource from the url attribute to read the schema of the object type. Example: .jsonSchema.',
+      objectTypeOverigeDefinitieObjectData: 'Object data',
+      objectTypeOverigeDefinitieObjectDataTooltip:
+        'A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.',
+      objectIdentificatie: 'Object identification',
+      resultProcessVariable: 'Result process variable',
+      rolUuid: 'Rol UUID',
+      rolUuidTooltip: 'The UUID of the rol',
     },
     de: {
       title: 'Zaken API',
@@ -380,6 +401,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       selection: 'Auswahl',
       'create-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – natürliche Person',
       'create-niet-natuurlijk-persoon-zaak-rol': 'Zaakrol erstellen – keine natürliche Person',
+      'delete-zaak-rol': 'Zum Löschen Zaakrol',
       'set-zaakopschorting': 'Einen Fall aussetzen',
       'start-hersteltermijn': 'Beginnen Sie mit der Erholungsphase',
       startHersteltermijnInformation:
@@ -407,17 +429,18 @@ const zakenApiPluginSpecification: PluginSpecification = {
       anpIdentificatie: 'Andere Identifizierung natürlicher Personen',
       annIdentificatie: 'Andere Identifizierung keine natürlicher Personen',
       annIdentificatieTooltip:
-        'Die eindeutige Nummer, die von der Gemeinde für eine andere nicht natürliche Person vergeben wird (annIdentificatie).',
+        'Die eindeutige Nummer, die von der Gemeinde für eine andere nicht natürliche Person vergeben wird (annIdentificatie). (Max. 17 Zeichen)',
       inpA_nummer: 'Verwaltungsnummer Person',
       innNnpId: 'Keine natürliche Personennummer',
       innNnpIdTooltip:
-        'Die von der Regierung vergebene eindeutige Nummer für die registrierte nicht natürliche Person (innNnpId).',
+        'Die von der Regierung vergebene eindeutige Nummer für die registrierte nicht natürliche Person (innNnpId). (Max. 9 Zeichen)',
       roltypeUrlTooltip: 'URL zu einem Rollentyp innerhalb des Zaaktypes eines Zaaks',
       rolToelichtingTooltip: 'Beschreibung der Art der Rolle',
       inpBsnTooltip: 'Die Sozialversicherungsnummer des Initiators',
       anpIdentificatieTooltip:
-        'Die eindeutige Nummer, die von der Gemeinde für eine andere natürliche Person vergeben wird',
-      inpA_nummerTooltip: 'Die Verwaltungsnummer der Person im Sinne des Wet BRP',
+        'Die eindeutige Nummer, die von der Gemeinde für eine andere natürliche Person vergeben wird. (Max. 17 Zeichen)',
+      inpA_nummerTooltip:
+        'Die Verwaltungsnummer der Person im Sinne des Wet BRP. (Numerisch, max. 10 Zeichen)',
       'set-zaakstatus': 'Fallstatus erstellen',
       statustypeUrl: 'URL des Zaakstatustyps',
       statustypeUrlTooltip: 'URL-Referenz zum Statustyp.',
@@ -441,36 +464,40 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakStatusToggle: 'Eingabetyp Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Eingabetyp Zaakresultaat-URL',
       addZaakProperty: 'Neue Case-Eigenschaft hinzufügen',
-      plannedEndDate: 'Geplantes Enddatum',
-      finalDeliveryDate: 'Endgültiger Liefertermin',
-      dateformatTooltip:
-        'Ein Datum im Format yyyy-mm-dd. Kann auch ein Verweis auf das Dokument oder den Prozess sein, zum Beispiel doc:kunde/startDatum oder pv:startDatum',
       'relateer-zaken': 'Beziehung zwischen Zaken herstellen',
       teRelaterenZaakUri: 'URL zum zu verknüpfenden Zaak',
       aardRelatie: 'Art der Beziehung',
       'option-vervolg': 'Der andere Zaak gab Anlass zur Einleitung des aktuellen Zaak.',
       'option-onderwerp': 'Der andere Zaak ist relevant für bzw. Gegenstand des aktuellen Zaak.',
       'option-bijdrage': 'Der aktuelle Zaak trägt zum Ergebnis des anderen Zaak bei.',
-      zaakObjectObjectUrl: "Objekt-URL",
-      zaakObjectObjectUrlTooltip: "URL-Referenz zur Ressource, die das OBJECT beschreibt.",
-      objectType: "Objekttyp",
-      objectTypeTooltip: "Beschreibt den Typ des OBJECT, das mit dem ZAAK verbunden ist. Wenn kein passender Typ vorhanden ist, muss der Typ unter objectTypeOverige angegeben werden.",
-      relatieomschrijving: "Beziehungsbeschreibung",
-      relatieomschrijvingTooltip: "Beschreibung der Beziehung zwischen dem ZAAK und dem OBJECT.",
-      zakelijkRechtIdentificatie: "Grundstücksrechtsidentifikation",
-      zakelijkRechtIdentificatieTooltip: "Die eindeutige Identifikation des OBJECT",
-      zakelijkRechtAvgAard: "Grundstücksrecht AVG Art",
-      zakelijkRechtAvgAardTooltip: "Kennzeichnung der Art des Rechts",
-      objectTypeOverige: "Sonstiger Objekttyp",
-      objectTypeOverigeTooltip: "Beschreibt den Typ des OBJECT, wenn objectType den Wert „overige“ hat.",
+      zaakObjectObjectUrl: 'Objekt-URL',
+      zaakObjectObjectUrlTooltip: 'URL-Referenz zur Ressource, die das OBJECT beschreibt.',
+      objectType: 'Objekttyp',
+      objectTypeTooltip:
+        'Beschreibt den Typ des OBJECT, das mit dem ZAAK verbunden ist. Wenn kein passender Typ vorhanden ist, muss der Typ unter objectTypeOverige angegeben werden.',
+      relatieomschrijving: 'Beziehungsbeschreibung',
+      relatieomschrijvingTooltip: 'Beschreibung der Beziehung zwischen dem ZAAK und dem OBJECT.',
+      zakelijkRechtIdentificatie: 'Grundstücksrechtsidentifikation',
+      zakelijkRechtIdentificatieTooltip: 'Die eindeutige Identifikation des OBJECT',
+      zakelijkRechtAvgAard: 'Grundstücksrecht AVG Art',
+      zakelijkRechtAvgAardTooltip: 'Kennzeichnung der Art des Rechts',
+      objectTypeOverige: 'Sonstiger Objekttyp',
+      objectTypeOverigeTooltip:
+        'Beschreibt den Typ des OBJECT, wenn objectType den Wert „overige“ hat.',
       objectTypeOverigeDefinitie: 'Sonstiger Objekttyp-Definition',
-      objectTypeOverigeDefinitieUrl: "URL",
-      objectTypeOverigeDefinitieUrlTooltip: "URL-Referenz zur Objekttyp-Ressource in einer API. Diese Ressource muss die JSON-Schema-Definition des Objekttyps enthalten.",
-      objectTypeOverigeDefinitieSchema: "Schema",
-      objectTypeOverigeDefinitieSchemaTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit der Ressource aus dem URL-Attribut kombiniert, um das Schema des Objekttyps auszulesen. Beispiel: .jsonSchema.",
-      objectTypeOverigeDefinitieObjectData: "Objektdaten",
-      objectTypeOverigeDefinitieObjectDataTooltip: "Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.",
-      objectIdentificatie: 'Objektidentifikation'
+      objectTypeOverigeDefinitieUrl: 'URL',
+      objectTypeOverigeDefinitieUrlTooltip:
+        'URL-Referenz zur Objekttyp-Ressource in einer API. Diese Ressource muss die JSON-Schema-Definition des Objekttyps enthalten.',
+      objectTypeOverigeDefinitieSchema: 'Schema',
+      objectTypeOverigeDefinitieSchemaTooltip:
+        'Ein gültiger jq-Ausdruck. Dies wird mit der Ressource aus dem URL-Attribut kombiniert, um das Schema des Objekttyps auszulesen. Beispiel: .jsonSchema.',
+      objectTypeOverigeDefinitieObjectData: 'Objektdaten',
+      objectTypeOverigeDefinitieObjectDataTooltip:
+        'Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.',
+      objectIdentificatie: 'Objektidentifikation',
+      resultProcessVariable: 'Ergebnis process variable',
+      rolUuid: 'Rolle UUID',
+      rolUuidTooltip: 'Die UUID der Rolle',
     },
   },
 };

@@ -32,6 +32,7 @@ import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/
 import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
+import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {
@@ -61,6 +62,7 @@ import {TranslateModule} from '@ngx-translate/core';
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
     CreateZaakConfigurationComponent,
+    DeleteZaakRolComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
     EndHersteltermijnComponent,
@@ -96,6 +98,7 @@ import {TranslateModule} from '@ngx-translate/core';
     CreateZaakConfigurationComponent,
     CreateNatuurlijkPersoonZaakRolComponent,
     CreateNietNatuurlijkPersoonZaakRolComponent,
+    DeleteZaakRolComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
     EndHersteltermijnComponent,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ interface CreateNatuurlijkePersoonZaakRolConfig {
   inpBsn: string;
   anpIdentificatie: string;
   inpA_nummer: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateNietNatuurlijkePersoonZaakRolConfig {
@@ -53,6 +54,11 @@ interface CreateNietNatuurlijkePersoonZaakRolConfig {
   rolToelichting: string;
   innNnpId: string;
   annIdentificatie: string;
+  resultProcessVariable?: string;
+}
+
+interface DeleteZaakRolConfig {
+  rolUuid: string;
 }
 
 interface CreateZaakConfig {
@@ -105,6 +111,7 @@ export {
   CreateZaakConfig,
   CreateNatuurlijkePersoonZaakRolConfig,
   CreateNietNatuurlijkePersoonZaakRolConfig,
+  DeleteZaakRolConfig,
   SetZaakopschortingConfig,
   StartHersteltermijnConfig,
   CreateZaakeigenschapConfig,
