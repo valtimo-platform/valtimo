@@ -68,7 +68,7 @@ export class GetZaakInformatieobjectenComponent
     this.openSaveSubscription();
   }
 
-  public ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.saveSubscription?.unsubscribe();
   }
 
