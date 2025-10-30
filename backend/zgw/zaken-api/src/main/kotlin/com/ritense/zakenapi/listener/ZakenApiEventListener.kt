@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.service
+package com.ritense.zakenapi.listener
 
 import com.ritense.document.domain.event.DocumentCreatedEvent
 import com.ritense.plugin.events.PluginConfigurationDeletedEvent
 import com.ritense.plugin.events.PluginConfigurationIdUpdatedEvent
 import com.ritense.plugin.service.PluginService
 import com.ritense.zakenapi.ZakenApiPlugin
+import com.ritense.zakenapi.service.ZaakTypeLinkService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.core.annotation.Order

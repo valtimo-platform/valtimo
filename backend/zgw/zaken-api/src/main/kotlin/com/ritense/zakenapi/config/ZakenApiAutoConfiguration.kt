@@ -34,7 +34,6 @@ import com.ritense.valtimo.contract.annotation.ProcessBean
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valueresolver.ValueResolverService
 import com.ritense.zakenapi.ZaakUrlProvider
-import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.ZakenApiPluginFactory
 import com.ritense.zakenapi.client.ZakenApiClient
 import com.ritense.zakenapi.exporter.ZaakTypeLinkExporter
@@ -56,13 +55,13 @@ import com.ritense.zakenapi.resolver.ZaakStatusValueResolverFactory
 import com.ritense.zakenapi.resolver.ZaakValueResolverFactory
 import com.ritense.zakenapi.security.ZakenApiHttpSecurityConfigurer
 import com.ritense.zakenapi.service.DefaultZaakTypeLinkService
-import com.ritense.zakenapi.service.DocumentMetadataAvailableEventListener
+import com.ritense.zakenapi.listener.DocumentMetadataAvailableEventListener
 import com.ritense.zakenapi.service.UploadProcessDelegate
 import com.ritense.zakenapi.service.ZaakDocumentService
 import com.ritense.zakenapi.service.ZaakNotitieService
 import com.ritense.zakenapi.service.ZaakTypeLinkService
-import com.ritense.zakenapi.service.ZakenApiDocumentDeletedEventListener
-import com.ritense.zakenapi.service.ZakenApiEventListener
+import com.ritense.zakenapi.listener.ZakenApiDocumentDeletedEventListener
+import com.ritense.zakenapi.listener.ZakenApiEventListener
 import com.ritense.zakenapi.service.ZakenDocumentDeleteHandler
 import com.ritense.zakenapi.web.rest.DefaultZaakTypeLinkResource
 import com.ritense.zakenapi.web.rest.ZaakDocumentResource

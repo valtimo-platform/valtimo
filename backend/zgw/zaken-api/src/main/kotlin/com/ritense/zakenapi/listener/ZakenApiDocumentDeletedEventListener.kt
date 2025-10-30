@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ritense.zakenapi.service
+package com.ritense.zakenapi.listener
 
 import com.ritense.document.domain.impl.JsonSchemaDocument
 import com.ritense.logging.withLoggingContext
@@ -23,6 +23,7 @@ import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.event.DocumentDeletedEvent
 import com.ritense.zakenapi.ZakenApiPlugin
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
+import com.ritense.zakenapi.service.ZaakDocumentService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.event.EventListener
 import org.springframework.transaction.annotation.Transactional
