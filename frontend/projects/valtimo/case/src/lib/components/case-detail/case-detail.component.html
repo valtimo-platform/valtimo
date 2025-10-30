@@ -75,11 +75,13 @@
         [disabled]="!tabContentObs.caseDetailLayout.widthAdjustable"
         [gutterSize]="CASE_DETAIL_GUTTER_SIZE"
         [unit]="tabContentObs.caseDetailLayout.unit"
+        class="split-area"
       >
         <as-split-area
           [size]="tabContentObs.caseDetailLayout.leftPanelWidth"
           [minSize]="tabContentObs.caseDetailLayout.leftPanelMinWidth"
           [maxSize]="tabContentObs.caseDetailLayout.leftPanelMaxWidth"
+          class="split-area__content"
         >
           <div
             class="card-body bg-white p-5 position-relative tab-container"

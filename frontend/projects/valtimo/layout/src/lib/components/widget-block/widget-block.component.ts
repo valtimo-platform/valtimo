@@ -174,7 +174,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
           const component = this.widgetComponentMap[widget.type];
           if (!component) return;
           this.dynamicContainer.clear();
-          const componentRef = this.dynamicContainer.createComponent(component);
+          const componentRef = this.dynamicContainer.createComponent(component) as any;
           if (documentId) componentRef.instance.documentId = documentId;
           componentRef.instance.widgetConfiguration = widget;
           componentRef.instance.widgetUuid = widget.uuid;

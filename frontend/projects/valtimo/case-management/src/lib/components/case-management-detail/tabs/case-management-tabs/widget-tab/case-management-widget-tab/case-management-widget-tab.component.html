@@ -14,48 +14,17 @@
   ~ limitations under the License.
   -->
 
+<valtimo-widget-management
+  [availableWidgetTypes]="AVAILABLE_WIDGET_TYPES"
+  [params]="params$ | async"
+></valtimo-widget-management>
+
 <valtimo-case-management-widget-tab-edit-modal
   [tabItem]="currentWidgetTabItem$ | async"
   [showModal$]="showEditWidgetTabModal$"
   (saveEvent)="refreshWidgetTab()"
 >
 </valtimo-case-management-widget-tab-edit-modal>
-
-<cds-tabs type="contained">
-  <cds-tab
-    [active]="activeTab() === WidgetEditorTab.VISUAL"
-    [heading]="'interface.editor.visualEditor' | translate"
-    (selected)="displayBodyComponent(WidgetEditorTab.VISUAL)"
-  >
-  </cds-tab>
-
-  <cds-tab
-    [active]="activeTab() === WidgetEditorTab.JSON"
-    [heading]="'interface.editor.jsonEditor' | translate"
-    (selected)="displayBodyComponent(WidgetEditorTab.JSON)"
-  >
-  </cds-tab>
-</cds-tabs>
-
-@switch (activeContent()) {
-  @case (WidgetEditorTab.VISUAL) {
-    <valtimo-case-management-widgets-editor
-      [params]="caseManagementRouteParams$ | async"
-      [tabWidgetKey]="tabWidgetKey$ | async"
-      [currentWidgetTab]="currentWidgetTab$ | async"
-      (changeSaved)="refreshWidgetTab()"
-    ></valtimo-case-management-widgets-editor>
-  }
-  @case (WidgetEditorTab.JSON) {
-    <valtimo-case-management-widgets-json-editor
-      [currentWidgetTab]="currentWidgetTab$ | async"
-      (canDeactivate)="onJsonCanDeactivate($event)"
-      (changeSaved)="refreshWidgetTab()"
-      (customModalLoaded)="onCustomModalLoaded($event)"
-      (pendingChangesUpdate)="onPendingChangesUpdate($event)"
-    ></valtimo-case-management-widgets-json-editor>
-  }
-}
 
 <ng-container renderInPageHeader>
   <ng-template>

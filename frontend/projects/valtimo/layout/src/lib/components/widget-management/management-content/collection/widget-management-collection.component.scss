@@ -24,6 +24,8 @@
     gap: 16px;
     grid-template-columns: repeat(3, 1fr);
     align-items: flex-end;
+    background: var(--cds-layer);
+    padding: 12px 16px 16px 16px;
   }
 
   &__subtitle {
@@ -32,7 +34,7 @@
     line-height: 22px;
   }
 
-  &__path-selector {
+  &__value-field {
     display: flex;
     flex-direction: column;
   }
@@ -41,6 +43,8 @@
     flex-direction: column;
     display: flex;
     gap: 16px;
+    background: var(--cds-layer);
+    padding: 16px;
 
     &-title {
       display: grid;
@@ -67,5 +71,10 @@
       align-items: flex-end;
       gap: 16px;
     }
+  }
+
+  .cds--text-input,
+  .cds--list-box {
+    background: var(--cds-layer-02);
   }
 }

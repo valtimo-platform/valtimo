@@ -14,14 +14,12 @@
   ~ limitations under the License.
   -->
 
-<p>{{ 'widgetTabManagement.content.description' | translate }}</p>
-
-<form [formGroup]="form">
-  <cds-text-label
-    *ngIf="$showTitleInput()"
-    [attr.data-carbon-theme]="theme$ | async"
-    class="valtimo-widget-management-fields__input"
-  >
+<form
+  *ngIf="$showTitleInput()"
+  [formGroup]="form"
+  class="valtimo-widget-management-fields__title-form"
+>
+  <cds-text-label class="valtimo-widget-management-fields__input">
     <v-input-label
       [title]="'widgetTabManagement.content.widgetTitle' | translate"
       [tooltip]="'widgetTabManagement.content.widgetTitleTooltip' | translate"
@@ -37,7 +35,6 @@
   </cds-text-label>
 </form>
 
-<!-- For projecting elements such as process selector in case widgets -->
 <ng-content></ng-content>
 
 <cds-tabs type="contained">

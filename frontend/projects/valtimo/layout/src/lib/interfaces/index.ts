@@ -15,4 +15,4 @@
  */
 
 export * from './widget-management-service.interface';
-export * from './widget-content-component.interface';
+export * from './widget-details-component.interface';

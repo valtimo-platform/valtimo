@@ -39,7 +39,11 @@
 >
   <cds-label *ngIf="index === 0 && dropdownColumnTitle">{{ dropdownColumnTitle }}</cds-label>
 
-  <cds-dropdown (selected)="onInputChange('dropdown', $event.item.id)" [appendInline]="true">
+  <cds-dropdown
+    [dropUp]="false"
+    (selected)="onInputChange('dropdown', $event.item.id)"
+    [appendInline]="true"
+  >
     <cds-dropdown-list [items]="dropdownItems$ | async" type="multi"></cds-dropdown-list>
   </cds-dropdown>
 </div>

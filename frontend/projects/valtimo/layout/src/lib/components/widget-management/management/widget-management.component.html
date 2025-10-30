@@ -44,10 +44,9 @@
   <valtimo-widget-management-editor
     *ngIf="$activeTab() === WidgetManagementTab.VISUAL"
     [availableWidgetTypes]="availableWidgetTypes"
-    [disableWidthStep]="disableWidthStep"
     [disableDuplicate]="disableDuplicate"
+    [enableWidgetDivider]="enableWidgetDivider"
     [singleWidget]="singleWidget"
     [defaultWidth]="defaultWidth"
-    [disableTitleInput]="disableTitleInput"
   ></valtimo-widget-management-editor>
 </ng-template>
