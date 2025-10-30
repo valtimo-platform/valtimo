@@ -17,6 +17,7 @@
 package com.ritense.valtimo.contract.case_
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.ritense.valtimo.contract.VersionedIdentifier
 import com.ritense.valtimo.contract.domain.AbstractId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.repository.SemverConverter
@@ -34,7 +35,7 @@ data class CaseDefinitionId(
     @Column(name = "case_definition_version_tag", nullable = false, updatable = true)
     @JsonSerialize(using = SemverSerializer::class)
     val versionTag: Semver
-) : AbstractId<CaseDefinitionId>() {
+) : AbstractId<CaseDefinitionId>(), VersionedIdentifier {
 
     constructor(
         key: String,
@@ -44,6 +45,10 @@ data class CaseDefinitionId(
         Semver.parse(versionTag)
             ?: throw IllegalArgumentException("Given version '$versionTag' is not a valid Semver version")
     )
+
+    override fun getTagPrefix(): String {
+        return OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
+    }
 
     init {
         require(key.isNotBlank()) { "[caseDefinitionId.key] was blank!" }

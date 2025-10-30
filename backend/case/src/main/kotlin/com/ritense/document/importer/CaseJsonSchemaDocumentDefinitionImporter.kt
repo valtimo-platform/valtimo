@@ -25,7 +25,7 @@ import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
-class JsonSchemaDocumentDefinitionImporter(
+class CaseJsonSchemaDocumentDefinitionImporter(
     private val jsonSchemaDocumentDefinitionService: JsonSchemaDocumentDefinitionService
 ) : Importer {
     override fun type() = DOCUMENT_DEFINITION

@@ -38,6 +38,7 @@ class ValtimoImportTypes {
         const val SEARCH = "search"
         const val SEARCH_FIELD = "searchField"
         const val CASE_HEADER_WIDGET = "caseheaderwidget"
+        const val BUILDING_BLOCK_DEFINITION = "buildingblockdefinition"
 
         // ZGW
         const val ZGW_DOCUMENT_LIST_COLUMN = "zgwdocumentlistcolumn"
