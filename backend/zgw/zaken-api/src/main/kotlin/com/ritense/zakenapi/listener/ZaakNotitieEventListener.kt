@@ -52,9 +52,7 @@ class ZaakNotitieEventListener(
     }
 
     private fun noteEventListenerEnabled(documentId: UUID): Boolean =
-        (zakenApiPluginInstanceFrom(documentId)?.noteEventListenerEnabled ?: false).also {
-            logger.debug { "Note event listener enabled for document id $documentId: $it" }
-        }
+        (zakenApiPluginInstanceFrom(documentId)?.noteEventListenerEnabled ?: false)
 
     private fun zakenApiPluginInstanceFrom(documentId: UUID): ZakenApiPlugin? =
         zaakUrlProvider.getZaakUrl(documentId).let { zaakUrl ->
@@ -63,9 +61,7 @@ class ZaakNotitieEventListener(
                 configurationFilter = ZakenApiPlugin.findConfigurationByUrl(zaakUrl)
             ).also {
                 if (it == null) {
-                    logger.warn {
-                        "Zaken API plugin has not been configured: unable to fulfill requested action!"
-                    }
+                    logger.warn { "Zaken API plugin has not been configured: unable to fulfill requested action!" }
                 }
             }
         }
