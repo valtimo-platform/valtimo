@@ -36,6 +36,7 @@ import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.CreateZaakNotitieRequest
 import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
+import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
@@ -73,6 +74,7 @@ import com.ritense.zakenapi.event.ZaakeigenschapUpdated
 import com.ritense.zakenapi.event.ZaakNotitieCreated
 import com.ritense.zakenapi.event.ZaakNotitieDeleted
 import com.ritense.zakenapi.event.ZaakNotitiePatched
+import com.ritense.zakenapi.event.ZaakNotitieUpdated
 import com.ritense.zakenapi.event.ZaakNotitieViewed
 import com.ritense.zakenapi.event.ZaakNotitiesListed
 import com.ritense.zakenapi.exception.ZaakRolNotUpdatedException
@@ -704,6 +706,33 @@ class ZakenApiClient(
             .body<ZaakNotitie>()!!
             .also { zaakNotitie ->
                 ZaakNotitieCreated(
+                    notitieUrl = zaakNotitie.url.toString(),
+                    notitie = objectMapper.valueToTree(zaakNotitie)
+                ).let { event ->
+                    applicationEventPublisher.publishEvent(event)
+                    outboxService.send { event }
+                }
+            }
+    }
+
+    fun updateZaakNotitie(
+        authentication: ZakenApiAuthentication,
+        baseUrl: URI,
+        notitieUrl: URI,
+        request: PutZaakNotitieRequest
+    ): ZaakNotitie {
+        validateUrlHost(baseUrl, notitieUrl)
+        validateUrlHost(baseUrl, request.gerelateerdAan)
+        return buildRestClient(authentication)
+            .put()
+            .uri { notitieUrl }
+            .headers(this::defaultHeaders)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+            .retrieve()
+            .body<ZaakNotitie>()!!
+            .also { zaakNotitie ->
+                ZaakNotitieUpdated(
                     notitieUrl = zaakNotitie.url.toString(),
                     notitie = objectMapper.valueToTree(zaakNotitie)
                 ).let { event ->
