@@ -40,6 +40,7 @@ import com.ritense.zakenapi.domain.PatchZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakNotitie
 import com.ritense.zakenapi.domain.NotitieType
 import com.ritense.zakenapi.domain.NotitieStatus
+import com.ritense.zakenapi.domain.PutZaakNotitieRequest
 import com.ritense.zakenapi.domain.ZaakHersteltermijn
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakObject
@@ -1301,6 +1302,53 @@ internal class ZakenApiPluginTest {
     }
 
     @Test
+    fun `should update zaaknotitie`() {
+        val documentId = UUID.randomUUID()
+        val zaakUrl = zaakUri()
+
+        val zakenApiClient: ZakenApiClient = mock()
+        val zaakUrlProvider: ZaakUrlProvider = mock {
+            on { this.getZaakUrl(eq(documentId)) } doReturn zaakUrl
+        }
+
+        val plugin = zakenApiPlugin(
+            zaakUrlProvider = zaakUrlProvider,
+            zakenApiClient = zakenApiClient
+        )
+
+        val notitieUrl = zaakNotitieUri()
+
+        // when
+        plugin.updateZaakNotitie(
+            zaakNotitieUrl = notitieUrl,
+            onderwerp = "updated",
+            tekst = "Tekst",
+            zaakUrl = zaakUrl,
+            aangemaaktDoor = "jan",
+            notitieType = NotitieType.EXTERN,
+            status = NotitieStatus.DEFINITIEF
+        )
+
+        // then
+        argumentCaptor<PutZaakNotitieRequest> {
+            verify(zakenApiClient).updateZaakNotitie(
+                authentication = any(),
+                baseUrl = eq(zakenApiUri()),
+                notitieUrl = eq(notitieUrl),
+                request = capture()
+            )
+
+            firstValue.let { request ->
+                assertThat(request.onderwerp).isEqualTo("updated")
+                assertThat(request.tekst).isEqualTo("Tekst")
+                assertThat(request.aangemaaktDoor).isEqualTo("jan")
+                assertThat(request.notitieType).isEqualTo(NotitieType.EXTERN)
+                assertThat(request.status).isEqualTo(NotitieStatus.DEFINITIEF)
+            }
+        }
+    }
+
+    @Test
     fun `should patch zaaknotitie`() {
         val documentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
@@ -1324,7 +1372,7 @@ internal class ZakenApiPluginTest {
         plugin.patchZaakNotitie(
             execution = executionMock,
             zaakNotitieUrl = notitieUrl,
-            onderwerp = "nieuw",
+            onderwerp = "patched",
             tekst = "Tekst",
             aangemaaktDoor = "jan",
             notitieType = NotitieType.EXTERN.key,
@@ -1341,7 +1389,7 @@ internal class ZakenApiPluginTest {
             )
 
             firstValue.let { request ->
-                assertThat(request.onderwerp).isEqualTo("nieuw")
+                assertThat(request.onderwerp).isEqualTo("patched")
                 assertThat(request.tekst).isEqualTo("Tekst")
                 assertThat(request.aangemaaktDoor).isEqualTo("jan")
                 assertThat(request.notitieType).isEqualTo(NotitieType.EXTERN)
