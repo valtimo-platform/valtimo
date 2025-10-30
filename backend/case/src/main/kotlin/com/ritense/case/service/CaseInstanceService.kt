@@ -61,10 +61,24 @@ class CaseInstanceService(
         )
         val newPageable = mutatePageable(caseListColumns, pageable)
 
-        return documentSearchService.search(caseDefinitionKey, searchRequest, newPageable)
-            .map { document -> toCaseListRowDto(document, caseListColumns) }
+        val searchResults = documentSearchService.search(caseDefinitionKey, searchRequest, newPageable)
+        val lazySupplierMap = searchResults
+            .map { it.definitionId().caseDefinitionId() }
+            .toSet()
+            .associate { it.toString() to lazySupplier { caseDefinitionService.getCaseDefinition(it) } }
+
+
+        return searchResults
+            .map { document ->
+                toCaseListRowDto(
+                    document,
+                    caseListColumns,
+                    lazySupplierMap[document.definitionId().caseDefinitionId().toString()]!!
+                )
+            }
     }
 
+    @Transactional
     fun storeQuickSearch(
         caseDefinitionKey: String,
         request: CaseDefinitionQuickSearchDto,
@@ -88,8 +102,9 @@ class CaseInstanceService(
                 userId = currentUserId,
                 title = request.title
             )
-        ) { "Failed to create quick search. A quick search for this user, for this case definition key, " +
-            "with this title, already exists."
+        ) {
+            "Failed to create quick search. A quick search for this user, for this case definition key, " +
+                "with this title, already exists."
         }
 
         quickSearchRepository.save(
@@ -101,7 +116,7 @@ class CaseInstanceService(
             )
         )
     }
-
+    @Transactional
     fun deleteQuickSearch(
         caseDefinitionKey: String,
         currentUserId: String,
@@ -128,10 +143,14 @@ class CaseInstanceService(
             )
         ) {
             "Failed to delete quick search. A quick search for this user, for this case definition key, " +
-            "with this title, already exists."
+                "with this title, already exists."
         }
 
-        quickSearchRepository.deleteByCaseDefinitionKeyAndUserIdAndTitle(caseDefinitionKey, currentUserId, quickSearchTitle)
+        quickSearchRepository.deleteByCaseDefinitionKeyAndUserIdAndTitle(
+            caseDefinitionKey,
+            currentUserId,
+            quickSearchTitle
+        )
     }
 
     fun getQuickSearchList(caseDefinitionKey: String, currentUserId: String): List<QuickSearch> {
@@ -160,7 +179,11 @@ class CaseInstanceService(
         return PageRequest.of(pageable.pageNumber, pageable.pageSize, newSort)
     }
 
-    private fun toCaseListRowDto(document: Document, caseListColumns: List<CaseListColumn>): CaseListRowDto {
+    private fun toCaseListRowDto(
+        document: Document,
+        caseListColumns: List<CaseListColumn>,
+        caseSupplier: () -> CaseDefinition
+    ): CaseListRowDto {
         val paths = caseListColumns.map { it.path }
         val resolvedValuesMap = valueResolverService.resolveValues(document.id().id.toString(), paths)
 
@@ -168,14 +191,17 @@ class CaseInstanceService(
             CaseListRowDto.CaseListItemDto(caseListColumn.id.key, resolvedValuesMap[caseListColumn.path])
         }.toMutableList()
 
-        if (items.none { it.key == "assigneeFullName" }) {
-            val case = caseDefinitionService.findCaseDefinition(document.definitionId().caseDefinitionId())
-            if (case?.canHaveAssignee == true) {
-                items.add(CaseListRowDto.CaseListItemDto("assigneeFullName", document.assigneeFullName()))
-            }
+        if (items.none { it.key == "assigneeFullName" } && caseSupplier().canHaveAssignee) {
+            items.add(CaseListRowDto.CaseListItemDto("assigneeFullName", document.assigneeFullName()))
         }
 
         return CaseListRowDto(document.id().toString(), items)
+    }
+
+    private fun <T> lazySupplier(delegate: () -> T) = object : () -> T {
+        private val value by lazy(delegate)
+
+        override fun invoke() = value
     }
 
 }
