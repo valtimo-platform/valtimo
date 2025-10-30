@@ -22,7 +22,8 @@
         "pluginDefinitionKey": "zakenapi",
         "properties": {
             "url": "${VALTIMO_ZAKEN_API_URL}",
-            "authenticationPluginConfiguration": "b609a0a3-886e-4b3d-ae0d-c01effb311ee"
+            "authenticationPluginConfiguration": "b609a0a3-886e-4b3d-ae0d-c01effb311ee",
+            "noteEventListenerEnabled": true
         }
     },
     {
