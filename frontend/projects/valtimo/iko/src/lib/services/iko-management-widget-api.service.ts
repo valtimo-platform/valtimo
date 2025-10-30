@@ -51,7 +51,7 @@ export class IkoWidgetManagementApiService
       switchMap((params: IkoManagementParams | null) =>
         this.httpClient.get<BasicWidget[]>(
           this.getApiUrl(
-            `/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget`
+            `management/v1/iko-data-aggregate/${params?.aggregateKey}/tab/${params?.widgetTabKey}/widget`
           )
         )
       )

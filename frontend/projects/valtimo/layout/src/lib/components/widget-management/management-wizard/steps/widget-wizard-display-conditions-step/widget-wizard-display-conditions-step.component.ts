@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed} from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {AbstractControl, FormBuilder, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
@@ -32,7 +32,7 @@ import {
   StructuredListModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {filter, map, Observable} from 'rxjs';
+import {filter, map, Observable, take, tap} from 'rxjs';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
@@ -82,6 +82,8 @@ export class WidgetWizardDisplayConditionsStepComponent {
     this.widgetWizardService.$widgetDisplayConditions
   ).pipe(
     filter(conditions => !!conditions),
+    take(1),
+    tap(conditions => console.log({conditions})),
     map((conditions: Array<Condition> | null) =>
       !conditions
         ? []
@@ -96,6 +98,12 @@ export class WidgetWizardDisplayConditionsStepComponent {
   public readonly form = this.fb.group({
     conditions: this.fb.control(null),
   });
+
+  public readonly $multiInputType = computed(() =>
+    this.widgetWizardService.$widgetContext() === 'case'
+      ? 'valuePathSelectorDropdownValue'
+      : 'keyDropdownValue'
+  );
 
   public get conditions(): AbstractControl {
     return this.form.get('conditions') as AbstractControl;
