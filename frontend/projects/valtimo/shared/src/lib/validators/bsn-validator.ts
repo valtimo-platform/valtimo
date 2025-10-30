@@ -37,7 +37,7 @@ export function bsnValidator(): ValidatorFn {
       return { invalidSequence: true };
     }
 
-    // BSN check digit validation (11-test)
+    // 11-test validation
     const digits = value.split('').map(d => parseInt(d, 10));
     let sum = 0;
     const length = digits.length;
