@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-package com.ritense.outbox.exception
+package com.ritense.valtimo.contract.event
 
-class OutboxTransactionReadOnlyException :
-    RuntimeException("Failed to send outbox message. Reason: current transaction is read-only")
+class ApplicationFullyReadyEvent

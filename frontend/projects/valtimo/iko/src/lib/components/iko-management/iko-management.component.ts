@@ -21,6 +21,7 @@ import {
   CarbonListModule,
   ColumnConfig,
   ConfirmationModalModule,
+  MenuService,
   PageTitleService,
 } from '@valtimo/components';
 import {ButtonModule, IconModule} from 'carbon-components-angular';
@@ -91,7 +92,8 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     private readonly ikoManagementApiService: IkoManagementApiService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly pageTitleService: PageTitleService
+    private readonly pageTitleService: PageTitleService,
+    private readonly menuService: MenuService
   ) {}
 
   public ngOnInit(): void {
@@ -124,9 +126,10 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   }
 
   public onDeleteConfirm(key: string): void {
-    this.ikoManagementApiService
-      .deleteIkoDataAggregate(key)
-      .subscribe(() => this._refresh$.next(null));
+    this.ikoManagementApiService.deleteIkoDataAggregate(key).subscribe(() => {
+      this.menuService.reload();
+      this._refresh$.next(null);
+    });
   }
 
   public onModalClose(item: IkoDataAggregateResponse | null, ikoRepositoryConfigKey: string) {
@@ -142,14 +145,20 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
           ikoRepositoryConfigKey,
         })
         .pipe(take(1))
-        .subscribe(() => this._refresh$.next(null));
+        .subscribe(() => {
+          this.menuService.reload();
+          this._refresh$.next(null);
+        });
       return;
     }
 
     this.ikoManagementApiService
       .createIkoDataAggregate(item.key, {...item, ikoRepositoryConfigKey})
       .pipe(take(1))
-      .subscribe(() => this._refresh$.next(null));
+      .subscribe(() => {
+        this.menuService.reload();
+        this._refresh$.next(null);
+      });
   }
 
   private setPageTitle(): void {
