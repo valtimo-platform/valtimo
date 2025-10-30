@@ -18,6 +18,8 @@ dependencies {
     implementation(project(":process-link-url"))
 
     implementation("io.github.oshai:kotlin-logging")
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-security"
 
     // Spring cloud stream RabbitMQ
     implementation "org.springframework.cloud:spring-cloud-starter-stream-rabbit:${springCloudStreamVersion}"

@@ -1034,6 +1034,39 @@
         "title": "Er zijn geen kolommen geconfigureerd voor dit document."
       }
     },
+    "notifications": {
+      "failed": {
+        "pageTitle": "Mislukte notificaties",
+        "retrySuccess": "Notificatie opnieuw ingepland",
+        "retryError": "Opnieuw proberen mislukt. Probeer het later nog eens.",
+        "noResults": {
+          "title": "Geen mislukte notificaties",
+          "description": "Er zijn momenteel geen mislukte notificaties."
+        },
+        "columns": {
+          "receivedAt": "Ontvangen op",
+          "idempotenceKey": "Idempotentiesleutel",
+          "pendingRetries": "Resterende pogingen",
+          "lastProcessedAt": "Laatst verwerkt op",
+          "lastErrorMessage": "Laatste foutmelding"
+        },
+        "detail": {
+          "title": "Details mislukte notificatie",
+          "metadataTitle": "Metadata",
+          "id": "ID",
+          "idempotenceKey": "Idempotentiesleutel",
+          "status": "Status",
+          "pendingRetries": "Resterende pogingen",
+          "receivedAt": "Ontvangen op",
+          "lastProcessedAt": "Laatst verwerkt op",
+          "payloadTitle": "Payload",
+          "noPayload": "Geen payload beschikbaar.",
+          "errorTitle": "Foutdetails",
+          "noError": "Geen foutdetails beschikbaar.",
+          "retry": "Opnieuw proberen"
+        }
+      }
+    },
     "tags": {
       "tag": "Trefwoord",
       "add": "Trefwoord toevoegen",

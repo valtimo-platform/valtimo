@@ -1009,6 +1009,39 @@
         "title": "No configured columns"
       }
     },
+    "notifications": {
+      "failed": {
+        "pageTitle": "Failed notifications",
+        "retrySuccess": "Notification retry scheduled",
+        "retryError": "Retry failed. Please try again later.",
+        "noResults": {
+          "title": "No failed notifications",
+          "description": "There are currently no failed notifications."
+        },
+        "columns": {
+          "receivedAt": "Received at",
+          "idempotenceKey": "Idempotence key",
+          "pendingRetries": "Remaining retries",
+          "lastProcessedAt": "Last processed at",
+          "lastErrorMessage": "Last error message"
+        },
+        "detail": {
+          "title": "Failed notification details",
+          "metadataTitle": "Metadata",
+          "id": "Identifier",
+          "idempotenceKey": "Idempotence key",
+          "status": "Status",
+          "pendingRetries": "Remaining retries",
+          "receivedAt": "Received at",
+          "lastProcessedAt": "Last processed at",
+          "payloadTitle": "Payload",
+          "noPayload": "Payload not available.",
+          "errorTitle": "Error details",
+          "noError": "No error details available.",
+          "retry": "Retry notification"
+        }
+      }
+    },
     "tags": {
       "tag": "Tag",
       "add": "Add tag",

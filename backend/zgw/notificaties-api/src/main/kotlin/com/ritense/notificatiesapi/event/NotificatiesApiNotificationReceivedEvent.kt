@@ -16,9 +16,13 @@
 
 package com.ritense.notificatiesapi.event
 
+import java.time.LocalDateTime
+
 data class NotificatiesApiNotificationReceivedEvent(
     val kanaal: String,
+    val hoofdObject: String?,
     val resourceUrl: String,
     val actie: String,
+    val aanmaakdatum: LocalDateTime?,
     val kenmerken: Map<String, String>
 )
