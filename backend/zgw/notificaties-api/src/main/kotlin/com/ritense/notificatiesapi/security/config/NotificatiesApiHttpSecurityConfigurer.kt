@@ -16,9 +16,11 @@
 
 package com.ritense.notificatiesapi.security.config
 
+import com.ritense.valtimo.contract.authentication.AuthoritiesConstants.ADMIN
 import com.ritense.valtimo.contract.security.config.HttpConfigurerConfigurationException
 import com.ritense.valtimo.contract.security.config.HttpSecurityConfigurer
-import org.springframework.http.HttpMethod
+import org.springframework.http.HttpMethod.GET
+import org.springframework.http.HttpMethod.POST
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher
 
@@ -26,7 +28,13 @@ class NotificatiesApiHttpSecurityConfigurer : HttpSecurityConfigurer {
     override fun configure(http: HttpSecurity) {
         try {
             http.authorizeHttpRequests { requests ->
-                requests.requestMatchers(antMatcher(HttpMethod.POST, "/api/v1/notificatiesapi/callback")).permitAll()
+                requests.requestMatchers(antMatcher(POST, "/api/v1/notificatiesapi/callback")).permitAll()
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/notificatiesapi/inbound-events/failed"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "/api/management/v1/notificatiesapi/inbound-events/failed/count"))
+                    .hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "/api/management/v1/notificatiesapi/inbound-events/*/retry"))
+                    .hasAuthority(ADMIN)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
