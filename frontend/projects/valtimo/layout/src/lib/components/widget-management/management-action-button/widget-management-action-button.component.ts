@@ -115,10 +115,14 @@ export class WidgetManagementActionButtonComponent implements OnInit, OnDestroy 
 
   public onTypeSelected(event: {item: ListItem}): void {
     this.buttonType$.next(event.item.id);
-    this.formGroup.reset({
-      name: '',
-      navigateTo: '',
-    });
+    this.widgetWizardService.$widgetActions.set([]);
+    this.formGroup.reset(
+      {
+        name: '',
+        navigateTo: '',
+      },
+      {emitEvent: false}
+    );
   }
 
   private formContentValidator(): ValidatorFn {
