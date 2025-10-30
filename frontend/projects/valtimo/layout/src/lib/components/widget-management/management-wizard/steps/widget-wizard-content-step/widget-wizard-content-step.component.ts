@@ -16,33 +16,30 @@
 import {CommonModule} from '@angular/common';
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
-  OnInit,
+  effect,
   TemplateRef,
   ViewChild,
   ViewContainerRef,
   ViewEncapsulation,
-  effect,
 } from '@angular/core';
 import {WidgetWizardService} from '../../../../../services/widget-wizard.service';
 import {WidgetManagementProcessSelectorComponent} from '../../../management-process-selector/widget-management-process-selector.component';
+import {WidgetManagementActionButtonComponent} from '../../../management-action-button/widget-management-action-button.component';
 
 @Component({
   templateUrl: './widget-wizard-content-step.component.html',
   encapsulation: ViewEncapsulation.None,
   standalone: true,
-  imports: [CommonModule, WidgetManagementProcessSelectorComponent],
+  imports: [CommonModule, WidgetManagementActionButtonComponent],
 })
 export class WidgetWizardContentStepComponent implements AfterViewInit {
-  @ViewChild('processSelector', {read: TemplateRef}) processSelector!: TemplateRef<any>;
+  @ViewChild('actionButton', {read: TemplateRef}) actionButton!: TemplateRef<any>;
   @ViewChild('contentRenderer', {read: ViewContainerRef})
   public projectedNodes: Node[][];
 
   public readonly $selectedWidget = this.widgetWizardService.$selectedWidget;
-  public readonly $disableProcessSelector = this.widgetWizardService.$disableProcessSelector;
-  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
+  public readonly $disableActionButton = this.widgetWizardService.$disableActionButton;
 
   constructor(
     private readonly vcr: ViewContainerRef,
@@ -55,8 +52,8 @@ export class WidgetWizardContentStepComponent implements AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
-    if (!this.processSelector) return;
-    const processSelectorNodes = this.vcr.createEmbeddedView(this.processSelector).rootNodes;
+    if (!this.actionButton) return;
+    const processSelectorNodes = this.vcr.createEmbeddedView(this.actionButton).rootNodes;
 
     this.projectedNodes = [processSelectorNodes];
   }
