@@ -6,7 +6,6 @@ import com.ritense.valtimo.contract.event.NoteDeletedEvent
 import com.ritense.valtimo.contract.event.NoteUpdatedEvent
 import com.ritense.zakenapi.ZaakUrlProvider
 import com.ritense.zakenapi.ZakenApiPlugin
-import com.ritense.zakenapi.domain.NotitieStatus
 import com.ritense.zakenapi.domain.ZaakNotitieLink
 import com.ritense.zakenapi.domain.ZaakNotitieLinkId
 import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
@@ -35,8 +34,7 @@ class ZaakNotitieService(
                         onderwerp = ZAAK_NOTITIE_ONDERWERP,
                         tekst = event.noteContent,
                         zaakUrl = zaakUrl,
-                        aangemaaktDoor = event.noteCreatedByUserFullName,
-                        status = NotitieStatus.CONCEPT // only ZaakNotitie with status CONCEPT can be modified
+                        aangemaaktDoor = event.noteCreatedByUserFullName
                     ).let { zaakNotitie ->
                         zaakNotitieLinkRepository.save(ZaakNotitieLink(
                             zaakNotitieLinkId = ZaakNotitieLinkId.newId(UUID.randomUUID()),
@@ -59,18 +57,22 @@ class ZaakNotitieService(
 
     fun updateZaakNotitieFrom(event: NoteUpdatedEvent) {
         logger.info {
-            "Trying to patch ZaakNotitie from NoteUpdatedEvent for " +
+            "Trying to update ZaakNotitie from NoteUpdatedEvent for " +
                 "Note(id=${event.noteId}, documentId=${event.noteDocumentId})"
         }
         logger.trace { "Event: $event" }
         if (zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
             zaakNotitieLinkRepository.getByNoteId(event.noteId).let { zaakNotitieLink ->
-                zakenApiPluginInstanceFor(event.noteDocumentId)?.let { zakenApiPlugin ->
-                    zakenApiPlugin.patchZaakNotitie(
-                        zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl,
-                        tekst = event.noteContent
-                    ).also {
-                        logger.info { "Patched ZaakNotitie(url=${it.url})" }
+                zaakUrlProvider.getZaakUrl(event.noteDocumentId).let { zaakUrl ->
+                    zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
+                        zakenApiPlugin.updateZaakNotitie(
+                            zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl,
+                            onderwerp = ZAAK_NOTITIE_ONDERWERP,
+                            tekst = event.noteContent,
+                            zaakUrl = zaakUrl
+                        ).also {
+                            logger.info { "Updated ZaakNotitie(url=${it.url})" }
+                        }
                     }
                 }
             }
