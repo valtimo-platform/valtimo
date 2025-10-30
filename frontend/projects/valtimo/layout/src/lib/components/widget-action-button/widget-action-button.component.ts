@@ -1,9 +1,3 @@
-import {CommonModule} from '@angular/common';
-import {Component, Input} from '@angular/core';
-import {ButtonModule} from 'carbon-components-angular';
-import {BasicWidget, WidgetAction} from '../../models';
-import {GlobalNotificationService} from '@valtimo/shared';
-
 /*
  * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
@@ -19,6 +13,13 @@ import {GlobalNotificationService} from '@valtimo/shared';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import {CommonModule} from '@angular/common';
+import {Component, Input} from '@angular/core';
+import {ButtonModule} from 'carbon-components-angular';
+import {BasicWidget, WidgetAction} from '../../models';
+import {GlobalNotificationService} from '@valtimo/shared';
+
 @Component({
   selector: 'valtimo-widget-action-button',
   templateUrl: './widget-action-button.component.html',
