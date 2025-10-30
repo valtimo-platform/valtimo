@@ -120,8 +120,6 @@ export class CaseManagementDividerModalComponent {
     }
   }
 
-  public submitDisabled$ = new BehaviorSubject<boolean>(false);
-
   public divider: BasicCaseWidget = {
     type: CaseWidgetType.DIVIDER,
     title: '',
@@ -142,7 +140,6 @@ export class CaseManagementDividerModalComponent {
     if (!dividerCreated) {
       this.closeEvent.emit(null);
       runAfterCarbonModalClosed(() => {
-        this.submitDisabled$.next(false);
         this.showAutoKey = false;
         this.resetForm();
       });
@@ -155,7 +152,6 @@ export class CaseManagementDividerModalComponent {
 
     this.closeEvent.emit(this.divider);
     runAfterCarbonModalClosed(() => {
-      this.submitDisabled$.next(false);
       this.showAutoKey = false;
       this.resetForm();
     });
@@ -167,10 +163,6 @@ export class CaseManagementDividerModalComponent {
     if (!title || !key) {
       return;
     }
-  }
-
-  public setSubmitDisabled(value: boolean): void {
-    this.submitDisabled$.next(value);
   }
 
   private resetForm = (): void => {

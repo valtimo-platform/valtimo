@@ -19,12 +19,11 @@ import {
   Component,
   forwardRef,
   Input,
+  OnChanges,
   OnDestroy,
   signal,
-  Output,
-  EventEmitter,
 } from '@angular/core';
-import {ControlValueAccessor, NG_VALUE_ACCESSOR, ReactiveFormsModule} from '@angular/forms';
+import {ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
@@ -53,9 +52,14 @@ import {filter} from 'rxjs/operators';
       useExisting: forwardRef(() => AutoKeyInputComponent),
       multi: true,
     },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => AutoKeyInputComponent),
+      multi: true,
+    },
   ],
 })
-export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
+export class AutoKeyInputComponent implements ControlValueAccessor, Validators, OnChanges, OnDestroy {
   @Input() public labelTranslationKey: string = 'Key';
   @Input() public placeholderTranslationKey: string = '';
 
@@ -77,8 +81,6 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
     this._sourceText$.next(value || '');
   }
 
-  @Output() public readonly submitDisabled = new EventEmitter<boolean>();
-
   public $disabled = signal<boolean>(false);
 
   public value = '';
@@ -90,6 +92,16 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
 
   private onChange = (_: any) => {};
   public onTouched = () => {};
+  public onValidatorChange = () => {};
+  public validate = (control: any): { [key: string]: any } | null => {
+    if (this.idError$.getValue()) {
+      return {
+        idError: {
+          value: this.idError$.getValue(),
+        },
+      };
+    }
+  }
 
   private readonly subscription = new Subscription();
 
@@ -117,6 +129,10 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
     );
   }
 
+  public ngOnChanges(): void {
+    this.onValidatorChange();
+  }
+
   public ngOnDestroy(): void {
     this.subscription.unsubscribe();
     this.duplicateInitialized = false;
@@ -139,16 +155,14 @@ export class AutoKeyInputComponent implements ControlValueAccessor, OnDestroy {
     this.onTouched = fn;
   }
 
+  registerOnValidatorChange(fn: () => void) {
+    this.onValidatorChange = fn;
+  }
+
   public onInputChange(event: InputEvent & {target: HTMLInputElement}): void {
     const usedKeys = this._usedKeys$.getValue();
-    if (usedKeys.includes(event.target.value)) {
-      this.idError$.next('caseManagement.statuses.keyDuplicated');
-      this.submitDisabled.emit(true);
-    } else {
-      this.idError$.next(null);
-      this.submitDisabled.emit(false);
-      this.onChange((this.value = event.target.value));
-    }
+    this.idError$.next(usedKeys.includes(event.target.value) ? 'caseManagement.statuses.keyDuplicated' : null);
+    this.onChange((this.value = event.target.value));
   }
 
   public enableKeyEditing(): void {

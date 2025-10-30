@@ -86,7 +86,6 @@ export class IkoManagementRepositoryModalComponent {
 
   public showAutoKey = true;
   public enableIkoType = false;
-  public readonly submitDisabled$ = new BehaviorSubject<boolean>(false);
   public readonly disabled$ = new BehaviorSubject(true);
   private readonly _ikoRepositoryTypes$ = this.ikoManagementApiService.getIkoRepositoryTypes();
 
@@ -158,10 +157,6 @@ export class IkoManagementRepositoryModalComponent {
     }
 
     return !control.valid && !control.pristine;
-  }
-
-  public setSubmitDisabled(value: boolean): void {
-    this.submitDisabled$.next(value);
   }
 
   private resetForm(): void {

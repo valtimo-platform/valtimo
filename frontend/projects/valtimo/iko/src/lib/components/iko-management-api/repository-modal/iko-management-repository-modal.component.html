@@ -22,7 +22,6 @@
       [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
       [mode]="modalMode"
       [usedKeys]="usedKeys$ | async"
-      (submitDisabled)="setSubmitDisabled($event)"
     >
     </valtimo-auto-key-input>
 
@@ -51,7 +50,7 @@
       {{ 'interface.cancel' | translate }}
     </button>
 
-    <button [disabled]="formGroup.invalid || (submitDisabled$ | async)" cdsButton="primary" (click)="onSave()">
+    <button [disabled]="formGroup.invalid" cdsButton="primary" (click)="onSave()">
       {{ 'interface.save' | translate }}
     </button>
   </cds-modal-footer>
