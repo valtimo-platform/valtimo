@@ -177,6 +177,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     if(!item) return;
 
     this._refresh$.next(null);
+    this.menuService.reload();
   }
 
   private setPageTitle(): void {
