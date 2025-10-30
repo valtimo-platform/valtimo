@@ -19,7 +19,7 @@
 </cds-label>
 
 <valtimo-carbon-multi-input
-  type="valuePathSelectorDropdownValue"
+  [type]="$multiInputType()"
   class="valtimo-widget-wizard-condition-step__multi-input"
   [addRowText]="'widgetTabManagement.displayConditions.addCondition' | translate"
   addButtonType="tertiary"
@@ -31,9 +31,9 @@
   [keyColumnTitle]="'widgetTabManagement.displayConditions.path' | translate"
   [minimumAmountOfRows]="0"
   [valueColumnTitle]="'widgetTabManagement.displayConditions.value' | translate"
+  valuePathSelectorNotation="dots"
   (allValuesValidEvent)="onAllConditionsValid($event)"
   (valueChange)="conditionsValueChange($event)"
-  valuePathSelectorNotation="dots"
   [valuePathSelectorPrefixes]="[ValuePathSelectorPrefix.DOC, ValuePathSelectorPrefix.CASE]"
   [valuePathSelectorShowCaseDefinitionSelector]="false"
   [valuePathSelectorCaseDefinitionKey]="(params$ | async)?.caseDefinitionKey"
