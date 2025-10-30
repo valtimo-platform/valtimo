@@ -16,6 +16,7 @@
 
 package com.ritense.notificatiesapi.client
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.notificatiesapi.NotificatiesApiAuthentication
 import com.ritense.notificatiesapi.domain.Abonnement
@@ -42,13 +43,15 @@ class NotificatiesApiClientTest {
     lateinit var mockNotificatiesApi: MockWebServer
     lateinit var restClientBuilder: RestClient.Builder
     lateinit var client: NotificatiesApiClient
+    lateinit var objectMapper: ObjectMapper
 
     @BeforeEach
     fun setup() {
         mockNotificatiesApi = MockWebServer()
         mockNotificatiesApi.start()
         restClientBuilder = RestClient.builder()
-        client = NotificatiesApiClient(restClientBuilder, MapperSingleton.get())
+        objectMapper = MapperSingleton.get()
+        client = NotificatiesApiClient(restClientBuilder, objectMapper)
     }
 
     @AfterEach
