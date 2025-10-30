@@ -17,6 +17,7 @@
 package com.ritense.widget.custom
 
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.ritense.valtimo.contract.conditions.Condition
 import com.ritense.widget.domain.WidgetAction
 import com.ritense.widget.domain.Widget
 import com.ritense.widget.web.rest.dto.WidgetDto
@@ -30,6 +31,7 @@ data class CustomWidgetDto(
     override val width: Int,
     override val highContrast: Boolean,
     override val actions: List<WidgetAction> = emptyList(),
+    override val displayConditions: List<Condition<*>> = emptyList(),
     @field:Valid val properties: CustomWidgetProperties
 ) : WidgetDto {
     override fun toEntity(id: UUID, order: Int): Widget = CustomWidget(
@@ -40,6 +42,7 @@ data class CustomWidgetDto(
         order = order,
         highContrast = highContrast,
         actions = actions,
+        displayConditions = displayConditions,
         properties = properties,
     )
 }

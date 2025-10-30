@@ -4,19 +4,16 @@ permissions:
   contents: read
 
 on:
-  pull_request:
-    branches:
-      - "next-minor"
-    types:
-      - synchronize
-
-  workflow_dispatch:
-
   workflow_call:
+    inputs:
+      backend_libraries_build_artifact_name:
+        required: true
+        description: Name of the backend build artifact to download with 'download-artifact'
+        type: "string"
     outputs:
-      imageTag:
-        description: "The Docker image tag"
-        value: ${{ jobs.build_image.outputs.imageTag }}
+      tagged_image:
+        description: "Tag of the Docker image that was built"
+        value: ${{ jobs.build_image.outputs.image_tag }}
 
 defaults:
   run:
@@ -35,10 +32,18 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
+      - name: Download built libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.backend_libraries_build_artifact_name }}
+          path: .
+
       - run: ./gradlew app:gzac:assemble
 
       - name: Prepare deployment folder
-        run: mkdir deployment | mv app/gzac/build/ app/gzac/Dockerfile deployment/
+        run: |
+          mkdir deployment
+          mv app/gzac/build/ app/gzac/Dockerfile deployment/
 
       - name: Archive deployment folder
         uses: actions/upload-artifact@v4
@@ -50,13 +55,13 @@ jobs:
   build_image:
     runs-on: ubuntu-latest
     needs: assemble
-
     permissions:
       contents: read
       packages: write
-
     outputs:
-      imageTag: ${{ steps.generate_tags.outputs.tags }}
+      image_tag: ${{ fromJson(steps.generate_tags.outputs.json).tags[0] }}
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
     steps:
       - name: Checkout repository
@@ -69,16 +74,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract branch name
-        id: vars
-        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      - name: Resolve backend tree hash
+        id: backend_tree
+        run: echo "tree=$(git rev-parse HEAD:backend)" >> "$GITHUB_OUTPUT"
 
       - name: Generate image tags
         id: generate_tags
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}/gzac-backend
-          tags: type=raw,value=${{ env.BRANCH_NAME }}.${{github.run_number}},enable=true
+          tags: |
+            type=raw,value=${{ env.BRANCH_NAME }}.${{ github.run_number }}
+            type=raw,value=commit-${{ github.sha }}
+            type=raw,value=contents-${{ steps.backend_tree.outputs.tree }}
           flavor: |
             latest=false
 
@@ -87,6 +95,12 @@ jobs:
         with:
           name: gzac-app-backend-deployment
           path: backend/deployment/
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          install: true
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

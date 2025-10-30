@@ -86,7 +86,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -119,6 +122,8 @@ public class JsonSchemaDocumentService implements DocumentService {
 
     private final CaseTagService caseTagService;
 
+    private final EntityManager entityManager;
+
     public JsonSchemaDocumentService(
         JsonSchemaDocumentRepository documentRepository,
         JsonSchemaDocumentDefinitionService documentDefinitionService,
@@ -130,7 +135,8 @@ public class JsonSchemaDocumentService implements DocumentService {
         OutboxService outboxService,
         ObjectMapper objectMapper,
         InternalCaseStatusService internalCaseStatusService,
-        CaseTagService caseTagService
+        CaseTagService caseTagService,
+        EntityManager entityManager
     ) {
         this.documentRepository = documentRepository;
         this.documentDefinitionService = documentDefinitionService;
@@ -143,6 +149,7 @@ public class JsonSchemaDocumentService implements DocumentService {
         this.objectMapper = objectMapper;
         this.internalCaseStatusService = internalCaseStatusService;
         this.caseTagService = caseTagService;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -375,6 +382,59 @@ public class JsonSchemaDocumentService implements DocumentService {
                 });
 
                 return result;
+            }
+        );
+    }
+
+    @Override
+    @Transactional(timeout = 30, rollbackFor = {Exception.class})
+    public void modifyDocumentAtomic(
+        @LoggableResource(resourceType = JsonSchemaDocument.class) Document.Id documentId,
+        Function<Document, Document> modifier
+    ) {
+        withLoggingContext(
+            JsonSchemaDocument.class, documentId.toString(), () -> {
+                final var lockedDocument = runWithoutAuthorization(() -> {
+                    try {
+                        // Detach any previously managed instance of this document (if present) from the persistence context.
+                        // This ensures that the following findByIdForUpdate(...) call actually hits the database and obtains
+                        // a fresh, up-to-date row with a PESSIMISTIC_WRITE lock, instead of reusing a potentially stale cached entity.
+                        Document cachedDocument = entityManager.getReference(JsonSchemaDocument.class, documentId);
+                        if (entityManager.contains(cachedDocument)) {
+                            entityManager.detach(cachedDocument);
+                        }
+                    } catch (EntityNotFoundException e) {
+                        // Safe to ignore
+                    }
+
+                    // Load the document from the database with a PESSIMISTIC_WRITE lock to guarantee exclusive access.
+                    return documentRepository.findByIdForUpdate(documentId.getId()).orElseThrow(
+                        () -> new DocumentNotFoundException("Document not found with id " + documentId)
+                    );
+                });
+
+                authorizationService.requirePermission(
+                    new EntityAuthorizationRequest<>(
+                        JsonSchemaDocument.class,
+                        MODIFY,
+                        lockedDocument
+                    )
+                );
+
+                final Document modifiedDocument = modifier.apply(lockedDocument);
+
+                if (modifiedDocument instanceof JsonSchemaDocument jsonSchemaDoc) {
+                    final var savedDocument = documentRepository.save(jsonSchemaDoc);
+                    outboxService.send(() ->
+                        new DocumentUpdated(
+                            savedDocument.id().toString(),
+                            objectMapper.valueToTree(savedDocument)
+                        )
+                    );
+                    return savedDocument;
+                } else {
+                    throw new IllegalArgumentException("Modified document must be of type JsonSchemaDocument");
+                }
             }
         );
     }

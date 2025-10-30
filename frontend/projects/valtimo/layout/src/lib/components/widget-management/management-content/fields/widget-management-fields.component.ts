@@ -28,7 +28,7 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
 import {TranslateModule} from '@ngx-translate/core';
 import {
@@ -69,6 +69,8 @@ export class WidgetManagementFieldsComponent
   @HostBinding('class') public readonly class = 'valtimo-widget-management-fields';
   @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
   @ViewChild(Tab) private readonly _tab: Tab;
+
+  public readonly $showTitleInput = signal<boolean>(true);
 
   public form = this.fb.group({
     widgetTitle: this.fb.control(this.widgetWizardService.$widgetTitle(), Validators.required),
@@ -186,5 +188,22 @@ export class WidgetManagementFieldsComponent
     });
     this._contentValid.set(event.valid);
     this.changeValidEvent.emit(event.valid && this.form.valid);
+  }
+
+  public setTitleInputVisible(visible: boolean): void {
+    this.$showTitleInput.set(visible);
+
+    const ctrl: AbstractControl | null = this.form.get('widgetTitle');
+    if (!ctrl) return;
+
+    if (visible) {
+      ctrl.addValidators(Validators.required);
+    } else {
+      ctrl.clearValidators();
+    }
+
+    ctrl.updateValueAndValidity({emitEvent: false});
+
+    this.changeValidEvent.emit(this.form.valid && this._contentValid());
   }
 }

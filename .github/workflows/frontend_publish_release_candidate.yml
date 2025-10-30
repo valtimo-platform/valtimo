@@ -5,27 +5,43 @@ permissions:
 
 on:
   workflow_dispatch:
-    inputs:
-      project_version:
-        description: 'Project version'
-        required: true
 
 defaults:
   run:
     working-directory: frontend
 
 jobs:
+  determine_version:
+    runs-on: ubuntu-latest
+    outputs:
+      project_version: ${{ steps.version.outputs.version_rc }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compute version from branch
+        id: version
+        shell: bash
+        run: |
+          SEMVER_VERSION="${GITHUB_REF_NAME#rc/}"
+          VERSION_RC="${SEMVER_VERSION}-${GITHUB_RUN_NUMBER}.RC"
+          echo "version_rc=$VERSION_RC" >> "$GITHUB_OUTPUT"
+
   build_and_test:
-    uses: ./.github/workflows/frontend_build_test.yml
+    needs: ["determine_version"]
+    uses: ./.github/workflows/frontend_build_test_libraries.yml
     with:
-      project_version: ${{ github.event.inputs.project_version }}
+      project_version: ${{ needs.determine_version.outputs.project_version }}
     secrets: inherit
 
   publish:
     if: ${{ startsWith(github.ref_name, 'rc/') }}
-    needs: build_and_test
+    needs:
+      - build_and_test
+      - determine_version
     uses: ./.github/workflows/frontend_publish_to_s3.yml
     with:
-      publish_type: 'release-candidate'
-      project_version: ${{ github.event.inputs.project_version }}
+      publish_type: "release-candidate"
+      frontend_libraries_build_artifact_name: ${{ needs.build_and_test.outputs.build_artifact_name }}
+      project_version: ${{ needs.determine_version.outputs.project_version }}
     secrets: inherit
