@@ -115,6 +115,14 @@ class ZakenApiPlugin(
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: ZakenApiAuthentication
 
+    @PluginProperty(
+        key = "noteEventListenerEnabled",
+        title = "When enabled acts on Note events resulting in create, update and delete of ZaakNotitie",
+        required = false,
+        secret = false
+    )
+    var noteEventListenerEnabled: Boolean = false
+
     @PluginAction(
         key = "link-document-to-zaak",
         title = "Link Documenten API document to Zaak",

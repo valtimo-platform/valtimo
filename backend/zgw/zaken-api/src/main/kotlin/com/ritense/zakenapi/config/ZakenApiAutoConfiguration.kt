@@ -352,8 +352,12 @@ class ZakenApiAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ZaakNotitieEventListener::class)
     fun zaakNotitieEventListener(
+        zaakUrlProvider: ZaakUrlProvider,
+        pluginService: PluginService,
         zaakNotitieService: ZaakNotitieService
     ) = ZaakNotitieEventListener(
+        zaakUrlProvider,
+        pluginService,
         zaakNotitieService
     )
 }
