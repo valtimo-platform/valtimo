@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package com.ritense.notificatiesapi.domain
+package com.ritense.zakenapi.event
 
-import com.fasterxml.jackson.annotation.JsonInclude
+import com.ritense.outbox.domain.BaseEvent
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class Abonnement(
-    val url: String? = null,
-    val callbackUrl: String,
-    val auth: String?,
-    val kanalen: List<Kanaal> = listOf(),
-) {
-    fun getId(): String? = url?.substringBeforeLast('/')
-
-    data class Kanaal(
-        val filters: Map<String, String> = mapOf(),
-        val naam: String
-    )
-}
+class ZaakRolDeleted(zaakRolUuid: String) : BaseEvent(
+    type = "com.ritense.gzac.zrc.rol.deleted",
+    resultType = null,
+    resultId = zaakRolUuid,
+    result = null
+)

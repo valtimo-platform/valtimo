@@ -36,6 +36,7 @@ import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create
 import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
+import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 
 const zakenApiPluginSpecification: PluginSpecification = {
   pluginId: 'zakenapi',
@@ -46,6 +47,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'link-uploaded-document-to-zaak': LinkUploadedDocumentToZaakConfigurationComponent,
     'set-zaakstatus': SetZaakStatusConfigurationComponent,
     'create-zaakresultaat': CreateZaakResultaatConfigurationComponent,
+    'delete-zaak-rol': DeleteZaakRolComponent,
     'create-zaak': CreateZaakConfigurationComponent,
     'create-natuurlijk-persoon-zaak-rol': CreateNatuurlijkPersoonZaakRolComponent,
     'create-niet-natuurlijk-persoon-zaak-rol': CreateNietNatuurlijkPersoonZaakRolComponent,
@@ -113,6 +115,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Zaakrol aanmaken - Medewerker',
       'create-organisatorische-eenheid-zaak-rol': 'Zaakrol aanmaken - Organisatorische eenheid',
       'create-vestiging-zaak-rol': 'Zaakrol aanmaken - Vestiging',
+      'delete-zaak-rol': 'Verwijderen Zaakrol',
       'set-zaakopschorting': 'Schort een zaak op',
       'start-hersteltermijn': 'Start hersteltermijn',
       startRecoveryPeriodInformation:
@@ -263,6 +266,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
       objectIdentificatie: 'Object identificatie',
+      resultProcessVariable: 'Resultaat process variable',
+      rolUuid: 'Rol UUID',
+      rolUuidTooltip: 'De UUID van de rol'
     },
     en: {
       title: 'Zaken API',
@@ -314,6 +320,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Create Zaakrol - Employee',
       'create-organisatorische-eenheid-zaak-rol': 'Create Zaakrol - Organizational unit',
       'create-vestiging-zaak-rol': 'Create Zaakrol - Branch',
+      'delete-zaak-rol': 'Removing Zaakrol',
       'set-zaakopschorting': 'Suspend case',
       'start-hersteltermijn': 'Start recovery period',
       startHersteltermijnInformation:
@@ -464,6 +471,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.',
       objectIdentificatie: 'Object identification',
+      resultProcessVariable: 'Result process variable',
+      rolUuid: 'Rol UUID',
+      rolUuidTooltip: 'The UUID of the rol'
     },
     de: {
       title: 'Zaken API',
@@ -515,6 +525,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Zaakrol erstellen – Mitarbeiter',
       'create-organisatorische-eenheid-zaak-rol': 'Zaakrol erstellen – Organisationseinheit',
       'create-vestiging-zaak-rol': 'Zaakrol erstellen – Niederlassung',
+      'delete-zaak-rol': 'Zum Löschen Zaakrol',
       'set-zaakopschorting': 'Einen Fall aussetzen',
       'start-hersteltermijn': 'Beginnen Sie mit der Erholungsphase',
       startHersteltermijnInformation:
@@ -666,6 +677,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.',
       objectIdentificatie: 'Objektidentifikation',
+      resultProcessVariable: 'Ergebnis process variable',
+      rolUuid: 'Rolle UUID',
+      rolUuidTooltip: 'Die UUID der Rolle'
     },
   },
 };
