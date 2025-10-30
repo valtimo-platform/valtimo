@@ -93,7 +93,7 @@ internal class IkoDataRequestResourceTest {
                         title = "BSN",
                         path = "/burgerservicenummer",
                         order = 0,
-                        dataType = DataType.TEXT,
+                        dataType = DataType.BSN,
                         fieldType = FieldType.SINGLE,
                     )
                 )
@@ -141,7 +141,7 @@ internal class IkoDataRequestResourceTest {
                         title = "BSN",
                         path = "/burgerservicenummer",
                         order = 0,
-                        dataType = DataType.TEXT,
+                        dataType = DataType.BSN,
                         fieldType = FieldType.SINGLE,
                     )
                 )
