@@ -16,8 +16,9 @@
 
 .valtimo-widget-management-process-selector {
   display: grid;
-  gap: 16px;
   grid-template-columns: 1fr 1fr;
+  align-items: flex-end;
+  gap: 16px;
 
   ::ng-deep.cds--text-input,
   ::ng-deep.cds--list-box {
