@@ -259,7 +259,6 @@ export class WidgetManagementEditorComponent implements OnDestroy {
   }
 
   public onCloseEvent(event: WidgetWizardCloseEvent | null): void {
-    console.log({event});
     this.$isWizardOpen.set(false);
     this.dividerDefinition$.next(null);
     this.$dividerModalMode.set('add');

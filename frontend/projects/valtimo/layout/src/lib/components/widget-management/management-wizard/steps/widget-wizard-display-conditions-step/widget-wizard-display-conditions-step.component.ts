@@ -32,7 +32,7 @@ import {
   StructuredListModule,
   ToggleModule,
 } from 'carbon-components-angular';
-import {filter, map, Observable, take, tap} from 'rxjs';
+import {filter, map, Observable, take} from 'rxjs';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
@@ -83,7 +83,6 @@ export class WidgetWizardDisplayConditionsStepComponent {
   ).pipe(
     filter(conditions => !!conditions),
     take(1),
-    tap(conditions => console.log({conditions})),
     map((conditions: Array<Condition> | null) =>
       !conditions
         ? []
