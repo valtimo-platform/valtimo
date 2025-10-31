@@ -399,7 +399,13 @@ export class DocumentenApiMetadataModalComponent implements OnInit, OnDestroy {
     })
   );
 
-  public readonly documentId$ = this.formioStateService.documentId$;
+  public readonly documentId$ = combineLatest([
+    this.formioStateService.documentId$,
+    this.route.params.pipe(
+      map(params => params?.documentId),
+      filter(documentId => !!documentId)
+    ),
+  ]).pipe(map(([formIoDocumentId, routeDocumentId]) => formIoDocumentId || routeDocumentId));
 
   public readonly documentTypeItems$: Observable<Array<ListItem>> = combineLatest([
     this.documentId$,
