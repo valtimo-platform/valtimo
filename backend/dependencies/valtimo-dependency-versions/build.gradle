@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,6 +102,8 @@ dependencies {
         //ShedLock
         api("net.javacrumbs.shedlock:shedlock-spring:${shedlockVersion}")
         api("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:${shedlockVersion}")
+
+        api("org.apache.commons:commons-lang3:${commonsLangVersion}")
 
         api("de.codecentric:spring-boot-admin-starter-client:${springBootAdminStarterClientVersion}")
         api "org.json:json:${orgJsonJsonVersion}"

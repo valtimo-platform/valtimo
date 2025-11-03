@@ -25,6 +25,7 @@
     (rowClicked)="onSearchActionClick($event)"
   >
     <div carbonToolbarContent>
+      <ng-container [ngTemplateOutlet]="exportButton"></ng-container>
       <ng-container [ngTemplateOutlet]="addActionButton"></ng-container>
     </div>
 
@@ -53,11 +54,27 @@
     (confirmEvent)="onDeleteSearchAction($event)"
   ></valtimo-confirmation-modal>
 
+  <ng-template #exportButton>
+    <button [iconOnly]="true" cdsButton="ghost" (click)="exportConfiguration()">
+      <svg cdsIcon="download" size="16"></svg>
+    </button>
+  </ng-template>
+
   <ng-template #addActionButton>
     <button cdsButton="primary" (click)="openAddModal()">
       {{ 'ikoManagement.searchActions.addActionTitle' | translate }}
 
       <svg class="cds--btn__icon" cdsIcon="add" size="16"></svg>
     </button>
+  </ng-template>
+
+  <ng-template #exportingMessage>
+    <div class="exporting-message">
+      <span class="cds--inline-notification__title">{{
+        'ikoManagement.preparingDownload' | translate
+      }}</span>
+
+      <cds-loading size="sm"></cds-loading>
+    </div>
   </ng-template>
 }

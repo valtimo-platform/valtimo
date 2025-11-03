@@ -16,7 +16,7 @@
 
 <div *ngIf="{widgetConfig: widgetConfig$ | async} as obs" class="custom-widget">
   <section class="custom-widget__header">
-    <h4 class="custom-widget__title">{{ obs.widgetConfig$?.title || '-' }}</h4>
+    <h4 class="custom-widget__title">{{ obs.widgetConfig?.title || '-' }}</h4>
 
     <ng-content></ng-content>
   </section>

@@ -133,6 +133,7 @@ export class WidgetWizardService {
       this.$widgetTitle.set(null);
       this.$widgetKey.set(null);
       this.$widgetActions.set(undefined);
+      this.$widgetDisplayConditions.set(null);
       this.$editMode.set(false);
     }, CARBON_CONSTANTS.modalAnimationMs);
   }
