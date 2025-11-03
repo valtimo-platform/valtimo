@@ -61,14 +61,18 @@
         caseDetailLayout: caseDetailLayout$ | async,
         openTaskAndProcessLinkInModal: openTaskAndProcessLinkInModal$ | async,
         taskAndProcessLinkOpenedInPanel: taskAndProcessLinkOpenedInPanel$ | async,
+        isDarkMode: isDarkMode$ | async,
+        compactMode: compactMode$ | async,
+        tabContentContainerMaxHeight: tabContentContainerMaxHeight$ | async,
       } as tabContentObs"
       #tabContentContainer
       class="tab-content-container"
       [ngClass]="{
-        'tab-content-container--dark': isDarkMode$ | async,
-        'tab-content-container--compact': compactMode$ | async,
+        'tab-content-container--dark': tabContentObs.isDarkMode,
+        'tab-content-container--compact': tabContentObs.compactMode,
       }"
-      [style.max-height]="tabContentContainerMaxHeight$ | async"
+      [style.max-height]="tabContentObs.tabContentContainerMaxHeight"
+      [style.height]="tabContentObs.tabContentContainerMaxHeight"
     >
       <as-split
         direction="horizontal"

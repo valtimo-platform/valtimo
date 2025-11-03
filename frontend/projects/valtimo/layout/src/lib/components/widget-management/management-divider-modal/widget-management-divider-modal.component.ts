@@ -149,7 +149,6 @@ export class WidgetManagementDividerModalComponent {
     if (!dividerCreated) {
       this.closeEvent.emit(null);
       runAfterCarbonModalClosed(() => {
-        this.submitDisabled$.next(false);
         this.showAutoKey = false;
         this.resetForm();
       });
@@ -168,7 +167,6 @@ export class WidgetManagementDividerModalComponent {
       widget: this.divider,
     });
     runAfterCarbonModalClosed(() => {
-      this.submitDisabled$.next(false);
       this.showAutoKey = false;
       this.resetForm();
     });
@@ -180,10 +178,6 @@ export class WidgetManagementDividerModalComponent {
     if (!title || !key) {
       return;
     }
-  }
-
-  public setSubmitDisabled(value: boolean): void {
-    this.submitDisabled$.next(value);
   }
 
   private resetForm = (): void => {

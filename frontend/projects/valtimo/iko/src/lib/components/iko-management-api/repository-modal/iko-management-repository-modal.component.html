@@ -1,6 +1,6 @@
 <cds-modal valtimoCdsModal [open]="open$ | async" size="sm" showFooter="true" (close)="onCancel()">
   <cds-modal-header [showCloseButton]="true" (closeSelect)="onCancel()">
-    <h3 cdsModalHeaderHeading>Add view</h3>
+    <h3 cdsModalHeaderHeading>{{ 'ikoManagement.configureIkoServer' | translate }}</h3>
   </cds-modal-header>
 
   <form cdsModalContent [cdsLayer]="1" [formGroup]="formGroup" class="iko-api-form">
@@ -15,16 +15,15 @@
       />
     </cds-label>
 
-    <cds-label [invalid]="getControlInvalid('key')">
-      {{ 'ikoManagement.keyTitle' | translate }}
-
-      <input
-        [invalid]="getControlInvalid('key')"
-        formControlName="key"
-        cdsText
-        placeholder="{{ 'ikoManagement.keyPlaceholder' | translate }}"
-      />
-    </cds-label>
+    <valtimo-auto-key-input
+      *ngIf="showAutoKey"
+      formControlName="key"
+      placeholderTranslationKey="ikoManagement.keyPlaceholder"
+      [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
+      [mode]="modalMode"
+      [usedKeys]="usedKeys$ | async"
+    >
+    </valtimo-auto-key-input>
 
     @if (enableIkoType) {
       <v-select
@@ -44,7 +43,6 @@
       [prefillData]="$prefillData()?.properties"
     />
   </form>
-
 
   <cds-modal-footer>
     <button cdsButton="ghost" (click)="onCancel()">
