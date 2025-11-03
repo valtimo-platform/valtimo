@@ -21,7 +21,6 @@ import com.ritense.form.domain.FormProcessLink
 import com.ritense.form.domain.request.CreateFormDefinitionRequest
 import com.ritense.form.service.FormDefinitionService
 import com.ritense.form.web.rest.dto.FormProcessLinkUpdateRequestDto
-import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.domain.ProcessLinksCopiedEvent
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
@@ -76,7 +75,7 @@ class FormCaseEventListener(
         }
 
         event.copiedProcessLinks.forEach { processLink ->
-            if (processLink !is FormProcessLink) return
+            if (processLink !is FormProcessLink) return@forEach
 
             val formProcessLinkUpdateRequest = FormProcessLinkUpdateRequestDto(
                 processLink.id,

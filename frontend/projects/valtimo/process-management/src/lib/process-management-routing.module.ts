@@ -38,7 +38,8 @@ const routes: Routes = [
     path: 'processes/create',
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Create new Process',
       roles: [ROLE_ADMIN],
@@ -49,7 +50,8 @@ const routes: Routes = [
     path: 'processes/:processDefinitionKey',
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Process details',
       roles: [ROLE_ADMIN],

@@ -854,7 +854,7 @@
       "success": "Widget-Konfiguration erfolgreich aktualisiert",
       "error": "Die Widget-Konfiguration konnte nicht aktualisiert werden"
     },
-    "types": {
+    "type": {
       "description": "Wählen Sie den Widget-Typ aus, den Sie konfigurieren möchten.",
       "fields": {"title": "Felder", "description": "Textdaten mit Inhalt und einer Beschriftung"},
       "custom": {"title": "Benutzerdefinierte Komponente", "description": "Für komplexe Inhalte"},
@@ -1028,6 +1028,39 @@
       "noColumns": {
         "description": "Klicken Sie hier, um eine Spalte für dieses Dokument zu konfigurieren",
         "title": "Keine konfigurierten Spalten"
+      }
+    },
+    "notifications": {
+      "failed": {
+        "pageTitle": "Fehlgeschlagene Benachrichtigungen",
+        "retrySuccess": "Benachrichtigung zur erneuten Verarbeitung eingeplant",
+        "retryError": "Erneuter Versuch fehlgeschlagen. Bitte später erneut versuchen.",
+        "noResults": {
+          "title": "Keine fehlgeschlagenen Benachrichtigungen",
+          "description": "Es liegen derzeit keine fehlgeschlagenen Benachrichtigungen vor."
+        },
+        "columns": {
+          "receivedAt": "Empfangen am",
+          "idempotenceKey": "Idempotenzschlüssel",
+          "pendingRetries": "Verbleibende Versuche",
+          "lastProcessedAt": "Zuletzt verarbeitet am",
+          "lastErrorMessage": "Letzte Fehlermeldung"
+        },
+        "detail": {
+          "title": "Details zur fehlgeschlagenen Benachrichtigung",
+          "metadataTitle": "Metadaten",
+          "id": "ID",
+          "idempotenceKey": "Idempotenzschlüssel",
+          "status": "Status",
+          "pendingRetries": "Verbleibende Versuche",
+          "receivedAt": "Empfangen am",
+          "lastProcessedAt": "Zuletzt verarbeitet am",
+          "payloadTitle": "Payload",
+          "noPayload": "Keine Payload verfügbar.",
+          "errorTitle": "Fehlerdetails",
+          "noError": "Keine Fehlerdetails verfügbar.",
+          "retry": "Benachrichtigung erneut versuchen"
+        }
       }
     },
     "tags": {
@@ -1966,6 +1999,7 @@
     "editTab": "Tab bearbeiten",
     "rowAction": "Zeilenaktion",
     "canStartCase": "Kann Case starten",
+    "collectionPathTooltip": "Ein Pfad, der zu der Sammlung von Werten führt, die du anzeigen möchtest. Um Eigenschaften in IKO's anzuzeigen, folge diesem Beispiel: 'iko:/pfad/zu/eigenschaft'.",
     "tabTypes": {
       "widgets": "Widgets"
     }

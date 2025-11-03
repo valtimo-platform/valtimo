@@ -859,7 +859,7 @@
       "success": "Widget-configuratie succesvol bijgewerkt",
       "error": "Widget-configuratie kan niet worden bijgewerkt"
     },
-    "types": {
+    "type": {
       "description": "Kies het widget-type dat je wilt configureren.",
       "fields": {"title": "Velden", "description": "Tekstgegevens met inhoud en een label"},
       "custom": {"title": "Eigen component", "description": "Voor complexe inhoud"},
@@ -869,7 +869,8 @@
         "title": "Interactieve tabel",
         "description": "Maak een interactieve tabel"
       },
-      "collection": {"title": "Collectie", "description": "Maak een collectie aan"}
+      "collection": {"title": "Collectie", "description": "Maak een collectie aan"},
+      "divider": {"title": "Scheidingslijn"}
     },
     "width": {
       "description": "Selecteer de gewenste breedte voor de widget.",
@@ -1031,6 +1032,39 @@
       "noColumns": {
         "description": "Klik hier om een kolom voor dit document te configureren",
         "title": "Er zijn geen kolommen geconfigureerd voor dit document."
+      }
+    },
+    "notifications": {
+      "failed": {
+        "pageTitle": "Mislukte notificaties",
+        "retrySuccess": "Notificatie opnieuw ingepland",
+        "retryError": "Opnieuw proberen mislukt. Probeer het later nog eens.",
+        "noResults": {
+          "title": "Geen mislukte notificaties",
+          "description": "Er zijn momenteel geen mislukte notificaties."
+        },
+        "columns": {
+          "receivedAt": "Ontvangen op",
+          "idempotenceKey": "Idempotentiesleutel",
+          "pendingRetries": "Resterende pogingen",
+          "lastProcessedAt": "Laatst verwerkt op",
+          "lastErrorMessage": "Laatste foutmelding"
+        },
+        "detail": {
+          "title": "Details mislukte notificatie",
+          "metadataTitle": "Metadata",
+          "id": "ID",
+          "idempotenceKey": "Idempotentiesleutel",
+          "status": "Status",
+          "pendingRetries": "Resterende pogingen",
+          "receivedAt": "Ontvangen op",
+          "lastProcessedAt": "Laatst verwerkt op",
+          "payloadTitle": "Payload",
+          "noPayload": "Geen payload beschikbaar.",
+          "errorTitle": "Foutdetails",
+          "noError": "Geen foutdetails beschikbaar.",
+          "retry": "Opnieuw proberen"
+        }
       }
     },
     "tags": {
@@ -1972,6 +2006,7 @@
     "editTab": "Tab bewerken",
     "rowAction": "Rijactie",
     "canStartCase": "Kan zaak starten",
+    "collectionPathTooltip": "Een pad dat leidt naar de verzameling van waarden die je wilt weergeven. Voor het tonen van eigenschappen in IKO's, volg dit voorbeeld: 'iko:/pad/naar/eigenschap'.",
     "tabTypes": {
       "widgets": "Widgets"
     }
