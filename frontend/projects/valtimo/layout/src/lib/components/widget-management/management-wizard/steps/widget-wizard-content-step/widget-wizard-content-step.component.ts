@@ -24,7 +24,6 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import {WidgetWizardService} from '../../../../../services/widget-wizard.service';
-import {WidgetManagementProcessSelectorComponent} from '../../../management-process-selector/widget-management-process-selector.component';
 import {WidgetManagementActionButtonComponent} from '../../../management-action-button/widget-management-action-button.component';
 
 @Component({
