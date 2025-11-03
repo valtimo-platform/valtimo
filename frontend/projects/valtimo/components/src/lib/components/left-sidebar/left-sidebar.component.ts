@@ -88,11 +88,6 @@ export class LeftSidebarComponent implements AfterViewInit, OnDestroy {
     this.shellService.setSidenavElement(
       this.elementRef.nativeElement.querySelector('.cds--side-nav')
     );
-    this.menuService.menuItems$.subscribe(menuItems => {
-      menuItems.forEach(menuItem => {
-        menuItem?.count$;
-      });
-    });
   }
 
   public ngOnDestroy(): void {
