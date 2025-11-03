@@ -10,7 +10,13 @@ import {
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
-import {ButtonModule, IconModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
+import {
+  ButtonModule,
+  IconModule,
+  InputModule,
+  LayerModule,
+  ModalModule,
+} from 'carbon-components-angular';
 import {BehaviorSubject, filter, Observable, switchMap, take} from 'rxjs';
 import {
   PropertyField,

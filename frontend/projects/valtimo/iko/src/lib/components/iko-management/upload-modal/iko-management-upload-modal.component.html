@@ -128,7 +128,9 @@
           obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.ACCESS_CONTROL
         "
         cdsButton="primary"
-        [disabled]="obs.nextButtonDisabled || (obs.activeStep === UPLOAD_STEP.FILE_SELECT && !_checked)"
+        [disabled]="
+          obs.nextButtonDisabled || (obs.activeStep === UPLOAD_STEP.FILE_SELECT && !_checked)
+        "
         (click)="onNextClick(obs.activeStep)"
       >
         {{

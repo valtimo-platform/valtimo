@@ -174,7 +174,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
 
   public onUploadModalClose(item: boolean) {
     this.$uploadModalOpen.set(false);
-    if(!item) return;
+    if (!item) return;
 
     this._refresh$.next(null);
     this.menuService.reload();

@@ -15,13 +15,13 @@
   -->
 
 <cds-modal
-        (close)="closeModal()"
-        *ngIf="{
+  (close)="closeModal()"
+  *ngIf="{
     title: (modalMode === 'add' ? 'ikoManagement.addTab' : 'ikoManagement.editTab') | translate,
   } as state"
-        [open]="$openModal()"
-        [title]="state.title"
-        valtimoCdsModal
+  [open]="$openModal()"
+  [title]="state.title"
+  valtimoCdsModal
 >
   <cds-modal-header [showCloseButton]="true" (closeSelect)="closeModal()">
     <h3 cdsModalHeaderHeading>

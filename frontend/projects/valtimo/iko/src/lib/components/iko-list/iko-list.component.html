@@ -19,11 +19,11 @@
     listConfig: listConfig$ | async,
     loading: loading$ | async,
   } as obs"
-    [fields]="obs.listConfig?.fields"
-    [items]="obs.listConfig?.items"
-    [loading]="obs.loading"
-    [hideToolbar]="true"
-    (rowClicked)="onRowClicked($event)"
+  [fields]="obs.listConfig?.fields"
+  [items]="obs.listConfig?.items"
+  [loading]="obs.loading"
+  [hideToolbar]="true"
+  (rowClicked)="onRowClicked($event)"
 >
   <valtimo-no-results
     title="{{ 'ikoManagement.search.noResultsTitle' | translate }}"

@@ -23,7 +23,13 @@ import {
   OnDestroy,
   signal,
 } from '@angular/core';
-import {ControlValueAccessor, NG_VALIDATORS, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  ControlValueAccessor,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {CommonModule} from '@angular/common';
 import {TranslateModule} from '@ngx-translate/core';
 import {ButtonModule, IconModule, IconService, InputModule} from 'carbon-components-angular';
@@ -93,15 +99,10 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
   private onChange = (_: any) => {};
   public onTouched = () => {};
   public onValidatorChange = () => {};
-  public validate = (control: any): { [key: string]: any } | null => {
-    if (this.idError$.getValue()) {
-      return {
-        idError: {
-          value: this.idError$.getValue(),
-        },
-      };
-    }
-  }
+  public validate = (control: any): { [key: string]: any } | null =>
+    this.idError$.getValue()
+      ? { idError: { value: this.idError$.getValue() } }
+      : null;
 
   private readonly subscription = new Subscription();
 
@@ -155,7 +156,7 @@ export class AutoKeyInputComponent implements ControlValueAccessor, Validators, 
     this.onTouched = fn;
   }
 
-  registerOnValidatorChange(fn: () => void) {
+  public registerOnValidatorChange(fn: () => void) {
     this.onValidatorChange = fn;
   }
 

@@ -21,7 +21,7 @@ import {
   SelectModule,
   ValtimoCdsModalDirective,
   AutoKeyInputComponent,
-  runAfterCarbonModalClosed
+  runAfterCarbonModalClosed,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -54,7 +54,7 @@ import {ConfigService, ModalMode} from '@valtimo/shared';
     PropertiesFormComponent,
     SelectModule,
     LayerModule,
-    AutoKeyInputComponent
+    AutoKeyInputComponent,
   ],
 })
 export class IkoManagementRepositoryModalComponent {
@@ -62,7 +62,7 @@ export class IkoManagementRepositoryModalComponent {
   @Input() public set open(value: boolean) {
     this._open$.next(value);
 
-    value ?  this.showAutoKey = true : this.resetForm();
+    value ? (this.showAutoKey = true) : this.resetForm();
   }
   public get open$(): Observable<boolean> {
     return this._open$.asObservable();
@@ -89,10 +89,9 @@ export class IkoManagementRepositoryModalComponent {
   public readonly disabled$ = new BehaviorSubject(true);
   private readonly _ikoRepositoryTypes$ = this.ikoManagementApiService.getIkoRepositoryTypes();
 
-  public readonly usedKeys$ = this.ikoManagementApiService.getIkoRepositoryConfigs()
-    .pipe(
-      map(response => response.content.map(c => c.key))
-    );
+  public readonly usedKeys$ = this.ikoManagementApiService
+    .getIkoRepositoryConfigs()
+    .pipe(map(response => response.content.map(c => c.key)));
 
   public readonly ikoRepositoryTypeSelectItems$: Observable<SelectItem[]> =
     this._ikoRepositoryTypes$.pipe(
