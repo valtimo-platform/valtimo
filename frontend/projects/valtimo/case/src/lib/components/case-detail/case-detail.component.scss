@@ -126,13 +126,13 @@
 }
 
 .split-area {
-  &,
   &__content {
-    height: unset !important;
+    height: 100% !important;
   }
 
   &__content .tab-container {
-    height: 100%;
+    height: min-content !important;
+    overflow: hidden !important;
   }
 }
 
