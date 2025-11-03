@@ -2,7 +2,6 @@
   "ikoDataAggregateKey" : "klant",
   "ikoListColumns" : [
     {
-      "id" : null,
       "key" : "naam",
       "title" : "Naam",
       "path" : "/naam/volledigeNaam",
@@ -10,11 +9,9 @@
         "type" : "text",
         "displayTypeParameters" : {}
       },
-      "sortable" : true,
-      "defaultSort" : null
+      "sortable" : true
     },
     {
-      "id" : null,
       "key" : "id",
       "title" : "BSN",
       "path" : "/burgerservicenummer",
@@ -22,11 +19,9 @@
         "type" : "text",
         "displayTypeParameters" : {}
       },
-      "sortable" : true,
-      "defaultSort" : null
+      "sortable" : true
     },
     {
-      "id" : null,
       "key" : "geboortedatum",
       "title" : "Geboortedatum",
       "path" : "/geboorte/datum/datum",
@@ -34,11 +29,9 @@
         "type" : "text",
         "displayTypeParameters" : {}
       },
-      "sortable" : true,
-      "defaultSort" : null
+      "sortable" : true
     },
     {
-      "id" : null,
       "key" : "adres",
       "title" : "Adres",
       "path" : "/verblijfplaats/verblijfadres/officieleStraatnaam",
@@ -46,8 +39,7 @@
         "type" : "text",
         "displayTypeParameters" : {}
       },
-      "sortable" : true,
-      "defaultSort" : null
+      "sortable" : true
     }
   ]
 }

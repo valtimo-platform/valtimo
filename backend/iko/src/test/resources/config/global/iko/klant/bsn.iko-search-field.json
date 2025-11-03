@@ -9,7 +9,6 @@
       "dataType" : "text",
       "fieldType" : "single",
       "matchType" : "exact",
-      "dropdownDataProvider" : null,
       "required" : true
     }
   ]

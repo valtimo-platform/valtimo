@@ -9,6 +9,7 @@
       "width" : 1,
       "highContrast" : true,
       "actions" : [],
+      "displayConditions" : [],
       "properties" : {
         "columns" : [
           [
@@ -43,6 +44,7 @@
       "width" : 1,
       "highContrast" : false,
       "actions" : [],
+      "displayConditions" : [],
       "properties" : {
         "collection" : "iko:/nationaliteiten",
         "defaultPageSize" : 4,
@@ -72,6 +74,7 @@
       "width" : 1,
       "highContrast" : true,
       "actions" : [],
+      "displayConditions" : [],
       "properties" : {
         "columns" : [
           [
@@ -106,6 +109,7 @@
       "width" : 1,
       "highContrast" : false,
       "actions" : [],
+      "displayConditions" : [],
       "properties" : {
         "collection" : "iko:/partners",
         "defaultPageSize" : 4,
@@ -146,6 +150,7 @@
           "navigateTo" : "http://localhost:8003/leningaanvragen/startpagina"
         }
       ],
+      "displayConditions" : [],
       "properties" : {
         "collection" : "iko:?ikoDataAggregateKey=zaak&identificatie=ZAAK-2025-0000000001&id=",
         "defaultPageSize" : 4,
@@ -186,6 +191,7 @@
       "width" : 4,
       "highContrast" : false,
       "actions" : [],
+      "displayConditions" : [],
       "properties" : {
         "collection" : "iko:?ikoDataAggregateKey=boom&boombeeld=Aanvaard boombeeld&id=",
         "defaultPageSize" : 4,
