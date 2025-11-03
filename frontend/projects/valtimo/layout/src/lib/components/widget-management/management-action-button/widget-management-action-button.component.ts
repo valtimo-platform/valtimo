@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -21,12 +20,9 @@ import {
   HostBinding,
   OnDestroy,
   OnInit,
-  signal,
   ViewEncapsulation,
 } from '@angular/core';
-import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
-import {WidgetWizardService} from '../../../services';
-import {WidgetManagementProcessSelectorComponent} from '../management-process-selector/widget-management-process-selector.component';
+import {toObservable} from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
   FormBuilder,
@@ -34,10 +30,12 @@ import {
   ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
-import {BehaviorSubject, debounceTime, map, Observable, Subscription, take, tap} from 'rxjs';
-import {toObservable} from '@angular/core/rxjs-interop';
-import {WidgetAction} from '../../../models';
 import {TranslateModule} from '@ngx-translate/core';
+import {DropdownModule, InputModule, ListItem} from 'carbon-components-angular';
+import {BehaviorSubject, debounceTime, map, Observable, Subscription, take, tap} from 'rxjs';
+import {WidgetAction} from '../../../models';
+import {WidgetWizardService} from '../../../services';
+import {WidgetManagementProcessSelectorComponent} from '../management-process-selector/widget-management-process-selector.component';
 
 @Component({
   selector: 'valtimo-widget-management-action-button',
