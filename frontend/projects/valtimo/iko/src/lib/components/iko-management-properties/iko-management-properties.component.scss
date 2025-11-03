@@ -20,7 +20,8 @@ form {
   gap: 16px;
 }
 
-fieldset {
+::ng-deep fieldset {
+  margin-top: 8px;
   display: flex;
   gap: 16px;
 }

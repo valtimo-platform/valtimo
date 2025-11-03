@@ -20,6 +20,8 @@ import {
   SelectItem,
   SelectModule,
   ValtimoCdsModalDirective,
+  AutoKeyInputComponent,
+  runAfterCarbonModalClosed,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -32,7 +34,7 @@ import {BehaviorSubject, filter, map, Observable, startWith, switchMap, tap} fro
 import {PropertyField, IkoRepositoryConfigResponse} from '../../../models';
 import {IkoManagementApiService} from '../../../services';
 import {PropertiesFormComponent} from '../../iko-management-properties/iko-management-properties.component';
-import {ConfigService} from '@valtimo/shared';
+import {ConfigService, ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-repository-modal',
@@ -52,6 +54,7 @@ import {ConfigService} from '@valtimo/shared';
     PropertiesFormComponent,
     SelectModule,
     LayerModule,
+    AutoKeyInputComponent,
   ],
 })
 export class IkoManagementRepositoryModalComponent {
@@ -59,24 +62,37 @@ export class IkoManagementRepositoryModalComponent {
   @Input() public set open(value: boolean) {
     this._open$.next(value);
 
-    if (!value) this.resetForm();
+    value ? (this.showAutoKey = true) : this.resetForm();
   }
   public get open$(): Observable<boolean> {
     return this._open$.asObservable();
   }
+
+  public modalMode: ModalMode = 'add';
+  public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoRepositoryConfigResponse | null>(null);
   @Input() public set prefillData(value: IkoRepositoryConfigResponse | null) {
     this.$prefillData.set(value);
     if (!value) return;
-
+    this.modalMode = 'edit';
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
   @Output() public readonly modalClose = new EventEmitter<any | null>();
 
+  public get title(): AbstractControl<string> {
+    return this.formGroup.get('title') as AbstractControl<string>;
+  }
+
+  public showAutoKey = true;
   public enableIkoType = false;
   public readonly disabled$ = new BehaviorSubject(true);
   private readonly _ikoRepositoryTypes$ = this.ikoManagementApiService.getIkoRepositoryTypes();
+
+  public readonly usedKeys$ = this.ikoManagementApiService
+    .getIkoRepositoryConfigs()
+    .pipe(map(response => response.content.map(c => c.key)));
+
   public readonly ikoRepositoryTypeSelectItems$: Observable<SelectItem[]> =
     this._ikoRepositoryTypes$.pipe(
       map(types => Object.keys(types).map(typeKey => ({id: typeKey, text: types[typeKey]}))),
@@ -115,10 +131,17 @@ export class IkoManagementRepositoryModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
+    runAfterCarbonModalClosed(() => {
+      this.showAutoKey = false;
+      this.modalMode = 'add';
+    });
   }
 
   public onSave(): void {
     this.modalClose.emit(this.formGroup.getRawValue());
+    runAfterCarbonModalClosed(() => {
+      this.showAutoKey = false;
+    });
   }
 
   public getControlInvalid(controlKey: string): boolean {
