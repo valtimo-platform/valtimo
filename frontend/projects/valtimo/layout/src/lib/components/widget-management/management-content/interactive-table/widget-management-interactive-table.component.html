@@ -15,8 +15,9 @@
   -->
 <valtimo-widget-management-table
   [showFirstColumnOption]="false"
-  (changeValidEvent)="onTableChangeValidEvent($event)"
 >
+  <ng-content></ng-content>
+
   <form [formGroup]="formGroup" class="valtimo-widget-management-interactive-table__form">
     <cds-checkbox formControlName="canStartCase">
       {{ 'ikoManagement.canStartCase' | translate }}

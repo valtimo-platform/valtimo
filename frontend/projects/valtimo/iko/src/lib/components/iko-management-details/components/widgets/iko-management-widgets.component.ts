@@ -21,9 +21,11 @@ import {BreadcrumbService} from '@valtimo/components';
 import {
   BasicWidget,
   IWidgetManagementService,
+  ManagementWidgetDetailsComponent,
   WIDGET_MANAGEMENT_SERVICE,
   WidgetManagementComponent,
   WidgetType,
+  WidgetWizardService,
 } from '@valtimo/layout';
 import {combineLatest, map, Observable, Subscription, switchMap, tap} from 'rxjs';
 import {IkoManagementParams, IkoRepositoryConfigResponse, TabDto} from '../../../../models';
@@ -42,7 +44,10 @@ import {IkoManagementApiService, IkoWidgetManagementApiService} from '../../../.
     },
   ],
 })
-export class IkoManagementWidgetsComponent implements OnInit, OnDestroy {
+export class IkoManagementWidgetsComponent
+  extends ManagementWidgetDetailsComponent
+  implements OnInit, OnDestroy
+{
   public readonly params$: Observable<IkoManagementParams> = this.route.params.pipe(
     map((params: Params) => ({
       apiKey: params.apiKey,
@@ -80,15 +85,19 @@ export class IkoManagementWidgetsComponent implements OnInit, OnDestroy {
   private readonly _subscriptions = new Subscription();
 
   constructor(
+    protected readonly widgetWizardService: WidgetWizardService,
     private readonly breadcrumbService: BreadcrumbService,
     private readonly ikoManagementApiService: IkoManagementApiService,
     private readonly route: ActivatedRoute,
     private readonly translateService: TranslateService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
     private ikoWidgetManagementApiService: IWidgetManagementService<IkoManagementParams>
-  ) {}
+  ) {
+    super(widgetWizardService);
+  }
 
   public ngOnInit(): void {
+    this.setContext('iko');
     this.setBreadcrumbs();
   }
 

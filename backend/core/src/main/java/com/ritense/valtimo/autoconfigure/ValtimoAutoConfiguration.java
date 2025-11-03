@@ -98,8 +98,10 @@ public class ValtimoAutoConfiguration {
     @Order(LOWEST_PRECEDENCE)
     @Bean
     @ConditionalOnMissingBean(ApplicationStateService.class)
-    public ApplicationStateService applicationStateService() {
-        return new ApplicationStateService();
+    public ApplicationStateService applicationStateService(
+        final ApplicationEventPublisher publisher
+    ) {
+        return new ApplicationStateService(publisher, false);
     }
 
     @Bean
