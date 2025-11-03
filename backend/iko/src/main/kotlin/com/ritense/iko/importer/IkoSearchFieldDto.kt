@@ -16,11 +16,13 @@
 
 package com.ritense.iko.importer
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.search.domain.DataType
 import com.ritense.search.domain.FieldType
 import com.ritense.search.domain.SearchFieldMatchType
 import com.ritense.search.domain.SearchFieldV2
 
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class IkoSearchFieldDto(
     val key: String,
     val title: String?,

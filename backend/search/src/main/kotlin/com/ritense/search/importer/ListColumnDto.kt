@@ -16,11 +16,13 @@
 
 package com.ritense.search.importer
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.ritense.search.domain.ColumnDefaultSort
 import com.ritense.search.domain.DisplayType
 import com.ritense.search.domain.SearchListColumn
 import java.util.UUID
 
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ListColumnDto(
     val id: UUID?,
     val key: String,
