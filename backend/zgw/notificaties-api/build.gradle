@@ -37,12 +37,15 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "io.github.oshai:kotlin-logging:${kotlinLoggingVersion}"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$kotlinCoroutinesVersion"
 
     //test
+    testImplementation project(':core')
     testImplementation project(':test-utils-common')
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "org.junit.jupiter:junit-jupiter"
     testImplementation "com.squareup.okhttp3:mockwebserver:${okhttpVersion}"

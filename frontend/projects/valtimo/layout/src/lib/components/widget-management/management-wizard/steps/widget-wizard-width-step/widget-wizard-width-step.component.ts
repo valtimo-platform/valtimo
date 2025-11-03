@@ -21,7 +21,6 @@ import {WidgetType, WidgetWidth} from '../../../../../models';
 import {WidgetWizardService} from '../../../../../services';
 
 @Component({
-  selector: 'valtimo-widget-wizard-width-step',
   templateUrl: './widget-wizard-width-step.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,

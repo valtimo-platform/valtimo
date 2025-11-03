@@ -18,3 +18,4 @@ export * from './documenten-api';
 export * from './objecten-api';
 export * from './zaakdetails';
 export * from './zaken-api';
+export * from './notificaties-api';

@@ -47,7 +47,7 @@ class NotificatiesApiResource(
             }
             try {
                 notificatiesApiService.findAbonnementSubscription(authHeader)
-                notificatiesApiService.handle(notification)
+                notificatiesApiService.registerNotification(notification)
                 ResponseEntity.noContent().build()
             } catch (ex: AuthorizationException) {
                 ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()

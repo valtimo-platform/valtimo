@@ -21,6 +21,7 @@ import {
   computed,
   EventEmitter,
   HostBinding,
+  Inject,
   Input,
   OnDestroy,
   OnInit,
@@ -56,6 +57,7 @@ import {
   IconModule,
   IconService,
   InputModule,
+  LayerModule,
   ListItem,
 } from 'carbon-components-angular';
 import {debounceTime, Observable, Subscription} from 'rxjs';
@@ -72,6 +74,8 @@ import {
   WidgetType,
   WidgetLinkDisplayType,
 } from '../../../../../models';
+import {WIDGET_MANAGEMENT_SERVICE} from '../../../../../constants';
+import {IWidgetManagementService} from '../../../../../interfaces';
 
 @Component({
   selector: 'valtimo-widget-management-fields-column',
@@ -92,6 +96,7 @@ import {
     InputLabelModule,
     ValuePathSelectorComponent,
     CheckboxModule,
+    LayerModule
   ],
 })
 export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy {
@@ -125,6 +130,9 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
     return this.widgetFieldsService.getDisplayItemsSelected(row);
   }
 
+  public readonly params$ = this.widgetManagementService.params$;
+
+  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
   public readonly WidgetDisplayTypeKey = WidgetDisplayTypeKey;
   public readonly $widgetType: Signal<WidgetType> = computed(
     () => this.widgetWizardService.$selectedWidget()?.type ?? WidgetType.FIELDS
@@ -144,7 +152,9 @@ export class WidgetManagementFieldsColumnComponent implements OnInit, OnDestroy 
     private readonly iconService: IconService,
     private readonly translateService: TranslateService,
     private readonly widgetFieldsService: WidgetFieldsService,
-    private readonly widgetWizardService: WidgetWizardService
+    private readonly widgetWizardService: WidgetWizardService,
+    @Inject(WIDGET_MANAGEMENT_SERVICE)
+    private widgetManagementService: IWidgetManagementService<any>
   ) {
     this.iconService.register(TrashCan16);
   }

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, Inject, Input, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Inject, Input, OnDestroy, signal} from '@angular/core';
+import {toObservable} from '@angular/core/rxjs-interop';
+import {DragVertical16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   ActionItem,
@@ -24,9 +26,11 @@ import {
   ConfirmationModalModule,
   ViewType,
 } from '@valtimo/components';
-import {ButtonModule, IconModule, TabsModule} from 'carbon-components-angular';
+import {ModalMode} from '@valtimo/shared';
+import {ButtonModule, IconModule, IconService, TabsModule} from 'carbon-components-angular';
 import {cloneDeep} from 'lodash';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, take, tap} from 'rxjs';
+
 import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
 import {
@@ -39,8 +43,10 @@ import {
   WidgetWidth,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
+  WidgetWizardStep,
 } from '../../../models';
 import {WidgetWizardService} from '../../../services';
+import {WidgetManagementDividerModalComponent} from '../management-divider-modal/widget-management-divider-modal.component';
 import {WidgetManagementWizardComponent} from '../management-wizard/widget-management-wizard.component';
 
 @Component({
@@ -57,9 +63,11 @@ import {WidgetManagementWizardComponent} from '../management-wizard/widget-manag
     TabsModule,
     WidgetManagementWizardComponent,
     ConfirmationModalModule,
+    WidgetManagementDividerModalComponent,
   ],
 })
-export class WidgetManagementEditorComponent {
+export class WidgetManagementEditorComponent implements OnDestroy {
+  @Input() public enableWidgetDivider = true;
   @Input() public set params(value: any) {
     if (!value) return;
     this.widgetManagementService.initParams(value);
@@ -67,11 +75,6 @@ export class WidgetManagementEditorComponent {
   @Input() public set availableWidgetTypes(value: WidgetType[]) {
     if (!value) return;
     this.widgetWizardService.$availableWidgetTypes.set(value);
-  }
-
-  public readonly disableWidthStep$ = new BehaviorSubject<boolean>(false);
-  @Input() public set disableWidthStep(value: boolean) {
-    this.disableWidthStep$.next(value);
   }
 
   public readonly disableDuplicate$ = new BehaviorSubject<boolean>(false);
@@ -84,21 +87,15 @@ export class WidgetManagementEditorComponent {
     this.singleWidget$.next(value);
   }
 
-  @Input() public set defaultWidth(value: WidgetWidth) {
-    this.widgetWizardService.setDefaultWidth(value);
-  }
-
-  public readonly disableTitleInput$ = new BehaviorSubject<boolean>(false);
-  @Input() public set disableTitleInput(value: boolean) {
-    this.disableTitleInput$.next(value);
+  @Input() public set defaultWidth(value: WidgetWidth | undefined) {
+    this.widgetWizardService.setDefaultWidth(value ?? null);
   }
 
   public readonly fields$: Observable<ColumnConfig[]> = combineLatest([
     this.singleWidget$,
-    this.disableWidthStep$,
-    this.disableTitleInput$,
+    toObservable(this.widgetWizardService.$disableTitleInput),
   ]).pipe(
-    map(([singleWidget, disableWidthStep, disableTitleInput]) => [
+    map(([singleWidget, disableTitleInput]) => [
       ...(!disableTitleInput
         ? [
             {
@@ -122,7 +119,7 @@ export class WidgetManagementEditorComponent {
             },
           ]
         : []),
-      ...(!disableWidthStep
+      ...(this.widgetWizardService.$widgetWizardSteps().includes(WidgetWizardStep.WIDTH)
         ? [
             {
               key: 'widthTranslation',
@@ -183,7 +180,7 @@ export class WidgetManagementEditorComponent {
         widthTranslation: this.translateService.instant(this.getWidthTranslationKey(item.width)),
         tags: [
           {
-            content: this.translateService.instant(`widgetTabManagement.types.${item.type}.title`),
+            content: this.translateService.instant(`widgetTabManagement.type.${item.type}.title`),
             type: WidgetTypeTags[item.type],
           },
         ],
@@ -191,36 +188,56 @@ export class WidgetManagementEditorComponent {
     ),
     tap(() => this.loading$.next(false))
   );
+  public readonly usedKeys$ = this.widgets$.pipe(
+    map((widgets: CarbonListItem[]) => widgets.map((widget: CarbonListItem) => widget.key))
+  );
+  public readonly dividerDefinition$ = new BehaviorSubject<Widget | null>(null);
 
   public readonly $isWizardOpen = signal<boolean>(false);
   public readonly $isEditMode = this.widgetWizardService.$editMode;
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly $deleteWidget = signal<BasicWidget | null>(null);
 
+  public readonly $isDividerModalOpen = signal<boolean>(false);
+  public readonly $dividerModalMode = signal<ModalMode>('add');
   public readonly $dragAndDropDisabled = signal(false);
 
   constructor(
+    private readonly iconService: IconService,
     private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService,
     @Inject(WIDGET_MANAGEMENT_SERVICE)
     private widgetManagementService: IWidgetManagementService<any>
-  ) {}
+  ) {
+    this.iconService.registerAll([DragVertical16]);
+  }
 
-  public editWidget(tabWidget: Widget): void {
-    this.widgetWizardService.$widgetTitle.set(tabWidget.title);
+  public ngOnDestroy(): void {
+    this.widgetWizardService.resetWizardSteps();
+  }
+
+  public editWidget(widget: Widget): void {
+    if (widget.type === WidgetType.DIVIDER) {
+      this.dividerDefinition$.next(widget);
+      this.$dividerModalMode.set('edit');
+      this.$isDividerModalOpen.set(true);
+      return;
+    }
+    this.widgetWizardService.$widgetTitle.set(widget.title);
     this.widgetWizardService.$widgetStyle.set(
-      tabWidget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
+      widget.highContrast ? WidgetStyle.HIGH_CONTRAST : WidgetStyle.DEFAULT
     );
     this.widgetWizardService.$widgetWidth.set(
-      tabWidget.width || this.widgetWizardService.defaultWidth
+      widget.width || this.widgetWizardService.defaultWidth
     );
     this.widgetWizardService.$selectedWidget.set(
-      AVAILABLE_WIDGETS.find(available => available.type === tabWidget.type) ?? null
+      AVAILABLE_WIDGETS.find(available => available.type === widget.type) ?? null
     );
-    this.widgetWizardService.$widgetContent.set(tabWidget.properties);
+    this.widgetWizardService.$widgetContent.set(widget.properties ?? null);
+    this.widgetWizardService.$widgetDisplayConditions.set(widget.displayConditions);
     this.widgetWizardService.$editMode.set(true);
-    this.widgetWizardService.$widgetKey.set(tabWidget.key);
-    this.widgetWizardService.$widgetActions.set(tabWidget.actions);
+    this.widgetWizardService.$widgetKey.set(widget.key);
+    this.widgetWizardService.$widgetActions.set(widget.actions);
     this.$isWizardOpen.set(true);
   }
 
@@ -241,9 +258,15 @@ export class WidgetManagementEditorComponent {
       .subscribe(() => this._refresh$.next(null));
   }
 
-  public onCloseEvent(event: WidgetWizardCloseEvent): void {
+  public onCloseEvent(event: WidgetWizardCloseEvent | null): void {
     this.$isWizardOpen.set(false);
+    this.dividerDefinition$.next(null);
+    this.$dividerModalMode.set('add');
+    this.$isDividerModalOpen.set(false);
     this.widgetWizardService.resetWizard();
+
+    if (!event) return;
+
     const {type, widget} = event;
 
     if (!widget || type === WidgetWizardCloseEventType.CANCEL) return;
@@ -267,6 +290,21 @@ export class WidgetManagementEditorComponent {
         this.$dragAndDropDisabled.set(false);
         this._refresh$.next(null);
       });
+  }
+
+  public openAddDividerModal(): void {
+    this.$isDividerModalOpen.set(true);
+  }
+
+  public onCloseDividerModalEvent(dividerDefinition: BasicWidget): void {
+    if (!dividerDefinition) return;
+
+    (this.$dividerModalMode() === 'add'
+      ? this.widgetManagementService.createWidget(dividerDefinition)
+      : this.widgetManagementService.updateWidget(dividerDefinition)
+    )
+      .pipe(take(1))
+      .subscribe(() => this._refresh$.next(null));
   }
 
   private deleteWidget(tabWidget: BasicWidget): void {

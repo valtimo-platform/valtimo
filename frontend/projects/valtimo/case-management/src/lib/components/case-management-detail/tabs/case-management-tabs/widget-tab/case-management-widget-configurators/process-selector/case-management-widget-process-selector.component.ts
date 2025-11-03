@@ -19,6 +19,7 @@ import {AbstractControl, FormBuilder, ReactiveFormsModule} from '@angular/forms'
 import {TranslateModule} from '@ngx-translate/core';
 import {CARBON_THEME, CdsThemeService, CurrentCarbonTheme} from '@valtimo/components';
 import {DocumentService, ProcessDefinitionCaseDefinition} from '@valtimo/document';
+import {WidgetWizardService} from '@valtimo/layout';
 import {CaseManagementParams} from '@valtimo/shared';
 import {ComboBoxModule, InputModule, LayerModule, ListItem} from 'carbon-components-angular';
 import {
@@ -30,7 +31,6 @@ import {
   Subscription,
   switchMap,
 } from 'rxjs';
-import {WidgetWizardService} from '../../../../../../../services';
 
 @Component({
   selector: 'valtimo-case-management-widget-process-selector',
