@@ -35,17 +35,15 @@ import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
 import com.ritense.processlink.domain.ActivityTypeWithEventName
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.operaton.domain.OperatonTask
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byActive
 import com.ritense.valtimo.operaton.repository.OperatonTaskSpecificationHelper.Companion.byProcessInstanceId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import com.ritense.valtimo.service.OperatonTaskService
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
-import org.operaton.bpm.engine.RepositoryService
-import org.operaton.bpm.engine.delegate.VariableScope
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.containsInAnyOrder
 import org.junit.jupiter.api.BeforeEach
@@ -59,6 +57,8 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.operaton.bpm.engine.RepositoryService
+import org.operaton.bpm.engine.delegate.VariableScope
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.client.RestClient
@@ -68,7 +68,8 @@ import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
 import java.net.URI
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Optional
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -224,7 +225,9 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
     private fun getEvent(): NotificatiesApiNotificationReceivedEvent {
         return NotificatiesApiNotificationReceivedEvent(
             kanaal = "objecten",
+            hoofdObject = null,
             actie = "update",
+            aanmaakdatum = null,
             resourceUrl = "${server.url("/")}objects",
             kenmerken = mapOf(Pair("objectType", objectManagement.objecttypeId))
         )
