@@ -18,12 +18,15 @@ package com.ritense.buildingblock.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
+import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -31,7 +34,8 @@ import org.springframework.transaction.annotation.Transactional
 class BuildingBlockManagementService(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
-    private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
+    private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
 ) {
     @Transactional(readOnly = true)
     fun getLatestPerKey(): List<BuildingBlockDefinitionDto> {
@@ -98,7 +102,10 @@ class BuildingBlockManagementService(
     @Transactional
     fun update(key: String, versionTag: String, dto: UpdateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto? {
         val id = BuildingBlockDefinitionId(key, versionTag)
-        val existing = buildingBlockDefinitionRepository.findById(id).orElse(null) ?: return null
+        val existing = buildingBlockDefinitionRepository.findByIdOrNull(id)
+            ?: throw UnknownBuildingBlockDefinitionException(id)
+
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(id)
 
         val updated = BuildingBlockDefinition(
             id = existing.id,
@@ -122,5 +129,19 @@ class BuildingBlockManagementService(
             basedOnVersionTag = saved.basedOnVersionTag?.toString(),
             final = saved.final
         )
+    }
+
+    @Transactional
+    fun finalize(key: String, versionTag: String): BuildingBlockDefinitionDto {
+        val id = BuildingBlockDefinitionId(key, versionTag)
+        val existing = buildingBlockDefinitionRepository.findByIdOrNull(id)
+            ?: throw UnknownBuildingBlockDefinitionException(id)
+
+        if (existing.final) {
+            return existing.toDto()
+        }
+
+        val finalized = buildingBlockDefinitionRepository.save(existing.copy(final = true))
+        return finalized.toDto()
     }
 }
