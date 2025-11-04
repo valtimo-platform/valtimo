@@ -994,6 +994,12 @@
       "selectorLabel": "Nieuwe procesknop (Optioneel)",
       "selectorPlaceholder": "Kies een proces"
     },
+    "actionButtonLabel": "Type actieknop",
+    "externalLink": {
+      "linkLabel": "Knop voor externe link",
+      "linkPlaceholder": "Externe link",
+      "buttonTextLabel": "Tekst van knop voor externe link"
+    },
     "saveModalContent": "Weet je zeker dat je de widget configuratie wilt opslaan?"
   },
   "zgw": {
