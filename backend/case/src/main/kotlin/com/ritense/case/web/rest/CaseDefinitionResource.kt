@@ -353,7 +353,7 @@ class CaseDefinitionResource(
         val baos = exportService
             .export(CaseDefinitionExportRequest(CaseDefinitionId(caseDefinitionKey, caseDefinitionVersionTag)))
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))
-        val fileName = "${caseDefinitionKey}_${caseDefinitionVersionTag}_$timestamp.valtimo.zip"
+        val fileName = "${caseDefinitionKey}_${caseDefinitionVersionTag}_$timestamp.case.zip"
         return ResponseEntity
             .ok()
             .header("Content-Disposition", "attachment;filename=$fileName")

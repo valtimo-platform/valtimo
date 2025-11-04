@@ -1920,18 +1920,51 @@
     "searchFieldsNoResults": "No search fields found for this entity"
   },
   "ikoManagement": {
+    "preparingDownload": "Preparing download",
     "ikoServer": "IKO Server",
+    "configureIkoServer": "Configure IKO Server",
     "dataUrl": "Data URL",
     "title": "Configuration",
     "list": "List",
     "tabs": {"title": "Tabs"},
     "widgets": {"title": "Widgets"},
+    "importDefinition": {
+      "title": "Import IKO definition",
+      "overwriteWarning": "If your IKO definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
+      "startUpload": "Start upload",
+      "progressBar": {
+        "active": "This may take a while",
+        "error": "Unable to import IKO definition. Nothing was imported due to an error at our end. Please try again later. If the issue keeps happening, contact support.",
+        "finished": "IKO definition successfully imported",
+        "label": "Importing IKO definition"
+      },
+      "checkbox": {
+        "message": "I understand that configurations may be overwritten",
+        "error": "This field is mandatory"
+      },
+      "upload": {
+        "title": "Upload file",
+        "description": "Max file size is 500kb. The supported file type is ZIP.",
+        "buttonText": "Select file"
+      },
+      "steps": {
+        "accessControl": {
+          "message": "Don't forget to set the rights in Access Control. Without the proper rights your new IKO-definition won't be accessible.",
+          "title": "Access control"
+        }
+      }
+    },
     "views": {
       "title": "Views",
+      "upload": "Upload",
       "add": "Add view",
       "deleteContent": "Are you sure you want to delete this view? This change cannot be reverted",
       "noResultsTitle": "There are no configured views",
       "noResultsDescription": "Click here to configure a view."
+    },
+    "search": {
+      "noResultsTitle": "No results",
+      "noResultsDescription": "Try adjusting your search or filter options to find what you're looking for."
     },
     "searchActions": {
       "addActionTitle": "Add search action",
