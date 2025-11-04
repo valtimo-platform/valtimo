@@ -25,7 +25,7 @@ import com.ritense.authorization.request.EntityAuthorizationRequest
 import com.ritense.iko.authorization.IkoDataAggregateActionProvider
 import com.ritense.iko.domain.IkoDataAggregate
 import com.ritense.iko.event.IkoDataAggregatePreDeleteEvent
-import com.ritense.iko.helper.MapHelper.deepMerge
+import com.ritense.iko.helper.MergeHelper.deepMerge
 import com.ritense.iko.repository.IkoDataAggregateRepository
 import com.ritense.iko.repository.IkoDataAggregateSpecificationHelper.Companion.byIkoRepositoryConfigKey
 import com.ritense.iko.repository.IkoDataAggregateSpecificationHelper.Companion.byKey

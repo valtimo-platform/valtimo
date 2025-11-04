@@ -22,7 +22,7 @@ import com.ritense.iko.authorization.IkoDataAggregateActionProvider.Companion.VI
 import com.ritense.iko.domain.IkoDataRequest
 import com.ritense.iko.domain.IkoDataRequestId
 import com.ritense.iko.event.IkoDataRequestPreDeleteEvent
-import com.ritense.iko.helper.MapHelper.deepMerge
+import com.ritense.iko.helper.MergeHelper.deepMerge
 import com.ritense.iko.repository.IkoDataRequestRepository
 import com.ritense.iko.repository.IkoDataRequestSpecificationHelper.Companion.byIkoDataAggregateKey
 import com.ritense.iko.repository.IkoDataRequestSpecificationHelper.Companion.byKey
