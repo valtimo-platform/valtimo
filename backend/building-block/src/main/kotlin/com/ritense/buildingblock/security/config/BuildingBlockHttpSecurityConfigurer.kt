@@ -36,6 +36,7 @@ class BuildingBlockHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PUT, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/document")).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(POST, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/finalize")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_BASE_PATH/{key}/version/{versionTag}/process-definition")).hasAuthority(ADMIN)
                     .requestMatchers(
                         antMatcher(
