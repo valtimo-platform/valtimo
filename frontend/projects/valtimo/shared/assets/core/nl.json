@@ -1953,18 +1953,51 @@
     "searchFieldsNoResults": "Geen zoekvelden gevonden voor deze entiteit"
   },
   "ikoManagement": {
+    "preparingDownload": "Download aan het voorbereiden",
     "title": "Configuratie",
     "ikoServer": "IKO Server",
+    "configureIkoServer": "IKO-server configureren",
     "dataUrl": "Gegevens-URL",
     "list": "Lijst",
     "tabs": {"title": "Tabbladen"},
     "widgets": {"title": "Widgets"},
+    "importDefinition": {
+      "title": "Importeer IKO-definitie",
+      "overwriteWarning": "Als je IKO-definitie configuraties, modellen en/of definities bevat met een naam of identifier die al op je systeem aanwezig zijn, worden deze overschreven.",
+      "startUpload": "Upload starten",
+      "progressBar": {
+        "active": "Dit kan even duren",
+        "error": "Kan de IKO-definitie niet importeren. Er is niets geïmporteerd vanwege een fout aan onze kant. Probeer het later opnieuw. Neem contact op met de ondersteuning als het probleem zich blijft voordoen.",
+        "finished": "IKO-definitie succesvol geïmporteerd",
+        "label": "IKO-definitie importeren"
+      },
+      "checkbox": {
+        "message": "Ik begrijp dat configuraties kunnen worden overschreven",
+        "error": "Dit veld is verplicht"
+      },
+      "upload": {
+        "title": "Bestand uploaden",
+        "description": "Maximale bestandsgrootte is 500kb. Het ondersteunde bestandstype is ZIP.",
+        "buttonText": "Bestand selecteren"
+      },
+      "steps": {
+        "accessControl": {
+          "message": "Vergeet niet om de rechten in Access Control in te stellen. Zonder de juiste rechten is je nieuwe IKO-definitie niet toegankelijk.",
+          "title": "Toegangsbeheer"
+        }
+      }
+    },
     "views": {
       "title": "Beelden",
+      "upload": "Uploaden",
       "add": "Beeld toevoegen",
       "deleteContent": "Weet u zeker dat u dit beeld wilt verwijderen? Deze wijziging kan niet ongedaan worden gemaakt.",
       "noResultsTitle": "Er zijn geen geconfigureerde beelden",
       "noResultsDescription": "Klik hier om een beeld te configureren."
+    },
+    "search": {
+      "noResultsTitle": "Geen resultaten",
+      "noResultsDescription": "Probeer je zoek- of filteropties aan te passen om te vinden wat je zoekt."
     },
     "searchActions": {
       "addActionTitle": "Zoekactie toevoegen",

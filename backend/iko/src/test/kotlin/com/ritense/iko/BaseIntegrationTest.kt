@@ -19,6 +19,7 @@ package com.ritense.iko
 import com.ritense.resource.service.ResourceService
 import com.ritense.testutilscommon.junit.extension.LiquibaseRunnerExtension
 import com.ritense.valtimo.contract.authentication.UserManagementService
+import com.ritense.valtimo.contract.mail.MailSender
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
@@ -40,6 +41,9 @@ class BaseIntegrationTest : BaseTest() {
 
     @MockitoBean
     lateinit var resourceService: ResourceService
+
+    @MockitoBean
+    lateinit var mailSender: MailSender
 
 }
 

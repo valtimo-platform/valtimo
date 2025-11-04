@@ -16,6 +16,7 @@
 
 package com.ritense.iko.web.rest
 
+import com.ritense.exporter.ExportService
 import com.ritense.iko.IkoServerRepository.Companion.CONNECTOR_INSTANCE_TAG
 import com.ritense.iko.IkoServerRepository.Companion.CONNECTOR_TAG
 import com.ritense.iko.IkoServerRepository.Companion.ENDPOINT_OPERATION
@@ -24,6 +25,7 @@ import com.ritense.iko.domain.IkoRepositoryConfig
 import com.ritense.iko.service.IkoDataAggregateService
 import com.ritense.iko.web.rest.request.IkoDataAggregateCreateRequest
 import com.ritense.iko.web.rest.request.IkoDataAggregateUpdateRequest
+import com.ritense.importer.ImportService
 import com.ritense.valtimo.contract.iko.PropertyField
 import com.ritense.valtimo.contract.iko.PropertyField.Companion.PROPERTY_FIELD_TYPE_TEXT
 import com.ritense.valtimo.contract.json.MapperSingleton
@@ -57,13 +59,17 @@ internal class IkoDataAggregateManagementResourceTest {
     private lateinit var mockMvc: MockMvc
     private lateinit var resource: IkoDataAggregateManagementResource
     private lateinit var service: IkoDataAggregateService
+    private lateinit var exportService: ExportService
+    private lateinit var importService: ImportService
 
     private val objectMapper = MapperSingleton.get()
 
     @BeforeEach
     fun init() {
         service = mock()
-        resource = IkoDataAggregateManagementResource(service)
+        exportService = mock()
+        importService = mock()
+        resource = IkoDataAggregateManagementResource(service, exportService, importService)
         mockMvc = MockMvcBuilders.standaloneSetup(resource)
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(MappingJackson2HttpMessageConverter(MapperSingleton.get()))
