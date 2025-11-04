@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
+ *
+ * Licensed under EUPL, Version 1.2 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ritense.buildingblock.service
 
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
@@ -6,6 +22,7 @@ import com.ritense.importer.ImportContext
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.springframework.core.env.Environment
+import org.springframework.data.repository.findByIdOrNull
 
 class BuildingBlockDefinitionCheckerImpl(
     private val repository: BuildingBlockDefinitionRepository,
@@ -14,7 +31,7 @@ class BuildingBlockDefinitionCheckerImpl(
     private val draftsEnabled: Boolean,
 ) : BuildingBlockDefinitionChecker {
     override fun existsBuildingBlockDefinition(buildingBlockDefinitionId: BuildingBlockDefinitionId): Boolean {
-        return repository.findById(buildingBlockDefinitionId) != null
+        return repository.findByIdOrNull(buildingBlockDefinitionId) != null
     }
 
     override fun existsBuildingBlockDefinition(buildingBlockDefinitionKey: String): Boolean {
@@ -27,7 +44,8 @@ class BuildingBlockDefinitionCheckerImpl(
         return if (!canUpdateGlobalConfiguration()) {
             false
         } else {
-            repository.findById(buildingBlockDefinitionId) != null
+            val definition = repository.findByIdOrNull(buildingBlockDefinitionId) ?: return false
+            !definition.final
         }
     }
 
@@ -48,7 +66,11 @@ class BuildingBlockDefinitionCheckerImpl(
 
     override fun assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId: BuildingBlockDefinitionId) {
         assertCanUpdateGlobalConfiguration()
-        requireNotNull(repository.findById(buildingBlockDefinitionId)) { "BuildingBlock $buildingBlockDefinitionId does not exist." }
+        val definition = repository.findByIdOrNull(buildingBlockDefinitionId)
+            ?: error("BuildingBlock $buildingBlockDefinitionId does not exist.")
+        require(!definition.final) {
+            "Failed to update BuildingBlockDefinition $buildingBlockDefinitionId. This building block definition is final."
+        }
     }
 
     override fun assertCanCreateOrUpdateBuildingBlockDefinition(

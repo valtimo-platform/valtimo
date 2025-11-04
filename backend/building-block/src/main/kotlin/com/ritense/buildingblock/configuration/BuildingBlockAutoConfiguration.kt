@@ -97,7 +97,8 @@ class BuildingBlockAutoConfiguration {
         processLinkService: ProcessLinkService,
         processLinkMappers: List<ProcessLinkMapper>,
         processDeploymentService: ProcessDeploymentService,
-        authorizationService: AuthorizationService
+        authorizationService: AuthorizationService,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
     ): BuildingBlockDefinitionProcessDefinitionService {
         return BuildingBlockDefinitionProcessDefinitionService(
             repositoryService,
@@ -106,7 +107,8 @@ class BuildingBlockAutoConfiguration {
             processLinkService,
             processLinkMappers,
             processDeploymentService,
-            authorizationService
+            authorizationService,
+            buildingBlockDefinitionChecker
         )
     }
 
@@ -115,12 +117,14 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockManagementService(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
-        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
+        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+        buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
     ): BuildingBlockManagementService {
         return BuildingBlockManagementService(
             buildingBlockDefinitionRepository,
             buildingBlockDocumentDefinitionService,
-            buildingBlockDefinitionProcessDefinitionService
+            buildingBlockDefinitionProcessDefinitionService,
+            buildingBlockDefinitionChecker
         )
     }
 

@@ -31,6 +31,7 @@ import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.service.OperatonProcessService
@@ -54,7 +55,8 @@ class BuildingBlockDefinitionProcessDefinitionService(
     private val processLinkService: ProcessLinkService,
     private val processLinkMappers: List<ProcessLinkMapper>,
     private val processDeploymentService: ProcessDeploymentService,
-    private val authorizationService: AuthorizationService
+    private val authorizationService: AuthorizationService,
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
 ) {
 
     @Transactional
@@ -62,6 +64,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
         denyAuthorization()
 
         val buildingBlockDefinitionId = BuildingBlockDefinitionId.of(key, versionTag)
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
         val buildingBlockVersionProcessVersionTag =
             OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX + buildingBlockDefinitionId.toString()
         val model = createMinimalModel(key, title, buildingBlockVersionProcessVersionTag)
@@ -184,6 +187,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
             buildingBlockDefinitionKey,
             buildingBlockDefinitionVersionTag
         )
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
 
         val deployedProcessDefinitionId = processDeploymentService.deployProcessDefinitionAndProcessLinks(
             buildingBlockDefinitionId,
@@ -218,6 +222,7 @@ class BuildingBlockDefinitionProcessDefinitionService(
         deployedProcessDefinitionId: ProcessDefinitionId,
         main: Boolean
     ) {
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(buildingBlockDefinitionId)
         val existingLink = if (currentProcessDefinitionId != null) {
             findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
         } else {
