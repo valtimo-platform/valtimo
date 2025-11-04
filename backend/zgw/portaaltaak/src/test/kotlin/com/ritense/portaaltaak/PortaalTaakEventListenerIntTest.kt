@@ -215,6 +215,8 @@ internal class PortaalTaakEventListenerIntTest : BaseIntegrationTest() {
         return NotificatiesApiNotificationReceivedEvent(
             kanaal = "objecten",
             actie = "update",
+            hoofdObject = null,
+            aanmaakdatum = null,
             resourceUrl = "${server.url("/")}objects",
             kenmerken = mapOf(Pair("objectType", objectManagement.objecttypeId))
         )

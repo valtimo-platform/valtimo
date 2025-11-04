@@ -512,6 +512,8 @@ internal class VerzoekPluginEventListenerIntTest : BaseIntegrationTest() {
         return NotificatiesApiNotificationReceivedEvent(
             kanaal = "objecten",
             actie = "create",
+            hoofdObject = null,
+            aanmaakdatum = null,
             resourceUrl = "aResource",
             kenmerken = mapOf(Pair("objectType", "something/$objectType"))
         )
