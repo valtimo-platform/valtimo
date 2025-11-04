@@ -167,6 +167,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakStatusToggle: 'Invoertype Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Invoertype Zaakresultaat-URL',
       addZaakProperty: 'Voeg nieuwe parameter toe',
+      plannedEndDate: 'Geplande eind datum',
+      finalDeliveryDate: 'Laatste opleverings datum',
+      dateformatTooltip:
+        'Een datum in formaat van yyyy-mm-dd. Kan ook een verwijzing zijn naar het document of process, bijvoorbeeld doc:customer/startDatum of pv:startDatum',
       'relateer-zaken': 'Relateer zaken',
       teRelaterenZaakUri: 'URL naar de te relateren zaak',
       aardRelatie: 'Aard van de relatie',
@@ -464,6 +468,10 @@ const zakenApiPluginSpecification: PluginSpecification = {
       inputTypeZaakStatusToggle: 'Eingabetyp Zaakstatus-URL',
       inputTypeZaakResultaatToggle: 'Eingabetyp Zaakresultaat-URL',
       addZaakProperty: 'Neue Case-Eigenschaft hinzufügen',
+      plannedEndDate: 'Geplantes Enddatum',
+      finalDeliveryDate: 'Endgültiger Liefertermin',
+      dateformatTooltip:
+        'Ein Datum im Format yyyy-mm-dd. Kann auch ein Verweis auf das Dokument oder den Prozess sein, zum Beispiel doc:kunde/startDatum oder pv:startDatum',
       'relateer-zaken': 'Beziehung zwischen Zaken herstellen',
       teRelaterenZaakUri: 'URL zum zu verknüpfenden Zaak',
       aardRelatie: 'Art der Beziehung',
