@@ -1370,6 +1370,16 @@
       "content": "Sie verlassen die Seite. Alle nicht gespeicherten Änderungen gehen verloren. Sind Sie sicher, dass Sie fortfahren möchten?",
       "keepEditing": "Bearbeiten Sie weiter"
     },
+    "dataValidation": {
+      "bsnValidator": {
+        "valueEmpty": "Der Wert darf nicht leer sein.",
+        "valueMaxLength": "Die BSN ist zu lang. Die maximale Länge beträgt 9 Zeichen.",
+        "valueMinLength": "Die BSN ist zu kurz. Die minimale Länge beträgt 8 Zeichen.",
+        "valueOnlyDigits": "Der Wert darf nur Ziffern enthalten. Buchstaben oder Symbole sind nicht erlaubt.",
+        "valueAllZerosOrNines": "Der Wert darf nicht ausschließlich aus Nullen oder Neunen bestehen.",
+        "valueElfCheck": "Der Wert hat die 11-Prüfung nicht bestanden. Bitte geben Sie eine gültige BSN ein."
+      }
+    },
     "required": "erforderlich",
     "filter": "Filter...",
     "back": "Zurück",

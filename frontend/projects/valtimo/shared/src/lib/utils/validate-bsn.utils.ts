@@ -14,16 +14,30 @@
  * limitations under the License.
  */
 
-const validateBsn = (value: string): boolean => {
-  if (!value) return false;
+const validateBsn = (value: string): { isValid: boolean; errorKey: string | null } => {
+  const baseKey = 'interface.dataValidation.bsnValidator';
+
+  if (!value) {
+    return { isValid: false, errorKey: `${baseKey}.valueEmpty` };
+  }
 
   const trimmed = value.toString().trim();
 
-  if (!/^\d+$/.test(trimmed)) return false;
+  if (!/^\d+$/.test(trimmed)) {
+    return { isValid: false, errorKey: `${baseKey}.valueOnlyDigits` };
+  }
 
-  if (trimmed.length < 8 || trimmed.length > 9) return false;
+  if (trimmed.length < 8 || trimmed.length > 9) {
+    return { isValid: false, errorKey: `${baseKey}.valueMinLength` };
+  }
 
-  if (/^0+$/.test(trimmed) || /^9+$/.test(trimmed)) return false;
+  if (trimmed.length > 9) {
+    return { isValid: false, errorKey: `${baseKey}.valueMaxLength` };
+  }
+
+  if (/^0+$/.test(trimmed) || /^9+$/.test(trimmed)) {
+    return { isValid: false, errorKey: `${baseKey}.valueAllZerosOrNines` };
+  }
 
   const digits = trimmed.split('').map(d => parseInt(d, 10));
   let sum = 0;
@@ -34,7 +48,11 @@ const validateBsn = (value: string): boolean => {
     sum += digits[i] * weight;
   }
 
-  return sum % 11 === 0;
+  if (sum % 11 !== 0) {
+    return { isValid: false, errorKey: `${baseKey}.valueElfCheck` };
+  }
+
+  return { isValid: true, errorKey: null };
 };
 
 export { validateBsn };

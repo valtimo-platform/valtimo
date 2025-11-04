@@ -51,6 +51,7 @@ import {validateBsn} from '@valtimo/shared';
 })
 export class IkoSearchComponent implements OnDestroy {
   public readonly formValues: Record<string, string> = {};
+  public bsnErrorKey: string | null = null;
 
   private readonly _key$ = this.route.params.pipe(
     map(params => params?.key),
@@ -95,10 +96,6 @@ export class IkoSearchComponent implements OnDestroy {
 
       if (param.required && !value) return true;
 
-      if (param.dataType === 'bsn' && value && !this.checkBsn(value)) {
-        return true;
-      }
-
       return false;
     });
   }
@@ -107,24 +104,36 @@ export class IkoSearchComponent implements OnDestroy {
     return param && param.group === true && Array.isArray(param.fields);
   }
 
-  public searchGroup(paramKey: string, params: {key: string}[]): void {
-    const queryParams: Record<string, string> = {};
+  public searchGroup(paramKey: string, params: {key: string; dataType?: string}[]): void {
+    let invalidBsnFound = false;
+
     for (const param of params) {
       const value = this.formValues[param.key];
-      if (value) {
-        queryParams[param.key] = value;
+
+      if (param.dataType === 'bsn') {
+        const result = validateBsn(value);
+
+        if (!value) {
+          this.bsnErrorKey = null;
+        } else if (!result.isValid && result.errorKey) {
+          this.bsnErrorKey = result.errorKey;
+          invalidBsnFound = true;
+        } else {
+          this.bsnErrorKey = null;
+        }
       }
     }
 
-    this.router.navigate([`${paramKey}`], {relativeTo: this.route, queryParams});
-  }
+    if (invalidBsnFound) {
+      return;
+    }
 
-  public onBsnChange(key: string): void {
-    console.log("key: ", key)
-  }
+    const queryParams: Record<string, string> = {};
+    for (const param of params) {
+      const value = this.formValues[param.key];
+      if (value) queryParams[param.key] = value;
+    }
 
-  private checkBsn(value: string): boolean {
-    console.log("validate bsn: ", value)
-    return validateBsn(value);
+    this.router.navigate([`${paramKey}`], { relativeTo: this.route, queryParams });
   }
 }

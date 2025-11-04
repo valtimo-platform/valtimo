@@ -224,7 +224,7 @@
 </ng-template>
 
 <ng-template
-    #searchFieldTemplateText
+    #searchFieldTemplateBsn
     let-searchField="searchField"
 >
   <v-input
@@ -233,7 +233,7 @@
     [name]="searchField.key"
     [title]="searchField.title"
     [(ngModel)]="formValues[searchField.key]"
-    (ngModelChange)="onBsnChange(searchField.key)"
+    [errorKey]="bsnErrorKey"
     ngDefaultControl
   >
   </v-input>

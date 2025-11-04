@@ -1348,6 +1348,16 @@
       "content": "You are leaving the page. Any unsaved changes will be lost. Are you sure you want to continue?",
       "keepEditing": "Keep editing"
     },
+    "dataValidation": {
+      "bsnValidator": {
+        "valueEmpty": "The value cannot be empty.",
+        "valueMaxLength": "The BSN is too long. Maximum length is 9 characters.",
+        "valueMinLength": "The BSN is too short. Minimum length is 8 characters.",
+        "valueOnlyDigits": "Value must contain only numeric digits. Letters or symbols are not allowed.",
+        "valueAllZerosOrNines": "Value cannot consist entirely of zeros or nines.",
+        "valueElfCheck": "Value failed the 11-check rule. Please enter a valid BSN."
+      }
+    },
     "required": "required",
     "filter": "Filter...",
     "back": "Back",
