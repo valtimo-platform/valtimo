@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional
 class BuildingBlockManagementService(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
-    private val buildingBlockProcessService: BuildingBlockProcessService
+    private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
 ) {
     @Transactional(readOnly = true)
     fun getLatestPerKey(): List<BuildingBlockDefinitionDto> {
@@ -50,7 +50,7 @@ class BuildingBlockManagementService(
             BuildingBlockDefinitionDto(
                 key = it.id.key,
                 versionTag = it.id.versionTag.toString(),
-                title = it.title,
+                name = it.name,
                 description = it.description,
                 createdBy = it.createdBy,
                 createdDate = it.createdDate,
@@ -64,7 +64,7 @@ class BuildingBlockManagementService(
     fun create(dto: CreateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto {
         val entity = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(dto.key, dto.versionTag),
-            title = dto.title,
+            name = dto.title,
             description = dto.description,
             createdBy = null,
             createdDate = null,
@@ -76,8 +76,8 @@ class BuildingBlockManagementService(
         buildingBlockDocumentDefinitionService.ensureEmptyFor(saved.id.key, saved.id.versionTag.toString())
 
         runWithoutAuthorization {
-            buildingBlockProcessService.createEmptyProcessAndLink(
-                saved.title,
+            buildingBlockDefinitionProcessDefinitionService.createEmptyProcessAndLink(
+                saved.name,
                 saved.id.key,
                 saved.id.versionTag.toString()
             )
@@ -86,7 +86,7 @@ class BuildingBlockManagementService(
         return BuildingBlockDefinitionDto(
             key = saved.id.key,
             versionTag = saved.id.versionTag.toString(),
-            title = saved.title,
+            name = saved.name,
             description = saved.description,
             createdBy = saved.createdBy,
             createdDate = saved.createdDate,
@@ -102,7 +102,7 @@ class BuildingBlockManagementService(
 
         val updated = BuildingBlockDefinition(
             id = existing.id,
-            title = dto.title,
+            name = dto.title,
             description = dto.description,
             createdBy = existing.createdBy,
             createdDate = existing.createdDate,
@@ -115,7 +115,7 @@ class BuildingBlockManagementService(
         return BuildingBlockDefinitionDto(
             key = saved.id.key,
             versionTag = saved.id.versionTag.toString(),
-            title = saved.title,
+            name = saved.name,
             description = saved.description,
             createdBy = saved.createdBy,
             createdDate = saved.createdDate,

@@ -21,7 +21,9 @@ import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.domain.ProcessDocumentDefinitionRequest
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
+import com.ritense.valtimo.contract.SolutionModuleId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.exception.BpmnParseException
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.ParseException
@@ -75,7 +77,7 @@ class ProcessDeploymentService(
     }
 
     fun deployProcessDefinitionAndProcessLinks(
-        caseDefinitionId: CaseDefinitionId?,
+        solutionModuleId: SolutionModuleId?,
         bpmn: MultipartFile?,
         processLinks: List<ProcessLinkCreateRequestDto>,
         processDefinitionId: String?
@@ -86,7 +88,7 @@ class ProcessDeploymentService(
             try {
                 val deployment = runWithoutAuthorization {
                     operatonProcessService.deploy(
-                        caseDefinitionId,
+                        solutionModuleId,
                         bpmn.originalFilename,
                         ByteArrayInputStream(bpmn.bytes),
                         true,
@@ -94,14 +96,15 @@ class ProcessDeploymentService(
                     )
                 }
 
+                // TODO: Have this work with BuildingBlockDefinitionId
                 // If the deployment is null, the same xml was deployed before
-                if (deployment == null) {
+                if (deployment == null && (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX == solutionModuleId?.getTagPrefix())) {
                     runWithoutAuthorization {
                         val model = Bpmn.readModelFromStream(bpmn!!.inputStream)
                         val previouslyDeployProcess =
-                            operatonProcessService.getExistingProcessForFile(caseDefinitionId, model)
+                            operatonProcessService.getExistingProcessForFile(solutionModuleId, model)
                         processLinkService.deleteProcessLinksForProcessDefinition(previouslyDeployProcess.id)
-                        createProcessLinks(processLinks = processLinks, caseDefinitionId = caseDefinitionId)
+                        createProcessLinks(processLinks = processLinks, caseDefinitionId = solutionModuleId as CaseDefinitionId)
                     }
                     return null
                 }
@@ -118,7 +121,7 @@ class ProcessDeploymentService(
             try {
                 val deployment = runWithoutAuthorization {
                     operatonProcessService.duplicateProcessDefinitionById(
-                        caseDefinitionId,
+                        solutionModuleId,
                         processDefinitionId,
                         true,
                         true
@@ -138,7 +141,10 @@ class ProcessDeploymentService(
                 throw RuntimeException("Failed to duplicate process definition. Rolling back deployment.", e)
             }
         }
-        createProcessLinks(processLinks, deployedProcessDefinitionId, caseDefinitionId)
+        // TODO: Have this work with BuildingBlockDefinitionId
+        if (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX == solutionModuleId?.getTagPrefix()) {
+            createProcessLinks(processLinks, deployedProcessDefinitionId, solutionModuleId as CaseDefinitionId)
+        }
 
         return ProcessDefinitionId(deployedProcessDefinitionId)
     }

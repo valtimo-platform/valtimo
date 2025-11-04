@@ -20,14 +20,14 @@ import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
 import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_DEFINITION
-import com.ritense.importer.ValtimoImportTypes.Companion.DOCUMENT_DEFINITION
+import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_DOCUMENT_DEFINITION
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
 class BuildingBlockJsonSchemaDocumentDefinitionImporter(
     private val service: BuildingBlockDocumentDefinitionService
 ) : Importer {
-    override fun type() = DOCUMENT_DEFINITION
+    override fun type() = BUILDING_BLOCK_DOCUMENT_DEFINITION
 
     override fun dependsOn() = setOf(BUILDING_BLOCK_DEFINITION)
 

@@ -17,7 +17,7 @@
 package com.ritense.valtimo.contract.buildingblock
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.ritense.valtimo.contract.VersionedIdentifier
+import com.ritense.valtimo.contract.SolutionModuleId
 import com.ritense.valtimo.contract.domain.AbstractId
 import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.contract.repository.SemverConverter
@@ -35,7 +35,7 @@ data class BuildingBlockDefinitionId(
     @Column(name = "building_block_definition_version_tag", nullable = false, updatable = true)
     @JsonSerialize(using = SemverSerializer::class)
     val versionTag: Semver
-) : AbstractId<BuildingBlockDefinitionId>(), VersionedIdentifier {
+) : AbstractId<BuildingBlockDefinitionId>(), SolutionModuleId {
 
     constructor(
         key: String,
@@ -49,6 +49,8 @@ data class BuildingBlockDefinitionId(
     override fun getTagPrefix(): String {
         return OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
     }
+
+    override fun getIdKey() = key
 
     init {
         require(key.isNotBlank()) { "[buildingBlockId.key] was blank!" }

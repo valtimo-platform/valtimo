@@ -16,7 +16,6 @@
 
 package com.ritense.valtimo.contract.buildingblock
 
-// TODO: make implementation of this
 interface BuildingBlockDefinitionChecker {
 
     fun existsBuildingBlockDefinition(buildingBlockDefinitionId: BuildingBlockDefinitionId): Boolean = false

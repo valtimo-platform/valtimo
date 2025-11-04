@@ -92,7 +92,6 @@ class BuildingBlockDocumentDefinitionService(
                 definitionChecker.assertCanUpdateBuildingBlockDefinition(documentDefinition.id.buildingBlockDefinitionId)
 
                 // TODO: access control
-
                 repository.saveAndFlush(documentDefinition)
             }
         )

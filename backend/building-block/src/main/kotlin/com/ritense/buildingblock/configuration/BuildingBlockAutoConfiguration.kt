@@ -18,28 +18,40 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
+import com.ritense.buildingblock.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
+import com.ritense.buildingblock.service.BuildingBlockDefinitionDeploymentService
+import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
+import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockManagementService
-import com.ritense.buildingblock.service.BuildingBlockProcessService
+import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.importer.ValtimoImportService
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.config.LiquibaseMasterChangeLogLocation
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.RepositoryService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.DependsOn
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
+import org.springframework.core.env.Environment
+import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @AutoConfiguration
@@ -69,14 +81,15 @@ class BuildingBlockAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionService::class)
     fun buildingBlockDocumentDefinitionService(
-        repository: BuildingBlockJsonSchemaDocumentDefinitionRepository
+        repository: BuildingBlockJsonSchemaDocumentDefinitionRepository,
+        checker: BuildingBlockDefinitionChecker
     ): BuildingBlockDocumentDefinitionService {
-        return BuildingBlockDocumentDefinitionService(repository)
+        return BuildingBlockDocumentDefinitionService(repository, checker)
     }
 
     @Bean
-    @ConditionalOnMissingBean(BuildingBlockProcessService::class)
-    fun buildingBlockProcessService(
+    @ConditionalOnMissingBean(BuildingBlockDefinitionProcessDefinitionService::class)
+    fun buildingBlockDefinitionProcessDefinitionService(
         repositoryService: RepositoryService,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
         operatonProcessService: OperatonProcessService,
@@ -84,8 +97,8 @@ class BuildingBlockAutoConfiguration {
         processLinkMappers: List<ProcessLinkMapper>,
         processDeploymentService: ProcessDeploymentService,
         authorizationService: AuthorizationService
-    ): BuildingBlockProcessService {
-        return BuildingBlockProcessService(
+    ): BuildingBlockDefinitionProcessDefinitionService {
+        return BuildingBlockDefinitionProcessDefinitionService(
             repositoryService,
             processDefinitionBuildingBlockDefinitionRepository,
             operatonProcessService,
@@ -101,12 +114,12 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockManagementService(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
         buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
-        buildingBlockProcessService: BuildingBlockProcessService
+        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
     ): BuildingBlockManagementService {
         return BuildingBlockManagementService(
             buildingBlockDefinitionRepository,
             buildingBlockDocumentDefinitionService,
-            buildingBlockProcessService
+            buildingBlockDefinitionProcessDefinitionService
         )
     }
 
@@ -137,10 +150,65 @@ class BuildingBlockAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BuildingBlockProcessResource::class)
     fun buildingBlockProcessResource(
-        buildingBlockProcessService: BuildingBlockProcessService,
+        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
     ): BuildingBlockProcessResource {
         return BuildingBlockProcessResource(
-            buildingBlockProcessService,
+            buildingBlockDefinitionProcessDefinitionService,
         )
     }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionChecker::class)
+    fun buildingBlockDefinitionChecker(
+        repository: BuildingBlockDefinitionRepository,
+        environment: Environment,
+        @Value("\${valtimo.draft.environments:inttest,dev,test}") draftEnvironments: String,
+        @Value("\${valtimo.draft.enabled:false}") draftsEnabled: Boolean,
+    ) = BuildingBlockDefinitionCheckerImpl(repository, environment, draftEnvironments, draftsEnabled)
+
+    @Bean
+    @DependsOn("importService") // TODO: Figure out why this is needed
+    fun buildingBlockDefinitionDeploymentService(
+        resourceLoader: ResourceLoader,
+        valtimoImportService: ValtimoImportService,
+        buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
+        applicationEventPublisher: ApplicationEventPublisher,
+    ): BuildingBlockDefinitionDeploymentService {
+        return BuildingBlockDefinitionDeploymentService(
+            resourceLoader,
+            valtimoImportService,
+            buildingBlockDefinitionRepository,
+            applicationEventPublisher
+        )
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionImporter::class)
+    fun buildingBlockDefinitionImporter(
+        objectMapper: ObjectMapper,
+        repository: BuildingBlockDefinitionRepository,
+        checker: BuildingBlockDefinitionChecker
+    ) = BuildingBlockDefinitionImporter(objectMapper, repository, checker)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionMainProcessDefinitionImporter::class)
+    fun buildingBlockDefinitionMainProcessDefinitionImporter(
+        objectMapper: ObjectMapper,
+        operatonProcessService: OperatonProcessService,
+        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+    ) = BuildingBlockDefinitionMainProcessDefinitionImporter(
+        objectMapper,
+        operatonProcessService,
+        buildingBlockDefinitionProcessDefinitionService
+    )
+
+    @Bean
+    @ConditionalOnMissingBean(ProcessDefinitionBuildingBlockDefinitionImporter::class)
+    fun processDefinitionBuildingBlockDefinitionImporter(
+        operatonProcessService: OperatonProcessService,
+        buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+    ) = ProcessDefinitionBuildingBlockDefinitionImporter(
+        operatonProcessService,
+        buildingBlockDefinitionProcessDefinitionService
+    )
 }

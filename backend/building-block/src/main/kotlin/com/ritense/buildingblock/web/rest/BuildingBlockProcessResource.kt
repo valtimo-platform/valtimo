@@ -17,7 +17,7 @@
 package com.ritense.buildingblock.web.rest
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
-import com.ritense.buildingblock.service.BuildingBlockProcessService
+import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
@@ -39,7 +39,7 @@ import org.springframework.web.multipart.MultipartFile
 @SkipComponentScan
 @RequestMapping("/api/management/v1/building-block", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockProcessResource(
-    private val buildingBlockProcessService: BuildingBlockProcessService,
+    private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
 ) {
     @GetMapping("/{key}/version/{versionTag}/process-definition")
     fun getProcessDefinitionsForBuildingBlock(
@@ -47,7 +47,7 @@ class BuildingBlockProcessResource(
         @PathVariable versionTag: String
     ): ResponseEntity<List<BuildingBlockProcessDefinitionDto>> {
         val items = runWithoutAuthorization {
-            buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(
+            buildingBlockDefinitionProcessDefinitionService.getProcessDefinitionsForBuildingBlock(
                 key,
                 versionTag
             )
@@ -62,7 +62,7 @@ class BuildingBlockProcessResource(
         @PathVariable processDefinitionId: String,
     ): ResponseEntity<BuildingBlockProcessDefinitionWithLinksDto> {
         val dto = runWithoutAuthorization {
-            buildingBlockProcessService.getProcessDefinitionWithProcessLinks(
+            buildingBlockDefinitionProcessDefinitionService.getProcessDefinitionWithProcessLinks(
                 key,
                 versionTag,
                 processDefinitionId
@@ -87,7 +87,7 @@ class BuildingBlockProcessResource(
         @RequestPart(name = "main", required = false) main: Boolean? = false
     ): ResponseEntity<Any> {
         runWithoutAuthorization {
-            buildingBlockProcessService.deployProcessDefinitionAndProcessLinks(
+            buildingBlockDefinitionProcessDefinitionService.deployProcessDefinitionAndProcessLinks(
                 key,
                 versionTag,
                 bpmn,

@@ -47,7 +47,7 @@ import org.springframework.web.multipart.MultipartFile
 import java.nio.charset.StandardCharsets
 
 @Service
-class BuildingBlockProcessService(
+class BuildingBlockDefinitionProcessDefinitionService(
     private val repositoryService: RepositoryService,
     private val processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository,
     private val operatonProcessService: OperatonProcessService,
@@ -169,7 +169,6 @@ class BuildingBlockProcessService(
         )
     }
 
-    // TODO Looks like this does not use the version tag?
     @Transactional
     fun deployProcessDefinitionAndProcessLinks(
         buildingBlockDefinitionKey: String,
@@ -187,7 +186,7 @@ class BuildingBlockProcessService(
         )
 
         val deployedProcessDefinitionId = processDeploymentService.deployProcessDefinitionAndProcessLinks(
-            null,
+            buildingBlockDefinitionId,
             bpmn,
             processLinks,
             currentProcessDefinitionId
@@ -210,6 +209,32 @@ class BuildingBlockProcessService(
         setProcessVersionTag(deployedProcessDefinitionId.id, buildingBlockDefinitionId)
 
         return deployedProcessDefinitionId
+    }
+
+    @Transactional
+    fun setMainLink(
+        buildingBlockDefinitionId: BuildingBlockDefinitionId,
+        currentProcessDefinitionId: String? = null,
+        deployedProcessDefinitionId: ProcessDefinitionId,
+        main: Boolean
+    ) {
+        val existingLink = if (currentProcessDefinitionId != null) {
+            findExistingLink(buildingBlockDefinitionId, currentProcessDefinitionId)
+        } else {
+            null
+        }
+        val mainFlag = existingLink?.main ?: main
+
+        val newLink = createOrReplaceLink(
+            buildingBlockDefinitionId,
+            deployedProcessDefinitionId,
+            existingLink,
+            mainFlag
+        )
+
+        if (newLink.main) {
+            ensureOnlyOneMainLink(buildingBlockDefinitionId, deployedProcessDefinitionId)
+        }
     }
 
     private fun findExistingLink(

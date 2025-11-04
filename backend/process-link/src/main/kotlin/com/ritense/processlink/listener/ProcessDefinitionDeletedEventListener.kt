@@ -21,6 +21,9 @@ import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
+import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX
+import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.event.ProcessDefinitionDeleted
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
@@ -37,11 +40,17 @@ class ProcessDefinitionDeletedEventListener(
     @RunWithoutAuthorization
     @EventListener(ProcessDefinitionDeleted::class)
     fun handleProcessDefinitionDeletedEvent(event: ProcessDefinitionDeleted) {
-        if (event.caseDefinitionId != null) {
-            processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
-                ProcessDefinitionId(event.processDefinitionId),
-                event.caseDefinitionId!!
-            )
+        if (event.solutionModuleId != null) {
+            if (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX == event.solutionModuleId?.getTagPrefix()) {
+                processDefinitionCaseDefinitionService.deleteProcessDefinitionCaseDefinition(
+                    ProcessDefinitionId(event.processDefinitionId),
+                    event.solutionModuleId!! as CaseDefinitionId
+                )
+            } else if (OPERATON_BUILDING_BLOCK_DEFINITION_VERSION_TAG_PREFIX == event.solutionModuleId?.getTagPrefix()) {
+                // TODO: how do we handle building blocks being deleted?
+            } else {
+                // TODO Do we need to react on something still?
+            }
 
         }
         processLinkService.deleteProcessLinksForProcessDefinition(event.processDefinitionId)

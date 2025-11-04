@@ -38,6 +38,10 @@ class BuildingBlockDefinitionImporter(
         logger.debug { "Building block with id '${buildingBlockDefinition.id}' was saved" }
     }
 
+    override fun partOfCaseDefinition() = false
+
+    override fun partOfBuildingBlockDefinition() = true
+
     private fun toDefinitionDto(fileContent: String): BuildingBlockDefinitionDto {
         return try {
             objectMapper.readValue(fileContent, BuildingBlockDefinitionDto::class.java)

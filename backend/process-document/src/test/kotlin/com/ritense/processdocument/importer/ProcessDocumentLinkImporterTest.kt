@@ -102,7 +102,7 @@ class ProcessDocumentLinkImporterTest(
 
         val processDefinition = mock<OperatonProcessDefinition>()
         val processDefinitionId = "test"
-        whenever(processService.getLatestDefinitionByKeyAndCaseDefinition(any(), any())).thenReturn(processDefinition)
+        whenever(processService.getLatestDefinitionByKeyAndSolutionModule(any(), any())).thenReturn(processDefinition)
         whenever(processDefinition.id).thenReturn(processDefinitionId)
 
         whenever(processDefinitionCaseDefinitionService.findById(any()))
@@ -140,7 +140,7 @@ class ProcessDocumentLinkImporterTest(
 
         val processDefinition = mock<OperatonProcessDefinition>()
         val processDefinitionId = "test"
-        whenever(processService.getLatestDefinitionByKeyAndCaseDefinition(any(), any())).thenReturn(processDefinition)
+        whenever(processService.getLatestDefinitionByKeyAndSolutionModule(any(), any())).thenReturn(processDefinition)
         whenever(processDefinition.id).thenReturn(processDefinitionId)
 
         val processDefinitionCaseDefinition = mock<ProcessDefinitionCaseDefinition>()
