@@ -173,7 +173,7 @@ class BuildingBlockProcessService(
     fun deployProcessDefinitionAndProcessLinks(
         buildingBlockDefinitionKey: String,
         buildingBlockDefinitionVersionTag: String,
-        bpmn: MultipartFile?,
+        bpmn: MultipartFile,
         processLinks: List<ProcessLinkCreateRequestDto>,
         currentProcessDefinitionId: String,
         main: Boolean
