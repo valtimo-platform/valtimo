@@ -28,6 +28,7 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionDeploymentServic
 import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
+import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
@@ -211,4 +212,10 @@ class BuildingBlockAutoConfiguration {
         operatonProcessService,
         buildingBlockDefinitionProcessDefinitionService
     )
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockJsonSchemaDocumentDefinitionImporter::class)
+    fun buildingBlockJsonSchemaDocumentDefinitionImporter(
+        service: BuildingBlockDocumentDefinitionService,
+    ) = BuildingBlockJsonSchemaDocumentDefinitionImporter(service)
 }

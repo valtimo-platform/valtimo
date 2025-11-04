@@ -40,6 +40,10 @@ class BuildingBlockJsonSchemaDocumentDefinitionImporter(
         )
     }
 
+    override fun partOfCaseDefinition() = false
+
+    override fun partOfBuildingBlockDefinition() = true
+
     private companion object {
         val PATH_REGEX = """/document/definition/[^/]+\.document-definition\.json""".toRegex()
     }
