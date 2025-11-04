@@ -24,7 +24,6 @@ import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefin
 import com.ritense.document.domain.impl.BuildingBlockJsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchema
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
@@ -54,8 +53,7 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 404 when document definition is missing")
-    fun shouldReturn404WhenDocumentDefinitionIsMissing() {
+    fun `should return 404 when document definition is missing`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
         val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
         whenever(repository.findById(eq(id))).thenReturn(Optional.empty())
@@ -66,8 +64,7 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 200 with schema when document definition exists")
-    fun shouldReturn200WithSchemaWhenDocumentDefinitionExists() {
+    fun `should return 200 with schema when document definition exists`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
         val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
         val schemaJson = """{"title":"My Schema","type":"object"}"""
@@ -85,8 +82,7 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should update document definition and return 200 with saved schema")
-    fun shouldUpdateDocumentDefinitionAndReturn200WithSavedSchema() {
+    fun `should update document definition and return 200 with saved schema`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
         val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
         val newSchema: JsonNode = objectMapper.readTree("""{"title":"Updated","type":"object","properties":{"a":{"type":"string"}}}""")
@@ -111,8 +107,7 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should accept minimal empty object schema on update")
-    fun shouldAcceptMinimalEmptyObjectSchemaOnUpdate() {
+    fun `should accept minimal empty object schema on update`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
         val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
         val minimalSchema: JsonNode = objectMapper.readTree("""{"type":"object"}""")

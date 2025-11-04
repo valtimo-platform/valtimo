@@ -26,7 +26,6 @@ import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -84,8 +83,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 404 when list is empty")
-    fun shouldReturn404WhenListIsEmpty() {
+    fun `should return 404 when list is empty`() {
         whenever(buildingBlockDefinitionRepository.findAll()).thenReturn(emptyList())
 
         mockMvc.get(base)
@@ -94,8 +92,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return list when elements exist")
-    fun shouldReturnListWhenElementsExist() {
+    fun `should return list when elements exist`() {
         val def = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
             title = "My Building Block",
@@ -118,8 +115,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should create definition and return 200 with body")
-    fun shouldCreateDefinitionAndReturn200WithBody() {
+    fun `should create definition and return 200 with body`() {
         val body = mapOf(
             "key" to key,
             "versionTag" to version,
@@ -150,8 +146,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 200 when definition exists")
-    fun shouldReturn200WhenDefinitionExists() {
+    fun `should return 200 when definition exists`() {
         val entity = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
             title = "My Building Block",
@@ -174,8 +169,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 404 when definition not found")
-    fun shouldReturn404WhenDefinitionNotFound() {
+    fun `should return 404 when definition not found`() {
         val id = BuildingBlockDefinitionId(key, Semver.parse(version)!!)
         whenever(buildingBlockDefinitionRepository.findById(eq(id))).thenReturn(Optional.empty())
 
@@ -185,8 +179,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should update and return 200 with updated body")
-    fun shouldUpdateAndReturn200WithUpdatedBody() {
+    fun `should update and return 200 with updated body`() {
         val body = mapOf("title" to "Updated Title", "description" to "Updated desc")
         val existing = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
@@ -221,8 +214,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 404 when update target not found")
-    fun shouldReturn404WhenUpdateTargetNotFound() {
+    fun `should return 404 when update target not found`() {
         val id = BuildingBlockDefinitionId(key, Semver.parse(version)!!)
         whenever(buildingBlockDefinitionRepository.findById(eq(id))).thenReturn(Optional.empty())
 
@@ -234,57 +226,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should create then get then update then list definitions")
-    fun shouldCreateThenGetThenUpdateThenListDefinitions() {
-        val saved = BuildingBlockDefinition(
-            id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
-            title = "My Building Block",
-            description = "desc",
-            createdBy = "tester@ritense.com",
-            createdDate = LocalDateTime.now(),
-            basedOnVersionTag = null,
-            final = false
-        )
-        whenever(buildingBlockDefinitionRepository.saveAndFlush(any())).thenReturn(saved)
-
-        mockMvc.post(base) {
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsBytes(
-                mapOf("key" to key, "versionTag" to version, "title" to "My Building Block")
-            )
-        }.andExpect { status { isOk() } }
-
-        whenever(buildingBlockDefinitionRepository.findById(eq(saved.id))).thenReturn(Optional.of(saved))
-        mockMvc.get("$base/{k}/version/{v}", key, version).andExpect { status { isOk() } }
-
-        val updated = BuildingBlockDefinition(
-            id = saved.id,
-            title = "Updated Title",
-            description = "Updated desc",
-            createdBy = saved.createdBy,
-            createdDate = saved.createdDate,
-            basedOnVersionTag = saved.basedOnVersionTag,
-            final = saved.final
-        )
-        whenever(buildingBlockDefinitionRepository.findById(eq(saved.id))).thenReturn(Optional.of(saved))
-        whenever(buildingBlockDefinitionRepository.save(any())).thenReturn(updated)
-        mockMvc.put("$base/{k}/version/{v}", key, version) {
-            contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsBytes(mapOf("title" to "Updated Title"))
-        }.andExpect { status { isOk() } }
-
-        whenever(buildingBlockDefinitionRepository.findAll()).thenReturn(listOf(updated))
-        mockMvc.get(base)
-            .andExpect {
-                status { isOk() }
-                jsonPath("\$[0].title") { value("Updated Title") }
-            }
-    }
-
-    @Test
-    @WithMockUser
-    @DisplayName("should create empty document definition on creation")
-    fun shouldCreateEmptyDocumentDefinitionOnCreation() {
+    fun `should create empty document definition on creation`() {
         val body = mapOf(
             "key" to key,
             "versionTag" to version,
@@ -312,8 +254,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should create empty process definition marked as main on creation")
-    fun shouldCreateEmptyProcessDefinitionMarkedAsMainOnCreation() {
+    fun `should create empty process definition marked as main on creation`() {
         val body = mapOf(
             "key" to key,
             "versionTag" to version,

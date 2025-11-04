@@ -25,7 +25,6 @@ import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkResponseDto
 import com.ritense.valtimo.web.rest.dto.ProcessDefinitionWithPropertiesDto
 import org.hamcrest.Matchers.hasSize
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -56,8 +55,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 200 with empty list when no process definitions found")
-    fun shouldReturn200WithEmptyListWhenNoProcessDefinitionsFound() {
+    fun `should return 200 with empty list when no process definitions found`() {
         whenever(buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(eq(key), eq(version)))
             .thenReturn(emptyList())
 
@@ -72,8 +70,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 200 when process definitions exist")
-    fun shouldReturn200WhenProcessDefinitionsExist() {
+    fun `should return 200 when process definitions exist`() {
         val dto = BuildingBlockProcessDefinitionDto(
             id = "pd-1",
             key = "process-key",
@@ -98,8 +95,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 200 when process definition with links exists")
-    fun shouldReturn200WhenProcessDefinitionWithLinksExists() {
+    fun `should return 200 when process definition with links exists`() {
         val proc = ProcessDefinitionWithPropertiesDto()
         val superCls = proc.javaClass.superclass
         superCls.getDeclaredField("id").apply { isAccessible = true }.set(proc, processDefinitionId)
@@ -141,8 +137,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should return 404 when process definition with links not found")
-    fun shouldReturn404WhenProcessDefinitionWithLinksNotFound() {
+    fun `should return 404 when process definition with links not found`() {
         whenever(
             buildingBlockProcessService.getProcessDefinitionWithProcessLinks(
                 eq(key),
@@ -165,8 +160,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 
     @Test
     @WithMockUser
-    @DisplayName("should deploy process definition with file and links and return 204")
-    fun shouldDeployProcessDefinitionWithFileAndLinksAndReturn204() {
+    fun `should deploy process definition with file and links and return 204`() {
         val bpmn = MockMultipartFile(
             "file",
             "process.bpmn",
