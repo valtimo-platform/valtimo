@@ -28,12 +28,19 @@ import jakarta.persistence.Table
 data class InternalCaseStatus(
     @EmbeddedId
     val id: InternalCaseStatusId,
+
     @Column(name = "status_title")
     val title: String,
+
     @Column(name = "visible_in_case_list_by_default")
     val visibleInCaseListByDefault: Boolean,
+
     @Column(name = "internal_case_status_order")
     val order: Int,
+
+    @Column(name = "internal_case_retention_period")
+    val retentionPeriod: Int,
+
     @Column(name = "internal_case_status_color")
     @Enumerated(EnumType.STRING)
     val color: InternalCaseStatusColor,

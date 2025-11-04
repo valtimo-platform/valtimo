@@ -202,6 +202,11 @@ export class CaseManagementStatusesComponent implements AfterViewInit {
         viewType: ViewType.BOOLEAN,
       },
       {
+        key: 'retentionPeriod',
+        label: 'caseManagement.statuses.columns.retentionPeriod',
+        viewType: ViewType.NUMBER,
+      },
+      {
         viewType: ViewType.TEMPLATE,
         template: this.colorColumnTemplate,
         key: 'color',

@@ -23,6 +23,7 @@ data class InternalCaseStatusDto(
     val key: String,
     val title: String,
     val visibleInCaseListByDefault: Boolean,
+    val retentionPeriod: Int,
     val color: InternalCaseStatusColor
 ) {
     companion object {
@@ -30,6 +31,7 @@ data class InternalCaseStatusDto(
             internalCaseStatus.id.key,
             internalCaseStatus.title,
             internalCaseStatus.visibleInCaseListByDefault,
+            internalCaseStatus.retentionPeriod,
             internalCaseStatus.color
         )
     }

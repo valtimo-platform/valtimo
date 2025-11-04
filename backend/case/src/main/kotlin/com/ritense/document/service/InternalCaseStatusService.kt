@@ -98,6 +98,7 @@ class InternalCaseStatusService(
                 request.title,
                 request.visibleInCaseListByDefault,
                 currentInternalCaseStatuses.size,
+                request.retentionPeriod,
                 request.color
             )
         )

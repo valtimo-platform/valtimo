@@ -88,9 +88,19 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       Validators.minLength(3),
       this.uniqueKeyValidator,
     ]),
+    retentionPeriod: this.fb.control(0, [
+      Validators.required,
+      this.numberValidator
+    ]),
     visibleInCaseListByDefault: this.fb.control(true, Validators.required),
     color: this.fb.control('', Validators.required),
   });
+
+  numberValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (value === null || value === '' || value === undefined) return null; // allow empty
+    return isNaN(value) ? { notNumber: true } : null;
+  }
 
   private _isEdit!: boolean;
 
@@ -144,6 +154,10 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
 
   public get title(): AbstractControl<string, string> {
     return this.statusFormGroup?.get('title');
+  }
+
+  public get retentionPeriod(): AbstractControl<number, number> {
+    return this.statusFormGroup?.get('retentionPeriod');
   }
 
   public get color(): AbstractControl<string, string> {
@@ -255,6 +269,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     this.statusFormGroup.patchValue({
       key: prefillStatus.key,
       title: prefillStatus.title,
+      retentionPeriod: prefillStatus.retentionPeriod,
       visibleInCaseListByDefault: prefillStatus.visibleInCaseListByDefault,
       color: prefillStatus.color,
     });
@@ -268,6 +283,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
       key: '',
       title: '',
       visibleInCaseListByDefault: true,
+      retentionPeriod: 0,
       color: TagColor.Blue,
     });
     this._selectedColor$.next(TagColor.Blue);
@@ -369,6 +385,7 @@ export class CaseManagementStatusModalComponent implements OnInit, OnDestroy {
     return {
       key: this.key.value,
       title: this.title.value,
+      retentionPeriod: this.retentionPeriod.value,
       visibleInCaseListByDefault: this.visibleInCaseListByDefault.value,
       color: this.color.value as TagColor,
     };

@@ -773,6 +773,7 @@
       "colorPlaceholder": "Kies een kleur",
       "columns": {
         "title": "Statusnaam",
+        "retentionPeriod": "Bewaartermijn",
         "key": "Status-key",
         "visible": "Standaard zichtbaar",
         "color": "Kleur"

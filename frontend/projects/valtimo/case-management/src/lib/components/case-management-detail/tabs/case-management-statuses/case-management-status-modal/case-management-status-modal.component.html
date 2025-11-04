@@ -60,6 +60,12 @@
     </cds-label>
 
     <cds-label>
+      {{ 'caseManagement.statuses.columns.retentionPeriod' | translate }}
+
+      <input cdsText formControlName="retentionPeriod" [attr.modal-primary-focus]="true" />
+    </cds-label>
+
+    <cds-label>
       {{ 'caseManagement.statuses.columns.key' | translate }}
 
       <div class="edit-key-input">
