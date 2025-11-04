@@ -16,8 +16,32 @@
 
 import {Versions} from '../models';
 
-const VERSIONS: Versions = {
-  frontendLibraries: '13.0.1',
+const FALLBACK_VERSION = 'unknown';
+const VERSION_ASSET_URL = new URL('../../assets/core/version.json', import.meta.url);
+
+const versionRef: {current: string} = {
+  current: FALLBACK_VERSION,
 };
+
+if (typeof window !== 'undefined' && typeof fetch === 'function') {
+  fetch(VERSION_ASSET_URL.href)
+    .then((response) => (response.ok ? response.json() : undefined))
+    .then((payload: {appVersion?: string} | undefined) => {
+      const version = payload?.appVersion?.trim();
+
+      if (version) {
+        versionRef.current = version;
+      }
+    })
+    .catch(() => {
+      // ignore and retain fallback
+    });
+}
+
+const VERSIONS: Versions = {
+  get frontendLibraries() {
+    return versionRef.current;
+  },
+} as Versions;
 
 export {VERSIONS};
