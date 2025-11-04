@@ -1,0 +1,15 @@
+{
+  "ikoDataAggregateKey" : "klant",
+  "ikoDataRequestKey" : "bsn",
+  "ikoSearchFields" : [
+    {
+      "key" : "bsn",
+      "title" : "BSN",
+      "path" : "bsn",
+      "dataType" : "text",
+      "fieldType" : "single",
+      "matchType" : "exact",
+      "required" : true
+    }
+  ]
+}

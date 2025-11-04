@@ -29,7 +29,12 @@ import {
 import {NgxLoggerLevel} from 'ngx-logger';
 import {authenticationKeycloak} from './auth/keycloak-config';
 import {cspHeaderParamsDev} from './csp';
-import {DARK_MODE_LOGO_BASE_64, DARK_MODE_LOGO_BASE_64_PNG, LOGO_BASE_64, LOGO_BASE_64_PNG} from './logo';
+import {
+  DARK_MODE_LOGO_BASE_64,
+  DARK_MODE_LOGO_BASE_64_PNG,
+  LOGO_BASE_64,
+  LOGO_BASE_64_PNG,
+} from './logo';
 
 const defaultDefinitionColumns: Array<DefinitionColumn> = [
   {
@@ -114,7 +119,11 @@ export const environment: ValtimoConfig = {
         sequence: 5,
         children: [
           {title: 'Configuration', textClass: 'text-dark font-weight-bold c-default', sequence: 1},
-          {link: ['/building-block-management'], title: 'buildingBlockManagement.title', sequence: 2},
+          {
+            link: ['/building-block-management'],
+            title: 'buildingBlockManagement.title',
+            sequence: 2,
+          },
           {link: ['/case-management'], title: 'Cases', sequence: 3},
           {link: ['/plugins'], title: 'Plugins', sequence: 4},
           {link: ['/dashboard-management'], title: 'Dashboard', sequence: 5},
@@ -128,18 +137,25 @@ export const environment: ValtimoConfig = {
           },
           {link: ['/object-management'], title: 'Objects', sequence: 10},
           {link: ['/form-management'], title: 'Forms', sequence: 11},
+          {link: ['/notifications-api/notifications/failed'], title: 'Notifications', sequence: 12},
           {
             title: 'System processes',
             textClass: 'text-dark font-weight-bold c-default',
-            sequence: 12,
+            sequence: 13,
           },
-          {link: ['/processes'], title: 'Processes', sequence: 13},
-          {link: ['/decision-tables'], title: 'Decision tables', sequence: 14},
-          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 15},
-          {link: ['/logging'], title: 'Logs', sequence: 16},
-          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 17},
-          {link: ['/process-migration'], title: 'Process migration', sequence: 18},
-          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 19},
+          {link: ['/processes'], title: 'Processes', sequence: 14},
+          {link: ['/decision-tables'], title: 'Decision tables', sequence: 15},
+          {title: 'Other', textClass: 'text-dark font-weight-bold c-default', sequence: 16},
+          {link: ['/logging'], title: 'Logs', sequence: 17},
+          {link: ['/case-migration'], title: 'Case migration (beta)', sequence: 18},
+          {link: ['/process-migration'], title: 'Process migration', sequence: 19},
+          {link: ['/task-management'], title: 'Tasks (legacy)', sequence: 20},
+          {
+            title: 'Valtimo test tools',
+            textClass: 'text-dark font-weight-bold c-default',
+            sequence: 21,
+          },
+          {link: ['/notification-test'], title: 'Send notification', sequence: 22},
         ],
       },
       {
@@ -252,16 +268,5 @@ export const environment: ValtimoConfig = {
       },
     },
   },
-  translationResources: [
-    './assets/i18n/'
-  ],
+  translationResources: ['./assets/i18n/'],
 };
-
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/dist/zone-error';  // Included with Angular CLI.

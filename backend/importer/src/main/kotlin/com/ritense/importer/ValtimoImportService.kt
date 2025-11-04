@@ -26,16 +26,18 @@ import com.ritense.importer.exception.DuplicateImporterTypeException
 import com.ritense.importer.exception.InvalidImportZipException
 import com.ritense.importer.exception.TooManyImportCandidatesException
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.InputStream
+import java.util.zip.ZipInputStream
 import org.apache.commons.lang3.StringUtils
 import org.springframework.core.env.Environment
 import org.springframework.core.io.Resource
 import org.springframework.transaction.annotation.Transactional
-import java.io.InputStream
-import java.util.zip.ZipInputStream
 
-open class ValtimoImportService(
+@AllOpen
+class ValtimoImportService(
     importers: Set<Importer>,
     private val environment: Environment,
     val whitelistedEnvironmentProperties: List<Regex>
@@ -116,7 +118,7 @@ open class ValtimoImportService(
     }
 
     @Transactional
-    open fun importCaseDefinition(
+    fun importCaseDefinition(
         resources: List<Pair<String, Resource>>,
         caseDefinitionIdList: List<CaseDefinitionId>
     ) {
@@ -212,7 +214,7 @@ open class ValtimoImportService(
     }
 
     @Transactional
-    open fun importGlobalDefinitions(
+    fun importGlobalDefinitions(
         resources: List<Pair<String, Resource>>
     ) {
         runImporter {
@@ -234,6 +236,26 @@ open class ValtimoImportService(
             }
         }
 
+    }
+
+    @Transactional
+    override fun importGlobal(inputStream: InputStream) {
+        runImporter {
+            val entries = readZipEntries(inputStream)
+            val importerEntriesList = getEntriesByImporter(entries).ifEmpty { return@runImporter }
+
+            importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
+                entries.forEach { entry ->
+                    logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
+                    importer.import(ImportRequest(entry.fileName, entry.content))
+                }
+            }
+            importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
+                entries.forEach { entry ->
+                    importer.afterImport(ImportRequest(entry.fileName, entry.content))
+                }
+            }
+        }
     }
 
     // TODO: provide equivalent for building block definitions
@@ -315,6 +337,8 @@ open class ValtimoImportService(
             } else {
                 path
             }
+        } else if (path.startsWith("config/global")) {
+            return path.substringAfter("config")
         } else {
             path
         }

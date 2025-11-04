@@ -28,6 +28,7 @@ import {
 import {DocumentModule} from '@valtimo/document';
 import {ResourceModule} from '@valtimo/resource';
 import {
+  NotificatiesApiRoutingModule,
   CaseDetailTabDocumentenApiDocumentsComponent,
   CaseDetailTabObjectTypeComponent,
   CaseManagementLinkProcessComponent,
@@ -47,6 +48,7 @@ import {CaseManagementZgwComponent} from './components';
     ResourceModule,
     RouterModule,
     DocumentenApiMetadataModalComponent,
+    NotificatiesApiRoutingModule,
   ],
   declarations: [DocumentenApiUploaderComponent],
   exports: [DocumentenApiUploaderComponent],

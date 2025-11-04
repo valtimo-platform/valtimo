@@ -21,7 +21,9 @@ import com.ritense.case.repository.CaseTabRepository
 import com.ritense.case.service.CaseDefinitionService
 import com.ritense.case.service.CaseTabService
 import com.ritense.case_.domain.tab.CaseWidgetTabWidget
+import com.ritense.case_.listener.CaseHeaderWidgetCaseEventListener
 import com.ritense.case_.listener.CaseTabCaseEventListener
+import com.ritense.case_.listener.CaseTagCaseEventListener
 import com.ritense.case_.repository.CaseHeaderWidgetRepository
 import com.ritense.case_.repository.CaseWidgetTabRepository
 import com.ritense.case_.repository.CaseWidgetTabWidgetSpecificationFactory
@@ -49,6 +51,7 @@ import com.ritense.case_.widget.fields.FieldsCaseWidgetDataProvider
 import com.ritense.case_.widget.fields.FieldsCaseWidgetMapper
 import com.ritense.case_.widget.table.TableCaseWidgetDataProvider
 import com.ritense.case_.widget.table.TableCaseWidgetMapper
+import com.ritense.document.service.CaseTagService
 import com.ritense.document.service.DocumentService
 import com.ritense.valtimo.contract.case_.CaseDefinitionChecker
 import com.ritense.valtimo.contract.database.QueryDialectHelper
@@ -221,6 +224,22 @@ class CaseWidgetAutoConfiguration {
     ) = CaseTabCaseEventListener(
         caseTabService,
         caseWidgetTabRepository,
+    )
+
+    @ConditionalOnMissingBean(CaseTagCaseEventListener::class)
+    @Bean
+    fun caseTagCaseEventListener(
+        caseTagService: CaseTagService,
+    ) = CaseTagCaseEventListener(
+        caseTagService,
+    )
+
+    @ConditionalOnMissingBean(CaseHeaderWidgetCaseEventListener::class)
+    @Bean
+    fun caseHeaderWidgetCaseEventListener(
+        caseHeaderWidgetService: CaseHeaderWidgetService,
+    ) = CaseHeaderWidgetCaseEventListener(
+        caseHeaderWidgetService,
     )
 
     @ConditionalOnMissingBean(CaseHeaderWidgetService::class)
