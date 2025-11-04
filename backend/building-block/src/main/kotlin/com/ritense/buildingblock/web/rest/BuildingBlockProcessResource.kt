@@ -41,16 +41,14 @@ import org.springframework.web.multipart.MultipartFile
 class BuildingBlockProcessResource(
     private val buildingBlockProcessService: BuildingBlockProcessService,
 ) {
+
     @GetMapping("/{key}/version/{versionTag}/process-definition")
     fun getProcessDefinitionsForBuildingBlock(
         @PathVariable key: String,
         @PathVariable versionTag: String
     ): ResponseEntity<List<BuildingBlockProcessDefinitionDto>> {
         val items = runWithoutAuthorization {
-            buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(
-                key,
-                versionTag
-            )
+            buildingBlockProcessService.getProcessDefinitionsForBuildingBlock(key, versionTag)
         }
         return ResponseEntity.ok(items)
     }
@@ -62,13 +60,8 @@ class BuildingBlockProcessResource(
         @PathVariable processDefinitionId: String,
     ): ResponseEntity<BuildingBlockProcessDefinitionWithLinksDto> {
         val dto = runWithoutAuthorization {
-            buildingBlockProcessService.getProcessDefinitionWithProcessLinks(
-                key,
-                versionTag,
-                processDefinitionId
-            )
+            buildingBlockProcessService.getProcessDefinitionWithProcessLinks(key, versionTag, processDefinitionId)
         }
-
         return dto?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 
@@ -81,7 +74,7 @@ class BuildingBlockProcessResource(
     fun deployProcessDefinitionAndProcessLinksForBuildingBlock(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-        @RequestPart(name = "file") bpmn: MultipartFile?,
+        @RequestPart(name = "file") bpmn: MultipartFile,
         @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
         @RequestPart(name = "processDefinitionId") processDefinitionId: String,
         @RequestPart(name = "main", required = false) main: Boolean? = false
