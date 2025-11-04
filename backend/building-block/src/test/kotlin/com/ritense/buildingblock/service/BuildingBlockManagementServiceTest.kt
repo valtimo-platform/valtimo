@@ -35,7 +35,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.data.repository.findByIdOrNull
 import java.util.Optional
 
 @ExtendWith(MockitoExtension::class)
@@ -43,6 +42,12 @@ class BuildingBlockManagementServiceTest {
 
     @Mock
     private lateinit var buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository
+
+    @Mock
+    private lateinit var buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService
+
+    @Mock
+    private lateinit var buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService
 
     @Mock
     private lateinit var buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
@@ -89,7 +94,7 @@ class BuildingBlockManagementServiceTest {
 
     @Test
     fun `finalize throws when definition missing`() {
-        whenever(buildingBlockDefinitionRepository.findByIdOrNull(definitionId)).thenReturn(null)
+        whenever(buildingBlockDefinitionRepository.findById(definitionId)).thenReturn(Optional.empty())
 
         assertThrows(UnknownBuildingBlockDefinitionException::class.java) {
             buildingBlockManagementService.finalize(definitionId.key, definitionId.versionTag.toString())
@@ -115,7 +120,7 @@ class BuildingBlockManagementServiceTest {
 
     @Test
     fun `update throws when definition missing`() {
-        whenever(buildingBlockDefinitionRepository.findByIdOrNull(definitionId)).thenReturn(null)
+        whenever(buildingBlockDefinitionRepository.findById(definitionId)).thenReturn(Optional.empty())
 
         assertThrows(UnknownBuildingBlockDefinitionException::class.java) {
             buildingBlockManagementService.update(definitionId.key, definitionId.versionTag.toString(), UpdateBuildingBlockDefinitionDto("t", null))
