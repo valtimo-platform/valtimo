@@ -158,6 +158,7 @@
     [fullWidth]="true"
     [disabled]="inputDisabled"
     [(ngModel)]="formValues[searchField.key]"
+    ngDefaultControl
   >
   </v-input>
 </ng-template>
@@ -174,6 +175,7 @@
       [title]="searchField.title"
       [hideNumberSpinBox]="true"
       [(ngModel)]="formValues[searchField.key]"
+      ngDefaultControl
   >
   </v-input>
 </ng-template>
@@ -186,6 +188,7 @@
     *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'single'"
     [title]="searchField.title"
     [(ngModel)]="formValues[searchField.key]"
+    ngDefaultControl
   ></v-date-picker>
 </ng-template>
 
@@ -197,6 +200,7 @@
     *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'single'"
     [title]="searchField.title"
     [(ngModel)]="formValues[searchField.key]"
+    ngDefaultControl
   ></v-date-picker>
 </ng-template>
 
@@ -214,6 +218,7 @@
       [items]="searchField.dropdownList"
       [name]="searchField.key"
       [(ngModel)]="formValues[searchField.key]"
+      ngDefaultControl
     ></v-select>
   </ng-container>
 </ng-template>
@@ -223,12 +228,13 @@
     let-searchField="searchField"
 >
   <v-input
-    *ngIf="searchField.dataType === 'bsn'"
-    type="text"
+    *ngIf="searchField.dataType === 'bsn' && searchField.fieldType === 'single'"
     [dataTestId]="'iko-search-field-' + searchField.key"
     [name]="searchField.key"
     [title]="searchField.title"
     [(ngModel)]="formValues[searchField.key]"
+    (ngModelChange)="onBsnChange(searchField.key)"
+    ngDefaultControl
   >
   </v-input>
 </ng-template>

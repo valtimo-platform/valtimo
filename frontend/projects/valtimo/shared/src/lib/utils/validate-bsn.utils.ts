@@ -14,9 +14,27 @@
  * limitations under the License.
  */
 
-export * from './router.utils';
-export * from './url.utils';
-export * from './global-notification.utils';
-export * from './route-params.utils';
-export * from './display-type.utils';
-export * from './validate-bsn.utils'
+const validateBsn = (value: string): boolean => {
+  if (!value) return false;
+
+  const trimmed = value.toString().trim();
+
+  if (!/^\d+$/.test(trimmed)) return false;
+
+  if (trimmed.length < 8 || trimmed.length > 9) return false;
+
+  if (/^0+$/.test(trimmed) || /^9+$/.test(trimmed)) return false;
+
+  const digits = trimmed.split('').map(d => parseInt(d, 10));
+  let sum = 0;
+  const length = digits.length;
+
+  for (let i = 0; i < length; i++) {
+    const weight = i === length - 1 ? -1 : length - i;
+    sum += digits[i] * weight;
+  }
+
+  return sum % 11 === 0;
+};
+
+export { validateBsn };

@@ -25,6 +25,7 @@ import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
 import {IkoApiService} from '../../services';
 import {IkoListComponent} from '../iko-list/iko-list.component';
+import {validateBsn} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-search',
@@ -88,8 +89,18 @@ export class IkoSearchComponent implements OnDestroy {
     this.pageTitleService.enableReset();
   }
 
-  public searchDisabled(params: {key: string; required: boolean}[]): boolean {
-    return params.some(param => !this.formValues[param.key] && param.required);
+  public searchDisabled(params: {key: string; required: boolean; dataType?: string}[]): boolean {
+    return params.some(param => {
+      const value = this.formValues[param.key];
+
+      if (param.required && !value) return true;
+
+      if (param.dataType === 'bsn' && value && !this.checkBsn(value)) {
+        return true;
+      }
+
+      return false;
+    });
   }
 
   public isQueryGroup(param: any): param is {group: true; fields: any[]} {
@@ -106,5 +117,14 @@ export class IkoSearchComponent implements OnDestroy {
     }
 
     this.router.navigate([`${paramKey}`], {relativeTo: this.route, queryParams});
+  }
+
+  public onBsnChange(key: string): void {
+    console.log("key: ", key)
+  }
+
+  private checkBsn(value: string): boolean {
+    console.log("validate bsn: ", value)
+    return validateBsn(value);
   }
 }
