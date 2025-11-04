@@ -60,5 +60,6 @@ services:
 #   url: jdbc:postgresql://localhost:3360/openklant-authentication-test
 #   url: jdbc:postgresql://localhost:3361/klantinteracties-api-test
 #   url: jdbc:postgresql://localhost:3362/iko-test
+#   url: jdbc:postgresql://localhost:3363/building-block-test
 #   url: localhost:55672 <--rabbitmq
 #   url: localhost:55673 <--rabbitmq
