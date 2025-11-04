@@ -242,7 +242,10 @@ class ValtimoImportService(
     override fun importGlobal(inputStream: InputStream) {
         runImporter {
             val entries = readZipEntries(inputStream)
-            val importerEntriesList = getEntriesByImporter(entries).ifEmpty { return@runImporter }
+            val importerEntriesList = getEntriesByImporter(
+                entries,
+                { importer -> !importer.partOfCaseDefinition() && !importer.partOfBuildingBlockDefinition() }
+            ).ifEmpty { return@runImporter }
 
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
