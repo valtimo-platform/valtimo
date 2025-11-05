@@ -68,7 +68,7 @@ class BuildingBlockManagementService(
     fun create(dto: CreateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto {
         val entity = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(dto.key, dto.versionTag),
-            name = dto.title,
+            name = dto.name,
             description = dto.description,
             createdBy = null,
             createdDate = null,
@@ -109,7 +109,7 @@ class BuildingBlockManagementService(
 
         val updated = BuildingBlockDefinition(
             id = existing.id,
-            name = dto.title,
+            name = dto.name,
             description = dto.description,
             createdBy = existing.createdBy,
             createdDate = existing.createdDate,

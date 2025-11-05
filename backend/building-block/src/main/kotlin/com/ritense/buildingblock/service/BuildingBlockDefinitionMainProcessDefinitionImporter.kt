@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.domain.BuildingBlockDefinitionMainProcessDefinitionDto
 import com.ritense.importer.ImportRequest
 import com.ritense.importer.Importer
-import com.ritense.importer.ValtimoImportTypes
+import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_MAIN_PROCESS_DEFINITION
+import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_DEFINITION
 import com.ritense.processdocument.domain.ProcessDefinitionId
 import com.ritense.valtimo.service.OperatonProcessService
 
@@ -13,9 +14,9 @@ class BuildingBlockDefinitionMainProcessDefinitionImporter(
     private val operatonProcessService: OperatonProcessService,
     private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
 ) : Importer {
-    override fun type() = ValtimoImportTypes.Companion.BUILDING_BLOCK_MAIN_PROCESS_DEFINITION
+    override fun type() = BUILDING_BLOCK_MAIN_PROCESS_DEFINITION
 
-    override fun dependsOn(): Set<String> = setOf(ValtimoImportTypes.Companion.BUILDING_BLOCK_PROCESS_DEFINITION)
+    override fun dependsOn(): Set<String> = setOf(BUILDING_BLOCK_PROCESS_DEFINITION)
 
     override fun supports(fileName: String) = fileName.matches(FILENAME_REGEX)
 

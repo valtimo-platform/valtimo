@@ -17,6 +17,6 @@
 package com.ritense.buildingblock.web.rest.dto
 
 data class UpdateBuildingBlockDefinitionDto(
-    val title: String,
+    val name: String,
     val description: String?
 )
