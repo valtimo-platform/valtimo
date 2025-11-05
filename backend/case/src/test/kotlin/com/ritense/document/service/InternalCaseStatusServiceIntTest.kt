@@ -66,6 +66,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -95,6 +96,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "@invalid.key&",
                         "456",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -112,6 +114,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -128,6 +131,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "test123",
                         "456",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -144,6 +148,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -155,6 +160,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "house123",
                         "456",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -171,6 +177,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -182,6 +189,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "789",
                     false,
+                    500,
                     GRAY
                 )
             )
@@ -213,6 +221,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "house123",
                         "789",
                         false,
+                        500,
                         GRAY
                     )
                 )
@@ -230,6 +239,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "789",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -247,6 +257,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -257,6 +268,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house124",
                     "457",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -267,6 +279,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house125",
                     "458",
                     false,
+                    500,
                     GRAY
                 )
             )
@@ -291,18 +304,21 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "house123",
                         "456",
                         true,
+                        500,
                         GRAY
                     ),
                     InternalCaseStatusUpdateOrderRequestDto(
                         "house125",
                         "458",
                         true,
+                        500,
                         GRAY
                     ),
                     InternalCaseStatusUpdateOrderRequestDto(
                         "house124",
                         "457",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -335,6 +351,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -345,6 +362,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house124",
                     "457",
                     true,
+                    500,
                     GRAY
                 )
             )
@@ -355,6 +373,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house125",
                     "458",
                     false,
+                    500,
                     GRAY
                 )
             )
@@ -380,6 +399,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                             "house123",
                             "456",
                             true,
+                            500,
                             GRAY
                         )
                     )
@@ -398,6 +418,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                         "house123",
                         "789",
                         true,
+                        500,
                         GRAY
                     )
                 )
@@ -414,6 +435,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "456",
                     true,
+                    500,
                     GRAY
                 )
             )

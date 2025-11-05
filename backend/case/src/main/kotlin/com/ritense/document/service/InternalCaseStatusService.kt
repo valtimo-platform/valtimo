@@ -121,6 +121,7 @@ class InternalCaseStatusService(
             oldInternalCaseStatus.copy(
                 title = request.title,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
+                retentionPeriod = request.retentionPeriod,
                 color = request.color
             )
         )
