@@ -22,7 +22,7 @@ defaults:
 
 jobs:
   check_cache:
-    if: ${{ !startsWith(github.base_ref, 'release/') }}
+    if: ${{ startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     outputs:
       cache-hit: ${{ steps.restore_cache.outputs.cache-hit  }}
