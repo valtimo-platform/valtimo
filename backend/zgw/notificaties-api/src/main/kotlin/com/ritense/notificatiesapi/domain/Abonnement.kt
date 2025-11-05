@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,10 @@ data class Abonnement(
     val auth: String?,
     val kanalen: List<Kanaal> = listOf(),
 ) {
+    fun getId(): String? = url?.substringAfterLast('/')
+
     data class Kanaal(
         val filters: Map<String, String> = mapOf(),
         val naam: String
     )
-
-    fun equals(url: String, callbackUrl: String, kanalen: Set<String>): Boolean {
-        return this.url == url
-            && this.callbackUrl == callbackUrl
-            && this.kanalen == kanalen.map { Kanaal(naam = it) }
-    }
 }

@@ -22,8 +22,15 @@ import {WIDGET_MANAGEMENT_SERVICE} from '../../../constants';
 import {IWidgetManagementService} from '../../../interfaces';
 import {WidgetManagementEditorComponent} from '../management-editor/widget-management-editor.component';
 import {map, Observable, take} from 'rxjs';
-import {BasicWidget, WidgetManagementTab, WidgetType, WidgetWidth} from '../../../models';
+import {
+  BasicWidget,
+  WidgetManagementTab,
+  WidgetType,
+  WidgetWidth,
+  WidgetWizardStep,
+} from '../../../models';
 import {EditorModel, JsonEditorComponent} from '@valtimo/components';
+import {WidgetWizardService} from '../../../services';
 
 @Component({
   selector: 'valtimo-widget-management',
@@ -45,12 +52,17 @@ export class WidgetManagementComponent {
     this.widgetManagementService.initParams(value);
   }
   @Input() availableWidgetTypes: WidgetType[];
-  @Input() public disableWidthStep = false;
   @Input() public disableDuplicate = false;
+  @Input() public enableWidgetDivider = true;
   @Input() public singleWidget = false;
   @Input() public disableJsonEditor = false;
   @Input() public defaultWidth!: WidgetWidth;
-  @Input() public disableTitleInput = false;
+
+  @Input() public set widgetWizardSteps(value: WidgetWizardStep[]) {
+    if (!value?.length) return;
+
+    this.widgetWizardService.$widgetWizardSteps.set(value);
+  }
 
   public readonly jsonModel$: Observable<EditorModel> = this.widgetManagementService
     .getWidgetConfiguration()
@@ -66,7 +78,8 @@ export class WidgetManagementComponent {
 
   constructor(
     @Inject(WIDGET_MANAGEMENT_SERVICE)
-    private widgetManagementService: IWidgetManagementService<any>
+    private widgetManagementService: IWidgetManagementService<any>,
+    private readonly widgetWizardService: WidgetWizardService
   ) {}
 
   public onSaveEvent(widgets: BasicWidget[]): void {

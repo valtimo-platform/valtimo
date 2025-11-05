@@ -23,7 +23,12 @@ import {SetZaakStatusConfigurationComponent} from './components/set-zaak-status/
 import {CreateZaakResultaatConfigurationComponent} from './components/create-zaak-resultaat/create-zaak-resultaat-configuration.component';
 import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuurlijk-persoon-zaak-rol/create-natuurlijk-persoon-zaak-rol.component';
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
+import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
+import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
+import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
+import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
+import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
 import {StartHersteltermijnConfigurationComponent} from './components/start-hersteltermijn/start-hersteltermijn-configuration.component';
 import {EndHersteltermijnComponent} from './components/end-hersteltermijn/end-hersteltermijn.component';
@@ -32,10 +37,6 @@ import {UpdateZaakeigenschapComponent} from './components/update-zaakeigenschap/
 import {DeleteZaakeigenschapComponent} from './components/delete-zaakeigenschap/delete-zaakeigenschap.component';
 import {CreateZaakObjectConfigurationComponent} from './components/create-zaak-object/create-zaak-object-configuration.component';
 import {RelateerZakenComponent} from './components/relateer-zaken/relateer-zaken.component';
-import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
-import {CreateMedewerkerZaakRolComponent} from './components/create-medewerker-zaak-rol/create-medewerker-zaak-rol.component';
-import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
-import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {CreateZaakNotitieConfigurationComponent} from './components/create-zaaknotitie/create-zaaknotitie-configuration.component';
 import {PatchZaakNotitieConfigurationComponent} from './components/patch-zaaknotitie/patch-zaaknotitie-configuration.component';
 
@@ -55,6 +56,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
     'create-medewerker-zaak-rol': CreateMedewerkerZaakRolComponent,
     'create-organisatorische-eenheid-zaak-rol': CreateOrganisatorischeEenheidZaakRolComponent,
     'create-vestiging-zaak-rol': CreateVestigingZaakRolComponent,
+    'delete-zaak-rol': DeleteZaakRolComponent,
     'set-zaakopschorting': SetZaakopschortingComponent,
     'start-hersteltermijn': StartHersteltermijnConfigurationComponent,
     'end-hersteltermijn': EndHersteltermijnComponent,
@@ -122,6 +124,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Zaakrol aanmaken - Medewerker',
       'create-organisatorische-eenheid-zaak-rol': 'Zaakrol aanmaken - Organisatorische eenheid',
       'create-vestiging-zaak-rol': 'Zaakrol aanmaken - Vestiging',
+      'delete-zaak-rol': 'Verwijderen Zaakrol',
       'set-zaakopschorting': 'Schort een zaak op',
       'start-hersteltermijn': 'Start hersteltermijn',
       startRecoveryPeriodInformation:
@@ -271,6 +274,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Een geldige jq expressie. Dit wordt gecombineerd met de JSON data uit de OBJECT url om de objectgegevens uit te lezen en de vorm van de gegevens tegen het schema te valideren. Bijvoorbeeld: .record.data.',
       objectIdentificatie: 'Object identificatie',
+      resultProcessVariable: 'Resultaat process variable',
+      rolUuid: 'Rol UUID',
+      rolUuidTooltip: 'De UUID van de rol',
       'create-zaaknotitie': 'Zaak-notitie aanmaken',
       createZaakNotitieInformation: 'Deze actie maakt het mogelijk een Zaak-notitie aan de Zaak in de Zaken API toe te voegen.',
       'patch-zaaknotitie': 'Zaak-notitie bijwerken',
@@ -338,6 +344,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Create Zaakrol - Employee',
       'create-organisatorische-eenheid-zaak-rol': 'Create Zaakrol - Organizational unit',
       'create-vestiging-zaak-rol': 'Create Zaakrol - Branch',
+      'delete-zaak-rol': 'Removing Zaakrol',
       'set-zaakopschorting': 'Suspend case',
       'start-hersteltermijn': 'Start recovery period',
       startHersteltermijnInformation:
@@ -488,6 +495,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'A valid jq expression. This is combined with the JSON data from the OBJECT url to read the object data and validate the data structure against the schema. Example: .record.data.',
       objectIdentificatie: 'Object identification',
+      resultProcessVariable: 'Result process variable',
+      rolUuid: 'Rol UUID',
+      rolUuidTooltip: 'The UUID of the rol',
       'create-zaaknotitie': 'Create zaak-notitie',
       createZaakNotitieInformation: 'This action allows you to add a Zaak-notitie to the Zaak in the Zaken API.',
       'patch-zaaknotitie': 'Update zaak-notitie',
@@ -555,6 +565,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
       'create-medewerker-zaak-rol': 'Zaakrol erstellen – Mitarbeiter',
       'create-organisatorische-eenheid-zaak-rol': 'Zaakrol erstellen – Organisationseinheit',
       'create-vestiging-zaak-rol': 'Zaakrol erstellen – Niederlassung',
+      'delete-zaak-rol': 'Zum Löschen Zaakrol',
       'set-zaakopschorting': 'Einen Fall aussetzen',
       'start-hersteltermijn': 'Beginnen Sie mit der Erholungsphase',
       startHersteltermijnInformation:
@@ -706,6 +717,9 @@ const zakenApiPluginSpecification: PluginSpecification = {
       objectTypeOverigeDefinitieObjectDataTooltip:
         'Ein gültiger jq-Ausdruck. Dies wird mit den JSON-Daten aus der OBJEKT-URL kombiniert, um die Objektdaten auszulesen und die Struktur der Daten gegen das Schema zu validieren. Beispiel: .record.data.',
       objectIdentificatie: 'Objektidentifikation',
+      resultProcessVariable: 'Ergebnis process variable',
+      rolUuid: 'Rolle UUID',
+      rolUuidTooltip: 'Die UUID der Rolle',
       'create-zaaknotitie': 'Zaak-notitie erstellen',
       createZaakNotitieInformation: 'Mit dieser Aktion können Sie dem Zaak in der Zaken-API eine Zaak-notitie hinzufügen.',
       'patch-zaaknotitie': 'Zaak-notitie aktualisieren',

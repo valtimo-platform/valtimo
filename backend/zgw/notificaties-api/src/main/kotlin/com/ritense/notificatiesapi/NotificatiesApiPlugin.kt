@@ -16,18 +16,18 @@
 
 package com.ritense.notificatiesapi
 
+import com.ritense.logging.withLoggingContext
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
 import com.ritense.notificatiesapi.domain.Kanaal
 import com.ritense.notificatiesapi.domain.NotificatiesApiConfigurationId
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
 import com.ritense.plugin.annotation.Plugin
 import com.ritense.plugin.annotation.PluginProperty
+import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
 import com.ritense.valtimo.contract.validation.Url
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.URI
-import java.security.SecureRandom
-import java.util.Base64
 
 @Plugin(
     key = "notificatiesapi",
@@ -52,23 +52,18 @@ class NotificatiesApiPlugin(
     @PluginProperty(key = "authenticationPluginConfiguration", secret = false)
     lateinit var authenticationPluginConfiguration: NotificatiesApiAuthentication
 
-    fun ensureKanalenExist(kanalen: Set<String>) {
-        logger.debug { "Ensuring Notificaties API kanalen '$kanalen' exist for authentication configuration with id '${authenticationPluginConfiguration.configurationId.id}'" }
+    fun ensureKanalenExist(kanalen: Set<String>) = withLoggingContext(
+        PluginConfiguration::class.java.canonicalName to notificatiesApiConfigurationId.toString()
+    ) {
+        logger.debug { "Ensuring Notificaties API kanalen '$kanalen' exist" }
         val existingKanalen = client.getKanalen(authenticationPluginConfiguration, url).map { it.naam }
         kanalen
             .filter { !existingKanalen.contains(it) }
             .forEach { kanaalNaam ->
-                logger.debug { "Attempting to create Notificaties API kanaal with name '$kanaalNaam' for authentication configuration with id '${authenticationPluginConfiguration.configurationId.id}'" }
+                logger.debug { "Attempting to create Notificaties API kanaal with name '$kanaalNaam'" }
                 client.createKanaal(authenticationPluginConfiguration, url, Kanaal(naam = kanaalNaam))
-                logger.info { "Successfully created Notificaties API kanaal with name '$kanaalNaam' for authentication configuration with id '${authenticationPluginConfiguration.configurationId.id}'" }
+                logger.info { "Successfully created Notificaties API kanaal with name '$kanaalNaam'" }
             }
-    }
-
-    private fun createRandomKey(): String {
-        val random = SecureRandom()
-        val bytes = ByteArray(32)
-        random.nextBytes(bytes)
-        return Base64.getEncoder().encodeToString(bytes)
     }
 
     companion object {

@@ -22,7 +22,8 @@ import {
   InputLabelModule,
   InputModule,
   ParagraphModule,
-  RadioModule, ReadOnlyDirective,
+  RadioModule,
+  ReadOnlyDirective,
   SelectModule,
 } from '@valtimo/components';
 import {
@@ -44,6 +45,7 @@ import {CreateNatuurlijkPersoonZaakRolComponent} from './components/create-natuu
 import {CreateNietNatuurlijkPersoonZaakRolComponent} from './components/create-niet-natuurlijk-persoon-zaak-rol/create-niet-natuurlijk-persoon-zaak-rol.component';
 import {CreateOrganisatorischeEenheidZaakRolComponent} from './components/create-organisatorische-eenheid-zaak-rol/create-organisatorische-eenheid-zaak-rol.component';
 import {CreateVestigingZaakRolComponent} from './components/create-vestiging-zaak-rol/create-vestiging-zaak-rol.component';
+import {DeleteZaakRolComponent} from './components/delete-zaak-rol/delete-zaak-rol.component';
 import {CreateZaakConfigurationComponent} from './components/create-zaak/create-zaak-configuration.component';
 import {PatchZaakConfigurationComponent} from './components/patch-zaak/patch-zaak-configuration.component';
 import {SetZaakopschortingComponent} from './components/set-zaakopschorting/set-zaakopschorting.component';
@@ -70,6 +72,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     CreateNietNatuurlijkPersoonZaakRolComponent,
     CreateOrganisatorischeEenheidZaakRolComponent,
     CreateVestigingZaakRolComponent,
+    DeleteZaakRolComponent,
     CreateZaakConfigurationComponent,
     PatchZaakConfigurationComponent,
     SetZaakopschortingComponent,
@@ -117,6 +120,7 @@ import {ReactiveFormsModule} from '@angular/forms';
     CreateNietNatuurlijkPersoonZaakRolComponent,
     CreateOrganisatorischeEenheidZaakRolComponent,
     CreateVestigingZaakRolComponent,
+    DeleteZaakRolComponent,
     SetZaakopschortingComponent,
     StartHersteltermijnConfigurationComponent,
     EndHersteltermijnComponent,

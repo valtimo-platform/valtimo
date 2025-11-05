@@ -854,7 +854,7 @@
       "success": "Widget-Konfiguration erfolgreich aktualisiert",
       "error": "Die Widget-Konfiguration konnte nicht aktualisiert werden"
     },
-    "types": {
+    "type": {
       "description": "Wählen Sie den Widget-Typ aus, den Sie konfigurieren möchten.",
       "fields": {"title": "Felder", "description": "Textdaten mit Inhalt und einer Beschriftung"},
       "custom": {"title": "Benutzerdefinierte Komponente", "description": "Für komplexe Inhalte"},
@@ -992,6 +992,12 @@
       "selectorLabel": "Schaltfläche Neuer Prozess (Optional)",
       "selectorPlaceholder": "Wählen Sie einen Prozess"
     },
+    "actionButtonLabel": "Typ der Aktionsschaltfläche",
+    "externalLink": {
+    "linkLabel": "Schaltfläche für externen Link",
+    "linkPlaceholder": "Externer Link",
+    "buttonTextLabel": "Text der Schaltfläche für externen Link"
+    },
     "saveModalContent": "Sind Sie sicher, dass Sie die Widget-Konfiguration speichern möchten? Das Entfernen oder Ändern eines Attributs kann die Widget-Konfiguration zerstören."
   },
   "zgw": {
@@ -1028,6 +1034,39 @@
       "noColumns": {
         "description": "Klicken Sie hier, um eine Spalte für dieses Dokument zu konfigurieren",
         "title": "Keine konfigurierten Spalten"
+      }
+    },
+    "notifications": {
+      "failed": {
+        "pageTitle": "Fehlgeschlagene Benachrichtigungen",
+        "retrySuccess": "Benachrichtigung zur erneuten Verarbeitung eingeplant",
+        "retryError": "Erneuter Versuch fehlgeschlagen. Bitte später erneut versuchen.",
+        "noResults": {
+          "title": "Keine fehlgeschlagenen Benachrichtigungen",
+          "description": "Es liegen derzeit keine fehlgeschlagenen Benachrichtigungen vor."
+        },
+        "columns": {
+          "receivedAt": "Empfangen am",
+          "idempotenceKey": "Idempotenzschlüssel",
+          "pendingRetries": "Verbleibende Versuche",
+          "lastProcessedAt": "Zuletzt verarbeitet am",
+          "lastErrorMessage": "Letzte Fehlermeldung"
+        },
+        "detail": {
+          "title": "Details zur fehlgeschlagenen Benachrichtigung",
+          "metadataTitle": "Metadaten",
+          "id": "ID",
+          "idempotenceKey": "Idempotenzschlüssel",
+          "status": "Status",
+          "pendingRetries": "Verbleibende Versuche",
+          "receivedAt": "Empfangen am",
+          "lastProcessedAt": "Zuletzt verarbeitet am",
+          "payloadTitle": "Payload",
+          "noPayload": "Keine Payload verfügbar.",
+          "errorTitle": "Fehlerdetails",
+          "noError": "Keine Fehlerdetails verfügbar.",
+          "retry": "Benachrichtigung erneut versuchen"
+        }
       }
     },
     "tags": {
@@ -1907,18 +1946,51 @@
     "searchFieldsNoResults": "Keine Suchfelder für diese Entität gefunden"
   },
   "ikoManagement": {
+    "preparingDownload": "Download wird vorbereitet",
     "ikoServer": "IKO Server",
+    "configureIkoServer": "IKO-Server konfigurieren",
     "dataUrl": "Daten-URL",
     "title": "Konfiguration",
     "list": "Liste",
     "tabs": {"title": "Tabs"},
     "widgets": {"title": "Widgets"},
+    "importDefinition": {
+      "title": "IKO-Definition importieren",
+      "overwriteWarning": "Wenn Ihre IKO-Definition Konfigurationen, Modelle und/oder Definitionen mit demselben Namen oder derselben Kennung enthält wie bereits auf Ihrem System, werden diese überschrieben.",
+      "startUpload": "Upload starten",
+      "progressBar": {
+        "active": "Dies kann eine Weile dauern",
+        "error": "IKO-Definition konnte nicht importiert werden. Aufgrund eines Fehlers auf unserer Seite wurde nichts importiert. Bitte versuchen Sie es später erneut. Wenn das Problem weiterhin besteht, wenden Sie sich an den Support.",
+        "finished": "IKO-Definition erfolgreich importiert",
+        "label": "IKO-Definition wird importiert"
+      },
+      "checkbox": {
+        "message": "Ich verstehe, dass Konfigurationen überschrieben werden können",
+        "error": "Dieses Feld ist erforderlich"
+      },
+      "upload": {
+        "title": "Datei hochladen",
+        "description": "Maximale Dateigröße beträgt 500 KB. De unterstützte Dateityp is ZIP.",
+        "buttonText": "Datei auswählen"
+      },
+      "steps": {
+        "accessControl": {
+          "message": "Vergessen Sie nicht, die Rechte in der Access Control festzulegen. Ohne die entsprechenden Rechte ist Ihre neue IKO-definition nicht zugänglich.",
+          "title": "Zugriffskontrolle"
+        }
+      }
+    },
     "views": {
       "title": "Bilder",
+      "upload": "Upload",
       "add": "Bild hinzufügen",
       "deleteContent": "Sind Sie sicher, dass Sie dieses Bild löschen möchten? Diese Änderung kann nicht rückgängig gemacht werden.",
       "noResultsTitle": "Es sind keine konfigurierten Bilder vorhanden",
       "noResultsDescription": "Klicken Sie hier, um ein Bild zu konfigurieren."
+    },
+    "search": {
+      "noResultsTitle": "Keine Ergebnisse",
+      "noResultsDescription": "Versuche, deine Such- oder Filteroptionen anzupassen, um zu finden, wonach du suchst."
     },
     "searchActions": {
       "addActionTitle": "Suchaktion hinzufügen",
@@ -1965,6 +2037,7 @@
     "editTab": "Tab bearbeiten",
     "rowAction": "Zeilenaktion",
     "canStartCase": "Kann Case starten",
+    "collectionPathTooltip": "Ein Pfad, der zu der Sammlung von Werten führt, die du anzeigen möchtest. Um Eigenschaften in IKO's anzuzeigen, folge diesem Beispiel: 'iko:/pfad/zu/eigenschaft'.",
     "tabTypes": {
       "widgets": "Widgets"
     }

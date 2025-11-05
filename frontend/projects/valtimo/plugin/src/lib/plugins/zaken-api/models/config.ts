@@ -47,6 +47,7 @@ interface CreateNatuurlijkePersoonZaakRolConfig {
   inpBsn: string;
   anpIdentificatie: string;
   inpA_nummer: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateNietNatuurlijkePersoonZaakRolConfig {
@@ -56,6 +57,7 @@ interface CreateNietNatuurlijkePersoonZaakRolConfig {
   annIdentificatie: string;
   kvkNummer?: string;
   vestigingsNummer?: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateMedewerkerZaakRolConfig {
@@ -67,6 +69,7 @@ interface CreateMedewerkerZaakRolConfig {
   voorvoegselAchternaam?: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateOrganisatorischeEenheidZaakRolConfig {
@@ -77,6 +80,7 @@ interface CreateOrganisatorischeEenheidZaakRolConfig {
   isGehuisvestIn: string;
   afwijkendeNaamBetrokkene?: string;
   indicatieMachtiging?: string;
+  resultProcessVariable?: string;
 }
 
 interface CreateVestigingZaakRolConfig {
@@ -85,6 +89,11 @@ interface CreateVestigingZaakRolConfig {
   handelsnaam?: string;
   kvkNummer: string;
   vestigingsNummer: string;
+  resultProcessVariable?: string;
+}
+
+interface DeleteZaakRolConfig {
+  rolUuid: string;
 }
 
 interface CreateZaakConfig {
@@ -188,6 +197,7 @@ export {
   CreateMedewerkerZaakRolConfig,
   CreateOrganisatorischeEenheidZaakRolConfig,
   CreateVestigingZaakRolConfig,
+  DeleteZaakRolConfig,
   SetZaakopschortingConfig,
   StartHersteltermijnConfig,
   CreateZaakeigenschapConfig,

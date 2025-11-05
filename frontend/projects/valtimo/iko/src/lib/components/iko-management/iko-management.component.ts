@@ -24,7 +24,7 @@ import {
   MenuService,
   PageTitleService,
 } from '@valtimo/components';
-import {ButtonModule, IconModule} from 'carbon-components-angular';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject, combineLatest, filter, switchMap, take, tap} from 'rxjs';
 import {map} from 'rxjs/operators';
 import {IKO_MANAGEMENT_TABS} from '../../constants';
@@ -32,6 +32,8 @@ import {IkoDataAggregateResponse} from '../../models';
 import {IkoManagementApiService} from '../../services';
 import {IkoManagementViewModalComponent} from './view-modal/iko-management-view-modal.component';
 import {TranslateModule} from '@ngx-translate/core';
+import {Upload16} from '@carbon/icons';
+import {IkoManagementUploadModalComponent} from './upload-modal/iko-management-upload-modal.component';
 
 @Component({
   selector: 'valtimo-iko-management',
@@ -43,6 +45,7 @@ import {TranslateModule} from '@ngx-translate/core';
     ButtonModule,
     IconModule,
     IkoManagementViewModalComponent,
+    IkoManagementUploadModalComponent,
     TranslateModule,
     ConfirmationModalModule,
   ],
@@ -65,7 +68,8 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
         )
     )
   );
-  public readonly $modalOpen = signal<boolean>(false);
+  public readonly $viewModalOpen = signal<boolean>(false);
+  public readonly $uploadModalOpen = signal<boolean>(false);
   public readonly $prefillData = signal<any | null>(null);
   public readonly $keyToDelete = signal<string | null>(null);
   public readonly showDeleteModal$ = new BehaviorSubject<boolean>(false);
@@ -93,8 +97,11 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly pageTitleService: PageTitleService,
-    private readonly menuService: MenuService
-  ) {}
+    private readonly menuService: MenuService,
+    private readonly iconService: IconService
+  ) {
+    this.iconService.registerAll([Upload16]);
+  }
 
   public ngOnInit(): void {
     this.pageTitleService.disableReset();
@@ -112,12 +119,16 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   }
 
   public openAddModal(): void {
-    this.$modalOpen.set(true);
+    this.$viewModalOpen.set(true);
+  }
+
+  public openUploadModal(): void {
+    this.$uploadModalOpen.set(true);
   }
 
   public onEditClick(item: IkoDataAggregateResponse): void {
     this.$prefillData.set(item);
-    this.$modalOpen.set(true);
+    this.$viewModalOpen.set(true);
   }
 
   public onDeleteClick(item: IkoDataAggregateResponse): void {
@@ -132,8 +143,8 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
     });
   }
 
-  public onModalClose(item: IkoDataAggregateResponse | null, ikoRepositoryConfigKey: string) {
-    this.$modalOpen.set(false);
+  public onViewModalClose(item: IkoDataAggregateResponse | null, ikoRepositoryConfigKey: string) {
+    this.$viewModalOpen.set(false);
     const prefillData: IkoDataAggregateResponse | null = this.$prefillData();
     this.$prefillData.set(null);
     if (!item) return;
@@ -159,6 +170,14 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
         this.menuService.reload();
         this._refresh$.next(null);
       });
+  }
+
+  public onUploadModalClose(item: boolean) {
+    this.$uploadModalOpen.set(false);
+    if (!item) return;
+
+    this._refresh$.next(null);
+    this.menuService.reload();
   }
 
   private setPageTitle(): void {
