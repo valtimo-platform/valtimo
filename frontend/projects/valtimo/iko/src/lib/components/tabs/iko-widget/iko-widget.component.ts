@@ -15,6 +15,7 @@
  */
 import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
+import {PageHeaderService} from '@valtimo/components';
 import {WidgetComponentMap, WidgetContainerComponent, WidgetType} from '@valtimo/layout';
 import {NGXLogger} from 'ngx-logger';
 import {BehaviorSubject, combineLatest, filter, map, Observable, switchMap, tap} from 'rxjs';
@@ -29,6 +30,7 @@ import {IkoWidgetTableComponent} from '../../widget-table';
 
 @Component({
   templateUrl: './iko-widget.component.html',
+  styleUrl: './iko-widget.component.scss',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, WidgetContainerComponent],
@@ -47,6 +49,7 @@ export class IkoWidgetComponent {
   }
 
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly compactMode$ = this.pageHeaderService.compactMode$;
 
   public widgets$ = combineLatest([this.dataAggregateKey$, this.key$]).pipe(
     switchMap(([dataAggregateKey, key]) => this.ikoApiService.getIkoWidget(dataAggregateKey, key))
@@ -79,6 +82,7 @@ export class IkoWidgetComponent {
   constructor(
     private readonly ikoTabService: IkoTabService,
     private readonly ikoApiService: IkoApiService,
+    private readonly pageHeaderService: PageHeaderService,
     private readonly logger: NGXLogger
   ) {}
 }

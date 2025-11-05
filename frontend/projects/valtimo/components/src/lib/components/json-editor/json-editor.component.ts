@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -25,12 +24,12 @@ import {
   signal,
 } from '@angular/core';
 import {Edit16, Save16} from '@carbon/icons';
-import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
-import {EditorModel} from '../../models';
-import {EditorModule} from '../editor/editor.module';
 import {TranslateModule} from '@ngx-translate/core';
-import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
+import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {BehaviorSubject} from 'rxjs';
+import {EditorModel} from '../../models';
+import {ConfirmationModalModule} from '../confirmation-modal/confirmation-modal.module';
+import {EditorModule} from '../editor/editor.module';
 
 @Component({
   selector: 'valtimo-json-editor',
@@ -124,9 +123,9 @@ export class JsonEditorComponent {
   }
 
   public onValueChangeEvent(value: string): void {
+    this._changesToSave = value;
     if (!this.isValidJson()) return;
 
-    this._changesToSave = value;
     this.changeEvent.emit();
   }
 
