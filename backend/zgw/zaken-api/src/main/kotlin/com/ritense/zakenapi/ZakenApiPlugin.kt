@@ -130,7 +130,7 @@ class ZakenApiPlugin(
         required = false,
         secret = false
     )
-    var noteSubject: String = "Note created in Valtimo GZAC"
+    var noteSubject: String = "Note created by Valtimo GZAC"
 
     @PluginAction(
         key = "link-document-to-zaak",

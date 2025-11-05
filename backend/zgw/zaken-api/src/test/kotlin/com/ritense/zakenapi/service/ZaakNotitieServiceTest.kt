@@ -38,7 +38,9 @@ internal class ZaakNotitieServiceTest {
 
     @Before
     fun setup() {
-        zakenApiPlugin = mock()
+        zakenApiPlugin = mock {
+            on { this.noteSubject } doReturn noteSubject()
+        }
         zaakUrlProvider = mock {
             on { getZaakUrl(eq(documentId())) } doReturn zaakUrl()
         }
@@ -203,12 +205,13 @@ internal class ZaakNotitieServiceTest {
     private fun zaakNotitieUrl() = URI.create("https://zakenapi.com/zaaknotities/e6a64f77-00ef-41dc-a24a-16573776c298")
     private fun createdByUserId() = "john.doe"
     private fun createdByUserFullName() = "John Doe"
+    private fun noteSubject() = "Note create by Valtimo GZAC"
 
     private fun zaakNotitie(
         tekst: String = "Content",
     ) = ZaakNotitie(
         url = zaakNotitieUrl(),
-        onderwerp = "Note synced from Valtimo GZAC",
+        onderwerp = noteSubject(),
         tekst = tekst,
         aangemaaktDoor = createdByUserFullName(),
         aanmaakdatum = LocalDateTime.now(),

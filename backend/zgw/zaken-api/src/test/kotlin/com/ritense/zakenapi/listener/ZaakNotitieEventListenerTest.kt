@@ -19,7 +19,7 @@ import org.mockito.kotlin.whenever
 import java.net.URI
 import java.util.UUID
 
-class ZaakNotitieEventListenerTest {
+internal class ZaakNotitieEventListenerTest {
 
     private lateinit var zakenApiPlugin: ZakenApiPlugin
     private lateinit var zaakUrlProvider: ZaakUrlProvider
