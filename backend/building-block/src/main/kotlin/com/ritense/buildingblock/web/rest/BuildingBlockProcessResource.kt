@@ -41,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile
 class BuildingBlockProcessResource(
     private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
 ) {
+
     @GetMapping("/{key}/version/{versionTag}/process-definition")
     fun getProcessDefinitionsForBuildingBlock(
         @PathVariable key: String,
@@ -68,7 +69,6 @@ class BuildingBlockProcessResource(
                 processDefinitionId
             )
         }
-
         return dto?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
     }
 
@@ -81,7 +81,7 @@ class BuildingBlockProcessResource(
     fun deployProcessDefinitionAndProcessLinksForBuildingBlock(
         @PathVariable key: String,
         @PathVariable versionTag: String,
-        @RequestPart(name = "file") bpmn: MultipartFile?,
+        @RequestPart(name = "file") bpmn: MultipartFile,
         @RequestPart(name = "processLinks") processLinks: List<ProcessLinkCreateRequestDto>,
         @RequestPart(name = "processDefinitionId") processDefinitionId: String,
         @RequestPart(name = "main", required = false) main: Boolean? = false
