@@ -296,7 +296,7 @@ class ProcessLinkResource(
 
         val definition = runWithoutAuthorization {
             operatonProcessService
-                .getDefinitionsByKeyAndCaseDefinition(caseDefinitionId, processDefinitionKey)
+                .getDefinitionsByKeyAndSolutionModule(caseDefinitionId, processDefinitionKey)
                 .firstOrNull()
                 ?: throw IllegalStateException("No process definition found for key '$processDefinitionKey' in case definition '$caseDefinitionId'")
         }
@@ -331,7 +331,7 @@ class ProcessLinkResource(
     ): ResponseEntity<Any> {
         runWithoutAuthorization {
             operatonProcessService
-                .getDefinitionsByKeyAndCaseDefinition(
+                .getDefinitionsByKeyAndSolutionModule(
                     CaseDefinitionId.of(caseDefinitionKey, versionTag),
                     processDefinitionKey
                 )

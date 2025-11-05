@@ -76,6 +76,15 @@ class BuildingBlockManagementResource(
         @RequestBody dto: UpdateBuildingBlockDefinitionDto
     ): ResponseEntity<BuildingBlockDefinitionDto> {
         val updated = buildingBlockManagementService.update(key, versionTag, dto)
-        return updated?.let { ResponseEntity.ok(it) } ?: ResponseEntity.notFound().build()
+        return ResponseEntity.ok(updated)
+    }
+
+    @PostMapping("/{key}/version/{versionTag}/finalize")
+    fun finalizeBuildingBlockDefinition(
+        @PathVariable key: String,
+        @PathVariable versionTag: String
+    ): ResponseEntity<BuildingBlockDefinitionDto> {
+        val finalized = buildingBlockManagementService.finalize(key, versionTag)
+        return ResponseEntity.ok(finalized)
     }
 }

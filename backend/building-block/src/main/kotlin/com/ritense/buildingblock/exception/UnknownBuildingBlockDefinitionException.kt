@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,23 @@
  * limitations under the License.
  */
 
-package com.ritense.importer
+package com.ritense.buildingblock.exception
 
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import org.zalando.problem.AbstractThrowableProblem
+import org.zalando.problem.Exceptional
+import org.zalando.problem.Status
 
-data class ImportRequest(
-    val fileName: String,
-    val content: ByteArray,
-    val caseDefinitionId: CaseDefinitionId? = null,
-    val buildingBlockDefinitionId: BuildingBlockDefinitionId? = null,
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+class UnknownBuildingBlockDefinitionException(message: String?) :
+    AbstractThrowableProblem(
+        null,
+        message,
+        Status.NOT_FOUND
+    ) {
+    constructor(buildingBlockDefinitionId: BuildingBlockDefinitionId) :
+        this("Building block definition with id $buildingBlockDefinitionId could not be found")
 
-        other as ImportRequest
-
-        return fileName == other.fileName
-    }
-
-    override fun hashCode(): Int {
-        return fileName.hashCode()
+    override fun getCause(): Exceptional? {
+        return null
     }
 }
