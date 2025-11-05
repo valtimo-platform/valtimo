@@ -56,6 +56,7 @@ import com.ritense.zakenapi.domain.rol.RolVestiging
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
 import com.ritense.zgw.Page
 import com.ritense.zgw.Rsin
 import org.assertj.core.api.Assertions.assertThat
@@ -1258,18 +1259,26 @@ internal class ZakenApiPluginTest {
         // given
         val documentId = UUID.randomUUID()
         val zaakUrl = zaakUri()
-
-        val zakenApiClient: ZakenApiClient = mock()
-        val zaakUrlProvider: ZaakUrlProvider = mock {
-            on { this.getZaakUrl(eq(documentId)) } doReturn zaakUrl
+        val zaakNotitie: ZaakNotitie = mock {
+            on { this.url } doReturn URI("https://example.com/zaaknotities/1")
+            on { this.gerelateerdAan } doReturn zaakUrl
         }
+
+        val zakenApiClient: ZakenApiClient = mock {
+            on { createZaakNotitie(any(), any(), any()) } doReturn zaakNotitie
+        }
+        val zaakUrlProvider: ZaakUrlProvider = mock {
+            on { getZaakUrl(eq(documentId)) } doReturn zaakUrl
+        }
+        val zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock()
         val executionMock: DelegateExecution = mock {
             on { this.businessKey } doReturn documentId.toString()
         }
 
         val plugin = zakenApiPlugin(
             zaakUrlProvider = zaakUrlProvider,
-            zakenApiClient = zakenApiClient
+            zakenApiClient = zakenApiClient,
+            zaakNotitieLinkRepository = zaakNotitieLinkRepository
         )
 
         // when
@@ -1299,6 +1308,7 @@ internal class ZakenApiPluginTest {
                 assertThat(request.gerelateerdAan).isEqualTo(zaakUrl)
             }
         }
+        verify(zaakNotitieLinkRepository).save(any())
     }
 
     @Test
@@ -1518,18 +1528,20 @@ internal class ZakenApiPluginTest {
         platformTransactionManager: PlatformTransactionManager = mock(),
         authenticationMock: ZakenApiAuthentication = mock(),
         valueResolverService: ValueResolverService = mock(),
-        objectMapper: ObjectMapper = mock()
+        objectMapper: ObjectMapper = mock(),
+        zaakNotitieLinkRepository: ZaakNotitieLinkRepository = mock()
     ): ZakenApiPlugin {
         return ZakenApiPlugin(
-            zakenApiClient,
-            zaakUrlProvider,
-            storageService,
-            zaakInstanceLinkRepository,
-            pluginService,
-            zaakHersteltermijnRepository,
-            platformTransactionManager,
-            valueResolverService,
-            objectMapper
+            client = zakenApiClient,
+            zaakUrlProvider = zaakUrlProvider,
+            storageService = storageService,
+            zaakInstanceLinkRepository = zaakInstanceLinkRepository,
+            pluginService = pluginService,
+            zaakHersteltermijnRepository = zaakHersteltermijnRepository,
+            platformTransactionManager = platformTransactionManager,
+            valueResolverService = valueResolverService,
+            objectMapper = objectMapper,
+            zaakNotitieLinkRepository = zaakNotitieLinkRepository
         ).apply {
             this.url = url
             this.authenticationPluginConfiguration = authenticationMock

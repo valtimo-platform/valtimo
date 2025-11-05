@@ -24,15 +24,18 @@ class ZaakNotitieLink(
     @Column(name = "zaak_notitie_url", columnDefinition = "VARCHAR(512)", nullable = false)
     val zaakNotitieUrl: URI,
 
-    @Column(name = "note_id", nullable = false)
-    val noteId: UUID,
+    @Column(name = "note_id", nullable = true)
+    val noteId: UUID? = null,
 
-    @Column(name = "document_id", nullable = false)
-    val documentId: UUID
+    @Column(name = "document_id", nullable = true)
+    val documentId: UUID? = null
 
 ) : Persistable<ZaakNotitieLinkId>, Validatable {
 
     init {
+        require( noteId != null || documentId != null ) {
+            "At least the noteId or documentId should be provided!"
+        }
         validate()
     }
 

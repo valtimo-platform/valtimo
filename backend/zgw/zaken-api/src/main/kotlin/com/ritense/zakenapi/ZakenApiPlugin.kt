@@ -60,6 +60,8 @@ import com.ritense.zakenapi.domain.ZaakInformatieObject
 import com.ritense.zakenapi.domain.ZaakInstanceLink
 import com.ritense.zakenapi.domain.ZaakInstanceLinkId
 import com.ritense.zakenapi.domain.ZaakNotitie
+import com.ritense.zakenapi.domain.ZaakNotitieLink
+import com.ritense.zakenapi.domain.ZaakNotitieLinkId
 import com.ritense.zakenapi.domain.ZaakObject
 import com.ritense.zakenapi.domain.ZaakResponse
 import com.ritense.zakenapi.domain.ZaakResultaat
@@ -77,6 +79,8 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectOverigeRequest
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectRequest
 import com.ritense.zakenapi.repository.ZaakHersteltermijnRepository
 import com.ritense.zakenapi.repository.ZaakInstanceLinkRepository
+import com.ritense.zakenapi.repository.ZaakNotitieLinkRepository
+import com.ritense.zakenapi.service.ZaakNotitieService
 import com.ritense.zgw.LoggingConstants
 import com.ritense.zgw.LoggingConstants.CATALOGI_API
 import com.ritense.zgw.LoggingConstants.DOCUMENTEN_API
@@ -108,6 +112,7 @@ class ZakenApiPlugin(
     private val platformTransactionManager: PlatformTransactionManager,
     private val valueResolverService: ValueResolverService,
     private val objectMapper: ObjectMapper,
+    private val zaakNotitieLinkRepository: ZaakNotitieLinkRepository
 ) {
     @Url
     @PluginProperty(key = URL_PROPERTY, secret = false)
@@ -1301,7 +1306,18 @@ class ZakenApiPlugin(
             aangemaaktDoor = aangemaaktDoor,
             notitieType = notitieTypeFrom(notitieType),
             status = notitieStatusFrom(status)
-        )
+        ).also { zaakNotitie ->
+            zaakNotitieLinkRepository.save(ZaakNotitieLink(
+                zaakNotitieLinkId = ZaakNotitieLinkId.newId(UUID.randomUUID()),
+                zaakNotitieUrl = zaakNotitie.url,
+                documentId = documentId
+            )).also {
+                logger.debug { "Created ZaakNotitieLink for " +
+                    "zaakNotitieUrl: ${zaakNotitie.url} and"
+                    "documentId: $documentId"
+                }
+            }
+        }
     }
 
     fun createZaakNotitie(

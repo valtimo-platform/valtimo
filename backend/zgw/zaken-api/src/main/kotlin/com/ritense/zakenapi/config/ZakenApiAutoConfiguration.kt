@@ -112,6 +112,7 @@ class ZakenApiAutoConfiguration {
         platformTransactionManager: PlatformTransactionManager,
         valueResolverService: ValueResolverService,
         objectMapper: ObjectMapper,
+        zaakNotitieLinkRepository: ZaakNotitieLinkRepository
     ) = ZakenApiPluginFactory(
         pluginService,
         zakenApiClient,
@@ -121,7 +122,8 @@ class ZakenApiAutoConfiguration {
         zaakHersteltermijnRepository,
         platformTransactionManager,
         valueResolverService,
-        objectMapper
+        objectMapper,
+        zaakNotitieLinkRepository
     )
 
     @Bean
