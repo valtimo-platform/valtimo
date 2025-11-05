@@ -43,12 +43,12 @@ import {Subscription} from 'rxjs';
 })
 export class BuildingBlockManagementMetadataComponent implements OnInit, OnDestroy {
   public formGroup: FormGroup = this.fb.group({
-    title: this.fb.control('', Validators.required),
+    name: this.fb.control('', Validators.required),
     key: this.fb.control('', Validators.required),
     description: this.fb.control(''),
   });
-  public get title(): FormControl<string> {
-    return this.formGroup.get('title') as FormControl<string>;
+  public get name(): FormControl<string> {
+    return this.formGroup.get('name') as FormControl<string>;
   }
   public get key(): FormControl<string> {
     return this.formGroup.get('key') as FormControl<string>;
@@ -93,7 +93,7 @@ export class BuildingBlockManagementMetadataComponent implements OnInit, OnDestr
       this.buildingBlockManagementDetailService.buildingBlockDefinition$.subscribe(
         buildingBlockDefinition => {
           this.formGroup.setValue({
-            title: buildingBlockDefinition.title,
+            name: buildingBlockDefinition.name,
             key: buildingBlockDefinition.key,
             description: buildingBlockDefinition.description,
           });
@@ -108,7 +108,7 @@ export class BuildingBlockManagementMetadataComponent implements OnInit, OnDestr
         if (loadingDefinition) {
           this.formGroup.disable();
         } else {
-          this.title.enable();
+          this.name.enable();
           this.description.enable();
           this.formGroup.markAsPristine();
         }

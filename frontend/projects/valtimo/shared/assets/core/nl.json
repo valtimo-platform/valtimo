@@ -2070,7 +2070,7 @@
   "buildingBlockManagement": {
     "title": "Bouwblokken",
     "listColumns": {
-      "title": "Titel",
+      "name": "Naam",
       "key": "Sleutel",
       "versionTag": "Versie"
     },
@@ -2083,9 +2083,9 @@
     },
     "createDefinition": {
       "modalTitle": "Bouwblok aanmaken",
-      "title": "Titel",
-      "titleTooltip": "De naam van het bouwblok.",
-      "titlePlaceholder": "Titel invoeren",
+      "name": "Naam",
+      "nameTooltip": "De naam van het bouwblok.",
+      "namePlaceholder": "Naam invoeren",
       "keyTitle": "Sleutel",
       "keyPlaceHolder": "De sleutel wordt hier automatisch gegenereerd",
       "version": "Versie",

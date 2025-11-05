@@ -115,7 +115,7 @@ export class BuildingBlockManagementDetailService implements OnDestroy {
           ),
           tap(res => {
             this._buildingBlockDefinition$.next(res);
-            this.pageTitleService.setCustomPageTitle(res.title);
+            this.pageTitleService.setCustomPageTitle(res.name);
             this._loadingDefinition$.next(false);
           })
         )

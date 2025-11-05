@@ -69,13 +69,13 @@ export class BuildingBlockManagementCreateModalComponent {
   public readonly usedKeys$ = this.buildingBlockManagementService.usedKeys$;
 
   public formGroup: FormGroup = this.fb.group({
-    title: this.fb.control('', Validators.required),
+    name: this.fb.control('', Validators.required),
     key: this.fb.control('', [Validators.required, Validators.pattern('[A-Za-z0-9-]*')]),
     versionTag: this.fb.control('', Validators.required),
     description: this.fb.control(''),
   });
-  public get title(): FormControl<string> {
-    return this.formGroup.get('title') as FormControl<string>;
+  public get name(): FormControl<string> {
+    return this.formGroup.get('name') as FormControl<string>;
   }
   public get key(): FormControl<string> {
     return this.formGroup.get('key') as FormControl<string>;
