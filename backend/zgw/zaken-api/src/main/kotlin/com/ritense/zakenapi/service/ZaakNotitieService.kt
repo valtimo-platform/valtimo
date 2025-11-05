@@ -51,6 +51,8 @@ class ZaakNotitieService(
                         logger.info { "Created ZaakNotitie(url=${zaakNotitie.url})" }
                     }
                 }
+            } else {
+                logger.info { "> Skipped as ZaakNotitieLink already exists" }
             }
         }
     }
@@ -76,6 +78,8 @@ class ZaakNotitieService(
                     }
                 }
             }
+        } else {
+            logger.info { "> Skipped as no ZaakNotitieLink exists" }
         }
     }
 
@@ -101,6 +105,8 @@ class ZaakNotitieService(
                     }
                 }
             }
+        } else {
+            logger.info { "> Skipped as no ZaakNotitieLink exists" }
         }
     }
 
