@@ -2063,7 +2063,7 @@
   "buildingBlockManagement": {
     "title": "Baublöcke",
     "listColumns": {
-      "title": "Titel",
+      "name": "Name",
       "key": "Schlüssel",
       "versionTag": "Version"
     },
@@ -2076,9 +2076,9 @@
     },
     "createDefinition": {
       "modalTitle": "Baublock erstellen",
-      "title": "Titel",
-      "titleTooltip": "Der Name des Baublocks.",
-      "titlePlaceholder": "Titel eingeben",
+      "name": "Name",
+      "nameTooltip": "Der Name des Baublocks.",
+      "namePlaceholder": "Name eingeben",
       "keyTitle": "Schlüssel",
       "keyPlaceHolder": "Der Schlüssel wird hier automatisch generiert",
       "version": "Version",

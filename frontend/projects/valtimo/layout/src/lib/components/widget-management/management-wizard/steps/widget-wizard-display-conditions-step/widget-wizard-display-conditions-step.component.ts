@@ -25,7 +25,7 @@ import {
   MultiInputKeyValue,
   ValuePathSelectorPrefix,
 } from '@valtimo/components';
-import {Condition, getCaseManagementRouteParams, Operator} from '@valtimo/shared';
+import {Condition, ExpressionOperator, getCaseManagementRouteParams} from '@valtimo/shared';
 import {
   DropdownModule,
   InputModule,
@@ -57,14 +57,7 @@ export class WidgetWizardDisplayConditionsStepComponent {
 
   public readonly params$ = getCaseManagementRouteParams(this.route);
 
-  private readonly _OPERATORS: Array<Operator> = [
-    Operator.NOT_EQUAL_TO,
-    Operator.EQUAL_TO,
-    Operator.GREATER_THAN,
-    Operator.GREATER_THAN_OR_EQUAL_TO,
-    Operator.LESS_THAN,
-    Operator.LESS_THAN_OR_EQUAL_TO,
-  ];
+  private readonly _OPERATORS: Array<ExpressionOperator> = ['!=', '==', '>', '>=', '<', '<='];
 
   public readonly operatorItems$: Observable<Array<ListItemWithId>> = this.translateService
     .stream('key')
@@ -83,7 +76,7 @@ export class WidgetWizardDisplayConditionsStepComponent {
   ).pipe(
     filter(conditions => !!conditions),
     take(1),
-    map((conditions: Array<Condition> | null) =>
+    map((conditions: Array<Condition<string>> | null) =>
       !conditions
         ? []
         : conditions.map(condition => ({
