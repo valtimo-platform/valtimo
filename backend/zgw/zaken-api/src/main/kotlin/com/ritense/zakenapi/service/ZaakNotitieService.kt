@@ -31,7 +31,7 @@ class ZaakNotitieService(
             if (!zaakNotitieLinkRepository.existsByNoteId(event.noteId)) {
                 zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
                     zakenApiPlugin.createZaakNotitie(
-                        onderwerp = ZAAK_NOTITIE_ONDERWERP,
+                        onderwerp = zakenApiPlugin.noteSubject,
                         tekst = event.noteContent,
                         zaakUrl = zaakUrl,
                         aangemaaktDoor = event.noteCreatedByUserFullName
@@ -69,7 +69,7 @@ class ZaakNotitieService(
                     zakenApiPluginInstanceFor(zaakUrl)?.let { zakenApiPlugin ->
                         zakenApiPlugin.updateZaakNotitie(
                             zaakNotitieUrl = zaakNotitieLink.zaakNotitieUrl,
-                            onderwerp = ZAAK_NOTITIE_ONDERWERP,
+                            onderwerp = zakenApiPlugin.noteSubject,
                             tekst = event.noteContent,
                             zaakUrl = zaakUrl
                         ).also {
@@ -126,7 +126,5 @@ class ZaakNotitieService(
 
     companion object {
         private val logger = KotlinLogging.logger {}
-
-        private const val ZAAK_NOTITIE_ONDERWERP = "Note synced from Valtimo GZAC"
     }
 }

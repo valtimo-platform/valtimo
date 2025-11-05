@@ -21,6 +21,7 @@ interface ZakenApiConfig extends PluginConfigurationData {
   url: string;
   authenticationPluginConfiguration: string;
   noteEventListenerEnabled?: boolean;
+  noteSubject?: string;
 }
 
 interface LinkDocumentToZaakConfig {

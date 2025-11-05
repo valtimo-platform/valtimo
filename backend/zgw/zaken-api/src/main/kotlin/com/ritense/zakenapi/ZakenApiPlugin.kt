@@ -124,6 +124,14 @@ class ZakenApiPlugin(
     )
     var noteEventListenerEnabled: Boolean = false
 
+    @PluginProperty(
+        key = "noteSubject",
+        title = "Contains the fixed value for 'onderwerp' of the ZaakNotitie",
+        required = false,
+        secret = false
+    )
+    var noteSubject: String = "Note created in Valtimo GZAC"
+
     @PluginAction(
         key = "link-document-to-zaak",
         title = "Link Documenten API document to Zaak",
