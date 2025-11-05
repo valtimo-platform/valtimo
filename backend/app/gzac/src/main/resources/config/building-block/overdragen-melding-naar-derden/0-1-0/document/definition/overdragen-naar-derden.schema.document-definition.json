@@ -1,0 +1,65 @@
+{
+    "$id": "overdragen-naar-derden.schema",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Overdragen naar derden",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "overdrachtNaarDerden": {
+            "type": "array",
+            "items": {
+                "overdrachtNaarDerden": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "overdracht": {
+                            "type": "object",
+                            "properties": {
+                                "overgedragenDoor": {
+                                    "type": "string"
+                                },
+                                "overgedragenNaar": {
+                                    "type": "string"
+                                },
+                                "overgedragenOp": {
+                                    "type": "string"
+                                },
+                                "emailBetrokkenPartij": {
+                                    "type": "string"
+                                },
+                                "categorieBetrokkenPartij": {
+                                    "type": "string"
+                                },
+                                "toelichtingNaarBetrokkenPartij": {
+                                    "type": "string"
+                                },
+                                "terugkoppelingGewenst": {
+                                    "type": "boolean"
+                                },
+                                "toelichtingNaarMelder": {
+                                    "type": "string"
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "terugkoppeling": {
+                            "type": "object",
+                            "properties": {
+                                "terugkoppelingVanBetrokkenPartij": {
+                                    "type": "string"
+                                },
+                                "terugkoppelingOntvangenOp": {
+                                    "type": "string"
+                                },
+                                "terugkoppelingDocumenten": {
+                                    "type": "array"
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
