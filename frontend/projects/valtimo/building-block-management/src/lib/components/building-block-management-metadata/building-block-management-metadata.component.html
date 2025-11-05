@@ -20,20 +20,20 @@
   </h4>
 
   <div class="cds--text-input__field-wrapper">
-    <cds-label [disabled]="formGroup.disabled" [invalid]="title.touched && title.invalid">
+    <cds-label [disabled]="formGroup.disabled" [invalid]="name.touched && name.invalid">
       <span class="label-with-tooltip select-label">
-        {{ 'buildingBlockManagement.createDefinition.title' | translate }}
+        {{ 'buildingBlockManagement.createDefinition.name' | translate }}
 
         <v-tooltip-icon
-          [tooltip]="'buildingBlockManagement.createDefinition.titleTooltip' | translate"
+          [tooltip]="'buildingBlockManagement.createDefinition.nameTooltip' | translate"
           [disabled]="formGroup.disabled"
         ></v-tooltip-icon>
       </span>
 
       <input
-        formControlName="title"
+        formControlName="name"
         cdsText
-        placeholder="{{ 'buildingBlockManagement.createDefinition.titlePlaceholder' | translate }}"
+        placeholder="{{ 'buildingBlockManagement.createDefinition.namePlaceholder' | translate }}"
       />
     </cds-label>
   </div>

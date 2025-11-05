@@ -53,7 +53,7 @@ export class BuildingBlockManagementListComponent {
   );
 
   public readonly FIELDS: ColumnConfig[] = [
-    {key: 'title', label: 'buildingBlockManagement.listColumns.title'},
+    {key: 'name', label: 'buildingBlockManagement.listColumns.name'},
     {key: 'key', label: 'buildingBlockManagement.listColumns.key'},
     {
       key: 'versionTag',

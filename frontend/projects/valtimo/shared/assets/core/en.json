@@ -2037,7 +2037,7 @@
   "buildingBlockManagement": {
     "title": "Building blocks",
     "listColumns": {
-      "title": "Title",
+      "name": "Name",
       "key": "Key",
       "versionTag": "Version"
     },
@@ -2050,9 +2050,9 @@
     },
     "createDefinition": {
       "modalTitle": "Create building block",
-      "title": "Title",
-      "titleTooltip": "The name of the building block.",
-      "titlePlaceholder": "Enter title",
+      "name": "Name",
+      "nameTooltip": "The name of the building block.",
+      "namePlaceholder": "Enter name",
       "keyTitle": "Key",
       "keyPlaceHolder": "The key is generated here automatically",
       "version": "Version",
