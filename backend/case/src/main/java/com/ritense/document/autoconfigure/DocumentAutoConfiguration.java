@@ -25,7 +25,7 @@ import com.ritense.document.domain.impl.listener.DocumentRelatedFileSubmittedEve
 import com.ritense.document.domain.impl.listener.RelatedJsonSchemaDocumentAvailableEventListenerImpl;
 import com.ritense.document.domain.impl.sequence.JsonSchemaDocumentDefinitionSequenceRecord;
 import com.ritense.document.exporter.JsonSchemaDocumentDefinitionExporter;
-import com.ritense.document.importer.JsonSchemaDocumentDefinitionImporter;
+import com.ritense.document.importer.CaseJsonSchemaDocumentDefinitionImporter;
 import com.ritense.document.listener.DocumentDefinitionCaseEventListener;
 import com.ritense.document.repository.DocumentDefinitionRepository;
 import com.ritense.document.repository.DocumentDefinitionSequenceRepository;
@@ -139,10 +139,10 @@ public class DocumentAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
+    public CaseJsonSchemaDocumentDefinitionImporter documentDefinitionImporter(
         JsonSchemaDocumentDefinitionService jsonSchemaDocumentDefinitionService
     ) {
-        return new JsonSchemaDocumentDefinitionImporter(
+        return new CaseJsonSchemaDocumentDefinitionImporter(
             jsonSchemaDocumentDefinitionService
         );
     }

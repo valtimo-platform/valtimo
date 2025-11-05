@@ -37,8 +37,8 @@ import java.time.LocalDateTime
 data class BuildingBlockDefinition(
     @EmbeddedId
     val id: BuildingBlockDefinitionId,
-    @Column(name = "title")
-    val title: String,
+    @Column(name = "name")
+    val name: String,
     @Column(name = "description")
     val description: String? = null,
     @CreatedBy
@@ -59,7 +59,7 @@ data class BuildingBlockDefinition(
         return BuildingBlockDefinitionDto(
             key = this.id.key,
             versionTag = this.id.versionTag.toString(),
-            title = this.title,
+            name = this.name,
             description = this.description,
             createdBy = this.createdBy,
             createdDate = this.createdDate,

@@ -16,6 +16,6 @@
 
 package com.ritense.valtimo.event
 
-import com.ritense.valtimo.contract.case_.CaseDefinitionId
+import com.ritense.valtimo.contract.SolutionModuleId
 
-data class ProcessDefinitionDeleted(val processDefinitionId: String, val caseDefinitionId: CaseDefinitionId?)
+data class ProcessDefinitionDeleted(val processDefinitionId: String, val solutionModuleId: SolutionModuleId?)

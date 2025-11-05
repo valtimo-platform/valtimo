@@ -18,7 +18,7 @@ package com.ritense.buildingblock.web.rest
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
-import com.ritense.buildingblock.service.BuildingBlockProcessService
+import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockProcessDefinitionWithLinksDto
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
@@ -46,7 +46,7 @@ class BuildingBlockProcessResourceIT @Autowired constructor(
 ) : BaseIntegrationTest() {
 
     @MockitoBean
-    lateinit var buildingBlockProcessService: BuildingBlockProcessService
+    lateinit var buildingBlockProcessService: BuildingBlockDefinitionProcessDefinitionService
 
     private val base = "/api/management/v1/building-block"
     private val key = "bb-key"

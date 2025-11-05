@@ -20,9 +20,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
+import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockManagementService
-import com.ritense.buildingblock.service.BuildingBlockProcessService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.junit.jupiter.api.BeforeEach
@@ -59,7 +59,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     lateinit var buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService
 
     @MockitoBean
-    lateinit var buildingBlockProcessService: BuildingBlockProcessService
+    lateinit var buildingBlockProcessService: BuildingBlockDefinitionProcessDefinitionService
 
     private val base = "/api/management/v1/building-block"
     private val key = "my-bb"
@@ -72,7 +72,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         dto = BuildingBlockDefinitionDto(
             key = key,
             versionTag = version,
-            title = "My Building Block",
+            name = "My Building Block",
             description = "desc",
             createdBy = "tester@ritense.com",
             createdDate = LocalDateTime.now(),
@@ -95,7 +95,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     fun `should return list when elements exist`() {
         val def = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
-            title = "My Building Block",
+            name = "My Building Block",
             description = "desc",
             createdBy = "tester@ritense.com",
             createdDate = LocalDateTime.now(),
@@ -109,7 +109,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
                 status { isOk() }
                 jsonPath("\$[0].key") { value(key) }
                 jsonPath("\$[0].versionTag") { value(version) }
-                jsonPath("\$[0].title") { value("My Building Block") }
+                jsonPath("\$[0].name") { value("My Building Block") }
             }
     }
 
@@ -119,12 +119,12 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         val body = mapOf(
             "key" to key,
             "versionTag" to version,
-            "title" to "My Building Block",
+            "name" to "My Building Block",
             "description" to "desc"
         )
         val saved = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
-            title = "My Building Block",
+            name = "My Building Block",
             description = "desc",
             createdBy = "tester@ritense.com",
             createdDate = LocalDateTime.now(),
@@ -140,7 +140,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             status { isOk() }
             jsonPath("$.key") { value(key) }
             jsonPath("$.versionTag") { value(version) }
-            jsonPath("$.title") { value("My Building Block") }
+            jsonPath("$.name") { value("My Building Block") }
         }
     }
 
@@ -149,7 +149,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     fun `should return 200 when definition exists`() {
         val entity = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
-            title = "My Building Block",
+            name = "My Building Block",
             description = "desc",
             createdBy = "tester@ritense.com",
             createdDate = LocalDateTime.now(),
@@ -163,7 +163,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
                 status { isOk() }
                 jsonPath("$.key") { value(key) }
                 jsonPath("$.versionTag") { value(version) }
-                jsonPath("$.title") { value("My Building Block") }
+                jsonPath("$.name") { value("My Building Block") }
             }
     }
 
@@ -180,10 +180,10 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
     @Test
     @WithMockUser
     fun `should update and return 200 with updated body`() {
-        val body = mapOf("title" to "Updated Title", "description" to "Updated desc")
+        val body = mapOf("name" to "Updated name", "description" to "Updated desc")
         val existing = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
-            title = "My Building Block",
+            name = "My Building Block",
             description = "desc",
             createdBy = "tester@ritense.com",
             createdDate = LocalDateTime.now(),
@@ -192,7 +192,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         )
         val updated = BuildingBlockDefinition(
             id = existing.id,
-            title = "Updated Title",
+            name = "Updated name",
             description = "Updated desc",
             createdBy = existing.createdBy,
             createdDate = existing.createdDate,
@@ -207,7 +207,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
             content = objectMapper.writeValueAsBytes(body)
         }.andExpect {
             status { isOk() }
-            jsonPath("$.title") { value("Updated Title") }
+            jsonPath("$.name") { value("Updated name") }
             jsonPath("$.description") { value("Updated desc") }
         }
     }
@@ -220,7 +220,7 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
 
         mockMvc.put("$base/{k}/version/{v}", key, version) {
             contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsBytes(mapOf("title" to "irrelevant"))
+            content = objectMapper.writeValueAsBytes(mapOf("name" to "irrelevant"))
         }.andExpect { status { isNotFound() } }
     }
 
@@ -230,12 +230,12 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         val body = mapOf(
             "key" to key,
             "versionTag" to version,
-            "title" to "My Building Block",
+            "name" to "My Building Block",
             "description" to "desc"
         )
         val saved = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
-            title = "My Building Block",
+            name = "My Building Block",
             description = "desc",
             createdBy = null,
             createdDate = null,
@@ -258,12 +258,12 @@ class BuildingBlockManagementResourceIT @Autowired constructor(
         val body = mapOf(
             "key" to key,
             "versionTag" to version,
-            "title" to "My Building Block",
+            "name" to "My Building Block",
             "description" to "desc"
         )
         val saved = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(key, Semver.parse(version)!!),
-            title = "My Building Block",
+            name = "My Building Block",
             description = "desc",
             createdBy = null,
             createdDate = null,

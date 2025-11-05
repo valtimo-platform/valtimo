@@ -25,7 +25,7 @@ import java.time.LocalDateTime
 data class BuildingBlockDefinitionDto(
     val key: String,
     val versionTag: String,
-    val title: String,
+    val name: String,
     val description: String?,
     val createdBy: String?,
     val createdDate: LocalDateTime?,
@@ -39,7 +39,7 @@ data class BuildingBlockDefinitionDto(
     fun toEntity(): BuildingBlockDefinition {
         return BuildingBlockDefinition(
             id = getBuildingBlockDefinitionId(),
-            title = title,
+            name = name,
             description = description,
             createdBy = createdBy,
             createdDate = createdDate,

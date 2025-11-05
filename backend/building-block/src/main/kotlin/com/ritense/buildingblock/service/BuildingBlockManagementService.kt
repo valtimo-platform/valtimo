@@ -18,12 +18,15 @@ package com.ritense.buildingblock.service
 
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.buildingblock.domain.definition.BuildingBlockDefinition
+import com.ritense.buildingblock.exception.UnknownBuildingBlockDefinitionException
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.semver4j.Semver
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -31,7 +34,8 @@ import org.springframework.transaction.annotation.Transactional
 class BuildingBlockManagementService(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
     private val buildingBlockDocumentDefinitionService: BuildingBlockDocumentDefinitionService,
-    private val buildingBlockProcessService: BuildingBlockProcessService
+    private val buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+    private val buildingBlockDefinitionChecker: BuildingBlockDefinitionChecker
 ) {
     @Transactional(readOnly = true)
     fun getLatestPerKey(): List<BuildingBlockDefinitionDto> {
@@ -50,7 +54,7 @@ class BuildingBlockManagementService(
             BuildingBlockDefinitionDto(
                 key = it.id.key,
                 versionTag = it.id.versionTag.toString(),
-                title = it.title,
+                name = it.name,
                 description = it.description,
                 createdBy = it.createdBy,
                 createdDate = it.createdDate,
@@ -64,7 +68,7 @@ class BuildingBlockManagementService(
     fun create(dto: CreateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto {
         val entity = BuildingBlockDefinition(
             id = BuildingBlockDefinitionId(dto.key, dto.versionTag),
-            title = dto.title,
+            name = dto.name,
             description = dto.description,
             createdBy = null,
             createdDate = null,
@@ -76,8 +80,8 @@ class BuildingBlockManagementService(
         buildingBlockDocumentDefinitionService.ensureEmptyFor(saved.id.key, saved.id.versionTag.toString())
 
         runWithoutAuthorization {
-            buildingBlockProcessService.createEmptyProcessAndLink(
-                saved.title,
+            buildingBlockDefinitionProcessDefinitionService.createEmptyProcessAndLink(
+                saved.name,
                 saved.id.key,
                 saved.id.versionTag.toString()
             )
@@ -86,7 +90,7 @@ class BuildingBlockManagementService(
         return BuildingBlockDefinitionDto(
             key = saved.id.key,
             versionTag = saved.id.versionTag.toString(),
-            title = saved.title,
+            name = saved.name,
             description = saved.description,
             createdBy = saved.createdBy,
             createdDate = saved.createdDate,
@@ -98,11 +102,14 @@ class BuildingBlockManagementService(
     @Transactional
     fun update(key: String, versionTag: String, dto: UpdateBuildingBlockDefinitionDto): BuildingBlockDefinitionDto? {
         val id = BuildingBlockDefinitionId(key, versionTag)
-        val existing = buildingBlockDefinitionRepository.findById(id).orElse(null) ?: return null
+        val existing = buildingBlockDefinitionRepository.findByIdOrNull(id)
+            ?: throw UnknownBuildingBlockDefinitionException(id)
+
+        buildingBlockDefinitionChecker.assertCanUpdateBuildingBlockDefinition(id)
 
         val updated = BuildingBlockDefinition(
             id = existing.id,
-            title = dto.title,
+            name = dto.name,
             description = dto.description,
             createdBy = existing.createdBy,
             createdDate = existing.createdDate,
@@ -115,12 +122,26 @@ class BuildingBlockManagementService(
         return BuildingBlockDefinitionDto(
             key = saved.id.key,
             versionTag = saved.id.versionTag.toString(),
-            title = saved.title,
+            name = saved.name,
             description = saved.description,
             createdBy = saved.createdBy,
             createdDate = saved.createdDate,
             basedOnVersionTag = saved.basedOnVersionTag?.toString(),
             final = saved.final
         )
+    }
+
+    @Transactional
+    fun finalize(key: String, versionTag: String): BuildingBlockDefinitionDto {
+        val id = BuildingBlockDefinitionId(key, versionTag)
+        val existing = buildingBlockDefinitionRepository.findByIdOrNull(id)
+            ?: throw UnknownBuildingBlockDefinitionException(id)
+
+        if (existing.final) {
+            return existing.toDto()
+        }
+
+        val finalized = buildingBlockDefinitionRepository.save(existing.copy(final = true))
+        return finalized.toDto()
     }
 }

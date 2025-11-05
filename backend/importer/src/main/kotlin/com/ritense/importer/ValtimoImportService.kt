@@ -19,11 +19,13 @@ package com.ritense.importer
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.importer.ImportContext.Companion.runImporter
+import com.ritense.importer.ValtimoImportTypes.Companion.BUILDING_BLOCK_DEFINITION
 import com.ritense.importer.ValtimoImportTypes.Companion.CASE_DEFINITION
 import com.ritense.importer.exception.CyclicImporterDependencyException
 import com.ritense.importer.exception.DuplicateImporterTypeException
 import com.ritense.importer.exception.InvalidImportZipException
 import com.ritense.importer.exception.TooManyImportCandidatesException
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.annotation.AllOpen
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -124,15 +126,18 @@ class ValtimoImportService(
             // If case definition is already imported, don't import the rest of the files for the case definition
             // (so a skip)
 
-            val importerEntriesList = getEntriesByImporter(getEntriesFromResources(resources))
+            val importerEntriesList = getEntriesByImporter(
+                getEntriesFromResources(resources),
+                { importer -> importer.partOfCaseDefinition() }
+            )
             val caseDefinitionId: CaseDefinitionId?
             val caseDefinitionEntries = importerEntriesList
                 .filter { it.key.type() == CASE_DEFINITION }
                 .let {
                     it[it.keys.first()]
                 }
-            val caseDefinitionContent = caseDefinitionEntries?.firstOrNull()?.content ?:
-                throw IllegalStateException("No case definition file found in the provided resources")
+            val caseDefinitionContent = caseDefinitionEntries?.firstOrNull()?.content
+                ?: throw IllegalStateException("No case definition file found in the provided resources")
             val caseDefinitionMap: Map<String, Any> = jacksonObjectMapper()
                 .readValue(caseDefinitionContent)
             caseDefinitionId = CaseDefinitionId(
@@ -161,11 +166,62 @@ class ValtimoImportService(
     }
 
     @Transactional
+    open fun importBuildingBlockDefinition(
+        resources: List<Pair<String, Resource>>,
+        buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
+    ) {
+        runImporter {
+            // If building block definition is already imported, don't import the rest of the files for the building
+            // block definition (so a skip)
+
+            val importerEntriesList = getEntriesByImporter(
+                getEntriesFromResources(resources),
+                { importer -> importer.partOfBuildingBlockDefinition() }
+            )
+            val buildingBlockDefinitionId: BuildingBlockDefinitionId?
+            val buildingBlockDefinitionEntries = importerEntriesList
+                .filter { it.key.type() == BUILDING_BLOCK_DEFINITION }
+                .let {
+                    it[it.keys.first()]
+                }
+            val definitionContent = buildingBlockDefinitionEntries?.firstOrNull()?.content
+                ?: throw IllegalStateException("No building block definition file found in the provided resources")
+            val buildingBlockDefinitionMap: Map<String, Any> = jacksonObjectMapper()
+                .readValue(definitionContent)
+            buildingBlockDefinitionId = BuildingBlockDefinitionId(
+                buildingBlockDefinitionMap["key"] as String,
+                buildingBlockDefinitionMap["versionTag"] as String
+            )
+
+            if (buildingBlockDefinitionIdList.contains(buildingBlockDefinitionId)) {
+                return@runImporter
+            }
+
+            importerEntriesList.filter { it.key.partOfBuildingBlockDefinition() }.forEach { (importer, entries) ->
+                entries.forEach { entry ->
+                    logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
+                    importer.import(ImportRequest(entry.fileName, entry.content, null, buildingBlockDefinitionId))
+                }
+            }
+
+            importerEntriesList.filter { it.key.partOfBuildingBlockDefinition() }.forEach { (importer, entries) ->
+                entries.forEach { entry ->
+                    importer.afterImport(ImportRequest(entry.fileName, entry.content, null, buildingBlockDefinitionId))
+                }
+            }
+        }
+
+    }
+
+    @Transactional
     fun importGlobalDefinitions(
         resources: List<Pair<String, Resource>>
     ) {
         runImporter {
-            val importerEntriesList = getEntriesByImporter(getEntriesFromResources(resources))
+            val importerEntriesList = getEntriesByImporter(
+                getEntriesFromResources(resources),
+                { importer -> !importer.partOfCaseDefinition() && !importer.partOfBuildingBlockDefinition() }
+            )
 
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
@@ -186,7 +242,10 @@ class ValtimoImportService(
     override fun importGlobal(inputStream: InputStream) {
         runImporter {
             val entries = readZipEntries(inputStream)
-            val importerEntriesList = getEntriesByImporter(entries).ifEmpty { return@runImporter }
+            val importerEntriesList = getEntriesByImporter(
+                entries,
+                { importer -> !importer.partOfCaseDefinition() && !importer.partOfBuildingBlockDefinition() }
+            ).ifEmpty { return@runImporter }
 
             importerEntriesList.filter { !it.key.partOfCaseDefinition() }.forEach { (importer, entries) ->
                 entries.forEach { entry ->
@@ -202,11 +261,15 @@ class ValtimoImportService(
         }
     }
 
+    // TODO: provide equivalent for building block definitions
     @Transactional
     override fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>) {
         runImporter {
             val entries = readZipEntries(inputStream)
-            val importerEntriesList = getEntriesByImporter(entries).ifEmpty { return@runImporter }
+            val importerEntriesList = getEntriesByImporter(
+                entries,
+                { importer -> importer.partOfCaseDefinition() }
+            ).ifEmpty { return@runImporter }
             val caseDefinitionId: CaseDefinitionId?
             val filteredImporterEntriesList = importerEntriesList
                 .filter { it.key.type() == CASE_DEFINITION }
@@ -317,9 +380,12 @@ class ValtimoImportService(
      * When no files are provided, an empty list value is mapped.
      * @param entries
      */
-    private fun getEntriesByImporter(entries: List<ZipFileEntry>): LinkedHashMap<Importer, List<ZipFileEntry>> {
+    private fun getEntriesByImporter(
+        entries: List<ZipFileEntry>,
+        filter: (Importer) -> Boolean
+    ): LinkedHashMap<Importer, List<ZipFileEntry>> {
         val entryPairs = entries.mapNotNull { entry ->
-            orderedImporters.filter { importer ->
+            orderedImporters.filter(filter).filter { importer ->
                 importer.supports(entry.fileName)
             }.apply {
                 if (this.isEmpty()) {
