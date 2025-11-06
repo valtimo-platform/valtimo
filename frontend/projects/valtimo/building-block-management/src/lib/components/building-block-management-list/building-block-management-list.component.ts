@@ -25,7 +25,7 @@ import {BuildingBlockDefinitionDto} from '@valtimo/shared';
 import {Upload16} from '@carbon/icons';
 import {Router} from '@angular/router';
 import {BUILDING_BLOCK_MANAGEMENT_TABS} from '../../constants';
-import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload/building-block-management-upload-modal.component';
+import {BuildingBlockManagementUploadModalComponent} from '../building-block-management-upload-modal/building-block-management-upload-modal.component';
 
 @Component({
   standalone: true,
