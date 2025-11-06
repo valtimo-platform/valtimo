@@ -39,6 +39,7 @@ jobs:
     uses: ./.github/workflows/frontend_publish_to_s3.yml
     with:
       publish_type: "snapshot"
+      project_version: ${{ needs.build_and_test_libraries.outputs.project_version }}
       frontend_libraries_build_artifact_name: ${{ needs.build_and_test_libraries.outputs.build_artifact_name }}
     secrets: inherit
 

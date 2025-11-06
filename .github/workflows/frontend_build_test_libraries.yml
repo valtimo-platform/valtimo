@@ -15,6 +15,9 @@ on:
       build_artifact_name:
         description: Build artifact this workflow produces that can be retrieved with the 'download-artifact' action
         value: frontend-build-output
+      project_version:
+        description: Project version, equal to the inputs.project_version if supplied, otherwise computed from branch name
+        value: ${{ inputs.project_version || jobs.build_and_test.outputs.project_version }}
 
 defaults:
   run:
