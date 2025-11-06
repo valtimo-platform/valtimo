@@ -85,7 +85,7 @@ const zakenApiPluginSpecification: PluginSpecification = {
         'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
       noteEventListenerEnabled: 'Synchroniseer Dossier notitie als Zaak-notitie naar de Zaak',
       noteEventListenerEnabledTooltip:
-        'Wanneer geactiveerd zal bij het aanmaken, updaten of verwijderen van een Dossier notitie deze ook als ZaakNotitie worden gesynchroniseerd naar de Zaak (aangemaakt, bijgewerkt of verwijderd).',
+        'Wanneer geactiveerd zal bij het aanmaken, updaten of verwijderen van een Dossier notitie deze ook als Zaak-notitie worden gesynchroniseerd naar de Zaak (aangemaakt, bijgewerkt of verwijderd).',
       'noteEventListenerEnabled.toggleOn': 'Geactiveerd',
       'noteEventListenerEnabled.toggleOff': 'Gedeactiveerd',
       noteSubject: 'De vaste onderwerp tekst van de Zaak-notitie',
