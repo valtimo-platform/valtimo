@@ -1285,7 +1285,7 @@ class ZakenApiPlugin(
     @PluginAction(
         key = "create-zaaknotitie",
         title = "Create zaaknotitie",
-        description = "Creates a new zaaknotitie for the current zaak",
+        description = "Creates a new Zaaknotitie for the current zaak",
         activityTypes = [SERVICE_TASK_START]
     )
     fun createZaakNotitie(
@@ -1379,7 +1379,7 @@ class ZakenApiPlugin(
     @PluginAction(
         key = "patch-zaaknotitie",
         title = "Patch zaaknotitie",
-        description = "Partially updates an existing zaaknotitie",
+        description = "Partially updates an existing Zaaknotitie",
         activityTypes = [SERVICE_TASK_START]
     )
     fun patchZaakNotitie(
@@ -1429,18 +1429,18 @@ class ZakenApiPlugin(
     }
 
     fun deleteZaakNotitie(zaakNotitieUrl: URI) {
-        logger.debug { "Deleting zaaknotitie with URL '$zaakNotitieUrl'" }
+        logger.debug { "Deleting Zaaknotitie with URL '$zaakNotitieUrl'" }
         return client.deleteZaakNotitie(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
             notitieUrl = zaakNotitieUrl
         ).also {
-            logger.info { "Deleted zaaknotitie with URL '$zaakNotitieUrl'" }
+            logger.info { "Deleted Zaaknotitie with URL '$zaakNotitieUrl'" }
         }
     }
 
     fun getZaakNotitie(zaakNotitieUrl: URI): ZaakNotitie {
-        logger.debug { "Fetching zaaknotitie with URL '$zaakNotitieUrl'" }
+        logger.debug { "Fetching Zaaknotitie with URL '$zaakNotitieUrl'" }
         return client.getZaakNotitie(
             authentication = authenticationPluginConfiguration,
             baseUrl = url,
@@ -1449,7 +1449,7 @@ class ZakenApiPlugin(
     }
 
     fun getZaakNotities(zaakUrl: URI): List<ZaakNotitie> {
-        logger.debug { "Fetching zaaknotities for Zaak with URL '$zaakUrl'" }
+        logger.debug { "Fetching Zaaknotities for Zaak with URL '$zaakUrl'" }
         return Page.getAll(100) { page ->
             client.getZaakNotities(
                 authentication = authenticationPluginConfiguration,
