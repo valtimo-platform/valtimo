@@ -16,11 +16,15 @@
 
 package com.ritense.buildingblock.web.rest
 
+import com.ritense.authorization.annotation.RunWithoutAuthorization
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.service.BuildingBlockManagementService
 import com.ritense.buildingblock.web.rest.dto.BuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.CreateBuildingBlockDefinitionDto
 import com.ritense.buildingblock.web.rest.dto.UpdateBuildingBlockDefinitionDto
+import com.ritense.case.web.rest.CaseDefinitionResource.Companion.logger
+import com.ritense.importer.ImportService
+import com.ritense.importer.exception.ImportServiceException
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.domain.ValtimoMediaType.APPLICATION_JSON_UTF8_VALUE
@@ -31,14 +35,17 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @SkipComponentScan
 @RequestMapping("/api/management/v1/building-block", produces = [APPLICATION_JSON_UTF8_VALUE])
 class BuildingBlockManagementResource(
     private val buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-    private val buildingBlockManagementService: BuildingBlockManagementService
+    private val buildingBlockManagementService: BuildingBlockManagementService,
+    private val importService: ImportService
 ) {
     @GetMapping
     fun getBuildingBlockDefinitions(): ResponseEntity<List<BuildingBlockDefinitionDto>> {
@@ -86,5 +93,19 @@ class BuildingBlockManagementResource(
     ): ResponseEntity<BuildingBlockDefinitionDto> {
         val finalized = buildingBlockManagementService.finalize(key, versionTag)
         return ResponseEntity.ok(finalized)
+    }
+
+    @PostMapping("/import")
+    @RunWithoutAuthorization
+    fun import(
+        @RequestParam("file") file: MultipartFile
+    ): ResponseEntity<Unit> {
+        return try {
+            importService.importBuildingBlockDefinitions(file.inputStream, buildingBlockDefinitionRepository.findAll().map { it.id })
+            ResponseEntity.ok().build()
+        } catch (exception: ImportServiceException) {
+            logger.info(exception) { "Import failed" }
+            ResponseEntity.badRequest().build()
+        }
     }
 }

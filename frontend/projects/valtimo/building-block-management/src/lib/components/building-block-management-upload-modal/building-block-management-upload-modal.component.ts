@@ -13,14 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -30,7 +23,7 @@ import {
 } from '@angular/forms';
 import {WarningFilled16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
-import {CARBON_CONSTANTS} from '@valtimo/components';
+import {CARBON_CONSTANTS, runAfterCarbonModalClosed} from '@valtimo/components';
 import {DocumentService} from '@valtimo/document';
 import {
   ButtonModule,
@@ -69,11 +62,8 @@ import {BuildingBlockManagementUploadStepComponent} from './step/building-block-
   ],
 })
 export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDestroy {
-  @Output() closeModal = new EventEmitter<boolean>();
-
   public readonly acceptedFiles: string[] = ['.zip'];
   public readonly showUploadModal$ = this.buildingBlockManagementService.showUploadModal$;
-  public selectedFile: File | null;
 
   private readonly _disabled$ = new BehaviorSubject<boolean>(true);
 
@@ -100,7 +90,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
   ]).pipe(map(([activeStep, disabled]) => activeStep !== UPLOAD_STEP.PLUGINS && disabled));
   public readonly notificationObj$: Observable<NotificationContent> = combineLatest([
     this.translateService.stream('interface.warning'),
-    this.translateService.stream('caseManagement.importDefinition.overwriteWarning'),
+    this.translateService.stream('buildingBlockManagement.importDefinition.overwriteWarning'),
   ]).pipe(
     map(([title, message]) => ({
       type: 'warning',
@@ -150,10 +140,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
           return;
         }
 
-        if (fileItem.file.type === 'application/json') {
-          this.setJsonFile(fileItem);
-          return;
-        }
+        console.log('zip', fileItem);
 
         this.setZipFile(fileItem);
       })
@@ -166,8 +153,14 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
   }
 
   public onCloseModal(definitionUploaded?: boolean): void {
-    this.closeModal.emit(definitionUploaded ?? false);
-    this.resetModal();
+    if (definitionUploaded) {
+    }
+
+    this.buildingBlockManagementService.hideUploadModal();
+
+    runAfterCarbonModalClosed(() => {
+      this.resetModal();
+    });
   }
 
   public onBackClick(activeStep: UPLOAD_STEP): void {
@@ -208,30 +201,6 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
     this.showCheckboxError$.next(false);
   }
 
-  private setJsonFile(fileItem: FileItem | undefined): void {
-    const file = fileItem?.file;
-
-    if (!file) {
-      this.clearJsonString();
-      return;
-    }
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      const result = (reader.result ?? '').toString();
-      if (this.stringIsValidJson(result)) {
-        this._disabled$.next(false);
-        this._importFile$.next(result);
-        return;
-      }
-
-      this.clearJsonString();
-      this.setErrorState(fileItem);
-    };
-
-    reader.readAsText(file);
-  }
-
   private setZipFile(fileItem: FileItem): void {
     const file = fileItem?.file;
 
@@ -251,7 +220,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
     this._disabled$.next(true);
     this._importFile$
       .pipe(
-        switchMap((file: string) =>
+        switchMap((file: FormData) =>
           this.buildingBlockManagementApiService.importBuildingBlockDefinition(file)
         ),
         take(1)
@@ -266,30 +235,6 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
           this._disabled$.next(false);
         },
       });
-  }
-
-  private clearJsonString(): void {
-    this._importFile$.next('');
-  }
-
-  private stringIsValidJson(string: string) {
-    try {
-      JSON.parse(string);
-    } catch (e) {
-      return false;
-    }
-    return true;
-  }
-
-  private setErrorState(fileItem: FileItem): void {
-    this._disabled$.next(true);
-    fileItem.invalid = true;
-    fileItem.invalidTitle = this.translateService.instant(
-      'caseManagement.importDefinition.invalidJsonError.title'
-    );
-    fileItem.invalidText = this.translateService.instant(
-      'caseManagement.importDefinition.invalidJsonError.text'
-    );
   }
 
   private resetModal(): void {

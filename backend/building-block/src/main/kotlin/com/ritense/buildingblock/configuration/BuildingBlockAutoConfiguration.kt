@@ -18,7 +18,6 @@ package com.ritense.buildingblock.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
-import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
@@ -26,6 +25,7 @@ import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfig
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
 import com.ritense.buildingblock.service.BuildingBlockDefinitionDeploymentService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionImporter
+import com.ritense.buildingblock.service.BuildingBlockDefinitionMainProcessDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
@@ -34,6 +34,7 @@ import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitio
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
 import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
+import com.ritense.importer.ImportService
 import com.ritense.importer.ValtimoImportService
 import com.ritense.processlink.mapper.ProcessLinkMapper
 import com.ritense.processlink.service.ProcessDeploymentService
@@ -132,11 +133,13 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockManagementResource::class)
     fun buildingBlockManagementResource(
         buildingBlockDefinitionRepository: BuildingBlockDefinitionRepository,
-        buildingBlockManagementService: BuildingBlockManagementService
+        buildingBlockManagementService: BuildingBlockManagementService,
+        importService: ImportService
     ): BuildingBlockManagementResource {
         return BuildingBlockManagementResource(
             buildingBlockDefinitionRepository,
-            buildingBlockManagementService
+            buildingBlockManagementService,
+            importService
         )
     }
 
