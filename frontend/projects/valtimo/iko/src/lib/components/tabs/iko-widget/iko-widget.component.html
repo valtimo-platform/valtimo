@@ -14,8 +14,8 @@
   ~ limitations under the License.
   -->
 <valtimo-widget-container
+  fitPage
   class="iko-widget-container"
-  [class.iko-widget-container--compact]="compactMode$ | async"
   [widgets]="widgets$ | async"
   [widgetComponentMap]="widgetComponentMap"
   [widgetParams]="widgetParams$ | async"
