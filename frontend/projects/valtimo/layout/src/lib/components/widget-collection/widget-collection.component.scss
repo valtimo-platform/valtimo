@@ -21,6 +21,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
+    margin: 0;
+  }
+
+  &__label .cds--text-input-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 32px;
   }
 
   &__header {
@@ -56,24 +64,31 @@
     background-color: var(--cds-background);
     padding: 16px;
     width: 100%;
-    gap: 16px;
+    gap: 12px;
+
+    &-title {
+      color: var(--cds-text-primary);
+      font-weight: 500;
+      font-size: 14px;
+      line-height: 22px;
+      font-style: italic;
+      width: 100%;
+    }
+
+    &-content {
+      width: 100%;
+      padding-left: 16px;
+      border-left: 1px solid var(--cds-border-subtle-01);
+    }
+
+    &-input {
+      background: transparent;
+      border: none;
+    }
 
     &--hidden {
       visibility: hidden;
     }
-  }
-
-  &__card-title {
-    color: var(--cds-text-primary);
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 22px;
-    font-style: italic;
-    width: 100%;
-  }
-
-  &__card-input {
-    background: transparent;
   }
 
   &__full-width-input {

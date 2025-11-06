@@ -42,9 +42,9 @@
       </valtimo-carbon-list>
 
       <cds-pagination-nav
-        *ngIf="paginationModel() && showPagination()"
+        *ngIf="$paginationModel() && $showPagination()"
         class="valtimo-widget-table__pagination"
-        [model]="paginationModel()"
+        [model]="$paginationModel()"
         (selectPage)="onSelectPage($event)"
       >
       </cds-pagination-nav>

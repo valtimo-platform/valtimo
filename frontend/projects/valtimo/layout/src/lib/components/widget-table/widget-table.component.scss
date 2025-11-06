@@ -63,7 +63,8 @@
     }
 
     tr {
-      gap: 16px;
+      gap: 12px;
+      height: 32px;
     }
   }
 
@@ -75,10 +76,10 @@
 
   &--transparent {
     background: transparent !important;
+    border: none !important;
   }
 
   &--title {
-    border: none !important;
     font-style: italic;
   }
 

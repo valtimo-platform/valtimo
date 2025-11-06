@@ -27,7 +27,7 @@
   &__column {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 8px;
     width: 100%;
     overflow: hidden;
 
@@ -53,8 +53,9 @@
 
   &__field {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
-    flex-direction: column;
     gap: 8px;
 
     &--compact {
@@ -76,7 +77,6 @@
     &-value {
       color: var(--cds-text-primary);
       padding: 8px 16px;
-      border-bottom: 1px solid var(--cds-border-subtle-01);
       font-size: 14px;
 
       &--compact {
@@ -95,6 +95,11 @@
 }
 
 .widget-field__render {
+  > * {
+    padding-left: 16px;
+    border-left: 1px solid var(--cds-border-subtle-01);
+  }
+
   &-vertically,
   &-two-columns,
   &-three-columns {
