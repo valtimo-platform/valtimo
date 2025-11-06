@@ -84,3 +84,9 @@
 v-input {
   width: 100%;
 }
+
+::ng-deep .multiple-search-fields {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+}

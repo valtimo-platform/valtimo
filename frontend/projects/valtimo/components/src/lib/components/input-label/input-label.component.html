@@ -23,8 +23,6 @@
 >
   <cds-label
     [disabled]="disabled"
-    [invalid]="!!errorKey"
-    [invalidText]="errorKey ? (errorKey | translate) : ''"
   >
     <span class="label-with-tooltip">
       {{ displayTitle$ | async }}

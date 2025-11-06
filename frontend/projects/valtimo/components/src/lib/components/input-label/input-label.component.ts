@@ -31,7 +31,6 @@ export class InputLabelComponent {
   @Input() public largeMargin = false;
   @Input() public small = false;
   @Input() public noMargin = false;
-  @Input() public errorKey: string | null = null;
 
   @Input() public set title(value: string) {
     this._title$.next(value);

@@ -60,8 +60,14 @@
       searchFieldTemplateNumber;
       context: {
         searchField: searchField
-      }
-    "
+      }"
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="
+      searchFieldTemplateNumberRange;
+      context: {
+        searchField: searchField,
+    }"
   ></ng-container>
   <ng-container
     *ngTemplateOutlet="
@@ -82,14 +88,6 @@
   <ng-container
     *ngTemplateOutlet="
       searchFieldTemplateDateTime;
-      context: {
-        searchField: searchField
-      }
-    "
-  ></ng-container>
-  <ng-container
-    *ngTemplateOutlet="
-      searchFieldTemplateNumberRange;
       context: {
         searchField: searchField
       }
@@ -154,7 +152,7 @@
     *ngIf="searchField.dataType === 'text' && searchField.fieldType === 'single'"
     [dataTestId]="'iko-search-field-' + searchField.key"
     [name]="searchField.key"
-    [title]="searchField.title"
+    [placeholder]="searchField.title"
     [fullWidth]="true"
     [disabled]="inputDisabled"
     [(ngModel)]="formValues[searchField.key]"
@@ -172,7 +170,7 @@
       type="number"
       [dataTestId]="'iko-search-field-' + searchField.key"
       [name]="searchField.key"
-      [title]="searchField.title"
+      [placeholder]="searchField.title"
       [hideNumberSpinBox]="true"
       [(ngModel)]="formValues[searchField.key]"
       ngDefaultControl
@@ -181,12 +179,48 @@
 </ng-template>
 
 <ng-template
+  #searchFieldTemplateNumberRange
+  let-searchField="searchField"
+>
+  <ng-container *ngIf="searchField.dataType === 'number' && searchField.fieldType === 'range'">
+    <v-input-label
+      [title]="searchField.title"
+      [small]="true"
+    ></v-input-label>
+
+    <v-form class="multiple-search-fields">
+      <v-input
+        name="start"
+        type="number"
+        [hideNumberSpinBox]="true"
+        [fullWidth]="true"
+        [(ngModel)]="formValues[searchField.key + '_start']"
+        ngDefaultControl
+      ></v-input>
+
+      <div class="to-text">
+        <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+      </div>
+
+      <v-input
+        name="end"
+        type="number"
+        [hideNumberSpinBox]="true"
+        [fullWidth]="true"
+        [(ngModel)]="formValues[searchField.key + '_end']"
+        ngDefaultControl
+      ></v-input>
+    </v-form>
+  </ng-container>
+</ng-template>
+
+<ng-template
   #searchFieldTemplateDate
   let-searchField="searchField"
 >
   <v-date-picker
     *ngIf="searchField.dataType === 'date' && searchField.fieldType === 'single'"
-    [title]="searchField.title"
+    [placeholder]="searchField.title"
     [(ngModel)]="formValues[searchField.key]"
     ngDefaultControl
   ></v-date-picker>
@@ -198,12 +232,11 @@
 >
   <v-date-picker
     *ngIf="searchField.dataType === 'datetime' && searchField.fieldType === 'single'"
-    [title]="searchField.title"
+    [placeholder]="searchField.title"
     [(ngModel)]="formValues[searchField.key]"
     ngDefaultControl
   ></v-date-picker>
 </ng-template>
-
 
 <ng-template
     #searchFieldTemplateBoolean
@@ -215,6 +248,7 @@
       [(ngModel)]="formValues[searchField.key]"
     ></v-input-label>
     <v-select
+      [placeholder]="searchField.title"
       [items]="searchField.dropdownList"
       [name]="searchField.key"
       [(ngModel)]="formValues[searchField.key]"
@@ -237,6 +271,12 @@
     ngDefaultControl
   >
   </v-input>
+</ng-template>
+
+<ng-template #toText>
+  <div class="to-text">
+    <v-paragraph>{{ 'searchFields.to' | translate }}</v-paragraph>
+  </div>
 </ng-template>
 
 

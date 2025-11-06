@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {AsyncPipe, CommonModule, NgTemplateOutlet} from '@angular/common';
+import {AsyncPipe, CommonModule, NgIf, NgTemplateOutlet} from '@angular/common';
 import {Component, OnDestroy} from '@angular/core';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Search16} from '@carbon/icons';
 import {TranslateModule} from '@ngx-translate/core';
-import {CarbonListModule, PageTitleService, InputModule, DatePickerModule, SelectModule} from '@valtimo/components';
+import {CarbonListModule, PageTitleService, InputModule, DatePickerModule, SelectModule, ParagraphModule} from '@valtimo/components';
 import {ButtonModule, IconModule, IconService} from 'carbon-components-angular';
 import {combineLatest, filter, map, Observable, of, switchMap} from 'rxjs';
 import {IkoDataRequestUser} from '../../models';
@@ -47,6 +47,11 @@ import {validateBsn} from '@valtimo/shared';
     InputModule,
     SelectModule,
     DatePickerModule,
+    NgTemplateOutlet,
+    InputModule,
+    NgIf,
+    NgTemplateOutlet,
+    ParagraphModule,
   ],
 })
 export class IkoSearchComponent implements OnDestroy {
@@ -104,7 +109,7 @@ export class IkoSearchComponent implements OnDestroy {
     return param && param.group === true && Array.isArray(param.fields);
   }
 
-  public searchGroup(paramKey: string, params: {key: string; dataType?: string}[]): void {
+  public searchGroup(paramKey: string, params: { key: string; dataType?: string; fieldType?: string }[]): void {
     let invalidBsnFound = false;
 
     for (const param of params) {
@@ -129,9 +134,26 @@ export class IkoSearchComponent implements OnDestroy {
     }
 
     const queryParams: Record<string, string> = {};
+
     for (const param of params) {
-      const value = this.formValues[param.key];
-      if (value) queryParams[param.key] = value;
+      if (param.dataType === 'number' && param.fieldType === 'range') {
+        const start = this.formValues[param.key + '_start'];
+        const end = this.formValues[param.key + '_end'];
+
+        if (start || end) {
+          queryParams[param.key] = JSON.stringify({ start, end });
+        }
+      } else if ((param.dataType === 'date' || param.dataType === 'datetime') && param.fieldType === 'range') {
+        const start = this.formValues[param.key + '_start'];
+        const end = this.formValues[param.key + '_end'];
+
+        if (start || end) {
+          queryParams[param.key] = JSON.stringify({ start, end });
+        }
+      } else {
+        const value = this.formValues[param.key];
+        if (value) queryParams[param.key] = value;
+      }
     }
 
     this.router.navigate([`${paramKey}`], { relativeTo: this.route, queryParams });

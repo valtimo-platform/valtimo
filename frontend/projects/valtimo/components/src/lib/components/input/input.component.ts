@@ -73,7 +73,6 @@ export class InputComponent implements OnInit, OnChanges, OnDestroy {
   @Input() public trim: boolean = false;
   @Input() public presetsTitle: string = 'Presets';
   @Input() public presetOptions: string[] = [];
-  @Input() public errorKey: string | null = null;
 
   @Output() public valueChange: EventEmitter<any> = new EventEmitter();
 
