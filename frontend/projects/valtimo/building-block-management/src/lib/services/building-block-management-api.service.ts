@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {HttpClient, HttpErrorResponse, HttpHeaders} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {
   BaseApiService,
@@ -106,8 +106,10 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     );
   }
 
-  public importBuildingBlockDefinition(file: string): Observable<null> {
-    console.log('import', file);
-    return of(null);
+  public importBuildingBlockDefinition(file: FormData): Observable<HttpResponse<Blob>> {
+    return this.httpClient.post<HttpResponse<Blob>>(
+      this.getApiUrl(`management/v1/building-block/import`),
+      file
+    );
   }
 }
