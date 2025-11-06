@@ -16,9 +16,8 @@
 
 package com.ritense.valtimo.dashboard
 
-import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import com.ritense.valtimo.contract.dashboard.WidgetDataSource
-import com.ritense.valtimo.contract.repository.ExpressionOperator
+import com.ritense.valtimo.operaton.repository.OperatonTaskRepository
 import com.ritense.valtimo.service.OperatonTaskService
 import jakarta.persistence.criteria.CriteriaBuilder
 import jakarta.persistence.criteria.Expression
@@ -31,7 +30,8 @@ class TaskWidgetDataSource(
 ) {
     @WidgetDataSource("task-count", "Task count")
     fun getTaskCount(taskCountDataSourceProperties: TaskCountDataSourceProperties): TaskCountDataResult {
-        val taskSpec = getAuthorizationSpecification(taskCountDataSourceProperties)
+        val taskSpec = getAuthorizationSpecification()
+
         val spec = taskSpec.and { root, _, criteriaBuilder ->
             criteriaBuilder.and(
                 *taskCountDataSourceProperties.conditions?.map {
@@ -45,25 +45,8 @@ class TaskWidgetDataSource(
         return TaskCountDataResult(count, total)
     }
 
-    private fun getAuthorizationSpecification(taskCountDataSourceProperties: TaskCountDataSourceProperties) =
-
-            taskCountDataSourceProperties.queryConditions?.firstOrNull { con ->
-                con.queryPath == "task:assignee" && con.queryOperator == ExpressionOperator.EQUAL_TO
-            }?.let {
-                return when (it.queryValue) {
-                    "\${currentUserIdentifier}" -> {
-                        operatonTaskService.getFilteredViewListSpecification(OperatonTaskService.TaskFilter.MINE)
-                    }
-
-                    "\${null}" -> {
-                        operatonTaskService.getFilteredViewListSpecification(OperatonTaskService.TaskFilter.OPEN)
-                    }
-
-                    else -> {
-                        operatonTaskService.getFilteredViewListSpecification(OperatonTaskService.TaskFilter.ALL)
-                    }
-                }
-            } ?: operatonTaskService.getFilteredViewListSpecification(OperatonTaskService.TaskFilter.ALL)
+    private fun getAuthorizationSpecification() =
+        operatonTaskService.getFilteredViewListSpecification(OperatonTaskService.TaskFilter.ALL)
 
     private fun <T> getPathExpression(
         valueClass: Class<T>,
