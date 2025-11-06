@@ -105,4 +105,9 @@ export class BuildingBlockManagementApiService extends BaseApiService {
       this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/process-definition`)
     );
   }
+
+  public importBuildingBlockDefinition(file: string): Observable<null> {
+    console.log('import', file);
+    return of(null);
+  }
 }
