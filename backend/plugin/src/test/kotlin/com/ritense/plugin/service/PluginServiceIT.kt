@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,9 @@ import com.ritense.plugin.autodeployment.AutoDeploymentTestPlugin
 import com.ritense.plugin.autodeployment.PluginAutoDeploymentDto
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginDefinition
 import com.ritense.plugin.domain.PluginProcessLink
-import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.exception.PluginEventInvocationException
 import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
@@ -162,13 +162,14 @@ internal class PluginServiceIT : BaseIntegrationTest() {
     @Transactional
     fun `should invoke an action on the plugin with void return type`() {
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
+            id = UUID.randomUUID(),
             processDefinitionId = UUID.randomUUID().toString(),
             activityId = "test",
-            pluginConfigurationId = pluginConfiguration.id,
-            pluginActionDefinitionKey = "test-action",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
             actionProperties = objectMapper.readTree("{}") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            pluginConfigurationId = pluginConfiguration.id,
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action"
         )
 
         val execution = mock<DelegateExecution>()
@@ -181,13 +182,14 @@ internal class PluginServiceIT : BaseIntegrationTest() {
     @Transactional
     fun `should invoke a user task create action on the plugin with void return type`() {
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
+            id = UUID.randomUUID(),
             processDefinitionId = UUID.randomUUID().toString(),
             activityId = "test",
-            pluginConfigurationId = pluginConfiguration.id,
-            pluginActionDefinitionKey = "test-action-task",
+            activityType = ActivityTypeWithEventName.USER_TASK_CREATE,
             actionProperties = objectMapper.readTree("{}") as ObjectNode,
-            activityType = ActivityTypeWithEventName.USER_TASK_CREATE
+            pluginConfigurationId = pluginConfiguration.id,
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action-task"
         )
 
         val execution = mock<DelegateExecution>()
@@ -204,13 +206,14 @@ internal class PluginServiceIT : BaseIntegrationTest() {
     @Transactional
     fun `should invoke an action on the plugin with return type`() {
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
+            id = UUID.randomUUID(),
             processDefinitionId = UUID.randomUUID().toString(),
             activityId = "test",
-            pluginConfigurationId = pluginConfiguration.id,
-            pluginActionDefinitionKey = "other-test-action",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
             actionProperties = objectMapper.readTree("""{"someString": "test123"}""") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            pluginConfigurationId = pluginConfiguration.id,
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "other-test-action"
         )
 
         val execution = mock<DelegateExecution>()
@@ -225,13 +228,14 @@ internal class PluginServiceIT : BaseIntegrationTest() {
     @Transactional
     fun `should invoke an action with a placeholder value on the plugin`() {
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
+            id = UUID.randomUUID(),
             processDefinitionId = UUID.randomUUID().toString(),
             activityId = "test",
-            pluginConfigurationId = pluginConfiguration.id,
-            pluginActionDefinitionKey = "other-test-action",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
             actionProperties = objectMapper.readTree("""{"someString": "pv:placeholder"}""") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            pluginConfigurationId = pluginConfiguration.id,
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "other-test-action"
         )
 
         val testPlugin = spy(TestPlugin("someString"))
@@ -253,13 +257,14 @@ internal class PluginServiceIT : BaseIntegrationTest() {
     @Transactional
     fun `should handle plugin action property with leading 0`() {
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
+            id = UUID.randomUUID(),
             processDefinitionId = UUID.randomUUID().toString(),
             activityId = "test",
-            pluginConfigurationId = pluginConfiguration.id,
-            pluginActionDefinitionKey = "other-test-action",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
             actionProperties = objectMapper.readTree("""{"someString": "01234"}""") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            pluginConfigurationId = pluginConfiguration.id,
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "other-test-action"
         )
 
         val testPlugin = spy(TestPlugin("someString"))
@@ -280,12 +285,13 @@ internal class PluginServiceIT : BaseIntegrationTest() {
     @Transactional
     fun `should fail when invoking an action with missing required parameter`() {
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
+            id = UUID.randomUUID(),
             processDefinitionId = UUID.randomUUID().toString(),
             activityId = "test",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
             pluginConfigurationId = pluginConfiguration.id,
-            pluginActionDefinitionKey = "other-test-action",
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "other-test-action"
         )
 
         assertFailsWith<InvocationTargetException>(
@@ -299,13 +305,14 @@ internal class PluginServiceIT : BaseIntegrationTest() {
     @Transactional
     fun `should invoke an action on the plugin with a URI inside a resolved parameter`() {
         val processLink = PluginProcessLink(
-            PluginProcessLinkId.newId(),
+            id = UUID.randomUUID(),
             processDefinitionId = UUID.randomUUID().toString(),
             activityId = "test",
-            pluginConfigurationId = pluginConfiguration.id,
-            pluginActionDefinitionKey = "test-action-with-uri-parameter",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
             actionProperties = objectMapper.readTree("""{"uriParam": "pv:exampleUrl"}""") as ObjectNode,
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START
+            pluginConfigurationId = pluginConfiguration.id,
+            pluginConfigurationReference = PluginConfigurationReference(),
+            pluginActionDefinitionKey = "test-action-with-uri-parameter"
         )
 
         val execution = mock<DelegateExecution>()

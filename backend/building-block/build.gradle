@@ -53,6 +53,7 @@ dependencies {
     implementation project(":process-document")
     implementation project(":case")
     implementation project(":process-link")
+    implementation project(":plugin")
 
     api "org.springframework.security:spring-security-core"
     api "org.springframework.boot:spring-boot"

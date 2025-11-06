@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.plugin.repository.PluginProcessLinkRepositoryImpl
 import com.ritense.plugin.repository.PluginPropertyRepository
 import com.ritense.plugin.security.config.PluginHttpSecurityConfigurer
+import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.plugin.service.EncryptionService
 import com.ritense.plugin.service.PluginConfigurationListener
 import com.ritense.plugin.service.PluginService
@@ -54,6 +55,7 @@ import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import java.util.Optional
 
 @AutoConfiguration
 @EnableJpaRepositories(
@@ -127,6 +129,7 @@ class PluginAutoConfiguration {
         encryptionService: EncryptionService,
         environment: Environment,
         caseDefinitionChecker: CaseDefinitionChecker,
+        buildingBlockPluginConfigurationResolver: Optional<BuildingBlockPluginConfigurationResolver>,
     ): PluginService {
         return PluginService(
             pluginDefinitionRepository,
@@ -142,6 +145,7 @@ class PluginAutoConfiguration {
             encryptionService,
             environment,
             caseDefinitionChecker,
+            buildingBlockPluginConfigurationResolver,
         )
     }
 

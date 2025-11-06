@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-package com.ritense.plugin.web.rest.request
+package com.ritense.buildingblock.processlink.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.plugin.domain.PluginConfigurationReferenceType
-import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
+import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.processlink.web.rest.dto.ProcessLinkUpdateRequestDto
 import java.util.UUID
 
-@JsonTypeName(PROCESS_LINK_TYPE_PLUGIN)
-data class PluginProcessLinkUpdateDto(
+@JsonTypeName(BuildingBlockProcessLink.PROCESS_LINK_TYPE)
+data class BuildingBlockProcessLinkUpdateRequestDto(
     override val id: UUID,
-    val pluginConfigurationId: UUID? = null,
-    val pluginActionDefinitionKey: String,
-    val actionProperties: ObjectNode? = null,
-    val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
-    val pluginDefinitionKey: String? = null
+    val buildingBlockDefinitionKey: String,
+    val buildingBlockDefinitionVersionTag: String,
+    val pluginConfigurationMappings: Map<String, UUID>
 ) : ProcessLinkUpdateRequestDto {
     override val processLinkType: String
-        get() = PROCESS_LINK_TYPE_PLUGIN
+        get() = BuildingBlockProcessLink.PROCESS_LINK_TYPE
 }

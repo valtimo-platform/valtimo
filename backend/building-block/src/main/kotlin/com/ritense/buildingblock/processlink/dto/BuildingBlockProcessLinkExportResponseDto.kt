@@ -14,27 +14,20 @@
  * limitations under the License.
  */
 
-package com.ritense.valtimo.processlink.mapper
+package com.ritense.buildingblock.processlink.dto
 
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import com.fasterxml.jackson.databind.node.ObjectNode
-import com.ritense.plugin.domain.PluginConfigurationReferenceType
-import com.ritense.plugin.service.PluginService.Companion.PROCESS_LINK_TYPE_PLUGIN
+import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.web.rest.dto.ProcessLinkExportResponseDto
 import java.util.UUID
 
-@JsonTypeName(PROCESS_LINK_TYPE_PLUGIN)
-class PluginProcessLinkExportResponseDto(
+@JsonTypeName(BuildingBlockProcessLink.PROCESS_LINK_TYPE)
+data class BuildingBlockProcessLinkExportResponseDto(
     override val activityId: String,
     override val activityType: ActivityTypeWithEventName,
-    val pluginConfigurationId: UUID? = null,
-    val pluginActionDefinitionKey: String,
-    val actionProperties: ObjectNode? = JsonNodeFactory.instance.objectNode(),
-    val referenceType: PluginConfigurationReferenceType = PluginConfigurationReferenceType.FIXED,
-    val pluginDefinitionKey: String? = null,
-) : ProcessLinkExportResponseDto {
-    override val processLinkType: String
-        get() = PROCESS_LINK_TYPE_PLUGIN
-}
+    val buildingBlockDefinitionKey: String,
+    val buildingBlockDefinitionVersionTag: String,
+    val pluginConfigurationMappings: Map<String, UUID>,
+    override val processLinkType: String = BuildingBlockProcessLink.PROCESS_LINK_TYPE
+) : ProcessLinkExportResponseDto
