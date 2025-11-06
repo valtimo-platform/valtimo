@@ -202,7 +202,7 @@ class BuildingBlockAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockProcessLinkMapper::class)
-    fun caseBuildingBlockProcessLinkMapper(
+    fun buildingBlockProcessLinkMapper(
         objectMapper: ObjectMapper,
         processLinkService: ProcessLinkService,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
@@ -210,7 +210,7 @@ class BuildingBlockAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockSupportedProcessLinksHandler::class)
-    fun caseBuildingBlockSupportedProcessLinksHandler() = BuildingBlockSupportedProcessLinksHandler()
+    fun buildingBlockSupportedProcessLinksHandler() = BuildingBlockSupportedProcessLinksHandler()
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockPluginConfigurationResolver::class)
@@ -219,7 +219,7 @@ class BuildingBlockAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockCallActivityListener::class)
-    fun caseBuildingBlockCallActivityListener(
+    fun buildingBlockCallActivityListener(
         processLinkService: ProcessLinkService,
         buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?
     ) = BuildingBlockCallActivityListener(processLinkService, buildingBlockPluginConfigurationResolver)

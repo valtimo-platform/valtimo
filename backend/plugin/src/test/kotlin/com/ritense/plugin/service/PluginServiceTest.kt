@@ -447,6 +447,49 @@ internal class PluginServiceTest {
     }
 
     @Test
+    fun `should throw when building block resolver cannot resolve configuration`() {
+        val resolver = mock<BuildingBlockPluginConfigurationResolver>()
+        val pluginServiceWithResolver = spy(
+            PluginService(
+                pluginDefinitionRepository,
+                pluginConfigurationRepository,
+                pluginActionDefinitionRepository,
+                pluginProcessLinkRepository,
+                listOf(pluginFactory),
+                MapperSingleton.get(),
+                valueResolverService,
+                pluginConfigurationSearchRepository,
+                Validation.buildDefaultValidatorFactory().validator,
+                applicationEventPublisher,
+                encryptionService,
+                environment,
+                mock(),
+                Optional.of(resolver)
+            )
+        )
+
+        val execution = mock<DelegateExecution>()
+        whenever(resolver.resolve(execution, "zaken-api")).thenReturn(null)
+
+        val processLink = PluginProcessLink(
+            id = UUID.randomUUID(),
+            processDefinitionId = "process",
+            activityId = "activity",
+            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+            actionProperties = MapperSingleton.get().createObjectNode(),
+            pluginConfigurationReference = PluginConfigurationReference(
+                PluginConfigurationReferenceType.BUILDING_BLOCK,
+                "zaken-api"
+            ),
+            pluginActionDefinitionKey = "test-action"
+        )
+
+        assertThrows(IllegalStateException::class.java) {
+            pluginServiceWithResolver.invoke(execution, processLink)
+        }
+    }
+
+    @Test
     fun `should throw exception when invoking delegateExecution method with variable where argument type doesn't match`(){
         val execution = mock<DelegateExecution>()
         val processLink = PluginProcessLink(
