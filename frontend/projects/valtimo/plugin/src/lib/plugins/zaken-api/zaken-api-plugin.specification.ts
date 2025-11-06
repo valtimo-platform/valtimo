@@ -83,12 +83,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuratienaam',
       configurationTitleTooltip:
         'Onder deze naam zal de plugin te herkennen zijn in de rest van de applicatie',
-      noteEventListenerEnabled: 'Synchroniseer Dossier notitie als Zaak notitie naar de Zaak',
+      noteEventListenerEnabled: 'Synchroniseer Dossier notitie als Zaak-notitie naar de Zaak',
       noteEventListenerEnabledTooltip:
         'Wanneer geactiveerd zal bij het aanmaken, updaten of verwijderen van een Dossier notitie deze ook als ZaakNotitie worden gesynchroniseerd naar de Zaak (aangemaakt, bijgewerkt of verwijderd).',
       'noteEventListenerEnabled.toggleOn': 'Geactiveerd',
       'noteEventListenerEnabled.toggleOff': 'Gedeactiveerd',
-      noteSubject: 'De vaste onderwerp tekst van de Zaak notitie',
+      noteSubject: 'De vaste onderwerp tekst van de Zaak-notitie',
       documentUrl: 'URL naar het document',
       documentUrlTooltip:
         'Dit veld ondersteunt URLs en proces variabelen. Gebruik pv:variable om een proces variabele uit te lezen',
@@ -304,12 +304,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Configuration name',
       configurationTitleTooltip:
         'With this name the plugin will be recognizable in the rest of the application',
-      noteEventListenerEnabled: 'Synchronise Case note as Zaak notitie to the Zaak',
+      noteEventListenerEnabled: 'Synchronise Case note as Zaak-notitie to the Zaak',
       noteEventListenerEnabledTooltip:
-        'When enabled, when creating, updating or deleting a Case note it will also be synchronized as a Zaak notitie to the Zaak (created, updated or deleted)',
+        'When enabled, when creating, updating or deleting a Case note it will also be synchronized as a Zaak-notitie to the Zaak (created, updated or deleted)',
       'noteEventListenerEnabled.toggleOn': 'Enabled',
       'noteEventListenerEnabled.toggleOff': 'Disabled',
-      noteSubject: 'The fixed subject text of the Case notitie',
+      noteSubject: 'The fixed subject text of the Zaak-notitie',
       documentUrl: 'URL to the document',
       documentUrlTooltip:
         'This field supports URLs and process variables. Use pv:variable to read a process variable',
@@ -526,12 +526,12 @@ const zakenApiPluginSpecification: PluginSpecification = {
       configurationTitle: 'Konfigurationsname',
       configurationTitleTooltip:
         'An diesem Namen wird das Plugin im Rest der Anwendung erkennbar sein',
-      noteEventListenerEnabled: 'Fallnotiz als Zaak notitie mit Zaak synchronisieren',
+      noteEventListenerEnabled: 'Fallnotiz als Zaak-notitie mit Zaak synchronisieren',
       noteEventListenerEnabledTooltip:
-        'Wenn aktiviert, wird beim Erstellen, Aktualisieren oder Löschen einer Dossier-Notiz diese auch als Zaak notitie mit dem entsprechenden Zaak (erstellt, aktualisiert oder gelöscht) synchronisiert.',
+        'Wenn aktiviert, wird beim Erstellen, Aktualisieren oder Löschen einer Fallnotiz diese auch als Zaak-notitie mit dem entsprechenden Zaak (erstellt, aktualisiert oder gelöscht) synchronisiert.',
       'noteEventListenerEnabled.toggleOn': 'Aktiviert',
       'noteEventListenerEnabled.toggleOff': 'Deaktiviert',
-      noteSubject: 'Der festgelegte Betrefftext der Zaak notitie',
+      noteSubject: 'Der festgelegte Betrefftext der Zaak-notitie',
       documentUrl: 'URL zum Dokument',
       documentUrlTooltip:
         'Dieses Feld unterstützt URLs und Prozessvariablen. Verwenden Sie pv:Variablen, um eine Prozessvariable zu lesen',
