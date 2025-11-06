@@ -70,6 +70,14 @@ class IkoSearchFieldService(
             ikoDataRequestKey = ikoDataRequestKey,
             searchFieldKey = searchFieldKey
         )
+    }
+
+    fun deleteByIkoDataRequestKey(ikoDataAggregateKey: String, ikoDataRequestKey: String) {
+        ikoDataAggregateService.denyAuthorization()
+        ikoDataRequestSearchFieldRepository.deleteByIdIkoDataAggregateKeyAndIdIkoDataRequestKey(
+            ikoDataAggregateKey = ikoDataAggregateKey,
+            ikoDataRequestKey = ikoDataRequestKey,
+        )
         ikoDataRequestSearchFieldRepository.flush()
     }
 

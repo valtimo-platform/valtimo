@@ -16,7 +16,7 @@
 
 package com.ritense.outbox.config.condition
 
-import com.ritense.outbox.NoopOutboxService
+import com.ritense.outbox.LocalOutboxService
 import com.ritense.outbox.ValtimoOutboxService
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Nested
@@ -50,8 +50,8 @@ class OnOutboxEnabledConditionIntTest {
         private val context: ApplicationContext
     ) {
         @Test
-        fun `Should create NoopOutboxService bean`() {
-            val bean = context.getBean(NoopOutboxService::class.java)
+        fun `Should create LocalOutboxService bean`() {
+            val bean = context.getBean(LocalOutboxService::class.java)
             Assertions.assertThat(bean).isNotNull
         }
     }
@@ -62,8 +62,8 @@ class OnOutboxEnabledConditionIntTest {
         private val context: ApplicationContext
     ) {
         @Test
-        fun `Should create NoopOutboxService bean`() {
-            val bean = context.getBean(NoopOutboxService::class.java)
+        fun `Should create LocalOutboxService bean`() {
+            val bean = context.getBean(LocalOutboxService::class.java)
             Assertions.assertThat(bean).isNotNull
         }
     }

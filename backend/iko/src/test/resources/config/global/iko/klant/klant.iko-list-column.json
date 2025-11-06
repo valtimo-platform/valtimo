@@ -1,0 +1,45 @@
+{
+  "ikoDataAggregateKey" : "klant",
+  "ikoListColumns" : [
+    {
+      "key" : "naam",
+      "title" : "Naam",
+      "path" : "/naam/volledigeNaam",
+      "displayType" : {
+        "type" : "text",
+        "displayTypeParameters" : {}
+      },
+      "sortable" : true
+    },
+    {
+      "key" : "id",
+      "title" : "BSN",
+      "path" : "/burgerservicenummer",
+      "displayType" : {
+        "type" : "text",
+        "displayTypeParameters" : {}
+      },
+      "sortable" : true
+    },
+    {
+      "key" : "geboortedatum",
+      "title" : "Geboortedatum",
+      "path" : "/geboorte/datum/datum",
+      "displayType" : {
+        "type" : "text",
+        "displayTypeParameters" : {}
+      },
+      "sortable" : true
+    },
+    {
+      "key" : "adres",
+      "title" : "Adres",
+      "path" : "/verblijfplaats/verblijfadres/officieleStraatnaam",
+      "displayType" : {
+        "type" : "text",
+        "displayTypeParameters" : {}
+      },
+      "sortable" : true
+    }
+  ]
+}

@@ -14,7 +14,7 @@
   ~ limitations under the License.
   -->
 
-<ng-container *ngIf="theme$ | async as theme">
+<ng-container *ngIf="{theme: theme$ | async, params: params$ | async} as obs">
   <form [formGroup]="widgetForm" class="valtimo-widget-management-collection__form">
     <cds-text-label [attr.data-carbon-theme]="theme">
       <v-input-label
@@ -48,37 +48,35 @@
       />
     </cds-text-label>
 
-    <div class="valtimo-widget-management-collection__path-selector">
+    <div class="valtimo-widget-management-collection__value-field">
       <v-input-label
         [title]="'widgetTabManagement.content.collection.collection' | translate"
-        [tooltip]="'widgetTabManagement.content.collection.collectionTooltip' | translate"
+        [tooltip]="collectionDataTooltip$ | async"
       >
       </v-input-label>
 
-      <input
-        formControlName="collection"
-        cdsText
-        [attr.data-carbon-theme]="theme"
-        [placeholder]="'widgetTabManagement.content.collection.collection' | translate"
-        type="text"
-      />
-      <!-- <valtimo-value-path-selector
-        formControlName="collection"
-        [attr.data-carbon-theme]="theme"
-        [caseDefinitionKey]="obs.params?.caseDefinitionKey"
-        [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
-        [type]="ValuePathType.COLLECTION"
-        (collectionSelected)="onCollectionSelected($event)"
-      ></valtimo-value-path-selector> -->
+      @if ($widgetContext() === 'case') {
+        <valtimo-value-path-selector
+          formControlName="collection"
+          [attr.data-carbon-theme]="theme"
+          [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+          [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+          [type]="ValuePathType.COLLECTION"
+          (collectionSelected)="onCollectionSelected($event)"
+        ></valtimo-value-path-selector>
+      } @else {
+        <input
+          formControlName="collection"
+          cdsText
+          [attr.data-carbon-theme]="theme"
+          [placeholder]="'widgetTabManagement.content.collection.collection' | translate"
+          type="text"
+        />
+      }
     </div>
   </form>
 
-  <!-- For injecting things such as process-selector in case widgets -->
   <ng-content></ng-content>
-
-  <!-- <valtimo-case-management-widget-process-selector
-    [params]="params$ | async"
-  ></valtimo-case-management-widget-process-selector> -->
 
   <span class="valtimo-widget-management-collection__subtitle">
     {{ 'widgetTabManagement.content.collection.cardTitle' | translate }}
@@ -92,21 +90,23 @@
           [tooltip]="'widgetTabManagement.content.collection.valueTooltip' | translate"
         >
         </v-input-label>
-
-        <input
-          formControlName="value"
-          cdsText
-          [attr.data-carbon-theme]="theme"
-          [placeholder]="'widgetTabManagement.content.fields.value' | translate"
-          type="text"
-        />
-        <!-- <valtimo-value-path-selector
-          formControlName="value"
-          [attr.data-carbon-theme]="theme"
-          [caseDefinitionKey]="obs.params?.caseDefinitionKey"
-          [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
-          [parentItem]="selectedCollection$ | async"
-        ></valtimo-value-path-selector> -->
+        @if ($widgetContext() === 'case') {
+          <valtimo-value-path-selector
+            formControlName="value"
+            [attr.data-carbon-theme]="theme"
+            [caseDefinitionKey]="obs.params?.caseDefinitionKey"
+            [caseDefinitionVersionTag]="obs.params?.caseDefinitionVersionTag"
+            [parentItem]="selectedCollection$ | async"
+          ></valtimo-value-path-selector>
+        } @else {
+          <input
+            formControlName="value"
+            cdsText
+            [attr.data-carbon-theme]="theme"
+            [placeholder]="'widgetTabManagement.content.fields.value' | translate"
+            type="text"
+          />
+        }
       </div>
 
       <cds-dropdown
@@ -329,9 +329,8 @@
     [fieldWidthDropdown]="fieldWidthDropdown"
     [showHideWhenEmptyCheckbox]="true"
     (columnUpdateEvent)="onColumnUpdateEvent($event)"
+    [selectedCollection]="selectedCollection$ | async"
   >
-    <!-- [params]="params$ | async"
-    [selectedCollection]="selectedCollection$ | async" -->
   </valtimo-widget-management-fields-column>
 
   <ng-template #fieldWidthDropdown let-index="index">

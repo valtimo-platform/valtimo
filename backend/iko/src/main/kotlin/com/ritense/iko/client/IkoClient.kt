@@ -25,14 +25,19 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.RestClient
 import org.springframework.web.client.body
 import java.net.URI
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 class IkoClient(
     private val restClientBuilder: RestClient.Builder,
 ) {
     fun getByEndpointId(
         baseUrl: URI,
-        endpointPath: String,
+        connectorTag: String,
+        connectorInstanceTag: String,
+        endpointOperation: String,
         id: String,
+        queryParams: Map<String, String> = emptyMap(),
     ): JsonNode {
         try {
             val result = restClientBuilder
@@ -45,43 +50,10 @@ class IkoClient(
                         .host(baseUrl.host)
                         .path(baseUrl.path)
                         .port(baseUrl.port)
-                        .pathSegment("endpoints")
-                        .path(endpointPath)
-                        .pathSegment(id)
-                        .build()
-                }
-                .header(AUTHORIZATION, "Bearer ${SecurityUtils.getCurrentJwtTokenValue()}")
-                .retrieve()
-                .body<JsonNode>()!!
-
-            return result
-        } catch (e: Exception) {
-            logger.error { e }
-            return jacksonObjectMapper().createObjectNode()
-        }
-    }
-
-    fun search(
-        baseUrl: URI,
-        endpointPath: String,
-        filters: Map<String, String>,
-    ): JsonNode {
-        try {
-            val result = restClientBuilder
-                .clone()
-                .build()
-                .get()
-                .uri { uriBuilder ->
-                    uriBuilder
-                        .scheme(baseUrl.scheme)
-                        .host(baseUrl.host)
-                        .path(baseUrl.path)
-                        .port(baseUrl.port)
-                        .pathSegment("endpoints")
-                        .path(endpointPath)
+                        .pathSegment("endpoints", connectorTag, connectorInstanceTag, endpointOperation, id)
                         .queryParams(
                             LinkedMultiValueMap(
-                                filters
+                                queryParams
                                     .map { (key, value) -> key to listOf(value) }
                                     .associate { it })
                         )
@@ -93,7 +65,45 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error { e }
+            logger.error(e) { "Failed to get data for connectorTag='$connectorTag', connectorInstanceTag='$connectorInstanceTag', endpointOperation='$endpointOperation'" }
+            return jacksonObjectMapper().createObjectNode()
+        }
+    }
+
+    fun search(
+        baseUrl: URI,
+        connectorTag: String,
+        connectorInstanceTag: String,
+        endpointOperation: String,
+        queryParams: Map<String, String> = emptyMap(),
+    ): JsonNode {
+        try {
+            val result = restClientBuilder
+                .clone()
+                .build()
+                .get()
+                .uri { uriBuilder ->
+                    uriBuilder
+                        .scheme(baseUrl.scheme)
+                        .host(baseUrl.host)
+                        .path(baseUrl.path)
+                        .port(baseUrl.port)
+                        .pathSegment("endpoints", connectorTag, connectorInstanceTag, endpointOperation)
+                        .queryParams(
+                            LinkedMultiValueMap(
+                                queryParams
+                                    .map { (key, value) -> key to listOf(value) }
+                                    .associate { it })
+                        )
+                        .build()
+                }
+                .header(AUTHORIZATION, "Bearer ${SecurityUtils.getCurrentJwtTokenValue()}")
+                .retrieve()
+                .body<JsonNode>()!!
+
+            return result
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to search data for connectorTag='$connectorTag', connectorInstanceTag='$connectorInstanceTag', endpointOperation='$endpointOperation'" }
             return jacksonObjectMapper().createArrayNode()
         }
     }
@@ -102,6 +112,7 @@ class IkoClient(
         baseUrl: URI,
         aggregatedDataProfileName: String,
         id: String,
+        queryParams: Map<String, String> = emptyMap(),
     ): JsonNode {
         try {
             val result = restClientBuilder
@@ -117,6 +128,12 @@ class IkoClient(
                         .pathSegment("aggregated-data-profiles")
                         .path(aggregatedDataProfileName)
                         .pathSegment(id)
+                        .queryParams(
+                            LinkedMultiValueMap(
+                                queryParams
+                                    .map { (key, value) -> key to listOf(value) }
+                                    .associate { it })
+                        )
                         .build()
                 }
                 .header(AUTHORIZATION, "Bearer ${SecurityUtils.getCurrentJwtTokenValue()}")
@@ -125,7 +142,7 @@ class IkoClient(
 
             return result
         } catch (e: Exception) {
-            logger.error { e }
+            logger.error(e) { "Failed to get data for aggregatedDataProfile='$aggregatedDataProfileName', id='$id'" }
             return jacksonObjectMapper().createObjectNode()
         }
     }

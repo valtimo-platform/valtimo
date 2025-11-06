@@ -23,10 +23,14 @@
     noVisibleFields: noVisibleFields$ | async,
   } as obs"
 >
-  <section class="widget-field__header">
+  <section *ngIf="obs?.widgetConfiguration?.title" class="widget-field__header">
     <h4 class="widget-field__title">{{ obs?.widgetConfiguration?.title }}</h4>
 
     <ng-content></ng-content>
+
+    <valtimo-widget-action-button
+      [widgetConfiguration]="obs.widgetConfiguration"
+    ></valtimo-widget-action-button>
   </section>
 
   @if (obs?.isEmptyWidgetData) {
@@ -53,7 +57,7 @@
         ></valtimo-no-results>
       } @else {
         @for (column of obs?.widgetPropertyValue; track column.key) {
-          <div class="widget-field__column">
+          <div class="widget-field__column" [ngClass]="{'widget-field__column--compact': compact}">
             @for (property of column; track property) {
               <div
                 *ngIf="
@@ -63,12 +67,21 @@
                   !property?.hideWhenEmpty
                 "
                 class="widget-field__field"
+                [ngClass]="{'widget-field__field--compact': compact}"
               >
-                <label class="widget-field__field-label" [attr.title]="property?.title">
+                <label
+                  class="widget-field__field-label"
+                  [ngClass]="{'widget-field__field-label--compact': compact}"
+                  [attr.title]="property?.title"
+                >
                   {{ property?.title }}</label
                 >
 
-                <div [attr.title]="property?.value" class="widget-field__field-value">
+                <div
+                  [attr.title]="property?.value"
+                  class="widget-field__field-value"
+                  [ngClass]="{'widget-field__field-value--compact': compact}"
+                >
                   @if (property?.isRawValue) {
                     <div [innerHTML]="property?.value"></div>
                   } @else {

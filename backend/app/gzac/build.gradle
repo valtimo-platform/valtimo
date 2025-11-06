@@ -13,12 +13,13 @@ dependencies {
     implementation(project(":mail:local-mail"))
     implementation(project(":document-generation:smartdocuments"))
     implementation(project(":iko"))
-    implementation(project(":logging"))
     implementation(project(":zgw:portaaltaak"))
     implementation(project(":outbox:outbox-rabbitmq"))
     implementation(project(":process-link-url"))
 
     implementation("io.github.oshai:kotlin-logging")
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+    implementation "org.springframework.boot:spring-boot-starter-security"
 
     // Spring cloud stream RabbitMQ
     implementation "org.springframework.cloud:spring-cloud-starter-stream-rabbit:${springCloudStreamVersion}"

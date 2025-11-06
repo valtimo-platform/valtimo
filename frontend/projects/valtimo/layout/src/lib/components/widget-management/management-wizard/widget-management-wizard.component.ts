@@ -16,26 +16,32 @@
 import {CommonModule} from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
+  effect,
   EventEmitter,
   Input,
+  OnDestroy,
   Output,
   Signal,
   signal,
+  ViewChild,
+  ViewContainerRef,
   ViewEncapsulation,
 } from '@angular/core';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, KeyGeneratorService} from '@valtimo/components';
-import {ButtonModule, ModalModule, ProgressIndicatorModule, Step} from 'carbon-components-angular';
-import {combineLatest, map, Observable} from 'rxjs';
+import {ButtonModule, ModalModule, ProgressIndicatorModule, Step, TilesModule} from 'carbon-components-angular';
+import {combineLatest, map, Observable, Subscription, switchMap} from 'rxjs';
 import {
   WIDGET_STYLE_LABELS,
   WIDGET_WIDTH_LABELS,
   WidgetWizardCloseEvent,
   WidgetWizardCloseEventType,
   WidgetWizardStep,
+  WIZARD_STEP_COMPONENTS,
 } from '../../../models';
 import {WidgetWizardService} from '../../../services';
 import {WIDGET_STEPS} from './steps';
@@ -56,111 +62,113 @@ import {WIDGET_STEPS} from './steps';
     ...WIDGET_STEPS,
   ],
 })
-export class WidgetManagementWizardComponent {
-  @Input() public open = false;
-  private _editMode: boolean;
-  @Input() public set editMode(value: boolean) {
-    this._editMode = value;
-    if (!value) return;
+export class WidgetManagementWizardComponent implements OnDestroy {
+  @ViewChild('wizardStepRenderer', {read: ViewContainerRef})
+  private readonly _vcr: ViewContainerRef;
 
-    this.$currentStep.set(WidgetWizardStep.CONTENT);
+  @Input() public open = false;
+  @Input() public disableDuplicate = false;
+
+  private get _editMode(): boolean {
+    return this.widgetWizardService.$editMode();
+  }
+  @Input() public set editMode(value: boolean) {
+    this.widgetWizardService.$editMode.set(value);
+    if (!value) return;
+    this.$currentStepIndex.set(
+      this.widgetWizardService
+        .$widgetWizardSteps()
+        .findIndex((step: WidgetWizardStep) => step === WidgetWizardStep.CONTENT)
+    );
   }
   public get editMode(): boolean {
     return this._editMode;
   }
+
   @Output() public closeEvent = new EventEmitter<WidgetWizardCloseEvent>();
 
-  public readonly WidgetWizardSteps = WidgetWizardStep;
-  private readonly _secondaryLabels = computed(() => {
-    const selectedWidgetType = this.widgetWizardService.$selectedWidget()?.type ?? '';
-    const selectedWidth = this.widgetWizardService.$widgetWidth() ?? '';
-    const selectedStyle = this.widgetWizardService.$widgetStyle() ?? '';
-
-    return {
-      [WidgetWizardStep.TYPE]: selectedWidgetType
-        ? `widgetTabManagement.types.${selectedWidgetType}.title`
-        : '',
-      [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[selectedWidth] ?? '',
-      [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[selectedStyle] ?? '',
-    };
-  });
-
-  public readonly steps$: Observable<Step[]> = combineLatest([
-    toObservable(this._secondaryLabels),
-    toObservable(this.widgetWizardService.$editMode),
-    this.translateService.stream('key'),
+  public readonly secondaryLabels$: Observable<Record<string, string>> = combineLatest([
+    toObservable(this.widgetWizardService.$selectedWidget),
+    toObservable(this.widgetWizardService.$widgetWidth),
+    toObservable(this.widgetWizardService.$widgetStyle),
   ]).pipe(
-    map(([secondaryLabels, editMode]) => {
-      return [
-        {
-          label: this.translateService.instant('widgetTabManagement.wizard.steps.type'),
-          ...(secondaryLabels[WidgetWizardStep.TYPE] && {
-            secondaryLabel: this.translateService.instant(secondaryLabels[WidgetWizardStep.TYPE]),
-          }),
-          disabled: editMode,
-          complete: !!this.widgetWizardService.$selectedWidget()?.type,
-        },
-        {
-          label: this.translateService.instant('widgetTabManagement.wizard.steps.width'),
-          ...(secondaryLabels[WidgetWizardStep.WIDTH] && {
-            secondaryLabel: this.translateService.instant(secondaryLabels[WidgetWizardStep.WIDTH]),
-          }),
-          disabled: !secondaryLabels[WidgetWizardStep.TYPE],
-          complete: !!this.widgetWizardService.$widgetWidth(),
-        },
-        {
-          label: this.translateService.instant('widgetTabManagement.wizard.steps.style'),
-          ...(secondaryLabels[WidgetWizardStep.STYLE] && {
-            secondaryLabel: this.translateService.instant(secondaryLabels[WidgetWizardStep.STYLE]),
-          }),
-          disabled: !secondaryLabels[WidgetWizardStep.WIDTH],
-          complete: !!this.widgetWizardService.$widgetStyle(),
-        },
-        {
-          label: this.translateService.instant('widgetTabManagement.wizard.steps.content'),
-          disabled:
-            !secondaryLabels[WidgetWizardStep.TYPE] ||
-            !secondaryLabels[WidgetWizardStep.WIDTH] ||
-            !secondaryLabels[WidgetWizardStep.STYLE],
-          complete: !!this.widgetWizardService.$widgetContent(),
-        },
-      ];
+    map(([selectedWidget, selectedWidth, selectedStyle]) => {
+      const type = selectedWidget?.type ?? '';
+      const width = selectedWidth ?? '';
+      const style = selectedStyle ?? '';
+
+      return {
+        [WidgetWizardStep.TYPE]: type ? `widgetTabManagement.type.${type}.title` : '',
+        [WidgetWizardStep.WIDTH]: WIDGET_WIDTH_LABELS[width] ?? '',
+        [WidgetWizardStep.STYLE]: WIDGET_STYLE_LABELS[style] ?? '',
+      };
     })
   );
 
-  private readonly _$contentStepValid = signal<boolean>(false);
-  public readonly $currentStep = signal<WidgetWizardStep>(WidgetWizardStep.TYPE);
-  public readonly $backButtonDisabled: Signal<boolean> = computed(
-    () => this.widgetWizardService.$editMode() && this.$currentStep() === WidgetWizardStep.WIDTH
+  public readonly steps$: Observable<Step[]> = combineLatest([
+    toObservable(this.widgetWizardService.$widgetWizardSteps),
+    toObservable(this.widgetWizardService.$widgetWizardStepProperties),
+    this.secondaryLabels$,
+    this.translateService.stream('key'),
+  ]).pipe(
+    map(([steps, stepProperties, secondaryLabels]) =>
+      steps.map((step: WidgetWizardStep) => ({
+        label: this.translateService.instant(`widgetTabManagement.wizard.steps.${step}`),
+        ...(!!secondaryLabels[step] && {
+          secondaryLabel: this.translateService.instant(secondaryLabels[step]),
+        }),
+        disabled: stepProperties[step]?.disabled,
+        complete: stepProperties[step]?.complete,
+      }))
+    )
   );
-  public $nextButtonDisabled = computed(() => {
-    switch (this.$currentStep()) {
-      case WidgetWizardStep.TYPE:
-        return !this.widgetWizardService.$selectedWidget();
-      case WidgetWizardStep.WIDTH:
-        return !this.widgetWizardService.$widgetWidth();
-      case WidgetWizardStep.STYLE:
-        return this.widgetWizardService.$widgetStyle() === null;
-      case WidgetWizardStep.CONTENT:
-        return this.widgetWizardService.$widgetContent() === null || !this._$contentStepValid();
-      default:
-        return true;
-    }
-  });
+
+  public readonly $currentStepIndex = this.widgetWizardService.$currentStepIndex;
+  public readonly $numberOfSteps = computed(
+    () => this.widgetWizardService.$widgetWizardSteps().length
+  );
+
+  public readonly stepLabel$ = toObservable(this.$currentStepIndex).pipe(
+    switchMap((stepIndex: number) =>
+      this.translateService.stream(
+        `widgetTabManagement.${this.widgetWizardService.$widgetWizardSteps()[stepIndex]}.description`
+      )
+    )
+  );
+
+  public readonly $backButtonDisabled: Signal<boolean> = computed(
+    () => this.widgetWizardService.$editMode() && this.$currentStepIndex() === 1
+  );
+
+  public $nextButtonDisabled = this.widgetWizardService.$nextButtonDisabled;
+
+  private readonly _subscriptions = new Subscription();
 
   constructor(
+    private readonly cdr: ChangeDetectorRef,
     private readonly keyGeneratorService: KeyGeneratorService,
     private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService
-  ) {}
+  ) {
+    effect(() => {
+      this.cdr.detectChanges();
+      this.renderStep(this.$currentStepIndex());
+    });
+  }
 
-  public onStepSelected(event: {step: Step; index: WidgetWizardStep}): void {
-    this.$currentStep.set(event.index);
+  public ngOnDestroy(): void {
+    this._subscriptions.unsubscribe();
+  }
+
+  public onStepSelected(event: {step: Step; index: number}): void {
+    this.widgetWizardService.$currentStepIndex.set(event.index);
   }
 
   public onNextButtonClick(): void {
-    if (this.$currentStep() === WidgetWizardStep.CONTENT) {
-      const isDuplicateMode = this.editMode && !this.widgetWizardService.$widgetKey();
+    if (this.$currentStepIndex() === this.$numberOfSteps() - 1) {
+      const isDuplicateMode =
+        this.editMode && !this.disableDuplicate && !this.widgetWizardService.$widgetKey();
+
       if (isDuplicateMode || !this.editMode) {
         this.widgetWizardService.$widgetKey.set(
           this.keyGeneratorService.getUniqueKey(
@@ -177,15 +185,17 @@ export class WidgetManagementWizardComponent {
             : WidgetWizardCloseEventType.CREATE,
         widget: this.widgetWizardService.$widgetsConfig(),
       });
+
       this.resetWizard();
+
       return;
     }
 
-    this.$currentStep.update((step: WidgetWizardStep) => step + 1);
+    this.widgetWizardService.$currentStepIndex.update((step: number) => step + 1);
   }
 
   public onBackButtonClick(): void {
-    this.$currentStep.update((step: WidgetWizardStep) => step - 1);
+    this.widgetWizardService.$currentStepIndex.update((step: number) => step - 1);
   }
 
   public onClose(): void {
@@ -193,14 +203,21 @@ export class WidgetManagementWizardComponent {
     this.resetWizard();
   }
 
-  public onContentValidEvent(valid: boolean): void {
-    this._$contentStepValid.set(valid);
-  }
-
   private resetWizard(): void {
     setTimeout(() => {
       this.widgetWizardService.resetWizard();
-      this.$currentStep.set(WidgetWizardStep.TYPE);
     }, CARBON_CONSTANTS.modalAnimationMs);
+  }
+
+  private renderStep(stepIndex: number): void {
+    this._vcr.clear();
+
+    const componentRef = this._vcr.createComponent(
+      WIZARD_STEP_COMPONENTS[this.widgetWizardService.$widgetWizardSteps()[stepIndex]]
+    );
+
+    componentRef.location.nativeElement.classList.add('valtimo-widget-wizard-step');
+
+    this.cdr.detectChanges();
   }
 }

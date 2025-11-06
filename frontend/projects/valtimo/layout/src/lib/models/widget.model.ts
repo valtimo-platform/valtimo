@@ -20,15 +20,19 @@ import {
   WidgetCustomContent,
   WidgetFieldsContent,
   WidgetTableContent,
+  WidgetInteractiveTableContent,
 } from './widget-content.model';
 import {WidgetDisplayType} from './widget-display.model';
+import {Condition} from '@valtimo/shared';
 
 enum WidgetType {
   FIELDS = 'fields',
+  INTERACTIVE_TABLE = 'interactive-table',
   TABLE = 'table',
   CUSTOM = 'custom',
   COLLECTION = 'collection',
   FORMIO = 'formio',
+  DIVIDER = 'divider',
 }
 
 type WidgetWidth = 1 | 2 | 3 | 4;
@@ -36,17 +40,20 @@ type CollectionFieldWidth = 'half' | 'full';
 
 interface WidgetAction {
   name?: string;
-  processDefinitionKey: string;
+  processDefinitionKey?: string;
+  caseDefinitionKey?: string;
+  navigateTo?: string;
 }
-
+ 
 interface BasicWidget {
   type: WidgetType;
   title: string;
   width: WidgetWidth;
   highContrast: boolean;
   key: string;
-  properties: WidgetContentProperties;
+  properties?: WidgetContentProperties;
   actions?: WidgetAction[];
+  displayConditions: Array<Condition>;
 }
 
 interface FieldsWidgetValue {
@@ -72,6 +79,16 @@ interface TableWidget extends BasicWidget {
   properties: WidgetTableContent;
 }
 
+interface InteractiveTableWidget extends BasicWidget {
+  type: WidgetType.INTERACTIVE_TABLE;
+  properties: WidgetInteractiveTableContent;
+}
+
+interface InteractiveTableWidget extends BasicWidget {
+  type: WidgetType.INTERACTIVE_TABLE;
+  properties: WidgetInteractiveTableContent;
+}
+
 interface CustomWidget extends BasicWidget {
   type: WidgetType.CUSTOM;
   properties: WidgetCustomContent;
@@ -84,7 +101,18 @@ interface FormioWidget extends BasicWidget {
   };
 }
 
-type Widget = FieldsWidget | CollectionWidget | CustomWidget | TableWidget | FormioWidget;
+interface DividerWidget extends BasicWidget {
+  type: WidgetType.DIVIDER;
+}
+
+type Widget =
+  | FieldsWidget
+  | CollectionWidget
+  | CustomWidget
+  | TableWidget
+  | InteractiveTableWidget
+  | FormioWidget
+  | DividerWidget
 
 type WidgetWithUuid = Widget & {
   uuid: string;
@@ -147,7 +175,14 @@ interface CustomWidgetConfig {
   [componentKey: string]: Type<any>;
 }
 
-type WidgetComponentMap = Record<WidgetType, Type<any>>;
+interface WidgetGroup {
+  divider: DividerWidget | null;
+  widgets: Widget[];
+}
+
+type WidgetComponentMap = Record<Exclude<WidgetType, WidgetType.DIVIDER>, Type<any>>;
+
+type WidgetContext = 'case' | 'iko';
 
 export {
   BasicWidget,
@@ -157,22 +192,25 @@ export {
   WidgetContentHeightsPx,
   WidgetContentHeightsPxWithContainerWidth,
   WidgetPackResult,
-  // WidgetsRes,
   WidgetType,
   WidgetWidth,
   WidgetWidthsPx,
   WidgetWithUuid,
   WidgetXY,
   CollectionFieldWidth,
+  DividerWidget,
   FieldsWidget,
   FieldsWidgetValue,
   CollectionWidget,
   CustomWidgetConfig,
   CustomWidget,
   TableWidget,
+  InteractiveTableWidget,
   WidgetPackResultItem,
   WidgetPackResultItemsByRow,
   FormioWidgetWidgetWithUuid,
   MaxRectsResult,
   WidgetComponentMap,
+  WidgetContext,
+  WidgetGroup
 };

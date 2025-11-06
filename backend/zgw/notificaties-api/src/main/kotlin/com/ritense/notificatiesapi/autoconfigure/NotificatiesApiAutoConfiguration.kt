@@ -16,41 +16,56 @@
 
 package com.ritense.notificatiesapi.autoconfigure
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.notificatiesapi.NotificatiesApiPluginFactory
 import com.ritense.notificatiesapi.PluginsDeployedEventListener
 import com.ritense.notificatiesapi.client.NotificatiesApiClient
+import com.ritense.notificatiesapi.config.NotificatiesApiProcessingProperties
+import com.ritense.notificatiesapi.health.NotificatiesApiInboundEventHealthIndicator
 import com.ritense.notificatiesapi.repository.NotificatiesApiAbonnementLinkRepository
+import com.ritense.notificatiesapi.repository.NotificatiesApiInboundEventRepository
 import com.ritense.notificatiesapi.security.config.NotificatiesApiHttpSecurityConfigurer
+import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventAdminService
+import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventIntakeService
+import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventProcessingService
+import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventQueryService
+import com.ritense.notificatiesapi.service.NotificatiesApiInboundEventWorker
 import com.ritense.notificatiesapi.service.NotificatiesApiService
+import com.ritense.notificatiesapi.web.rest.NotificatiesApiManagementResource
 import com.ritense.notificatiesapi.web.rest.NotificatiesApiResource
-import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.service.PluginService
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.annotation.Order
+import org.springframework.core.task.TaskExecutor
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
+import org.springframework.scheduling.annotation.EnableScheduling
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.client.RestClient
 
 @AutoConfiguration
+@EnableConfigurationProperties(NotificatiesApiProcessingProperties::class)
 @EnableJpaRepositories(basePackages = ["com.ritense.notificatiesapi.repository"])
 @EntityScan("com.ritense.notificatiesapi.domain")
+@EnableScheduling
 class NotificatiesApiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(NotificatiesApiClient::class)
-    fun notificatiesApiClient(restClientBuilder: RestClient.Builder): NotificatiesApiClient {
-        return NotificatiesApiClient(restClientBuilder)
+    fun notificatiesApiClient(restClientBuilder: RestClient.Builder, objectMapper: ObjectMapper): NotificatiesApiClient {
+        return NotificatiesApiClient(restClientBuilder, objectMapper)
     }
 
     @Bean
     @ConditionalOnMissingBean(NotificatiesApiPluginFactory::class)
     fun notificatiesApiPluginFactory(
         pluginService: PluginService,
-        pluginConfigurationRepository: PluginConfigurationRepository,
         client: NotificatiesApiClient,
         abonnementLinkRepository: NotificatiesApiAbonnementLinkRepository
     ): NotificatiesApiPluginFactory {
@@ -78,17 +93,116 @@ class NotificatiesApiAutoConfiguration {
     }
 
     @Bean
+    fun notificatiesApiInboundEventIntakeService(
+        objectMapper: ObjectMapper,
+        inboundEventRepository: NotificatiesApiInboundEventRepository,
+        processingProperties: NotificatiesApiProcessingProperties
+    ): NotificatiesApiInboundEventIntakeService {
+        return NotificatiesApiInboundEventIntakeService(
+            objectMapper,
+            inboundEventRepository,
+            processingProperties
+        )
+    }
+
+    @Bean
     fun notificatiesApiService(
-        applicationEventPublisher: ApplicationEventPublisher,
-        notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository
+        notificatiesApiAbonnementLinkRepository: NotificatiesApiAbonnementLinkRepository,
+        inboundEventIntakeService: NotificatiesApiInboundEventIntakeService,
+        inboundEventProcessingService: NotificatiesApiInboundEventProcessingService,
+        @Qualifier("notificatiesApiTaskExecutor") taskExecutor: TaskExecutor
     ): NotificatiesApiService {
-        return NotificatiesApiService(applicationEventPublisher, notificatiesApiAbonnementLinkRepository)
+        return NotificatiesApiService(
+            notificatiesApiAbonnementLinkRepository,
+            inboundEventIntakeService,
+            inboundEventProcessingService,
+            taskExecutor
+        )
+    }
+
+    @Bean
+    fun notificatiesApiInboundEventProcessingService(
+        inboundEventRepository: NotificatiesApiInboundEventRepository,
+        applicationEventPublisher: ApplicationEventPublisher,
+        objectMapper: ObjectMapper,
+        processingProperties: NotificatiesApiProcessingProperties
+    ): NotificatiesApiInboundEventProcessingService {
+        return NotificatiesApiInboundEventProcessingService(
+            inboundEventRepository,
+            applicationEventPublisher,
+            objectMapper,
+            processingProperties
+        )
+    }
+
+    @Bean
+    fun notificatiesApiInboundEventWorker(
+        processingProperties: NotificatiesApiProcessingProperties,
+        processingService: NotificatiesApiInboundEventProcessingService
+    ): NotificatiesApiInboundEventWorker {
+        return NotificatiesApiInboundEventWorker(
+            processingProperties,
+            processingService
+        )
+    }
+
+    @Bean("notificatiesApiTaskExecutor")
+    fun notificatiesApiTaskExecutor(processingProperties: NotificatiesApiProcessingProperties): TaskExecutor {
+        return ThreadPoolTaskExecutor().apply {
+            threadNamePrefix = "notificaties-api-task-"
+            corePoolSize = processingProperties.executorCorePoolSize
+            maxPoolSize = processingProperties.executorMaxPoolSize
+            setQueueCapacity(processingProperties.executorQueueCapacity)
+            setWaitForTasksToCompleteOnShutdown(true)
+            initialize()
+        }
+    }
+
+    @Bean
+    fun notificatiesApiInboundEventQueryService(
+        inboundEventRepository: NotificatiesApiInboundEventRepository
+    ): NotificatiesApiInboundEventQueryService {
+        return NotificatiesApiInboundEventQueryService(inboundEventRepository)
+    }
+
+    @Bean
+    fun notificatiesApiInboundEventAdminService(
+        inboundEventRepository: NotificatiesApiInboundEventRepository,
+        processingProperties: NotificatiesApiProcessingProperties
+    ): NotificatiesApiInboundEventAdminService {
+        return NotificatiesApiInboundEventAdminService(
+            inboundEventRepository,
+            processingProperties
+        )
     }
 
     @Bean
     @ConditionalOnMissingBean(NotificatiesApiResource::class)
     fun notificatiesApiResource(notificatiesApiService: NotificatiesApiService): NotificatiesApiResource {
         return NotificatiesApiResource(notificatiesApiService)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(NotificatiesApiManagementResource::class)
+    fun notificatiesApiManagementResource(
+        inboundEventQueryService: NotificatiesApiInboundEventQueryService,
+        inboundEventAdminService: NotificatiesApiInboundEventAdminService
+    ): NotificatiesApiManagementResource {
+        return NotificatiesApiManagementResource(
+            inboundEventQueryService,
+            inboundEventAdminService
+        )
+    }
+
+    @Bean
+    fun notificatiesApiInboundEventHealthIndicator(
+        inboundEventRepository: NotificatiesApiInboundEventRepository,
+        processingProperties: NotificatiesApiProcessingProperties
+    ): NotificatiesApiInboundEventHealthIndicator {
+        return NotificatiesApiInboundEventHealthIndicator(
+            inboundEventRepository,
+            processingProperties
+        )
     }
 
     @Bean

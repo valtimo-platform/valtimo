@@ -18,35 +18,46 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  EventEmitter,
   HostBinding,
+  Inject,
+  Input,
   OnDestroy,
   OnInit,
-  Output,
   signal,
   ViewEncapsulation,
   WritableSignal,
 } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
-import {TranslateModule} from '@ngx-translate/core';
+import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
   CARBON_THEME,
   CdsThemeService,
   CurrentCarbonTheme,
   InputLabelModule,
   ValuePathItem,
+  ValuePathSelectorComponent,
   ValuePathSelectorPrefix,
   ValuePathType,
 } from '@valtimo/components';
-import {ButtonModule, InputModule, ToggleModule} from 'carbon-components-angular';
-import {BehaviorSubject, debounceTime, map, Observable, Subscription} from 'rxjs';
-import {IWidgetContentComponent} from '../../../../interfaces';
+import {ButtonModule, InputModule, LayerModule, ToggleModule} from 'carbon-components-angular';
+import {
+  BehaviorSubject,
+  combineLatest,
+  debounceTime,
+  map,
+  Observable,
+  Subscription,
+  switchMap,
+} from 'rxjs';
+import {WIDGET_MANAGEMENT_SERVICE} from '../../../../constants';
+import {IWidgetManagementService} from '../../../../interfaces';
+import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
 import {WidgetWizardService} from '../../../../services';
 import {WidgetManagementFieldsColumnComponent} from '../fields/column/widget-management-fields-column.component';
-import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '../../../../models';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Component({
+  selector: 'valtimo-widget-management-table',
   templateUrl: './widget-management-table.component.html',
   styleUrl: './widget-management-table.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,11 +72,13 @@ import {FieldsWidgetValue, WidgetContentProperties, WidgetTableContent} from '..
     ToggleModule,
     ButtonModule,
     InputLabelModule,
+    LayerModule,
+    ValuePathSelectorComponent,
   ],
 })
-export class WidgetManagementTableComponent implements IWidgetContentComponent, OnInit, OnDestroy {
+export class WidgetManagementTableComponent implements OnInit, OnDestroy {
   @HostBinding('class') public readonly class = 'valtimo-widget-management-table';
-  @Output() public readonly changeValidEvent = new EventEmitter<boolean>();
+  @Input() public showFirstColumnOption = true;
 
   public readonly form: FormGroup = this.fb.group({
     title: this.fb.control<string>(
@@ -87,7 +100,9 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
       currentTheme === CurrentCarbonTheme.G10 ? CARBON_THEME.WHITE : CARBON_THEME.G90
     )
   );
+  public readonly params$ = this.widgetManagementService.params$;
 
+  public readonly $widgetContext = this.widgetWizardService.$widgetContext;
   public readonly $content = this.widgetWizardService
     .$widgetContent as WritableSignal<WidgetTableContent>;
   public readonly $checked = computed(
@@ -100,14 +115,28 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
   public readonly ValuePathType = ValuePathType;
 
-  private readonly _contentValid = signal<boolean>(this.widgetWizardService.$editMode());
+  public readonly collectionDataTooltip$ = toObservable(
+    this.widgetWizardService.$widgetContext
+  ).pipe(
+    switchMap((context: 'case' | 'iko' | null) =>
+      this.translateService.stream(
+        context === 'iko'
+          ? 'ikoManagement.collectionPathTooltip'
+          : 'widgetTabManagement.content.table.collectionTooltip'
+      )
+    )
+  );
+
+  private readonly _$contentValid = signal<boolean>(this.widgetWizardService.$editMode());
   private readonly _subscriptions = new Subscription();
 
   constructor(
     private readonly cdsThemeService: CdsThemeService,
     private readonly fb: FormBuilder,
+    private readonly translateService: TranslateService,
     private readonly widgetWizardService: WidgetWizardService,
-    private readonly route: ActivatedRoute
+    @Inject(WIDGET_MANAGEMENT_SERVICE)
+    private widgetManagementService: IWidgetManagementService<any>
   ) {}
 
   public ngOnInit(): void {
@@ -124,15 +153,15 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
             }) as WidgetTableContent
         );
 
-        this.changeValidEvent.emit(this.form.valid && this._contentValid());
+        this.widgetWizardService.$widgetContentValid.set(this.form.valid && this._$contentValid());
       })
     );
   }
 
   public ngOnDestroy(): void {
-    this._contentValid.set(false);
+    this._$contentValid.set(false);
     this._subscriptions.unsubscribe();
-    this.changeValidEvent.emit(false);
+    this.widgetWizardService.$widgetContentValid.set(false);
     this.form.reset();
   }
 
@@ -142,8 +171,8 @@ export class WidgetManagementTableComponent implements IWidgetContentComponent, 
       (content: WidgetContentProperties | null) =>
         ({...content, columns: data}) as WidgetTableContent
     );
-    this._contentValid.set(valid);
-    this.changeValidEvent.emit(valid && this.form.valid);
+    this._$contentValid.set(valid);
+    this.widgetWizardService.$widgetContentValid.set(valid && this.form.valid);
   }
 
   public onCheckedChange(firstColumnAsTitle: boolean): void {

@@ -33,6 +33,7 @@ import {
   ProcessManagementRouteData,
 } from '@valtimo/process-management';
 import {AuthGuardService} from '@valtimo/security';
+
 import {CASE_MANAGEMENT_TAB_TOKEN, CaseManagementTabConfig, ROLE_ADMIN} from '@valtimo/shared';
 import {TaskManagementDetailComponent} from '@valtimo/task-management';
 import {CaseManagementCaseDetailComponent} from './components/case-management-case-detail/case-management-case-detail.component';
@@ -51,19 +52,6 @@ const routes: Routes = [
     component: CaseManagementListComponent,
     canActivate: [AuthGuardService],
     data: {title: 'Cases', roles: [ROLE_ADMIN]},
-  },
-  {
-    path: 'case-management/case/:name/widget-tab/:key',
-    component: CaseManagementWidgetTabComponent,
-    canActivate: [AuthGuardService],
-    // TODO: Check when widgets are back in place
-    // canDeactivate: [pendingChangesGuard],
-    data: {
-      title: 'Widget tab',
-      roles: [ROLE_ADMIN],
-      customPageTitle: true,
-      customPageSubtitle: true,
-    },
   },
   {
     path: 'case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag',
@@ -120,7 +108,8 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.CASE_DETAILS}/widget-tab/:key`,
     component: CaseManagementWidgetTabComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: enable when pendingChanges is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Widget tab',
       roles: [ROLE_ADMIN],
@@ -132,7 +121,8 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.PROCESSES}/create`,
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Create new Process',
       customPageTitle: false,
@@ -144,7 +134,8 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.PROCESSES}/:processDefinitionKey`,
     component: ProcessManagementBuilderComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Process details',
       roles: [ROLE_ADMIN],
@@ -156,7 +147,8 @@ const routes: Routes = [
     path: `case-management/case/:caseDefinitionKey/version/:caseDefinitionVersionTag/${TabEnum.DECISIONS}/:id`,
     component: DecisionModelerComponent,
     canActivate: [AuthGuardService],
-    canDeactivate: [pendingChangesGuard],
+    //TODO: Re-enable when pending changes is fixed
+    // canDeactivate: [pendingChangesGuard],
     data: {
       title: 'Process details',
       roles: [ROLE_ADMIN],

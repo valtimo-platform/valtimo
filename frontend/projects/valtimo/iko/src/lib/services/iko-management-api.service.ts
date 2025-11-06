@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {HttpClient, HttpParams} from '@angular/common/http';
+import {HttpClient, HttpParams, HttpResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
-import {BaseApiService, ConfigService, Page} from '@valtimo/shared';
+import {BaseApiService, ConfigService, Page, InterceptorSkipHeader} from '@valtimo/shared';
 import {Observable} from 'rxjs';
 import {
   IkoDataAggregateCreateRequest,
@@ -94,6 +94,20 @@ export class IkoManagementApiService extends BaseApiService {
 
   public deleteIkoDataAggregate(key: string): Observable<void> {
     return this.httpClient.delete<void>(this.getApiUrl(`management/v1/iko-data-aggregate/${key}`));
+  }
+
+  public exportIKOConfiguration(key: string): Observable<HttpResponse<Blob>> {
+    return this.httpClient.get<Blob>(
+      this.getApiUrl(`management/v1/iko-data-aggregate/${key}/export`),
+      {observe: 'response', responseType: 'blob' as 'json', headers: InterceptorSkipHeader}
+    );
+  }
+
+  public importConfigurationZip(file: any): Observable<HttpResponse<Blob>> {
+    return this.httpClient.post<HttpResponse<Blob>>(
+      this.getApiUrl(`management/v1/iko-data-aggregate/import`),
+      file
+    );
   }
 
   public getIkoRepositoryPropertyFields(type: string): Observable<PropertyField[]> {
@@ -278,12 +292,6 @@ export class IkoManagementApiService extends BaseApiService {
     );
   }
 
-  // public getIkoWidgets(aggregateKey: string, tabKey: string): Observable<BasicWidget[]> {
-  //   return this.httpClient.get<BasicWidget[]>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget`)
-  //   );
-  // }
-
   public getIkoWidget(
     aggregateKey: string,
     tabKey: string,
@@ -293,39 +301,6 @@ export class IkoManagementApiService extends BaseApiService {
       this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`)
     );
   }
-
-  // public createIkoWidget(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   widgetKey: string,
-  //   body: WidgetDto
-  // ): Observable<WidgetDto> {
-  //   return this.httpClient.post<WidgetDto>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`),
-  //     body
-  //   );
-  // }
-
-  // public updateIkoWidgets(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   body: WidgetDto[]
-  // ): Observable<WidgetDto[]> {
-  //   return this.httpClient.put<WidgetDto[]>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget`),
-  //     body
-  //   );
-  // }
-
-  // public deleteIkoWidget(
-  //   aggregateKey: string,
-  //   tabKey: string,
-  //   widgetKey: string
-  // ): Observable<void> {
-  //   return this.httpClient.delete<void>(
-  //     this.getApiUrl(`/v1/iko-data-aggregate/${aggregateKey}/tab/${tabKey}/widget/${widgetKey}`)
-  //   );
-  // }
 
   public getIkoSearchFields(
     aggregateKey: string,

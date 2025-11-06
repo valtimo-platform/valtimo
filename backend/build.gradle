@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,10 @@ plugins {
 
 jacoco {
     toolVersion = "0.8.12"
+}
+
+checkstyle {
+    toolVersion = "12.1.1"
 }
 
 def allTestCoverageFile = "${rootDir}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml"
@@ -146,6 +150,7 @@ allprojects {
                 dependency "org.hibernate.orm:hibernate-core:${hibernateCoreVersion}"
                 dependency "org.liquibase:liquibase-core:${liquibaseVersion}"
                 dependency "com.rabbitmq:amqp-client:${amqpCLientVersion}"
+                dependency "org.apache.commons:commons-lang3:${commonsLangVersion}"
             }
         }
 
@@ -259,4 +264,38 @@ tasks.withType(PublishToMavenRepository) {
 }
 tasks.withType(PublishToMavenLocal) {
     enabled = false
+}
+
+
+tasks.register("cleanAll") {
+    group = "build"
+    description = "Runs all `clean` tasks across subprojects."
+
+    dependsOn subprojects.collect { subproject ->
+        subproject.tasks.matching { it.name == "clean" }
+    }
+}
+
+[
+    "test",
+    "integrationTestingPostgresql",
+    "integrationTestingMysql",
+    "securityTesting"
+].each { taskName ->
+    tasks.register("${taskName}All", Test) {
+        def matchingSubprojects = subprojects.findAll { subproject ->
+            subproject.tasks.findByName(taskName)
+        }
+
+        def groupName = matchingSubprojects.collect {
+            it.tasks.findByName(taskName)?.group
+        }.find { it } ?: "other"
+
+        group = groupName
+        description = "Runs all `${taskName}` tasks across subprojects."
+
+        dependsOn subprojects.collect { subproject ->
+            subproject.tasks.matching { it.name == taskName }
+        }
+    }
 }

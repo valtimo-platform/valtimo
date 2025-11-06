@@ -56,6 +56,8 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(DELETE, "/api/v1/case/{caseDefinitionKey}/stored-quick-search/{title}")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/v1/case/{caseDefinitionKey}/stored-quick-search")).authenticated()
                     .requestMatchers(antMatcher(POST, "/api/v1/case/{caseDefinitionName}/export")).authenticated()
+                    .requestMatchers(antMatcher(GET, "/api/v1/case/{caseDefinitionKey}/hidden-list-column")).authenticated()
+                    .requestMatchers(antMatcher(POST, "/api/v1/case/{caseDefinitionKey}/hidden-list-column")).authenticated()
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(PATCH, "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/settings")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/{caseDefinitionKey}")).hasAuthority(ADMIN)
@@ -95,9 +97,18 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
                     .requestMatchers(antMatcher(GET, "/api/management/v1/case-definition/check")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(GET, "$MANAGEMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(ADMIN)
                     .requestMatchers(antMatcher(POST, "$MANAGEMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(ADMIN)
-                    .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(USER)
                     .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}/widget/{widgetKey}"))
                     .hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}")).hasAuthority(USER)
+                    .requestMatchers(antMatcher(POST, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(PUT, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(DELETE, MANAGEMENT_HEADER_WIDGET_URL)).hasAuthority(ADMIN)
+                    .requestMatchers(antMatcher(GET, "$DOCUMENT_WIDGET_TAB_URL/{tabKey}/widget/{widgetKey}"))
+                    .hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, HEADER_WIDGET_URL))
+                    .hasAuthority(USER)
+                    .requestMatchers(antMatcher(GET, "$HEADER_WIDGET_URL/data")).hasAuthority(USER)
             }
         } catch (e: Exception) {
             throw HttpConfigurerConfigurationException(e)
@@ -118,5 +129,9 @@ class CaseHttpSecurityConfigurer : HttpSecurityConfigurer {
         private const val MANAGEMENT_WIDGET_TAB_URL =
             "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/widget-tab"
         private const val DOCUMENT_WIDGET_TAB_URL = "/api/v1/document/{documentId}/widget-tab"
+        private const val MANAGEMENT_HEADER_WIDGET_URL =
+            "/api/management/v1/case-definition/{caseDefinitionKey}/version/{caseDefinitionVersionTag}/header-widget"
+        private const val HEADER_WIDGET_URL =
+            "/api/v1/case/{documentId}/header-widget"
     }
 }

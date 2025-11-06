@@ -14,27 +14,39 @@
   ~ limitations under the License.
   -->
 
-<cds-tabs type="contained">
-  <cds-tab
-    [heading]="'interface.editor.visualEditor' | translate"
-    (selected)="switchTab(WidgetManagementTab.VISUAL)"
-  >
-    <valtimo-widget-management-editor
-      *ngIf="$activeTab() === WidgetManagementTab.VISUAL"
-      [availableWidgetTypes]="availableWidgetTypes"
-    ></valtimo-widget-management-editor>
-  </cds-tab>
+@if (!disableJsonEditor) {
+  <cds-tabs type="contained">
+    <cds-tab
+      [heading]="'interface.editor.visualEditor' | translate"
+      (selected)="switchTab(WidgetManagementTab.VISUAL)"
+    >
+      <ng-container *ngTemplateOutlet="widgetEditor"></ng-container>
+    </cds-tab>
 
-  <cds-tab
-    [heading]="'interface.editor.jsonEditor' | translate"
-    (selected)="switchTab(WidgetManagementTab.JSON)"
-  >
-    <valtimo-json-editor
-      *ngIf="$activeTab() === WidgetManagementTab.JSON"
-      [model]="jsonModel$ | async"
-      [fitPage]="true"
-      [fitPageExtraSpace]="136"
-      (saveEvent)="onSaveEvent($event)"
-    ></valtimo-json-editor>
-  </cds-tab>
-</cds-tabs>
+    <cds-tab
+      [heading]="'interface.editor.jsonEditor' | translate"
+      (selected)="switchTab(WidgetManagementTab.JSON)"
+    >
+      <valtimo-json-editor
+        *ngIf="$activeTab() === WidgetManagementTab.JSON"
+        [model]="jsonModel$ | async"
+        [fitPage]="true"
+        [fitPageExtraSpace]="136"
+        (saveEvent)="onSaveEvent($event)"
+      ></valtimo-json-editor>
+    </cds-tab>
+  </cds-tabs>
+} @else {
+  <ng-container *ngTemplateOutlet="widgetEditor"></ng-container>
+}
+
+<ng-template #widgetEditor>
+  <valtimo-widget-management-editor
+    *ngIf="$activeTab() === WidgetManagementTab.VISUAL"
+    [availableWidgetTypes]="availableWidgetTypes"
+    [disableDuplicate]="disableDuplicate"
+    [enableWidgetDivider]="enableWidgetDivider"
+    [singleWidget]="singleWidget"
+    [defaultWidth]="defaultWidth"
+  ></valtimo-widget-management-editor>
+</ng-template>

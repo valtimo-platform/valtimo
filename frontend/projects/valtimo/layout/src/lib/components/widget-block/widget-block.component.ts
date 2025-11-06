@@ -62,7 +62,6 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
   public readonly dynamicContainer: ViewContainerRef;
 
   @Input() public set widget(value: WidgetWithUuid) {
-    this._widgetUuid = value.uuid;
     this._widget$.next(value);
   }
 
@@ -131,8 +130,6 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
 
   private _observer!: ResizeObserver;
 
-  private _widgetUuid!: string;
-
   constructor(
     private readonly widgetLayoutService: WidgetLayoutService,
     private readonly route: ActivatedRoute,
@@ -174,7 +171,7 @@ export class WidgetBlockComponent implements AfterViewInit, OnDestroy {
           const component = this.widgetComponentMap[widget.type];
           if (!component) return;
           this.dynamicContainer.clear();
-          const componentRef = this.dynamicContainer.createComponent(component);
+          const componentRef = this.dynamicContainer.createComponent(component) as any;
           if (documentId) componentRef.instance.documentId = documentId;
           componentRef.instance.widgetConfiguration = widget;
           componentRef.instance.widgetUuid = widget.uuid;

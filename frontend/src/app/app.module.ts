@@ -67,6 +67,7 @@ import {FormioComponent} from './form-io/form-io.component';
 import {FormModule} from '@valtimo/form';
 import {UploadShowcaseComponent} from './upload-showcase/upload-showcase.component';
 import {CustomCaseTabComponent} from './custom-case-tab/custom-case-tab.component';
+import {NotificationTestComponent} from './notification-test/notification-test.component';
 import {CustomMapsTabComponent} from './custom-maps-tab/custom-maps-tab.component';
 import {SwaggerModule} from '@valtimo/swagger';
 import {AnalyseModule} from '@valtimo/analyse';
@@ -97,6 +98,7 @@ import {
   catalogiApiPluginSpecification,
   DocumentenApiPluginModule,
   documentenApiPluginSpecification,
+  IkoPluginModule,
   KlantinteractiesApiPluginModule,
   klantinteractiesApiPluginSpecification,
   NotificatiesApiPluginModule,
@@ -138,6 +140,7 @@ import {LoggingModule} from '@valtimo/logging';
 import {FormViewModelModule} from '@valtimo/form-view-model';
 import {CaseManagementModule} from '@valtimo/case-management';
 import {CustomFormComponent} from '@src/app/custom-form-component/custom-form.component';
+import {IkoModule} from '@valtimo/iko';
 
 export function tabsFactory() {
   return new Map<string, object>([
@@ -160,6 +163,7 @@ export function tabsFactory() {
     UploadShowcaseComponent,
     CustomCaseTabComponent,
     CustomMapsTabComponent,
+    NotificationTestComponent,
   ],
   bootstrap: [AppComponent],
   imports: [
@@ -231,6 +235,8 @@ export function tabsFactory() {
     BpmnJsDiagramModule,
     MenuModule,
     WidgetModule,
+    IkoPluginModule,
+    IkoModule,
   ],
   providers: [
     provideHttpClient(withInterceptorsFromDi()),

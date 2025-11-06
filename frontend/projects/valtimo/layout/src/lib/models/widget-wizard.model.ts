@@ -22,20 +22,27 @@ import {
   WidgetManagementFieldsComponent,
   WidgetManagementTableComponent,
 } from '../components/widget-management/management-content';
-import {IWidgetContentComponent} from '../interfaces';
+import {WidgetManagementInteractiveTableComponent} from '../components/widget-management/management-content/interactive-table/widget-management-interactive-table.component';
 import {BasicWidget, WidgetType} from './widget.model';
+import {WidgetWizardTypeStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-type-step/widget-wizard-type-step.component';
+import {WidgetWizardWidthStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-width-step/widget-wizard-width-step.component';
+import {WidgetWizardStyleStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-style-step/widget-wizard-style-step.component';
+import {WidgetWizardContentStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-content-step/widget-wizard-content-step.component';
+import {WidgetWizardDisplayConditionsStepComponent} from '../components/widget-management/management-wizard/steps/widget-wizard-display-conditions-step/widget-wizard-display-conditions-step.component';
+import {WidgetManagementWidgetFormioComponent} from '../components/widget-management/management-content/formio/widget-management-widget-formio.component';
 
 enum WidgetWizardStep {
-  TYPE,
-  WIDTH,
-  STYLE,
-  CONTENT,
+  TYPE = 'type',
+  WIDTH = 'width',
+  STYLE = 'style',
+  CONTENT = 'content',
+  DISPLAY_CONDITIONS = 'displayConditions',
 }
 
 enum WidgetWizardCloseEventType {
-  CANCEL,
-  CREATE,
-  EDIT,
+  CANCEL = 'cancel',
+  CREATE = 'create',
+  EDIT = 'edit',
 }
 
 enum WidgetStyle {
@@ -53,34 +60,56 @@ interface WidgetTypeSelection {
   descriptionKey: string;
   illustrationUrl: string;
   type: WidgetType;
-  component: Type<IWidgetContentComponent>;
+  component: Type<any>;
 }
+
+const WIZARD_STEP_COMPONENTS: Record<WidgetWizardStep, any> = {
+  [WidgetWizardStep.TYPE]: WidgetWizardTypeStepComponent,
+  [WidgetWizardStep.WIDTH]: WidgetWizardWidthStepComponent,
+  [WidgetWizardStep.STYLE]: WidgetWizardStyleStepComponent,
+  [WidgetWizardStep.CONTENT]: WidgetWizardContentStepComponent,
+  [WidgetWizardStep.DISPLAY_CONDITIONS]: WidgetWizardDisplayConditionsStepComponent,
+};
 
 const AVAILABLE_WIDGETS: WidgetTypeSelection[] = [
   {
-    titleKey: 'widgetTabManagement.types.fields.title',
-    descriptionKey: 'widgetTabManagement.types.fields.description',
+    titleKey: 'widgetTabManagement.type.fields.title',
+    descriptionKey: 'widgetTabManagement.type.fields.description',
     illustrationUrl: 'valtimo-layout/img/widget-management/types/fields.svg',
     type: WidgetType.FIELDS,
     component: WidgetManagementFieldsComponent,
   },
   {
-    titleKey: 'widgetTabManagement.types.custom.title',
-    descriptionKey: 'widgetTabManagement.types.custom.description',
+    titleKey: 'widgetTabManagement.type.custom.title',
+    descriptionKey: 'widgetTabManagement.type.custom.description',
     illustrationUrl: 'valtimo-layout/img/widget-management/types/angular.svg',
     type: WidgetType.CUSTOM,
     component: WidgetManagementCustomComponent,
   },
   {
-    titleKey: 'widgetTabManagement.types.table.title',
-    descriptionKey: 'widgetTabManagement.types.table.description',
+    titleKey: 'widgetTabManagement.type.formio.title',
+    descriptionKey: 'widgetTabManagement.type.formio.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/formio.svg',
+    type: WidgetType.FORMIO,
+    component: WidgetManagementWidgetFormioComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.table.title',
+    descriptionKey: 'widgetTabManagement.type.table.description',
     illustrationUrl: 'valtimo-layout/img/widget-management/types/table.svg',
     type: WidgetType.TABLE,
     component: WidgetManagementTableComponent,
   },
   {
-    titleKey: 'widgetTabManagement.types.collection.title',
-    descriptionKey: 'widgetTabManagement.types.collection.description',
+    titleKey: 'widgetTabManagement.type.interactive-table.title',
+    descriptionKey: 'widgetTabManagement.type.interactive-table.description',
+    illustrationUrl: 'valtimo-layout/img/widget-management/types/table.svg',
+    type: WidgetType.INTERACTIVE_TABLE,
+    component: WidgetManagementInteractiveTableComponent,
+  },
+  {
+    titleKey: 'widgetTabManagement.type.collection.title',
+    descriptionKey: 'widgetTabManagement.type.collection.description',
     illustrationUrl: 'valtimo-layout/img/widget-management/types/collection.svg',
     type: WidgetType.COLLECTION,
     component: WidgetManagementCollectionComponent,
@@ -100,12 +129,13 @@ const WIDGET_STYLE_LABELS: {[key: string]: string} = {
 };
 
 export {
-  WidgetWizardStep,
-  WidgetTypeSelection,
   AVAILABLE_WIDGETS,
-  WidgetStyle,
-  WIDGET_WIDTH_LABELS,
   WIDGET_STYLE_LABELS,
-  WidgetWizardCloseEventType,
+  WIDGET_WIDTH_LABELS,
+  WidgetStyle,
+  WidgetTypeSelection,
   WidgetWizardCloseEvent,
+  WidgetWizardCloseEventType,
+  WidgetWizardStep,
+  WIZARD_STEP_COMPONENTS,
 };

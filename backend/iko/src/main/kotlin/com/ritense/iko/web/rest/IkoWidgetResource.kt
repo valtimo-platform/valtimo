@@ -45,7 +45,7 @@ class IkoWidgetResource(
         @PathVariable ikoDataAggregateKey: String,
         @PathVariable tabKey: String,
     ): ResponseEntity<List<WidgetDto>> {
-        return ResponseEntity.ok(ikoWidgetService.findAllByTabKey(ikoDataAggregateKey, tabKey).map { it.toDto() })
+        return ResponseEntity.ok(ikoWidgetService.findAllByTabKeyFilteredByDisplayConditions(ikoDataAggregateKey, tabKey).map { it.toDto() })
     }
 
     @GetMapping("/v1/iko-data-aggregate/{ikoDataAggregateKey}/tab/{tabKey}/widget/{widgetKey}/data")

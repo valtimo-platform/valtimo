@@ -114,7 +114,6 @@ spring:
     autoconfigure:
         exclude:
             - org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration
-            - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
     cloud:
         function:
             definition: kotlinInboxCloudEventConsumer
@@ -174,6 +173,17 @@ valtimo:
         tokenValidityInSeconds: 3600 # Token is valid 1 hour
     plugin:
         encryption-secret: ${VALTIMO_PLUGIN_ENCRYPTIONSECRET}
+        identifier-field: username
+
+    notificaties-api:
+        processing:
+            batch-size: 50
+            initial-retries: 5
+            retry-delay: 5s
+            retry-backoff-multiplier: 3
+            retention-period: 5m
+            poll-interval: PT1S
+
     hardening:
         allowStacktraceOnIps:
             - 127.0.0.1
