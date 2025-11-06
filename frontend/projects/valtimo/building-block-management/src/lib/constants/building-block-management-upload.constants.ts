@@ -14,5 +14,18 @@
  * limitations under the License.
  */
 
-export * from './building-block-management.constants';
-export * from './building-block-management-upload.constants';
+enum UPLOAD_STATUS {
+  ACTIVE = 'active',
+  ERROR = 'error',
+  FINISHED = 'finished',
+}
+
+enum UPLOAD_STEP {
+  FILE_SELECT = 'fileSelect',
+  FILE_UPLOAD = 'fileUpload',
+  PLUGINS = 'plugins',
+}
+
+const STEPS = [UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT, UPLOAD_STEP.FILE_UPLOAD];
+
+export {STEPS, UPLOAD_STATUS, UPLOAD_STEP};

@@ -14,5 +14,18 @@
  * limitations under the License.
  */
 
-export * from './building-block-management.constants';
-export * from './building-block-management-upload.constants';
+import {Component, Input} from '@angular/core';
+import {CommonModule} from '@angular/common';
+
+@Component({
+  standalone: true,
+  selector: 'valtimo-building-block-management-upload-step',
+  templateUrl: './building-block-management-upload-step.component.html',
+  styleUrls: ['./building-block-management-upload-step.component.scss'],
+  imports: [CommonModule],
+})
+export class BuildingBlockManagementUploadStepComponent {
+  @Input() illustration!: string;
+  @Input() message!: string;
+  @Input() title!: string;
+}
