@@ -4,11 +4,17 @@ permissions:
   contents: read
 
 on:
+  workflow_call:
+    inputs:
+      project_version:
+        description: "Project version"
+        required: false
+        type: string
   workflow_dispatch:
     inputs:
       project_version:
         description: "Project version"
-        required: true
+        required: false
 
 defaults:
   run:
@@ -19,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       project_version: ${{ steps.version.outputs.version_release }}
+    env:
+      PROVIDED_VERSION: ${{ inputs.project_version || github.event.inputs.project_version || '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,7 +35,11 @@ jobs:
         id: version
         shell: bash
         run: |
-          SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
+          if [[ -n "${PROVIDED_VERSION}" ]]; then
+            SEMVER_VERSION="${PROVIDED_VERSION}"
+          else
+            SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
+          fi
           echo "version_release=$SEMVER_VERSION" >> "$GITHUB_OUTPUT"
 
   build_and_test_libs:
