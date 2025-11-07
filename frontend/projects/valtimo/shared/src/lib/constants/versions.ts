@@ -30,7 +30,9 @@ async function getLibVersion() {
 }
 
 const VERSIONS: Versions = {
-  frontendLibraries: await getLibVersion(),
+  frontendLibraries: 'unknown',
 } as Versions;
+
+getLibVersion().then(version => (VERSIONS.frontendLibraries = version));
 
 export {VERSIONS};
