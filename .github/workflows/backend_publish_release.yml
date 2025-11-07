@@ -5,7 +5,16 @@ permissions:
 
 on:
   workflow_call:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      project_version:
+        description: "Base semantic version (e.g. 13.6.0)"
+        required: true
 
 defaults:
   run:
@@ -23,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref_name, 'release/') }}
     env:
+      PROVIDED_VERSION: ${{ inputs.project_version || github.event.inputs.project_version || '' }}
       SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
       SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
@@ -49,7 +59,11 @@ jobs:
         id: version
         shell: bash
         run: |
-          SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
+          if [[ -n "${PROVIDED_VERSION}" ]]; then
+            SEMVER_VERSION="${PROVIDED_VERSION}"
+          else
+            SEMVER_VERSION="${GITHUB_REF_NAME#release/}"
+          fi
           VERSION_RELEASE="${SEMVER_VERSION}.RELEASE"
           echo "version_release=$VERSION_RELEASE" >> "$GITHUB_OUTPUT"
 
