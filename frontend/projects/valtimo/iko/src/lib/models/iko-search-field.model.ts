@@ -27,8 +27,8 @@ enum SearchFieldDataType {
 enum SearchFieldFieldType {
   SINGLE = 'single',
   RANGE = 'range',
-  SINGLE_SELECT_DROPDOWN = 'single_select_dropdown',
-  MULTI_SELECT_DROPDOWN = 'multi_select_dropdown',
+  SINGLE_SELECT_DROPDOWN = 'single-select-dropdown',
+  MULTI_SELECT_DROPDOWN = 'multi-select-dropdown',
 }
 
 enum SearchFieldMatchType {

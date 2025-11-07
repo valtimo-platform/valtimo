@@ -33,6 +33,7 @@ import {
   combineLatest,
   map,
   Observable,
+  of,
   Subscription,
   switchMap,
   take,
@@ -43,6 +44,8 @@ import {
   IkoManagementParams,
   IkoRepositoryConfigResponse,
   IkoSearchField,
+  SearchDropdownValue,
+  SearchFieldFieldType,
 } from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchFieldModalComponent} from './search-field-modal/search-field-modal.component';
@@ -92,7 +95,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
     tap(() => this.loading$.next(false))
   );
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
-  public readonly deleteFieldKey$ = new BehaviorSubject<string | null>(null);
+  public readonly deleteField$ = new BehaviorSubject<IkoSearchField | null>(null);
   public readonly fieldModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly prefillData$ = new BehaviorSubject<IkoSearchField | null>(null);
 
@@ -196,25 +199,61 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public deleteSearchField(field: IkoSearchField): void {
-    this.deleteFieldKey$.next(field.key);
+    this.deleteField$.next(field);
     this.deleteModalOpen$.next(true);
   }
 
   public editSearchField(field: IkoSearchField): void {
+    if (!!field.dropdownDataProvider) {
+      this.params$
+        .pipe(
+          switchMap((params: {aggregateKey: string; actionKey: string}) =>
+            this.ikoManagementApiService.getDropdownData(
+              field.dropdownDataProvider,
+              params.aggregateKey,
+              params.actionKey,
+              field.key
+            )
+          ),
+          take(1)
+        )
+        .subscribe(dropdownValues => {
+          field.dropdownValues = dropdownValues as SearchDropdownValue;
+          this.prefillData$.next(field);
+          this.fieldModalOpen$.next(true);
+        });
+
+      return;
+    }
     this.prefillData$.next(field);
     this.fieldModalOpen$.next(true);
   }
 
-  public onDeleteSearchField(key: string): void {
+  public onDeleteSearchField(field: IkoSearchField): void {
     this.params$
       .pipe(
-        switchMap((params: {aggregateKey: string; actionKey: string}) =>
-          this.ikoManagementApiService.deleteIkoSearchField(
-            params.aggregateKey,
-            params.actionKey,
-            key
-          )
-        )
+        switchMap((params: {aggregateKey: string; actionKey: string}) => {
+          const dropdown$ = field.dropdownDataProvider
+            ? this.ikoManagementApiService
+                .deleteDropdownData(
+                  field.dropdownDataProvider,
+                  params.aggregateKey,
+                  params.actionKey,
+                  field.key
+                )
+                .pipe(map(result => ({params, dropdownResult: result})))
+            : of({params, dropdownResult: null});
+
+          return dropdown$.pipe(
+            switchMap(({params}) =>
+              this.ikoManagementApiService.deleteIkoSearchField(
+                params.aggregateKey,
+                params.actionKey,
+                field.key
+              )
+            )
+          );
+        })
       )
       .subscribe(() => this._refresh$.next(null));
   }
@@ -223,10 +262,14 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
     this.fieldModalOpen$.next(false);
     if (!field) return;
 
+    const hasDropdownValues: boolean =
+      field.fieldType === SearchFieldFieldType.SINGLE_SELECT_DROPDOWN ||
+      field.fieldType === SearchFieldFieldType.MULTI_SELECT_DROPDOWN;
+
     this.params$
       .pipe(
         switchMap((params: {aggregateKey: string; actionKey: string}) =>
-          this.prefillData$.getValue() === null
+          (this.prefillData$.getValue() === null
             ? this.ikoManagementApiService.createIkoSearchField(
                 params.aggregateKey,
                 params.actionKey,
@@ -239,6 +282,19 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
                 field.key,
                 field
               )
+          ).pipe(
+            switchMap(() => {
+              return hasDropdownValues
+                ? this.ikoManagementApiService.postDropdownData(
+                    field.dropdownDataProvider ?? '',
+                    params.aggregateKey,
+                    params.actionKey,
+                    field.key,
+                    field.dropdownValues ?? {}
+                  )
+                : of(field);
+            })
+          )
         )
       )
       .subscribe(() => this._refresh$.next(null));

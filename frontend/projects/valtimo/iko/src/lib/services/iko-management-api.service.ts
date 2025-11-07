@@ -357,8 +357,8 @@ export class IkoManagementApiService extends BaseApiService {
     requestKey: string,
     fieldKey: string,
     body: IkoSearchField
-  ): Observable<IkoSearchField[]> {
-    return this.httpClient.put<IkoSearchField[]>(
+  ): Observable<IkoSearchField> {
+    return this.httpClient.put<IkoSearchField>(
       this.getApiUrl(
         `management/v1/iko-data-aggregate/${aggregateKey}/data-request/${requestKey}/search-field/${fieldKey}`
       ),
@@ -425,6 +425,50 @@ export class IkoManagementApiService extends BaseApiService {
   public deleteIkoListColumn(aggregateKey: string, columnKey: string): Observable<void> {
     return this.httpClient.delete<void>(
       this.getApiUrl(`/management/v1/iko-data-aggregate/${aggregateKey}/column/${columnKey}`)
+    );
+  }
+
+  public getDropdownData(
+    provider: string,
+    ikoDataAggregateKey: string,
+    ikoDataRequestKey: string,
+    searchFieldKey: string
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(
+      ikoDataAggregateKey + '_' + ikoDataRequestKey + '_' + searchFieldKey
+    );
+    return this.httpClient.get<object>(
+      this.getApiUrl(`/v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
+    );
+  }
+
+  public postDropdownData(
+    provider: string,
+    ikoDataAggregateKey: string,
+    ikoDataRequestKey: string,
+    searchFieldKey: string,
+    dropdownData: object
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(
+      ikoDataAggregateKey + '_' + ikoDataRequestKey + '_' + searchFieldKey
+    );
+    return this.httpClient.post<object>(
+      this.getApiUrl(`v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`),
+      dropdownData
+    );
+  }
+
+  public deleteDropdownData(
+    provider: string,
+    ikoDataAggregateKey: string,
+    ikoDataRequestKey: string,
+    searchFieldKey: string
+  ): Observable<object> {
+    const dropdownListKey = encodeURI(
+      ikoDataAggregateKey + '_' + ikoDataRequestKey + '_' + searchFieldKey
+    );
+    return this.httpClient.delete<object>(
+      this.getApiUrl(`v1/data/dropdown-list?provider=${provider}&key=${dropdownListKey}`)
     );
   }
 }
