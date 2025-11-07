@@ -17,7 +17,7 @@ on:
         value: frontend-build-output
       project_version:
         description: Project version, equal to the inputs.project_version if supplied, otherwise computed from branch name
-        value: ${{ inputs.project_version || jobs.build_and_test.outputs.project_version }}
+        value: ${{ jobs.determine_project_version.outputs.project_version }}
 
 defaults:
   run:
@@ -84,14 +84,40 @@ jobs:
           path: frontend/node_modules
           key: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
 
-  build_and_test:
-    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') && needs.install_packages.result == 'skipped' }}
+  determine_project_version:
     runs-on: ubuntu-latest
     outputs:
       project_version: ${{ steps.determine_project_version.outputs.project_version }}
+    steps:
+      - name: Determine project version
+        id: determine_project_version
+        env:
+          INPUT_PROJECT_VERSION: ${{ inputs.project_version }}
+          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          if [[ "$INPUT_PROJECT_VERSION" != '' ]]; then
+            echo "Version is ${INPUT_PROJECT_VERSION}"
+            echo "project_version=${INPUT_PROJECT_VERSION}" >> $GITHUB_OUTPUT
+            return 0
+          fi
+
+          # replace special characters with -
+          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
+
+          SEMVER_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
+          PROJECT_VERSION="${SEMVER_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
+
+          echo "Version is ${PROJECT_VERSION}"
+          echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
+
+  build_and_test:
+    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') && needs.install_packages.result == 'skipped' }}
+    runs-on: ubuntu-latest
     needs:
       - install_packages
       - check_cache
+      - determine_project_version
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -113,25 +139,9 @@ jobs:
       - name: Test all libraries
         run: npm run libs-test-all-cicd
 
-      - name: Determine project version
-        id: determine_project_version
-        if: inputs.project_version == ''
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-          BUILD_NUMBER: ${{ github.run_number }}
-        run: |
-          # replace special characters with -
-          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[\/+|<>,;]/-/g' | tr '[:upper:]' '[:lower:]')
-
-          SEMVER_VERSION=$(cat gradle.properties | grep 'projectVersion=' | cut -d '=' -f 2)     
-          PROJECT_VERSION="${SEMVER_VERSION}-${SAFE_BRANCH_NAME}.${BUILD_NUMBER}"
-
-          echo "Version is ${PROJECT_VERSION}"
-          echo "project_version=${PROJECT_VERSION}" >> $GITHUB_OUTPUT
-
       - name: Set project version on all libraries
         env:
-          PROJECT_VERSION: ${{ inputs.project_version || steps.determine_project_version.outputs.project_version }}
+          PROJECT_VERSION: ${{ needs.determine_project_version.outputs.project_version }}
         run: |
           npm run libs-increment-all -- ${PROJECT_VERSION}
           npm run copy-frontend-version
