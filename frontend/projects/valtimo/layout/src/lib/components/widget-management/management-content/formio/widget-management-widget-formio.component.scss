@@ -24,6 +24,11 @@
     background: var(--cds-layer-02);
   }
 
+  ::ng-deep.cds--list-box,
+  ::ng-deep.cds--text-input {
+    background: var(--cds-layer);
+  }
+
   ::ng-deep.dropdown-label {
     label {
       display: flex;

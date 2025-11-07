@@ -57,12 +57,21 @@ class IkoValueResolverFactory(
 
     override fun createResolver(properties: Map<String, Any>): Function<String, Any?> {
         val ikoDataAggregateKey = properties[IKO_DATA_AGGREGATE_KEY]?.toString()
+        return getIkoDataAggregateDataById(ikoDataAggregateKey, properties)
+            ?: searchIkoDataAggregateData(ikoDataAggregateKey, properties)
+            ?: Function { null }
+    }
+
+    private fun getIkoDataAggregateDataById(ikoDataAggregateKey: String?, properties: Map<String, Any>): Function<String, Any?>? {
         val id = properties[ID]?.toString()
         if (ikoDataAggregateKey != null && id != null) {
             val data = ikoDataAggregateService.getDataById(ikoDataAggregateKey, id)
             return toValueFunction(data)
         }
+        return null
+    }
 
+    private fun searchIkoDataAggregateData(ikoDataAggregateKey: String?, properties: Map<String, Any>): Function<String, Any?>? {
         val ikoDataRequestKey = properties[IKO_DATA_REQUEST_KEY]?.toString()
         require(ikoDataAggregateKey != null || ikoDataRequestKey != null) { "Missing ValueResolver context." }
         val (dataRequest, searchFields) = ikoDataRequestService.findAll(
@@ -76,7 +85,7 @@ class IkoValueResolverFactory(
         }
             .filter { (_, searchFields) -> searchFields.all { properties.contains(it.key) || !it.required } }
             .map { (dataRequest, searchFields) -> dataRequest to searchFields.filter { properties.contains(it.key) } }
-            .firstOrNull() ?: return Function { null }
+            .firstOrNull() ?: return null
 
         val filters = searchFields.map { searchField -> DataFilter(searchField.path, properties[searchField.key]) }
         val pageable = properties[PAGEABLE] as Pageable? ?: Pageable.unpaged()
