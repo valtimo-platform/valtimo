@@ -221,8 +221,7 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockCallActivityListener::class)
     fun buildingBlockCallActivityListener(
         processLinkService: ProcessLinkService,
-        buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?
-    ) = BuildingBlockCallActivityListener(processLinkService, buildingBlockPluginConfigurationResolver)
+    ) = BuildingBlockCallActivityListener(processLinkService)
 
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDefinitionMainProcessDefinitionImporter::class)

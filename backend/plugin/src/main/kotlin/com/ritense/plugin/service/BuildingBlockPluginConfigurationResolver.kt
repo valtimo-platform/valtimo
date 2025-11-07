@@ -21,7 +21,6 @@ import org.operaton.bpm.engine.delegate.DelegateTask
 import java.util.UUID
 
 interface BuildingBlockPluginConfigurationResolver {
-    fun register(execution: DelegateExecution, mappings: Map<String, UUID>)
     fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID?
     fun resolve(task: DelegateTask, pluginDefinitionKey: String): UUID?
 }

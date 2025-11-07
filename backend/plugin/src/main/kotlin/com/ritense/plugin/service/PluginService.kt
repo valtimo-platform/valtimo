@@ -418,8 +418,8 @@ class PluginService(
                     )
 
                 val resolvedId = when {
-                    execution != null -> resolver.resolve(execution, pluginDefinitionKey)
                     task != null -> resolver.resolve(task, pluginDefinitionKey)
+                    execution != null -> resolver.resolve(execution, pluginDefinitionKey)
                     else -> null
                 }
 

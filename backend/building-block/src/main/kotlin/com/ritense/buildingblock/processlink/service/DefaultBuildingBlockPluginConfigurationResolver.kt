@@ -26,11 +26,6 @@ import java.util.UUID
 @Component
 @SkipComponentScan
 class DefaultBuildingBlockPluginConfigurationResolver : BuildingBlockPluginConfigurationResolver {
-
-    override fun register(execution: DelegateExecution, mappings: Map<String, UUID>) {
-        execution.setVariableLocal(PLUGIN_CONFIGURATION_MAPPINGS_VARIABLE, HashMap(mappings))
-    }
-
     override fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID? {
         return findMappings(execution)[pluginDefinitionKey]
     }
@@ -40,17 +35,6 @@ class DefaultBuildingBlockPluginConfigurationResolver : BuildingBlockPluginConfi
     }
 
     private fun findMappings(execution: DelegateExecution): Map<String, UUID> {
-        return generateSequence(execution) { current -> current.superExecution }
-            .mapNotNull { current ->
-                val value = current.getVariableLocal(PLUGIN_CONFIGURATION_MAPPINGS_VARIABLE)
-                @Suppress("UNCHECKED_CAST")
-                value as? Map<String, UUID>
-            }
-            .firstOrNull()
-            ?: emptyMap()
-    }
-
-    companion object {
-        private const val PLUGIN_CONFIGURATION_MAPPINGS_VARIABLE = "buildBlockPluginConfigurationMappings"
+        throw NotImplementedError("TODO: find mapping for building block instance")
     }
 }

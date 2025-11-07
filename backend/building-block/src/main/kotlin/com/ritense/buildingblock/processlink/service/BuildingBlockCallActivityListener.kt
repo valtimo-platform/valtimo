@@ -17,9 +17,6 @@
 package com.ritense.buildingblock.processlink.service
 
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import com.ritense.logging.withLoggingContext
-import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
-import com.ritense.processlink.domain.ProcessLink
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import org.operaton.bpm.engine.delegate.DelegateExecution
@@ -30,7 +27,7 @@ import org.springframework.stereotype.Component
 @SkipComponentScan
 class BuildingBlockCallActivityListener(
     private val processLinkService: ProcessLinkService,
-    private val buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?
+
 ) {
 
     @EventListener(
@@ -39,15 +36,10 @@ class BuildingBlockCallActivityListener(
             && #execution.eventName == T(org.operaton.bpm.engine.delegate.ExecutionListener).EVENTNAME_START"""
     )
     fun onCallActivityStart(execution: DelegateExecution) {
-        val resolver = buildingBlockPluginConfigurationResolver ?: return
         val activityId = execution.currentActivityId ?: return
         val links = processLinkService.getProcessLinks(execution.processDefinitionId, activityId)
             .filterIsInstance<BuildingBlockProcessLink>()
 
-        links.forEach { processLink ->
-            withLoggingContext(ProcessLink::class, processLink.id) {
-                resolver.register(execution, processLink.pluginConfigurationMappings)
-            }
-        }
+        //TODO: start building block instance here
     }
 }
