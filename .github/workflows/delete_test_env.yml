@@ -32,7 +32,8 @@ jobs:
     steps:
       - name: Delete test environment
         run: |
-          curl -L \
+          set -euo pipefail
+          curl --fail-with-body -sS -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.VALTIMO_PRODUCT_DEVELOPMENT_INFRA_GITHUB_TOKEN }}" \
