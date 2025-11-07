@@ -15,6 +15,9 @@ on:
       build_artifact_name:
         description: Build artifact this workflow produces that can be retrieved with the 'download-artifact' action
         value: frontend-build-output
+      project_version:
+        description: Project version, equal to the inputs.project_version if supplied, otherwise computed from branch name
+        value: ${{ inputs.project_version || jobs.build_and_test.outputs.project_version }}
 
 defaults:
   run:
@@ -22,6 +25,7 @@ defaults:
 
 jobs:
   check_cache:
+    if: ${{ !startsWith(github.ref_name, 'release/') }}
     runs-on: ubuntu-latest
     outputs:
       cache-hit: ${{ steps.restore_cache.outputs.cache-hit  }}
@@ -54,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - check_cache
-    if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
+    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') }}
     outputs:
       npm_package_cachekey: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
     steps:
@@ -81,7 +85,7 @@ jobs:
           key: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
 
   build_and_test:
-    if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
+    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') }}
     runs-on: ubuntu-latest
     outputs:
       project_version: ${{ steps.determine_project_version.outputs.project_version }}
@@ -148,7 +152,7 @@ jobs:
 
   # 'lint' can run in parallel with 'build_and_test'
   lint:
-    if: ${{ needs.check_cache.outputs.cache-hit != 'true' }}
+    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') }}
     needs:
       - install_packages
       - check_cache
