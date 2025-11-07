@@ -85,13 +85,13 @@ jobs:
           key: ${{ steps.restore_node_modules_cache.outputs.cache-primary-key }}
 
   build_and_test:
-    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') }}
+    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') && needs.install_packages.result == 'skipped' }}
     runs-on: ubuntu-latest
     outputs:
       project_version: ${{ steps.determine_project_version.outputs.project_version }}
     needs:
-      - check_cache
       - install_packages
+      - check_cache
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -152,10 +152,8 @@ jobs:
 
   # 'lint' can run in parallel with 'build_and_test'
   lint:
-    if: ${{ always() && (needs.check_cache.result == 'skipped' || needs.check_cache.outputs.cache-hit != 'true') }}
     needs:
       - install_packages
-      - check_cache
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
