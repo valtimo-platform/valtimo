@@ -2075,6 +2075,40 @@
       "name": "Name",
       "key": "Key",
       "mainText": "Main process"
+    },
+    "importDefinition": {
+      "title": "Import building block definition",
+      "overwriteWarning": "If your building block definition contains configurations, models and/or definitions with the same name or identifier as already on your system, they will be overwritten.",
+      "startUpload": "Start upload",
+      "checkbox": {
+        "message": "I understand that configurations may be overwritten",
+        "error": "This field is mandatory"
+      },
+      "info": {
+        "title": "Attention",
+        "message": "Before importing, please make sure the plugin configurations or process definitions referenced by this building block are already present in the system."
+      },
+      "upload": {
+        "title": "Upload file",
+        "description": "Max file size is 500kb. Supported file types are ZIP and JSON.",
+        "buttonText": "Select file"
+      },
+      "progressBar": {
+        "active": "This may take a while",
+        "error": "Unable to import building block definition. Nothing was imported due to an error at our end. Please try again later. If the issue keeps happening, contact support.",
+        "finished": "Building block definition successfully imported",
+        "label": "Importing building block definition"
+      },
+      "invalidJsonError": {
+        "text": "Please make sure it contains a valid JSON value.",
+        "title": "The file contains an error."
+      },
+      "steps": {
+        "plugins": {
+          "message": "This building block may use plugins. Make sure you configure them correctly.",
+          "title": "Plugin Configuration"
+        }
+      }
     }
   }
 }

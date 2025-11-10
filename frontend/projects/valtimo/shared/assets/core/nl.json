@@ -2108,6 +2108,40 @@
       "name": "Naam",
       "key": "Sleutel",
       "mainText": "Hoofdproces"
+    },
+    "importDefinition": {
+      "title": "Bouwblokdefinitie importeren",
+      "overwriteWarning": "Als je bouwblokdefinitie configuraties, modellen en/of definities bevat met dezelfde naam of identifier als die al in het systeem aanwezig zijn, worden deze overschreven.",
+      "startUpload": "Upload starten",
+      "checkbox": {
+        "message": "Ik begrijp dat configuraties kunnen worden overschreven",
+        "error": "Dit veld is verplicht"
+      },
+      "info": {
+        "title": "Let op",
+        "message": "Controleer vóór het importeren dat de plug-inconfiguraties of procesdefinities waarnaar dit bouwblok verwijst al aanwezig zijn in het systeem."
+      },
+      "upload": {
+        "title": "Bestand uploaden",
+        "description": "Maximale bestandsgrootte is 500 KB. Ondersteunde bestandstypen zijn ZIP en JSON.",
+        "buttonText": "Bestand selecteren"
+      },
+      "progressBar": {
+        "active": "Dit kan even duren",
+        "error": "Bouwblokdefinitie kon niet worden geïmporteerd. Er is niets geïmporteerd door een fout aan onze kant. Probeer het later opnieuw. Als het probleem aanhoudt, neem contact op met de supportafdeling.",
+        "finished": "Bouwblokdefinitie succesvol geïmporteerd",
+        "label": "Bouwblokdefinitie importeren"
+      },
+      "invalidJsonError": {
+        "text": "Zorg ervoor dat het bestand een geldige JSON-waarde bevat.",
+        "title": "Het bestand bevat een fout."
+      },
+      "steps": {
+        "plugins": {
+          "message": "Dit bouwblok kan plug-ins gebruiken. Zorg dat je deze correct configureert.",
+          "title": "Plug-inconfiguratie"
+        }
+      }
     }
   }
 }
