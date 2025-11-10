@@ -23,7 +23,6 @@ import com.ritense.processdocument.service.ProcessDefinitionCaseDefinitionServic
 import com.ritense.processlink.web.rest.dto.ProcessLinkCreateRequestDto
 import com.ritense.valtimo.contract.SolutionModuleId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
-import com.ritense.valtimo.contract.process.ProcessConstants.OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX
 import com.ritense.valtimo.exception.BpmnParseException
 import com.ritense.valtimo.service.OperatonProcessService
 import org.operaton.bpm.engine.ParseException
@@ -96,15 +95,14 @@ class ProcessDeploymentService(
                     )
                 }
 
-                // TODO: Have this work with BuildingBlockDefinitionId
                 // If the deployment is null, the same xml was deployed before
-                if (deployment == null && (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX == solutionModuleId?.getTagPrefix())) {
+                if (deployment == null) {
                     runWithoutAuthorization {
                         val model = Bpmn.readModelFromStream(bpmn!!.inputStream)
                         val previouslyDeployProcess =
                             operatonProcessService.getExistingProcessForFile(solutionModuleId, model)
                         processLinkService.deleteProcessLinksForProcessDefinition(previouslyDeployProcess.id)
-                        createProcessLinks(processLinks = processLinks, caseDefinitionId = solutionModuleId as CaseDefinitionId)
+                        createProcessLinks(processLinks = processLinks, solutionModuleId = solutionModuleId)
                     }
                     return null
                 }
@@ -141,10 +139,7 @@ class ProcessDeploymentService(
                 throw RuntimeException("Failed to duplicate process definition. Rolling back deployment.", e)
             }
         }
-        // TODO: Have this work with BuildingBlockDefinitionId
-        if (OPERATON_CASE_DEFINITION_VERSION_TAG_PREFIX == solutionModuleId?.getTagPrefix()) {
-            createProcessLinks(processLinks, deployedProcessDefinitionId, solutionModuleId as CaseDefinitionId)
-        }
+        createProcessLinks(processLinks, deployedProcessDefinitionId, solutionModuleId)
 
         return ProcessDefinitionId(deployedProcessDefinitionId)
     }
@@ -152,7 +147,7 @@ class ProcessDeploymentService(
     private fun createProcessLinks(
         processLinks: List<ProcessLinkCreateRequestDto>,
         deployedProcessDefinitionId: String? = null,
-        caseDefinitionId: CaseDefinitionId? = null
+        solutionModuleId: SolutionModuleId?= null
     ) {
         try {
             processLinks.map { originalLink ->
@@ -163,7 +158,7 @@ class ProcessDeploymentService(
                 }
             }.forEach { link ->
                 runWithoutAuthorization {
-                    processLinkService.createProcessLink(link, caseDefinitionId)
+                    processLinkService.createProcessLink(link, solutionModuleId as? CaseDefinitionId)
                 }
             }
         } catch (e: Exception) {
