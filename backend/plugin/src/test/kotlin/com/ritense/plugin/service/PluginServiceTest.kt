@@ -101,7 +101,7 @@ internal class PluginServiceTest {
             encryptionService,
             environment,
             mock(),
-            Optional.empty()
+            null
         ))
     }
 
@@ -404,7 +404,7 @@ internal class PluginServiceTest {
                 encryptionService,
                 environment,
                 mock(),
-                Optional.of(resolver)
+                resolver
             )
         )
 
@@ -464,7 +464,7 @@ internal class PluginServiceTest {
                 encryptionService,
                 environment,
                 mock(),
-                Optional.of(resolver)
+                resolver
             )
         )
 

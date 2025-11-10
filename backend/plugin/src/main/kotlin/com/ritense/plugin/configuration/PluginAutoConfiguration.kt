@@ -55,7 +55,6 @@ import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
 import org.springframework.core.io.ResourceLoader
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import java.util.Optional
 
 @AutoConfiguration
 @EnableJpaRepositories(
@@ -129,7 +128,7 @@ class PluginAutoConfiguration {
         encryptionService: EncryptionService,
         environment: Environment,
         caseDefinitionChecker: CaseDefinitionChecker,
-        buildingBlockPluginConfigurationResolver: Optional<BuildingBlockPluginConfigurationResolver>,
+        buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?,
     ): PluginService {
         return PluginService(
             pluginDefinitionRepository,

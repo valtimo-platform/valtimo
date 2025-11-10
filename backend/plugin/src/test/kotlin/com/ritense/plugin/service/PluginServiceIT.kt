@@ -49,6 +49,9 @@ import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Import
 import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.InvocationTargetException
 import java.net.URI
@@ -56,6 +59,8 @@ import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
+
+@Import(PluginServiceIT.TestResolverConfig::class)
 internal class PluginServiceIT : BaseIntegrationTest() {
 
     @Autowired
@@ -462,5 +467,27 @@ internal class PluginServiceIT : BaseIntegrationTest() {
         assertEquals(updatedConfiguration.get().properties!!["property1"].textValue(), "updated")
         val linkedConfiguration = pluginConfigurationRepository.findById(pluginConfigurationWithRef.id).get()
         assertEquals(linkedConfiguration.properties!!["property4"].textValue(), newPluginConfigurationId.id.toString())
+    }
+
+    @TestConfiguration
+    class TestResolverConfig {
+        @Bean
+        fun buildingBlockPluginConfigurationResolver(): BuildingBlockPluginConfigurationResolver = TestBuildingBlockPluginConfigurationResolver()
+    }
+
+    class TestBuildingBlockPluginConfigurationResolver : BuildingBlockPluginConfigurationResolver {
+        private val executionMappings = mutableMapOf<String, UUID>()
+
+        override fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID? {
+            return executionMappings.get(pluginDefinitionKey)
+        }
+
+        override fun resolve(task: DelegateTask, pluginDefinitionKey: String): UUID? {
+            return executionMappings.get(pluginDefinitionKey)
+        }
+
+        fun putMapping(pluginDefinitionKey: String, uuid: UUID) {
+            executionMappings[pluginDefinitionKey] = uuid
+        }
     }
 }

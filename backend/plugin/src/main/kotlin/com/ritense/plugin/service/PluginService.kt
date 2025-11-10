@@ -72,7 +72,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.Method
 import java.lang.reflect.Parameter
-import java.util.Optional
 import java.util.UUID
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.functions
@@ -94,7 +93,7 @@ class PluginService(
     private val encryptionService: EncryptionService,
     private val environment: Environment,
     private val caseDefinitionChecker: CaseDefinitionChecker,
-    private val buildingBlockPluginConfigurationResolver: Optional<BuildingBlockPluginConfigurationResolver>
+    private val buildingBlockPluginConfigurationResolver: BuildingBlockPluginConfigurationResolver?
 ) {
 
     fun getObjectMapper(): ObjectMapper {
@@ -412,7 +411,7 @@ class PluginService(
                         "Missing plugin definition key for process link ${processLink.id}"
                     )
 
-                val resolver = buildingBlockPluginConfigurationResolver.orElse(null)
+                val resolver = buildingBlockPluginConfigurationResolver
                     ?: throw IllegalStateException(
                         "Building block plugin configuration resolver is not available"
                     )
