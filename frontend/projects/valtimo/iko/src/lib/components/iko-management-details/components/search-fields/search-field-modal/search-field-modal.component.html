@@ -33,13 +33,16 @@
     </div>
 
     <div class="valtimo-search-fields-modal__input">
-      <v-input-label
-        [title]="'searchFieldsOverview.key' | translate"
-        [tooltip]="'searchFieldsOverviewTooltips.key' | translate"
+      <valtimo-auto-key-input
+        *ngIf="showAutoKey"
+        data-testid="iko-search-key"
+        formControlName="key"
+        placeholderTranslationKey="interface.key"
+        [sourceText]="$modalMode() === 'edit' ? $selectedKey() : title.value"
+        [mode]="$modalMode()"
+        [usedKeys]="usedKeys"
       >
-      </v-input-label>
-
-      <input cdsLayer data-testid="iko-search-key" cdsText type="text" formControlName="key" />
+      </valtimo-auto-key-input>
     </div>
 
     <div class="valtimo-search-fields-modal__input">

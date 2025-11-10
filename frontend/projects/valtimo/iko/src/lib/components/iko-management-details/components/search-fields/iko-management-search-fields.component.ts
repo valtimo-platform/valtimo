@@ -73,6 +73,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
     }))
   );
   public readonly loading$ = new BehaviorSubject<boolean>(true);
+  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
 
   public readonly searchFields$: Observable<IkoSearchField[]> = combineLatest([
     this.params$,
@@ -89,7 +90,12 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
         fieldTypeText: this.translateService.instant(`searchFieldsOverview.${field.fieldType}`),
       }))
     ),
-    tap(() => this.loading$.next(false))
+    tap((content) =>
+    {
+      const keys = content?.map(item => item.key) ?? [];
+      this.usedKeys$.next(keys);
+      this.loading$.next(false);
+    })
   );
   public readonly deleteModalOpen$ = new BehaviorSubject<boolean>(false);
   public readonly deleteFieldKey$ = new BehaviorSubject<string | null>(null);

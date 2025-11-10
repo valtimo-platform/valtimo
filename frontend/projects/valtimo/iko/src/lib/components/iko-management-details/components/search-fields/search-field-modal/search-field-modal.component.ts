@@ -41,6 +41,7 @@ import {
   ValtimoCdsModalDirective,
   ValuePathSelectorPrefix,
   ViewType,
+  AutoKeyInputComponent
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -71,6 +72,7 @@ import {
   SearchFieldFieldType,
   SearchFieldMatchType,
 } from '../../../../../models';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-search-field-modal',
@@ -89,10 +91,13 @@ import {
     ReactiveFormsModule,
     TranslateModule,
     ValtimoCdsModalDirective,
+    AutoKeyInputComponent
   ],
 })
 export class IkoManagementSearchFieldModalComponent implements OnInit {
   @Input({required: true}) open: boolean;
+
+  @Input() public usedKeys: string[] = [];
 
   private _prefillData: IkoSearchField | null;
   @Input() public set prefillData(value: IkoSearchField | null) {
@@ -103,6 +108,10 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
     return this._prefillData;
   }
   @Output() closeEvent = new EventEmitter<Partial<IkoSearchField> | null>();
+
+  public get title(): AbstractControl<string> {
+    return this.formGroup.get('title') as AbstractControl<string>;
+  }
 
   public readonly formGroup = this.fb.group({
     key: this.fb.control<string>('', Validators.required),
@@ -314,6 +323,10 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
     );
 
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
+
+  public readonly $selectedKey = signal<string>('');
+  public readonly $modalMode = signal<ModalMode>('add');
+  public showAutoKey = true;
 
   constructor(
     private readonly iconService: IconService,

@@ -45,8 +45,8 @@
       *ngIf="showAutoKey"
       formControlName="key"
       placeholderTranslationKey="interface.key"
-      [sourceText]="$modalMode() === 'edit' ? $selectedKey() : title.value"
-      [mode]="$modalMode()"
+      [sourceText]="$modalType() === 'edit' ? $selectedKey() : title.value"
+      [mode]="$modalType()"
       [usedKeys]="usedKeys"
     >
     </valtimo-auto-key-input>

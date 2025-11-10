@@ -95,7 +95,6 @@ export class IkoManagementSearchActionModalComponent {
   }
 
   public readonly $selectedKey = signal<string>('');
-  public readonly $modalMode = signal<ModalMode>('add');
   public showAutoKey = true;
 
   public readonly propertyFields$: Observable<PropertyField[]> = toObservable(this.$isOpen).pipe(

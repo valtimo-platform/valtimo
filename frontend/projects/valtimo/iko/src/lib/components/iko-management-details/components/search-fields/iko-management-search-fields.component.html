@@ -39,6 +39,7 @@
 <valtimo-iko-management-search-field-modal
   [open]="fieldModalOpen$ | async"
   [prefillData]="prefillData$ | async"
+  [usedKeys]="usedKeys$ | async"
   (closeEvent)="onModalClose($event)"
 ></valtimo-iko-management-search-field-modal>
 
