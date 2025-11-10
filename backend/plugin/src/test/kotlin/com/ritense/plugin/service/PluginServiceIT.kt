@@ -211,6 +211,35 @@ internal class PluginServiceIT : BaseIntegrationTest() {
 
     @Test
     @Transactional
+    fun `should return plugin definitions filtered by activity type`() {
+        val allDefinitions = pluginService.getPluginDefinitions()
+        assertTrue(allDefinitions.isNotEmpty())
+
+        val userTaskDefinitions = pluginService.getPluginDefinitions(
+            ActivityTypeWithEventName.USER_TASK_CREATE
+        )
+        assertTrue(userTaskDefinitions.isNotEmpty())
+        val userTaskKeys = userTaskDefinitions.map { it.key }
+        assertTrue(userTaskKeys.contains("test-plugin"))
+        assertTrue(userTaskDefinitions.all { definition ->
+            definition.actions.any { ActivityTypeWithEventName.USER_TASK_CREATE in it.activityTypes }
+        })
+        assertTrue(userTaskKeys.none { it == "test-category-plugin" })
+
+        val serviceTaskDefinitions = pluginService.getPluginDefinitions(
+            ActivityTypeWithEventName.SERVICE_TASK_START
+        )
+        assertTrue(serviceTaskDefinitions.isNotEmpty())
+        val serviceTaskKeys = serviceTaskDefinitions.map { it.key }
+        assertTrue(serviceTaskKeys.contains("test-plugin"))
+        assertTrue(serviceTaskKeys.contains("test-category-plugin"))
+        assertTrue(serviceTaskDefinitions.all { definition ->
+            definition.actions.any { ActivityTypeWithEventName.SERVICE_TASK_START in it.activityTypes }
+        })
+    }
+
+    @Test
+    @Transactional
     fun `should invoke an action on the plugin with return type`() {
         val processLink = PluginProcessLink(
             id = UUID.randomUUID(),

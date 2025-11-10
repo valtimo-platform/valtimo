@@ -100,8 +100,13 @@ class PluginService(
         return objectMapper
     }
 
-    fun getPluginDefinitions(): List<PluginDefinition> {
-        return pluginDefinitionRepository.findAllByOrderByTitleAsc()
+    fun getPluginDefinitions(
+        activityType: ActivityTypeWithEventName? = null
+    ): List<PluginDefinition> {
+        if (activityType == null) {
+            return pluginDefinitionRepository.findAllByOrderByTitleAsc()
+        }
+        return pluginDefinitionRepository.findAllWithActivityType(activityType)
     }
 
     fun getPluginConfigurations(
