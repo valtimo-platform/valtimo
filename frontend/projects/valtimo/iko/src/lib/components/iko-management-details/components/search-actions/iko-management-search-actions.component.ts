@@ -98,13 +98,19 @@ export class IkoManagementSearchActionsComponent {
     filter(key => !!key)
   );
 
+  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly searchActions$: Observable<IkoDataRequestResponse[]> = combineLatest([
     this.aggregateKey$,
     this._refresh$,
   ]).pipe(
     switchMap(([key]) => this.ikoManagementApiService.getManagementIkoDataRequests(key)),
-    tap(() => this.loading$.next(false))
+    tap((content) =>
+    {
+      const keys = content?.map(item => item.key) ?? [];
+      this.usedKeys$.next(keys);
+      this.loading$.next(false);
+    })
   );
 
   private _currentNotification!: Notification;

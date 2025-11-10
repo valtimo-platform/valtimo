@@ -22,9 +22,9 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective, AutoKeyInputComponent} from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {
   PropertyField,
@@ -36,6 +36,7 @@ import {filter, map, Observable, switchMap, take} from 'rxjs';
 import {IkoManagementApiService} from '../../../../../services';
 import {toObservable} from '@angular/core/rxjs-interop';
 import {PropertiesFormComponent} from '../../../../iko-management-properties/iko-management-properties.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-search-action-modal',
@@ -53,6 +54,7 @@ import {PropertiesFormComponent} from '../../../../iko-management-properties/iko
     ButtonModule,
     LayerModule,
     PropertiesFormComponent,
+    AutoKeyInputComponent
   ],
 })
 export class IkoManagementSearchActionModalComponent {
@@ -61,7 +63,11 @@ export class IkoManagementSearchActionModalComponent {
   @Input() public set open(value: boolean) {
     this.$isOpen.set(value);
 
-    if (value) return;
+    if (value) {
+      this.showAutoKey = true;
+    } else {
+      return;
+    }
 
     setTimeout(() => {
       this.$modalType.set('add');
@@ -78,10 +84,19 @@ export class IkoManagementSearchActionModalComponent {
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
-  @Input() repositoryKey: string;
-  @Input() aggregateKey: string;
+  @Input() public repositoryKey: string;
+  @Input() public aggregateKey: string;
+  @Input() public usedKeys: string[] = [];
 
   @Output() public readonly modalClose = new EventEmitter<IkoDataRequestResponse | null>();
+
+  public get title(): AbstractControl<string> {
+    return this.formGroup.get('title') as AbstractControl<string>;
+  }
+
+  public readonly $selectedKey = signal<string>('');
+  public readonly $modalMode = signal<ModalMode>('add');
+  public showAutoKey = true;
 
   public readonly propertyFields$: Observable<PropertyField[]> = toObservable(this.$isOpen).pipe(
     filter((open: boolean) => !!open),
@@ -113,6 +128,7 @@ export class IkoManagementSearchActionModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
+    this.showAutoKey = false;
   }
 
   public onSave(): void {
@@ -130,6 +146,7 @@ export class IkoManagementSearchActionModalComponent {
             : {};
         }
       });
+      this.showAutoKey = false;
       this.modalClose.emit(formData);
     });
   }

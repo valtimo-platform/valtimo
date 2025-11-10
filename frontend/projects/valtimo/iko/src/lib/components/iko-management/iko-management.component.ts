@@ -68,8 +68,8 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
           tap(content => {
             const keys = content?.map(item => item.key) ?? [];
             this.usedKeys$.next(keys);
-          }),
-          tap(() => this.$loading.set(false))
+            this.$loading.set(false);
+          })
         )
     )
   );
