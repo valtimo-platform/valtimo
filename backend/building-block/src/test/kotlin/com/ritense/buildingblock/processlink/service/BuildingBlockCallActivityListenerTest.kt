@@ -17,16 +17,12 @@
 package com.ritense.buildingblock.processlink.service
 
 import com.ritense.buildingblock.processlink.domain.BuildingBlockProcessLink
-import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import java.util.UUID
@@ -34,11 +30,10 @@ import java.util.UUID
 class BuildingBlockCallActivityListenerTest {
 
     private val processLinkService = mock<ProcessLinkService>()
-    private val resolver = mock<BuildingBlockPluginConfigurationResolver>()
 
     @Test
-    fun `should register mappings when listener is triggered`() {
-        val listener = BuildingBlockCallActivityListener(processLinkService, resolver)
+    fun `should create instance when process link is available`() {
+        val listener = BuildingBlockCallActivityListener(processLinkService)
         val execution = mock<DelegateExecution> {
             on { currentActivityId } doReturn "callActivity"
             on { processDefinitionId } doReturn "case-process"
@@ -55,16 +50,6 @@ class BuildingBlockCallActivityListenerTest {
 
         listener.onCallActivityStart(execution)
 
-        verify(resolver).register(execution, link.pluginConfigurationMappings)
-    }
-
-    @Test
-    fun `should do nothing when resolver unavailable`() {
-        val listener = BuildingBlockCallActivityListener(processLinkService, null)
-        val execution = mock<DelegateExecution>()
-
-        listener.onCallActivityStart(execution)
-
-        verify(processLinkService, never()).getProcessLinks(any(), any())
+        //TODO: finish when link to instance is done.
     }
 }

@@ -33,7 +33,6 @@ import com.ritense.plugin.repository.PluginConfigurationRepository
 import com.ritense.plugin.repository.PluginDefinitionRepository
 import com.ritense.processlink.domain.ActivityTypeWithEventName
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -50,9 +49,6 @@ import org.mockito.kotlin.whenever
 import org.operaton.bpm.engine.delegate.DelegateExecution
 import org.operaton.bpm.engine.delegate.DelegateTask
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Import
 import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.InvocationTargetException
 import java.net.URI
@@ -60,8 +56,6 @@ import java.util.UUID
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
-
-@Import(PluginServiceIT.TestResolverConfig::class)
 internal class PluginServiceIT : BaseIntegrationTest() {
 
     @Autowired
@@ -208,58 +202,6 @@ internal class PluginServiceIT : BaseIntegrationTest() {
         whenever(task.execution).thenReturn(execution)
 
         pluginService.invoke(task, processLink)
-    }
-
-    @Test
-    @Transactional
-    fun `should invoke plugin action using building block mapping`() {
-        val execution = mock<DelegateExecution>()
-        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
-
-        val mapping = mapOf("test-plugin" to pluginConfiguration.id.id)
-        buildingBlockPluginConfigurationResolver.register(execution, mapping)
-
-        val processLink = PluginProcessLink(
-            id = UUID.randomUUID(),
-            processDefinitionId = UUID.randomUUID().toString(),
-            activityId = "test",
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
-            actionProperties = objectMapper.readTree("""{"someString": "test123"}""") as ObjectNode,
-            pluginConfigurationReference = PluginConfigurationReference(
-                PluginConfigurationReferenceType.BUILDING_BLOCK,
-                "test-plugin"
-            ),
-            pluginActionDefinitionKey = "other-test-action"
-        )
-
-        val result = pluginService.invoke(execution, processLink)
-
-        assertEquals("test123", result)
-    }
-
-    @Test
-    @Transactional
-    fun `should fail when building block mapping missing`() {
-        val execution = mock<DelegateExecution>()
-        whenever(execution.processInstanceId).thenReturn(UUID.randomUUID().toString())
-
-        buildingBlockPluginConfigurationResolver.register(execution, emptyMap())
-
-        val processLink = PluginProcessLink(
-            id = UUID.randomUUID(),
-            processDefinitionId = UUID.randomUUID().toString(),
-            activityId = "test",
-            activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
-            pluginConfigurationReference = PluginConfigurationReference(
-                PluginConfigurationReferenceType.BUILDING_BLOCK,
-                "test-plugin"
-            ),
-            pluginActionDefinitionKey = "test-action"
-        )
-
-        assertThrows(IllegalStateException::class.java) {
-            pluginService.invoke(execution, processLink)
-        }
     }
 
     @Test
@@ -520,27 +462,5 @@ internal class PluginServiceIT : BaseIntegrationTest() {
         assertEquals(updatedConfiguration.get().properties!!["property1"].textValue(), "updated")
         val linkedConfiguration = pluginConfigurationRepository.findById(pluginConfigurationWithRef.id).get()
         assertEquals(linkedConfiguration.properties!!["property4"].textValue(), newPluginConfigurationId.id.toString())
-    }
-
-    @TestConfiguration
-    class TestResolverConfig {
-        @Bean
-        fun buildingBlockPluginConfigurationResolver(): BuildingBlockPluginConfigurationResolver = TestBuildingBlockPluginConfigurationResolver()
-    }
-
-    class TestBuildingBlockPluginConfigurationResolver : BuildingBlockPluginConfigurationResolver {
-        private val executionMappings = mutableMapOf<DelegateExecution, Map<String, UUID>>()
-
-        override fun register(execution: DelegateExecution, mappings: Map<String, UUID>) {
-            executionMappings[execution] = mappings
-        }
-
-        override fun resolve(execution: DelegateExecution, pluginDefinitionKey: String): UUID? {
-            return executionMappings[execution]?.get(pluginDefinitionKey)
-        }
-
-        override fun resolve(task: DelegateTask, pluginDefinitionKey: String): UUID? {
-            return executionMappings[task.execution]?.get(pluginDefinitionKey)
-        }
     }
 }

@@ -27,7 +27,6 @@ import org.springframework.stereotype.Component
 @SkipComponentScan
 class BuildingBlockCallActivityListener(
     private val processLinkService: ProcessLinkService,
-
 ) {
 
     @EventListener(
