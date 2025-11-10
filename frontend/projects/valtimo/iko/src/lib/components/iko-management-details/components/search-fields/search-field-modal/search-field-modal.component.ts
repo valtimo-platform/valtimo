@@ -95,18 +95,37 @@ import {ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementSearchFieldModalComponent implements OnInit {
-  @Input({required: true}) open: boolean;
+  public readonly $isOpen = signal<boolean>(false);
+  @Input() public set open(value: boolean) {
+    this.$isOpen.set(value);
+
+    if (value) {
+      this.showAutoKey = true;
+    } else {
+      return;
+    }
+
+    setTimeout(() => {
+      if (this.$modalMode() === 'add') {
+        this.formGroup.reset();
+        this.formGroup.get('key')?.enable();
+      }
+    }, CARBON_CONSTANTS.modalAnimationMs);
+  }
 
   @Input() public usedKeys: string[] = [];
 
-  private _prefillData: IkoSearchField | null;
+  public readonly $prefillData = signal<IkoSearchField | null>(null);
+
   @Input() public set prefillData(value: IkoSearchField | null) {
-    this._prefillData = value;
+    this.$prefillData.set(value);
+    if (!value) return;
+
+    this.$modalMode.set('edit');
     this.setPrefilledForm(value);
+    this.formGroup.get('key')?.disable();
   }
-  public get prefillData(): IkoSearchField | null {
-    return this._prefillData;
-  }
+
   @Output() closeEvent = new EventEmitter<Partial<IkoSearchField> | null>();
 
   public get title(): AbstractControl<string> {
@@ -362,6 +381,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
 
   public onCancel(): void {
     this.closeEvent.emit(null);
+    this.showAutoKey = false;
     this.resetForm();
   }
 
@@ -385,6 +405,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
       }),
     });
 
+    this.showAutoKey = false;
     this.resetForm();
   }
 

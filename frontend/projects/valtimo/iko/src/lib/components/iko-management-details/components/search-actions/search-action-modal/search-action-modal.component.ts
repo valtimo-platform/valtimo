@@ -63,11 +63,8 @@ export class IkoManagementSearchActionModalComponent {
   @Input() public set open(value: boolean) {
     this.$isOpen.set(value);
 
-    if (value) {
-      this.showAutoKey = true;
-    } else {
-      return;
-    }
+    if (value) return;
+    this.showAutoKey = true;
 
     setTimeout(() => {
       this.$modalType.set('add');
