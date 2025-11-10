@@ -404,6 +404,14 @@ class ValtimoImportService(
             } else {
                 path
             }
+        } else if (path.startsWith("config/building-block")) {
+            val relativePath = path.substringAfter("config/building-block")
+            val subStringStartIndex = StringUtils.ordinalIndexOf(relativePath, "/", 3)
+            if (subStringStartIndex > -1) {
+                relativePath.substring(subStringStartIndex)
+            } else {
+                path
+            }
         } else if (path.startsWith("config/global")) {
             return path.substringAfter("config")
         } else {
