@@ -14,10 +14,14 @@
   ~ limitations under the License.
   -->
 
-<div class="case-management-general-tab" muuri [columnMinWidth]="350">
-  <valtimo-muuri-item>
-    <valtimo-building-block-management-metadata
-      muuriItem
-    ></valtimo-building-block-management-metadata>
-  </valtimo-muuri-item>
+<div class="muuri-container">
+  <div muuri [columnMinWidth]="350" class="case-management-general-tab">
+    <valtimo-muuri-item>
+      <valtimo-building-block-management-metadata></valtimo-building-block-management-metadata>
+    </valtimo-muuri-item>
+
+    <valtimo-muuri-item>
+      <valtimo-building-block-management-artwork></valtimo-building-block-management-artwork>
+    </valtimo-muuri-item>
+  </div>
 </div>

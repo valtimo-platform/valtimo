@@ -16,8 +16,9 @@
 import {Component} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BuildingBlockManagementDetailService} from '../../services';
-import {MuuriDirective, MuuriItemComponent} from '@valtimo/components';
+import {MuuriDirectiveModule} from '@valtimo/components';
 import {BuildingBlockManagementMetadataComponent} from '../building-block-management-metadata/building-block-management-metadata.component';
+import {BuildingBlockManagementArtworkComponent} from '../building-block-management-artwork/building-block-management-artwork.component';
 
 @Component({
   standalone: true,
@@ -26,9 +27,9 @@ import {BuildingBlockManagementMetadataComponent} from '../building-block-manage
   styleUrls: ['./building-block-management-general.component.scss'],
   imports: [
     CommonModule,
-    MuuriDirective,
-    MuuriItemComponent,
+    MuuriDirectiveModule,
     BuildingBlockManagementMetadataComponent,
+    BuildingBlockManagementArtworkComponent,
   ],
 })
 export class BuildingBlockManagementGeneralComponent {

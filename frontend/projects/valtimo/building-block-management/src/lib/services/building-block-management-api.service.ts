@@ -18,11 +18,14 @@ import {HttpClient, HttpErrorResponse, HttpHeaders, HttpResponse} from '@angular
 import {Injectable} from '@angular/core';
 import {
   BaseApiService,
+  BuildingBlockDefinitionArtworkDto,
   BuildingBlockDefinitionDto,
   BuildingBlockProcessDefinitionDto,
   ConfigService,
+  CreateBuildingBlockDefinitionArtworkDto,
   CreateBuildingBlockDefinitionDto,
   InterceptorSkip,
+  UpdateBuildingBlockDefinitionArtworkDto,
   UpdateBuildingBlockDefinitionDto,
 } from '@valtimo/shared';
 import {catchError, Observable, of} from 'rxjs';
@@ -110,6 +113,53 @@ export class BuildingBlockManagementApiService extends BaseApiService {
     return this.httpClient.post<HttpResponse<Blob>>(
       this.getApiUrl(`management/v1/building-block/import`),
       file
+    );
+  }
+
+  public getBuildingBlockArtwork(
+    key: string,
+    versionTag: string
+  ): Observable<BuildingBlockDefinitionArtworkDto | null> {
+    return this.httpClient
+      .get<BuildingBlockDefinitionArtworkDto>(
+        this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/artwork`),
+        {
+          headers: new HttpHeaders().set(InterceptorSkip, '404'),
+        }
+      )
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404) return of(null);
+          throw error;
+        })
+      );
+  }
+
+  public createBuildingBlockArtwork(
+    key: string,
+    versionTag: string,
+    dto: CreateBuildingBlockDefinitionArtworkDto
+  ): Observable<BuildingBlockDefinitionArtworkDto> {
+    return this.httpClient.post<BuildingBlockDefinitionArtworkDto>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/artwork`),
+      dto
+    );
+  }
+
+  public updateBuildingBlockArtwork(
+    key: string,
+    versionTag: string,
+    dto: UpdateBuildingBlockDefinitionArtworkDto
+  ): Observable<BuildingBlockDefinitionArtworkDto> {
+    return this.httpClient.put<BuildingBlockDefinitionArtworkDto>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/artwork`),
+      dto
+    );
+  }
+
+  public deleteBuildingBlockArtwork(key: string, versionTag: string): Observable<void> {
+    return this.httpClient.delete<void>(
+      this.getApiUrl(`management/v1/building-block/${key}/version/${versionTag}/artwork`)
     );
   }
 }
