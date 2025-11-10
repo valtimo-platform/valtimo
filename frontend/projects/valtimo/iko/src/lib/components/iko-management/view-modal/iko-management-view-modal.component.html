@@ -16,17 +16,15 @@
       />
     </cds-label>
 
-    <cds-label>
-      {{ 'interface.key' | translate }}
-
-      <input
-        formControlName="key"
-        cdsText
-        cdsLayer
-        placeholder="{{ 'interface.key' | translate }}"
-        [attr.modal-primary-focus]="true"
-      />
-    </cds-label>
+    <valtimo-auto-key-input
+      *ngIf="showAutoKey"
+      formControlName="key"
+      placeholderTranslationKey="interface.key"
+      [sourceText]="$modalMode() === 'edit' ? $selectedKey() : title.value"
+      [mode]="$modalMode()"
+      [usedKeys]="usedKeys"
+    >
+    </valtimo-auto-key-input>
 
     <valtimo-iko-management-properties
       [propertiesFormGroup]="properties"

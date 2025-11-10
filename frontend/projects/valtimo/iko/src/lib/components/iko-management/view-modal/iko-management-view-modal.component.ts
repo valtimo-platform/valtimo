@@ -7,9 +7,9 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective} from '@valtimo/components';
+import {CARBON_CONSTANTS, ValtimoCdsModalDirective, runAfterCarbonModalClosed, AutoKeyInputComponent,} from '@valtimo/components';
 import {
   ButtonModule,
   IconModule,
@@ -25,6 +25,7 @@ import {
 } from '../../../models';
 import {IkoManagementApiService} from '../../../services';
 import {PropertiesFormComponent} from '../../iko-management-properties/iko-management-properties.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-view-modal',
@@ -43,6 +44,7 @@ import {PropertiesFormComponent} from '../../iko-management-properties/iko-manag
     IconModule,
     PropertiesFormComponent,
     LayerModule,
+    AutoKeyInputComponent
   ],
 })
 export class IkoManagementViewModalComponent {
@@ -51,7 +53,7 @@ export class IkoManagementViewModalComponent {
   @Input() public set open(value: boolean) {
     this._open$.next(value);
 
-    if (!value) this.resetForm();
+    value ? (this.showAutoKey = true) : this.resetForm();
   }
 
   public get open$(): Observable<boolean> {
@@ -72,11 +74,22 @@ export class IkoManagementViewModalComponent {
     this.$prefillData.set(value);
     if (!value) return;
 
+    this.$modalMode.set('edit');
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
 
+  @Input() public usedKeys: string[] = [];
+
   @Output() public readonly modalClose = new EventEmitter<any | null>();
+
+  public get title(): AbstractControl<string> {
+    return this.formGroup.get('title') as AbstractControl<string>;
+  }
+
+  public readonly $selectedKey = signal<string>('');
+  public readonly $modalMode = signal<ModalMode>('add');
+  public showAutoKey = true;
 
   public readonly propertyFields$: Observable<PropertyField[]> = this.open$.pipe(
     filter((open: boolean) => !!open),
@@ -88,6 +101,7 @@ export class IkoManagementViewModalComponent {
       this.ikoManagementApiService.getIkoDataAggregatePropertyFields(repository.type)
     )
   );
+
   public formGroup = this.fb.group({
     title: this.fb.control('', Validators.required),
     key: this.fb.control('', Validators.required),
@@ -96,7 +110,7 @@ export class IkoManagementViewModalComponent {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly ikoManagementApiService: IkoManagementApiService
+    private readonly ikoManagementApiService: IkoManagementApiService,
   ) {}
 
   public get properties(): FormGroup | null {
@@ -106,6 +120,10 @@ export class IkoManagementViewModalComponent {
 
   public onCancel(): void {
     this.modalClose.emit(null);
+    runAfterCarbonModalClosed(() => {
+      this.$modalMode.set('add');
+      this.showAutoKey = false;
+    });
   }
 
   public onSave(): void {
@@ -124,6 +142,8 @@ export class IkoManagementViewModalComponent {
         }
       });
       this.modalClose.emit(formData);
+      this.$modalMode.set('add');
+      this.showAutoKey = false;
     });
   }
 

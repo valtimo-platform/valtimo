@@ -52,6 +52,7 @@ import {IkoManagementUploadModalComponent} from './upload-modal/iko-management-u
 })
 export class IkoManagementComponent implements OnInit, OnDestroy {
   public readonly $loading = signal<boolean>(true);
+  public readonly usedKeys$ = new BehaviorSubject<string[]>([]);
   public readonly apiKey$ = this.route.params.pipe(
     map(params => params?.apiKey as string),
     filter(key => !!key)
@@ -64,6 +65,10 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
         .getManagementIkoDataAggregates(undefined, undefined, apiKey)
         .pipe(
           map(dataAggregatePage => dataAggregatePage.content),
+          tap(content => {
+            const keys = content?.map(item => item.key) ?? [];
+            this.usedKeys$.next(keys);
+          }),
           tap(() => this.$loading.set(false))
         )
     )
