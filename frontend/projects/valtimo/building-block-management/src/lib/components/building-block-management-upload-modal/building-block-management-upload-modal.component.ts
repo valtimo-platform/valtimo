@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -24,7 +24,6 @@ import {
 import {WarningFilled16} from '@carbon/icons';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {CARBON_CONSTANTS, runAfterCarbonModalClosed} from '@valtimo/components';
-import {DocumentService} from '@valtimo/document';
 import {
   ButtonModule,
   CheckboxModule,
@@ -41,6 +40,7 @@ import {STEPS, UPLOAD_STATUS, UPLOAD_STEP} from '../../constants';
 import {BuildingBlockManagementApiService, BuildingBlockManagementService} from '../../services';
 import {CommonModule} from '@angular/common';
 import {BuildingBlockManagementUploadStepComponent} from './step/building-block-management-upload-step.component';
+import {toObservable} from '@angular/core/rxjs-interop';
 
 @Component({
   standalone: true,
@@ -84,10 +84,19 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
       [UPLOAD_STEP.PLUGINS, UPLOAD_STEP.FILE_SELECT, UPLOAD_STEP.FILE_UPLOAD].includes(activeStep)
     )
   );
+  public readonly $warningChecked = signal(false);
+
   public readonly nextButtonDisabled$: Observable<boolean> = combineLatest([
     this.activeStep$,
     this._disabled$,
-  ]).pipe(map(([activeStep, disabled]) => activeStep !== UPLOAD_STEP.PLUGINS && disabled));
+    toObservable(this.$warningChecked),
+  ]).pipe(
+    map(([activeStep, disabled, warningChecked]) => {
+      const warningNotChecked = activeStep === UPLOAD_STEP.FILE_SELECT && !warningChecked;
+      return warningNotChecked || (activeStep !== UPLOAD_STEP.PLUGINS && disabled);
+    })
+  );
+
   public readonly notificationObj$: Observable<NotificationContent> = combineLatest([
     this.translateService.stream('interface.warning'),
     this.translateService.stream('buildingBlockManagement.importDefinition.overwriteWarning'),
@@ -107,13 +116,10 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
     file: this.fb.control(new Set<any>(), [Validators.required]),
   });
 
-  private _checked = false;
-
   private readonly _importFile$ = new BehaviorSubject<string | FormData>('');
   private readonly _subscriptions = new Subscription();
 
   constructor(
-    private readonly documentService: DocumentService,
     private readonly buildingBlockManagementApiService: BuildingBlockManagementApiService,
     private readonly buildingBlockManagementService: BuildingBlockManagementService,
     private readonly fb: FormBuilder,
@@ -136,11 +142,9 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
         if (!fileItem) {
           this._disabled$.next(true);
           this.showCheckboxError$.next(false);
-          this._checked = false;
+          this.$warningChecked.set(false);
           return;
         }
-
-        console.log('zip', fileItem);
 
         this.setZipFile(fileItem);
       })
@@ -154,6 +158,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
 
   public onCloseModal(definitionUploaded?: boolean): void {
     if (definitionUploaded) {
+      this.buildingBlockManagementService.reload();
     }
 
     this.buildingBlockManagementService.hideUploadModal();
@@ -178,7 +183,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
       return;
     }
 
-    if (activeStep === UPLOAD_STEP.FILE_SELECT && !this._checked) {
+    if (activeStep === UPLOAD_STEP.FILE_SELECT && !this.$warningChecked()) {
       this.showCheckboxError$.next(true);
       return;
     }
@@ -192,7 +197,7 @@ export class BuildingBlockManagementUploadModalComponent implements OnInit, OnDe
   }
 
   public onCheckedChange(checked: boolean): void {
-    this._checked = checked;
+    this.$warningChecked.set(checked);
 
     if (!checked) {
       return;

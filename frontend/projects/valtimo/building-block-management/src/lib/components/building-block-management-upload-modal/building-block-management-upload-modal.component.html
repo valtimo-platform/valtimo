@@ -69,7 +69,7 @@
       >
       </cds-file-uploader>
 
-      <ng-container *ngIf="!obs.nextButtonDisabled">
+      <ng-container *ngIf="obs.activeStep === UPLOAD_STEP.FILE_SELECT">
         <cds-inline-notification [notificationObj]="obs.notificationObj"></cds-inline-notification>
 
         <div class="valtimo-uploader__checkbox">
@@ -82,7 +82,6 @@
 
           <div *ngIf="obs.showCheckboxError" class="valtimo-definition-uploader__error">
             <svg cdsIcon="warning--filled" size="16"></svg>
-
             {{ 'buildingBlockManagement.importDefinition.checkbox.error' | translate }}
           </div>
         </div>
@@ -123,7 +122,9 @@
       </button>
 
       <button
-        *ngIf="obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.DASHBOARD"
+        *ngIf="
+          obs.uploadStatus !== UPLOAD_STATUS.ERROR && obs.activeStep !== UPLOAD_STEP.FILE_UPLOAD
+        "
         cdsButton="primary"
         [disabled]="obs.nextButtonDisabled"
         (click)="onNextClick(obs.activeStep)"
@@ -137,7 +138,9 @@
       </button>
 
       <button
-        *ngIf="obs.uploadStatus === UPLOAD_STATUS.ERROR || obs.activeStep === UPLOAD_STEP.DASHBOARD"
+        *ngIf="
+          obs.uploadStatus === UPLOAD_STATUS.ERROR || obs.activeStep === UPLOAD_STEP.FILE_UPLOAD
+        "
         class="valtimo-definition-uploader__cancel"
         cdsButton="primary"
         (click)="onCloseModal(true)"
