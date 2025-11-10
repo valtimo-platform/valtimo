@@ -22,6 +22,8 @@ import com.ritense.processlink.domain.ActivityTypeWithEventName
 import com.ritense.processlink.domain.ProcessLink
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import io.hypersistence.utils.hibernate.type.json.JsonType
+import jakarta.persistence.AttributeOverride
+import jakarta.persistence.AttributeOverrides
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Embedded
@@ -44,10 +46,24 @@ class BuildingBlockProcessLink(
     activityType: ActivityTypeWithEventName,
 
     @Embedded
+    @AttributeOverrides(
+        AttributeOverride(
+            name = "key",
+            column = Column(name = "building_block_definition_key", table = SECONDARY_TABLE_NAME)
+        ),
+        AttributeOverride(
+            name = "versionTag",
+            column = Column(name = "building_block_definition_version_tag", table = SECONDARY_TABLE_NAME)
+        )
+    )
     val buildingBlockDefinitionId: BuildingBlockDefinitionId,
 
     @Type(value = JsonType::class)
-    @Column(name = "plugin_configuration_mappings", columnDefinition = "json")
+    @Column(
+        name = "plugin_configuration_mappings",
+        columnDefinition = "json",
+        table = SECONDARY_TABLE_NAME
+    )
     val pluginConfigurationMappings: Map<String, UUID>
 
 ) : ProcessLink(

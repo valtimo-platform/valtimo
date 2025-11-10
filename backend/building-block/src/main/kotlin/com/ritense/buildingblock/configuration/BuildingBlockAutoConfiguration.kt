@@ -54,6 +54,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.DependsOn
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.core.env.Environment
@@ -204,7 +205,7 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockProcessLinkMapper::class)
     fun buildingBlockProcessLinkMapper(
         objectMapper: ObjectMapper,
-        processLinkService: ProcessLinkService,
+        @Lazy processLinkService: ProcessLinkService,
         processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
     ) = BuildingBlockProcessLinkMapper(objectMapper, processLinkService, processDefinitionBuildingBlockDefinitionRepository)
 
