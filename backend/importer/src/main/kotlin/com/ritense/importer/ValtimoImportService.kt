@@ -25,16 +25,16 @@ import com.ritense.importer.exception.CyclicImporterDependencyException
 import com.ritense.importer.exception.DuplicateImporterTypeException
 import com.ritense.importer.exception.InvalidImportZipException
 import com.ritense.importer.exception.TooManyImportCandidatesException
-import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.annotation.AllOpen
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import com.ritense.valtimo.contract.case_.CaseDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.InputStream
-import java.util.zip.ZipInputStream
 import org.apache.commons.lang3.StringUtils
 import org.springframework.core.env.Environment
 import org.springframework.core.io.Resource
 import org.springframework.transaction.annotation.Transactional
+import java.io.InputStream
+import java.util.zip.ZipInputStream
 
 @AllOpen
 class ValtimoImportService(
@@ -261,7 +261,6 @@ class ValtimoImportService(
         }
     }
 
-    // TODO: provide equivalent for building block definitions
     @Transactional
     override fun import(inputStream: InputStream, caseDefinitionIdList: List<CaseDefinitionId>) {
         runImporter {
@@ -310,6 +309,71 @@ class ValtimoImportService(
                     importer.afterImport(ImportRequest(entry.fileName, entry.content))
                 }
             }
+        }
+    }
+
+    @Transactional
+    override fun importBuildingBlockDefinitions(
+        inputStream: InputStream,
+        buildingBlockDefinitionIdList: List<BuildingBlockDefinitionId>
+    ) {
+        runImporter {
+            val entries = readZipEntries(inputStream)
+
+            val importerEntriesList = getEntriesByImporter(
+                entries
+            ) { importer -> importer.partOfBuildingBlockDefinition() }
+                .ifEmpty { return@runImporter }
+
+            val filteredImporterEntriesList = importerEntriesList
+                .filter { it.key.type() == BUILDING_BLOCK_DEFINITION }
+
+            if (filteredImporterEntriesList.isEmpty()) {
+                throw IllegalStateException("No building block definition file found in the provided archive")
+            }
+
+            val definitionEntries = filteredImporterEntriesList.let { it[it.keys.first()] }
+            val definitionMap: Map<String, Any> = jacksonObjectMapper()
+                .readValue(definitionEntries?.first()?.content!!)
+            val buildingBlockDefinitionId = BuildingBlockDefinitionId(
+                definitionMap["key"] as String,
+                definitionMap["versionTag"] as String
+            )
+
+            if (buildingBlockDefinitionIdList.contains(buildingBlockDefinitionId)) {
+                return@runImporter
+            }
+
+            importerEntriesList
+                .filter { it.key.partOfBuildingBlockDefinition() }
+                .forEach { (importer, bbEntries) ->
+                    bbEntries.forEach { entry ->
+                        logger.debug { "Importing ${entry.fileName} with importer ${importer.type()}" }
+                        importer.import(
+                            ImportRequest(
+                                entry.fileName,
+                                entry.content,
+                                null,
+                                buildingBlockDefinitionId
+                            )
+                        )
+                    }
+                }
+
+            importerEntriesList
+                .filter { it.key.partOfBuildingBlockDefinition() }
+                .forEach { (importer, bbEntries) ->
+                    bbEntries.forEach { entry ->
+                        importer.afterImport(
+                            ImportRequest(
+                                entry.fileName,
+                                entry.content,
+                                null,
+                                buildingBlockDefinitionId
+                            )
+                        )
+                    }
+                }
         }
     }
 
