@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.domain
+package com.ritense.buildingblock.web.rest.dto
 
-data class BuildingBlockDefinitionMainProcessDefinitionDto(
-    val processDefinitionKey: String
+data class CreateBuildingBlockDefinitionArtworkDto(
+    val imageBase64: String
 )

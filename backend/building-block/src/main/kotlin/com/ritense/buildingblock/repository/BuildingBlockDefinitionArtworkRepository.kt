@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package com.ritense.buildingblock.domain
+package com.ritense.buildingblock.repository
 
-data class BuildingBlockDefinitionMainProcessDefinitionDto(
-    val processDefinitionKey: String
-)
+import com.ritense.buildingblock.domain.definition.BuildingBlockDefinitionArtwork
+import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
+import org.springframework.data.jpa.repository.JpaRepository
+
+interface BuildingBlockDefinitionArtworkRepository :
+    JpaRepository<BuildingBlockDefinitionArtwork, BuildingBlockDefinitionId>
