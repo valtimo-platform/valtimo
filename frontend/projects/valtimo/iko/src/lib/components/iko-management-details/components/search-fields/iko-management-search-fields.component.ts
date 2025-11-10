@@ -221,6 +221,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
 
   public onModalClose(field: IkoSearchField | null): void {
     this.fieldModalOpen$.next(false);
+    this.prefillData$.next(null);
     if (!field) return;
 
     this.params$
