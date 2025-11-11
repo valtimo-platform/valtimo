@@ -106,8 +106,7 @@ export class IkoManagementSearchActionsComponent {
     this._refresh$,
   ]).pipe(
     switchMap(([key]) => this.ikoManagementApiService.getManagementIkoDataRequests(key)),
-    tap((content) =>
-    {
+    tap(content => {
       const keys = content?.map(item => item.key) ?? [];
       this.usedKeys$.next(keys);
       this.loading$.next(false);

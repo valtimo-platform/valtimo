@@ -49,7 +49,6 @@
       [usedKeys]="usedKeys"
       [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
       [mode]="modalMode"
-
     >
     </valtimo-auto-key-input>
 
@@ -57,7 +56,7 @@
       [propertiesFormGroup]="properties"
       [fields]="propertyFields$ | async"
       [prefillData]="$prefillData()?.properties"
-      />
+    />
   </form>
 
   <cds-modal-footer>

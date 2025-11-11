@@ -93,8 +93,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
         fieldTypeText: this.translateService.instant(`searchFieldsOverview.${field.fieldType}`),
       }))
     ),
-    tap((content) =>
-    {
+    tap(content => {
       const keys = content?.map(item => item.key) ?? [];
       this.usedKeys$.next(keys);
       this.loading$.next(false);

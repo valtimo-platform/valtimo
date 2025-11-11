@@ -41,7 +41,7 @@ import {
   ValtimoCdsModalDirective,
   ValuePathSelectorPrefix,
   ViewType,
-  AutoKeyInputComponent
+  AutoKeyInputComponent,
 } from '@valtimo/components';
 import {
   ButtonModule,
@@ -91,7 +91,7 @@ import {ModalMode} from '@valtimo/shared';
     ReactiveFormsModule,
     TranslateModule,
     ValtimoCdsModalDirective,
-    AutoKeyInputComponent
+    AutoKeyInputComponent,
   ],
 })
 export class IkoManagementSearchFieldModalComponent implements OnInit {

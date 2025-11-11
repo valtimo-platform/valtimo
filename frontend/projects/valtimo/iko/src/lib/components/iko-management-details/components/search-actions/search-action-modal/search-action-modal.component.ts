@@ -22,9 +22,19 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective, AutoKeyInputComponent} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  ValtimoCdsModalDirective,
+  AutoKeyInputComponent,
+} from '@valtimo/components';
 import {ButtonModule, InputModule, LayerModule, ModalModule} from 'carbon-components-angular';
 import {
   PropertyField,
@@ -54,7 +64,7 @@ import {ModalMode} from '@valtimo/shared';
     ButtonModule,
     LayerModule,
     PropertiesFormComponent,
-    AutoKeyInputComponent
+    AutoKeyInputComponent,
   ],
 })
 export class IkoManagementSearchActionModalComponent {

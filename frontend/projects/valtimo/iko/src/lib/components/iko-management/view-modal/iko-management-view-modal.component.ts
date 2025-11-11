@@ -7,9 +7,20 @@ import {
   Output,
   signal,
 } from '@angular/core';
-import {AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {TranslateModule} from '@ngx-translate/core';
-import {CARBON_CONSTANTS, ValtimoCdsModalDirective, runAfterCarbonModalClosed, AutoKeyInputComponent,} from '@valtimo/components';
+import {
+  CARBON_CONSTANTS,
+  ValtimoCdsModalDirective,
+  runAfterCarbonModalClosed,
+  AutoKeyInputComponent,
+} from '@valtimo/components';
 import {
   ButtonModule,
   IconModule,
@@ -44,7 +55,7 @@ import {ModalMode} from '@valtimo/shared';
     IconModule,
     PropertiesFormComponent,
     LayerModule,
-    AutoKeyInputComponent
+    AutoKeyInputComponent,
   ],
 })
 export class IkoManagementViewModalComponent {
@@ -118,7 +129,7 @@ export class IkoManagementViewModalComponent {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly ikoManagementApiService: IkoManagementApiService,
+    private readonly ikoManagementApiService: IkoManagementApiService
   ) {}
 
   public get properties(): FormGroup | null {
