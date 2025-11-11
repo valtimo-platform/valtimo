@@ -420,11 +420,26 @@ class ValtimoImportService(
     }
 
     private fun getEntriesFromResources(resources: List<Pair<String, Resource>>): List<ZipFileEntry> {
-        return resources.map {
-            val resolvedContent = resolveProperties(it.second.getContentAsString(Charsets.UTF_8))
+        return resources.map { (path, resource) ->
+            val bytes =
+                if (isTextResource(path)) {
+                    val resolvedContent = resolveProperties(resource.getContentAsString(Charsets.UTF_8))
+                    resolvedContent.toByteArray(Charsets.UTF_8)
+                } else {
+                    resource.inputStream.use { it.readBytes() }
+                }
 
-            ZipFileEntry(it.first, resolvedContent.toByteArray(Charsets.UTF_8))
+            ZipFileEntry(path, bytes)
         }
+    }
+
+    private fun isTextResource(path: String): Boolean {
+        return path.endsWith(".json", ignoreCase = true) ||
+            path.endsWith(".yml", ignoreCase = true) ||
+            path.endsWith(".yaml", ignoreCase = true) ||
+            path.endsWith(".xml", ignoreCase = true) ||
+            path.endsWith(".sql", ignoreCase = true) ||
+            path.endsWith(".txt", ignoreCase = true)
     }
 
     private fun resolveProperties(content: String): String {

@@ -23,6 +23,7 @@ import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
 import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
+import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkImporter
 import com.ritense.buildingblock.service.BuildingBlockDefinitionArtworkService
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
 import com.ritense.buildingblock.service.BuildingBlockDefinitionDeploymentService
@@ -249,4 +250,12 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockJsonSchemaDocumentDefinitionImporter(
         service: BuildingBlockDocumentDefinitionService,
     ) = BuildingBlockJsonSchemaDocumentDefinitionImporter(service)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockDefinitionArtworkImporter::class)
+    fun buildingBlockDefinitionArtworkImporter(
+        buildingBlockDefinitionArtworkService: BuildingBlockDefinitionArtworkService
+    ): BuildingBlockDefinitionArtworkImporter {
+        return BuildingBlockDefinitionArtworkImporter(buildingBlockDefinitionArtworkService)
+    }
 }
