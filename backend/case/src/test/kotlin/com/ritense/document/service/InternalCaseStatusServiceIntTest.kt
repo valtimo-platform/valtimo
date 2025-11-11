@@ -189,7 +189,7 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
                     "house123",
                     "789",
                     false,
-                    500,
+                    123,
                     GRAY
                 )
             )
@@ -206,8 +206,8 @@ class InternalCaseStatusServiceIntTest @Autowired constructor(
         assertEquals("house123", internalCaseStatus.id.key)
         assertEquals("789", internalCaseStatus.title)
         assertFalse(internalCaseStatus.visibleInCaseListByDefault)
+        assertEquals(123, internalCaseStatus.retentionPeriod)
         assertEquals(internalCaseCount - 1, internalCaseStatus.order)
-
     }
 
     @Test

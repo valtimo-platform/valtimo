@@ -3,12 +3,14 @@
         "key": "closed",
         "title": "Closed",
         "visibleInCaseListByDefault": false,
+        "retentionPeriod": 100,
         "color": "GRAY"
     },
     {
         "key": "started",
         "title": "Started",
         "visibleInCaseListByDefault": true,
+        "retentionPeriod": -1,
         "color": "GRAY"
     }
 ]

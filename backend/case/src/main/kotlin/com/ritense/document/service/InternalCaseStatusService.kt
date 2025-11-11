@@ -150,6 +150,7 @@ class InternalCaseStatusService(
                 title = request.title,
                 order = index,
                 visibleInCaseListByDefault = request.visibleInCaseListByDefault,
+                retentionPeriod = request.retentionPeriod,
                 color = request.color
             )
         }

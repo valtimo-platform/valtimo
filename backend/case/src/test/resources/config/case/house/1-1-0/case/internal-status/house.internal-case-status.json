@@ -3,12 +3,14 @@
         "key": "suspended",
         "title": "Suspended",
         "visibleInCaseListByDefault": false,
+        "retentionPeriod": 300,
         "color": "GRAY"
     },
     {
         "key": "closed",
         "title": "Closed",
         "visibleInCaseListByDefault": false,
+        "retentionPeriod": 100,
         "color": "GRAY"
     },
     {
