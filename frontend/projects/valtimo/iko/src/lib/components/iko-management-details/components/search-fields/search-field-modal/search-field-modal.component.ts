@@ -97,24 +97,29 @@ import {ModalMode} from '@valtimo/shared';
 export class IkoManagementSearchFieldModalComponent implements OnInit {
   public readonly $isOpen = signal<boolean>(false);
   @Input() public set open(value: boolean) {
-    if(!value) return;
-
     this.$isOpen.set(value);
-    this.showAutoKey = true;
+
+    if (value) {
+      this.showAutoKey = true;
+      return;
+    }
+
+    setTimeout(() => {
+      this.formGroup.reset();
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
   @Input() public usedKeys: string[] = [];
 
   public readonly $prefillData = signal<IkoSearchField | null>(null);
-
   @Input() public set prefillData(value: IkoSearchField | null) {
+    console.log("value: ", value)
     this.$prefillData.set(value);
     if (!value) return;
 
     this.$selectedKey.set(value.key);
     this.$modalMode.set('edit');
     this.setPrefilledForm(value);
-    this.formGroup.get('key')?.disable();
   }
 
   @Output() closeEvent = new EventEmitter<Partial<IkoSearchField> | null>();
@@ -371,10 +376,11 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
   }
 
   public onCancel(): void {
-    this.$isOpen.set(false);
+    this.resetForm();
     this.closeEvent.emit(null);
     this.showAutoKey = false;
     this.resetForm();
+    this.$modalMode.set('add');
   }
 
   public onSave(): void {
@@ -399,6 +405,7 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
 
     this.showAutoKey = false;
     this.resetForm();
+    this.$modalMode.set('add');
   }
 
   private setPrefilledForm(prefillData: IkoSearchField | null): void {

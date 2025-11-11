@@ -142,9 +142,13 @@ export class IkoManagementViewModalComponent {
             : {};
         }
       });
+
       this.modalClose.emit(formData);
-      this.$modalMode.set('add');
-      this.showAutoKey = false;
+
+      runAfterCarbonModalClosed(() => {
+        this.$modalMode.set('add');
+        this.showAutoKey = false;
+      });
     });
   }
 

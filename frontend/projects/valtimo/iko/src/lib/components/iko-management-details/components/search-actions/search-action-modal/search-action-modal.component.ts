@@ -65,21 +65,19 @@ export class IkoManagementSearchActionModalComponent {
 
     if (value) {
       this.showAutoKey = true;
-    } else {
-      setTimeout(() => {
-        this.showAutoKey = false;
-        this.$modalType.set('add');
-        this.formGroup.reset();
-        this.formGroup.get('key')?.enable();
-      }, CARBON_CONSTANTS.modalAnimationMs);
+      return;
     }
+
+    setTimeout(() => {
+      this.formGroup.reset();
+      this.formGroup.get('key')?.enable();
+    }, CARBON_CONSTANTS.modalAnimationMs);
   }
 
   public readonly $selectedKey = signal<string>('');
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
   @Input() public set prefillData(value: IkoDataRequestResponse | null) {
     this.$prefillData.set(value);
-
     if (!value) return;
 
     this.$selectedKey.set(value.key);
