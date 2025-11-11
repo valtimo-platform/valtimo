@@ -57,4 +57,9 @@
             onDelete="CASCADE"
             constraintName="fk_bb_json_schema_to_bb_definition"/>
     </changeSet>
+
+    <changeSet id="4" author="Ritense">
+        <dropAllForeignKeyConstraints baseTableName="building_block_json_schema_document_definition"/>
+        <dropTable tableName="building_block_json_schema_document_definition"/>
+    </changeSet>
 </databaseChangeLog>

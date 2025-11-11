@@ -68,10 +68,8 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldStore() {
-        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString())).thenReturn(
-            Optional.empty());
-        when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class))).thenReturn(
-            Optional.empty());
+        when(jsonSchemaDocumentDefinitionRepository.findOne(any(Specification.class)))
+            .thenReturn(Optional.empty());
 
         documentDefinitionService.store(definition);
 
@@ -80,10 +78,8 @@ class JsonSchemaDocumentDefinitionServiceTest extends BaseTest {
 
     @Test
     void shouldThrowExceptionWhenDeployingNameMismatchedSchema() {
-        when(jsonSchemaDocumentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(anyString())).thenReturn(
-            Optional.empty());
-        when(jsonSchemaDocumentDefinitionRepository.findById(any(JsonSchemaDocumentDefinitionId.class))).thenReturn(
-            Optional.of(definition));
+        when(jsonSchemaDocumentDefinitionRepository.findOne(any(Specification.class)))
+            .thenReturn(Optional.of(definition));
 
         final var jsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("person", mock());
         final var otherJsonSchemaDocumentDefinitionId = JsonSchemaDocumentDefinitionId.of("person2", mock());

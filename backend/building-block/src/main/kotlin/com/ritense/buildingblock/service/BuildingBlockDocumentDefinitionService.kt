@@ -16,10 +16,10 @@
 
 package com.ritense.buildingblock.service
 
-import com.ritense.buildingblock.domain.impl.BuildingBlockJsonSchemaDocumentDefinitionId
-import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
-import com.ritense.document.domain.impl.BuildingBlockJsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchema
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.document.service.result.DeployDocumentDefinitionResult
 import com.ritense.document.service.result.DeployDocumentDefinitionResultFailed
 import com.ritense.document.service.result.DeployDocumentDefinitionResultSucceeded
@@ -30,16 +30,17 @@ import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.security.access.AccessDeniedException
 
 @Service
 class BuildingBlockDocumentDefinitionService(
-    private val repository: BuildingBlockJsonSchemaDocumentDefinitionRepository,
+    private val repository: JsonSchemaDocumentDefinitionRepository,
     private val definitionChecker: BuildingBlockDefinitionChecker,
 ) {
     @Transactional
-    fun ensureEmptyFor(key: String, versionTag: String): BuildingBlockJsonSchemaDocumentDefinition {
+    fun ensureEmptyFor(key: String, versionTag: String): JsonSchemaDocumentDefinition {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, versionTag)
-        val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
+        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
 
         val existing = repository.findById(id)
 
@@ -47,7 +48,7 @@ class BuildingBlockDocumentDefinitionService(
             return existing.get()
         }
 
-        val entity = BuildingBlockJsonSchemaDocumentDefinition(id)
+        val entity = JsonSchemaDocumentDefinition(id, emptySchemaForName(id.name()))
         return repository.save(entity)
     }
 
@@ -64,13 +65,12 @@ class BuildingBlockDocumentDefinitionService(
                 documentDefinitionName,
                 {
                     val documentDefinitionId =
-                        BuildingBlockJsonSchemaDocumentDefinitionId(documentDefinitionName, buildingBlockDefinitionId)
+                        JsonSchemaDocumentDefinitionId.forBuildingBlock(documentDefinitionName, buildingBlockDefinitionId)
                     logger.info {
-                        "Deploying schema ${jsonSchema.schema.id} for building " +
-                            "block definition $buildingBlockDefinitionId"
+                        "Deploying schema ${jsonSchema.schema.id} for building block definition $buildingBlockDefinitionId"
                     }
 
-                    val documentDefinition = BuildingBlockJsonSchemaDocumentDefinition(documentDefinitionId, jsonSchema)
+                    val documentDefinition = JsonSchemaDocumentDefinition(documentDefinitionId, jsonSchema)
                     store(documentDefinition)
                     return DeployDocumentDefinitionResultSucceeded(documentDefinition)
                 }
@@ -84,17 +84,28 @@ class BuildingBlockDocumentDefinitionService(
         }
     }
 
-    fun store(documentDefinition: BuildingBlockJsonSchemaDocumentDefinition) {
+    fun store(documentDefinition: JsonSchemaDocumentDefinition) {
         withLoggingContext(
-            BuildingBlockJsonSchemaDocumentDefinition::class.java,
+            JsonSchemaDocumentDefinition::class.java,
             documentDefinition.id.toString(),
             {
-                definitionChecker.assertCanUpdateBuildingBlockDefinition(documentDefinition.id.buildingBlockDefinitionId)
+                definitionChecker.assertCanUpdateBuildingBlockDefinition(documentDefinition.id.buildingBlockDefinitionId())
 
-                // TODO: access control
                 repository.saveAndFlush(documentDefinition)
             }
         )
+    }
+
+    private fun emptySchemaForName(name: String): JsonSchema {
+        val json = """
+            {
+              "${'$'}schema": "http://json-schema.org/draft-07/schema#",
+              "${'$'}id": "$name.schema",
+              "type": "object",
+              "properties": {}
+            }
+        """.trimIndent()
+        return JsonSchema.fromString(json)
     }
 
     private companion object {

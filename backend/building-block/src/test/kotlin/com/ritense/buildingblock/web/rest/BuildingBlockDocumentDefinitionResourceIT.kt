@@ -19,10 +19,10 @@ package com.ritense.buildingblock.web.rest
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.buildingblock.BaseIntegrationTest
-import com.ritense.buildingblock.domain.impl.BuildingBlockJsonSchemaDocumentDefinitionId
-import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
-import com.ritense.document.domain.impl.BuildingBlockJsonSchemaDocumentDefinition
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinition
 import com.ritense.document.domain.impl.JsonSchema
+import com.ritense.document.domain.impl.JsonSchemaDocumentDefinitionId
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionId
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -45,7 +45,7 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
 ) : BaseIntegrationTest() {
 
     @MockitoBean
-    lateinit var repository: BuildingBlockJsonSchemaDocumentDefinitionRepository
+    lateinit var repository: JsonSchemaDocumentDefinitionRepository
 
     private val base = "/api/management/v1/building-block"
     private val key = "bb-key"
@@ -55,7 +55,7 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
     @WithMockUser
     fun `should return 404 when document definition is missing`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
-        val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
+        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
         whenever(repository.findById(eq(id))).thenReturn(Optional.empty())
 
         mockMvc.get("$base/{key}/version/{version}/document", key, version)
@@ -66,9 +66,9 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
     @WithMockUser
     fun `should return 200 with schema when document definition exists`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
-        val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
+        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
         val schemaJson = """{"title":"My Schema","type":"object"}"""
-        val entity = BuildingBlockJsonSchemaDocumentDefinition(id, JsonSchema.fromString(schemaJson))
+        val entity = JsonSchemaDocumentDefinition(id, JsonSchema.fromString(schemaJson))
         whenever(repository.findById(eq(id))).thenReturn(Optional.of(entity))
 
         mockMvc.get("$base/{key}/version/{version}/document", key, version)
@@ -84,10 +84,10 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
     @WithMockUser
     fun `should update document definition and return 200 with saved schema`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
-        val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
+        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
         val newSchema: JsonNode = objectMapper.readTree("""{"title":"Updated","type":"object","properties":{"a":{"type":"string"}}}""")
 
-        whenever(repository.save(any())).thenAnswer { it.arguments[0] as BuildingBlockJsonSchemaDocumentDefinition }
+        whenever(repository.save(any())).thenAnswer { it.arguments[0] as JsonSchemaDocumentDefinition }
 
         mockMvc.put("$base/{key}/version/{version}/document", key, version) {
             contentType = MediaType.APPLICATION_JSON
@@ -97,7 +97,7 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
             content { json(objectMapper.writeValueAsString(newSchema)) }
         }
 
-        val captor = argumentCaptor<BuildingBlockJsonSchemaDocumentDefinition>()
+        val captor = argumentCaptor<JsonSchemaDocumentDefinition>()
         verify(repository).save(captor.capture())
         val saved = captor.firstValue
         assert(saved.id().name() == key)
@@ -109,10 +109,10 @@ class BuildingBlockDocumentDefinitionResourceIT @Autowired constructor(
     @WithMockUser
     fun `should accept minimal empty object schema on update`() {
         val buildingBlockId = BuildingBlockDefinitionId.of(key, version)
-        val id = BuildingBlockJsonSchemaDocumentDefinitionId(key, buildingBlockId)
+        val id = JsonSchemaDocumentDefinitionId.forBuildingBlock(key, buildingBlockId)
         val minimalSchema: JsonNode = objectMapper.readTree("""{"type":"object"}""")
 
-        whenever(repository.save(any())).thenAnswer { it.arguments[0] as BuildingBlockJsonSchemaDocumentDefinition }
+        whenever(repository.save(any())).thenAnswer { it.arguments[0] as JsonSchemaDocumentDefinition }
 
         mockMvc.put("$base/{key}/version/{version}/document", key, version) {
             contentType = MediaType.APPLICATION_JSON

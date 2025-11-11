@@ -228,7 +228,9 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     public Optional<JsonSchemaDocumentDefinition> findByCaseDefinitionId(
         CaseDefinitionId caseDefinitionId
     ) {
-        final var optionalDefinition = documentDefinitionRepository.findByIdCaseDefinitionId(caseDefinitionId);
+        final var optionalDefinition = documentDefinitionRepository.findOne(
+            byIdCaseDefinitionId(caseDefinitionId)
+        );
 
         optionalDefinition.ifPresent(definition -> authorizationService.requirePermission(
             new EntityAuthorizationRequest<>(
@@ -276,11 +278,15 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
     public List<CaseDefinitionId> findVersionsByName(
         @LoggableResource("documentDefinitionName") String documentDefinitionName
     ) {
-        final var optionalDefinition = documentDefinitionRepository.findFirstByIdNameOrderByIdCaseDefinitionIdVersionTagDesc(
-            documentDefinitionName
+        final var definitions = documentDefinitionRepository.findAll(
+            byIdName(documentDefinitionName).and(byCaseDefinitionActive()),
+            org.springframework.data.domain.Sort.by(
+                org.springframework.data.domain.Sort.Order.asc("id.ownerId.ownerKey"),
+                org.springframework.data.domain.Sort.Order.desc("id.ownerId.ownerVersionTag")
+            )
         );
 
-        optionalDefinition.ifPresent(definition -> authorizationService.requirePermission(
+        definitions.stream().findFirst().ifPresent(definition -> authorizationService.requirePermission(
             new EntityAuthorizationRequest<>(
                 JsonSchemaDocumentDefinition.class,
                 VIEW,
@@ -288,7 +294,10 @@ public class JsonSchemaDocumentDefinitionService implements DocumentDefinitionSe
             )
         ));
 
-        return documentDefinitionRepository.findVersionsByName(documentDefinitionName);
+        return definitions.stream()
+            .map(definition -> definition.id().caseDefinitionId())
+            .filter(java.util.Objects::nonNull)
+            .toList();
     }
 
     @Override

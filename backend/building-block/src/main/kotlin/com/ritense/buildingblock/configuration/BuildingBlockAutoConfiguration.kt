@@ -19,7 +19,7 @@ package com.ritense.buildingblock.configuration
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ritense.authorization.AuthorizationService
 import com.ritense.buildingblock.repository.BuildingBlockDefinitionRepository
-import com.ritense.buildingblock.repository.BuildingBlockJsonSchemaDocumentDefinitionRepository
+import com.ritense.document.repository.impl.JsonSchemaDocumentDefinitionRepository
 import com.ritense.buildingblock.repository.ProcessDefinitionBuildingBlockDefinitionRepository
 import com.ritense.buildingblock.security.config.BuildingBlockHttpSecurityConfigurer
 import com.ritense.buildingblock.service.BuildingBlockDefinitionCheckerImpl
@@ -60,7 +60,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @EnableJpaRepositories(
     basePackageClasses = [
         BuildingBlockDefinitionRepository::class,
-        BuildingBlockJsonSchemaDocumentDefinitionRepository::class,
+        JsonSchemaDocumentDefinitionRepository::class,
         ProcessDefinitionBuildingBlockDefinitionRepository::class
     ]
 )
@@ -83,7 +83,7 @@ class BuildingBlockAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionService::class)
     fun buildingBlockDocumentDefinitionService(
-        repository: BuildingBlockJsonSchemaDocumentDefinitionRepository,
+        repository: JsonSchemaDocumentDefinitionRepository,
         checker: BuildingBlockDefinitionChecker
     ): BuildingBlockDocumentDefinitionService {
         return BuildingBlockDocumentDefinitionService(repository, checker)
@@ -146,7 +146,7 @@ class BuildingBlockAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(BuildingBlockDocumentDefinitionResource::class)
     fun buildingBlockDocumentDefinitionResource(
-        buildingBlockJsonSchemaDocumentDefinitionRepository: BuildingBlockJsonSchemaDocumentDefinitionRepository,
+        buildingBlockJsonSchemaDocumentDefinitionRepository: JsonSchemaDocumentDefinitionRepository,
         objectMapper: ObjectMapper
     ): BuildingBlockDocumentDefinitionResource {
         return BuildingBlockDocumentDefinitionResource(
