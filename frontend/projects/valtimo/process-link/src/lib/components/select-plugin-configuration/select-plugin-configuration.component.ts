@@ -30,16 +30,7 @@ import {
   ProcessLinkStateService,
   ProcessLinkStepService,
 } from '../../services';
-
-type PluginDefinitionWithLogo = PluginDefinition & {pluginLogoBase64?: string};
-type PluginListItem = {
-  id: string;
-  title: string;
-  description: string;
-  logo?: string | null;
-  payload: PluginConfiguration | string;
-  isDefinition: boolean;
-};
+import {PluginListItem} from '../../models';
 
 @Component({
   standalone: false,

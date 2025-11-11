@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {PluginConfiguration} from '@valtimo/plugin/lib/models/plugin';
 import {ProcessInstanceTask} from '@valtimo/process';
 
 interface ProcessLink {
@@ -248,6 +249,15 @@ interface CompatiblePluginProcessLinks {
   versions: CompatibleProcessVersion[];
 }
 
+type PluginListItem = {
+  id: string;
+  title: string;
+  description: string;
+  logo?: string | null;
+  payload: PluginConfiguration | string;
+  isDefinition: boolean;
+};
+
 export {
   CompatiblePluginProcessLinks,
   CompatibleProcessVersion,
@@ -269,6 +279,7 @@ export {
   ProcessLinkType,
   ProcessLinkUpdateEvent,
   PluginConfigurationReferenceType,
+  PluginListItem,
   TaskProcessLinkResult,
   TaskProcessLinkType,
   TaskWithProcessLink,
