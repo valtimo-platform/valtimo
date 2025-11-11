@@ -35,4 +35,5 @@
     <include file="changelog/20251015-add-building-block-definition-process-definition.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251021-add-building-block-json-schema-doc-def-table.xml" relativeToChangelogFile="true"/>
     <include file="changelog/20251110-add-building-block-definition-artwork-table.xml" relativeToChangelogFile="true"/>
+    <include file="changelog/20250601-create-building-block-process-link.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

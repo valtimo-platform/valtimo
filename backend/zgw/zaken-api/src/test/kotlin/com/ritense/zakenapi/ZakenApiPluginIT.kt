@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import com.ritense.document.domain.impl.request.NewDocumentRequest
 import com.ritense.document.service.DocumentService
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.domain.PluginConfigurationId
+import com.ritense.plugin.domain.PluginConfigurationReference
 import com.ritense.plugin.domain.PluginProcessLink
-import com.ritense.plugin.domain.PluginProcessLinkId
 import com.ritense.plugin.repository.PluginProcessLinkRepository
 import com.ritense.processdocument.domain.impl.request.NewDocumentAndStartProcessRequest
 import com.ritense.processdocument.service.ProcessDocumentService
@@ -42,13 +42,6 @@ import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectType
 import com.ritense.zakenapi.domain.zaakobjectrequest.ZaakObjectZakelijkRechtRequest
 import com.ritense.zakenapi.link.ZaakInstanceLinkService
 import com.ritense.zgw.Rsin
-import java.lang.Thread.sleep
-import java.net.URI
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.Optional
-import java.util.UUID
-import kotlin.test.assertEquals
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -77,6 +70,13 @@ import org.springframework.web.reactive.function.client.ClientRequest
 import org.springframework.web.reactive.function.client.ClientResponse
 import org.springframework.web.reactive.function.client.ExchangeFunction
 import reactor.core.publisher.Mono
+import java.lang.Thread.sleep
+import java.net.URI
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.Optional
+import java.util.UUID
+import kotlin.test.assertEquals
 
 @Transactional
 class ZakenApiPluginIT : BaseIntegrationTest() {
@@ -153,13 +153,14 @@ class ZakenApiPluginIT : BaseIntegrationTest() {
 
         pluginProcessLinkRepository.save(
             PluginProcessLink(
-                PluginProcessLinkId(UUID.randomUUID()),
-                processDefinitionId,
-                "LinkDocument",
-                objectMapper.readTree(actionPropertiesJson) as ObjectNode,
-                configuration.id,
-                "link-document-to-zaak",
-                ActivityTypeWithEventName.SERVICE_TASK_START
+                id = UUID.randomUUID(),
+                processDefinitionId = processDefinitionId,
+                activityId = "LinkDocument",
+                activityType = ActivityTypeWithEventName.SERVICE_TASK_START,
+                actionProperties = objectMapper.readTree(actionPropertiesJson) as ObjectNode,
+                pluginConfigurationId = configuration.id,
+                pluginConfigurationReference = PluginConfigurationReference(),
+                pluginActionDefinitionKey = "link-document-to-zaak"
             )
         )
     }

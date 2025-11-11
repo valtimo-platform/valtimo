@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2024 Ritense BV, the Netherlands.
+ * Copyright 2015-2025 Ritense BV, the Netherlands.
  *
  * Licensed under EUPL, Version 1.2 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.ritense.documentenapi.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.ritense.authorization.Action
-import com.ritense.authorization.AuthorizationContext
 import com.ritense.authorization.AuthorizationContext.Companion.runWithoutAuthorization
 import com.ritense.authorization.AuthorizationService
 import com.ritense.authorization.request.EntityAuthorizationRequest
@@ -35,9 +34,9 @@ import com.ritense.logging.LoggableResource
 import com.ritense.plugin.domain.PluginConfiguration
 import com.ritense.plugin.service.PluginService
 import com.ritense.processdocument.service.CaseDefinitionProcessLinkService
+import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.operaton.repository.OperatonProcessDefinitionSpecificationHelper
 import com.ritense.valtimo.operaton.service.OperatonRepositoryService
-import com.ritense.valtimo.contract.annotation.SkipComponentScan
 import com.ritense.valtimo.processlink.service.PluginProcessLinkService
 import org.springframework.core.io.Resource
 import org.springframework.core.io.ResourceLoader
@@ -125,7 +124,7 @@ class DocumentenApiVersionService(
             return emptyList()
         }
         val processDefinitionKey = link.id.processDefinitionKey
-        val detectedConfigurations = AuthorizationContext.runWithoutAuthorization {
+        val detectedConfigurations = runWithoutAuthorization {
             operatonRepositoryService.findLinkedProcessDefinitions(
                 OperatonProcessDefinitionSpecificationHelper.byKey(
                     processDefinitionKey
@@ -133,7 +132,8 @@ class DocumentenApiVersionService(
             )
                 .asSequence()
                 .flatMap { pluginProcessLinkService.getProcessLinks(it.id) }
-                .map { pluginService.getPluginConfiguration(it.pluginConfigurationId) }
+                .filter { it.pluginConfigurationId != null }
+                .map { pluginService.getPluginConfiguration(it.pluginConfigurationId!!) }
                 .filter { it.pluginDefinition.key == DocumentenApiPlugin.PLUGIN_KEY }
                 .toList()
         }
