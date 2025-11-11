@@ -15,7 +15,7 @@
  */
 
 import {CommonModule, DOCUMENT} from '@angular/common';
-import {Component, Inject, TemplateRef, ViewChild} from '@angular/core';
+import {Component, Inject, signal, TemplateRef, ViewChild} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -37,7 +37,7 @@ import {map, take} from 'rxjs/operators';
 import {IkoDataRequestResponse} from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchActionModalComponent} from './search-action-modal/search-action-modal.component';
-import {GlobalNotificationService} from '@valtimo/shared';
+import {GlobalNotificationService, ModalMode} from '@valtimo/shared';
 import {HttpResponse} from '@angular/common/http';
 
 @Component({
@@ -59,6 +59,7 @@ export class IkoManagementSearchActionsComponent {
   @ViewChild('exportingMessage')
   private readonly _exportMessageTemplateRef: TemplateRef<HTMLDivElement>;
 
+  public readonly $modalMode = signal<ModalMode>('add');
   public readonly loading$ = new BehaviorSubject<boolean>(true);
   public readonly FIELDS: ColumnConfig[] = [
     {
@@ -144,6 +145,7 @@ export class IkoManagementSearchActionsComponent {
   }
 
   public editSearchAction(action: IkoDataRequestResponse): void {
+    this.$modalMode.set('edit');
     this.prefillData$.next(action);
     this.actionModalOpen$.next(true);
   }
@@ -218,6 +220,7 @@ export class IkoManagementSearchActionsComponent {
   }
 
   public openAddModal(): void {
+    this.$modalMode.set('add');
     this.actionModalOpen$.next(true);
   }
 

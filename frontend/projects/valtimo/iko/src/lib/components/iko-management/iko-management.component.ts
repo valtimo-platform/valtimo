@@ -34,6 +34,8 @@ import {IkoManagementViewModalComponent} from './view-modal/iko-management-view-
 import {TranslateModule} from '@ngx-translate/core';
 import {Upload16} from '@carbon/icons';
 import {IkoManagementUploadModalComponent} from './upload-modal/iko-management-upload-modal.component';
+import {IkoManagementSearchActionModalComponent} from '../iko-management-details/components/search-actions/search-action-modal/search-action-modal.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management',
@@ -48,6 +50,7 @@ import {IkoManagementUploadModalComponent} from './upload-modal/iko-management-u
     IkoManagementUploadModalComponent,
     TranslateModule,
     ConfirmationModalModule,
+    IkoManagementSearchActionModalComponent,
   ],
 })
 export class IkoManagementComponent implements OnInit, OnDestroy {
@@ -73,6 +76,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
         )
     )
   );
+  public readonly $modalMode = signal<ModalMode>('add');
   public readonly $viewModalOpen = signal<boolean>(false);
   public readonly $uploadModalOpen = signal<boolean>(false);
   public readonly $prefillData = signal<any | null>(null);
@@ -124,6 +128,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   }
 
   public openAddModal(): void {
+    this.$modalMode.set('add');
     this.$viewModalOpen.set(true);
   }
 
@@ -132,6 +137,7 @@ export class IkoManagementComponent implements OnInit, OnDestroy {
   }
 
   public onEditClick(item: IkoDataAggregateResponse): void {
+    this.$modalMode.set('edit');
     this.$prefillData.set(item);
     this.$viewModalOpen.set(true);
   }

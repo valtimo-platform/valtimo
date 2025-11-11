@@ -68,6 +68,15 @@ export class IkoManagementViewModalComponent {
     this._apiKey$.next(value);
   }
 
+  private _modalMode: ModalMode = 'add';
+  @Input()
+  public set modalMode(value: ModalMode) {
+    this._modalMode = value;
+  }
+  public get modalMode(): ModalMode {
+    return this._modalMode;
+  }
+
   public readonly $prefillData = signal<IkoDataAggregateResponse | null>(null);
   public readonly $selectedKey = signal<string>('');
 
@@ -76,7 +85,6 @@ export class IkoManagementViewModalComponent {
     if (!value) return;
 
     this.$selectedKey.set(value.key);
-    this.$modalMode.set('edit');
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
@@ -89,7 +97,6 @@ export class IkoManagementViewModalComponent {
     return this.formGroup.get('title') as AbstractControl<string>;
   }
 
-  public readonly $modalMode = signal<ModalMode>('add');
   public showAutoKey = true;
 
   public readonly propertyFields$: Observable<PropertyField[]> = this.open$.pipe(
@@ -122,7 +129,6 @@ export class IkoManagementViewModalComponent {
   public onCancel(): void {
     this.modalClose.emit(null);
     runAfterCarbonModalClosed(() => {
-      this.$modalMode.set('add');
       this.showAutoKey = false;
     });
   }
@@ -146,7 +152,6 @@ export class IkoManagementViewModalComponent {
       this.modalClose.emit(formData);
 
       runAfterCarbonModalClosed(() => {
-        this.$modalMode.set('add');
         this.showAutoKey = false;
       });
     });

@@ -42,6 +42,7 @@
     [open]="actionModalOpen$ | async"
     [usedKeys]="usedKeys$ | async"
     [prefillData]="prefillData$ | async"
+    [modalMode]="$modalMode()"
     (modalClose)="onModalClose($event)"
   ></valtimo-iko-management-search-action-modal>
 

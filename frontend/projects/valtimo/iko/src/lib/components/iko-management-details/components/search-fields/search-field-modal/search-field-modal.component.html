@@ -38,8 +38,8 @@
         data-testid="iko-search-key"
         formControlName="key"
         placeholderTranslationKey="interface.key"
-        [sourceText]="$modalMode() === 'edit' ? $selectedKey() : title.value"
-        [mode]="$modalMode()"
+        [sourceText]="modalMode === 'edit' ? $selectedKey() : title.value"
+        [mode]="modalMode"
         [usedKeys]="usedKeys"
       >
       </valtimo-auto-key-input>

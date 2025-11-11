@@ -52,6 +52,7 @@
   [open]="$viewModalOpen()"
   [prefillData]="$prefillData()"
   [usedKeys]="usedKeys$ | async"
+  [modalMode]="$modalMode()"
   (modalClose)="onViewModalClose($event, apiKey)"
 ></valtimo-iko-management-view-modal>
 

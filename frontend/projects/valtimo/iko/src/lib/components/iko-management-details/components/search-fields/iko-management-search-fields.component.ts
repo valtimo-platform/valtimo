@@ -15,7 +15,7 @@
  */
 
 import {CommonModule} from '@angular/common';
-import {ChangeDetectionStrategy, Component, OnDestroy, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal} from '@angular/core';
 import {ActivatedRoute, Params} from '@angular/router';
 import {TranslateModule, TranslateService} from '@ngx-translate/core';
 import {
@@ -46,6 +46,8 @@ import {
 } from '../../../../models';
 import {IkoManagementApiService} from '../../../../services';
 import {IkoManagementSearchFieldModalComponent} from './search-field-modal/search-field-modal.component';
+import {IkoManagementSearchActionModalComponent} from '../search-actions/search-action-modal/search-action-modal.component';
+import {ModalMode} from '@valtimo/shared';
 
 @Component({
   selector: 'valtimo-iko-management-search-fields',
@@ -63,6 +65,7 @@ import {IkoManagementSearchFieldModalComponent} from './search-field-modal/searc
   ],
 })
 export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
+  public readonly $modalMode = signal<ModalMode>('add');
   private readonly _refresh$ = new BehaviorSubject<null>(null);
   public readonly params$: Observable<IkoManagementParams> = this.route.params.pipe(
     map((params: Params) => ({
@@ -198,6 +201,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public openAddModal(): void {
+    this.$modalMode.set('add');
     this.fieldModalOpen$.next(true);
   }
 
@@ -207,6 +211,7 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
   }
 
   public editSearchField(field: IkoSearchField): void {
+    this.$modalMode.set('edit');
     this.prefillData$.next(field);
     this.fieldModalOpen$.next(true);
   }
@@ -227,7 +232,6 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
 
   public onModalClose(field: IkoSearchField | null): void {
     this.fieldModalOpen$.next(false);
-    this.prefillData$.next(null);
     if (!field) return;
 
     this.params$
@@ -249,6 +253,8 @@ export class IkoManagementSearchFieldsComponent implements OnInit, OnDestroy {
         )
       )
       .subscribe(() => this._refresh$.next(null));
+
+    this.prefillData$.next(null);
   }
 
   private setBreadcrumbs(): void {

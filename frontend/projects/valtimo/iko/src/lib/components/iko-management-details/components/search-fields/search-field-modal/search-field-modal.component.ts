@@ -111,14 +111,21 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
 
   @Input() public usedKeys: string[] = [];
 
+  private _modalMode: ModalMode = 'add';
+  @Input()
+  public set modalMode(value: ModalMode) {
+    this._modalMode = value;
+  }
+  public get modalMode(): ModalMode {
+    return this._modalMode;
+  }
+
   public readonly $prefillData = signal<IkoSearchField | null>(null);
   @Input() public set prefillData(value: IkoSearchField | null) {
-    console.log("value: ", value)
     this.$prefillData.set(value);
     if (!value) return;
 
     this.$selectedKey.set(value.key);
-    this.$modalMode.set('edit');
     this.setPrefilledForm(value);
   }
 
@@ -340,7 +347,6 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
   public readonly ValuePathSelectorPrefix = ValuePathSelectorPrefix;
 
   public readonly $selectedKey = signal<string>('');
-  public readonly $modalMode = signal<ModalMode>('add');
   public showAutoKey = true;
 
   constructor(
@@ -380,7 +386,6 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
     this.closeEvent.emit(null);
     this.showAutoKey = false;
     this.resetForm();
-    this.$modalMode.set('add');
   }
 
   public onSave(): void {
@@ -405,7 +410,6 @@ export class IkoManagementSearchFieldModalComponent implements OnInit {
 
     this.showAutoKey = false;
     this.resetForm();
-    this.$modalMode.set('add');
   }
 
   private setPrefilledForm(prefillData: IkoSearchField | null): void {

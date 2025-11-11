@@ -58,7 +58,6 @@ import {ModalMode} from '@valtimo/shared';
   ],
 })
 export class IkoManagementSearchActionModalComponent {
-  public readonly $modalType = signal<'add' | 'edit'>('add');
   public readonly $isOpen = signal<boolean>(false);
   @Input() public set open(value: boolean) {
     this.$isOpen.set(value);
@@ -81,10 +80,19 @@ export class IkoManagementSearchActionModalComponent {
     if (!value) return;
 
     this.$selectedKey.set(value.key);
-    this.$modalType.set('edit');
     this.formGroup.patchValue(value);
     this.formGroup.get('key')?.disable();
   }
+
+  private _modalMode: ModalMode = 'add';
+  @Input()
+  public set modalMode(value: ModalMode) {
+    this._modalMode = value;
+  }
+  public get modalMode(): ModalMode {
+    return this._modalMode;
+  }
+
   @Input() public repositoryKey: string;
   @Input() public aggregateKey: string;
   @Input() public usedKeys: string[] = [];
@@ -128,7 +136,6 @@ export class IkoManagementSearchActionModalComponent {
   public onCancel(): void {
     this.modalClose.emit(null);
     this.showAutoKey = false;
-    this.$modalType.set('add');
   }
 
   public onSave(): void {
@@ -148,7 +155,6 @@ export class IkoManagementSearchActionModalComponent {
       });
       this.showAutoKey = false;
       this.modalClose.emit(formData);
-      this.$modalType.set('add');
     });
   }
 }
