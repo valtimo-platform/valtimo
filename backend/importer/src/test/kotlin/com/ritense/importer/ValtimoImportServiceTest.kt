@@ -20,11 +20,6 @@ import com.ritense.importer.exception.CyclicImporterDependencyException
 import com.ritense.importer.exception.DuplicateImporterTypeException
 import com.ritense.importer.exception.InvalidImportZipException
 import com.ritense.importer.exception.TooManyImportCandidatesException
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -36,6 +31,11 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class ValtimoImportServiceTest {
 
@@ -154,6 +154,51 @@ class ValtimoImportServiceTest {
                 assertThat(importer.supports(importRequest.fileName)).isTrue()
             }
         }
+    }
+
+    @Test
+    fun `should import binary files as raw bytes and text files as UTF8`() {
+        val pngBytes = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47) // PNG header
+        val jsonText = """{"name":"test"}"""
+
+        val zipOut = ByteArrayOutputStream()
+        ZipOutputStream(zipOut).use { zip ->
+            zip.putNextEntry(ZipEntry("artwork/test.png"))
+            zip.write(pngBytes)
+            zip.closeEntry()
+
+            zip.putNextEntry(ZipEntry("config/test.json"))
+            zip.write(jsonText.toByteArray(Charsets.UTF_8))
+            zip.closeEntry()
+        }
+        val input = ByteArrayInputStream(zipOut.toByteArray())
+
+        val received = mutableMapOf<String, ByteArray>()
+
+        val importer = TestImporter(
+            type = "mixed",
+            dependsOn = emptySet(),
+            supportsFunction = { true },
+            importFunction = { req ->
+                received[req.fileName] = req.content
+            }
+        )
+
+        val service = ValtimoImportService(setOf(importer), mock(), emptyList())
+
+        service.importGlobal(input)
+
+        assertThat(received.keys).containsExactlyInAnyOrder(
+            "artwork/test.png",
+            "config/test.json"
+        )
+
+        assertThat(received["artwork/test.png"])
+            .isNotNull()
+            .containsExactly(*pngBytes)
+
+        assertThat(String(received["config/test.json"]!!, Charsets.UTF_8))
+            .isEqualTo(jsonText)
     }
 
     private fun createZipInputStream(size: Int = 5, skip: Int? = null): InputStream {
