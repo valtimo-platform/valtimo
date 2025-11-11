@@ -33,7 +33,7 @@ export class ProcessLinkStepService {
   private readonly _currentStepIndex$ = new BehaviorSubject<number>(0);
   private readonly _disableSteps$ = new BehaviorSubject<boolean>(false);
   private readonly _hasOneProcessLinkType$ = new BehaviorSubject<boolean>(false);
-  private context: ManagementContext = 'independent';
+  private _context: ManagementContext = 'independent';
 
   get steps$(): Observable<Array<Step>> {
     return combineLatest([
@@ -126,7 +126,7 @@ export class ProcessLinkStepService {
 
   setChoosePluginConfigurationSteps(): void {
     const selectionLabel =
-      this.context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
+      this._context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
     this._steps$.next([
       {label: 'chooseProcessLinkType', secondaryLabel: 'processLinkType.plugin'},
       {label: selectionLabel},
@@ -138,7 +138,7 @@ export class ProcessLinkStepService {
 
   setSingleChoosePluginConfigurationSteps(): void {
     const selectionLabel =
-      this.context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
+      this._context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
     this._steps$.next([
       {label: selectionLabel},
       {label: 'choosePluginAction', disabled: true},
@@ -156,7 +156,9 @@ export class ProcessLinkStepService {
       .pipe(take(1))
       .subscribe(([hasOneType, selectedConfiguration, selectedDefinition]) => {
         const selectionLabel =
-          this.context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
+          this._context === 'buildingBlock'
+            ? 'choosePluginDefinition'
+            : 'choosePluginConfiguration';
         const selectedPluginLabel = this.getSelectedPluginLabel(
           selectedConfiguration,
           selectedDefinition
@@ -204,7 +206,9 @@ export class ProcessLinkStepService {
           ? this.pluginTranslateService.instant(selectedFunction.key, pluginKey)
           : selectedFunction.key;
         const selectionLabel =
-          this.context === 'buildingBlock' ? 'choosePluginDefinition' : 'choosePluginConfiguration';
+          this._context === 'buildingBlock'
+            ? 'choosePluginDefinition'
+            : 'choosePluginConfiguration';
         const selectedPluginLabel = this.getSelectedPluginLabel(
           selectedConfiguration,
           selectedDefinition
@@ -324,7 +328,7 @@ export class ProcessLinkStepService {
     selectedConfiguration: PluginConfiguration | undefined,
     selectedDefinition: PluginDefinition | undefined
   ): string {
-    if (this.context === 'buildingBlock') {
+    if (this._context === 'buildingBlock') {
       const definitionKey = selectedDefinition?.key || selectedConfiguration?.pluginDefinition?.key;
       return definitionKey ? this.pluginTranslateService.instant('title', definitionKey) : '';
     }
@@ -332,6 +336,6 @@ export class ProcessLinkStepService {
   }
 
   public setContext(context: ManagementContext): void {
-    this.context = context;
+    this._context = context;
   }
 }
