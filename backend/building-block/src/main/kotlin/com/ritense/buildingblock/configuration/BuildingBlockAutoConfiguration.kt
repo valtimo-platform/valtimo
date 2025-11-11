@@ -34,6 +34,7 @@ import com.ritense.buildingblock.service.BuildingBlockDefinitionProcessDefinitio
 import com.ritense.buildingblock.service.BuildingBlockDocumentDefinitionService
 import com.ritense.buildingblock.service.BuildingBlockJsonSchemaDocumentDefinitionImporter
 import com.ritense.buildingblock.service.BuildingBlockManagementService
+import com.ritense.buildingblock.service.BuildingBlockPluginDefinitionService
 import com.ritense.buildingblock.service.ProcessDefinitionBuildingBlockDefinitionImporter
 import com.ritense.buildingblock.web.rest.BuildingBlockDocumentDefinitionResource
 import com.ritense.buildingblock.web.rest.BuildingBlockManagementResource
@@ -41,6 +42,7 @@ import com.ritense.buildingblock.web.rest.BuildingBlockProcessResource
 import com.ritense.importer.ValtimoImportService
 import com.ritense.plugin.service.BuildingBlockPluginConfigurationResolver
 import com.ritense.processlink.mapper.ProcessLinkMapper
+import com.ritense.processlink.repository.ValtimoPluginProcessLinkRepository
 import com.ritense.processlink.service.ProcessDeploymentService
 import com.ritense.processlink.service.ProcessLinkService
 import com.ritense.valtimo.contract.buildingblock.BuildingBlockDefinitionChecker
@@ -162,9 +164,11 @@ class BuildingBlockAutoConfiguration {
     @ConditionalOnMissingBean(BuildingBlockProcessResource::class)
     fun buildingBlockProcessResource(
         buildingBlockDefinitionProcessDefinitionService: BuildingBlockDefinitionProcessDefinitionService,
+        buildingBlockPluginDefinitionService: BuildingBlockPluginDefinitionService,
     ): BuildingBlockProcessResource {
         return BuildingBlockProcessResource(
             buildingBlockDefinitionProcessDefinitionService,
+            buildingBlockPluginDefinitionService
         )
     }
 
@@ -251,4 +255,11 @@ class BuildingBlockAutoConfiguration {
     fun buildingBlockJsonSchemaDocumentDefinitionImporter(
         service: BuildingBlockDocumentDefinitionService,
     ) = BuildingBlockJsonSchemaDocumentDefinitionImporter(service)
+
+    @Bean
+    @ConditionalOnMissingBean(BuildingBlockPluginDefinitionService::class)
+    fun buildingBlockPluginDefinitionService(
+        pluginProcessLinkRepository: ValtimoPluginProcessLinkRepository,
+        processDefinitionBuildingBlockDefinitionRepository: ProcessDefinitionBuildingBlockDefinitionRepository
+    ) = BuildingBlockPluginDefinitionService(pluginProcessLinkRepository, processDefinitionBuildingBlockDefinitionRepository)
 }

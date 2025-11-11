@@ -1793,6 +1793,7 @@
     },
     "selectFormFlow": "Select your FormFlow",
     "choosePluginConfiguration": "Select plugin configuration",
+    "choosePluginDefinition": "Select plugin type",
     "choosePluginAction": "Choose your action",
     "configurePluginAction": "Configure your action",
     "selectURL": "Configure your URL",
